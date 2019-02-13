@@ -1792,7 +1792,7 @@ def imageToPointSet(im):
     ps.set_var(v=v, vname='Y', ind=1)
 
     # Set z-coordinate
-    v = np.repeat(im.z(), im.nxy)
+    v = np.repeat(im.z(), im.nxy())
     ps.set_var(v=v, vname='Z', ind=2)
 
     # Set next variable(s)
