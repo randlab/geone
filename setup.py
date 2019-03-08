@@ -13,9 +13,11 @@ setuptools.setup(
     name='geone',
     version='0.1.0',
     author="Julien Straubhaar",
+    author_email="julien.straubhaar@unine.ch",
     description="Geostatistics simulation tools",
     long_description=long_description,
     packages=setuptools.find_packages(),
     package_data={'geone.deesse_core':deesse_lib},
-    include_package_data=True
+    include_package_data=True,
+    license=open('LICENSE').read()
 )
