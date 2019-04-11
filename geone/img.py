@@ -167,9 +167,9 @@ class Img(object):
         possible new locations:
 
         :param ix0, ix1: (int or None) indices for x direction ix0 <= ix1
-        :param iy0, iy1: (int or None) indices for x direction ix0 <= ix1
-        :param iz0, iz1: (int or None) indices for x direction ix0 <= ix1
-        :param iv0, iv1: (int or None) indices for x direction ix0 <= ix1
+        :param iy0, iy1: (int or None) indices for y direction iy0 <= iy1
+        :param iz0, iz1: (int or None) indices for z direction iz0 <= iz1
+        :param iv0, iv1: (int or None) indices for v direction iv0 <= iv1
         :param newv:     (float) new value to insert at possible new location
         :param newvname: (string) prefix for new variable name(s)
         """
@@ -1323,7 +1323,7 @@ def writeImageGslib(im, filename, missing_value=None, fmt="%.10g"):
 def writeImageVtk(im, filename, missing_value=None, fmt="%.10g",
                   data_type='float', version=3.4, name=None):
     """
-    Writes an image in a file (gslib format):
+    Writes an image in a file (vtk format):
 
     :param im:              (Img class) image to be written
     :param filename:        (string) name of the file
