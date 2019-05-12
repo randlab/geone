@@ -166,10 +166,10 @@ class Img(object):
         to ox+ix0*sx(, oy+iy0*sy, oz+iz0*sz), and inserting value newv at
         possible new locations:
 
-        :param ix0, ix1: (int or None) indices for x direction ix0 <= ix1
-        :param iy0, iy1: (int or None) indices for y direction iy0 <= iy1
-        :param iz0, iz1: (int or None) indices for z direction iz0 <= iz1
-        :param iv0, iv1: (int or None) indices for v direction iv0 <= iv1
+        :param ix0, ix1: (int or None) indices for x direction ix0 < ix1
+        :param iy0, iy1: (int or None) indices for y direction iy0 < iy1
+        :param iz0, iz1: (int or None) indices for z direction iz0 < iz1
+        :param iv0, iv1: (int or None) indices for v direction iv0 < iv1
         :param newv:     (float) new value to insert at possible new location
         :param newvname: (string) prefix for new variable name(s)
         """
@@ -186,19 +186,19 @@ class Img(object):
         if iv1 is None:
             iv1 = self.nv
 
-        if ix0 > ix1:
+        if ix0 >= ix1:
             print("Nothing is done! (invalid indices along x)")
             return
 
-        if iy0 > iy1:
+        if iy0 >= iy1:
             print("Nothing is done! (invalid indices along y)")
             return
 
-        if iz0 > iz1:
+        if iz0 >= iz1:
             print("Nothing is done! (invalid indices along z)")
             return
 
-        if iv0 > iv1:
+        if iv0 >= iv1:
             print("Nothing is done! (invalid indices along v)")
             return
 

@@ -94,7 +94,7 @@ class SearchNeighborhoodParameters(object):
                  radiusMode='large_default',
                  rx=0., ry=0., rz=0.,
                  anisotropyRatioMode='one',
-                 ax=0.,  ay=0., az=0.,
+                 ax=0., ay=0., az=0.,
                  angle1=0., angle2=0., angle3=0.,
                  power=0.):
         self.radiusMode = radiusMode
