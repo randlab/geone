@@ -259,10 +259,12 @@ MPDS_MIN_BLOCK_DATA_LOCAL_VAR = _deesse.MPDS_MIN_BLOCK_DATA_LOCAL_VAR
 MPDS_MIN_BLOCK_DATA_KERNEL_BANDWIDTH = _deesse.MPDS_MIN_BLOCK_DATA_KERNEL_BANDWIDTH
 MPDS_MAX_BLOCK_DATA_SAMPLED_REGION = _deesse.MPDS_MAX_BLOCK_DATA_SAMPLED_REGION
 MPDS_PYRAMID_NLEVEL_MAX = _deesse.MPDS_PYRAMID_NLEVEL_MAX
-MPDS_PYRAMID_FACTOR_DISTANCE_THRESHOLD_MIN = _deesse.MPDS_PYRAMID_FACTOR_DISTANCE_THRESHOLD_MIN
-MPDS_PYRAMID_FACTOR_DISTANCE_THRESHOLD_MAX = _deesse.MPDS_PYRAMID_FACTOR_DISTANCE_THRESHOLD_MAX
 MPDS_PYRAMID_FACTOR_MAX_N_NEIGHBOR_MIN = _deesse.MPDS_PYRAMID_FACTOR_MAX_N_NEIGHBOR_MIN
 MPDS_PYRAMID_FACTOR_MAX_N_NEIGHBOR_MAX = _deesse.MPDS_PYRAMID_FACTOR_MAX_N_NEIGHBOR_MAX
+MPDS_PYRAMID_FACTOR_DISTANCE_THRESHOLD_MIN = _deesse.MPDS_PYRAMID_FACTOR_DISTANCE_THRESHOLD_MIN
+MPDS_PYRAMID_FACTOR_DISTANCE_THRESHOLD_MAX = _deesse.MPDS_PYRAMID_FACTOR_DISTANCE_THRESHOLD_MAX
+MPDS_PYRAMID_FACTOR_MAX_SCAN_FRACTION_MIN = _deesse.MPDS_PYRAMID_FACTOR_MAX_SCAN_FRACTION_MIN
+MPDS_PYRAMID_FACTOR_MAX_SCAN_FRACTION_MAX = _deesse.MPDS_PYRAMID_FACTOR_MAX_SCAN_FRACTION_MAX
 MPDS_PYRAMID_REDUCTION_FACTOR_MAX = _deesse.MPDS_PYRAMID_REDUCTION_FACTOR_MAX
 MPDS_PYRAMID_CATEGORICAL_NCLASS_MAX = _deesse.MPDS_PYRAMID_CATEGORICAL_NCLASS_MAX
 MPDS_GAUSSIAN_PYRAMID_RED_TOTAL_WEIGHT_MIN = _deesse.MPDS_GAUSSIAN_PYRAMID_RED_TOTAL_WEIGHT_MIN
@@ -476,8 +478,8 @@ def MPDSFreeConnectivity(arg1):
     return _deesse.MPDSFreeConnectivity(arg1)
 MPDSFreeConnectivity = _deesse.MPDSFreeConnectivity
 
-def MPDSImageToImageWithConnectivityLabel(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _deesse.MPDSImageToImageWithConnectivityLabel(arg1, arg2, arg3, arg4, arg5, arg6)
+def MPDSImageToImageWithConnectivityLabel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _deesse.MPDSImageToImageWithConnectivityLabel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 MPDSImageToImageWithConnectivityLabel = _deesse.MPDSImageToImageWithConnectivityLabel
 
 def MPDSInitConnectivity(arg1):
@@ -636,6 +638,10 @@ def MPDSFreeImage(arg1):
     return _deesse.MPDSFreeImage(arg1)
 MPDSFreeImage = _deesse.MPDSFreeImage
 
+def MPDSGetImageOneVarValueIndex(arg1, arg2, arg3, arg4, arg5):
+    return _deesse.MPDSGetImageOneVarValueIndex(arg1, arg2, arg3, arg4, arg5)
+MPDSGetImageOneVarValueIndex = _deesse.MPDSGetImageOneVarValueIndex
+
 def MPDSGetImageNumberVarValueMissing(arg1, arg2):
     return _deesse.MPDSGetImageNumberVarValueMissing(arg1, arg2)
 MPDSGetImageNumberVarValueMissing = _deesse.MPDSGetImageNumberVarValueMissing
@@ -692,8 +698,8 @@ def MPDSGetNImageVarValuePdf(arg1, arg2, arg3, arg4, arg5, arg6):
     return _deesse.MPDSGetNImageVarValuePdf(arg1, arg2, arg3, arg4, arg5, arg6)
 MPDSGetNImageVarValuePdf = _deesse.MPDSGetNImageVarValuePdf
 
-def MPDSImageToImage(arg1, arg2, arg3, arg4):
-    return _deesse.MPDSImageToImage(arg1, arg2, arg3, arg4)
+def MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _deesse.MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 MPDSImageToImage = _deesse.MPDSImageToImage
 
 def MPDSInitImage(arg1):
@@ -864,6 +870,7 @@ MPDS_WARNING_MSG_00041 = _deesse.MPDS_WARNING_MSG_00041
 MPDS_WARNING_MSG_00042 = _deesse.MPDS_WARNING_MSG_00042
 MPDS_WARNING_MSG_00043 = _deesse.MPDS_WARNING_MSG_00043
 MPDS_WARNING_MSG_00044 = _deesse.MPDS_WARNING_MSG_00044
+MPDS_WARNING_MSG_00045 = _deesse.MPDS_WARNING_MSG_00045
 MPDS_WARNING_MSG_00046 = _deesse.MPDS_WARNING_MSG_00046
 MPDS_WARNING_MSG_00050 = _deesse.MPDS_WARNING_MSG_00050
 MPDS_WARNING_MSG_00051 = _deesse.MPDS_WARNING_MSG_00051
@@ -950,6 +957,7 @@ PYRAMID_NONE = _deesse.PYRAMID_NONE
 PYRAMID_CONTINUOUS = _deesse.PYRAMID_CONTINUOUS
 PYRAMID_CATEGORICAL_AUTO = _deesse.PYRAMID_CATEGORICAL_AUTO
 PYRAMID_CATEGORICAL_CUSTOM = _deesse.PYRAMID_CATEGORICAL_CUSTOM
+PYRAMID_CATEGORICAL_TO_CONTINUOUS = _deesse.PYRAMID_CATEGORICAL_TO_CONTINUOUS
 class mpds_pyramidGeneralParameters(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_pyramidGeneralParameters, name, value)
@@ -984,6 +992,10 @@ class mpds_pyramidGeneralParameters(_object):
     __swig_getmethods__["factorDistanceThreshold"] = _deesse.mpds_pyramidGeneralParameters_factorDistanceThreshold_get
     if _newclass:
         factorDistanceThreshold = _swig_property(_deesse.mpds_pyramidGeneralParameters_factorDistanceThreshold_get, _deesse.mpds_pyramidGeneralParameters_factorDistanceThreshold_set)
+    __swig_setmethods__["factorMaxScanFraction"] = _deesse.mpds_pyramidGeneralParameters_factorMaxScanFraction_set
+    __swig_getmethods__["factorMaxScanFraction"] = _deesse.mpds_pyramidGeneralParameters_factorMaxScanFraction_get
+    if _newclass:
+        factorMaxScanFraction = _swig_property(_deesse.mpds_pyramidGeneralParameters_factorMaxScanFraction_get, _deesse.mpds_pyramidGeneralParameters_factorMaxScanFraction_set)
 
     def __init__(self):
         this = _deesse.new_mpds_pyramidGeneralParameters()
@@ -1058,10 +1070,6 @@ MPDSPrintPyramidGeneralParameters = _deesse.MPDSPrintPyramidGeneralParameters
 def MPDSPrintPyramidParameters(arg1, arg2, arg3):
     return _deesse.MPDSPrintPyramidParameters(arg1, arg2, arg3)
 MPDSPrintPyramidParameters = _deesse.MPDSPrintPyramidParameters
-
-def MPDSReadPyramidGeneralParameters(arg1, arg2):
-    return _deesse.MPDSReadPyramidGeneralParameters(arg1, arg2)
-MPDSReadPyramidGeneralParameters = _deesse.MPDSReadPyramidGeneralParameters
 
 def MPDSReadPyramidParameters(arg1, arg2):
     return _deesse.MPDSReadPyramidParameters(arg1, arg2)
@@ -1278,12 +1286,12 @@ def MPDSSim(arg1, arg2, arg3, arg4):
     return _deesse.MPDSSim(arg1, arg2, arg3, arg4)
 MPDSSim = _deesse.MPDSSim
 
-def MPDSSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42):
-    return _deesse.MPDSSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42)
+def MPDSSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45):
+    return _deesse.MPDSSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45)
 MPDSSimComputePyramid = _deesse.MPDSSimComputePyramid
 
-def MPDSSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18):
-    return _deesse.MPDSSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18)
+def MPDSSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20):
+    return _deesse.MPDSSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20)
 MPDSSimComputePyramidInitialSim = _deesse.MPDSSimComputePyramidInitialSim
 
 def MPDSSimComputePyramidNvar(arg1, arg2, arg3, arg4, arg5):
@@ -2032,12 +2040,12 @@ def MPDSOMPSim(arg1, arg2, arg3, arg4, arg5):
     return _deesse.MPDSOMPSim(arg1, arg2, arg3, arg4, arg5)
 MPDSOMPSim = _deesse.MPDSOMPSim
 
-def MPDSOMPSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43):
-    return _deesse.MPDSOMPSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43)
+def MPDSOMPSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46):
+    return _deesse.MPDSOMPSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46)
 MPDSOMPSimComputePyramid = _deesse.MPDSOMPSimComputePyramid
 
-def MPDSOMPSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19):
-    return _deesse.MPDSOMPSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19)
+def MPDSOMPSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21):
+    return _deesse.MPDSOMPSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21)
 MPDSOMPSimComputePyramidInitialSim = _deesse.MPDSOMPSimComputePyramidInitialSim
 
 def MPDSOMPSimOneReal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69):
