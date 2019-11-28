@@ -45,12 +45,12 @@ class Img(object):
         self.nx = nx
         self.ny = ny
         self.nz = nz
-        self.sx = sx
-        self.sy = sy
-        self.sz = sz
-        self.ox = ox
-        self.oy = oy
-        self.oz = oz
+        self.sx = float(sx)
+        self.sy = float(sy)
+        self.sz = float(sz)
+        self.ox = float(ox)
+        self.oy = float(oy)
+        self.oz = float(oz)
         self.nv = nv
 
         valarr = np.asarray(v, dtype=float) # numpy.ndarray (possibly 0-dimensional)
