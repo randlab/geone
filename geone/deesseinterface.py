@@ -436,7 +436,7 @@ class PyramidGeneralParameters(object):
 
         factorMaxScanFraction:
                     (1-dimensional array of floats of size npyramidLevel + 1)
-                        factors for adpating the maixmal scan fraction:
+                        factors for adpating the maximal scan fraction:
                         the maximal scan fraction (according to each training image)
                         is multiplied by factorMaxScanFraction[j] for the j-th pyramid level
     """
