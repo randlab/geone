@@ -94,7 +94,7 @@ class SearchNeighborhoodParameters(object):
                  radiusMode='large_default',
                  rx=0., ry=0., rz=0.,
                  anisotropyRatioMode='one',
-                 ax=0.,  ay=0., az=0.,
+                 ax=0., ay=0., az=0.,
                  angle1=0., angle2=0., angle3=0.,
                  power=0.):
         self.radiusMode = radiusMode
@@ -433,6 +433,12 @@ class PyramidGeneralParameters(object):
         factorDistanceThreshold:
                     (1-dimensional array of floats) factors for adpating the
                         distance (acceptance) threshold (similar to factorNneighboringNode)
+
+        factorMaxScanFraction:
+                    (1-dimensional array of floats of size npyramidLevel + 1)
+                        factors for adpating the maximal scan fraction:
+                        the maximal scan fraction (according to each training image)
+                        is multiplied by factorMaxScanFraction[j] for the j-th pyramid level
     """
 
     def __init__(self,
@@ -441,7 +447,8 @@ class PyramidGeneralParameters(object):
                  kx=None, ky=None, kz=None,
                  pyramidSimulationMode='hierarchical_using_expansion',
                  factorNneighboringNode=None,
-                 factorDistanceThreshold=None):
+                 factorDistanceThreshold=None,
+                 factorMaxScanFraction=None):
         """
         Init Function for the class:
             note that the parameters nx, ny, nz should be the dimension
@@ -449,6 +456,7 @@ class PyramidGeneralParameters(object):
         """
         self.npyramidLevel = npyramidLevel
 
+        # pyramidSimulationMode
         if pyramidSimulationMode not in ('hierarchical', 'hierarchical_using_expansion', 'all_level_one_by_one'):
             print('ERROR: (PyramidGeneralParameters) unknown pyramidSimulationMode')
             return
@@ -456,6 +464,7 @@ class PyramidGeneralParameters(object):
         self.pyramidSimulationMode = pyramidSimulationMode
 
         if npyramidLevel > 0:
+            # kx, ky, kz
             if kx is None:
                 self.kx = np.array([2 * int (nx>1) for i in range(npyramidLevel)])
             else:
@@ -483,6 +492,7 @@ class PyramidGeneralParameters(object):
                     print('ERROR: (PyramidGeneralParameters) field "kz"...')
                     return
 
+            # factorNneighboringNode, factorDistanceThreshold
             if pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
                 n = 4*npyramidLevel + 1
                 if factorNneighboringNode is None:
@@ -530,6 +540,22 @@ class PyramidGeneralParameters(object):
                     except:
                         print('ERROR: (PyramidGeneralParameters) field "factorDistanceThreshold"...')
                         return
+
+            # factorMaxScanFraction
+            n = npyramidLevel + 1
+            if factorMaxScanFraction is None:
+                factorMaxScanFraction = np.ones(n)
+                d = 1.0
+                for j in range(npyramidLevel):
+                    d = d * np.maximum(self.kx[j], 1) * np.maximum(self.ky[j], 1) * np.maximum(self.kz[j], 1)
+                    factorMaxScanFraction[j+1] = d
+                self.factorMaxScanFraction = factorMaxScanFraction
+            else:
+                try:
+                    self.factorMaxScanFraction = np.asarray(factorMaxScanFraction, dtype=float).reshape(n)
+                except:
+                    print('ERROR: (PyramidGeneralParameters) field "factorMaxScanFraction"...')
+                    return
 # ============================================================================
 
 # ============================================================================
@@ -553,6 +579,13 @@ class PyramidParameters(object):
                             pyramid for categorical variable, pyramid for
                             indicator variable of each class of values given
                             explicitly (one pyramid per indicator variable)
+                        - 'categorical_to_continuous':
+                            pyramid for categorical variable, the variable is
+                            transformed to a continuous variable (according to
+                            connection between adjacent nodes, the new values
+                            are ordered such that close values correspond to the
+                            most connected categories), then one pyramid for the
+                            transformed variable is used
 
         nclass:     (int) number of classes of values
                         (used when pyramidType == 'categorical_custom')
@@ -572,7 +605,7 @@ class PyramidParameters(object):
                  classInterval=None):
         self.nlevel = nlevel
 
-        if pyramidType not in ('none', 'continuous', 'categorical_auto', 'categorical_custom'):
+        if pyramidType not in ('none', 'continuous', 'categorical_auto', 'categorical_custom', 'categorical_to_continuous'):
             print('ERROR: (PyramidParameters) unknown pyramidType')
             return
 
@@ -2529,6 +2562,12 @@ def deesse_input_py2C(deesse_input):
             mpds_siminput.pyramidGeneralParameters.factorDistanceThreshold, 0,
                 np.asarray(deesse_input.pyramidGeneralParameters.factorDistanceThreshold).reshape(nn))
 
+        # ... factorMaxScanFraction
+        mpds_siminput.pyramidGeneralParameters.factorMaxScanFraction = deesse.new_double_array(nl+1)
+        deesse.mpds_set_double_vector_from_array(
+            mpds_siminput.pyramidGeneralParameters.factorMaxScanFraction, 0,
+                np.asarray(deesse_input.pyramidGeneralParameters.factorMaxScanFraction).reshape(nl+1))
+
     # mpds_siminput.pyramidParameters ...
     mpds_siminput.pyramidParameters = deesse.new_MPDS_PYRAMIDPARAMETERS_array(deesse_input.nv)
 
@@ -2549,6 +2588,8 @@ def deesse_input_py2C(deesse_input):
             pp_c.pyramidType = deesse.PYRAMID_CATEGORICAL_AUTO
         elif pp.pyramidType == 'categorical_custom':
             pp_c.pyramidType = deesse.PYRAMID_CATEGORICAL_CUSTOM
+        elif pp.pyramidType == 'categorical_to_continuous':
+            pp_c.pyramidType = deesse.PYRAMID_CATEGORICAL_TO_CONTINUOUS
         else:
             pp_c.pyramidType = deesse.PYRAMID_NONE
 
@@ -4164,9 +4205,9 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
                       co-simulation of all levels, simulation done at one level at a time{0}\
          I.4. Factors to adapt the maximal number of neighboring nodes:{0}\
               I.4.1. Setting mode, key word (factorNneighboringNodeSettingMode):{0}\
-                        - PYRAMID_ADAPTING_FACTOR_DEFAULT: set by default{0}\
-                        - PYRAMID_ADAPTING_FACTOR_MANUAL : read in input{0}\
-              If factorNneighboringNodeSettingMode == PYRAMID_ADAPTING_FACTOR_MANUAL:{0}\
+                        - PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_DEFAULT: set by default{0}\
+                        - PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL : read in input{0}\
+              If factorNneighboringNodeSettingMode == PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL:{0}\
                  I.4.2. The factors, depending on pyramid simulation mode:{0}\
                     - if pyramidSimulationMode == PYRAMID_SIM_HIERARCHICAL{0}\
                       or PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION:{0}\
@@ -4183,16 +4224,26 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
                                     if pyramidSimulationMode == PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION){0}\
                                     and the simulated level (level j) resp. during step (b) above{0}\
                     - if pyramidSimulationMode == PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE:{0}\
-                         - f[0],...,f[npyramidLevel-1],f[npyramidLevel]:{0}\
+                         - f[0],..., f[npyramidLevel-1], f[npyramidLevel]:{0}\
                               I.e. (npyramidLevel + 1) positive numbers, with the following meaning. The{0}\
                               maximal number of neighboring nodes (according to each variable) is{0}\
                               multiplied by f[j] for the j-th pyramid level.{0}\
          I.5. Factors to adapt the distance threshold (similar to I.4):{0}\
               I.5.1. Setting mode, key word (factorDistanceThresholdSettingMode):{0}\
-                        - PYRAMID_ADAPTING_FACTOR_DEFAULT: set by default{0}\
-                        - PYRAMID_ADAPTING_FACTOR_MANUAL : read in input{0}\
-              If factorDistanceThresholdSettingMode == PYRAMID_ADAPTING_FACTOR_MANUAL:{0}\
+                        - PYRAMID_THRESHOLD_ADAPTING_FACTOR_DEFAULT: set by default{0}\
+                        - PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL : read in input{0}\
+              If factorDistanceThresholdSettingMode == PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL:{0}\
                  I.5.2. The factors, depending on pyramid simulation mode (similar to I.4.2).{0}\
+         I.6. Factors to adapt the maximal scan fraction:{0}\
+              I.6.1. Setting mode, key word (factorMaxScanFractionSettingMode):{0}\
+                        - PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_DEFAULT: set by default{0}\
+                        - PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL : read in input{0}\
+              If factorMaxScanFractionSettingMode == PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL:{0}\
+                 I.6.2. The factors:{0}\
+                    - f[0],..., f[npyramidLevel-1], f[npyramidLevel]:{0}\
+                         I.e. (npyramidLevel + 1) positive numbers, with the following meaning. The{0}\
+                      maximal scan fraction (according to each training image) is{0}\
+                      multiplied by f[j] for the j-th pyramid level.{0}\
 {0}\
          II. PYRAMID PARAMETERS FOR EACH VARIABLE:{0}\
 {0}\
@@ -4210,7 +4261,14 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
                                                       - pyramid for indicator variable of each class{0}\
                                                         of values given explicitly (one pyramid per{0}\
                                                         indicator variable){0}\
-{0}\
+                     - PYRAMID_CATEGORICAL_TO_CONTINUOUS:{0}\
+                                                   pyramid for categorical variable{0}\
+                                                      - the variable is transformed to a continuous{0}\
+                                                        variable (according to connection between adjacent{0}\
+                                                        nodes, the new values are ordered such that close{0}\
+                                                        values correspond to the most connected categories),{0}\
+                                                        then one pyramid for the transformed variable{0}\
+                                                        is used{0}\
             If pyramidType == PYRAMID_CATEGORICAL_CUSTOM:{0}\
                II.3.  The classes of values (for which the indicator variables are{0}\
                   considered for pyramids) have to be defined; a class of values is given by a union{0}\
@@ -4265,10 +4323,9 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
                 infid.write('PYRAMID_SIM_NONE{0}'.format(endofline))
 
         if verbose == 2:
-            infid.write('   // factor to adapt max number of neighbors{0}'.format(endofline))
-            infid.write('PYRAMID_ADAPTING_FACTOR_MANUAL // setting mode{0}'.format(endofline))
+            infid.write('PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL // mode for adapting factors (max number of neighbors){0}'.format(endofline))
         else:
-            infid.write('PYRAMID_ADAPTING_FACTOR_MANUAL{0}'.format(endofline))
+            infid.write('PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL{0}'.format(endofline))
 
         if gp.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
             for i in range(gp.npyramidLevel):
@@ -4294,10 +4351,9 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
                     infid.write('{1}{0}'.format(endofline, f))
 
         if verbose == 2:
-            infid.write('   // factor to adapt distance threshold{0}'.format(endofline))
-            infid.write('PYRAMID_ADAPTING_FACTOR_MANUAL // setting mode{0}'.format(endofline))
+            infid.write('PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL // mode for adapting factors (distance threshold){0}'.format(endofline))
         else:
-            infid.write('PYRAMID_ADAPTING_FACTOR_MANUAL // setting mode{0}'.format(endofline))
+            infid.write('PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL{0}'.format(endofline))
 
         if gp.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
             for i in range(gp.npyramidLevel):
@@ -4321,6 +4377,17 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
                     infid.write('{1} // f[{2}]{0}'.format(endofline, f, i))
                 else:
                     infid.write('{1}{0}'.format(endofline, f))
+
+        if verbose == 2:
+            infid.write('PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL // mode for adapting factors (maximal scan fraction){0}'.format(endofline))
+        else:
+            infid.write('PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL{0}'.format(endofline))
+
+        for i, f in enumerate(gp.factorMaxScanFraction):
+            if verbose == 2:
+                infid.write('{1} // f[{2}]{0}'.format(endofline, f, i))
+            else:
+                infid.write('{1}{0}'.format(endofline, f))
 
         for i, pp in enumerate(deesse_input.pyramidParameters):
             if verbose > 0:
@@ -4362,6 +4429,11 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
                         infid.write(' // class #{1} (ninterval, and interval(s)){0}'.format(endofline, j))
                     else:
                         infid.write('{0}'.format(endofline))
+            elif pp.pyramidType == 'categorical_to_continuous':
+                if verbose == 2:
+                    infid.write('PYRAMID_CATEGORICAL_TO_CONTINUOUS // pyramid type{0}'.format(endofline))
+                else:
+                    infid.write('PYRAMID_CATEGORICAL_TO_CONTINUOUS{0}'.format(endofline))
             else:
                 if verbose == 2:
                     infid.write('PYRAMID_NONE // pyramid type{0}'.format(endofline))

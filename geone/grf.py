@@ -22,7 +22,7 @@ def grf1D(covFun, dimension, spacing, origin=0.,
     Generates gaussian random fields (GRF) in 1D via FFT.
 
     The GRFs:
-        - are generated using the covariance function,
+        - are generated using the covariance function (covFun),
         - have specified mean (mean) and variance (var), which can be non stationary
         - are conditioned to location x with value v
     Notes:
@@ -573,6 +573,399 @@ def grf1D(covFun, dimension, spacing, origin=0.,
     return (grf)
 # ----------------------------------------------------------------------------
 
+def krige1D(x, v, covFun, dimension, spacing, origin=0.,
+            mean=0, var=None,
+            extensionMin=None,
+            conditioningMethod=2,
+            measureErrVar=0., tolInvKappa=1.e-10,
+            computeKrigSD=True,
+            printInfo=True):
+    """
+    Computes kriging estimates and standard deviation in 1D via FFT.
+
+    It is a simple kriging
+        - of value v at location x,
+        - based on the covariance function (covFun),
+        - with a specified mean (mean) and variance (var), which can be non stationary
+
+    Notes:
+    1) For reproducing covariance model, the dimension of the field/domain should be large
+       enough; let K an integer such that K*spacing is greater or equal to the
+       correlation range, then
+        - correlation accross opposite border should be removed by extending
+          the domain sufficiently, i.e.
+              extensionMin >= K - 1
+        - two nodes could not be correlated simultaneously regarding both distances
+          between them (with respect to the periodic grid), i.e. one should have
+              dimension+extensionMin >= 2*K - 1,
+          To sum up, extensionMin should be chosen such that
+              dimension+extensionMin >= max(dimension, K) + K - 1
+          i.e.
+              extensionMin >= max(K-1,2*K-dimension-1)
+    2) For large data set:
+        - conditioningMethod should be set to 2 for using FFT
+        - measureErrVar could be set to a small positive value to stabilize
+          the covariance matrix (solving linear system)
+
+    :param x:           (1-dimensional array of float) coordinate of data points
+    :param v:           (1-dimensional array of float) value at data points
+    :param covFun:      (function) covariance function f(h), where
+                            h: (1-dimensional array or float) 1D-lag(s)
+    :param dimension:   (int) nx, number of cells
+    :param spacing:     (float) dx, spacing between two adjacent cells
+    :param origin:      (float) ox, origin of the 1D field
+                            - used for localizing the conditioning points
+    :param mean:        (float or ndarray) mean of the variable:
+                            - scalar for stationary mean
+                            - ndarray for non stationary mean, must contain
+                                nx values (reshaped if needed)
+    :param var:         (float or ndarray or None) variance of the variable,
+                            if not None: variance in the field is updated
+                            depending on the specified variance and the covariance
+                            function, otherwise: only the covariance function is
+                            used
+                                - scalar for stationary variance
+                                - array for non stationary variance, must contain
+                                    nx values (reshaped if needed)
+    :param extensionMin: (int) minimal extension in nodes for embedding (see above)
+    :param conditioningMethod:
+                        (int) indicates which method is used to perform kriging.
+                            Let
+                                A: index of conditioning (data) nodes
+                                B: index of non-conditioning nodes
+                            and
+                                    +         +
+                                    | rAA rAB |
+                                r = |         |
+                                    | rBA rBB |
+                                    +         +
+                            the covariance matrix, where index A (resp. B) refers
+                            to conditioning (resp. non-conditioning) index in the
+                            grid. Then, thre kriging estimates and variance are
+                                krig[B]    = mean + rBA * rAA^(-1) * (v - mean)
+                                krigVar[B] = diag(rBB - rBA * rAA^(-1) * rAB)
+                            The computation is done in a way depending on the
+                            following possible values for conditioningMethod:
+                                1: method CondtioningA:
+                                   the matrices rBA, RAA^(-1) are explicitly
+                                   computed (warning: could require large amount
+                                   of memory), then all the simulations are updated
+                                   by a sum and a multiplication by the matrix M
+                                2: method ConditioningB:
+                                   for kriging estimates:
+                                       the linear system
+                                         rAA * y = (v - mean)
+                                       is solved, and then
+                                         mean + rBA*y
+                                       is computed
+                                   for kriging variances:
+                                       for each column u[j] of rAB, the linear
+                                       system
+                                         rAA * y = u[j]
+                                       is solved, and then
+                                         rBB[j,j] - y^t*y
+                                       is computed
+    :param measureErrVar:
+                        (float >=0) measurement error variance; we assume that
+                            the error on conditioining data follows the distrubution
+                            N(0,measureErrVar*I); i.e. rAA + measureErrVar*I is
+                            considered instead of rAA for stabilizing the linear
+                            system for this matrix.
+    :param tolInvKappa: (float >0) the function is stopped if the inverse of
+                            the condition number of rAA is above tolInvKappa
+    :param computeKrigSD:
+                        (bool) indicates if the standard deviation of kriging is computed
+    :param printInfo:   (bool) indicates if some info is printed in stdout
+
+    :return ret:        two possible cases:
+                            ret = [krig, krigSD] if computeKrigSD is equal to True
+                            ret = krig           if computeKrigSD is equal to False
+                        where
+                            krig:   (1-dimensional array of dim nx)
+                                        kriging estimates
+                            krigSD: (1-dimensional array of dim nx)
+                                        kriging standard deviation
+
+    NOTES:
+        Discrete Fourier Transform (DFT) of a vector x of length N is given by
+            c = DFT(x) = F * x
+        where F is the N x N matrix with coefficients
+            F(j,k) = [exp(-i*2*pi*j*k/N)], 0 <= j,k <= N-1
+        We have
+            F^(-1) = 1/N * F^(*)
+        where ^(*) denotes the conjugate transpose
+        Let
+            Q = 1/N^(1/2) * F
+        Then Q is unitary, i.e. Q^(-1) = Q^(*)
+        Then, we have
+            DFT = F = N^(1/2) * Q
+            DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*)
+
+        Using numpy package in python3, we have
+            numpy.fft.fft() = DFT
+            numpy.fft.ifft() = DFT^(-1)
+    """
+
+    if conditioningMethod not in (1, 2):
+        print('ERROR (KRIGE1D): invalid method!')
+        return
+
+    nx = dimension
+    dx = spacing
+    # ox = origin
+
+    x = np.asarray(x).reshape(-1) # cast in 1-dimensional array if needed
+    v = np.asarray(v).reshape(-1) # cast in 1-dimensional array if needed
+
+    mean = np.asarray(mean).reshape(-1) # cast in 1-dimensional array if needed
+
+    if mean.size not in (1, nx):
+        print('ERROR (KRIGE1D): number of entry for "mean"...')
+        return
+
+    if var is not None:
+        var = np.asarray(var).reshape(-1) # cast in 1-dimensional array if needed
+        if var.size not in (1, nx):
+            print('ERROR (KRIGE1D): number of entry for "var"...')
+            return
+
+    if extensionMin is None:
+        extensionMin = dimension - 1 # default
+
+    Nmin = nx + extensionMin
+
+    if printInfo:
+        print('KRIGE1D: Computing circulant embedding...')
+
+    # Circulant embedding of the covariance matrix
+    # --------------------------------------------
+    # The embedding matrix is a circulant matrix of size N x N, computed from
+    # the covariance function.
+    # To take a maximal benefit of Fast Fourier Transform (FFT) for computing DFT,
+    # we choose
+    #    N = 2^g (a power of 2), with N >= Nmin
+    g = int(np.ceil(np.log2(Nmin)))
+    N = int(2**g)
+
+    if printInfo:
+        print('KRIGE1D: Embedding dimension: {}'.format(N))
+
+    # ccirc: coefficient of the embedding matrix (first line), vector of size N
+    L = int (N/2)
+    h = np.arange(-L, L, dtype=float) * dx # [-L ... 0 ... L-1] * dx
+    ccirc = covFun(h)
+
+    del(h)
+
+    # ...shift first L index to the end of the axis, i.e.:
+    #    [-L ... 0 ... L-1] -> [0 ... L-1 -L ... -1]
+    ind = np.arange(L)
+    ccirc = ccirc[np.hstack((ind+L, ind))]
+
+    del(ind)
+
+    if printInfo:
+        print('KRIGE1D: Computing FFT of circulant matrix...')
+
+    # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
+    # --------------------------------------------------------------
+    # The DFT coefficients
+    #   lam = DFT(ccirc) = (lam(0),lam(1),...,lam(N-1))
+    # are the eigen values of the embedding matrix.
+    # We have:
+    #   a) lam are real coefficients, because the embedding matrix is symmetric
+    #   b) lam(k) = lam(N-k), k=1,...,N-1, because the coefficients ccirc are real
+    lam = np.real(np.fft.fft(ccirc))
+    # ...note that the imaginary parts are equal to 0
+
+    # -------------------------------------
+    # If some DFT coefficients are negative, then set them to zero
+    # and update them to fit the marginals distribution (approximate embedding)
+    if np.min(lam) < 0:
+        lam = np.sum(lam)/np.sum(np.maximum(lam, 0.)) * np.maximum(lam, 0.)
+
+    # Take the square root of the (updated) DFT coefficients
+    # ------------------------------------------------------
+    lamSqrt = np.sqrt(lam)
+
+    # For specified variance
+    # ----------------------
+    # Compute updating factor
+    if var is not None:
+        varUpdate = np.sqrt(var/covFun(0.))
+
+    # Kriging
+    # -------
+    # Let
+    #    A: index of conditioning nodes
+    #    B: index of non-conditioning nodes
+    #    Zobs: vector of values at conditioning nodes
+    # and
+    #        +         +
+    #        | rAA rAB |
+    #    r = |         |
+    #        | rBA rBB |
+    #        +         +
+    # the covariance matrix, where index A (resp. B) refers to
+    # conditioning (resp. non-conditioning) index in the grid.
+    #
+    # Then, the kriging estimates are
+    #     mean + rBA * rAA^(-1) * (v - mean)
+    # and the kriging standard deviation
+    #    diag(rBB - rBA * rAA^(-1) * rAB)
+
+    # Compute the part rAA of the covariance matrix
+    # Note: if a variance var is specified, then the matrix r should be updated
+    # by the following operation:
+    #    diag((var/covFun(0))^1/2) * r * diag((var/covFun(0))^1/2)
+    # which is accounting in the computation of kriging estimates and standard
+    # deviation below
+
+    if printInfo:
+        print('KRIGE1D: Computing covariance matrix (rAA) for conditioning locations...')
+
+    # Compute
+    #    indc: node index of conditioning node (nearest node)
+    indc = np.asarray(np.floor((x-origin)/spacing), dtype=int)
+    if sum(indc < 0) > 0 or sum(indc >= nx):
+        print('ERROR (KRIGE1D): a conditioning point is out of the grid')
+        return
+
+    if len(np.unique(indc)) != len(x):
+        print('ERROR (KRIGE1D): more than one conditioning point in a same grid cell')
+
+    nc = len(x)
+
+    # rAA
+    rAA = np.zeros((nc, nc))
+
+    diagEntry = ccirc[0] + measureErrVar
+    for i in range(nc):
+        rAA[i,i] = diagEntry
+        for j in range(i+1, nc):
+            rAA[i,j] = ccirc[np.mod(indc[j]-indc[i], N)]
+            rAA[j,i] = rAA[i,j]
+
+    # Test if rAA is almost singular...
+    if 1./np.linalg.cond(rAA) < tolInvKappa:
+        print('ERROR (KRIGE1D): conditioning issue: condition number of matrix rAA is too big')
+        return
+
+    # Compute:
+    #    indnc: node index of non-conditioning node (nearest node)
+    indnc = np.asarray(np.setdiff1d(np.arange(nx), indc), dtype=int)
+    nnc = len(indnc)
+
+    # Initialize
+    krig = np.zeros(nx)
+    if computeKrigSD:
+        krigSD = np.zeros(nx)
+
+    if mean.size == 1:
+        v = v - mean
+    else:
+        v = v - mean[indc]
+
+    if var is not None and var.size > 1:
+        v = 1./varUpdate[indc] * v
+
+    if conditioningMethod == 1:
+        # Method ConditioningA
+        # --------------------
+        if printInfo:
+            print('KRIGE1D: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+
+        # Compute the parts rBA of the covariance matrix (see above)
+        # rBA
+        rBA = np.zeros((nnc, nc))
+        for j in range(nc):
+            k = np.mod(indc[j] - indnc, N)
+            rBA[:,j] = ccirc[k]
+
+        del(ccirc)
+
+        if printInfo:
+            print('KRIGE1D: Computing rBA * rAA^(-1)...')
+
+        # compute rBA * rAA^(-1)
+        rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
+
+        del(rAA)
+        if not computeKrigSD:
+            del(rBA)
+
+        # Compute kriging estimates
+        if printInfo:
+            print('KRIGE1D: computing kriging estimates...')
+
+        krig[indnc] = np.dot(rBArAAinv, v)
+        krig[indc] = v
+
+        if computeKrigSD:
+            # Compute kriging standard deviation
+            if printInfo:
+                print('KRIGE1D: computing kriging standard deviation ...')
+
+            krigSD[indnc] = np.sqrt(diagEntry - np.diag(np.dot(rBArAAinv, np.transpose(rBA))))
+
+            del(rBA)
+
+    elif conditioningMethod == 2:
+        # Method ConditioningB
+        # --------------------
+        if not computeKrigSD:
+            del(ccirc)
+
+        if printInfo:
+            print('KRIGE1D: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+
+        # Compute index in the embedding grid for indc and indnc
+        # (to allow use of fft)
+        indcEmb = indc
+        indncEmb = indnc
+
+        # Compute kriging estimates
+        if printInfo:
+            print('KRIGE1D: computing kriging estimates...')
+
+        # Compute
+        #    u = rAA^(-1) * v, and then
+        #    Z = rBA * u via the circulant embedding of the covariance matrix
+        uEmb = np.zeros(N)
+        uEmb[indcEmb] = np.linalg.solve(rAA, v)
+        Z = np.fft.ifft(lam * np.fft.fft(uEmb))
+        # ...note that Im(Z) = 0
+        krig[indnc] = np.real(Z[indncEmb])
+        krig[indc] = v
+
+        if computeKrigSD:
+            # Compute kriging standard deviation
+            if printInfo:
+                print('KRIGE1D: computing kriging standard deviation ...')
+
+            for j in range(nnc):
+                u = ccirc[np.mod(indc - indnc[j], N)] # j-th row of rBA
+                krigSD[indnc[j]] = np.dot(u,np.linalg.solve(rAA, u))
+
+            del(ccirc)
+
+            krigSD[indnc] = np.sqrt(diagEntry - krigSD[indnc])
+
+    # ... update if non stationary covariance is specified
+    if var is not None:
+        if var.size > 1:
+            krig = varUpdate * krig
+        if computeKrigSD:
+            krigSD = varUpdate * krigSD
+
+    krig = krig + mean
+
+    if computeKrigSD:
+        return ([krig, krigSD])
+    else:
+        return (krig)
+# ----------------------------------------------------------------------------
+
 def grf2D(covFun, dimension, spacing, origin=[0., 0.],
           nreal=1, mean=0, var=None,
           x=None, v=None,
@@ -584,7 +977,7 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
     Generates gaussian random fields (GRF) in 2D via FFT.
 
     The GRFs:
-        - are generated using the covariance function,
+        - are generated using the covariance function (covFun),
         - have specified mean (mean) and variance (var), which can be non stationary
         - are conditioned to location x with value v
     Notes:
@@ -917,7 +1310,6 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
             print('ERROR (GRF2D): a conditioning point is out of the grid (y-direction)')
             return
 
-
         indc = ix + iy * nx # single-indices
 
         if len(np.unique(indc)) != len(x):
@@ -958,7 +1350,7 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
             # rBA
             rBA = np.zeros((nnc, nc))
             for j in range(nc):
-                rBA[:,j] = ccirc[np.mod(iy[j] - ky, N2), np.mod(ix[j] - ky, N1)]
+                rBA[:,j] = ccirc[np.mod(iy[j] - ky, N2), np.mod(ix[j] - kx, N1)]
 
             if printInfo:
                 print('GRF2D: Computing rBA * rAA^(-1)...')
@@ -1155,6 +1547,448 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
     return (grf)
 # ----------------------------------------------------------------------------
 
+def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
+            mean=0, var=None,
+            extensionMin=None,
+            conditioningMethod=2,
+            measureErrVar=0., tolInvKappa=1.e-10,
+            computeKrigSD=True,
+            printInfo=True):
+    """
+    Computes kriging estimates and standard deviation in 2D via FFT.
+
+    It is a simple kriging
+        - of value v at location x,
+        - based on the covariance function (covFun),
+        - with a specified mean (mean) and variance (var), which can be non stationary
+    Notes:
+    1) For reproducing covariance model, the dimension of field/domain should be large
+       enough; let K an integer such that K*spacing is greater or equal to the
+       correlation range, then
+        - correlation accross opposite border should be removed by extending
+          the domain sufficiently, i.e.
+              extensionMin >= K - 1
+        - two nodes could not be correlated simultaneously regarding both distances
+          between them (with respect to the periodic grid), i.e. one should have
+          i.e. one should have
+              dimension+extensionMin >= 2*K - 1,
+          To sum up, extensionMin should be chosen such that
+              dimension+extensionMin >= max(dimension, K) + K - 1
+          i.e.
+              extensionMin >= max(K-1,2*K-dimension-1)
+    2) For large data set:
+        - conditioningMethod should be set to 2 for using FFT
+        - measureErrVar could be set to a small positive value to stabilize
+          the covariance matrix (solving linear system)
+
+    :param x:           (2-dimensional array array of dim n x 2) coordinate of data points
+    :param v:           (1-dimensional array length n) value at data points
+    :param covFun:      (function) covariance function f(h), where
+                            h:  (2-dimensional array of dim n x 2, or
+                                1-dimensional array of dim 2) 2D-lag(s)
+    :param dimension:   (sequence of 2 int) [nx, ny], number of cells
+                            in x-, y-axis direction
+    :param spacing:     (sequence of 2 float) [dx, dy], spacing between
+                            two adjacent cells in x-, y-axis direction
+    :param origin:      (sequence of 2 float) [ox, oy], origin of the 2D field
+                            - used for localizing the conditioning points
+    :param nreal:       (int) number of realizations
+    :param mean:        (float or ndarray) mean of the GRF:
+                            - scalar for stationary mean
+                            - ndarray for non stationary mean, must contain
+                                nx*ny values (reshaped if needed)
+    :param var:         (float or ndarray or None) variance of the GRF,
+                            if not None: variance of GRF is updated
+                            depending on the specified variance and the covariance
+                            function, otherwise: only the covariance function is
+                            used
+                                - scalar for stationary variance
+                                - array for non stationary variance, must contain
+                                    nx*ny values (reshaped if needed)
+    :param extensionMin: (sequence of 2 int) minimal extension in nodes in
+                            x-, y-axis direction for embedding (see above)
+    :param conditioningMethod:
+                        (int) indicates which method is used to perform kriging.
+                            Let
+                                A: index of conditioning (data) nodes
+                                B: index of non-conditioning nodes
+                            and
+                                    +         +
+                                    | rAA rAB |
+                                r = |         |
+                                    | rBA rBB |
+                                    +         +
+                            the covariance matrix, where index A (resp. B) refers
+                            to conditioning (resp. non-conditioning) index in the
+                            grid. Then, thre kriging estimates and variance are
+                                krig[B]    = mean + rBA * rAA^(-1) * (v - mean)
+                                krigVar[B] = diag(rBB - rBA * rAA^(-1) * rAB)
+                            The computation is done in a way depending on the
+                            following possible values for conditioningMethod:
+                                1: method CondtioningA:
+                                   the matrices rBA, RAA^(-1) are explicitly
+                                   computed (warning: could require large amount
+                                   of memory), then all the simulations are updated
+                                   by a sum and a multiplication by the matrix M
+                                2: method ConditioningB:
+                                   for kriging estimates:
+                                       the linear system
+                                         rAA * y = (v - mean)
+                                       is solved, and then
+                                         mean + rBA*y
+                                       is computed
+                                   for kriging variances:
+                                       for each column u[j] of rAB, the linear
+                                       system
+                                         rAA * y = u[j]
+                                       is solved, and then
+                                         rBB[j,j] - y^t*y
+                                       is computed
+    :param measureErrVar:
+                        (float >=0) measurement error variance; we assume that
+                            the error on conditioining data follows the distrubution
+                            N(0,measureErrVar*I); i.e. rAA + measureErrVar*I is
+                            considered instead of rAA for stabilizing the linear
+                            system for this matrix.
+    :param tolInvKappa: (float >0) the function is stopped if the inverse of
+                            the condition number of rAA is above tolInvKappa
+    :param computeKrigSD:
+                        (bool) indicates if the standard deviation of kriging is computed
+    :param printInfo:   (bool) indicates if some info is printed in stdout
+
+    :return ret:        two possible cases:
+                            ret = [krig, krigSD] if computeKrigSD is equal to True
+                            ret = krig           if computeKrigSD is equal to False
+                        where
+                            krig:   (2-dimensional array of dim ny x nx)
+                                        kriging estimates
+                            krigSD: (2-dimensional array of dim ny x nx)
+                                        kriging standard deviation
+
+    NOTES:
+        Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 is given by
+            c = DFT(x) = F * x
+        where F is the the (N1*N2) x (N1*N2) matrix with coefficients
+            F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2) )], j=(j1,j2), k=(k1,k2) in G,
+        and
+            G = {n=(n1,n2), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1}
+        denotes the indices grid
+        and where we use the bijection
+            (n1,n2) in G -> n1 + n2 * N1 in {0,...,N1*N2-1},
+        between the multiple-indices and the single indices
+
+        With N = N1*N2, we have
+            F^(-1) = 1/N * F^(*)
+        where ^(*) denotes the conjugate transpose
+        Let
+            Q = 1/N^(1/2) * F
+        Then Q is unitary, i.e. Q^(-1) = Q^(*)
+        Then, we have
+            DFT = F = N^(1/2) * Q
+            DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*)
+
+        Using numpy package in python3, we have
+            numpy.fft.fft2() = DFT
+            numpy.fft.ifft2() = DFT^(-1)
+    """
+
+    if conditioningMethod not in (1, 2):
+        print('ERROR (KRIGE2D): invalid method!')
+        return
+
+    nx, ny = dimension
+    dx, dy = spacing
+    # ox, oy = origin
+
+    nxy = nx*ny
+
+    x = np.asarray(x).reshape(-1,2) # cast in 1-dimensional array if needed
+    v = np.asarray(v).reshape(-1) # cast in 1-dimensional array if needed
+
+    mean = np.asarray(mean).reshape(-1) # cast in 1-dimensional array if needed
+
+    if mean.size != 1:
+        if mean.size != nxy:
+            print('ERROR (KRIGE2D): number of entry for "mean"...')
+            return
+        mean = np.asarray(mean).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
+
+    if var is not None:
+        var = np.asarray(var).reshape(-1) # cast in 1-dimensional array if needed
+        if var.size != 1:
+            if var.size != nxy:
+                print('ERROR (KRIGE2D): number of entry for "var"...')
+                return
+            var = np.asarray(var).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
+
+    if extensionMin is None:
+        extensionMin = [nx-1, ny-1] # default
+
+    N1min = nx + extensionMin[0]
+    N2min = ny + extensionMin[1]
+
+    if printInfo:
+        print('KRIGE2D: Computing circulant embedding...')
+
+    # Circulant embedding of the covariance matrix
+    # --------------------------------------------
+    # The embedding matrix is a (N1,N2)-nested block circulant matrix, computed from
+    # the covariance function.
+    # To take a maximal benefit of Fast Fourier Transform (FFT) for computing DFT,
+    # we choose
+    #     N1 = 2^g1 (a power of 2), with N1 >= N1min
+    #     N2 = 2^g2 (a power of 2), with N2 >= N2min
+    g1 = int(np.ceil(np.log2(N1min)))
+    g2 = int(np.ceil(np.log2(N2min)))
+    N1 = int(2**g1)
+    N2 = int(2**g2)
+
+    if printInfo:
+        print('KRIGE2D: Embedding dimension: {} x {}'.format(N1, N2))
+
+    N = N1*N2
+
+    # ccirc: coefficient of the embedding matrix (N2, N1) array
+    L1 = int (N1/2)
+    L2 = int (N2/2)
+    h1 = np.arange(-L1, L1, dtype=float) * dx # [-L1 ... 0 ... L1-1] * dx
+    h2 = np.arange(-L2, L2, dtype=float) * dy # [-L2 ... 0 ... L2-1] * dy
+
+    hh = np.meshgrid(h1, h2)
+    ccirc = covFun(np.hstack((hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
+    ccirc.resize(N2, N1)
+
+    del(h1, h2, hh)
+
+    # ...shift first L1 index to the end of the axis 1:
+    ind = np.arange(L1)
+    ccirc = ccirc[:, np.hstack((ind+L1, ind))]
+    # ...shift first L2 index to the end of the axis 0:
+    ind = np.arange(L2)
+    ccirc = ccirc[np.hstack((ind+L2, ind)), :]
+
+    del(ind)
+
+    if printInfo:
+        print('KRIGE2D: Computing FFT of circulant matrix...')
+
+    # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
+    # --------------------------------------------------------------
+    # The (2-dimensional) DFT coefficients
+    #   lam = DFT(ccirc) = {lam(k1,k2), 0<=k1<=N1-1, 0<=k2<=N2-1}
+    # are the eigen values of the embedding matrix.
+    # We have:
+    #   a) lam are real coefficients, because the embedding matrix is symmetric
+    #   b) lam(k1,k2) = lam(N1-k1,N2-k2), 1<=k1<=N1-1, 1<=k2<=N2-1, because the coefficients ccirc are real
+    lam = np.real(np.fft.fft2(ccirc))
+    # ...note that the imaginary parts are equal to 0
+
+    # Eventual use of approximate embedding
+    # -------------------------------------
+    # If some DFT coefficients are negative, then set them to zero
+    # and update them to fit the marginals distribution (approximate embedding)
+    if np.min(lam) < 0:
+        lam = np.sum(lam)/np.sum(np.maximum(lam, 0.)) * np.maximum(lam, 0.)
+
+    # Take the square root of the (updated) DFT coefficients
+    # ------------------------------------------------------
+    lamSqrt = np.sqrt(lam)
+
+    # For specified variance
+    # ----------------------
+    # Compute updating factor
+    if var is not None:
+        varUpdate = np.sqrt(var/covFun(np.zeros(2)))
+
+    # Kriging
+    # -------
+    # Let
+    #    A: index of conditioning nodes
+    #    B: index of non-conditioning nodes
+    #    Zobs: vector of values at conditioning nodes
+    # and
+    #        +         +
+    #        | rAA rAB |
+    #    r = |         |
+    #        | rBA rBB |
+    #        +         +
+    # the covariance matrix, where index A (resp. B) refers to
+    # conditioning (resp. non-conditioning) index in the grid.
+    #
+    # Then, the kriging estimates are
+    #     mean + rBA * rAA^(-1) * (v - mean)
+    # and the kriging standard deviation
+    #    diag(rBB - rBA * rAA^(-1) * rAB)
+
+    # Compute the part rAA of the covariance matrix
+    # Note: if a variance var is specified, then the matrix r should be updated
+    # by the following operation:
+    #    diag((var/covFun(0))^1/2) * r * diag((var/covFun(0))^1/2)
+    # which is accounting in the computation of kriging estimates and standard
+    # deviation below
+
+    if printInfo:
+        print('KRIGE2D: Computing covariance matrix (rAA) for conditioning locations...')
+
+    # Compute
+    #    indc: node index of conditioning node (nearest node)
+    indc = np.asarray(np.floor((x-origin)/spacing), dtype=int) # multiple-indices: size n x 2
+
+    ix, iy = indc[:, 0], indc[:, 1]
+
+    if sum(ix < 0) > 0 or sum(ix >= nx):
+        print('ERROR (KRIGE2D): a conditioning point is out of the grid (x-direction)')
+        return
+    if sum(iy < 0) > 0 or sum(iy >= ny):
+        print('ERROR (KRIGE2D): a conditioning point is out of the grid (y-direction)')
+        return
+
+    indc = ix + iy * nx # single-indices
+
+    if len(np.unique(indc)) != len(x):
+        print('ERROR (KRIGE2D): more than one conditioning point in a same grid cell')
+
+    nc = len(x)
+
+    # rAA
+    rAA = np.zeros((nc, nc))
+
+    diagEntry = ccirc[0, 0] + measureErrVar
+    for i in range(nc):
+        rAA[i,i] = diagEntry
+        for j in range(i+1, nc):
+            rAA[i,j] = ccirc[np.mod(iy[j]-iy[i], N2), np.mod(ix[j]-ix[i], N1)]
+            rAA[j,i] = rAA[i,j]
+
+    # Test if rAA is almost singular...
+    if 1./np.linalg.cond(rAA) < tolInvKappa:
+        print('ERROR (GRF2D): conditioning issue: condition number of matrix rAA is too big')
+        return
+
+    # Compute:
+    #    indnc: node index of non-conditioning node (nearest node)
+    indnc = np.asarray(np.setdiff1d(np.arange(nxy), indc), dtype=int)
+    nnc = len(indnc)
+
+    ky = np.floor_divide(indnc, nx)
+    kx = np.mod(indnc, nx)
+
+    # Initialize
+    krig = np.zeros(ny*nx)
+    if computeKrigSD:
+        krigSD = np.zeros(ny*nx)
+
+    if mean.size == 1:
+        v = v - mean
+    else:
+        v = v - mean.reshape(-1)[indc]
+
+    if var is not None and var.size > 1:
+        v = 1./varUpdate.reshape(-1)[indc] * v
+
+    if conditioningMethod == 1:
+        # Method ConditioningA
+        # --------------------
+        if printInfo:
+            print('KRIGE2D: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+
+        # Compute the parts rBA of the covariance matrix (see above)
+        # rBA
+        rBA = np.zeros((nnc, nc))
+        for j in range(nc):
+            rBA[:,j] = ccirc[np.mod(iy[j] - ky, N2), np.mod(ix[j] - kx, N1)]
+
+        del(ix, iy, kx, ky)
+        del(ccirc)
+
+        if printInfo:
+            print('KRIGE2D: Computing rBA * rAA^(-1)...')
+
+        # compute rBA * rAA^(-1)
+        rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
+
+        del(rAA)
+        if not computeKrigSD:
+            del(rBA)
+
+        # Compute kriging estimates
+        if printInfo:
+            print('KRIGE2D: computing kriging estimates...')
+
+        krig[indnc] = np.dot(rBArAAinv, v)
+        krig[indc] = v
+
+        if computeKrigSD:
+            # Compute kriging standard deviation
+            if printInfo:
+                print('KRIGE2D: computing kriging standard deviation ...')
+
+            krigSD[indnc] = np.sqrt(diagEntry - np.diag(np.dot(rBArAAinv, np.transpose(rBA))))
+
+            del(rBA)
+
+    elif conditioningMethod == 2:
+        # Method ConditioningB
+        # --------------------
+        if not computeKrigSD:
+            del(ccirc)
+
+        if printInfo:
+            print('KRIGE2D: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+
+        # Compute index in the embedding grid for indc and indnc
+        # (to allow use of fft)
+        indcEmb =  iy * N1 + ix
+        indncEmb = ky * N1 + kx
+
+        # Compute kriging estimates
+        if printInfo:
+            print('KRIGE2D: computing kriging estimates...')
+
+        # Compute
+        #    u = rAA^(-1) * v, and then
+        #    Z = rBA * u via the circulant embedding of the covariance matrix
+        uEmb = np.zeros(N2*N1)
+        uEmb[indcEmb] = np.linalg.solve(rAA, v)
+        Z = np.fft.ifft2(lam * np.fft.fft2(uEmb.reshape(N2, N1)))
+        # ...note that Im(Z) = 0
+        krig[indnc] = np.real(Z.reshape(-1)[indncEmb])
+        krig[indc] = v
+
+        if computeKrigSD:
+            # Compute kriging standard deviation
+            if printInfo:
+                print('KRIGE2D: computing kriging standard deviation ...')
+
+            for j in range(nnc):
+                u = ccirc[np.mod(iy - ky[j], N2), np.mod(ix - kx[j], N1)] # j-th row of rBA
+                krigSD[indnc[j]] = np.dot(u,np.linalg.solve(rAA, u))
+
+            del(ccirc)
+
+            krigSD[indnc] = np.sqrt(diagEntry - krigSD[indnc])
+
+        del(ix, iy, kx, ky)
+
+    # ... update if non stationary covariance is specified
+    if var is not None:
+        if var.size > 1:
+            krig = varUpdate.reshape(-1) * krig
+        if computeKrigSD:
+            krigSD = varUpdate.reshape(-1) * krigSD
+
+    krig.resize(ny, nx)
+    if computeKrigSD:
+        krigSD.resize(ny, nx)
+
+    krig = krig + mean
+
+    if computeKrigSD:
+        return ([krig, krigSD])
+    else:
+        return (krig)
+# ----------------------------------------------------------------------------
+
 def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
           nreal=1, mean=0, var=None,
           x=None, v=None,
@@ -1166,7 +2000,7 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
     Generates gaussian random fields (GRF) in 3D via FFT.
 
     The GRFs:
-        - are generated using the covariance function,
+        - are generated using the covariance function (covFun),
         - have specified mean (mean) and variance (var), which can be non stationary
         - are conditioned to location x with value v
     Notes:
@@ -1339,7 +2173,7 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
     #### Preliminary computation ####
     nx, ny, nz = dimension
     dx, dy, dz = spacing
-    # ox, oy = origin
+    # ox, oy, oz = origin
 
     nxy = nx*ny
     nxyz = nxy * nz
@@ -1754,7 +2588,466 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
     return (grf)
 # ----------------------------------------------------------------------------
 
+def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
+            mean=0, var=None,
+            extensionMin=None,
+            conditioningMethod=2,
+            measureErrVar=0., tolInvKappa=1.e-10,
+            computeKrigSD=True,
+            printInfo=True):
+    """
+    Computes kriging estimates and standard deviation in 3D via FFT.
+
+    It is a simple kriging
+        - of value v at location x,
+        - based on the covariance function (covFun),
+        - with a specified mean (mean) and variance (var), which can be non stationary
+    Notes:
+    1) For reproducing covariance model, the dimension of field/domain should be large
+       enough; let K an integer such that K*spacing is greater or equal to the
+       correlation range, then
+        - correlation accross opposite border should be removed by extending
+          the domain sufficiently, i.e.
+              extensionMin >= K - 1
+        - two nodes could not be correlated simultaneously regarding both distances
+          between them (with respect to the periodic grid), i.e. one should have
+          i.e. one should have
+              dimension+extensionMin >= 2*K - 1,
+          To sum up, extensionMin should be chosen such that
+              dimension+extensionMin >= max(dimension, K) + K - 1
+          i.e.
+              extensionMin >= max(K-1,2*K-dimension-1)
+    2) For large data set:
+        - conditioningMethod should be set to 2 for using FFT
+        - measureErrVar could be set to a small positive value to stabilize
+          the covariance matrix (solving linear system)
+
+    :param x:           (2-dimensional array array of dim n x 3) coordinate of data points
+    :param v:           (1-dimensional array length n) value at data points
+    :param covFun:      (function) covariance function f(h), where
+                            h:  (2-dimensional array of dim n x 3, or
+                                1-dimensional array of dim 3) 2D-lag(s)
+    :param dimension:   (sequence of 3 int) [nx, ny, nz], number of cells
+                            in x-, y-, z-axis direction
+    :param spacing:     (sequence of 3 float) [dx, dy, dz], spacing between
+                            two adjacent cells in x-, y-, z-axis direction
+    :param origin:      (sequence of 3 float) [ox, oy, oz], origin of the 2D field
+                            - used for localizing the conditioning points
+    :param nreal:       (int) number of realizations
+    :param mean:        (float or ndarray) mean of the GRF:
+                            - scalar for stationary mean
+                            - ndarray for non stationary mean, must contain
+                                nx*ny*nz values (reshaped if needed)
+    :param var:         (float or ndarray or None) variance of the GRF,
+                            if not None: variance of GRF is updated
+                            depending on the specified variance and the covariance
+                            function, otherwise: only the covariance function is
+                            used
+                                - scalar for stationary variance
+                                - array for non stationary variance, must contain
+                                    nx*ny*nz values (reshaped if needed)
+    :param extensionMin: (sequence of 3 int) minimal extension in nodes in
+                            x-, y-, z-axis direction for embedding (see above)
+    :param conditioningMethod:
+                        (int) indicates which method is used to perform kriging.
+                            Let
+                                A: index of conditioning (data) nodes
+                                B: index of non-conditioning nodes
+                            and
+                                    +         +
+                                    | rAA rAB |
+                                r = |         |
+                                    | rBA rBB |
+                                    +         +
+                            the covariance matrix, where index A (resp. B) refers
+                            to conditioning (resp. non-conditioning) index in the
+                            grid. Then, thre kriging estimates and variance are
+                                krig[B]    = mean + rBA * rAA^(-1) * (v - mean)
+                                krigVar[B] = diag(rBB - rBA * rAA^(-1) * rAB)
+                            The computation is done in a way depending on the
+                            following possible values for conditioningMethod:
+                                1: method CondtioningA:
+                                   the matrices rBA, RAA^(-1) are explicitly
+                                   computed (warning: could require large amount
+                                   of memory), then all the simulations are updated
+                                   by a sum and a multiplication by the matrix M
+                                2: method ConditioningB:
+                                   for kriging estimates:
+                                       the linear system
+                                         rAA * y = (v - mean)
+                                       is solved, and then
+                                         mean + rBA*y
+                                       is computed
+                                   for kriging variances:
+                                       for each column u[j] of rAB, the linear
+                                       system
+                                         rAA * y = u[j]
+                                       is solved, and then
+                                         rBB[j,j] - y^t*y
+                                       is computed
+    :param measureErrVar:
+                        (float >=0) measurement error variance; we assume that
+                            the error on conditioining data follows the distrubution
+                            N(0,measureErrVar*I); i.e. rAA + measureErrVar*I is
+                            considered instead of rAA for stabilizing the linear
+                            system for this matrix.
+    :param tolInvKappa: (float >0) the function is stopped if the inverse of
+                            the condition number of rAA is above tolInvKappa
+    :param computeKrigSD:
+                        (bool) indicates if the standard deviation of kriging is computed
+    :param printInfo:   (bool) indicates if some info is printed in stdout
+
+    :return ret:        two possible cases:
+                            ret = [krig, krigSD] if computeKrigSD is equal to True
+                            ret = krig           if computeKrigSD is equal to False
+                        where
+                            krig:   (3-dimensional array of dim nz x ny x nx)
+                                        kriging estimates
+                            krigSD: (3-dimensional array of dim nz x ny x nx)
+                                        kriging standard deviation
+
+    NOTES:
+        Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 x N3 is given by
+            c = DFT(x) = F * x
+        where F is the the (N1*N2*N3) x (N1*N2*N3) matrix with coefficients
+            F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2*N3) )], j=(j1,j2,j3), k=(k1,k2,k3) in G,
+        and
+            G = {n=(n1,n2,n3), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1, 0 <= n3 <= N3-1}
+        denotes the indices grid
+        and where we use the bijection
+            (n1,n2,n3) in G -> n1 + n2 * N1 + n3 * N1 * N2 in {0,...,N1*N2*N3-1},
+        between the multiple-indices and the single indices
+
+        With N = N1*N2*N3, we have
+            F^(-1) = 1/N * F^(*)
+        where ^(*) denotes the conjugate transpose
+        Let
+            Q = 1/N^(1/2) * F
+        Then Q is unitary, i.e. Q^(-1) = Q^(*)
+        Then, we have
+            DFT = F = N^(1/2) * Q
+            DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*)
+
+        Using numpy package in python3, we have
+            numpy.fft.fftn() = DFT
+            numpy.fft.ifftn() = DFT^(-1)
+    """
+
+    if conditioningMethod not in (1, 2):
+        print('ERROR (KRIGE3D): invalid method!')
+        return
+
+    nx, ny, nz = dimension
+    dx, dy, dz = spacing
+    # ox, oy, oz = origin
+
+    nxy = nx*ny
+    nxyz = nxy * nz
+
+    x = np.asarray(x).reshape(-1,3) # cast in 1-dimensional array if needed
+    v = np.asarray(v).reshape(-1) # cast in 1-dimensional array if needed
+
+    mean = np.asarray(mean).reshape(-1) # cast in 1-dimensional array if needed
+
+    if mean.size != 1:
+        if mean.size != nxyz:
+            print('ERROR (KRIGE3D): number of entry for "mean"...')
+            return
+        mean = np.asarray(mean).reshape(nz, ny, nx) # cast in 3-dimensional array of same shape as grid
+
+    if var is not None:
+        var = np.asarray(var).reshape(-1) # cast in 1-dimensional array if needed
+        if var.size != 1:
+            if var.size != nxyz:
+                print('ERROR (KRIGE3D): number of entry for "var"...')
+                return
+            var = np.asarray(var).reshape(nz, ny, nx) # cast in 3-dimensional array of same shape as grid
+
+    if extensionMin is None:
+        extensionMin = [nx-1, ny-1, nz-1] # default
+
+    N1min = nx + extensionMin[0]
+    N2min = ny + extensionMin[1]
+    N3min = nz + extensionMin[2]
+
+    if printInfo:
+        print('KRIGE3D: Computing circulant embedding...')
+
+    # Circulant embedding of the covariance matrix
+    # --------------------------------------------
+    # The embedding matrix is a (N1,N2,N3)-nested block circulant matrix, computed from
+    # the covariance function.
+    # To take a maximal benefit of Fast Fourier Transform (FFT) for computing DFT,
+    # we choose
+    #     N1 = 2^g1 (a power of 2), with N1 >= N1min
+    #     N2 = 2^g2 (a power of 2), with N2 >= N2min
+    #     N3 = 2^g3 (a power of 2), with N3 >= N3min
+    g1 = int(np.ceil(np.log2(N1min)))
+    g2 = int(np.ceil(np.log2(N2min)))
+    g3 = int(np.ceil(np.log2(N3min)))
+    N1 = int(2**g1)
+    N2 = int(2**g2)
+    N3 = int(2**g3)
+
+    if printInfo:
+        print('KRIGE3D: Embedding dimension: {} x {} x {}'.format(N1, N2, N3))
+
+    N12 = N1*N2
+    N = N12 * N3
+
+    # ccirc: coefficient of the embedding matrix, (N3, N2, N1) array
+    L1 = int (N1/2)
+    L2 = int (N2/2)
+    L3 = int (N3/2)
+    h1 = np.arange(-L1, L1, dtype=float) * dx # [-L1 ... 0 ... L1-1] * dx
+    h2 = np.arange(-L2, L2, dtype=float) * dy # [-L2 ... 0 ... L2-1] * dy
+    h3 = np.arange(-L3, L3, dtype=float) * dz # [-L3 ... 0 ... L3-1] * dz
+
+    hh = np.meshgrid(h2, h3, h1) # as this! hh[i]: (N3, N2, N1) array
+                                 # hh[0]: y-coord, hh[1]: z-coord, hh[2]: x-coord
+    ccirc = covFun(np.hstack((hh[2].reshape(-1,1), hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
+    ccirc.resize(N3, N2, N1)
+
+    del(h1, h2, h3, hh)
+
+    # ...shift first L1 index to the end of the axis 2:
+    ind = np.arange(L1)
+    ccirc = ccirc[:,:, np.hstack((ind+L1, ind))]
+    # ...shift first L2 index to the end of the axis 1:
+    ind = np.arange(L2)
+    ccirc = ccirc[:, np.hstack((ind+L2, ind)), :]
+    # ...shift first L3 index to the end of the axis 0:
+    ind = np.arange(L3)
+    ccirc = ccirc[np.hstack((ind+L3, ind)), :,:]
+
+    del(ind)
+
+    if printInfo:
+        print('KRIGE3D: Computing FFT of circulant matrix...')
+
+    # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
+    # --------------------------------------------------------------
+    # The (3-dimensional) DFT coefficients
+    #   lam = DFT(ccirc) = {lam(k1,k2,k3), 0<=k1<=N1-1, 0<=k2<=N2-1, 0<=k3<=N3-1}
+    # are the eigen values of the embedding matrix.
+    # We have:
+    #   a) lam are real coefficients, because the embedding matrix is symmetric
+    #   b) lam(k1,k2,k3) = lam(N1-k1,N2-k2,N3-k3), 1<=k1<=N1-1, 1<=k2<=N2-1, 1<=k3<=N3-1, because the coefficients ccirc are real
+    lam = np.real(np.fft.fftn(ccirc))
+    # ...note that the imaginary parts are equal to 0
+
+    # Eventual use of approximate embedding
+    # -------------------------------------
+    # If some DFT coefficients are negative, then set them to zero
+    # and update them to fit the marginals distribution (approximate embedding)
+    if np.min(lam) < 0:
+        lam = np.sum(lam)/np.sum(np.maximum(lam, 0.)) * np.maximum(lam, 0.)
+
+    # Take the square root of the (updated) DFT coefficients
+    # ------------------------------------------------------
+    lamSqrt = np.sqrt(lam)
+
+    # For specified variance
+    # ----------------------
+    # Compute updating factor
+    if var is not None:
+        varUpdate = np.sqrt(var/covFun(np.zeros(3)))
+
+    # Kriging
+    # -------
+    # Let
+    #    A: index of conditioning nodes
+    #    B: index of non-conditioning nodes
+    #    Zobs: vector of values at conditioning nodes
+    # and
+    #        +         +
+    #        | rAA rAB |
+    #    r = |         |
+    #        | rBA rBB |
+    #        +         +
+    # the covariance matrix, where index A (resp. B) refers to
+    # conditioning (resp. non-conditioning) index in the grid.
+    #
+    # Then, the kriging estimates are
+    #     mean + rBA * rAA^(-1) * (v - mean)
+    # and the kriging standard deviation
+    #    diag(rBB - rBA * rAA^(-1) * rAB)
+
+    # Compute the part rAA of the covariance matrix
+    # Note: if a variance var is specified, then the matrix r should be updated
+    # by the following operation:
+    #    diag((var/covFun(0))^1/2) * r * diag((var/covFun(0))^1/2)
+    # which is accounting in the computation of kriging estimates and standard
+    # deviation below
+
+    if printInfo:
+        print('KRIGE3D: Computing covariance matrix (rAA) for conditioning locations...')
+
+    # Compute
+    #    indc: node index of conditioning node (nearest node)
+    indc = np.asarray(np.floor((x-origin)/spacing), dtype=int) # multiple-indices: size n x 3
+
+    ix, iy, iz = indc[:, 0], indc[:, 1], indc[:, 2]
+
+    if sum(ix < 0) > 0 or sum(ix >= nx):
+        print('ERROR (KRIGE3D): a conditioning point is out of the grid (x-direction)')
+        return
+    if sum(iy < 0) > 0 or sum(iy >= ny):
+        print('ERROR (KRIGE3D): a conditioning point is out of the grid (y-direction)')
+        return
+    if sum(iz < 0) > 0 or sum(iz >= nz):
+        print('ERROR (KRIGE3D): a conditioning point is out of the grid (z-direction)')
+        return
+
+    indc = ix + iy * nx + iz * nxy # single-indices
+
+    if len(np.unique(indc)) != len(x):
+        print('ERROR (KRIGE3D): more than one conditioning point in a same grid cell')
+
+    nc = len(x)
+
+    # rAA
+    rAA = np.zeros((nc, nc))
+
+    diagEntry = ccirc[0, 0, 0] + measureErrVar
+    for i in range(nc):
+        rAA[i,i] = diagEntry
+        for j in range(i+1, nc):
+            rAA[i,j] = ccirc[np.mod(iz[j]-iz[i], N3), np.mod(iy[j]-iy[i], N2), np.mod(ix[j]-ix[i], N1)]
+            rAA[j,i] = rAA[i,j]
+
+    # Test if rAA is almost singular...
+    if 1./np.linalg.cond(rAA) < tolInvKappa:
+        print('ERROR (GRF3D): conditioning issue: condition number of matrix rAA is too big')
+        return
+
+    # Compute:
+    #    indnc: node index of non-conditioning node (nearest node)
+    indnc = np.asarray(np.setdiff1d(np.arange(nxyz), indc), dtype=int)
+    nnc = len(indnc)
+
+    kz = np.floor_divide(indnc, nxy)
+    kk = np.mod(indnc, nxy)
+    ky = np.floor_divide(kk, nx)
+    kx = np.mod(kk, nx)
+    del(kk)
+
+    # Initialize
+    krig = np.zeros(nz*ny*nx)
+    if computeKrigSD:
+        krigSD = np.zeros(nz*ny*nx)
+
+    if mean.size == 1:
+        v = v - mean
+    else:
+        v = v - mean.reshape(-1)[indc]
+
+    if var is not None and var.size > 1:
+        v = 1./varUpdate.reshape(-1)[indc] * v
+
+    if conditioningMethod == 1:
+        # Method ConditioningA
+        # --------------------
+        if printInfo:
+            print('KRIGE3D: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+
+        # Compute the parts rBA of the covariance matrix (see above)
+        # rBA
+        rBA = np.zeros((nnc, nc))
+        for j in range(nc):
+            rBA[:,j] = ccirc[np.mod(iz[j] - kz, N3), np.mod(iy[j] - ky, N2), np.mod(ix[j] - ky, N1)]
+
+        del(ix, iy, kx, ky)
+        del(ccirc)
+
+        if printInfo:
+            print('KRIGE3D: Computing rBA * rAA^(-1)...')
+
+        # compute rBA * rAA^(-1)
+        rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
+
+        del(rAA)
+        if not computeKrigSD:
+            del(rBA)
+
+        # Compute kriging estimates
+        if printInfo:
+            print('KRIGE3D: computing kriging estimates...')
+
+        krig[indnc] = np.dot(rBArAAinv, v)
+        krig[indc] = v
+
+        if computeKrigSD:
+            # Compute kriging standard deviation
+            if printInfo:
+                print('KRIGE3D: computing kriging standard deviation ...')
+
+            krigSD[indnc] = np.sqrt(diagEntry - np.diag(np.dot(rBArAAinv, np.transpose(rBA))))
+
+            del(rBA)
+
+    elif conditioningMethod == 2:
+        # Method ConditioningB
+        # --------------------
+        if not computeKrigSD:
+            del(ccirc)
+
+        if printInfo:
+            print('KRIGE3D: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+
+        # Compute index in the embedding grid for indc and indnc
+        # (to allow use of fft)
+        indcEmb =  iz * N12 + iy * N1 + ix
+        indncEmb = kz * N12 + ky * N1 + kx
+
+        # Compute kriging estimates
+        if printInfo:
+            print('KRIGE3D: computing kriging estimates...')
+
+        # Compute
+        #    u = rAA^(-1) * v, and then
+        #    Z = rBA * u via the circulant embedding of the covariance matrix
+        uEmb = np.zeros(N3*N2*N1)
+        uEmb[indcEmb] = np.linalg.solve(rAA, v)
+        Z = np.fft.ifftn(lam * np.fft.fftn(uEmb.reshape(N3, N2, N1)))
+        # ...note that Im(Z) = 0
+        krig[indnc] = np.real(Z.reshape(-1)[indncEmb])
+        krig[indc] = v
+
+        if computeKrigSD:
+            # Compute kriging standard deviation
+            if printInfo:
+                print('KRIGE3D: computing kriging standard deviation ...')
+
+            for j in range(nnc):
+                u = ccirc[np.mod(iz - kz[j], N3), np.mod(iy - ky[j], N2), np.mod(ix - kx[j], N1)] # j-th row of rBA
+                krigSD[indnc[j]] = np.dot(u,np.linalg.solve(rAA, u))
+
+            del(ccirc)
+
+            krigSD[indnc] = np.sqrt(diagEntry - krigSD[indnc])
+
+        del(ix, iy, kx, ky)
+
+    # ... update if non stationary covariance is specified
+    if var is not None:
+        if var.size > 1:
+            krig = varUpdate.reshape(-1) * krig
+        if computeKrigSD:
+            krigSD = varUpdate.reshape(-1) * krigSD
+
+    krig.resize(nz, ny, nx)
+    if computeKrigSD:
+        krigSD.resize(nz, ny, nx)
+
+    krig = krig + mean
+
+    if computeKrigSD:
+        return ([krig, krigSD])
+    else:
+        return (krig)
 # ----------------------------------------------------------------------------
+
 def extension_min(r, n, s=1.):
     """
     Compute extension of the dimension in a direction so that a GRF reproduces
@@ -1832,11 +3125,23 @@ if __name__ == "__main__":
     grfMean = np.mean(grf, axis=0) # mean along axis 0
     grfSD = np.std(grf, axis=0) # standard deviation along axis 0
 
+    if x is not None:
+        # Kriging
+        t1 = time.time()
+        krig, krigSD = krige1D(x, v, cov_fun, nx, dx, origin=ox,
+                               mean=mean, var=var,
+                               conditioningMethod=2,
+                               extensionMin=extensionMin)
+        t2 = time.time()
+        time_krig_case1D = t2-t1
+        print('Elapsed time for kriging: {} sec'.format(time_krig_case1D))
+
     # Display
     # -------
     # xg: center of grid points
     xg = ox + 0.5 * dx + dx * np.arange(nx)
 
+    # === 4 real and mean and sd of all real
     fig, ax = plt.subplots(figsize=(20,10))
     for i in range(4):
         plt.plot(xg, grf[i], label='real #{}'.format(i+1))
@@ -1844,12 +3149,47 @@ if __name__ == "__main__":
     plt.plot(xg, grfMean, c='black', ls='dashed', label='mean ({} real)'.format(nreal))
     plt.plot(xg, grfMean + grfSD, c='gray', label='mean +/- sd ({} real)'.format(nreal))
     plt.plot(xg, grfMean - grfSD, c='gray')
+
     if x is not None:
         plt.plot(x,v,'+k', markersize=10)
     plt.legend()
-    plt.title(cov_model.name)
+    plt.title('GRF1D')
 
     fig.show()
+
+    if x is not None:
+        # === 4 real and kriging estimates and sd
+        fig, ax = plt.subplots(figsize=(20,10))
+        for i in range(4):
+            plt.plot(xg, grf[i], label='real #{}'.format(i+1))
+
+        plt.plot(xg, krig, c='black', ls='dashed', label='kriging')
+        plt.plot(xg, krig + krigSD, c='gray', label='kriging +/- sd')
+        plt.plot(xg, krig - krigSD, c='gray')
+
+        plt.plot(x,v,'+k', markersize=10)
+        plt.legend()
+        plt.title('GRF1D')
+
+        fig.show()
+
+        # === comparison of mean and sd of all real, with kriging estimates and sd
+        fig, ax = plt.subplots(figsize=(20,10))
+        plt.plot(xg, grfMean - krig, c='black', label='grfMean-krig')
+        plt.plot(xg, grfSD - krigSD, c='red', label='grfSD-krigSD')
+
+        plt.axhline(y=0)
+        for xx in x:
+            plt.axvline(x=xx)
+        plt.legend()
+        plt.title('GRF1D and KRIGE1D / nreal={}'.format(nreal))
+
+        fig.show()
+
+        print('Peak to peak for "grfMean - krig": {}'.format(np.ptp(grfMean-krig)))
+        print('Peak to peak for "grfSD - krigSD": {}'.format(np.ptp(grfSD-krigSD)))
+
+        del(krig, krigSD)
 
     del (grf, grfMean, grfSD)
 
@@ -1912,6 +3252,17 @@ if __name__ == "__main__":
     grfMean = np.mean(grf.reshape(nreal, -1), axis=0).reshape(ny, nx)
     grfSD = np.std(grf.reshape(nreal, -1), axis=0).reshape(ny, nx)
 
+    if x is not None:
+        # Kriging
+        t1 = time.time()
+        krig, krigSD = krige2D(x, v, cov_fun, dimension, spacing, origin=origin,
+                               mean=mean, var=var,
+                               conditioningMethod=2,
+                               extensionMin=extensionMin)
+        t2 = time.time()
+        time_krig_case2D = t2-t1
+        print('Elapsed time for kriging: {} sec'.format(time_krig_case2D))
+
     # Display
     # -------
     # xg, yg: center of grid points
@@ -1920,6 +3271,7 @@ if __name__ == "__main__":
     xmin, xmax = ox, ox + nx * dx
     ymin, ymax = oy, oy + ny * dy
 
+    # === 4 real and mean and sd of all real
     fig, ax = plt.subplots(2,3,figsize=(24,12))
 
     # 4 first real ...
@@ -1960,6 +3312,74 @@ if __name__ == "__main__":
     plt.title('SD over {} real'.format(nreal))
 
     fig.show()
+
+    if x is not None:
+        # === 4 real and kriging estimates and sd
+        fig, ax = plt.subplots(2,3,figsize=(24,12))
+
+        # 4 first real ...
+        pnum = [1, 2, 4, 5]
+        for i in range(4):
+            plt.subplot(2,3,pnum[i])
+            im_plot = plt.imshow(grf[i],
+                                 origin='lower', extent=[xmin,xmax,ymin,ymax],
+                                 interpolation='none')
+            plt.colorbar()
+            plt.plot(x[:,0],x[:,1],'+k', markersize=10)
+
+            plt.title('GRF2D {}: real #{}'.format(cov_model.name, i+1))
+
+        # kriging estimates...
+        plt.subplot(2,3,3)
+        im_plot = plt.imshow(krig,
+                             origin='lower', extent=[xmin,xmax,ymin,ymax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.plot(x[:,0],x[:,1],'+k', markersize=10)
+
+        plt.title('Kriging')
+
+        # kiging sd...
+        plt.subplot(2,3,6)
+        im_plot = plt.imshow(krigSD,
+                             origin='lower', extent=[xmin,xmax,ymin,ymax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.plot(x[:,0],x[:,1],'+k', markersize=10)
+
+        plt.title('Kriging SD')
+
+        fig.show()
+
+        # === comparison of mean and sd of all real, with kriging estimates and sd
+        fig, ax = plt.subplots(1,2,figsize=(15,5))
+
+        # grfMean - krig
+        plt.subplot(1,2,1)
+        im_plot = plt.imshow(grfMean - krig,
+                             origin='lower', extent=[xmin,xmax,ymin,ymax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.plot(x[:,0],x[:,1],'+k', markersize=10)
+
+        plt.title('2D: grfMean - krig / nreal={}'.format(nreal))
+
+        # grfMean - krig
+        plt.subplot(1,2,2)
+        im_plot = plt.imshow(grfSD - krigSD,
+                             origin='lower', extent=[xmin,xmax,ymin,ymax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.plot(x[:,0],x[:,1],'+k', markersize=10)
+
+        plt.title('2D: grfSD - krigSD / nreal={}'.format(nreal))
+
+        fig.show()
+
+        print('Peak to peak for "grfMean - krig": {}'.format(np.ptp(grfMean-krig)))
+        print('Peak to peak for "grfSD - krigSD": {}'.format(np.ptp(grfSD-krigSD)))
+
+        del(krig, krigSD)
 
     del (grf, grfMean, grfSD)
 
@@ -2022,6 +3442,17 @@ if __name__ == "__main__":
     grfMean = np.mean(grf.reshape(nreal, -1), axis=0).reshape(nz, ny, nx)
     grfSD = np.std(grf.reshape(nreal, -1), axis=0).reshape(nz, ny, nx)
 
+    if x is not None:
+        # Kriging
+        t1 = time.time()
+        krig, krigSD = krige3D(x, v, cov_fun, dimension, spacing, origin=origin,
+                               mean=mean, var=var,
+                               conditioningMethod=2,
+                               extensionMin=extensionMin)
+        t2 = time.time()
+        time_krig_case3D = t2-t1
+        print('Elapsed time for kriging: {} sec'.format(time_krig_case3D))
+
     # Display: slices going through the cell index ix0, iy0, iz0
     # -------
     ix0, iy0, iz0 = [30, 30, 30]
@@ -2033,7 +3464,8 @@ if __name__ == "__main__":
     ymin, ymax = oy, oy + ny * dy
     zmin, zmax = oz, oz + nz * dz
 
-    fig, ax = plt.subplots(3,3,figsize=(24,15))
+    # === first real and mean and sd of all real
+    fig, ax = plt.subplots(3,3,figsize=(20,12))
 
     # first real ...
     # ... xy slice
@@ -2131,9 +3563,188 @@ if __name__ == "__main__":
     # plt.show()
     fig.show()
 
+    if x is not None:
+        # === first real and kriging estimates and sd
+        fig, ax = plt.subplots(3,3,figsize=(20,12))
+
+        # first real ...
+        # ... xy slice
+        plt.subplot(3,3,1)
+        im_plot = plt.imshow(grf[0,iz0,:,:],
+                             origin='lower', extent=[xmin,xmax,ymin,ymax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('GRF3D {}: real #{}, iz = {}'.format(cov_model.name, 1, iz0))
+
+        # ... xz slice
+        plt.subplot(3,3,2)
+        im_plot = plt.imshow(grf[0,:,iy0,:],
+                             origin='lower', extent=[xmin,xmax,zmin,zmax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('x')
+        plt.ylabel('z')
+        plt.title('GRF3D {}: real #{}, iy = {}'.format(cov_model.name, 1, iy0))
+
+        # ... yz slice
+        plt.subplot(3,3,3)
+        im_plot = plt.imshow(grf[0,:,:,ix0],
+                             origin='lower', extent=[ymin,ymax,zmin,zmax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('y')
+        plt.ylabel('z')
+        plt.title('GRF3D {}: real #{}, ix = {}'.format(cov_model.name, 1, ix0))
+
+        # Kriging..
+        # ... xy slice
+        plt.subplot(3,3,4)
+        im_plot = plt.imshow(krig[iz0,:,:],
+                             origin='lower', extent=[xmin,xmax,ymin,ymax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('Kriging, iz = {}'.format(iz0))
+
+        # ... xz slice
+        plt.subplot(3,3,5)
+        im_plot = plt.imshow(krig[:,iy0,:],
+                             origin='lower', extent=[xmin,xmax,zmin,zmax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('x')
+        plt.ylabel('z')
+        plt.title('Kriging, iy = {}'.format(iy0))
+
+        # ... yz slice
+        plt.subplot(3,3,6)
+        im_plot = plt.imshow(krig[:,:,ix0],
+                             origin='lower', extent=[ymin,ymax,zmin,zmax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('y')
+        plt.ylabel('z')
+        plt.title('Kriging, ix = {}'.format(ix0))
+
+        # Kriging sd...
+        # ... xy slice
+        plt.subplot(3,3,7)
+        im_plot = plt.imshow(krigSD[iz0,:,:],
+                             origin='lower', extent=[xmin,xmax,ymin,ymax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('Kriging SD, iz = {}'.format(iz0))
+
+        # ... xz slice
+        plt.subplot(3,3,8)
+        im_plot = plt.imshow(krigSD[:,iy0,:],
+                             origin='lower', extent=[xmin,xmax,zmin,zmax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('x')
+        plt.ylabel('z')
+        plt.title('Kriging SD, iy = {}'.format(iy0))
+
+        # ... yz slice
+        plt.subplot(3,3,9)
+        im_plot = plt.imshow(krigSD[:,:,ix0],
+                             origin='lower', extent=[ymin,ymax,zmin,zmax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('y')
+        plt.ylabel('z')
+        plt.title('Kriging SD, ix = {}'.format(ix0))
+
+        # plt.show()
+        fig.show()
+
+        # === comparison of mean and sd of all real, with kriging estimates and sd
+        fig, ax = plt.subplots(2,3,figsize=(20,10))
+
+        # grfMean - krig ...
+        # ... xy slice
+        plt.subplot(2,3,1)
+        im_plot = plt.imshow(grfMean[iz0,:,:]-krig[iz0,:,:],
+                             origin='lower', extent=[xmin,xmax,ymin,ymax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('3D: grfMean - krig / nreal={} / iz = {}'.format(nreal, iz0))
+
+        # ... xz slice
+        plt.subplot(2,3,2)
+        im_plot = plt.imshow(grfMean[:,iy0,:]-krig[:,iy0,:],
+                             origin='lower', extent=[xmin,xmax,zmin,zmax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('x')
+        plt.ylabel('z')
+        plt.title('3D: grfMean - krig / nreal={} / iy = {}'.format(nreal, iy0))
+
+        # ... yz slice
+        plt.subplot(2,3,3)
+        im_plot = plt.imshow(grfMean[:,:,ix0]-krig[:,:,ix0],
+                             origin='lower', extent=[ymin,ymax,zmin,zmax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('y')
+        plt.ylabel('z')
+        plt.title('3D: grfMean - krig / nreal={} / ix = {}'.format(nreal, ix0))
+
+        # grfSD - krigSD ...
+        # ... xy slice
+        plt.subplot(2,3,4)
+        im_plot = plt.imshow(grfSD[iz0,:,:]-krigSD[iz0,:,:],
+                             origin='lower', extent=[xmin,xmax,ymin,ymax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('3D: grfSD - krigSD / nreal={} / iz = {}'.format(nreal, iz0))
+
+        # ... xz slice
+        plt.subplot(2,3,5)
+        im_plot = plt.imshow(grfSD[:,iy0,:]-krigSD[:,iy0,:],
+                             origin='lower', extent=[xmin,xmax,zmin,zmax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('x')
+        plt.ylabel('z')
+        plt.title('3D: grfSD - krigSD / nreal={} / iy = {}'.format(nreal, iy0))
+
+        # ... yz slice
+        plt.subplot(2,3,6)
+        im_plot = plt.imshow(grfSD[:,:,ix0]-krigSD[:,:,ix0],
+                             origin='lower', extent=[ymin,ymax,zmin,zmax],
+                             interpolation='none')
+        plt.colorbar()
+        plt.xlabel('y')
+        plt.ylabel('z')
+        plt.title('3D: grfSD - krigSD / nreal={} / ix = {}'.format(nreal, ix0))
+
+        # plt.show()
+        fig.show()
+
+        print('Peak to peak for "grfMean - krig": {}'.format(np.ptp(grfMean-krig)))
+        print('Peak to peak for "grfSD - krigSD": {}'.format(np.ptp(grfSD-krigSD)))
+
+        del(krig, krigSD)
+
     del (grf, grfMean, grfSD)
 
+    ######### Elapsed time for all cases ##########
     print('Case 1D: elapsed time: {:5.2f} sec  ({} real, {})'.format(time_case1D, nreal_case1D, infogrid_case1D))
     print('Case 2D: elapsed time: {:5.2f} sec  ({} real, {})'.format(time_case2D, nreal_case2D, infogrid_case2D))
     print('Case 3D: elapsed time: {:5.2f} sec  ({} real, {})'.format(time_case3D, nreal_case3D, infogrid_case3D))
+    print('Kriging Case 1D: elapsed time: {:5.2f} sec'.format(time_krig_case1D))
+    print('Kriging Case 2D: elapsed time: {:5.2f} sec'.format(time_krig_case2D))
+    print('Kriging Case 3D: elapsed time: {:5.2f} sec'.format(time_krig_case3D))
+
+    ######### END ##########
     a = input("Press enter to continue...")
