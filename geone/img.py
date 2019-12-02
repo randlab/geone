@@ -1955,10 +1955,10 @@ def sampleFromPointSet(point_set, size, seed=None, mask=None):
     # Initialise the seed; will randomly reseed the generator if None
     np.random.seed(seed)
 
-    #if mask not None:
-    #    indices = np.where(mask.np != 0)[0]
-    #else:
-    indices = point_set.npt
+    if mask is not None:
+        indices = np.where(mask.val[3,:] != 0)[0]
+    else:
+        indices = point_set.npt
 
     # Sample only some points from the point set
     sampled_indices = np.random.choice(indices, size, replace=False)
@@ -1984,8 +1984,8 @@ def sampleFromImage(image, size, seed=None, mask=None):
     """
     # Create point set from image
     point_set = imageToPointSet(image)
-    #if mask is not None:
-    #    mask = imageToPointSet(mask)
+    if mask is not None:
+        mask = imageToPointSet(mask)
 
     return sampleFromPointSet(point_set, size, seed, mask)
 # ----------------------------------------------------------------------------
