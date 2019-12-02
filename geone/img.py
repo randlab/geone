@@ -1941,6 +1941,55 @@ def singleGridIndexToGridIndex(i, nx, ny, nz):
     return ([ix, iy, iz])
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
+def sampleFromPointSet(point_set, size, seed=None, mask=None):
+    """
+    Sample random points from PointSet object
+    and return a PointSet
+    :param point_set:          (PointSet) PointSet object to sample from
+    :param size: (size) number of points to be sampled
+    :param seed: (int) optional random seed
+    :return: PointSet:
+                       A PointSet object
+    """
+    # Initialise the seed; will randomly reseed the generator if None
+    np.random.seed(seed)
+
+    #if mask not None:
+    #    indices = np.where(mask.np != 0)[0]
+    #else:
+    indices = point_set.npt
+
+    # Sample only some points from the point set
+    sampled_indices = np.random.choice(indices, size, replace=False)
+
+    # Return the new object
+    return PointSet(npt=size,
+            nv=point_set.nv,
+            v=point_set.val[:,sampled_indices],
+            varname=point_set.varname,
+            name=point_set.name)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def sampleFromImage(image, size, seed=None, mask=None):
+    """
+    Sample random points from Img object
+    and return a PointSet
+    :param image:          (Img) Img object to sample from
+    :param size: (int) number of points to be sampled
+    :param seed: (int) optional random seed
+    :return: PointSet:
+                       A PointSet object
+    """
+    # Create point set from image
+    point_set = imageToPointSet(image)
+    #if mask is not None:
+    #    mask = imageToPointSet(mask)
+
+    return sampleFromPointSet(point_set, size, seed, mask)
+# ----------------------------------------------------------------------------
+
 if __name__ == "__main__":
     print("Module 'geone.img' example:")
     print("Run the module 'geone.imgplot'...")
