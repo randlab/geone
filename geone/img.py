@@ -1946,9 +1946,11 @@ def sampleFromPointSet(point_set, size, seed=None, mask=None):
     """
     Sample random points from PointSet object
     and return a PointSet
-    :param point_set:          (PointSet) PointSet object to sample from
+    :param point_set: (PointSet) PointSet object to sample from
     :param size: (size) number of points to be sampled
     :param seed: (int) optional random seed
+    :param mask: (PointSet) PointSet of the same size showing where to sample
+                 points where mask == 0 will be not taken into account
     :return: PointSet:
                        A PointSet object
     """
@@ -1976,9 +1978,11 @@ def sampleFromImage(image, size, seed=None, mask=None):
     """
     Sample random points from Img object
     and return a PointSet
-    :param image:          (Img) Img object to sample from
-    :param size: (int) number of points to be sampled
-    :param seed: (int) optional random seed
+    :param image: (Img) Img object to sample from
+    :param size:  (int) number of points to be sampled
+    :param seed:  (int) optional random seed
+    :param mask:  (Image) Image of the same size indicating where to sample
+                  points where mask == 0 will be not taken into account
     :return: PointSet:
                        A PointSet object
     """
