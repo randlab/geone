@@ -75,6 +75,12 @@ class Img(object):
         self.name = name
 
     # ------------------------------------------------------------------------
+    def __str__(self):
+        """Returns name of the image: string representation of Image object"""
+        return self.name
+    # ------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------
     def set_default_varname(self):
         """Sets default variable names: varname = ('V0', 'V1',...)."""
         self.varname = ["V{:d}".format(i) for i in range(self.nv)]
