@@ -4555,36 +4555,34 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
 
 # ----------------------------------------------------------------------------
 class DeesseEstimator():
-    """ DS estimator
-
-    Parameters
-    ----------
-    ti_filename : string, name of the training image file in geone.gslib format
-    fraction_scan : float, in [0,1], DS parameter
-    n_neighbours : int, DS parameter
-    threshold : float, DS parameter
-    n_realisations : int, number of DS simulations to be run for predict_proba
-    simulation_grid : tuple (int,int,int), dimensions of DS simulation grid
-    origin_of_simulation_grid: tuple (float,float,float) origin of DS grid
-    seed: int, random seed for DS
-    n_postprocessing_paths: DS parameter
-    n : int, default=1
-    distance_type : DS parameter, default = 0 for categorical
-        Number of DS repeated simulations runs in the same point
+    """ DS estimator: scikit-learn compatible wrapper for DeesseInput
+    and DeesseRun
     """
 
     def __init__(self, varnames=None, **kwargs):
+        """
+        :param varnames: must be specified, list of all variables
+            (including X, Y, Z) in the conditioning data
+        :param kwargs: parameters of DeesseInput
+        """
         if varnames is None:
             raise ValueError("Please specify varnames: list of all variables in the observation set")
         self.deesse_parameters = kwargs
         self.varnames = varnames
 
     def set_params(self, **parameters):
+        """
+        Sets simulation parameters according to a dictionary
+        for compatibility with scikit-learn
+        """
         for parameter, value in parameters.items():
             self.deesse_parameters[parameter] = value
         return self
 
     def get_params(self, deep=True):
+        """
+        Returns all parameters in a dictionary fo compatibility with scikit-learn
+        """
         return {'varnames': self.varnames, **self.deesse_parameters}
 
     def fit(self, X, y):
@@ -4592,18 +4590,12 @@ class DeesseEstimator():
         Set ups all parametes and reads the TI for the DS.
         Constructs DS input. Converts X,y into hard data
 
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+        :param X : array-like (provides __array__ method) shape (n_samples, n_features)
             The training input samples.
-        y : array-like, shape (n_samples,) or (n_samples, n_outputs)
-            The target values (class labels in classification, real numbers in
-            regression).
+        :param y : array-like, shape (n_samples,)
+            The target values (class labels)
 
-        Returns
-        -------
-        self : object
-            Returns self.
+        :return self: returns self
         """
 
         # Convert X,y into the hard conditioning Point
@@ -4631,42 +4623,59 @@ class DeesseEstimator():
     def predict(self, X):
         """ Implementation of a predicting function.
         Returns predicted facies by taking the biggest probability
-        eveluatet by the predict_proba method
+        eveluated by the predict_proba method
 
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape (n_samples, n_features)
-            The training input samples.
+        :param X: array-like (must implement __array__ method)
+            containing spatial coordinates
 
-        Returns
-        -------
-        y : ndarray, shape (n_samples,)
+        :return y:  (ndarray) predicted classes
+            shape (n_samples, )
         """
         y = self.predict_proba(X)
         return self.classes_.take(np.argmax(y, axis=1), axis=0)
 
-    def simulate(self, verbose=0):
+    def simulate(self, verbose=0, unconditional=False):
         """
-        Simulates given ds parameters
+        Return DeeSse simulation
+
+        :param verbose=0: (int) 0, 1, 2 specifies verbosity of deesseRun
+        :param unconditional=False: if True, performs unconditional simulation
+            ignores the fitted parameters
+
+        :return deesse_output:  (dictionary) {'sim':sim, 'path':path, 'error':error}
+            With nreal = deesse_input.nrealization:
+            sim:    (1-dimensional array of Img (class) of size nreal)
+                        sim[i]: i-th realisation
+            path:   (1-dimensional array of Img (class) of size nreal or None)
+                        path[i]: path index map for the i-th realisation
+                        (path is None if deesse_input.outputPathIndexFlag is False)
+            error:  (1-dimensional array of Img (class) of size nreal or None)
+                        error[i]: error map for the i-th realisation
+                        (path is None if deesse_input.outputErrorFlag is False)
         """
         # Verbose == 1 only print warning and error
         # TODO https://stackoverflow.com/questions/8391411/
         # suppress-calls-to-print-python
-        return deesseRun(self.deesse_input, verbose=verbose)
+        if unconditional is True:
+            deesse_input = DeesseInput(**self.deesse_parameters)
+        else:
+            try:
+                deesse_input = self.deesse_input
+            except AttributeError:
+                deesse_input = DeesseInput(**self.deesse_parameters)
+
+        return deesseRun(deesse_input, verbose=verbose)
 
     def predict_proba(self, X):
         """ Implementation of a predicting function, probabilities for each category.
         Uses pixel-wise average proportion of DS predictions.
         Number od DS simulations corresponds to number of realisations.
 
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape (n_samples, n_features)
-            The training input samples.
+        :param X: array-like (must implement __array__ method)
+            containing spatial coordinates
 
-        Returns
-        -------
-        y : ndarray, shape (n_samples,n_features)
+        :return y:  (ndarray) probability predictions
+            shape (n_samples, n_features)
         """
         X = X.__array__()
 
