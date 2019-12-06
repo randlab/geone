@@ -4617,6 +4617,15 @@ class DeesseEstimator():
         self.X_ = X
         self.y_ = y
 
+        # predict_proba remembers last prediction to avoid recomputing it
+        # for multiple custom scorers
+        # fitting invalidates last prediction
+        try:
+            del self.previous_X_
+            del self.previous_y_
+        except AttributeError:
+            pass
+
         # `fit` should always return `self`
         return self
 
