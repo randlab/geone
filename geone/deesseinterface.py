@@ -4559,7 +4559,7 @@ class DeesseEstimator():
     and DeesseRun
     """
 
-    def __init__(self, varnames=None, **kwargs):
+    def __init__(self, varnames=None, nthreads=-1, **kwargs):
         """
         :param varnames: must be specified, list of all variables
             (including X, Y, Z) in the conditioning data
@@ -4569,6 +4569,7 @@ class DeesseEstimator():
             raise ValueError("Please specify varnames: list of all variables in the observation set")
         self.deesse_parameters = kwargs
         self.varnames = varnames
+        self.nthreads = nthreads
 
     def set_params(self, **parameters):
         """
@@ -4583,7 +4584,7 @@ class DeesseEstimator():
         """
         Returns all parameters in a dictionary fo compatibility with scikit-learn
         """
-        return {'varnames': self.varnames, **self.deesse_parameters}
+        return {'varnames': self.varnames, **self.deesse_parameters, 'nthreads': self.nthreads}
 
     def fit(self, X, y):
         """An implementation of DS fitting function.
@@ -4673,7 +4674,7 @@ class DeesseEstimator():
             except AttributeError:
                 deesse_input = DeesseInput(**self.deesse_parameters)
 
-        return deesseRun(deesse_input, verbose=verbose)
+        return deesseRun(deesse_input, verbose=verbose, nthreads=self.nthreads)
 
     def predict_proba(self, X):
         """ Implementation of a predicting function, probabilities for each category.
