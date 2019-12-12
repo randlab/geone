@@ -1,12 +1,15 @@
 import numpy as np
 import unittest
-from geone.cv_metrics import brier_score, zero_one_score, balanced_brier_score, balanced_zero_one_score, balanced_linear_score, linear_score
+from geone.cv_metrics import brier_score, zero_one_score, balanced_brier_score, balanced_zero_one_score, balanced_linear_score, linear_score, SkillScore
 
 class fake_estimator:
     def __init__(self):
         self.classes_ = np.array([0, 1, 3])
     def predict_proba(self, X):
         return X
+    def fit(self, X, y):
+        self.X_ = X
+        self.y_ = y
 
 class estimator_for_previous_testing(fake_estimator):
     def __init__(self):
@@ -45,3 +48,8 @@ class TestMetrics(unittest.TestCase):
 
         assert zero_one_score(estimator_for_previous_testing(), X1, [3]) == 1
         assert brier_score(estimator_for_previous_testing(), X1, [3]) == 0
+        estimator = fake_estimator()
+        estimator.fit(X2, [0])
+        skill = SkillScore(fake_estimator(), 0, brier_score)
+
+        self.assertEqual(skill(estimator, X2, [0]), 0)

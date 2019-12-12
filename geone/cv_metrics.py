@@ -1,5 +1,17 @@
 import numpy as np
 
+class SkillScore():
+    def __init__(self, reference_method, optimal_score, scorer):
+        self.reference_method = reference_method
+        self.optimal_score = optimal_score
+        self.scorer = scorer
+    def __call__(self, estimator, X, y_true):
+        self.reference_method.fit(estimator.X_, estimator.y_)
+        score_ref = self.scorer(self.reference_method, X, y_true)
+        score_forecast = self.scorer(estimator, X, y_true)
+        print(score_ref, score_forecast, self.optimal_score)
+        return (score_forecast - score_ref)/(self.optimal_score - score_ref)
+
 def brier_score(estimator, X, y_true):
     y_pred_proba = _generate_prediction(estimator, X)
     return np.mean([2*p[np.where(estimator.classes_ == i)] - np.sum(p**2) - 1 for p, i in zip(y_pred_proba, y_true)])
