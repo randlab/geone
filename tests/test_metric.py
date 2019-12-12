@@ -1,6 +1,6 @@
 import numpy as np
 import unittest
-from geone.cv_metrics import brier_score, zero_one_score, balanced_brier_score, balanced_zero_one_score
+from geone.cv_metrics import brier_score, zero_one_score, balanced_brier_score, balanced_zero_one_score, balanced_linear_score, linear_score
 
 class fake_estimator:
     def __init__(self):
@@ -33,6 +33,8 @@ class TestMetrics(unittest.TestCase):
 
         assert balanced_brier_score(fake_estimator(), np.vstack((X1,X2,X3)), [1,1,0]) == -1.38/2
         assert balanced_zero_one_score(fake_estimator(), np.vstack((X2,X3,X4,X5)), [1,0,3,1]) == 2.75/3
+        assert linear_score(fake_estimator(), np.vstack((X2,X3,X4,X5)), [1,0,3,1]) == 0.6
+        assert balanced_linear_score(fake_estimator(), np.vstack((X2,X3,X4,X5)), [1,0,3,1]) == 1.7/3
 
         assert zero_one_score(fake_estimator(), X2, [1]) == 1  
         assert zero_one_score(fake_estimator(), X3, [0]) == 1  

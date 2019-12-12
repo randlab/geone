@@ -8,6 +8,11 @@ def zero_one_score(estimator, X, y_true):
     y_pred_proba = _generate_prediction(estimator, X)
     return np.mean([zero_one_rule(p, i, estimator.classes_) for p, i in zip(y_pred_proba, y_true)])
 
+def linear_score(estimator, X, y_true):
+    y_pred_proba = _generate_prediction(estimator, X)
+    linear_scores = [linear_rule(p, i, estimator.classes_) for p, i in zip(y_pred_proba, y_true)]
+    return np.mean(linear_scores)
+
 def balanced_brier_score(estimator, X, y_true):
     y_pred_proba = _generate_prediction(estimator, X)
     brier_scores = [2*p[np.where(estimator.classes_ == i)] - np.sum(p**2) - 1 for p, i in zip(y_pred_proba, y_true)]
@@ -18,6 +23,11 @@ def balanced_zero_one_score(estimator, X, y_true):
     zero_one_scores = [zero_one_rule(p, i, estimator.classes_) for p, i in zip(y_pred_proba, y_true)]
     return _balance_score(y_true, zero_one_scores, estimator.classes_)
 
+def balanced_linear_score(estimator, X, y_true):
+    y_pred_proba = _generate_prediction(estimator, X)
+    linear_scores = [linear_rule(p, i, estimator.classes_) for p, i in zip(y_pred_proba, y_true)]
+    return _balance_score(y_true, linear_scores, estimator.classes_)
+
 def zero_one_rule(y_pred_proba, y_true, classes):
     max_proba = np.max(y_pred_proba)
     modes = classes[y_pred_proba == (np.ones_like(y_pred_proba)*max_proba)]
@@ -26,6 +36,9 @@ def zero_one_rule(y_pred_proba, y_true, classes):
     else:
         score = 0
     return score
+
+def linear_rule(y_pred_proba, y_true, classes):
+    return y_pred_proba[np.where(y_true==classes)]
 
 def _generate_prediction(estimator, X):
     if hasattr(estimator, 'previous_X_') and np.all(estimator.previous_X_ == X):
