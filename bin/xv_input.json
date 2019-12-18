@@ -1,0 +1,47 @@
+{
+    "results_path": "results",
+    "estimator":
+    {
+        "varnames": ["X","Y","Z", "facies"],
+        "nx":100,
+        "ny":100,
+        "nz":1,
+        "sx":1.0,
+        "sy":1.0,
+        "sz":1.0,
+        "ox":0.0,
+        "oy":0.0,
+        "oz":0.0,
+        "nv":1,
+        "varname":"facies",
+        "nTI":1,
+        "TI":"data/ti_test.gslib",
+        "nneighboringNode":60,
+        "distanceThreshold":0.1,
+        "maxScanFraction":0.25,
+        "npostProcessingPathMax":1,
+        "seed":20191201,
+        "nrealization":30,
+        "nthreads":1
+    },
+    "scoring":
+    {
+        "brier":"brier_score",
+        "zero-one":"zero_one_score"
+    },
+    "cv_splitter":
+    {
+        "n_splits": 5,
+        "shuffle":true,
+        "random_state":20191201
+    },
+    "model_selector":
+    {
+        "param_grid":{"maxScanFraction":[0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]},
+        "n_jobs":8,
+        "refit":false,
+        "verbose":0,
+        "error_score":"raise",
+        "return_train_score":false
+    }
+}
