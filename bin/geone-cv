@@ -36,8 +36,6 @@ def main():
 
     X =observations_df[observations['coordinates']]
     y = observations_df[observations['variable']]
-    print(X)
-    print(y)
     cross_validator.fit(X=X, y=y)
     cross_validator.write_pandas_results()
 
