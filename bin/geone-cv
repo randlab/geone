@@ -57,15 +57,26 @@ class CrossValidator():
                 scoring[key] = eval(scoring_method)
         self.scoring = scoring
 
+        # Convert TI filename to Image
         for key, parameter in estimator_parameters.items():
             if key == 'TI':
                 estimator_parameters[key] = readImageGslib(parameter)
+
+        # In model_selector param_grid
+        # Convert all TI filenames to Image
+        for key, parameter in model_selector_parameters["param_grid"].items():
+            if key == 'TI':
+                # it's a list
+                model_selector_parameters["param_grid"]["TI"] = [
+                        readImageGslib(x) for x in parameter]
+
 
         # Set estimator and scikit learn's engine
         self.estimator = DeesseEstimator(**estimator_parameters)
         self.cv_splitter = StratifiedKFold(**cv_splitter_parameters)
         self.model_selector = GridSearchCV(estimator=self.estimator,
                 scoring=self.scoring,
+                cv=self.cv_splitter,
                 **model_selector_parameters)
 
         # Prepare the results directory
