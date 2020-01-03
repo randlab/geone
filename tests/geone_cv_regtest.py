@@ -8,7 +8,7 @@ import geone_cv
 
 def main():
     # run cv as from command line
-    geone_cv.run_cv('xv_input.json')
+    geone_cv.run_cv('cv_data/xv_input.json')
 
     # read generated results by the script
     results = pd.read_csv('results/cv_results.csv')
