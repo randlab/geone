@@ -19,7 +19,10 @@ def main():
     parser.add_argument('input', help='Input file')
 
     args = parser.parse_args()
-    with open(args.input, 'r') as input_file:
+    run_cv(args.input)
+
+def run_cv(input_filename):
+    with open(input_filename, 'r') as input_file:
         parameters = json.load(input_file)
 
     observations = parameters['observations']
