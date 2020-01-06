@@ -17,7 +17,9 @@ def main():
     results_ref = pd.read_csv('cv_data/cross-validation-ref.csv')
 
     # compare relevant features
-    features = ['param_TI', 'param_nneighboringNode', 'mean_test_brier', 'mean_test_zero_one']
+    features = ['param_TI', 'param_nneighboringNode',
+                'mean_test_brier', 'mean_test_zero_one',
+                'mean_test_linear', 'mean_test_skill_brier', 'mean_test_skill_zero_one']
     assert(results[features].equals(results_ref[features]))
 
     # print message if successful

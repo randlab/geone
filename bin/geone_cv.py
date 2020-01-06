@@ -9,7 +9,8 @@ import sys
 import pandas as pd
 
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
-from geone.cv_metrics import brier_score, zero_one_score
+from sklearn.dummy import DummyClassifier
+from geone.cv_metrics import brier_score, zero_one_score, balanced_linear_score, SkillScore
 from geone.deesseinterface import DeesseEstimator
 from geone.img import readImageGslib
 from geone.gslib import read
@@ -54,8 +55,12 @@ class CrossValidator():
 
         # Preprocess scoring dictionary (recognize geone functions)
         for key, scoring_method in scoring.items():
-            if scoring_method in ['brier_score', 'zero_one_score']:
+            # potentially dangerous implementation but it's not a critical script
+            try:
                 scoring[key] = eval(scoring_method)
+            except NameError:
+                # expect string here, sklearn's scoring method
+                pass
         self.scoring = scoring
 
         # Convert TI filename to Image
