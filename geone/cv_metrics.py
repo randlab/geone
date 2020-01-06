@@ -12,7 +12,6 @@ class SkillScore():
         self.reference_method.fit(estimator.X_, estimator.y_)
         score_ref = self.scorer(self.reference_method, X, y_true)
         score_forecast = self.scorer(estimator, X, y_true)
-        print(score_ref, score_forecast, self.optimal_score)
         return (score_forecast - score_ref)/(self.optimal_score - score_ref)
 
 def brier_score(estimator, X, y_true):
