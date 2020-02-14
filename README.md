@@ -16,6 +16,7 @@ The following python packages are used by 'geone':
    - numpy
    - matplotlib
    - mpl_toolkits
+   - pyvista
 
 **Important note**:  
 The package 'geone' includes a *deesse wrapper*, i.e. an *interface* to directly launch deesse with python. Whereas this wrapper is provided as an open source software (under MIT license), the deesse software itself is patent-protected by the University of Neuchâtel. Free licenses for deesse are provided on request, for non-commercial academic research and education only.
@@ -30,7 +31,7 @@ Various examples are provided in notebooks.
    - `ex_grf_3d.ipynb`: example for the generation of 3D fields
 - Multiple-point statistics - simulation using the deesse wrapper:
    - `ex_deesse_01_basics.ipynb`: basic deesse (categorical) simulations
-   - `ex_deesse_02_get_path_and_error.ipynb`: retrieving the simulation path and the error map
+   - `ex_deesse_02_additional_outputs_and_simulation_paths.ipynb`: retrieving additional output maps and setting the simulation path
    - `ex_deesse_03_search_neigbhorhood.ipynb`: advanced setting for the search neighborhood ellipsoid
    - `ex_deesse_04_continous_sim.ipynb`: continous simulations
    - `ex_deesse_05_geom_transformation.ipynb`: simulations with geometrical transformations (rotation / scaling)

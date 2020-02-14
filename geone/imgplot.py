@@ -40,9 +40,10 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                  removeColorbar=False,
                  showColorbarOnly=0,
                  **kwargs):
-    """Draws an 2D image (can be a slice of a 3D image):
+    """
+    Draws an 2D image (can be a slice of a 3D image):
 
-    :param im:  (img.mpdsutils.Img class) image
+    :param im:  (img.Img class) image
     :param ix:  (int or None) index along x-axis of the yz-slice to be drawn
     :param iy:  (int or None) index along y-axis of the xz-slice to be drawn
     :param iz:  (int or None) index along z-axis of the xy-slice to be drawn
@@ -100,23 +101,23 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
     :param xticks, yticks, cticks:
                         (sequence or None) sequence where to place ticks along
                         x-axis, y-axis, colorbar respectively,
-                        None for default
+                        None by default
     :param xticklabels, yticklabels, cticklabels:
                         (sequence or None) sequence of labels for ticks along
                         x-axis, y-axis, colorbar respectively,
-                        None for default
+                        None by default
     :param colorbar_extend: (string)
                                 -- used only if categ is False --
                                 keyword argument 'extend' to be passed
                                 to plt.colorbar() /
-                                mpdsutils.customcolors.add_colorbar(), can be:
+                                geone.customcolors.add_colorbar(), can be:
                                     'neither' | 'both' | 'min' | 'max'
     :param colorbar_aspect: (float or int) keyword argument 'aspect' to be
-                                passed to mpdsutils.customcolors.add_colorbar(),
+                                passed to geone.customcolors.add_colorbar(),
     :param colorbar_pad_fraction:
                             (float or int) keyword argument 'pad_fraction' to
                                 be passed to
-                                mpdsutils.customcolors.add_colorbar(),
+                                geone.customcolors.add_colorbar(),
                                 (not used if showColorbar is False)
     :param showColorbar:    (bool) indicates if the colorbar (vertical) is drawn
     :param removeColorbar:  (bool) if True (and if showColorbar is True), then
@@ -167,7 +168,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         iv = im.nv + iv
 
     if iv < 0 or iv >= im.nv:
-        print("Error: invalid iv index!")
+        print("ERROR: invalid iv index!")
         return
 
     # Check slice direction and indices
@@ -183,7 +184,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                 ix = im.nx + ix
 
             if ix < 0 or ix >= im.nx:
-                print("Error: invalid ix index!")
+                print("ERROR: invalid ix index!")
                 return
 
             sliceDir = 'x'
@@ -193,7 +194,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                 iy = im.ny + iy
 
             if iy < 0 or iy >= im.ny:
-                print("Error: invalid iy index!")
+                print("ERROR: invalid iy index!")
                 return
 
             sliceDir = 'y'
@@ -203,13 +204,13 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                 iz = im.nz + iz
 
             if iz < 0 or iz >= im.nz:
-                print("Error: invalid iz index!")
+                print("ERROR: invalid iz index!")
                 return
 
             sliceDir = 'z'
 
     else: # n > 1
-        print("Error: slice specified in more than one direction!")
+        print("ERROR: slice specified in more than one direction!")
         return
 
     # Extract what to be plotted
@@ -221,7 +222,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         dim1 = im.nz
         min1 = im.oz
         max1 = im.zmax()
-        zz = np.array(im.val[iv, :, :, ix].reshape(dim1,dim0)) # np.array() to get a copy
+        zz = np.array(im.val[iv, :, :, ix].reshape(dim1, dim0)) # np.array() to get a copy
             # reshape to force 2-dimensional array
 
     elif sliceDir == 'y':
@@ -232,7 +233,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         dim1 = im.nz
         min1 = im.oz
         max1 = im.zmax()
-        zz = np.array(im.val[iv, :, iy, :].reshape(dim1,dim0)) # np.array() to get a copy
+        zz = np.array(im.val[iv, :, iy, :].reshape(dim1, dim0)) # np.array() to get a copy
 
     else: # sliceDir == 'z'
         dim0 = im.nx
@@ -242,23 +243,27 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         dim1 = im.ny
         min1 = im.oy
         max1 = im.ymax()
-        zz = np.array(im.val[iv, iz, :, :].reshape(dim1,dim0)) # np.array() to get a copy
+        zz = np.array(im.val[iv, iz, :, :].reshape(dim1, dim0)) # np.array() to get a copy
 
     if categ:
         # --- Treat categorical variable ---
         if categCol is not None\
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
-            print("Error: 'categCol' must be a list or a tuple (if not None)!")
+            print("ERROR: 'categCol' must be a list or a tuple (if not None)!")
             return
 
         # Get array 'dval' of displayed values
         if categVal is not None:
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
+            if len(np.unique(dval)) != len(dval):
+                print("ERROR: 'categVal' contains duplicated entries!")
+                return
+
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print("Error: length of 'categVal' and 'categCol' differs!")
+                print("ERROR: length of 'categVal' and 'categCol' differs!")
                 return
 
         else:
@@ -268,8 +273,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                     np.putmask(zz, zz == val, np.nan)
 
             # Get the unique value in zz
-            dval = np.array(
-                    [v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
+            dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
 
         if not len(dval): # len(dval) == 0
             print ("Warning: no value to be drawn!")
@@ -474,7 +478,8 @@ def writeImage2Dppm (im, filename,
                      categ=False, categVal=None, categCol=None,
                      vmin=None, vmax=None,
                      interpolation='none'):
-    """Writes an image from 'im' in ppm format in the file 'filename',
+    """
+    Writes an image from 'im' in ppm format in the file 'filename',
     using colors as in function drawImage2D (other arguments are defined as in
     this function).
     """
@@ -484,7 +489,7 @@ def writeImage2Dppm (im, filename,
         iv = im.nv + iv
 
     if iv < 0 or iv >= im.nv:
-        print("Error: invalid iv index!")
+        print("ERROR: invalid iv index!")
         return
 
     # Check slice direction and indices
@@ -500,7 +505,7 @@ def writeImage2Dppm (im, filename,
                 ix = im.nx + ix
 
             if ix < 0 or ix >= im.nx:
-                print("Error: invalid ix index!")
+                print("ERROR: invalid ix index!")
                 return
 
             sliceDir = 'x'
@@ -510,7 +515,7 @@ def writeImage2Dppm (im, filename,
                 iy = im.ny + iy
 
             if iy < 0 or iy >= im.ny:
-                print("Error: invalid iy index!")
+                print("ERROR: invalid iy index!")
                 return
 
             sliceDir = 'y'
@@ -520,13 +525,13 @@ def writeImage2Dppm (im, filename,
                 iz = im.nz + iz
 
             if iz < 0 or iz >= im.nz:
-                print("Error: invalid iz index!")
+                print("ERROR: invalid iz index!")
                 return
 
             sliceDir = 'z'
 
     else: # n > 1
-        print("Error: slice specified in more than one direction!")
+        print("ERROR: slice specified in more than one direction!")
         return
 
     # Extract what to be plotted
@@ -538,7 +543,7 @@ def writeImage2Dppm (im, filename,
         dim1 = im.nz
         min1 = im.oz
         max1 = im.zmax()
-        zz = np.array(im.val[iv, :, :, ix].reshape(dim1,dim0)) # np.array() to get a copy
+        zz = np.array(im.val[iv, :, :, ix].reshape(dim1, dim0)) # np.array() to get a copy
             # reshape to force 2-dimensional array
 
     elif sliceDir == 'y':
@@ -549,7 +554,7 @@ def writeImage2Dppm (im, filename,
         dim1 = im.nz
         min1 = im.oz
         max1 = im.zmax()
-        zz = np.array(im.val[iv, :, iy, :].reshape(dim1,dim0)) # np.array() to get a copy
+        zz = np.array(im.val[iv, :, iy, :].reshape(dim1, dim0)) # np.array() to get a copy
 
     else: # sliceDir == 'z'
         dim0 = im.nx
@@ -559,23 +564,27 @@ def writeImage2Dppm (im, filename,
         dim1 = im.ny
         min1 = im.oy
         max1 = im.ymax()
-        zz = np.array(im.val[iv, iz, :, :].reshape(dim1,dim0)) # np.array() to get a copy
+        zz = np.array(im.val[iv, iz, :, :].reshape(dim1, dim0)) # np.array() to get a copy
 
     if categ:
         # --- Treat categorical variable ---
         if categCol is not None\
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
-            print("Error: 'categCol' must be a list or a tuple (if not None)!")
+            print("ERROR: 'categCol' must be a list or a tuple (if not None)!")
             return
 
         # Get array 'dval' of displayed values
         if categVal is not None:
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
+            if len(np.unique(dval)) != len(dval):
+                print("ERROR: 'categVal' contains duplicated entries!")
+                return
+
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print("Error: length of 'categVal' and 'categCol' differs!")
+                print("ERROR: length of 'categVal' and 'categCol' differs!")
                 return
 
         else:
@@ -585,11 +594,10 @@ def writeImage2Dppm (im, filename,
                     np.putmask(zz, zz == val, np.nan)
 
             # Get the unique value in zz
-            dval = np.array(
-                    [v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
+            dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
 
         if not len(dval): # len(dval) == 0
-            print ("Error: no value to be drawn!")
+            print ("ERROR: no value to be drawn!")
 
         # Replace dval[i] by i in zz and other values by np.nan
         zz2 = np.array(zz) # copy array
@@ -625,7 +633,6 @@ def writeImage2Dppm (im, filename,
             # cmap = mcolors.ListedColormap(colorList)
             cmap = ccol.custom_cmap(colorList, ncol=len(colorList),
                                     cbad=ccol.cbad_def)
-# ----------------------------------------------------------------------------
 
         # Set the min and max of the colorbar
         vmin, vmax = -0.5, len(dval) - 0.5
@@ -729,8 +736,7 @@ if __name__ == "__main__":
              ox=xmin, oy=ymin, oz=0.0)
 
     for i in range(nv):
-        im.set_var(ind=i,
-                   v=zz.reshape(-1)+np.random.normal(size=im.nxy()))
+        im.set_var(ind=i, val=zz.reshape(-1)+np.random.normal(size=im.nxy()))
 
     # Compute the mean and standard deviation
     # ---------------------------------------

@@ -7,5 +7,6 @@ try:
     import geone.grf
     import geone.img
     import geone.imgplot
+    import geone.imgplot3d
 except ImportError:
     pass

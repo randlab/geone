@@ -97,7 +97,7 @@ def readBlockData(filename):
     """
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("Error: invalid filename ({})".format(filename))
+        print("ERROR: invalid filename ({})".format(filename))
         return
 
     # Open the file in read mode

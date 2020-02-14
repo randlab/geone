@@ -30,21 +30,21 @@ class Img(object):
                  nx=0,   ny=0,   nz=0,
                  sx=1.0, sy=1.0, sz=1.0,
                  ox=0.0, oy=0.0, oz=0.0,
-                 nv=0, v=np.nan, varname=None,
+                 nv=0, val=np.nan, varname=None,
                  name=""):
         """
         Init function for the class:
 
-        :param v:   (int/float or tuple/list/ndarray) value(s) of the new
+        :param val: (int/float or tuple/list/ndarray) value(s) of the new
                         variable:
                         if type is int/float: constant variable
                         if tuple/list/ndarray: must contain nv*nx*ny*nz values,
                             which are put in the image (after reshape if needed)
         """
 
-        self.nx = nx
-        self.ny = ny
-        self.nz = nz
+        self.nx = int(nx)
+        self.ny = int(ny)
+        self.nz = int(nz)
         self.sx = float(sx)
         self.sy = float(sy)
         self.sz = float(sz)
@@ -53,11 +53,11 @@ class Img(object):
         self.oz = float(oz)
         self.nv = nv
 
-        valarr = np.asarray(v, dtype=float) # numpy.ndarray (possibly 0-dimensional)
+        valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(nx*ny*nz*nv)
         elif valarr.size != nx*ny*nz*nv:
-            print ('ERROR: v have not an acceptable size')
+            print ('ERROR: val have not an acceptable size')
             return
 
         self.val = valarr.reshape(nv, nz, ny, nx)
@@ -76,14 +76,18 @@ class Img(object):
 
     # ------------------------------------------------------------------------
     def set_default_varname(self):
-        """Sets default variable names: varname = ('V0', 'V1',...)."""
+        """
+        Sets default variable names: varname = ('V0', 'V1',...).
+        """
         self.varname = ["V{:d}".format(i) for i in range(self.nv)]
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_varname(self, vname=None, ind=-1):
-        """Sets name of the variable of the given index (if vname is None:
-        'V' appended by the variable index is used as vname)."""
+    def set_varname(self, varname=None, ind=-1):
+        """
+        Sets name of the variable of the given index (if varname is None:
+        'V' appended by the variable index is used as varame).
+        """
         if ind < 0:
             ii = self.nv + ind
         else:
@@ -93,20 +97,20 @@ class Img(object):
             print("Nothing is done! (invalid index)")
             return
 
-        if vname is None:
-            vname = "V{:d}".format(ii)
-        self.varname[ii] = vname
+        if varname is None:
+            varname = "V{:d}".format(ii)
+        self.varname[ii] = varname
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_dimension(self, nx, ny, nz, newv=np.nan):
+    def set_dimension(self, nx, ny, nz, newval=np.nan):
         """
         Sets dimensions and update shape of values array (by possible
         truncation or extension):
 
         :param nx, ny, nz:  (int) dimensions (number of cells) in x, y, z
                                 direction
-        :param newv:        (float) new value to insert if the array of values
+        :param newval:      (float) new value to insert if the array of values
                                 has to be extended
         """
 
@@ -118,7 +122,7 @@ class Img(object):
             if n > self.val.shape[i]:
                 s = [j for j in self.val.shape]
                 s[i] = n - self.val.shape[i]
-                self.val = np.concatenate((self.val, newv * np.ones(s)), i)
+                self.val = np.concatenate((self.val, newval * np.ones(s)), i)
 
         # Update nx, ny, nz
         self.nx = nx
@@ -128,7 +132,9 @@ class Img(object):
 
     # ------------------------------------------------------------------------
     def set_spacing(self, sx, sy, sz):
-        """Sets cell size (sx, sy, sz)."""
+        """
+        Sets cell size (sx, sy, sz).
+        """
         self.sx = float(sx)
         self.sy = float(sy)
         self.sz = float(sz)
@@ -136,16 +142,20 @@ class Img(object):
 
     # ------------------------------------------------------------------------
     def set_origin(self, ox, oy, oz):
-        """Sets grid origin (ox, oy, oz)."""
+        """
+        Sets grid origin (ox, oy, oz).
+        """
         self.ox = float(ox)
         self.oy = float(oy)
         self.oz = float(oz)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_grid(self, nx, ny, nz, sx, sy, sz, ox, oy, oz, newv=np.nan):
-        """Sets grid (dimension, cell size, and origin)."""
-        self.set_dimension(nx, ny, nz, newv)
+    def set_grid(self, nx, ny, nz, sx, sy, sz, ox, oy, oz, newval=np.nan):
+        """
+        Sets grid (dimension, cell size, and origin).
+        """
+        self.set_dimension(nx, ny, nz, newval)
         self.set_spacing(sx, sy, sz)
         self.set_origin(ox, oy, oz)
     # ------------------------------------------------------------------------
@@ -156,22 +166,22 @@ class Img(object):
                iy0=0, iy1=None,
                iz0=0, iz1=None,
                iv0=0, iv1=None,
-               newv=np.nan,
-               newvname=""):
+               newval=np.nan,
+               newvarname=""):
         """
         Resizes the image.
         According to the x(, y, z) direction, the slice from ix0 to ix1-1
         (iy0 to iy1-1, iz0 to iz1-1) is considered (if None, ix1(, iy1, iz1)
         is set to nx(, ny, nz)), deplacing the origin from ox(, oy, oz)
-        to ox+ix0*sx(, oy+iy0*sy, oz+iz0*sz), and inserting value newv at
+        to ox+ix0*sx(, oy+iy0*sy, oz+iz0*sz), and inserting value newval at
         possible new locations:
 
-        :param ix0, ix1: (int or None) indices for x direction ix0 < ix1
-        :param iy0, iy1: (int or None) indices for y direction iy0 < iy1
-        :param iz0, iz1: (int or None) indices for z direction iz0 < iz1
-        :param iv0, iv1: (int or None) indices for v direction iv0 < iv1
-        :param newv:     (float) new value to insert at possible new location
-        :param newvname: (string) prefix for new variable name(s)
+        :param ix0, ix1:    (int or None) indices for x direction ix0 < ix1
+        :param iy0, iy1:    (int or None) indices for y direction iy0 < iy1
+        :param iz0, iz1:    (int or None) indices for z direction iz0 < iz1
+        :param iv0, iv1:    (int or None) indices for v direction iv0 < iv1
+        :param newval:      (float) new value to insert at possible new location
+        :param newvarname:  (string) prefix for new variable name(s)
         """
 
         if ix1 is None:
@@ -221,18 +231,15 @@ class Img(object):
             s1 = [j for j in self.val.shape]
             s0[i] = n0[i]
             s1[i] = n1[i]
-            self.val = np.concatenate((newv * np.ones(s0),
-                                       self.val,
-                                       newv * np.ones(s1)),
-                                      i)
+            self.val = np.concatenate((newval * np.ones(s0), self.val, newval * np.ones(s1)), i)
 
         # Update varname
         # n0 = -np.min([iv0, 0])           # number of new variable(s) to prepend
         # n1 = np.max([iv1-initshape[0], 0]) # number of new variable(s) to append
-        self.varname = ['newvname' + '{}'.format(i) for i in range(n0[0])] +\
+        self.varname = ['newvarname' + '{}'.format(i) for i in range(n0[0])] +\
                        [self.varname[i]
                         for i in range(np.max([iv0, 0]), np.min([iv1, initShape[0]]))] +\
-                       ['newvname' + '{}'.format(n0[0]+i) for i in range(n1[0])]
+                       ['newvarname' + '{}'.format(n0[0]+i) for i in range(n1[0])]
 
         # Update nx, ny, nz, nv
         self.nx = self.val.shape[3]
@@ -247,19 +254,16 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def insert_var(self, v=np.nan, vname=None, ind=0):
+    def insert_var(self, val=np.nan, varname=None, ind=0):
         """
         Inserts a variable at a given index:
 
-        :param v:   (int/float or tuple/list/ndarray) value(s) of the new
-                        variable:
-                        if type is int/float: constant variable
-                        if tuple/list/ndarray: must contain nx*ny*nz values,
-                            which are inserted in the image (after reshape
-                            if needed)
-        :param vname:   (string or None) name of the insterted variable (set by
-                            default if None)
-        :param ind: (int) index where the new variable is inserted
+        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
+                            variable:
+                            if type is int/float: constant variable
+                            if tuple/list/ndarray: must contain nx*ny*nz values
+        :param varname: (string or None) name of the new variable
+        :param ind:     (int) index where the new variable is inserted
         """
 
         if ind < 0:
@@ -271,11 +275,11 @@ class Img(object):
             print("Nothing is done! (invalid index)")
             return
 
-        valarr = np.asarray(v, dtype=float) # numpy.ndarray (possibly 0-dimensional)
+        valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
-            print ('ERROR: v have not an acceptable size')
+            print ('ERROR: val have not an acceptable size')
             return
 
         # Extend val
@@ -284,35 +288,34 @@ class Img(object):
                                    self.val[ii:,...]),
                                   0)
         # Extend varname list
-        if vname is None:
-            vname = "V{:d}".format(self.nv)
-        self.varname.insert(ii,vname)
+        if varname is None:
+            varname = "V{:d}".format(self.nv)
+        self.varname.insert(ii, varname)
 
         # Update nv
         self.nv = self.nv + 1
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def append_var(self, v=np.nan, vname=None):
+    def append_var(self, val=np.nan, varname=None):
         """
         Appends one variable:
 
-        :param v:   (int/float or tuple/list/ndarray) value(s) of the new
-                        variable:
-                        if type is int/float: constant variable
-                        if tuple/list/ndarray: must contain nx*ny*nz values,
-                            which are appended in the image (after reshape
-                            if needed)
-        :param vname:   (string or None) name of the appended variable (set by
-                            default if None)
+        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
+                            variable:
+                            if type is int/float: constant variable
+                            if tuple/list/ndarray: must contain nx*ny*nz values
+        :param varname: (string or None) name of the new variable
         """
 
-        self.insert_var(v=v, vname=vname, ind=self.nv)
+        self.insert_var(val=val, varname=varname, ind=self.nv)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
     def remove_var(self, ind=-1):
-        """Removes one variable (of given index)."""
+        """
+        Removes one variable (of given index).
+        """
         if ind < 0:
             ii = self.nv + ind
         else:
@@ -336,7 +339,9 @@ class Img(object):
 
     # ------------------------------------------------------------------------
     def remove_allvar(self):
-        """Removes all variables."""
+        """
+        Removes all variables.
+        """
 
         # Update val array
         self.val = np.zeros((0, self.nz, self.ny, self.nx))
@@ -349,18 +354,16 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_var(self, v=np.nan, vname=None, ind=-1):
+    def set_var(self, val=np.nan, varname=None, ind=-1):
         """
         Sets one variable (of given index):
 
-        :param v:   (int/float or tuple/list/ndarray) value(s) of the new
-                        variable:
-                        if type is int/float: constant variable
-                        if tuple/list/ndarray: must contain nx*ny*nz values,
-                            which are appended in the image (after reshape
-                            if needed)
-        :param vname:(string) variable name: set only if not None
-        :param ind: (int) index of the variable to be set
+        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
+                            variable:
+                            if type is int/float: constant variable
+                            if tuple/list/ndarray: must contain nx*ny*nz values
+        :param varname: (string or None) name of the variable
+        :param ind:     (int) index where the variable to be set
         """
 
         if ind < 0:
@@ -372,19 +375,19 @@ class Img(object):
             print("Nothing is done! (invalid index)")
             return
 
-        valarr = np.asarray(v, dtype=float) # numpy.ndarray (possibly 0-dimensional)
+        valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
-            print ('ERROR: v have not an acceptable size')
+            print ('ERROR: val have not an acceptable size')
             return
 
         # Set variable of index ii
         self.val[ii,...] = valarr.reshape(self.nz, self.ny, self.nx)
 
         # Set variable name of index ii
-        if vname is not None:
-            self.varname[ii] = vname
+        if varname is not None:
+            self.varname[ii] = varname
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -393,7 +396,7 @@ class Img(object):
         Extracts variable(s) (of given index-es):
 
         :param indlist: (int or list of ints) index or list of index-es of the
-                        variable(s) to be extracted (kept)
+                            variable(s) to be extracted (kept)
         """
 
         indlist = list(np.asarray(indlist).flatten())
@@ -631,15 +634,21 @@ class Img(object):
         return (self.oz + self.nz * self.sz)
 
     def x(self):
-        """Returns 1-dimensional array of x coordinates."""
+        """
+        Returns 1-dimensional array of x coordinates.
+        """
         return (self.ox + 0.5 * self.sx + self.sx * np.arange(self.nx))
 
     def y(self):
-        """Returns 1-dimensional array of y coordinates."""
+        """
+        Returns 1-dimensional array of y coordinates.
+        """
         return (self.oy + 0.5 * self.sy + self.sy * np.arange(self.ny))
 
     def z(self):
-        """Returns 1-dimensional array of z coordinates."""
+        """
+        Returns 1-dimensional array of z coordinates.
+        """
         return (self.oz + 0.5 * self.sz + self.sz * np.arange(self.nz))
 
     def vmin(self):
@@ -662,26 +671,25 @@ class PointSet(object):
 
     def __init__(self,
                  npt=0,
-                 nv=0, v=np.nan, varname=None,
+                 nv=0, val=np.nan, varname=None,
                  name=""):
         """
         Inits function for the class:
 
-        :param v:   (int/float or tuple/list/ndarray) value(s) of the new
+        :param val: (int/float or tuple/list/ndarray) value(s) of the new
                         variable:
                         if type is int/float: constant variable
-                        if tuple/list/ndarray: must contain nv*nx*ny*nz values,
-                            which are put in the image (after reshape if needed)
+                        if tuple/list/ndarray: must contain npt values
         """
 
         self.npt = npt
         self.nv = nv
 
-        valarr = np.asarray(v, dtype=float) # numpy.ndarray (possibly 0-dimensional)
+        valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(npt*nv)
         elif valarr.size != npt*nv:
-            print ('ERROR: v have not an acceptable size')
+            print ('ERROR: val have not an acceptable size')
             return
 
         self.val = valarr.reshape(nv, npt)
@@ -714,7 +722,9 @@ class PointSet(object):
 
     # ------------------------------------------------------------------------
     def set_default_varname(self):
-        """Sets default variable names: 'X', 'Y', 'Z', 'V0', 'V1', ..."""
+        """
+        Sets default variable names: 'X', 'Y', 'Z', 'V0', 'V1', ...
+        """
 
         self.varname = []
 
@@ -733,9 +743,11 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_varname(self, vname=None, ind=-1):
-        """Sets name of the variable of the given index (if vname is None:
-        'V' appended by the variable index is used as vname)."""
+    def set_varname(self, varname=None, ind=-1):
+        """
+        Sets name of the variable of the given index (if varname is None:
+        'V' appended by the variable index is used as varname).
+        """
 
         if ind < 0:
             ii = self.nv + ind
@@ -746,25 +758,22 @@ class PointSet(object):
             print("Nothing is done! (invalid index)")
             return
 
-        if vname is None:
-            vname = "V{:d}".format(ii)
-        self.varname[ii] = vname
+        if varname is None:
+            varname = "V{:d}".format(ii)
+        self.varname[ii] = varname
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def insert_var(self, v=np.nan, vname=None, ind=0):
+    def insert_var(self, val=np.nan, varname=None, ind=0):
         """
         Inserts a variable at a given index:
 
-        :param v:   (int/float or tuple/list/ndarray) value(s) of the new
-                        variable:
-                        if type is int/float: constant variable
-                        if tuple/list/ndarray: must contain npt values,
-                            which are inserted in the image (after reshape
-                            if needed)
-        :param vname:   (string or None) name of the insterted variable (set by
-                            default if None)
-        :param ind: (int) index where the new variable is inserted
+        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
+                            variable:
+                            if type is int/float: constant variable
+                            if tuple/list/ndarray: must contain npt values
+        :param varname: (string or None) name of the new variable
+        :param ind:     (int) index where the variable to be set
         """
 
         if ind < 0:
@@ -776,11 +785,11 @@ class PointSet(object):
             print("Nothing is done! (invalid index)")
             return
 
-        valarr = np.asarray(v, dtype=float) # numpy.ndarray (possibly 0-dimensional)
+        valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
-            print ('ERROR: v have not an acceptable size')
+            print ('ERROR: val have not an acceptable size')
             return
 
         # Extend val
@@ -789,35 +798,34 @@ class PointSet(object):
                                    self.val[ii:,...]),
                                   0)
         # Extend varname list
-        if vname is None:
-            vname = "V{:d}".format(self.nv)
-        self.varname.insert(ii,vname)
+        if varname is None:
+            varname = "V{:d}".format(self.nv)
+        self.varname.insert(ii, varname)
 
         # Update nv
         self.nv = self.nv + 1
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def append_var(self, v=np.nan, vname=None):
+    def append_var(self, val=np.nan, varname=None):
         """
         Appends one variable:
 
-        :param v:   (int/float or tuple/list/ndarray) value(s) of the new
-                        variable:
-                        if type is int/float: constant variable
-                        if tuple/list/ndarray: must contain npt values,
-                            which are appended in the image (after reshape
-                            if needed)
-        :param vname:   (string or None) name of the appended variable (set by
-                            default if None)
+        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
+                            variable:
+                            if type is int/float: constant variable
+                            if tuple/list/ndarray: must contain npt values
+        :param varname: (string or None) name of the new variable
         """
 
-        self.insert_var(v=v, vname=vname, ind=self.nv)
+        self.insert_var(val=val, varname=varname, ind=self.nv)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
     def remove_var(self, ind=-1):
-        """Removes one variable (of given index)."""
+        """
+        Removes one variable (of given index).
+        """
 
         if ind < 0:
             ii = self.nv + ind
@@ -842,7 +850,9 @@ class PointSet(object):
 
     # ------------------------------------------------------------------------
     def remove_allvar(self):
-        """Removes all variables."""
+        """
+        Removes all variables.
+        """
 
         # Update val array
         self.val = np.zeros((0, self.npt))
@@ -855,18 +865,16 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_var(self, v=np.nan, vname=None, ind=-1):
+    def set_var(self, val=np.nan, varname=None, ind=-1):
         """
         Sets one variable (of given index):
 
-        :param v:   (int/float or tuple/list/ndarray) value(s) of the new
-                        variable:
-                        if type is int/float: constant variable
-                        if tuple/list/ndarray: must contain npt values,
-                            which are appended in the image (after reshape
-                            if needed)
-        :param vname:(string) variable name: set only if not None
-        :param ind: (int) index of the variable to be set
+        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
+                            variable:
+                            if type is int/float: constant variable
+                            if tuple/list/ndarray: must contain npt values
+        :param varname: (string or None) name of the new variable
+        :param ind:     (int) index where the variable to be set
         """
 
         if ind < 0:
@@ -878,19 +886,19 @@ class PointSet(object):
             print("Nothing is done! (invalid index)")
             return
 
-        valarr = np.asarray(v, dtype=float) # numpy.ndarray (possibly 0-dimensional)
+        valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
-            print ('ERROR: v have not an acceptable size')
+            print ('ERROR: val have not an acceptable size')
             return
 
         # Set variable of index ii
         self.val[ii,...] = valarr.reshape(self.npt)
 
         # Set variable name of index ii
-        if vname is not None:
-            self.varname[ii] = vname
+        if varname is not None:
+            self.varname[ii] = varname
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -899,7 +907,7 @@ class PointSet(object):
         Extracts variable(s) (of given index-es):
 
         :param indlist: (int or list of ints) index or list of index-es of the
-                        variable(s) to be extracted (kept)
+                            variable(s) to be extracted (kept)
         """
 
         indlist = list(np.asarray(indlist).flatten())
@@ -1021,7 +1029,7 @@ def copyImg(im, varIndList=None):
     if varIndList is not None:
         # Check if each index is valid
         if sum([iv in range(im.nv) for iv in varIndList]) != len(varIndList):
-            print("Error: invalid index-es")
+            print("ERROR: invalid index-es")
             return
     else:
         varIndList = range(im.nv)
@@ -1033,7 +1041,7 @@ def copyImg(im, varIndList=None):
                 name=im.name)
 
     for i, iv in enumerate(varIndList):
-        imOut.set_var(v=im.val[iv,...], vname=im.varname[iv], ind=i)
+        imOut.set_var(val=im.val[iv,...], varname=im.varname[iv], ind=i)
 
     return (imOut)
 # ----------------------------------------------------------------------------
@@ -1062,7 +1070,7 @@ def readImageGslib(filename, missing_value=None):
 
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("Error: invalid filename ({})".format(filename))
+        print("ERROR: invalid filename ({})".format(filename))
         return
 
     # Open the file in read mode
@@ -1093,7 +1101,7 @@ def readImageGslib(filename, missing_value=None):
     if len(g) >= 6:
         sx, sy, sz = [float(n) for n in g[3:6]]
 
-    if len(g) >= 6:
+    if len(g) >= 9:
         ox, oy, oz = [float(n) for n in g[6:9]]
 
     # Replace missing_value by np.nan
@@ -1119,7 +1127,7 @@ def readImageVtk(filename, missing_value=None):
 
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("Error: invalid filename ({})".format(filename))
+        print("ERROR: invalid filename ({})".format(filename))
         return
 
     # Open the file in read mode
@@ -1166,7 +1174,7 @@ def readImagePgm(filename, missing_value=None, varname=['pgmValue']):
 
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("Error: invalid filename ({})".format(filename))
+        print("ERROR: invalid filename ({})".format(filename))
         return
 
     # Open the file in read mode
@@ -1174,7 +1182,7 @@ def readImagePgm(filename, missing_value=None, varname=['pgmValue']):
         # Read 1st line
         line = ff.readline()
         if line[:2] != 'P2':
-            print("Error: invalid format (first line)")
+            print("ERROR: invalid format (first line)")
             return
 
         # Read 2nd line
@@ -1189,7 +1197,7 @@ def readImagePgm(filename, missing_value=None, varname=['pgmValue']):
         # Read next line
         line = ff.readline()
         if line[:3] != '255':
-            print("Error: invalid format (number of colors / max val)")
+            print("ERROR: invalid format (number of colors / max val)")
             return
 
         # Read the rest of the file
@@ -1230,7 +1238,7 @@ def readImagePpm(filename, missing_value=None, varname=['ppmR', 'ppmG', 'ppmB'])
 
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("Error: invalid filename ({})".format(filename))
+        print("ERROR: invalid filename ({})".format(filename))
         return
 
     # Open the file in read mode
@@ -1238,7 +1246,7 @@ def readImagePpm(filename, missing_value=None, varname=['ppmR', 'ppmG', 'ppmB'])
         # Read 1st line
         line = ff.readline()
         if line[:2] != 'P3':
-            print("Error: invalid format (first line)")
+            print("ERROR: invalid format (first line)")
             return
 
         # Read 2nd line
@@ -1253,7 +1261,7 @@ def readImagePpm(filename, missing_value=None, varname=['ppmR', 'ppmG', 'ppmB'])
         # Read next line
         line = ff.readline()
         if line[:3] != '255':
-            print("Error: invalid format (number of colors / max val)")
+            print("ERROR: invalid format (number of colors / max val)")
             return
 
         # Read the rest of the file
@@ -1437,7 +1445,9 @@ def writeImagePpm(im, filename, missing_value=None, fmt="%.10g"):
 
 # ----------------------------------------------------------------------------
 def isImageDimensionEqual (im1, im2):
-    """Checks if grid dimensions of two images are equal."""
+    """
+    Checks if grid dimensions of two images are equal.
+    """
 
     return (im1.nx == im2.nx and im1.ny == im2.ny and im1.nz == im2.nz)
 # ----------------------------------------------------------------------------
@@ -1462,27 +1472,27 @@ def gatherImages (imlist, varInd=None, remVarFromInput=False):
 
     for i in range(1,len(imlist)):
         if not isImageDimensionEqual(imlist[0], imlist[i]):
-            print("Error: grid dimensions differ, nothing done!")
+            print("ERROR: grid dimensions differ, nothing done!")
             return
 
     if varInd is not None:
         if varInd < 0:
-            print("Error: invalid index (negative), nothing done!")
+            print("ERROR: invalid index (negative), nothing done!")
             return
 
         for i in range(len(imlist)):
             if varInd >= imlist[i].nv:
-                print("Error: invalid index, nothing done!")
+                print("ERROR: invalid index, nothing done!")
                 return
 
     im = Img(nx=imlist[0].nx, ny=imlist[0].ny, nz=imlist[0].nz,
              sx=imlist[0].sx, sy=imlist[0].sy, sz=imlist[0].sz,
              ox=imlist[0].ox, oy=imlist[0].oy, oz=imlist[0].oz,
-             nv=0, v=0.0)
+             nv=0, val=0.0)
 
     if varInd is not None:
         for i in range(len(imlist)):
-            im.append_var(v=imlist[i].val[varInd,...])
+            im.append_var(val=imlist[i].val[varInd,...])
 
             if remVarFromInput:
                 imlist[i].remove_var(varInd)
@@ -1490,7 +1500,7 @@ def gatherImages (imlist, varInd=None, remVarFromInput=False):
     else:
         for i in range(len(imlist)):
             for j in range(imlist[i].nv):
-                im.append_var(v=imlist[i].val[j,...])
+                im.append_var(val=imlist[i].val[j,...])
 
             if remVarFromInput:
                 imlist[i].remove_allvar()
@@ -1529,13 +1539,13 @@ def imageContStat (im, op='mean', **kwargs):
     elif op == 'var':
         func = np.nanvar
     else:
-        print("Error: unkown operation {}, nothing done!".format(op))
+        print("ERROR: unkown operation {}, nothing done!".format(op))
         return
 
     imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
              sx=im.sx, sy=im.sy, sz=im.sz,
              ox=im.ox, oy=im.oy, oz=im.oz,
-             nv=0, v=0.0)
+             nv=0, val=0.0)
 
     imOut.append_var(func(im.val.reshape(im.nv,-1), axis=0, **kwargs))
 
@@ -1563,7 +1573,7 @@ def imageCategProp (im, categ):
     imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
                 sx=im.sx, sy=im.sy, sz=im.sz,
                 ox=im.ox, oy=im.oy, oz=im.oz,
-                nv=0, v=0.0)
+                nv=0, val=0.0)
 
     for code in categarr:
         x = im.val.reshape(im.nv,-1) == code
@@ -1595,19 +1605,19 @@ def imageEntropy (im, varIndList=None):
     if varIndList is not None:
         # Check if each index is valid
         if sum([iv in range(im.nv) for iv in varIndList]) != len(varIndList):
-            print("Error: invalid index-es")
+            print("ERROR: invalid index-es")
             return
     else:
         varIndList = range(im.nv)
 
     if len(varIndList) < 2:
-        print("Error: at least 2 indexes should be given")
+        print("ERROR: at least 2 indexes should be given")
         return
 
     imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
                 sx=im.sx, sy=im.sy, sz=im.sz,
                 ox=im.ox, oy=im.oy, oz=im.oz,
-                nv=1, v=np.nan,
+                nv=1, val=np.nan,
                 name=im.name)
 
     t = 1. / np.log(len(varIndList))
@@ -1651,15 +1661,15 @@ def copyPointSet(ps, varIndList=None):
     if varIndList is not None:
         # Check if each index is valid
         if sum([iv in range(ps.nv) for iv in varIndList]) != len(varIndList):
-            print("Error: invalid index-es")
+            print("ERROR: invalid index-es")
             return
     else:
         varIndList = range(ps.nv)
 
-    psOut = PointSet(npt=ps.npt, nv=len(varIndList), v=0.0, name=ps.name)
+    psOut = PointSet(npt=ps.npt, nv=len(varIndList), val=0.0, name=ps.name)
 
     for i, iv in enumerate(varIndList):
-        psOut.set_var(v=ps.val[iv,...], vname=ps.varname[iv], ind=i)
+        psOut.set_var(val=ps.val[iv,...], varname=ps.varname[iv], ind=i)
 
     return (psOut)
 # ----------------------------------------------------------------------------
@@ -1691,7 +1701,7 @@ def readPointSetGslib(filename, missing_value=None):
 
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("Error: invalid filename ({})".format(filename))
+        print("ERROR: invalid filename ({})".format(filename))
         return
 
     # Open the file in read mode
@@ -1719,7 +1729,7 @@ def readPointSetGslib(filename, missing_value=None):
         np.putmask(valarr, valarr == missing_value, np.nan)
 
     # Set point set
-    ps = PointSet(npt=npt, nv=nv, v=valarr.T, varname=varname)
+    ps = PointSet(npt=npt, nv=nv, val=valarr.T, varname=varname)
 
     return (ps)
 # ----------------------------------------------------------------------------
@@ -1773,7 +1783,7 @@ def imageToPointSet(im):
     """
 
     # Initialize point set
-    ps = PointSet(npt=im.nxyz(), nv=3+im.nv, v=0.0)
+    ps = PointSet(npt=im.nxyz(), nv=3+im.nv, val=0.0)
 
     # Set x-coordinate
     t = im.x()
@@ -1781,7 +1791,7 @@ def imageToPointSet(im):
     for i in range(im.nyz()):
         v.append(t)
 
-    ps.set_var(v=v, vname='X', ind=0)
+    ps.set_var(val=v, varname='X', ind=0)
 
     # Set y-coordinate
     t = np.repeat(im.y(), im.nx)
@@ -1789,15 +1799,15 @@ def imageToPointSet(im):
     for i in range(im.nz):
         v.append(t)
 
-    ps.set_var(v=v, vname='Y', ind=1)
+    ps.set_var(val=v, varname='Y', ind=1)
 
     # Set z-coordinate
     v = np.repeat(im.z(), im.nxy())
-    ps.set_var(v=v, vname='Z', ind=2)
+    ps.set_var(val=v, varname='Z', ind=2)
 
     # Set next variable(s)
     for i in range(im.nv):
-        ps.set_var(v=im.val[i,...], vname=im.varname[i], ind=3+i)
+        ps.set_var(val=im.val[i,...], varname=im.varname[i], ind=3+i)
 
     return (ps)
 # ----------------------------------------------------------------------------
@@ -1824,14 +1834,14 @@ def pointSetToImage(ps, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0
     """
 
     if ps.nv < 3:
-        print("Error: invalid number of variable (should be > 3)")
+        print("ERROR: invalid number of variable (should be > 3)")
         return
 
     # Initialize image
     im = Img(nx=nx, ny=ny, nz=nz,
              sx=sx, sy=sy, sz=sz,
              ox=ox, oy=oy, oz=oz,
-             nv=ps.nv-3, v=np.nan,
+             nv=ps.nv-3, val=np.nan,
              varname=[ps.varname[3+i] for i in range(ps.nv-3)])
 
     # Get index of point in the image
@@ -1867,7 +1877,7 @@ def pointSetToImage(ps, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0
                             iz < 0, iz >= nz)), 0)
 
     if not job and sum(iout) > 0:
-        print ("Error: point out of the image grid!")
+        print ("ERROR: point out of the image grid!")
         return
 
     # Set values in the image

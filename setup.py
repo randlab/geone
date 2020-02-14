@@ -5,7 +5,7 @@ with open("README.md", "r") as file_handle:
     long_description = file_handle.read()
 
 if platform.system() == 'Windows':
-   deesse_lib = ['_deesse.pyd', 'rlm1212.dll', 'vcruntime140.dll']
+   deesse_lib = ['_deesse.pyd', 'rlm1302.dll', 'vcruntime140.dll']
 else:
    deesse_lib = ['_deesse.so']
 
