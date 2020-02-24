@@ -633,9 +633,21 @@ class DeesseInput(object):
 
         outputPathIndexFlag:
                     (bool) indicates if path index maps are retrieved in output
+                        path index map: index in the simulation path
 
         outputErrorFlag:
                     (bool) indicates if error maps are retrieved in output
+                        error map: error for the retained candidate
+
+        outputTiGridNodeIndexFlag:
+                    (bool) indicates if TI grid node index maps are retrieved in
+                        TI grid node index map: index of the grid node of the
+                        retained candidate in the TI
+
+        outputTiIndexFlag:
+                    (bool) indicates if TI index maps are retrieved in output
+                        TI index map: index of the TI used (makes sense if
+                        number of TIs (nTI) is greater than 1)
 
         outputReportFlag:
                     (bool) indicates if a report file will be written
@@ -943,6 +955,8 @@ class DeesseInput(object):
                  nv=0, varname=None, outputVarFlag=None,
                  outputPathIndexFlag=False, #outputPathIndexFileName=None,
                  outputErrorFlag=False, #outputErrorFileName=None,
+                 outputTiGridNodeIndexFlag=False, #outputTiGridNodeIndexFileName=None,
+                 outputTiIndexFlag=False, #outputTiIndexFileName=None,
                  outputReportFlag=False, outputReportFileName='ds.log',
                  nTI=0, simGridAsTiFlag=None, TI=None, pdfTI=None,
                  dataImage=None, dataPointSet=None,
@@ -1023,6 +1037,12 @@ class DeesseInput(object):
 
         self.outputErrorFlag = outputErrorFlag
         # self.outputErrorFileName = None # no output file!
+
+        self.outputTiGridNodeIndexFlag = outputTiGridNodeIndexFlag
+        # self.outputTiGridNodeIndexFileName = None # no output file!
+
+        self.outputTiIndexFlag = outputTiIndexFlag
+        # self.outputTiIndexFileName = None # no output file!
 
         self.outputReportFlag = outputReportFlag
         self.outputReportFileName = outputReportFileName
@@ -1697,7 +1717,7 @@ def img_C2py(im_c):
     im_py = Img(nx=im_c.grid.nx, ny=im_c.grid.ny, nz=im_c.grid.nz,
                 sx=im_c.grid.sx, sy=im_c.grid.sy, sz=im_c.grid.sz,
                 ox=im_c.grid.ox, oy=im_c.grid.oy, oz=im_c.grid.oz,
-                nv=im_c.nvar, v=v, varname=varname)
+                nv=im_c.nvar, val=v, varname=varname)
 
     np.putmask(im_py.val, im_py.val == deesse.MPDS_MISSING_VALUE, np.nan)
 
@@ -1768,7 +1788,7 @@ def ps_C2py(ps_c):
     v = np.hstack(coord,v)
 
     ps_py = img.PointSet(npt=ps_c.npoint,
-                         nv=ps_c.nvar+3, v=v, varname=varname)
+                         nv=ps_c.nvar+3, val=v, varname=varname)
 
     np.putmask(ps_py.val, ps_py.val == deesse.MPDS_MISSING_VALUE, np.nan)
 
@@ -1841,7 +1861,7 @@ def deesse_input_py2C(deesse_input):
     im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
              sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
              ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-             nv=deesse_input.nv, v=deesse.MPDS_MISSING_VALUE,
+             nv=deesse_input.nv, val=deesse.MPDS_MISSING_VALUE,
              varname=deesse_input.varname)
 
     # # ... integrate data image to im
@@ -1859,7 +1879,7 @@ def deesse_input_py2C(deesse_input):
     #                 return
     #
     #             iv = np.where(tmp)[0][0]
-    #             im.set_var(v=dataIm.val[j,...], ind=iv)
+    #             im.set_var(val=dataIm.val[j,...], ind=iv)
 
     # ... convert im from python to C
     mpds_siminput.simImage = img_py2C(im)
@@ -1893,6 +1913,22 @@ def deesse_input_py2C(deesse_input):
 
     # mpds_siminput.outputErrorFileName: not used (NULL: no output file!)
 
+    # mpds_siminput.outputTiGridNodeIndexFlag
+    if deesse_input.outputTiGridNodeIndexFlag:
+        mpds_siminput.outputTiGridNodeIndexFlag = deesse.TRUE
+    else:
+        mpds_siminput.outputTiGridNodeIndexFlag = deesse.FALSE
+
+    # mpds_siminput.outputTiGridNodeIndexFileName: not used (NULL: no output file!)
+
+    # mpds_siminput.outputTiIndexFlag
+    if deesse_input.outputTiIndexFlag:
+        mpds_siminput.outputTiIndexFlag = deesse.TRUE
+    else:
+        mpds_siminput.outputTiIndexFlag = deesse.FALSE
+
+    # mpds_siminput.outputTiIndexFileName: not used (NULL: no output file!)
+
     # mpds_siminput.outputReportFlag
     if deesse_input.outputReportFlag:
         mpds_siminput.outputReportFlag = deesse.TRUE
@@ -1917,7 +1953,7 @@ def deesse_input_py2C(deesse_input):
         im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                  sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                  ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                 nv=deesse_input.nTI, v=deesse_input.pdfTI)
+                 nv=deesse_input.nTI, val=deesse_input.pdfTI)
         mpds_siminput.pdfTrainImage = img_py2C(im)
 
     # mpds_siminput.ndataImage and mpds_siminput.dataImage
@@ -1948,7 +1984,7 @@ def deesse_input_py2C(deesse_input):
         im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                  sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                  ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                 nv=1, v=deesse_input.mask)
+                 nv=1, val=deesse_input.mask)
         mpds_siminput.maskImage = img_py2C(im)
 
     # Homothety:
@@ -1963,7 +1999,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.homothetyXRatio)
+                     nv=1, val=deesse_input.homothetyXRatio)
             mpds_siminput.homothetyXRatioImage = img_py2C(im)
 
         else:
@@ -1977,7 +2013,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.homothetyYRatio)
+                     nv=1, val=deesse_input.homothetyYRatio)
             mpds_siminput.homothetyYRatioImage = img_py2C(im)
 
         else:
@@ -1991,7 +2027,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.homothetyZRatio)
+                     nv=1, val=deesse_input.homothetyZRatio)
             mpds_siminput.homothetyZRatioImage = img_py2C(im)
 
         else:
@@ -2006,7 +2042,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.homothetyXRatio)
+                     nv=2, val=deesse_input.homothetyXRatio)
             mpds_siminput.homothetyXRatioImage = img_py2C(im)
 
         else:
@@ -2020,7 +2056,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.homothetyYRatio)
+                     nv=2, val=deesse_input.homothetyYRatio)
             mpds_siminput.homothetyYRatioImage = img_py2C(im)
 
         else:
@@ -2034,7 +2070,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.homothetyZRatio)
+                     nv=2, val=deesse_input.homothetyZRatio)
             mpds_siminput.homothetyZRatioImage = img_py2C(im)
 
         else:
@@ -2055,7 +2091,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.rotationAzimuth)
+                     nv=1, val=deesse_input.rotationAzimuth)
             mpds_siminput.rotationAzimuthImage = img_py2C(im)
 
         else:
@@ -2069,7 +2105,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.rotationDip)
+                     nv=1, val=deesse_input.rotationDip)
             mpds_siminput.rotationDipImage = img_py2C(im)
 
         else:
@@ -2083,7 +2119,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.rotationPlunge)
+                     nv=1, val=deesse_input.rotationPlunge)
             mpds_siminput.rotationPlungeImage = img_py2C(im)
 
         else:
@@ -2098,7 +2134,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.rotationAzimuth)
+                     nv=2, val=deesse_input.rotationAzimuth)
             mpds_siminput.rotationAzimuthImage = img_py2C(im)
 
         else:
@@ -2112,7 +2148,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.rotationDip)
+                     nv=2, val=deesse_input.rotationDip)
             mpds_siminput.rotationDipImage = img_py2C(im)
 
         else:
@@ -2126,7 +2162,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.rotationPlunge)
+                     nv=2, val=deesse_input.rotationPlunge)
             mpds_siminput.rotationPlungeImage = img_py2C(im)
 
         else:
@@ -2363,7 +2399,7 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=sp.nclass, v=sp.localPdf)
+                     nv=sp.nclass, val=sp.localPdf)
             sp_c.localPdfImage = img_py2C(im)
 
             # ... localPdfSupportRadius
@@ -2651,7 +2687,8 @@ def deesse_output_C2py(mpds_simoutput):
 
     :param mpds_simoutput:  (MPDS_SIMOUTPUT *) deesse output - (C struct)
 
-    :return deesse_output:  (dictionary) {'sim':sim, 'path':path, 'error':error}
+    :return deesse_output:  (dictionary) {'sim':sim, 'path':path, 'error':error,
+        'tiGridNode':tiGridNode, 'tiIndex':tiIndex}
         With nreal = mpds_simOutput->nreal:
         sim:    (1-dimensional array of Img (class) of size nreal or None)
                     sim[i]: i-th realisation
@@ -2665,10 +2702,20 @@ def deesse_output_C2py(mpds_simoutput):
                     error[i]: error map for the i-th realisation
                               (mpds_simoutput->outputErrorImage[i])
                     (path is None if mpds_simoutput->outputErrorImage is NULL)
+        tiGridNode:
+                (1-dimensional array of Img (class) of size nreal or None)
+                    tiGridNode[i]: TI grid node index map for the i-th realisation
+                             (mpds_simoutput->outputTiGridNodeIndexImage[i])
+                    (path is None if mpds_simoutput->outputTiGridNodeIndexImage is NULL)
+        tiIndex:
+                (1-dimensional array of Img (class) of size nreal or None)
+                    tiGridNode[i]: TI index map for the i-th realisation
+                             (mpds_simoutput->outputTiIndexImage[i])
+                    (path is None if mpds_simoutput->outputTiIndexImage is NULL)
     """
 
     # Initialization
-    sim, path, error = None, None, None
+    sim, path, error, tiGridNode, tiIndex = None, None, None, None, None
 
     if mpds_simoutput.nreal:
         nreal = mpds_simoutput.nreal
@@ -2684,7 +2731,7 @@ def deesse_output_C2py(mpds_simoutput):
                 sim.append(Img(nx=im.nx, ny=im.ny, nz=im.nz,
                                sx=im.sx, sy=im.sy, sz=im.sz,
                                ox=im.ox, oy=im.oy, oz=im.oz,
-                               nv=nv, v=im.val[k:(k+nv),...],
+                               nv=nv, val=im.val[k:(k+nv),...],
                                varname=im.varname[k:(k+nv)]))
                 k = k + nv
 
@@ -2701,7 +2748,7 @@ def deesse_output_C2py(mpds_simoutput):
                 path.append(Img(nx=im.nx, ny=im.ny, nz=im.nz,
                                 sx=im.sx, sy=im.sy, sz=im.sz,
                                 ox=im.ox, oy=im.oy, oz=im.oz,
-                                nv=nv, v=im.val[k:(k+nv),...],
+                                nv=nv, val=im.val[k:(k+nv),...],
                                 varname=im.varname[k:(k+nv)]))
                 k = k + nv
 
@@ -2718,13 +2765,47 @@ def deesse_output_C2py(mpds_simoutput):
                 error.append(Img(nx=im.nx, ny=im.ny, nz=im.nz,
                                  sx=im.sx, sy=im.sy, sz=im.sz,
                                  ox=im.ox, oy=im.oy, oz=im.oz,
-                                 nv=nv, v=im.val[k:(k+nv),...],
+                                 nv=nv, val=im.val[k:(k+nv),...],
                                  varname=im.varname[k:(k+nv)]))
                 k = k + nv
 
             error = np.asarray(error).reshape(nreal)
 
-    return {'sim':sim, 'path':path, 'error':error}
+        if mpds_simoutput.nvarTiGridNodeIndexPerReal:
+            # Retrieve the list of TI grid node index image
+            im = img_C2py(mpds_simoutput.outputTiGridNodeIndexImage)
+
+            nv = mpds_simoutput.nvarTiGridNodeIndexPerReal
+            k = 0
+            tiGridNode = []
+            for i in range(nreal):
+                tiGridNode.append(Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                                sx=im.sx, sy=im.sy, sz=im.sz,
+                                ox=im.ox, oy=im.oy, oz=im.oz,
+                                nv=nv, val=im.val[k:(k+nv),...],
+                                varname=im.varname[k:(k+nv)]))
+                k = k + nv
+
+            tiGridNode = np.asarray(tiGridNode).reshape(nreal)
+
+        if mpds_simoutput.nvarTiIndexPerReal:
+            # Retrieve the list of TI index image
+            im = img_C2py(mpds_simoutput.outputTiIndexImage)
+
+            nv = mpds_simoutput.nvarTiIndexPerReal
+            k = 0
+            tiIndex = []
+            for i in range(nreal):
+                tiIndex.append(Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                                sx=im.sx, sy=im.sy, sz=im.sz,
+                                ox=im.ox, oy=im.oy, oz=im.oz,
+                                nv=nv, val=im.val[k:(k+nv),...],
+                                varname=im.varname[k:(k+nv)]))
+                k = k + nv
+
+            tiIndex = np.asarray(tiIndex).reshape(nreal)
+
+    return {'sim':sim, 'path':path, 'error':error, 'tiGridNode':tiGridNode, 'tiIndex':tiIndex}
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -2744,7 +2825,8 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
                     - 1: warning only
                     - 2 (or >1): warning and progress
 
-    :return deesse_output:  (dictionary) {'sim':sim, 'path':path, 'error':error}
+    :return deesse_output:  (dictionary) {'sim':sim, 'path':path, 'error':error,
+        'tiGridNode':tiGridNode, 'tiIndex':tiIndex}
         With nreal = deesse_input.nrealization:
         sim:    (1-dimensional array of Img (class) of size nreal)
                     sim[i]: i-th realisation
@@ -2754,6 +2836,14 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
         error:  (1-dimensional array of Img (class) of size nreal or None)
                     error[i]: error map for the i-th realisation
                     (path is None if deesse_input.outputErrorFlag is False)
+        tiGridNode:
+                (1-dimensional array of Img (class) of size nreal or None)
+                    tiGridNode[i]: TI grid node index map for the i-th realisation
+                    (path is None if deesse_input.outputTiGridNodeIndexFlag is False)
+        tiIndex:
+                (1-dimensional array of Img (class) of size nreal or None)
+                    tiGridNode[i]: TI index map for the i-th realisation
+                    (path is None if deesse_input.outputTiIndexFlag is False)
     """
 
     # Convert deesse input from python to C
@@ -2843,6 +2933,8 @@ def exportDeesseInput(deesse_input,
                       suffix_outputSim='',
                       suffix_outputPathIndex='_pathIndex',
                       suffix_outputError='_error',
+                      suffix_outputTiGridNodeIndex='_tiGridNodeIndex',
+                      suffix_outputTiIndex='_tiIndex',
                       suffix_TI='_ti',
                       suffix_pdfTI='_ti',
                       suffix_mask='_mask',
@@ -2963,7 +3055,7 @@ def exportDeesseInput(deesse_input,
     infid.write('\
 OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
 {1}{0}\
-{0}'.format(endofline, '{}'.format(fileprefix,suffix_outputSim)))
+{0}'.format(endofline, '{}'.format(fileprefix, suffix_outputSim)))
 
     # Output: additional maps
     if verbose > 0:
@@ -2972,35 +3064,64 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
 
     if verbose == 2:
         infid.write('\
-/* Additional maps (images) can be retrieved in output (one file per realization).{0}\
-      - Flag ( 0 / 1) for path index map (index in the simulation path is attached{0}\
-        to each simulation grid node), and if 1, one prefix (for file name){0}\
-      - Flag ( 0 / 1) for error map (error e, see TOLERANCE below) obtained{0}\
-        during the simulation (excluding possible post-processing paths),{0}\
-        and if 1, one prefix (for file name){0}\
-   Note: the string "_real#####.gslib" will be appended to these prefix, where{0}\
-   "######" is the realization index. */{0}'.format(endofline))
+/* Additional maps (images) can be retrieved in output.{0}\
+   An output map is defined on the simulation grid and contains information{0}\
+   on the simulation but excluding possible post-processing path(s).{0}\
+   The following output maps are proposed:{0}\
+      - path index map         : index in the simulation path{0}\
+      - error map              : error e (see TOLERANCE below){0}\
+      - TI grid node index map : index of the grid node of the retained{0}\
+                                 candidate in the TI{0}\
+      - TI index map           : index of the TI used (makes sense if number of{0}\
+                                 TIs (nTI) is greater than 1){0}\
+   For each of these 4 cases (in the order exposed above), specify:{0}\
+      - flag (0 / 1) indicating if the output is desired{0}\
+      - and if the flag is set to 1, a prefix for the name of the output files{0}\
+   Note: for any output map, one file per realization is generated, the string{0}\
+         "_real#####.gslib" will be appended to the given prefix, where "######"{0}\
+         is the realization index.{0}\
+*/{0}'.format(endofline))
 
         if deesse_input.outputPathIndexFlag:
-            infid.write('{1} {2} // path index map{0}'.format(endofline, int(deesse_input.outputPathIndexFlag), '{}{}'.format(fileprefix,suffix_outputPathIndex)))
+            infid.write('{1} {2} // path index map{0}'.format(endofline, int(deesse_input.outputPathIndexFlag), '{}{}'.format(fileprefix, suffix_outputPathIndex)))
         else:
             infid.write('{1} // path index map{0}'.format(endofline, int(deesse_input.outputPathIndexFlag)))
 
         if deesse_input.outputErrorFlag:
-            infid.write('{1} {2} // error map{0}{0}'.format(endofline, int(deesse_input.outputErrorFlag), '{}{}'.format(fileprefix,suffix_outputError)))
+            infid.write('{1} {2} // error map{0}'.format(endofline, int(deesse_input.outputErrorFlag), '{}{}'.format(fileprefix, suffix_outputError)))
         else:
-            infid.write('{1} // error map{0}{0}'.format(endofline, int(deesse_input.outputErrorFlag)))
+            infid.write('{1} // error map{0}'.format(endofline, int(deesse_input.outputErrorFlag)))
+
+        if deesse_input.outputTiGridNodeIndexFlag:
+            infid.write('{1} {2} // TI grid node index map{0}'.format(endofline, int(deesse_input.outputTiGridNodeIndexFlag), '{}{}'.format(fileprefix, suffix_outputTiGridNodeIndex)))
+        else:
+            infid.write('{1} // TI grid node index map{0}'.format(endofline, int(deesse_input.outputTiGridNodeIndexFlag)))
+
+        if deesse_input.outputTiIndexFlag:
+            infid.write('{1} {2} // TI index map{0}{0}'.format(endofline, int(deesse_input.outputTiIndexFlag), '{}{}'.format(fileprefix, suffix_outputTiIndex)))
+        else:
+            infid.write('{1} // TI index map{0}{0}'.format(endofline, int(deesse_input.outputTiIndexFlag)))
 
     else:
         if deesse_input.outputPathIndexFlag:
-            infid.write('{1} {2}{0}'.format(endofline, int(deesse_input.outputPathIndexFlag), '{}{}'.format(fileprefix,suffix_outputPathIndex)))
+            infid.write('{1} {2}{0}'.format(endofline, int(deesse_input.outputPathIndexFlag), '{}{}'.format(fileprefix, suffix_outputPathIndex)))
         else:
             infid.write('{1}{0}'.format(endofline, int(deesse_input.outputPathIndexFlag)))
 
         if deesse_input.outputErrorFlag:
-            infid.write('{1} {2}{0}{0}'.format(endofline, int(deesse_input.outputErrorFlag), '{}{}'.format(fileprefix,suffix_outputError)))
+            infid.write('{1} {2}{0}'.format(endofline, int(deesse_input.outputErrorFlag), '{}{}'.format(fileprefix, suffix_outputError)))
         else:
-            infid.write('{1}{0}{0}'.format(endofline, int(deesse_input.outputErrorFlag)))
+            infid.write('{1}{0}'.format(endofline, int(deesse_input.outputErrorFlag)))
+
+        if deesse_input.outputTiGridNodeIndexFlag:
+            infid.write('{1} {2}{0}'.format(endofline, int(deesse_input.outputTiGridNodeIndexFlag), '{}{}'.format(fileprefix, suffix_outputTiGridNodeIndex)))
+        else:
+            infid.write('{1}{0}'.format(endofline, int(deesse_input.outputTiGridNodeIndexFlag)))
+
+        if deesse_input.outputTiIndexFlag:
+            infid.write('{1} {2}{0}{0}'.format(endofline, int(deesse_input.outputTiIndexFlag), '{}{}'.format(fileprefix, suffix_outputTiIndex)))
+        else:
+            infid.write('{1}{0}{0}'.format(endofline, int(deesse_input.outputTiIndexFlag)))
 
     # Output report
     if verbose > 0:
@@ -3044,7 +3165,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
         im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                  sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                  ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                 nv=deesse_input.nTI, v=deesse_input.pdfTI,
+                 nv=deesse_input.nTI, val=deesse_input.pdfTI,
                  varname=['pdfTI{}'.format(i) for i in range(deesse_input.nTI)])
         fname = '{}{}.{}'.format(fileprefix, suffix_pdfTI, 'gslib')
         img.writeImageGslib(im, dirname + '/' + fname,
@@ -3111,7 +3232,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
         im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                  sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                  ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                 nv=1, v=deesse_input.mask,
+                 nv=1, val=deesse_input.mask,
                  varname='mask')
         fname = '{}{}.{}'.format(fileprefix, suffix_mask, 'gslib')
         img.writeImageGslib(im, dirname + '/' + fname,
@@ -3156,7 +3277,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.homothetyXRatio,
+                     nv=1, val=deesse_input.homothetyXRatio,
                      varname='ratio')
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyXRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3170,7 +3291,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.homothetyYRatio,
+                     nv=1, val=deesse_input.homothetyYRatio,
                      varname='ratio')
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyYRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3184,7 +3305,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.homothetyZRatio,
+                     nv=1, val=deesse_input.homothetyZRatio,
                      varname='ratio')
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyZRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3199,7 +3320,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.homothetyXRatio,
+                     nv=2, val=deesse_input.homothetyXRatio,
                      varname=['ratioMin', 'ratioMax'])
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyXRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3213,7 +3334,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.homothetyYRatio,
+                     nv=2, val=deesse_input.homothetyYRatio,
                      varname=['ratioMin', 'ratioMax'])
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyYRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3227,7 +3348,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.homothetyZRatio,
+                     nv=2, val=deesse_input.homothetyZRatio,
                      varname=['ratioMin', 'ratioMax'])
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyZRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3273,7 +3394,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.rotationAzimuth,
+                     nv=1, val=deesse_input.rotationAzimuth,
                      varname='angle')
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationAzimuth, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3287,7 +3408,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.rotationDip,
+                     nv=1, val=deesse_input.rotationDip,
                      varname='angle')
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationDip, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3301,7 +3422,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, v=deesse_input.rotationPlunge,
+                     nv=1, val=deesse_input.rotationPlunge,
                      varname='angle')
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationPlunge, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3316,7 +3437,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.rotationAzimuth,
+                     nv=2, val=deesse_input.rotationAzimuth,
                      varname=['angleMin', 'angleMax'])
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationAzimuth, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3330,7 +3451,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.rotationDip,
+                     nv=2, val=deesse_input.rotationDip,
                      varname=['angleMin', 'angleMax'])
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationDip, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3344,7 +3465,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, v=deesse_input.rotationPlunge,
+                     nv=2, val=deesse_input.rotationPlunge,
                      varname=['angleMin', 'angleMax'])
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationPlunge, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
@@ -3949,7 +4070,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=sp.nclass, v=sp.localPdf,
+                     nv=sp.nclass, val=sp.localPdf,
                      varname=['pdfClass{}'.format(j) for j in range(sp.nclass)])
             fname = '{}{}{}.gslib'.format(fileprefix, suffix_localPdf, i)
             img.writeImageGslib(im, dirname + '/' + fname,

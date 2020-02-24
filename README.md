@@ -6,21 +6,22 @@ This python3 project provides tools for goestatistics simulations:
 Note: most of the modules in this package can be run as a script ('\_\_main\_\_' scope) and provide an example by this way.
 
 ## Installation
-To install the package (in your home directory): `pip3 install .`  
-To uninstall the package: `pip3 uninstall -y geone`
+To install the package (in your home directory): `python3 -m pip install install .`  
+To uninstall the package: `python3 -m pip uninstall -y geone`
 
-To install the package in development mode (enable editing): `pip3 install -e .`
+To install the package in development mode (enable editing): `python3 -m pip install -e .`
 
 ## Requirements
 The following python packages are used by 'geone':
    - numpy
    - matplotlib
    - mpl_toolkits
+   - pyvista
 
 **Important note**:  
-The package 'geone' includes a *deesse wrapper*, i.e. an *interface* to directly launch deesse with python. Whereas this wrapper is provided as an open source software (under MIT license), the deesse software itself is patent-protected by the University of Neuchâtel. Free licenses for deesse are provided on request, for non-commercial academic research and education only.
+The package 'geone' includes a *deesse wrapper*, i.e. an *interface* to directly launch deesse within python. Whereas this wrapper is provided as an open source software (under MIT license), the deesse software itself is patent-protected by the University of Neuchâtel. Free licenses for deesse are provided on request, for non-commercial academic research and education only.
 
-Note also that the deesse wrapper is built for python3.6.
+Note also that the deesse wrapper is built for python3.6 / python3.7 / python3.8.
 
 ## Examples
 Various examples are provided in notebooks.
@@ -30,7 +31,7 @@ Various examples are provided in notebooks.
    - `ex_grf_3d.ipynb`: example for the generation of 3D fields
 - Multiple-point statistics - simulation using the deesse wrapper:
    - `ex_deesse_01_basics.ipynb`: basic deesse (categorical) simulations
-   - `ex_deesse_02_get_path_and_error.ipynb`: retrieving the simulation path and the error map
+   - `ex_deesse_02_additional_outputs_and_simulation_paths.ipynb`: retrieving additional output maps and setting the simulation path
    - `ex_deesse_03_search_neigbhorhood.ipynb`: advanced setting for the search neighborhood ellipsoid
    - `ex_deesse_04_continous_sim.ipynb`: continous simulations
    - `ex_deesse_05_geom_transformation.ipynb`: simulations with geometrical transformations (rotation / scaling)

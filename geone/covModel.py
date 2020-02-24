@@ -512,7 +512,6 @@ class CovModel3D (object):
         return f
 # ----------------------------------------------------------------------------
 
-
 if __name__ == "__main__":
     print("Module 'geone.covModel' example:")
 

@@ -11,6 +11,7 @@ Module for gaussian random fields (GRF) simulations in 1D, 2D and 3D.
 
 import numpy as np
 
+# ----------------------------------------------------------------------------
 def grf1D(covFun, dimension, spacing, origin=0.,
           nreal=1, mean=0, var=None,
           x=None, v=None,
@@ -573,6 +574,7 @@ def grf1D(covFun, dimension, spacing, origin=0.,
     return (grf)
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
 def krige1D(x, v, covFun, dimension, spacing, origin=0.,
             mean=0, var=None,
             extensionMin=None,
@@ -966,6 +968,7 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
         return (krig)
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
 def grf2D(covFun, dimension, spacing, origin=[0., 0.],
           nreal=1, mean=0, var=None,
           x=None, v=None,
@@ -1547,6 +1550,7 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
     return (grf)
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
 def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
             mean=0, var=None,
             extensionMin=None,
@@ -1989,6 +1993,7 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
         return (krig)
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
 def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
           nreal=1, mean=0, var=None,
           x=None, v=None,
@@ -2588,6 +2593,7 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
     return (grf)
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
 def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
             mean=0, var=None,
             extensionMin=None,
@@ -3048,6 +3054,7 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
         return (krig)
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
 def extension_min(r, n, s=1.):
     """
     Compute extension of the dimension in a direction so that a GRF reproduces
@@ -3063,7 +3070,6 @@ def extension_min(r, n, s=1.):
     k = int(np.ceil(r/s))
     return max(k-n, 0) + k - 1
 # ----------------------------------------------------------------------------
-
 
 if __name__ == "__main__":
     print("Module 'geone.grf' example:")

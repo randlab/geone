@@ -17,7 +17,8 @@ from mpl_toolkits import axes_grid1
 
 # ----------------------------------------------------------------------------
 def add_colorbar(im, aspect=20, pad_fraction=1.0, **kwargs):
-    """Add a vertical color bar to an image plot.
+    """
+    Add a vertical color bar to an image plot.
     (from: http://nbviewer.jupyter.org/github/mgeier/python-audio/blob/master/plotting/matplotlib-colorbar.ipynb)
     """
 
@@ -37,6 +38,7 @@ def custom_cmap(cseq,
                 cunder=None,
                 cover=None,
                 cbad=None,
+                alpha=1.0,
                 cmap_name='custom_cmap'):
     """
     Defines a custom colormap given colors at transition values:
@@ -46,22 +48,33 @@ def custom_cmap(cseq,
                         corresponding to the color of cseq in the colormap,
                         default: None: equally spaced values are used
     :param ncol:    (int) number of colors for the colormap
-    :param cunder:  (string or rgb-tuple) color for 'under' values
-    :param cover:   (string or rgb-tuple) color for 'over' values
-    :param cbad:    (string or rgb-tuple) color for 'bad' values
+    :param cunder:  (string or rgb-tuple or rgba-tuple) color for 'under' values
+    :param cover:   (string or rgb-tuple or rgba-tuple) color for 'over' values
+    :param cbad:    (string or rgb-tuple or rgba-tuple) color for 'bad' values
+    :param alpha:   (float or list of floats) values of alpha channel for
+                        transparency, for each color in cseq (if a single float
+                        is given, the same value is used for each color)
     :param cmap_name: (string) colormap name
 
     :return: (LinearSegmentedColormap) colormap
     """
 
+    # Set alpha sequence
+    aseq = np.asarray(alpha, dtype=float) # numpy.ndarray (possibly 0-dimensional)
+    if aseq.size == 1:
+        aseq = aseq.flat[0] * np.ones(len(cseq))
+    elif aseq.size != len(cseq):
+        print ('ERROR: length of alpha not compatible with cseq')
+        return
+
     # Set vseqn: sequence of values rescaled in [0,1]
     if vseq is not None:
         if len(vseq) != len(cseq):
-            print("Error: length of vseq and cseq differs")
+            print("ERROR: length of vseq and cseq differs")
             return None
 
         if sum(np.diff(vseq) <= 0.0 ):
-            print("Error: vseq is not an increasing sequence")
+            print("ERROR: vseq is not an increasing sequence")
             return None
 
         # Linearly rescale vseq on [0,1]
@@ -78,30 +91,31 @@ def custom_cmap(cseq,
         except:
             cseqRGB.append(c)
 
-    # Set dictionary to define the colormap
-    cdict = {'red': [], 'green': [], 'blue': []}
-    for i in range(len(cseq)):
-        cdict['red'].append((vseqn[i],cseqRGB[i][0],cseqRGB[i][0]))
-        cdict['green'].append((vseqn[i],cseqRGB[i][1],cseqRGB[i][1]))
-        cdict['blue'].append((vseqn[i],cseqRGB[i][2],cseqRGB[i][2]))
+    # Set dictionary to define the color map
+    cdict = {
+        'red'  :[(vseqn[i], cseqRGB[i][0], cseqRGB[i][0]) for i in range(len(cseq))],
+        'green':[(vseqn[i], cseqRGB[i][1], cseqRGB[i][1]) for i in range(len(cseq))],
+        'blue' :[(vseqn[i], cseqRGB[i][2], cseqRGB[i][2]) for i in range(len(cseq))],
+        'alpha':[(vseqn[i], aseq[i],       aseq[i])       for i in range(len(cseq))]
+        }
 
     cmap = mcolors.LinearSegmentedColormap(cmap_name, cdict, N=ncol)
 
     if cunder is not None:
         try:
-            cmap.set_under(mcolors.ColorConverter().to_rgb(cunder))
+            cmap.set_under(mcolors.ColorConverter().to_rgba(cunder))
         except:
             cmap.set_under(cunder)
 
     if cover is not None:
         try:
-            cmap.set_over(mcolors.ColorConverter().to_rgb(cover))
+            cmap.set_over(mcolors.ColorConverter().to_rgba(cover))
         except:
             cmap.set_over(cover)
 
     if cbad is not None:
         try:
-            cmap.set_bad(mcolors.ColorConverter().to_rgb(cbad))
+            cmap.set_bad(mcolors.ColorConverter().to_rgba(cbad))
         except:
             cmap.set_bad(cbad)
 
@@ -145,27 +159,27 @@ col_chart_list = [col_chart01, col_chart02, col_chart03, col_chart04,
                   col_chart09, col_chart10, col_chart11, col_chart12]
 
 # ... list reordered
-col_chart_list_s = [col_chart_list[i] for i in (8,0,11,5,3,6,7,2,9,1,10,4)]
+col_chart_list_s = [col_chart_list[i] for i in (8, 0, 11, 5, 3, 6, 7, 2, 9, 1, 10, 4)]
 
 # Default color for bad value (nan)
-cbad_def = (.9, .9, .9)
+cbad_def = (.9, .9, .9, 0.5)
 
 # colormaps
 # ... default color map
-cbad1   = (.9, .9, .9)
-cunder1 = [x/255. for x in (230, 165, 250)]
-cover1  = [x/255. for x in (250,  80, 120)]
+cbad1   = (.9, .9, .9, 0.5)
+cunder1 = [x/255. for x in (230, 165, 250)] + [0.5] # +[0.5] ... for appending alpha channel
+cover1  = [x/255. for x in (250,  80, 120)] + [0.5] # +[0.5] ... for appending alpha channel
 cmaplist1 = ([x/255. for x in (160,  40, 240)],
              [x/255. for x in (  0, 240, 240)],
              [x/255. for x in (240, 240,   0)],
              [x/255. for x in (180,  10,  10)])
-cmap1 = custom_cmap(cmaplist1, cunder=cunder1, cover=cover1, cbad=cbad1)
+cmap1 = custom_cmap(cmaplist1, cunder=cunder1, cover=cover1, cbad=cbad1, alpha=1.0)
 
 cmap2 = custom_cmap(['purple', 'blue', 'cyan', 'yellow', 'red', 'black'],
-                    cunder=cbad_def, cover=cbad_def, cbad=cbad_def)
+                    cunder=cbad_def, cover=cbad_def, cbad=cbad_def, alpha=1.0)
 
-cmapW2B = custom_cmap(['white', 'black'], cunder='blue', cover='red', cbad=col_chart_yellow)
-cmapB2W = custom_cmap(['black', 'white'], cunder='blue', cover='red', cbad=col_chart_yellow)
+cmapW2B = custom_cmap(['white', 'black'], cunder=(0.0, 0.0, 1.0, 0.5), cover=(1.0, 0.0, 0.0, 0.5), cbad=col_chart_yellow+[0.5], alpha=1.0)
+cmapB2W = custom_cmap(['black', 'white'], cunder=(0.0, 0.0, 1.0, 0.5), cover=(1.0, 0.0, 0.0, 0.5), cbad=col_chart_yellow+[0.5], alpha=1.0)
 
 # # Notes:
 # # =====
@@ -212,7 +226,7 @@ if __name__ == "__main__":
 
     # Create a custom colormap
     my_cmap = custom_cmap(('blue', 'white', 'red'), vseq=(vmin,0,vmax),
-                          cunder='cyan', cover='violet', cbad='gray')
+                          cunder='cyan', cover='violet', cbad='gray', alpha=.3)
 
     # Display
     fig, ax = plt.subplots(2,2,figsize=(16,10))
