@@ -4630,20 +4630,6 @@ class DeesseEstimator():
         # `fit` should always return `self`
         return self
 
-    def predict(self, X):
-        """ Implementation of a predicting function.
-        Returns predicted facies by taking the biggest probability
-        eveluated by the predict_proba method
-
-        :param X: array-like (must implement __array__ method)
-            containing spatial coordinates
-
-        :return y:  (ndarray) predicted classes
-            shape (n_samples, )
-        """
-        y = self.predict_proba(X)
-        return self.classes_.take(np.argmax(y, axis=1), axis=0)
-
     def simulate(self, verbose=0, unconditional=False):
         """
         Return DeeSse simulation
@@ -4675,6 +4661,23 @@ class DeesseEstimator():
                 deesse_input = DeesseInput(**self.deesse_parameters)
 
         return deesseRun(deesse_input, verbose=verbose, nthreads=self.nthreads)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+class DeesseClassifier(DeesseEstimator):
+    def predict(self, X):
+        """ Implementation of a predicting function.
+        Returns predicted facies by taking the biggest probability
+        eveluated by the predict_proba method
+
+        :param X: array-like (must implement __array__ method)
+            containing spatial coordinates
+
+        :return y:  (ndarray) predicted classes
+            shape (n_samples, )
+        """
+        y = self.predict_proba(X)
+        return self.classes_.take(np.argmax(y, axis=1), axis=0)
 
     def predict_proba(self, X):
         """ Implementation of a predicting function, probabilities for each category.
@@ -4721,9 +4724,6 @@ class DeesseEstimator():
 
         return y
 # ----------------------------------------------------------------------------
-
-class DeesseClassifier(DeesseEstimator):
-    pass
 
 if __name__ == "__main__":
     print("Module 'geone.deesseinterface'.")
