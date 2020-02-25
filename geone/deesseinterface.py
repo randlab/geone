@@ -4661,8 +4661,57 @@ class DeesseEstimator():
                 deesse_input = DeesseInput(**self.deesse_parameters)
 
         return deesseRun(deesse_input, verbose=verbose, nthreads=self.nthreads)
-# ----------------------------------------------------------------------------
 
+
+# ----------------------------------------------------------------------------
+class DeesseRegressor(DeesseEstimator):
+    def predict(self, X):
+        X = X.__array__()
+
+        # suppress print bevause license check is still printed :(
+        deesse_output = self.simulate()
+
+    def sample_y(self, X):
+        """ Implementation of a predicting function, probabilities for each category.
+        Uses pixel-wise average proportion of DS predictions.
+        Number od DS simulations corresponds to number of realisations.
+
+        :param X: array-like (must implement __array__ method)
+            containing spatial coordinates
+
+        :return y:  (ndarray) probability predictions
+            shape (n_samples, n_features)
+        """
+        X = X.__array__()
+
+        # suppress print bevause license check is still printed :(
+        deesse_output = self.simulate()
+
+        # compute pixel-wise proportions
+        all_sim = img.gatherImages(deesse_output['sim'])
+
+        p = self.deesse_parameters
+        # get only relevant pixels for comparison
+        y = np.zeros((X.shape[0], p['nrealization']))
+        for counter, point in enumerate(X):
+            # get index of predicted point
+            index = img.pointToGridIndex(point[0], point[1], point[2],
+                    nx=p['nx'], ny=p['ny'], nz=p['nz'],
+                    sx=p['sx'], sy=p['sy'], sz=p['sz'],
+                    ox=p['ox'], oy=p['oy'], oz=p['oz'])
+            y[counter, :] = all_sim.val[:,
+                                              index[2],
+                                              index[1],
+                                              index[0]]
+
+        # This is a workaround for scorers to reuse results
+        # because our scorers call predict_proba always
+        # we want to reuse the results for the same X if no fitting
+        # was done in the meantime
+        self.previous_X_ = X
+        self.previous_y_ = y
+
+        return y
 # ----------------------------------------------------------------------------
 class DeesseClassifier(DeesseEstimator):
     def predict(self, X):

@@ -1,4 +1,10 @@
 import numpy as np
+from properscoring import crps_ensemble
+
+def crps(regressor, X, y_true):
+    y_pred_ensemble = regressor.sample_y(X)
+    print([(true, ensemble) for true, ensemble in zip(y_true, y_pred_ensemble)])
+    return np.mean([crps_ensemble(true, ensemble) for true, ensemble in zip(y_true, y_pred_ensemble)])
 
 class SkillScore():
     """
