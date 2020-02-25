@@ -4726,7 +4726,7 @@ class DeesseEstimator():
         array = np.hstack([X, y])
         self.hd = img.PointSet(npt=array.shape[0],
                 nv=array.shape[1],
-                v=array.transpose(),
+                val=array.transpose(),
                 varname=self.varnames)
 
         self.deesse_input = DeesseInput(dataPointSet=self.hd, **self.deesse_parameters)
