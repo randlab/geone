@@ -6,12 +6,12 @@ import pandas as pd
 #import os
 #TEST_DIR = os.path.dirname(__file__)
 
-class TestDeesseEstimator(unittest.TestCase):
+class TestDeesseClassifier(unittest.TestCase):
     def setUp(self):
         DATA_DIR = 'data/'
         ti = geone.img.readImageGslib(DATA_DIR+'A.gslib')
         self.data = pd.DataFrame(geone.gslib.read(DATA_DIR+'sample_100.gslib'))
-        self.deesse_estimator = geone.deesseinterface.DeesseEstimator(
+        self.deesse_estimator = geone.deesseinterface.DeesseClassifier(
             varnames = ['X','Y','Z', 'facies'],
             nx=100, ny=100, nz=1,     # dimension of the simulation grid (number of cells)
             sx=1.0, sy=1.0, sz=1.0,   # cells units in the simulation grid (here are the default values)

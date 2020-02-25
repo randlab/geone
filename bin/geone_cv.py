@@ -11,7 +11,7 @@ import pandas as pd
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.dummy import DummyClassifier
 from geone.cv_metrics import brier_score, zero_one_score, balanced_linear_score, SkillScore
-from geone.deesseinterface import DeesseEstimator
+from geone.deesseinterface import DeesseClassifier
 from geone.img import readImageGslib
 from geone.gslib import read
 
@@ -78,7 +78,7 @@ class CrossValidator():
 
 
         # Set estimator and scikit learn's engine
-        self.estimator = DeesseEstimator(**estimator_parameters)
+        self.estimator = DeesseClassifier(**estimator_parameters)
         self.cv_splitter = StratifiedKFold(**cv_splitter_parameters)
         self.model_selector = GridSearchCV(estimator=self.estimator,
                 scoring=self.scoring,

@@ -4722,5 +4722,8 @@ class DeesseEstimator():
         return y
 # ----------------------------------------------------------------------------
 
+class DeesseClassifier(DeesseEstimator):
+    pass
+
 if __name__ == "__main__":
     print("Module 'geone.deesseinterface'.")
