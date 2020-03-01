@@ -8,7 +8,6 @@ Note: most of the modules in this package can be run as a script ('\_\_main\_\_'
 ## Installation
 To install the package (in your home directory): `python3 -m pip install install .`  
 To uninstall the package: `python3 -m pip uninstall -y geone`
-
 To install the package in development mode (enable editing): `python3 -m pip install -e .`
 
 ## Requirements

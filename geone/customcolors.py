@@ -329,7 +329,7 @@ if __name__ == "__main__":
 
     # plt.tight_layout()
 
-    #plt.show()
-    fig.show()
+    # fig.show()
+    plt.show()
 
     a = input("Press enter to continue...")
