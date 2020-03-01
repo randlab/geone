@@ -6,8 +6,10 @@ This python3 project provides tools for goestatistics simulations:
 Note: most of the modules in this package can be run as a script ('\_\_main\_\_' scope) and provide an example by this way.
 
 ## Installation
-To install the package (in your home directory): `python3 -m pip install install .`  
+To install the package (in your home directory): `python3 -m pip install install .`
+
 To uninstall the package: `python3 -m pip uninstall -y geone`
+
 To install the package in development mode (enable editing): `python3 -m pip install -e .`
 
 ## Requirements
