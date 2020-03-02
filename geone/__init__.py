@@ -6,5 +6,4 @@ import geone.deesseinterface
 import geone.grf
 import geone.img
 import geone.imgplot
-import geone.gslib
 import geone.cv_metrics
