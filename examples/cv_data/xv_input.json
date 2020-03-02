@@ -1,0 +1,53 @@
+{
+    "results_path": "results",
+    "observations":{
+        "file":"cv_data/sample_100.gslib",
+        "coordinates": ["X", "Y", "Z"],
+        "variable": "code_real00000"
+    },
+    "estimator":
+    {
+        "varnames": ["X","Y","Z", "facies"],
+        "nx":100,
+        "ny":100,
+        "nz":1,
+        "sx":1.0,
+        "sy":1.0,
+        "sz":1.0,
+        "ox":0.0,
+        "oy":0.0,
+        "oz":0.0,
+        "nv":1,
+        "varname":"facies",
+        "nTI":1,
+        "TI":"cv_data/A.gslib",
+        "distanceType":0,
+        "nneighboringNode":20,
+        "distanceThreshold":0.1,
+        "maxScanFraction":0.25,
+        "npostProcessingPathMax":1,
+        "seed":20191201,
+        "nrealization":4,
+        "nthreads":4
+    },
+    "scoring":
+    {
+        "brier":"brier_score",
+        "zero_one":"zero_one_score"
+    },
+    "cv_splitter":
+    {
+        "n_splits": 5,
+        "shuffle":true,
+        "random_state":20191201
+    },
+    "model_selector":
+    {
+        "param_grid":{"TI": ["cv_data/A.gslib", "cv_data/B.gslib", "cv_data/C.gslib"], "nneighboringNode": [5, 10, 15]},
+        "n_jobs":1,
+        "refit":false,
+        "verbose":0,
+        "error_score":"raise",
+        "return_train_score":false
+    }
+}

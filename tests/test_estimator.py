@@ -10,7 +10,7 @@ class TestDeesseClassifier(unittest.TestCase):
     def setUp(self):
         DATA_DIR = 'data/'
         ti = geone.img.readImageGslib(DATA_DIR+'A.gslib')
-        self.data = pd.DataFrame(geone.gslib.read(DATA_DIR+'sample_100.gslib'))
+        self.data = pd.DataFrame(geone.img.readPointSetGslib(DATA_DIR+'sample_100.gslib').to_dict())
         self.deesse_estimator = geone.deesseinterface.DeesseClassifier(
             varnames = ['X','Y','Z', 'facies'],
             nx=100, ny=100, nz=1,     # dimension of the simulation grid (number of cells)
@@ -42,7 +42,7 @@ class TestDeesseRegressor(unittest.TestCase):
     def setUp(self):
         DATA_DIR = 'data/'
         ti = geone.img.readImageGslib(DATA_DIR+'tiContinuous.gslib')
-        self.data = pd.DataFrame(geone.gslib.read(DATA_DIR+'continous_sample_100.gslib'))
+        self.data = pd.DataFrame(geone.img.readPointSetGslib(DATA_DIR+'continous_sample_100.gslib').to_dict())
         self.deesse_regressor = geone.deesseinterface.DeesseRegressor(
             varnames = ['X','Y','Z', 'facies'],
             nx=100, ny=100, nz=1,     # dimension of the simulation grid (number of cells)
