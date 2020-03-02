@@ -991,6 +991,14 @@ class PointSet(object):
         return ([uv, cv])
     # ------------------------------------------------------------------------
 
+    # ------------------------------------------------------------------------
+    def to_dict(self):
+        """
+        Returns PointSet as a dictionary
+        """
+        return {name: values for name, values in zip(self.varname, self.val)}
+    # ------------------------------------------------------------------------
+
     def x(self):
         return(self.val[0])
 

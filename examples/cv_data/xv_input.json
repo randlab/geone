@@ -33,10 +33,7 @@
     "scoring":
     {
         "brier":"brier_score",
-        "zero_one":"zero_one_score",
-        "linear":"balanced_linear_score",
-        "skill_brier":"SkillScore(DummyClassifier(strategy='prior'), 0, brier_score)",
-        "skill_zero_one":"SkillScore(DummyClassifier(strategy='prior'), 1, zero_one_score)"
+        "zero_one":"zero_one_score"
     },
     "cv_splitter":
     {
