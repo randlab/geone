@@ -43,3 +43,4 @@ Various examples are provided in notebooks.
    - `ex_deesse_10_incomplete_image.ipynb`: reconstruction of an image using a training data set
    - `ex_deesse_11_using_mask.ipynb`: simulation using a mask
    - `ex_deesse_12_multiple_TIs.ipynb`: simulation using multiple training images
+   - `ex_deesse_13_inequality_data.ipynb`: simulations with inequality data

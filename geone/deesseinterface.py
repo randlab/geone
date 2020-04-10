@@ -3174,6 +3174,21 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
 
     infid.write('{0}'.format(endofline))
 
+    # Conditioning data files (data image file / data point set file)
+    if verbose == 1:
+        infid.write('\
+/* CONDITIONING DATA FILES (IMAGE FILE OR POINT SET FILE) (below) */{0}{0}'.format(endofline))
+    elif verbose == 2:
+        infid.write('\
+/* CONDITIONING DATA FILES (IMAGE FILE OR POINT SET FILE) (below){0}\
+   In such files, the name of a variable should correspond to a variable name{0}\
+   specified above to give usual conditioning (hard) data for that variable.{0}\
+   Moreover, inequality conditioning data can be given for a variable by{0}\
+   appending the suffix "_min" (resp. "_max") to the variable name: the given{0}\
+   values are then minimal (resp. maximal) bounds, i.e. indicating that the{0}\
+   simulated values should be greater than or equal to (resp. less than or equal{0}\
+   to) the given values. */{0}{0}'.format(endofline))
+
     # Data image
     if verbose > 0:
         infid.write('\
