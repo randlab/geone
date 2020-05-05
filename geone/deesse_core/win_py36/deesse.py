@@ -107,20 +107,6 @@ MPDS_VERSION_NUMBER = _deesse.MPDS_VERSION_NUMBER
 MPDS_BUILD_NUMBER = _deesse.MPDS_BUILD_NUMBER
 FALSE = _deesse.FALSE
 TRUE = _deesse.TRUE
-MPDS_SHOW_PROGRESS_MONITOR = _deesse.MPDS_SHOW_PROGRESS_MONITOR
-MPDS_SHOW_TIME = _deesse.MPDS_SHOW_TIME
-MPDS_SHOW_DEBUG = _deesse.MPDS_SHOW_DEBUG
-MPDS_SHOW_SIMINPUTASCII = _deesse.MPDS_SHOW_SIMINPUTASCII
-MPDS_SHOW_SIMINPUTASCII_FOR_DEBUGGING = _deesse.MPDS_SHOW_SIMINPUTASCII_FOR_DEBUGGING
-MPDS_SHOW_MPDS_POST_PROCESSING_PATH = _deesse.MPDS_SHOW_MPDS_POST_PROCESSING_PATH
-MPDS_CHECK_SEARCHNEIGHBORHOODPARAMETERS_AND_ROTATION = _deesse.MPDS_CHECK_SEARCHNEIGHBORHOODPARAMETERS_AND_ROTATION
-MPDS_USE_COPY_OF_SIMIMAGE = _deesse.MPDS_USE_COPY_OF_SIMIMAGE
-MPDS_USE_COPY_OF_TRAINIMAGE = _deesse.MPDS_USE_COPY_OF_TRAINIMAGE
-MPDS_USE_COPY_OF_HOMOTHETYIMAGE = _deesse.MPDS_USE_COPY_OF_HOMOTHETYIMAGE
-MPDS_USE_COPY_OF_HOMOTHETYVALUE = _deesse.MPDS_USE_COPY_OF_HOMOTHETYVALUE
-MPDS_USE_COPY_OF_ROTATIONIMAGE = _deesse.MPDS_USE_COPY_OF_ROTATIONIMAGE
-MPDS_USE_COPY_OF_ROTATIONVALUE = _deesse.MPDS_USE_COPY_OF_ROTATIONVALUE
-MPDS_FREE_CONDITIONING_DATA_AFTER_INTEGRATION = _deesse.MPDS_FREE_CONDITIONING_DATA_AFTER_INTEGRATION
 MPDS_FORMAT_DEFAULT = _deesse.MPDS_FORMAT_DEFAULT
 MPDS_FORMAT_WIDTH = _deesse.MPDS_FORMAT_WIDTH
 MPDS_FORMAT_PRECISION = _deesse.MPDS_FORMAT_PRECISION
@@ -912,6 +898,8 @@ MPDS_WARNING_MSG_05101 = _deesse.MPDS_WARNING_MSG_05101
 MPDS_WARNING_MSG_05102 = _deesse.MPDS_WARNING_MSG_05102
 MPDS_WARNING_MSG_08001 = _deesse.MPDS_WARNING_MSG_08001
 MPDS_WARNING_MSG_99998 = _deesse.MPDS_WARNING_MSG_99998
+MPDS_MAX_NWARNING = _deesse.MPDS_MAX_NWARNING
+MPDS_SHOW_PROGRESS_MONITOR = _deesse.MPDS_SHOW_PROGRESS_MONITOR
 class mpds_progressMonitor(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_progressMonitor, name, value)
@@ -942,6 +930,18 @@ class mpds_progressMonitor(_object):
     __swig_getmethods__["abortedJobFlag"] = _deesse.mpds_progressMonitor_abortedJobFlag_get
     if _newclass:
         abortedJobFlag = _swig_property(_deesse.mpds_progressMonitor_abortedJobFlag_get, _deesse.mpds_progressMonitor_abortedJobFlag_set)
+    __swig_setmethods__["warningNumberList"] = _deesse.mpds_progressMonitor_warningNumberList_set
+    __swig_getmethods__["warningNumberList"] = _deesse.mpds_progressMonitor_warningNumberList_get
+    if _newclass:
+        warningNumberList = _swig_property(_deesse.mpds_progressMonitor_warningNumberList_get, _deesse.mpds_progressMonitor_warningNumberList_set)
+    __swig_setmethods__["nwarningNumber"] = _deesse.mpds_progressMonitor_nwarningNumber_set
+    __swig_getmethods__["nwarningNumber"] = _deesse.mpds_progressMonitor_nwarningNumber_get
+    if _newclass:
+        nwarningNumber = _swig_property(_deesse.mpds_progressMonitor_nwarningNumber_get, _deesse.mpds_progressMonitor_nwarningNumber_set)
+    __swig_setmethods__["nwarning"] = _deesse.mpds_progressMonitor_nwarning_set
+    __swig_getmethods__["nwarning"] = _deesse.mpds_progressMonitor_nwarning_get
+    if _newclass:
+        nwarning = _swig_property(_deesse.mpds_progressMonitor_nwarning_get, _deesse.mpds_progressMonitor_nwarning_set)
 
     def __init__(self):
         this = _deesse.new_mpds_progressMonitor()
@@ -963,9 +963,21 @@ def MPDSInitProgressMonitor(arg1):
     return _deesse.MPDSInitProgressMonitor(arg1)
 MPDSInitProgressMonitor = _deesse.MPDSInitProgressMonitor
 
+def MPDSUpdateProgressMonitor0(arg1):
+    return _deesse.MPDSUpdateProgressMonitor0(arg1)
+MPDSUpdateProgressMonitor0 = _deesse.MPDSUpdateProgressMonitor0
+
 def MPDSUpdateProgressMonitorAllGI(arg1):
     return _deesse.MPDSUpdateProgressMonitorAllGI(arg1)
 MPDSUpdateProgressMonitorAllGI = _deesse.MPDSUpdateProgressMonitorAllGI
+
+def MPDSUpdateProgressMonitorAllOnlyPercentGI(arg1):
+    return _deesse.MPDSUpdateProgressMonitorAllOnlyPercentGI(arg1)
+MPDSUpdateProgressMonitorAllOnlyPercentGI = _deesse.MPDSUpdateProgressMonitorAllOnlyPercentGI
+
+def MPDSUpdateProgressMonitorAllOnlyPercentStdout(arg1):
+    return _deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout(arg1)
+MPDSUpdateProgressMonitorAllOnlyPercentStdout = _deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout
 
 def MPDSUpdateProgressMonitorAllStdout(arg1):
     return _deesse.MPDSUpdateProgressMonitorAllStdout(arg1)
@@ -978,6 +990,14 @@ MPDSUpdateProgressMonitorGI = _deesse.MPDSUpdateProgressMonitorGI
 def MPDSUpdateProgressMonitorStdout(arg1):
     return _deesse.MPDSUpdateProgressMonitorStdout(arg1)
 MPDSUpdateProgressMonitorStdout = _deesse.MPDSUpdateProgressMonitorStdout
+
+def MPDSUpdateProgressMonitorWarningOnlyGI(arg1):
+    return _deesse.MPDSUpdateProgressMonitorWarningOnlyGI(arg1)
+MPDSUpdateProgressMonitorWarningOnlyGI = _deesse.MPDSUpdateProgressMonitorWarningOnlyGI
+
+def MPDSUpdateProgressMonitorWarningOnlyStdout(arg1):
+    return _deesse.MPDSUpdateProgressMonitorWarningOnlyStdout(arg1)
+MPDSUpdateProgressMonitorWarningOnlyStdout = _deesse.MPDSUpdateProgressMonitorWarningOnlyStdout
 PYRAMID_SIM_NONE = _deesse.PYRAMID_SIM_NONE
 PYRAMID_SIM_HIERARCHICAL = _deesse.PYRAMID_SIM_HIERARCHICAL
 PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION = _deesse.PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION
@@ -1941,8 +1961,8 @@ def MPDSPrintSimInput(arg1, arg2, arg3):
     return _deesse.MPDSPrintSimInput(arg1, arg2, arg3)
 MPDSPrintSimInput = _deesse.MPDSPrintSimInput
 
-def MPDSPrintVersion(arg1, arg2, arg3):
-    return _deesse.MPDSPrintVersion(arg1, arg2, arg3)
+def MPDSPrintVersion(arg1, arg2, arg3, arg4, arg5):
+    return _deesse.MPDSPrintVersion(arg1, arg2, arg3, arg4, arg5)
 MPDSPrintVersion = _deesse.MPDSPrintVersion
 
 def MPDSValidateSimInput(arg1, arg2, arg3, arg4):
@@ -2622,70 +2642,67 @@ def free_MPDS_PROGRESSMONITOR(ptr):
     return _deesse.free_MPDS_PROGRESSMONITOR(ptr)
 free_MPDS_PROGRESSMONITOR = _deesse.free_MPDS_PROGRESSMONITOR
 sizeof_MPDS_PROGRESSMONITOR = _deesse.sizeof_MPDS_PROGRESSMONITOR
-MPDSUpdateProgressMonitorStdout_ptr = _deesse.MPDSUpdateProgressMonitorStdout_ptr
+MPDSUpdateProgressMonitor0_ptr = _deesse.MPDSUpdateProgressMonitor0_ptr
+MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr = _deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 MPDSUpdateProgressMonitorAllStdout_ptr = _deesse.MPDSUpdateProgressMonitorAllStdout_ptr
-MPDSUpdateProgressMonitorNoDisplay_ptr = _deesse.MPDSUpdateProgressMonitorNoDisplay_ptr
-MPDSUpdateProgressMonitorDisplayWarningOnly_ptr = _deesse.MPDSUpdateProgressMonitorDisplayWarningOnly_ptr
-
-def MPDSUpdateProgressMonitorNoDisplay(progressMonitor):
-    return _deesse.MPDSUpdateProgressMonitorNoDisplay(progressMonitor)
-MPDSUpdateProgressMonitorNoDisplay = _deesse.MPDSUpdateProgressMonitorNoDisplay
-
-def MPDSUpdateProgressMonitorDisplayWarningOnly(progressMonitor):
-    return _deesse.MPDSUpdateProgressMonitorDisplayWarningOnly(progressMonitor)
-MPDSUpdateProgressMonitorDisplayWarningOnly = _deesse.MPDSUpdateProgressMonitorDisplayWarningOnly
+MPDSUpdateProgressMonitorStdout_ptr = _deesse.MPDSUpdateProgressMonitorStdout_ptr
+MPDSUpdateProgressMonitorWarningOnlyStdout_ptr = _deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
 
 def mpds_get_error_message(ierr):
     return _deesse.mpds_get_error_message(ierr)
 mpds_get_error_message = _deesse.mpds_get_error_message
 
-def mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4):
-    return _deesse.mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4)
-mpds_set_real_vector_to_cst = _deesse.mpds_set_real_vector_to_cst
-
-def mpds_set_real_vector_from_array(vector, offset, array):
-    return _deesse.mpds_set_real_vector_from_array(vector, offset, array)
-mpds_set_real_vector_from_array = _deesse.mpds_set_real_vector_from_array
-
-def mpds_get_array_from_real_vector(vector, offset, array):
-    return _deesse.mpds_get_array_from_real_vector(vector, offset, array)
-mpds_get_array_from_real_vector = _deesse.mpds_get_array_from_real_vector
+def mpds_get_warning_message(iwarn):
+    return _deesse.mpds_get_warning_message(iwarn)
+mpds_get_warning_message = _deesse.mpds_get_warning_message
 
 def mpds_set_int_vector_from_array(vector, offset, array):
     return _deesse.mpds_set_int_vector_from_array(vector, offset, array)
 mpds_set_int_vector_from_array = _deesse.mpds_set_int_vector_from_array
 
-def mpds_get_array_from_int_vector(vector, offset, array):
-    return _deesse.mpds_get_array_from_int_vector(vector, offset, array)
-mpds_get_array_from_int_vector = _deesse.mpds_get_array_from_int_vector
-
 def mpds_set_double_vector_from_array(vector, offset, array):
     return _deesse.mpds_set_double_vector_from_array(vector, offset, array)
 mpds_set_double_vector_from_array = _deesse.mpds_set_double_vector_from_array
+
+def mpds_set_real_vector_from_array(vector, offset, array):
+    return _deesse.mpds_set_real_vector_from_array(vector, offset, array)
+mpds_set_real_vector_from_array = _deesse.mpds_set_real_vector_from_array
+
+def mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4):
+    return _deesse.mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4)
+mpds_set_real_vector_to_cst = _deesse.mpds_set_real_vector_to_cst
+
+def mpds_get_array_from_int_vector(vector, offset, array):
+    return _deesse.mpds_get_array_from_int_vector(vector, offset, array)
+mpds_get_array_from_int_vector = _deesse.mpds_get_array_from_int_vector
 
 def mpds_get_array_from_double_vector(vector, offset, array):
     return _deesse.mpds_get_array_from_double_vector(vector, offset, array)
 mpds_get_array_from_double_vector = _deesse.mpds_get_array_from_double_vector
 
-def mpds_set_outputVarFlag(simInput, flag):
-    return _deesse.mpds_set_outputVarFlag(simInput, flag)
-mpds_set_outputVarFlag = _deesse.mpds_set_outputVarFlag
+def mpds_get_array_from_real_vector(vector, offset, array):
+    return _deesse.mpds_get_array_from_real_vector(vector, offset, array)
+mpds_get_array_from_real_vector = _deesse.mpds_get_array_from_real_vector
 
-def mpds_set_simGridAsTiFlag(simInput, flag):
-    return _deesse.mpds_set_simGridAsTiFlag(simInput, flag)
-mpds_set_simGridAsTiFlag = _deesse.mpds_set_simGridAsTiFlag
-
-def mpds_set_relativeDistanceFlag(simInput, flag):
-    return _deesse.mpds_set_relativeDistanceFlag(simInput, flag)
-mpds_set_relativeDistanceFlag = _deesse.mpds_set_relativeDistanceFlag
+def mpds_set_connectivity_varname(connectivity, STRING):
+    return _deesse.mpds_set_connectivity_varname(connectivity, STRING)
+mpds_set_connectivity_varname = _deesse.mpds_set_connectivity_varname
 
 def mpds_set_outputReportFileName(simInput, STRING):
     return _deesse.mpds_set_outputReportFileName(simInput, STRING)
 mpds_set_outputReportFileName = _deesse.mpds_set_outputReportFileName
 
-def mpds_set_connectivity_varname(connectivity, STRING):
-    return _deesse.mpds_set_connectivity_varname(connectivity, STRING)
-mpds_set_connectivity_varname = _deesse.mpds_set_connectivity_varname
+def mpds_set_outputVarFlag(simInput, flag):
+    return _deesse.mpds_set_outputVarFlag(simInput, flag)
+mpds_set_outputVarFlag = _deesse.mpds_set_outputVarFlag
+
+def mpds_set_relativeDistanceFlag(simInput, flag):
+    return _deesse.mpds_set_relativeDistanceFlag(simInput, flag)
+mpds_set_relativeDistanceFlag = _deesse.mpds_set_relativeDistanceFlag
+
+def mpds_set_simGridAsTiFlag(simInput, flag):
+    return _deesse.mpds_set_simGridAsTiFlag(simInput, flag)
+mpds_set_simGridAsTiFlag = _deesse.mpds_set_simGridAsTiFlag
 
 def mpds_set_varname(varname, index, STRING):
     return _deesse.mpds_set_varname(varname, index, STRING)

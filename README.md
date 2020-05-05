@@ -20,7 +20,7 @@ The following python packages are used by 'geone':
    - pyvista
 
 **Important note**:  
-The package 'geone' includes a *deesse wrapper*, i.e. an *interface* to directly launch deesse within python. Whereas this wrapper is provided as an open source software (under MIT license), the deesse software itself is patent-protected by the University of Neuchâtel. Free licenses for deesse are provided on request, for non-commercial academic research and education only.
+The package 'geone' includes a *deesse wrapper*, i.e. an *interface* to directly launch deesse within python. Whereas this wrapper is provided as an open source software, the deesse software itself is patent-protected by the University of Neuchâtel. Free licenses for deesse are provided on request, for non-commercial academic research and education only.
 
 Note also that the deesse wrapper is built for python3.6 / python3.7 / python3.8.
 

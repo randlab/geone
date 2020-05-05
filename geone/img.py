@@ -51,7 +51,7 @@ class Img(object):
         self.ox = float(ox)
         self.oy = float(oy)
         self.oz = float(oz)
-        self.nv = nv
+        self.nv = int(nv)
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
@@ -682,8 +682,8 @@ class PointSet(object):
                         if tuple/list/ndarray: must contain npt values
         """
 
-        self.npt = npt
-        self.nv = nv
+        self.npt = int(npt)
+        self.nv = int(nv)
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
@@ -1520,6 +1520,9 @@ def imageContStat (im, op='mean', **kwargs):
                         'min': min
                         'std': standard deviation
                         'var': variance
+                        'quantile': quantile
+                                    this operator requires the keyword argument
+                                    q=<sequence of quantile to compute>
     :param kwargs:  additional key word arguments passed to np.<op>
                         function, typically: ddof=1 if op is 'std' or 'var'
 
@@ -1530,14 +1533,25 @@ def imageContStat (im, op='mean', **kwargs):
 
     if op == 'max':
         func = np.nanmax
+        varname = [op]
     elif op == 'mean':
         func = np.nanmean
+        varname = [op]
     elif op == 'min':
         func = np.nanmin
+        varname = [op]
     elif op == 'std':
         func = np.nanstd
+        varname = [op]
     elif op == 'var':
         func = np.nanvar
+        varname = [op]
+    elif op == 'quantile':
+        func = np.nanquantile
+        if 'q' not in kwargs:
+            print("ERROR: keyword argument 'q' required for op='quantile', nothing done!")
+            return
+        varname = [op + '_' + str(v) for v in kwargs['q']]
     else:
         print("ERROR: unkown operation {}, nothing done!".format(op))
         return
@@ -1547,7 +1561,10 @@ def imageContStat (im, op='mean', **kwargs):
              ox=im.ox, oy=im.oy, oz=im.oz,
              nv=0, val=0.0)
 
-    imOut.append_var(func(im.val.reshape(im.nv,-1), axis=0, **kwargs))
+    vv = func(im.val.reshape(im.nv,-1), axis=0, **kwargs)
+    vv = vv.reshape(-1, im.nxyz())
+    for v, name in zip(vv, varname):
+        imOut.append_var(v, varname=name)
 
     return (imOut)
 # ----------------------------------------------------------------------------
