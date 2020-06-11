@@ -1,12 +1,10 @@
-# Package 'geone'
-This python3 project provides tools for goestatistics simulations:
+# Package GEONE
+GEONE is a python package providing a set of tools for geostatistical and multiple-point statistics modeling, comprising:
    - gaussian random fields (GRF)
-   - multiple-point statistics (MPS) - deesse wrapper
-
-Note: most of the modules in this package can be run as a script ('\_\_main\_\_' scope) and provide an example by this way.
+   - multiple-point statistics (MPS) - DEESSE wrapper
 
 ## Installation
-To install the package (in your home directory): `python3 -m pip install install .`
+To install the package: `python3 -m pip install install .`
 
 To uninstall the package: `python3 -m pip uninstall -y geone`
 
@@ -20,18 +18,20 @@ The following python packages are used by 'geone':
    - pyvista
 
 **Important note**:  
-The package 'geone' includes a *deesse wrapper*, i.e. an *interface* to directly launch deesse within python. Whereas this wrapper is provided as an open source software, the deesse software itself is patent-protected by the University of Neuchâtel. Free licenses for deesse are provided on request, for non-commercial academic research and education only.
+GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The DEESSE version provided with GEONE is a test version with restricted capabilities. To unlock the full capabilities of DEESSE, the user must obtain a commercial or academic license from the University of Neuchâtel. See LICENSE file for details.
 
-Note also that the deesse wrapper is built for python3.6 / python3.7 / python3.8.
+Note also that the DEESSE wrapper is built for python3.6 / python3.7 / python3.8.
 
 ## Examples
-Various examples are provided in notebooks.
+Most of the modules in the package GEONE can be run as a script ('\_\_main\_\_' scope) and provide examples by this way.
+
+Various examples are provided in notebooks, as described below.
 - Gaussian random fields (GRF):
    - `ex_grf_1d.ipynb`: example for the generation of 1D fields
    - `ex_grf_2d.ipynb`: example for the generation of 2D fields
    - `ex_grf_3d.ipynb`: example for the generation of 3D fields
-- Multiple-point statistics - simulation using the deesse wrapper:
-   - `ex_deesse_01_basics.ipynb`: basic deesse (categorical) simulations
+- Multiple-point statistics - simulation using the DEESSE wrapper:
+   - `ex_deesse_01_basics.ipynb`: basic DEESSE (categorical) simulations
    - `ex_deesse_02_additional_outputs_and_simulation_paths.ipynb`: retrieving additional output maps and setting the simulation path
    - `ex_deesse_03_search_neigbhorhood.ipynb`: advanced setting for the search neighborhood ellipsoid
    - `ex_deesse_04_continous_sim.ipynb`: continous simulations

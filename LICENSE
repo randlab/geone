@@ -1,31 +1,54 @@
-LICENSE - non-commercial use of the software DeeSse which requires a license agreement
+LICENSE
 
-This package is developed by the University of Neuchâtel (CHYN), Switzerland.
+Copyright (c) 2020 - University of Neuchâtel
 
-This package contains the software DeeSse (DS - Multiple-Point Simulation by
-Direct Sampling) (hereafter "the software"), developed by the University of
-Neuchâtel. The software is commercial and belongs to the University of Neuchâtel
-which holds the patent no US 8682624 on it.
 
-The use of the software requires a license agreement and is restricted to purposes
-of non-commercial academic research and education.
+PREAMBLE
 
-It is explicitly forbidden to deal in the software and to undertake reverse
-engineering in order to get its sources which are not open. It is expressly
-forbidden to copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the software.
+GEONE is a python package providing a set of tools for geostatistical
+and multiple-point statistics modeling. It contains the DEESSE library
+in the sub-package deesse_core.
 
-The software DeeSse is provided by the copyright holders and contributors "as is"
-without warranty of any kind, express or implied, including, but not limited to,
-the implied warranties of merchantability and fitness for a particular purpose
-and non infringement. In no event shall the authors or copyright owner or
-contributors be liable for any claim, any direct, indirect, incidental, special,
-exemplary, or consequential damages (including, but not limited to, procurement
-of substitute goods or services; loss of use, data, or profits; or business
-interruption) however caused and on any theory of liability, whether in contract,
-strict liability, or tort (including negligence or otherwise) arising in any way
-out of the use of or in connection with this software, or other dealing in the
-software even if advised of the possibility of such damage.
+DEESSE is a commercial product belonging to the University of
+Neuchâtel which holds the patent no US 8682624 on its core algorithm.
+GEONE includes a wrapper allowing to launch DEESSE directly in python.
 
-The use of the software is restricted to a fixed time period. This period can be
-renewed upon request, subject to the authorization of the University of Neuchâtel.
+GEONE is provided as an open source code with an open access license
+applicable for all the code except the deesse_core subpackage (see
+details below).
+
+DEESSE and therefore the deesse_core subpackage requires a specific
+license agreement. The version provided with GEONE is a test version
+with restricted capabilities. To unlock the full capabilities of
+DEESSE, the user must obtain a commercial or academic license from the
+University of Neuchâtel.
+
+
+LICENSE TERMS FOR THE SOFTWARE GEONE
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files, to deal in
+the software GEONE ("the Software") excluding the software DEESSE,
+without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software excluding DEESSE, and to permit persons to whom
+the Software is furnished to do so, subject to the following
+condition:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+The permission granted here over is related to the Software only and
+does not imply any patent license grant nor contains any patent
+retaliation clause, in particular concerning DEESSE patent software
+also made available by the copyright owners and the University of
+Neuchâtel on the GitHub platform.
+
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

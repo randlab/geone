@@ -40,5 +40,5 @@ setuptools.setup(
     package_dir={'geone':'geone', 'geone.deesse_core':deesse_core_dir},
     package_data={'geone.deesse_core':['*']},
     include_package_data=True,
-    license=open('LICENSE').read()
+    license=open('LICENSE', encoding='utf-8').read()
 )
