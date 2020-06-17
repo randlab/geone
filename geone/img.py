@@ -1992,7 +1992,7 @@ def sampleFromPointSet(point_set, size, seed=None, mask=None):
     # Return the new object
     return PointSet(npt=size,
             nv=point_set.nv,
-            v=point_set.val[:,sampled_indices],
+            val=point_set.val[:,sampled_indices],
             varname=point_set.varname,
             name=point_set.name)
 # ----------------------------------------------------------------------------
