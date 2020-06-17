@@ -27,7 +27,7 @@ def drawImage3D_surface (
                  iy0=0, iy1=None,
                  iz0=0, iz1=None,
                  iv=0,
-                 cmap=plt.get_cmap('viridis'),
+                 cmap='viridis',
                  cmin=None, cmax=None,
                  custom_scalar_bar_for_equidistant_categories=False,
                  custom_colors=None,
@@ -75,8 +75,8 @@ def drawImage3D_surface (
 
     :param iv:      (int) index of the variable to be drawn
 
-    :param cmap:    colormap (e.g. plt.get_cmap('viridis'))
-                        (None for default color map)
+    :param cmap:    colormap (e.g. plt.get_cmap('viridis'), or equivalently,
+                        just the string 'viridis' (default))
 
     :param cmin, cmax:
                     (float) min and max values for the color bar
@@ -191,6 +191,14 @@ def drawImage3D_surface (
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         print("Invalid indices along z)")
         return
+
+    # Get the color map
+    if isinstance(cmap, str):
+        try:
+            cmap = plt.get_cmap(cmap)
+        except:
+            print("ERROR: invalid cmap string!")
+            return
 
     # Initialization of dictionary (do not used {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
@@ -343,7 +351,7 @@ def drawImage3D_slice (
                  slice_normal_y=None,
                  slice_normal_z=None,
                  slice_normal_custom=None,
-                 cmap=plt.get_cmap('viridis'),
+                 cmap='viridis',
                  cmin=None, cmax=None,
                  custom_scalar_bar_for_equidistant_categories=False,
                  custom_colors=None,
@@ -392,8 +400,8 @@ def drawImage3D_slice (
 
     :param iv:      (int) index of the variable to be drawn
 
-    :param cmap:    colormap (e.g. plt.get_cmap('viridis'))
-                        (None for default color map)
+    :param cmap:    colormap (e.g. plt.get_cmap('viridis'), or equivalently,
+                        just the string 'viridis' (default))
 
     :param cmin, cmax:
                     (float) min and max values for the color bar
@@ -528,6 +536,14 @@ def drawImage3D_slice (
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         print("Invalid indices along z)")
         return
+
+    # Get the color map
+    if isinstance(cmap, str):
+        try:
+            cmap = plt.get_cmap(cmap)
+        except:
+            print("ERROR: invalid cmap string!")
+            return
 
     # Initialization of dictionary (do not used {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
@@ -692,7 +708,7 @@ def drawImage3D_volume (
                  iy0=0, iy1=None,
                  iz0=0, iz1=None,
                  iv=0,
-                 cmap=None,
+                 cmap='viridis',
                  cmin=None, cmax=None,
                  set_out_values_to_nan=True,
                  show_scalar_bar=True,
@@ -735,8 +751,8 @@ def drawImage3D_volume (
 
     :param iv:      (int) index of the variable to be drawn
 
-    :param cmap:    colormap (e.g. plt.get_cmap('viridis'))
-                        (None for default color map)
+    :param cmap:    colormap (e.g. plt.get_cmap('viridis'), or equivalently,
+                        just the string 'viridis' (default))
 
     :param cmin, cmax:
                     (float) min and max values for the color bar
@@ -830,6 +846,14 @@ def drawImage3D_volume (
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         print("Invalid indices along z)")
         return
+
+    # Get the color map
+    if isinstance(cmap, str):
+        try:
+            cmap = plt.get_cmap(cmap)
+        except:
+            print("ERROR: invalid cmap string!")
+            return
 
     # Initialization of dictionary (do not used {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:

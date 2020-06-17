@@ -51,13 +51,13 @@ class Img(object):
         self.ox = float(ox)
         self.oy = float(oy)
         self.oz = float(oz)
-        self.nv = nv
+        self.nv = int(nv)
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(nx*ny*nz*nv)
         elif valarr.size != nx*ny*nz*nv:
-            print ('ERROR: val have not an acceptable size')
+            print ('ERROR: val has not an acceptable size')
             return
 
         self.val = valarr.reshape(nv, nz, ny, nx)
@@ -67,7 +67,7 @@ class Img(object):
         else:
             varname = list(np.asarray(varname).reshape(-1))
             if len(varname) != nv:
-                print ('ERROR: varname have not an acceptable size')
+                print ('ERROR: varname has not an acceptable size')
                 return
 
             self.varname = list(np.asarray(varname).reshape(-1))
@@ -285,7 +285,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
-            print ('ERROR: val have not an acceptable size')
+            print ('ERROR: val has not an acceptable size')
             return
 
         # Extend val
@@ -385,7 +385,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
-            print ('ERROR: val have not an acceptable size')
+            print ('ERROR: val has not an acceptable size')
             return
 
         # Set variable of index ii
@@ -688,14 +688,14 @@ class PointSet(object):
                         if tuple/list/ndarray: must contain npt values
         """
 
-        self.npt = npt
-        self.nv = nv
+        self.npt = int(npt)
+        self.nv = int(nv)
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(npt*nv)
         elif valarr.size != npt*nv:
-            print ('ERROR: val have not an acceptable size')
+            print ('ERROR: val has not an acceptable size')
             return
 
         self.val = valarr.reshape(nv, npt)
@@ -719,7 +719,7 @@ class PointSet(object):
         else:
             varname = list(np.asarray(varname).reshape(-1))
             if len(varname) != nv:
-                print ('ERROR: varname have not an acceptable size')
+                print ('ERROR: varname has not an acceptable size')
                 return
 
             self.varname = list(np.asarray(varname).reshape(-1))
@@ -795,7 +795,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
-            print ('ERROR: val have not an acceptable size')
+            print ('ERROR: val has not an acceptable size')
             return
 
         # Extend val
@@ -896,7 +896,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
-            print ('ERROR: val have not an acceptable size')
+            print ('ERROR: val has not an acceptable size')
             return
 
         # Set variable of index ii
@@ -1304,6 +1304,79 @@ def readImagePpm(filename, missing_value=None, varname=['ppmR', 'ppmG', 'ppmB'])
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def imCategFromPgm(filename, flip_vertical=True, cmap='binary'):
+    """
+    Reads an image from a file (pgm format (ASCII), e.g. created by Gimp):
+
+    :param filename:        (string) name of the file
+    :param flip_vertical:   (bool) if True: flip the image vertically after reading the image
+
+    :return:    (tuple) (im, code, col)
+                    im: (Img class) image with categories 0, 1, ..., n-1 as values
+                    col  : list of colors (rgba tuple, for each category) (length n)
+                    pgm  : list of initial pgm values (length n)
+    """
+
+    # Read image
+    im = img.readImagePgm(filename)
+
+    if flip_vertical:
+        # Flip image vertically
+        im.flipy()
+
+    # Set cmap function
+    if isinstance(cmap, str):
+        cmap_func = plt.get_cmap(cmap)
+    else:
+        cmap_func = cmap
+
+    # Get colors and set color codes
+    v = im.val.reshape(-1)
+    pgm, code = np.unique(v, return_inverse=True)
+    col = [cmap_func(c/255.) for c in pgm]
+
+    # Set image
+    im = img.Img(im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz, nv=1, val=code, varname='code')
+
+    return (im, col, pgm)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imCategFromPpm(filename, flip_vertical=True):
+    """
+    Reads an image from a file (ppm format (ASCII), e.g. created by Gimp):
+
+    :param filename:        (string) name of the file
+    :param flip_vertical:   (bool) if True: flip the image vertically after reading the image
+
+    :return:    (tuple) (im, code, col)
+                    im: (Img class) image with categories 0, 1, ..., n-1 as values
+                    col  : list of colors (rgba tuple, for each category) (length n)
+                    rgb  : list of initial rgb values (length n)
+    """
+
+    # Read image
+    im = img.readImagePpm(filename)
+
+    if flip_vertical:
+        # Flip image vertically
+        im.flipy()
+
+    # Get colors and set color codes
+    v = np.array((1, 256, 256**2)).dot(im.val.reshape(3,-1))
+    x, code = np.unique(v, return_inverse=True)
+    x,     ired   = np.divmod(x, 256)
+    iblue, igreen = np.divmod(x, 256)
+    rgb = np.array((ired, igreen, iblue)).T
+    col = [[c/255. for c in irgb] for irgb in rgb]
+
+    # Set image
+    im = img.Img(im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz, nv=1, val=code, varname='code')
+
+    return (im, col, rgb)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def writeImageGslib(im, filename, missing_value=None, fmt="%.10g"):
     """
     Writes an image in a file (gslib format):
@@ -1534,6 +1607,9 @@ def imageContStat (im, op='mean', **kwargs):
                         'min': min
                         'std': standard deviation
                         'var': variance
+                        'quantile': quantile
+                                    this operator requires the keyword argument
+                                    q=<sequence of quantile to compute>
     :param kwargs:  additional key word arguments passed to np.<op>
                         function, typically: ddof=1 if op is 'std' or 'var'
 
@@ -1544,14 +1620,25 @@ def imageContStat (im, op='mean', **kwargs):
 
     if op == 'max':
         func = np.nanmax
+        varname = [op]
     elif op == 'mean':
         func = np.nanmean
+        varname = [op]
     elif op == 'min':
         func = np.nanmin
+        varname = [op]
     elif op == 'std':
         func = np.nanstd
+        varname = [op]
     elif op == 'var':
         func = np.nanvar
+        varname = [op]
+    elif op == 'quantile':
+        func = np.nanquantile
+        if 'q' not in kwargs:
+            print("ERROR: keyword argument 'q' required for op='quantile', nothing done!")
+            return
+        varname = [op + '_' + str(v) for v in kwargs['q']]
     else:
         print("ERROR: unkown operation {}, nothing done!".format(op))
         return
@@ -1561,7 +1648,10 @@ def imageContStat (im, op='mean', **kwargs):
              ox=im.ox, oy=im.oy, oz=im.oz,
              nv=0, val=0.0)
 
-    imOut.append_var(func(im.val.reshape(im.nv,-1), axis=0, **kwargs))
+    vv = func(im.val.reshape(im.nv,-1), axis=0, **kwargs)
+    vv = vv.reshape(-1, im.nxyz())
+    for v, name in zip(vv, varname):
+        imOut.append_var(v, varname=name)
 
     return (imOut)
 # ----------------------------------------------------------------------------
@@ -1874,11 +1964,11 @@ def pointSetToImage(ps, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0
                 ix[i] = nx-1
 
         if iy[i] == ny:
-            if (ps.val[0,i]-ymin)/sy - ny < 1.e-10:
+            if (ps.val[1,i]-ymin)/sy - ny < 1.e-10:
                 iy[i] = ny-1
 
         if iz[i] == nz:
-            if (ps.val[0,i]-zmin)/sz - nz < 1.e-10:
+            if (ps.val[2,i]-zmin)/sz - nz < 1.e-10:
                 iz[i] = nz-1
 
     # Check which index is out of the image grid
@@ -2016,6 +2106,60 @@ def sampleFromImage(image, size, seed=None, mask=None):
         mask = imageToPointSet(mask)
 
     return sampleFromPointSet(point_set, size, seed, mask)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def extractRandomPointFromImage (im, npt, seed=None):
+    """
+    Extracts random points from an image (at center of grid cells) and return
+    the corresponding point set:
+
+    :param im:  (Img class) input image
+    :param npt: (int) number of points to extract
+                    (if greater than the number of image grid cells,
+                    npt is set to this latter)
+    :seed:      (int) seed number for initializing the random number generator (if not None)
+
+    :return:    (PointSet class) point set containing the extracting points
+    """
+
+    if npt <= 0:
+        print("ERROR: number of points negative or zero (npt={}), nothing done!".format(npt))
+        return
+
+    if npt >= im.nxyz():
+        return imageToPointSet(im)
+
+    if seed is not None:
+        np.random.seed(seed)
+
+    # Get random single grid indices
+    ind_grid = np.random.choice(np.arange(im.nxyz()), size=npt, replace=False)
+
+    # Get grid indices along each axis
+    ind_ixyz = np.array([singleGridIndexToGridIndex(i, im.nx, im.ny, im.nz) for i in ind_grid])
+
+    # Get points coordinates
+    x = im.ox + (ind_ixyz[:,0]+0.5)*im.sx
+    y = im.oy + (ind_ixyz[:,1]+0.5)*im.sy
+    z = im.oz + (ind_ixyz[:,2]+0.5)*im.sz
+
+    # Get value of every variable at points
+    v = np.array([im.val.reshape(im.nv,-1)[:,i] for i in ind_grid])
+
+    # Initialize point set
+    ps = PointSet(npt=npt, nv=3+im.nv, val=0.0)
+
+    # Set points coordinates
+    ps.set_var(val=x, varname='X', ind=0)
+    ps.set_var(val=y, varname='Y', ind=1)
+    ps.set_var(val=z, varname='Z', ind=2)
+
+    # Set next variable(s)
+    for i in range(im.nv):
+        ps.set_var(val=v[:,i], varname=im.varname[i], ind=3+i)
+
+    return (ps)
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":

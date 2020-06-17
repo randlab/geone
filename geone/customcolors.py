@@ -167,7 +167,7 @@ cbad_def = (.9, .9, .9, 0.5)
 # colormaps
 # ... default color map
 cbad1   = (.9, .9, .9, 0.5)
-cunder1 = [x/255. for x in (230, 165, 250)] + [0.5] # +[0.5] ... for appending alpha channel
+cunder1 = [x/255. for x in (160, 40, 160)] + [0.5] # +[0.5] ... for appending alpha channel
 cover1  = [x/255. for x in (250,  80, 120)] + [0.5] # +[0.5] ... for appending alpha channel
 cmaplist1 = ([x/255. for x in (160,  40, 240)],
              [x/255. for x in (  0, 240, 240)],
@@ -189,6 +189,9 @@ cmapB2W = custom_cmap(['black', 'white'], cunder=(0.0, 0.0, 1.0, 0.5), cover=(1.
 # # To get current rcParams (matplotlib)
 # import matplotlib as mpl
 # mpl.rcParams
+# # To customize existing colormap from matplotlib, example:
+# nn = 20
+# cmap_new_terrain = ccol.custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0,1,nn)], ncol=nn, cunder='pink', cover='orange', cbad='red')
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":
@@ -329,7 +332,7 @@ if __name__ == "__main__":
 
     # plt.tight_layout()
 
-    #plt.show()
-    fig.show()
+    # fig.show()
+    plt.show()
 
     a = input("Press enter to continue...")

@@ -50,7 +50,10 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                     only one of the parameters ix, iy, iz should be specified,
                     or none of them (in this case, iz is set to 0)
     :param iv:  (int) index of the variable to be drawn
-    :param cmap:    colormap
+
+    :param cmap:    colormap (can be a string: in this case the color map
+                        matplotlib.pyplot.get_cmap(cmap) is used)
+
     :param excludedVal: (int/float or sequence or None) values to be
                             excluded from the plot.
                             Note: not used if categ is True and categVal is
@@ -244,6 +247,14 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         min1 = im.oy
         max1 = im.ymax()
         zz = np.array(im.val[iv, iz, :, :].reshape(dim1, dim0)) # np.array() to get a copy
+
+    # Get the color map
+    if isinstance(cmap, str):
+        try:
+            cmap = plt.get_cmap(cmap)
+        except:
+            print("ERROR: invalid cmap string!")
+            return
 
     if categ:
         # --- Treat categorical variable ---
@@ -766,7 +777,9 @@ if __name__ == "__main__":
     drawImage2D(imStd, title='Std over {} real'.format(nv))
 
     # plt.tight_layout()
-    fig.show()
+
+    # fig.show()
+    plt.show()
 
     # Copy im and categorize
     # ----------------------
@@ -828,7 +841,7 @@ if __name__ == "__main__":
 
     # plt.tight_layout()
 
-    #plt.show()
-    fig.show()
+    # fig.show()
+    plt.show()
 
     a = input("Press enter to continue...")

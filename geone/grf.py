@@ -3161,7 +3161,8 @@ if __name__ == "__main__":
     plt.legend()
     plt.title('GRF1D')
 
-    fig.show()
+    # fig.show()
+    plt.show()
 
     if x is not None:
         # === 4 real and kriging estimates and sd
@@ -3177,7 +3178,8 @@ if __name__ == "__main__":
         plt.legend()
         plt.title('GRF1D')
 
-        fig.show()
+        # fig.show()
+        plt.show()
 
         # === comparison of mean and sd of all real, with kriging estimates and sd
         fig, ax = plt.subplots(figsize=(20,10))
@@ -3190,7 +3192,8 @@ if __name__ == "__main__":
         plt.legend()
         plt.title('GRF1D and KRIGE1D / nreal={}'.format(nreal))
 
-        fig.show()
+        # fig.show()
+        plt.show()
 
         print('Peak to peak for "grfMean - krig": {}'.format(np.ptp(grfMean-krig)))
         print('Peak to peak for "grfSD - krigSD": {}'.format(np.ptp(grfSD-krigSD)))
@@ -3317,7 +3320,8 @@ if __name__ == "__main__":
         plt.plot(x[:,0],x[:,1],'+k', markersize=10)
     plt.title('SD over {} real'.format(nreal))
 
-    fig.show()
+    # fig.show()
+    plt.show()
 
     if x is not None:
         # === 4 real and kriging estimates and sd
@@ -3355,7 +3359,8 @@ if __name__ == "__main__":
 
         plt.title('Kriging SD')
 
-        fig.show()
+        # fig.show()
+        plt.show()
 
         # === comparison of mean and sd of all real, with kriging estimates and sd
         fig, ax = plt.subplots(1,2,figsize=(15,5))
@@ -3380,7 +3385,8 @@ if __name__ == "__main__":
 
         plt.title('2D: grfSD - krigSD / nreal={}'.format(nreal))
 
-        fig.show()
+        # fig.show()
+        plt.show()
 
         print('Peak to peak for "grfMean - krig": {}'.format(np.ptp(grfMean-krig)))
         print('Peak to peak for "grfSD - krigSD": {}'.format(np.ptp(grfSD-krigSD)))
@@ -3566,8 +3572,8 @@ if __name__ == "__main__":
     plt.ylabel('z')
     plt.title('SD over {} real, ix = {}'.format(nreal, ix0))
 
-    # plt.show()
-    fig.show()
+    # fig.show()
+    plt.show()
 
     if x is not None:
         # === first real and kriging estimates and sd
@@ -3666,8 +3672,8 @@ if __name__ == "__main__":
         plt.ylabel('z')
         plt.title('Kriging SD, ix = {}'.format(ix0))
 
-        # plt.show()
-        fig.show()
+        # fig.show()
+        plt.show()
 
         # === comparison of mean and sd of all real, with kriging estimates and sd
         fig, ax = plt.subplots(2,3,figsize=(20,10))
@@ -3734,8 +3740,8 @@ if __name__ == "__main__":
         plt.ylabel('z')
         plt.title('3D: grfSD - krigSD / nreal={} / ix = {}'.format(nreal, ix0))
 
-        # plt.show()
-        fig.show()
+        # fig.show()
+        plt.show()
 
         print('Peak to peak for "grfMean - krig": {}'.format(np.ptp(grfMean-krig)))
         print('Peak to peak for "grfSD - krigSD": {}'.format(np.ptp(grfSD-krigSD)))

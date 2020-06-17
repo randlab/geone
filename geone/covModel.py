@@ -555,7 +555,8 @@ if __name__ == "__main__":
     #ax.yaxis.set_ticks_position('left')
     ax.spines['left'].set_position(('data',0))
 
-    fig.show()
+    # fig.show()
+    plt.show()
 
     # ########## 2D case ##########
     # Define covariance model
@@ -607,7 +608,8 @@ if __name__ == "__main__":
     plt.ylabel('y')
     plt.title('{}: vario'.format(cov_model.name))
 
-    fig.show()
+    # fig.show()
+    plt.show()
 
     # fig: cov using plot_surface
     fig = plt.figure()
@@ -618,7 +620,8 @@ if __name__ == "__main__":
     ax.set_ylabel('y')
     ax.set_title('{}: cov'.format(cov_model.name))
 
-    fig.show()
+    # fig.show()
+    plt.show()
 
     # fig: vario using plot_surface
     fig = plt.figure()
@@ -628,7 +631,9 @@ if __name__ == "__main__":
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_title('{}: vario'.format(cov_model.name))
-    fig.show()
+
+    # fig.show()
+    plt.show()
 
     # # fig: cov and vario using plot_surface
     # fig = plt.figure(figsize=(16,10))
@@ -645,7 +650,9 @@ if __name__ == "__main__":
     # ax.set_xlabel('x')
     # ax.set_ylabel('y')
     # ax.set_title('{}: vario'.format(cov_model.name))
-    # fig.show()
+    #
+    # # fig.show()
+    # plt.show()
 
     ########## 3D case ##########
     # Define covariance model
@@ -745,7 +752,7 @@ if __name__ == "__main__":
     plt.ylabel('z')
     plt.title('{}: vario yz-slice x={}'.format(cov_model.name, hx[ix0]))
 
-    #plt.show()
-    fig.show()
+    # fig.show()
+    plt.show()
 
     a = input("Press enter to continue...")

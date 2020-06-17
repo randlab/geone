@@ -10,8 +10,8 @@ Module interfacing deesse for python.
 """
 
 import numpy as np
-import os
-import multiprocessing
+import sys, os, re, copy
+# import multiprocessing
 
 from geone import img, blockdata
 from geone.deesse_core import deesse
@@ -785,6 +785,9 @@ class DeesseInput(object):
         nneighboringNode:
                 (1-dimensional array of ints of size nv) maximal number of neighbors
                     in the search pattern, for each variable
+        maxPropInequalityNode:
+                (1-dimensional array of doubles of size nv) maximal proportion of nodes
+                    with inequality data in the search pattern, for each variable
         neighboringNodeDensity:
                 (1-dimensional array of doubles of size nv) density of neighbors
                     in the search pattern, for each variable
@@ -815,13 +818,13 @@ class DeesseInput(object):
                     flag for each variable indicating if relative distance
                     is used (True) or not (False)
         distanceType:
-                (1-dimensional array of ints of size nv) distance type (between
-                    pattern) for each variable; possible value:
-                        - 0: non-matching nodes (typically for categorical variable)
-                        - 1: L-1 distance
-                        - 2: L-2 distance
-                        - 3: L-p distance, requires the real positive parameter p
-                        - 4: L-infinity
+                (List (or 1-dimensional array) of ints or strings of size nv)
+                    distance type (between pattern) for each variable; possible value:
+                        - 0 or 'categorical' : non-matching nodes (default if None)
+                        - 1 or 'continuous'  : L-1 distance
+                        - 2 : L-2 distance
+                        - 3 : L-p distance, requires the real positive parameter p
+                        - 4 : L-infinity
         powerLpDistance
                 (1-dimensional array of doubles of size nv) p parameter for L-p
                     distance, for each variable (unused for variable not using
@@ -972,7 +975,8 @@ class DeesseInput(object):
                  expMax=0.05,
                  normalizingType='linear',
                  searchNeighborhoodParameters=None,
-                 nneighboringNode=None, neighboringNodeDensity=None,
+                 nneighboringNode=None,
+                 maxPropInequalityNode=None, neighboringNodeDensity=None,
                  rescalingMode=None,
                  rescalingTargetMin=None, rescalingTargetMax=None,
                  rescalingTargetMean=None, rescalingTargetLength=None,
@@ -1390,6 +1394,15 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "nneighboringNode"...')
                 return
 
+        if maxPropInequalityNode is None:
+            self.maxPropInequalityNode = np.array([0.25 for i in range(nv)])
+        else:
+            try:
+                self.maxPropInequalityNode = np.asarray(maxPropInequalityNode).reshape(nv)
+            except:
+                print('ERROR: (DeesseInput) field "maxPropInequalityNode"...')
+                return
+
         if neighboringNodeDensity is None:
             self.neighboringNodeDensity = np.array([1. for i in range(nv)])
         else:
@@ -1468,7 +1481,20 @@ class DeesseInput(object):
             self.distanceType = np.array([0 for i in range(nv)])
         else:
             try:
-                self.distanceType = np.asarray(distanceType).reshape(nv)
+                if isinstance(distanceType, str) or isinstance(distanceType, int):
+                    self.distanceType = [distanceType]
+                else:
+                    self.distanceType = list(distanceType)
+                for i in range(len(self.distanceType)):
+                    if isinstance(self.distanceType[i], str):
+                        if self.distanceType[i] == 'categorical':
+                            self.distanceType[i] = 0
+                        elif self.distanceType[i] == 'continuous':
+                            self.distanceType[i] = 1
+                        else:
+                            print('ERROR: (DeesseInput) field "distanceType"...')
+                            return
+                self.distanceType = np.asarray(self.distanceType).reshape(nv)
             except:
                 print('ERROR: (DeesseInput) field "distanceType"...')
                 return
@@ -1647,7 +1673,7 @@ class DeesseInput(object):
         self.seed = seed
         self.seedIncrement = seedIncrement
         self.nrealization = nrealization
-        self.ok = True
+        self.ok = True # flag to "validate" the class
 # ============================================================================
 
 # ----------------------------------------------------------------------------
@@ -1839,8 +1865,6 @@ def deesse_input_py2C(deesse_input):
     :return:             (MPDS_SIMINPUT) deesse input - C
     """
 
-    # check deesse_input:...
-
     nxy = deesse_input.nx * deesse_input.ny
     nxyz = nxy * deesse_input.nz
 
@@ -1885,7 +1909,7 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.simImage = img_py2C(im)
 
     # mpds_siminput.nvar
-    mpds_siminput.nvar = deesse_input.nv
+    mpds_siminput.nvar = int(deesse_input.nv)
 
     # mpds_siminput.outputVarFlag
     deesse.mpds_set_outputVarFlag(mpds_siminput, np.array([int(i) for i in deesse_input.outputVarFlag], dtype='intc'))
@@ -2186,7 +2210,7 @@ def deesse_input_py2C(deesse_input):
         return
 
     # mpds_siminput.searchNeighborhoodParameters
-    mpds_siminput.searchNeighborhoodParameters = deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(deesse_input.nv)
+    mpds_siminput.searchNeighborhoodParameters = deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(int(deesse_input.nv))
     for i, sn in enumerate(deesse_input.searchNeighborhoodParameters):
         sn_c = deesse.malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS()
         deesse.MPDSInitSearchNeighborhoodParameters(sn_c)
@@ -2234,19 +2258,25 @@ def deesse_input_py2C(deesse_input):
             mpds_siminput.searchNeighborhoodParameters, i, sn_c)
 
     # mpds_siminput.nneighboringNode
-    mpds_siminput.nneighboringNode = deesse.new_int_array(deesse_input.nv)
+    mpds_siminput.nneighboringNode = deesse.new_int_array(int(deesse_input.nv))
     deesse.mpds_set_int_vector_from_array(
         mpds_siminput.nneighboringNode, 0,
         np.asarray(deesse_input.nneighboringNode, dtype='intc').reshape(deesse_input.nv))
 
+    # mpds_siminput.maxPropInequalityNode
+    mpds_siminput.maxPropInequalityNode = deesse.new_double_array(int(deesse_input.nv))
+    deesse.mpds_set_double_vector_from_array(
+        mpds_siminput.maxPropInequalityNode, 0,
+        np.asarray(deesse_input.maxPropInequalityNode).reshape(deesse_input.nv))
+
     # mpds_siminput.neighboringNodeDensity
-    mpds_siminput.neighboringNodeDensity = deesse.new_double_array(deesse_input.nv)
+    mpds_siminput.neighboringNodeDensity = deesse.new_double_array(int(deesse_input.nv))
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.neighboringNodeDensity, 0,
         np.asarray(deesse_input.neighboringNodeDensity).reshape(deesse_input.nv))
 
     # mpds_siminput.rescalingMode
-    mpds_siminput.rescalingMode = deesse.new_MPDS_RESCALINGMODE_array(deesse_input.nv)
+    mpds_siminput.rescalingMode = deesse.new_MPDS_RESCALINGMODE_array(int(deesse_input.nv))
     for i, m in enumerate(deesse_input.rescalingMode):
         if m == 'none':
             deesse.MPDS_RESCALINGMODE_array_setitem(mpds_siminput.rescalingMode, i, deesse.RESCALING_NONE)
@@ -2259,25 +2289,25 @@ def deesse_input_py2C(deesse_input):
             return
 
     # mpds_simInput.rescalingTargetMin
-    mpds_siminput.rescalingTargetMin = deesse.new_real_array(deesse_input.nv)
+    mpds_siminput.rescalingTargetMin = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetMin, 0,
         np.asarray(deesse_input.rescalingTargetMin).reshape(deesse_input.nv))
 
     # mpds_simInput.rescalingTargetMax
-    mpds_siminput.rescalingTargetMax = deesse.new_real_array(deesse_input.nv)
+    mpds_siminput.rescalingTargetMax = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetMax, 0,
         np.asarray(deesse_input.rescalingTargetMax).reshape(deesse_input.nv))
 
     # mpds_simInput.rescalingTargetMean
-    mpds_siminput.rescalingTargetMean = deesse.new_real_array(deesse_input.nv)
+    mpds_siminput.rescalingTargetMean = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetMean, 0,
         np.asarray(deesse_input.rescalingTargetMean).reshape(deesse_input.nv))
 
     # mpds_simInput.rescalingTargetLength
-    mpds_siminput.rescalingTargetLength = deesse.new_real_array(deesse_input.nv)
+    mpds_siminput.rescalingTargetLength = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetLength, 0,
         np.asarray(deesse_input.rescalingTargetLength).reshape(deesse_input.nv))
@@ -2286,25 +2316,25 @@ def deesse_input_py2C(deesse_input):
     deesse.mpds_set_relativeDistanceFlag(mpds_siminput, np.array([int(i) for i in deesse_input.relativeDistanceFlag], dtype='intc'))
 
     # mpds_siminput.distanceType
-    mpds_siminput.distanceType = deesse.new_int_array(deesse_input.nv)
+    mpds_siminput.distanceType = deesse.new_int_array(int(deesse_input.nv))
     deesse.mpds_set_int_vector_from_array(
         mpds_siminput.distanceType, 0,
         np.asarray(deesse_input.distanceType, dtype='intc').reshape(deesse_input.nv))
 
     # mpds_siminput.powerLpDistance
-    mpds_siminput.powerLpDistance = deesse.new_double_array(deesse_input.nv)
+    mpds_siminput.powerLpDistance = deesse.new_double_array(int(deesse_input.nv))
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.powerLpDistance, 0,
         np.asarray(deesse_input.powerLpDistance).reshape(deesse_input.nv))
 
     # mpds_siminput.powerLpDistanceInv
-    mpds_siminput.powerLpDistanceInv = deesse.new_double_array(deesse_input.nv)
+    mpds_siminput.powerLpDistanceInv = deesse.new_double_array(int(deesse_input.nv))
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.powerLpDistanceInv, 0,
         np.asarray(deesse_input.powerLpDistanceInv).reshape(deesse_input.nv))
 
     # mpds_siminput.conditioningWeightFactor
-    mpds_siminput.conditioningWeightFactor = deesse.new_real_array(deesse_input.nv)
+    mpds_siminput.conditioningWeightFactor = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.conditioningWeightFactor, 0,
         np.asarray(deesse_input.conditioningWeightFactor).reshape(deesse_input.nv))
@@ -2350,13 +2380,13 @@ def deesse_input_py2C(deesse_input):
         return
 
     # mpds_siminput.distanceThreshold
-    mpds_siminput.distanceThreshold = deesse.new_real_array(deesse_input.nv)
+    mpds_siminput.distanceThreshold = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.distanceThreshold, 0,
         np.asarray(deesse_input.distanceThreshold).reshape(deesse_input.nv))
 
     # mpds_siminput.softProbability ...
-    mpds_siminput.softProbability = deesse.new_MPDS_SOFTPROBABILITY_array(deesse_input.nv)
+    mpds_siminput.softProbability = deesse.new_MPDS_SOFTPROBABILITY_array(int(deesse_input.nv))
 
     # ... for each variable ...
     for i, sp in enumerate(deesse_input.softProbability):
@@ -2431,7 +2461,7 @@ def deesse_input_py2C(deesse_input):
         deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_siminput.softProbability, i, sp_c)
 
     # mpds_siminput.connectivity ...
-    mpds_siminput.connectivity = deesse.new_MPDS_CONNECTIVITY_array(deesse_input.nv)
+    mpds_siminput.connectivity = deesse.new_MPDS_CONNECTIVITY_array(int(deesse_input.nv))
 
     for i, co in enumerate(deesse_input.connectivity):
         co_c = deesse.malloc_MPDS_CONNECTIVITY()
@@ -2481,7 +2511,7 @@ def deesse_input_py2C(deesse_input):
         deesse.MPDS_CONNECTIVITY_array_setitem(mpds_siminput.connectivity, i, co_c)
 
     # mpds_siminput.blockData ...
-    mpds_siminput.blockData = deesse.new_MPDS_BLOCKDATA_array(deesse_input.nv)
+    mpds_siminput.blockData = deesse.new_MPDS_BLOCKDATA_array(int(deesse_input.nv))
     # ... for each variable ...
     for i, bd in enumerate(deesse_input.blockData):
         bd_c = deesse.malloc_MPDS_BLOCKDATA()
@@ -2548,7 +2578,7 @@ def deesse_input_py2C(deesse_input):
     deesse.MPDSInitPyramidGeneralParameters(mpds_siminput.pyramidGeneralParameters)
 
     # ... npyramidLevel
-    nl = deesse_input.pyramidGeneralParameters.npyramidLevel
+    nl = int(deesse_input.pyramidGeneralParameters.npyramidLevel)
     mpds_siminput.pyramidGeneralParameters.npyramidLevel = nl
 
     # ... pyramidSimulationMode
@@ -2605,7 +2635,7 @@ def deesse_input_py2C(deesse_input):
                 np.asarray(deesse_input.pyramidGeneralParameters.factorMaxScanFraction).reshape(nl+1))
 
     # mpds_siminput.pyramidParameters ...
-    mpds_siminput.pyramidParameters = deesse.new_MPDS_PYRAMIDPARAMETERS_array(deesse_input.nv)
+    mpds_siminput.pyramidParameters = deesse.new_MPDS_PYRAMIDPARAMETERS_array(int(deesse_input.nv))
 
     # ... for each variable ...
     for i, pp in enumerate(deesse_input.pyramidParameters):
@@ -2613,7 +2643,7 @@ def deesse_input_py2C(deesse_input):
         deesse.MPDSInitPyramidParameters(pp_c)
 
         # ... nlevel
-        pp_c.nlevel = pp.nlevel
+        pp_c.nlevel = int(pp.nlevel)
 
         # ... pyramidType
         if pp.pyramidType == 'none':
@@ -2642,19 +2672,19 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.npostProcessingPathMax = deesse_input.npostProcessingPathMax
 
     # mpds_siminput.postProcessingNneighboringNode
-    mpds_siminput.postProcessingNneighboringNode = deesse.new_int_array(deesse_input.nv)
+    mpds_siminput.postProcessingNneighboringNode = deesse.new_int_array(int(deesse_input.nv))
     deesse.mpds_set_int_vector_from_array(
         mpds_siminput.postProcessingNneighboringNode, 0,
             np.asarray(deesse_input.postProcessingNneighboringNode, dtype='intc').reshape(deesse_input.nv))
 
     # mpds_siminput.postProcessingNeighboringNodeDensity
-    mpds_siminput.postProcessingNeighboringNodeDensity = deesse.new_double_array(deesse_input.nv)
+    mpds_siminput.postProcessingNeighboringNodeDensity = deesse.new_double_array(int(deesse_input.nv))
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.postProcessingNeighboringNodeDensity, 0,
             np.asarray(deesse_input.postProcessingNeighboringNodeDensity).reshape(deesse_input.nv))
 
     # mpds_siminput.postProcessingDistanceThreshold
-    mpds_siminput.postProcessingDistanceThreshold = deesse.new_real_array(deesse_input.nv)
+    mpds_siminput.postProcessingDistanceThreshold = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.postProcessingDistanceThreshold, 0,
             np.asarray(deesse_input.postProcessingDistanceThreshold).reshape(deesse_input.nv))
@@ -2669,26 +2699,34 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.postProcessingTolerance = deesse_input.postProcessingTolerance
 
     # mpds_siminput.seed
-    mpds_siminput.seed = deesse_input.seed
+    mpds_siminput.seed = int(deesse_input.seed)
 
     # mpds_siminput.seedIncrement
-    mpds_siminput.seedIncrement = deesse_input.seedIncrement
+    mpds_siminput.seedIncrement = int(deesse_input.seedIncrement)
 
     # mpds_siminput.nrealization
-    mpds_siminput.nrealization = deesse_input.nrealization
+    mpds_siminput.nrealization = int(deesse_input.nrealization)
 
     return mpds_siminput
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesse_output_C2py(mpds_simoutput):
+def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
     """
-    Converts deesse output from C to python.
+    Get deesse output for python from C.
 
-    :param mpds_simoutput:  (MPDS_SIMOUTPUT *) deesse output - (C struct)
+    :param mpds_simoutput:  (MPDS_SIMOUTPUT *) simulation output - (C struct)
+    :param mpds_progressMonitor:
+                            (MPDS_PROGRESSMONITOR *) progress monitor - (C struct)
 
-    :return deesse_output:  (dictionary) {'sim':sim, 'path':path, 'error':error,
-        'tiGridNode':tiGridNode, 'tiIndex':tiIndex}
+    :return deesse_output:  (dictionary)
+            {'sim':sim,
+             'path':path,
+             'error':error,
+             'tiGridNode':tiGridNode,
+             'tiIndex':tiIndex,
+             'nwarning':nwarning,
+             'warnings':warnings}
         With nreal = mpds_simOutput->nreal:
         sim:    (1-dimensional array of Img (class) of size nreal or None)
                     sim[i]: i-th realisation
@@ -2701,21 +2739,28 @@ def deesse_output_C2py(mpds_simoutput):
         error:   (1-dimensional array of Img (class) of size nreal or None)
                     error[i]: error map for the i-th realisation
                               (mpds_simoutput->outputErrorImage[i])
-                    (path is None if mpds_simoutput->outputErrorImage is NULL)
+                    (error is None if mpds_simoutput->outputErrorImage is NULL)
         tiGridNode:
                 (1-dimensional array of Img (class) of size nreal or None)
                     tiGridNode[i]: TI grid node index map for the i-th realisation
                              (mpds_simoutput->outputTiGridNodeIndexImage[i])
-                    (path is None if mpds_simoutput->outputTiGridNodeIndexImage is NULL)
+                    (tiGridNode is None if mpds_simoutput->outputTiGridNodeIndexImage is NULL)
         tiIndex:
                 (1-dimensional array of Img (class) of size nreal or None)
-                    tiGridNode[i]: TI index map for the i-th realisation
+                    tiIndex[i]: TI index map for the i-th realisation
                              (mpds_simoutput->outputTiIndexImage[i])
-                    (path is None if mpds_simoutput->outputTiIndexImage is NULL)
+                    (tiIndex is None if mpds_simoutput->outputTiIndexImage is NULL)
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
     """
 
     # Initialization
     sim, path, error, tiGridNode, tiIndex = None, None, None, None, None
+    nwarning, warnings = None, None
 
     if mpds_simoutput.nreal:
         nreal = mpds_simoutput.nreal
@@ -2805,7 +2850,18 @@ def deesse_output_C2py(mpds_simoutput):
 
             tiIndex = np.asarray(tiIndex).reshape(nreal)
 
-    return {'sim':sim, 'path':path, 'error':error, 'tiGridNode':tiGridNode, 'tiIndex':tiIndex}
+    nwarning = mpds_progressMonitor.nwarning
+    warnings = []
+    if mpds_progressMonitor.nwarningNumber:
+        tmp = np.zeros(mpds_progressMonitor.nwarningNumber, dtype='int32') # 'int32' for C-compatibility
+        deesse.mpds_get_array_from_int_vector(mpds_progressMonitor.warningNumberList, 0, tmp)
+        warningNumberList = np.asarray(tmp, dtype='int') # 'int' or equivalently 'int64'
+        for iwarn in warningNumberList:
+            warning_message = deesse.mpds_get_warning_message(int(iwarn)) # int() required!
+            warning_message = warning_message.replace('\n', '')
+            warnings.append(warning_message)
+
+    return {'sim':sim, 'path':path, 'error':error, 'tiGridNode':tiGridNode, 'tiIndex':tiIndex, 'nwarning':nwarning, 'warnings':warnings}
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -2825,25 +2881,39 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
                     - 1: warning only
                     - 2 (or >1): warning and progress
 
-    :return deesse_output:  (dictionary) {'sim':sim, 'path':path, 'error':error,
-        'tiGridNode':tiGridNode, 'tiIndex':tiIndex}
-        With nreal = deesse_input.nrealization:
-        sim:    (1-dimensional array of Img (class) of size nreal)
-                    sim[i]: i-th realisation
-        path:   (1-dimensional array of Img (class) of size nreal or None)
-                    path[i]: path index map for the i-th realisation
-                    (path is None if deesse_input.outputPathIndexFlag is False)
-        error:  (1-dimensional array of Img (class) of size nreal or None)
-                    error[i]: error map for the i-th realisation
-                    (path is None if deesse_input.outputErrorFlag is False)
-        tiGridNode:
-                (1-dimensional array of Img (class) of size nreal or None)
-                    tiGridNode[i]: TI grid node index map for the i-th realisation
-                    (path is None if deesse_input.outputTiGridNodeIndexFlag is False)
-        tiIndex:
-                (1-dimensional array of Img (class) of size nreal or None)
-                    tiGridNode[i]: TI index map for the i-th realisation
-                    (path is None if deesse_input.outputTiIndexFlag is False)
+    :return deesse_output:
+        (dictionary)
+                {'sim':sim,
+                 'path':path,
+                 'error':error,
+                 'tiGridNode':tiGridNode,
+                 'tiIndex':tiIndex,
+                 'nwarning':nwarning,
+                 'warnings':warnings}
+            With nreal = deesse_input.nrealization:
+            sim:    (1-dimensional array of Img (class) of size nreal or None)
+                        sim[i]: i-th realisation
+                        (sim is None if no simulation is retrieved)
+            path:   (1-dimensional array of Img (class) of size nreal or None)
+                        path[i]: path index map for the i-th realisation
+                        (path is None if no path index map is retrieved)
+            error:   (1-dimensional array of Img (class) of size nreal or None)
+                        error[i]: error map for the i-th realisation
+                        (error is None if no error map is retrieved)
+            tiGridNode:
+                    (1-dimensional array of Img (class) of size nreal or None)
+                        tiGridNode[i]: TI grid node index map for the i-th realisation
+                        (tiGridNode is None if no TI grid node index map is retrieved)
+            tiIndex:
+                    (1-dimensional array of Img (class) of size nreal or None)
+                        tiIndex[i]: TI index map for the i-th realisation
+                        (tiIndex is None if no TI index map is retrieved)
+            nwarning:
+                    (int) total number of warning(s) encountered
+                        (same warnings can be counted several times)
+            warnings:
+                    (list of strings) list of distinct warnings encountered
+                        (can be empty)
     """
 
     # Convert deesse input from python to C
@@ -2851,6 +2921,17 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
         print('ERROR: check deesse input')
         return
 
+    # Set number of threads
+    if nthreads <= 0:
+        nth = max(os.cpu_count() + nthreads, 1)
+    else:
+        nth = nthreads
+
+    if verbose >= 2:
+        print('Deesse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
+        sys.stdout.flush() # so that the previous print is flushed before launching deesse...
+
+    # Convert deesse input from python to C
     try:
         mpds_siminput = deesse_input_py2C(deesse_input)
     except:
@@ -2858,6 +2939,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
         return
 
     if mpds_siminput is None:
+        print('ERROR: unable to convert deesse input from python to C...')
         return
 
     # Allocate mpds_simoutput
@@ -2870,60 +2952,507 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
     mpds_progressMonitor = deesse.malloc_MPDS_PROGRESSMONITOR()
     deesse.MPDSInitProgressMonitor(mpds_progressMonitor)
 
-    # Set function to update progress monitor
+    # Set function to update progress monitor:
+    # according to deesse.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
+    # the function
+    #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    # should be used, but the following function can also be used:
+    #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr: no output
+    #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
     if verbose == 0:
-        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorNoDisplay_ptr
+        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorDisplayWarningOnly_ptr
+        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        if deesse.MPDS_SHOW_PROGRESS_MONITOR == 2:
-            mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllStdout_ptr
-        else:
-            mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorStdout_ptr
-
-    # Set number of threads
-    if nthreads <= 0:
-        nth = max(multiprocessing.cpu_count() + nthreads, 1)
-    else:
-        nth = nthreads
-
-    if verbose >= 2:
-        print('********************************************************************************')
-        print('DEESSE VERSION {:s} / BUILD NUMBER {:s}'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER))
-        print('********************************************************************************')
+        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
     # Launch deesse
-    # mpds_err = deesse.MPDSSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    mpds_err = deesse.MPDSOMPSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    # err = deesse.MPDSSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor )
+    err = deesse.MPDSOMPSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
 
-    # Free memory on C side: deesse input and progress monitor
+    # Free memory on C side: deesse input
     deesse.MPDSFreeSimInput(mpds_siminput)
     #deesse.MPDSFree(mpds_siminput)
     deesse.free_MPDS_SIMINPUT(mpds_siminput)
-    #deesse.MPDSFree(mpds_progressMonitor)
-    deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if mpds_err:
-        err_message = deesse.mpds_get_error_message(-mpds_err)
-        print(err_message.replace('\n', ''))
-        # Free memory on C side: deesse output
-        deesse.MPDSFreeSimOutput(mpds_simoutput)
-        #deesse.MPDSFree (mpds_simoutput)
-        deesse.free_MPDS_SIMOUTPUT(mpds_simoutput)
-        return
+    if err:
+        err_message = deesse.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        print(err_message)
+        deesse_output = None
+    else:
+        deesse_output = deesse_output_C2py(mpds_simoutput, mpds_progressMonitor)
 
-    deesse_output = deesse_output_C2py(mpds_simoutput)
-
-    # Free memory on C side: deesse output
+    # Free memory on C side: simulation output
     deesse.MPDSFreeSimOutput(mpds_simoutput)
     #deesse.MPDSFree (mpds_simoutput)
     deesse.free_MPDS_SIMOUTPUT(mpds_simoutput)
 
+    # Free memory on C side: progress monitor
+    #deesse.MPDSFree(mpds_progressMonitor)
+    deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
     if verbose >= 2:
-        print('DONE')
+        print('Deesse run complete')
+
+    # Show (print) encountered warnings
+    if verbose >= 1 and deesse_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(deesse_output['nwarning']))
+        for i, warning_message in enumerate(deesse_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
 
     return deesse_output
 # ----------------------------------------------------------------------------
+
+# # ----------------------------------------------------------------------------
+# # Note: the three following functions:
+# #          deesseRunC, deesseRun_sp, and deesseRun_mp
+# #       are based on multiprocessing package, but as their use implies
+# #       unwanted behaviours in notebook, they are commented...
+# # ----------------------------------------------------------------------------
+# def deesseRunC(deesse_input, nthreads, verbose):
+#     """
+#     Launches deesse in C (single process).
+#
+#     :param deesse_input:
+#                 (DeesseInput (class)): deesse input parameter (python)
+#     :param nthreads:
+#                 (int) number of thread(s) to use for deesse (C), nthreads > 0
+#     :param verbose:
+#                 (int) indicates what is displayed during the deesse run:
+#                     - 0: nothing
+#                     - 1: warning only
+#                     - 2 (or >1): warning and progress
+#
+#     :return (deesse_output, err, err_message):
+#         deesse_output: (dictionary)
+#                 {'sim':sim,
+#                  'path':path,
+#                  'error':error,
+#                  'tiGridNode':tiGridNode,
+#                  'tiIndex':tiIndex,
+#                  'nwarning':nwarning,
+#                  'warnings':warnings}
+#             With nreal = deesse_input.nrealization:
+#             sim:    (1-dimensional array of Img (class) of size nreal or None)
+#                         sim[i]: i-th realisation
+#                         (sim is None if no simulation is retrieved)
+#             path:   (1-dimensional array of Img (class) of size nreal or None)
+#                         path[i]: path index map for the i-th realisation
+#                         (path is None if no path index map is retrieved)
+#             error:   (1-dimensional array of Img (class) of size nreal or None)
+#                         error[i]: error map for the i-th realisation
+#                         (error is None if no error map is retrieved)
+#             tiGridNode:
+#                     (1-dimensional array of Img (class) of size nreal or None)
+#                         tiGridNode[i]: TI grid node index map for the i-th realisation
+#                         (tiGridNode is None if no TI grid node index map is retrieved)
+#             tiIndex:
+#                     (1-dimensional array of Img (class) of size nreal or None)
+#                         tiIndex[i]: TI index map for the i-th realisation
+#                         (tiIndex is None if no TI index map is retrieved)
+#             nwarning:
+#                     (int) total number of warning(s) encountered
+#                         (same warnings can be counted several times)
+#             warnings:
+#                     (list of strings) list of distinct warnings encountered
+#                         (can be empty)
+#
+#         err: (int) error code:
+#             = 0: no error
+#             < 0: error resulting from the C function
+#             > 0: error intercepted in this function
+#
+#         err_message: (string) error message
+#
+#     :note: a call of this function should be isolated in a process (multiprocessing package)
+#     """
+#
+#     # Initialization
+#     err = 0
+#     err_message = ''
+#     deesse_output = None
+#
+#     # Check number of threads
+#     if nthreads <= 0:
+#         err = 2
+#         err_message = 'ERROR: invalid number of threads...'
+#         return (deesse_output, err, err_message)
+#
+#     # Convert deesse input from python to C
+#     try:
+#         mpds_siminput = deesse_input_py2C(deesse_input)
+#     except:
+#         err = 3
+#         err_message = 'ERROR: unable to convert deesse input from python to C...'
+#         return (deesse_output, err, err_message)
+#
+#     if mpds_siminput is None:
+#         err = 3
+#         err_message = 'ERROR: unable to convert deesse input from python to C...'
+#         return (deesse_output, err, err_message)
+#
+#     # Allocate mpds_simoutput
+#     mpds_simoutput = deesse.malloc_MPDS_SIMOUTPUT()
+#
+#     # Init mpds_simoutput
+#     deesse.MPDSInitSimOutput(mpds_simoutput)
+#
+#     # Set progress monitor
+#     mpds_progressMonitor = deesse.malloc_MPDS_PROGRESSMONITOR()
+#     deesse.MPDSInitProgressMonitor(mpds_progressMonitor)
+#
+#     # Set function to update progress monitor:
+#     # according to deesse.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
+#     # the function
+#     #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+#     # should be used, but the following function can also be used:
+#     #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr: no output
+#     #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
+#     if verbose == 0:
+#         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
+#     elif verbose == 1:
+#         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+#     else:
+#         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+#
+#     # Launch deesse
+#     # err = deesse.MPDSSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor )
+#     err = deesse.MPDSOMPSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor, nthreads )
+#
+#     # Free memory on C side: deesse input
+#     deesse.MPDSFreeSimInput(mpds_siminput)
+#     #deesse.MPDSFree(mpds_siminput)
+#     deesse.free_MPDS_SIMINPUT(mpds_siminput)
+#
+#     if err:
+#         err_message = deesse.mpds_get_error_message(-err)
+#         err_message = err_message.replace('\n', '')
+#     else:
+#         deesse_output = deesse_output_C2py(mpds_simoutput, mpds_progressMonitor)
+#
+#     # Free memory on C side: simulation output
+#     deesse.MPDSFreeSimOutput(mpds_simoutput)
+#     #deesse.MPDSFree (mpds_simoutput)
+#     deesse.free_MPDS_SIMOUTPUT(mpds_simoutput)
+#
+#     # Free memory on C side: progress monitor
+#     #deesse.MPDSFree(mpds_progressMonitor)
+#     deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+#
+#     return (deesse_output, err, err_message)
+# # ----------------------------------------------------------------------------
+#
+# # ----------------------------------------------------------------------------
+# def deesseRun_sp(deesse_input, nthreads=-1, verbose=2):
+#     """
+#     Launches deesse through a single process.
+#
+#     :param deesse_input:
+#                 (DeesseInput (class)): deesse input parameter (python)
+#     :param nthreads:
+#                 (int) number of thread(s) to use for deesse (C),
+#                     (nthreads = -n <= 0: for maximal number of threads except n,
+#                     but at least 1)
+#     :param verbose:
+#                 (int) indicates what is displayed during the deesse run:
+#                     - 0: nothing
+#                     - 1: warning only
+#                     - 2 (or >1): warning and progress
+#
+#     :return deesse_output:
+#         (dictionary)
+#                 {'sim':sim,
+#                  'path':path,
+#                  'error':error,
+#                  'tiGridNode':tiGridNode,
+#                  'tiIndex':tiIndex,
+#                  'nwarning':nwarning,
+#                  'warnings':warnings}
+#             With nreal = deesse_input.nrealization:
+#             sim:    (1-dimensional array of Img (class) of size nreal or None)
+#                         sim[i]: i-th realisation
+#                         (sim is None if no simulation is retrieved)
+#             path:   (1-dimensional array of Img (class) of size nreal or None)
+#                         path[i]: path index map for the i-th realisation
+#                         (path is None if no path index map is retrieved)
+#             error:   (1-dimensional array of Img (class) of size nreal or None)
+#                         error[i]: error map for the i-th realisation
+#                         (error is None if no error map is retrieved)
+#             tiGridNode:
+#                     (1-dimensional array of Img (class) of size nreal or None)
+#                         tiGridNode[i]: TI grid node index map for the i-th realisation
+#                         (tiGridNode is None if no TI grid node index map is retrieved)
+#             tiIndex:
+#                     (1-dimensional array of Img (class) of size nreal or None)
+#                         tiIndex[i]: TI index map for the i-th realisation
+#                         (tiIndex is None if no TI index map is retrieved)
+#             nwarning:
+#                     (int) total number of warning(s) encountered
+#                         (same warnings can be counted several times)
+#             warnings:
+#                     (list of strings) list of distinct warnings encountered
+#                         (can be empty)
+#     """
+#
+#     # Convert deesse input from python to C
+#     if not deesse_input.ok:
+#         print('ERROR: check deesse input')
+#         return
+#
+#     # Set number of threads
+#     if nthreads <= 0:
+#         nth = max(multiprocessing.cpu_count() + nthreads, 1)
+#     else:
+#         nth = nthreads
+#
+#     if verbose >= 2:
+#         print('Deesse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
+#         # print('********************************************************************************')
+#         # print('DEESSE VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
+#         # print('[{:d} process(es)]'.format(1))
+#         # print('********************************************************************************')
+#
+#     # Run deesse in a pool of 1 worker
+#     pool = multiprocessing.Pool(1)
+#     out = pool.apply_async(deesseRunC, args=(deesse_input, nth, verbose))
+#     # Properly end working process
+#     pool.close() # Prevents any more tasks from being submitted to the pool,
+#     pool.join()  # then, wait for the worker processes to exit.
+#
+#     deesse_output, err, err_message = out.get()
+#
+#     if err:
+#         print(err_message)
+#         return
+#
+#     if verbose >= 2:
+#         print('Deesse run complete')
+#
+#     # Show (print) encountered warnings
+#     if verbose >= 1 and deesse_output['nwarning']:
+#         print('\nWarnings encountered ({} times in all):'.format(deesse_output['nwarning']))
+#         for i, warning_message in enumerate(deesse_output['warnings']):
+#             print('#{:3d}: {}'.format(i+1, warning_message))
+#
+#     return deesse_output
+# # ----------------------------------------------------------------------------
+#
+# # ----------------------------------------------------------------------------
+# def deesseRun_mp(deesse_input, nprocesses=1, nthreads=None, verbose=2):
+#     """
+#     Launches deesse through mutliple processes, i.e. nprocesses parallel deesse
+#     run(s) using each one nthreads threads will be launched. The set of
+#     realizations (specified by deesse_input.nrealization) is distributed in
+#     a balanced way over the processes.
+#     In terms of resources, this implies the use of nprocesses * nthreads cpu(s).
+#
+#     :param deesse_input:
+#                 (DeesseInput (class)): deesse input parameter (python)
+#     :param nprocesses:
+#                 (int) number of processes, must be greater than 0
+#     :param nthreads:
+#                 (int) number of thread(s) to use for each process (C code):
+#                     nthreads = None: nthreads is automatically computed as the
+#                         maximal integer (but at least 1) such that
+#                             nprocesses * nthreads <= nmax
+#                         where nmax is the number of threads of the system
+#     :param verbose:
+#                 (int) indicates what is displayed during the deesse run:
+#                     - 0: nothing
+#                     - 1: warning only
+#                     - 2 (or >1): warning and progress
+#
+#     :return deesse_output:
+#         (dictionary)
+#                 {'sim':sim,
+#                  'path':path,
+#                  'error':error,
+#                  'tiGridNode':tiGridNode,
+#                  'tiIndex':tiIndex,
+#                  'nwarning':nwarning,
+#                  'warnings':warnings}
+#             With nreal = deesse_input.nrealization:
+#             sim:    (1-dimensional array of Img (class) of size nreal or None)
+#                         sim[i]: i-th realisation
+#                         (sim is None if no simulation is retrieved)
+#             path:   (1-dimensional array of Img (class) of size nreal or None)
+#                         path[i]: path index map for the i-th realisation
+#                         (path is None if no path index map is retrieved)
+#             error:   (1-dimensional array of Img (class) of size nreal or None)
+#                         error[i]: error map for the i-th realisation
+#                         (error is None if no error map is retrieved)
+#             tiGridNode:
+#                     (1-dimensional array of Img (class) of size nreal or None)
+#                         tiGridNode[i]: TI grid node index map for the i-th realisation
+#                         (tiGridNode is None if no TI grid node index map is retrieved)
+#             tiIndex:
+#                     (1-dimensional array of Img (class) of size nreal or None)
+#                         tiIndex[i]: TI index map for the i-th realisation
+#                         (tiIndex is None if no TI index map is retrieved)
+#             nwarning:
+#                     (int) total number of warning(s) encountered
+#                         (same warnings can be counted several times)
+#             warnings:
+#                     (list of strings) list of distinct warnings encountered
+#                         (can be empty)
+#     """
+#
+#     # Convert deesse input from python to C
+#     if not deesse_input.ok:
+#         print('ERROR: check deesse input')
+#         return
+#
+#     # Set number of threads and processes
+#     nprocesses = int(nprocesses)
+#
+#     if nprocesses <= 0:
+#         print('ERROR: nprocesses not valid...')
+#         return
+#
+#     if nthreads is None:
+#         nth = max(int(np.floor(multiprocessing.cpu_count() / nprocesses)), 1)
+#     else:
+#         if nthreads <= 0:
+#             # nth = max(int(multiprocessing.cpu_count() + nthreads), 1)
+#             print('ERROR: nthreads should be positive')
+#             return
+#         else:
+#             nth = int(nthreads)
+#
+#     if nprocesses * nth > multiprocessing.cpu_count():
+#         print('WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+#
+#     # Set the distribution of the realizations over the processes
+#     #   real_index_proc[i]: index list of the realization that will be done by i-th process
+#     q, r = np.divmod(deesse_input.nrealization, nprocesses)
+#     real_index_proc = [i*q + min(i, r) + np.arange(q+(i<r)) for i in range(nprocesses)]
+#
+#     if verbose >= 2:
+#         print('Deesse running in {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]...'.format(nprocesses, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
+#         # print('********************************************************************************')
+#         # print('DEESSE VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
+#         # print('[{:d} process(es)]'.format(nprocesses))
+#         # print('********************************************************************************')
+#
+#     # Initialize deesse input for each process
+#     deesse_input_proc = [copy.copy(deesse_input) for i in range(nprocesses)]
+#     init_seed = deesse_input.seed
+#
+#     # Set pool of nprocesses workers
+#     pool = multiprocessing.Pool(nprocesses)
+#     out_pool = []
+#
+#     for i, input in enumerate(deesse_input_proc):
+#         # Adapt deesse input for i-th process
+#         input.nrealization = len(real_index_proc[i])
+#         if input.nrealization:
+#             input.seed = init_seed + int(real_index_proc[i][0]) * input.seedIncrement
+#         if i==0:
+#             verb = verbose
+#         else:
+#             verb = min(verbose, 1) # keep only printing of warning if verbose >= 1
+#         # Launch deesse (i-th process)
+#         out_pool.append(pool.apply_async(deesseRunC, args=(input, nth, verb)))
+#
+#     # Properly end working process
+#     pool.close() # Prevents any more tasks from being submitted to the pool,
+#     pool.join()  # then, wait for the worker processes to exit.
+#
+#     # Get result from each process
+#     deesse_result_proc = [p.get() for p in out_pool]
+#
+#     # Gather results of every process
+#     deesse_output_proc = [result[0] for result in deesse_result_proc]
+#     deesse_err_proc = [result[1] for result in deesse_result_proc]
+#     deesse_err_message_proc = [result[2] for result in deesse_result_proc]
+#
+#     for output, err, err_message in zip(deesse_output_proc, deesse_err_proc, deesse_err_message_proc):
+#         if err:
+#             print(err_message)
+#             return
+#         if output is None:
+#             print('ERROR: output cannot be retrieved...')
+#             return
+#
+#     deesse_output = {}
+#
+#     # 'sim'
+#     tmp = [output['sim'] for output in deesse_output_proc if output['sim'] is not None]
+#     if tmp:
+#         deesse_output['sim'] = np.hstack(tmp)
+#         # ... set right index in varname
+#         for i in range(deesse_input.nrealization):
+#             for j in range(len(deesse_output['sim'][i].varname)):
+#                 deesse_output['sim'][i].varname[j] = re.sub('[0-9][0-9][0-9][0-9][0-9]$', '{:05d}'.format(i), deesse_output['sim'][i].varname[j])
+#     else:
+#         deesse_output['sim'] = None
+#
+#     # 'path'
+#     tmp = [output['path'] for output in deesse_output_proc if output['path'] is not None]
+#     if tmp:
+#         deesse_output['path'] = np.hstack(tmp)
+#         # ... set right index in varname
+#         for i in range(deesse_input.nrealization):
+#             for j in range(len(deesse_output['path'][i].varname)):
+#                 deesse_output['path'][i].varname[j] = re.sub('[0-9][0-9][0-9][0-9][0-9]$', '{:05d}'.format(i), deesse_output['path'][i].varname[j])
+#     else:
+#         deesse_output['path'] = None
+#
+#     # 'error'
+#     tmp = [output['error'] for output in deesse_output_proc if output['error'] is not None]
+#     if tmp:
+#         deesse_output['error'] = np.hstack(tmp)
+#         # ... set right index in varname
+#         for i in range(deesse_input.nrealization):
+#             for j in range(len(deesse_output['error'][i].varname)):
+#                 deesse_output['error'][i].varname[j] = re.sub('[0-9][0-9][0-9][0-9][0-9]$', '{:05d}'.format(i), deesse_output['error'][i].varname[j])
+#     else:
+#         deesse_output['error'] = None
+#
+#     # 'tiGridNode'
+#     tmp = [output['tiGridNode'] for output in deesse_output_proc if output['tiGridNode'] is not None]
+#     if tmp:
+#         deesse_output['tiGridNode'] = np.hstack(tmp)
+#         # ... set right index in varname
+#         for i in range(deesse_input.nrealization):
+#             for j in range(len(deesse_output['tiGridNode'][i].varname)):
+#                 deesse_output['tiGridNode'][i].varname[j] = re.sub('[0-9][0-9][0-9][0-9][0-9]$', '{:05d}'.format(i), deesse_output['tiGridNode'][i].varname[j])
+#     else:
+#         deesse_output['tiGridNode'] = None
+#
+#     # 'tiIndex'
+#     tmp = [output['tiIndex'] for output in deesse_output_proc if output['tiIndex'] is not None]
+#     if tmp:
+#         deesse_output['tiIndex'] = np.hstack(tmp)
+#         # ... set right index in varname
+#         for i in range(deesse_input.nrealization):
+#             for j in range(len(deesse_output['tiIndex'][i].varname)):
+#                 deesse_output['tiIndex'][i].varname[j] = re.sub('[0-9][0-9][0-9][0-9][0-9]$', '{:05d}'.format(i), deesse_output['tiIndex'][i].varname[j])
+#     else:
+#         deesse_output['tiIndex'] = None
+#
+#     # 'nwarning'
+#     deesse_output['nwarning'] = np.sum([output['nwarning'] for output in deesse_output_proc])
+#
+#     # 'warnings'
+#     tmp = []
+#     for output in deesse_output_proc:
+#         tmp = tmp + output['warnings'] # concatenation
+#     tmp, id = np.unique(tmp, return_index=True)
+#     deesse_output['warnings'] = [tmp[id[i]] for i in id]
+#
+#     if verbose >= 2:
+#         print('Deesse run complete')
+#
+#     # Show (print) encountered warnings
+#     if verbose >= 1 and deesse_output['nwarning']:
+#         print('\nWarnings encountered ({} times in all):'.format(deesse_output['nwarning']))
+#         for i, warning_message in enumerate(deesse_output['warnings']):
+#             print('#{:3d}: {}'.format(i+1, warning_message))
+#
+#     return deesse_output
+# # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 def exportDeesseInput(deesse_input,
@@ -3173,6 +3702,21 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
         infid.write('{1}{0}'.format(endofline, fname))
 
     infid.write('{0}'.format(endofline))
+
+    # Conditioning data files (data image file / data point set file)
+    if verbose == 1:
+        infid.write('\
+/* CONDITIONING DATA FILES (IMAGE FILE OR POINT SET FILE) (below) */{0}{0}'.format(endofline))
+    elif verbose == 2:
+        infid.write('\
+/* CONDITIONING DATA FILES (IMAGE FILE OR POINT SET FILE) (below){0}\
+   In such files, the name of a variable should correspond to a variable name{0}\
+   specified above to give usual conditioning (hard) data for that variable.{0}\
+   Moreover, inequality conditioning data can be given for a variable by{0}\
+   appending the suffix "_min" (resp. "_max") to the variable name: the given{0}\
+   values are then minimal (resp. maximal) bounds, i.e. indicating that the{0}\
+   simulated values should be greater than or equal to (resp. less than or equal{0}\
+   to) the given values. */{0}{0}'.format(endofline))
 
     # Data image
     if verbose > 0:
@@ -3719,6 +4263,16 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
 /* MAXIMAL NUMBER OF NEIGHBORING NODES FOR EACH VARIABLE (as many number(s) as number of variable(s)) */{0}'.format(endofline))
 
     for v in deesse_input.nneighboringNode:
+        infid.write('{1}{0}'.format(endofline, v))
+    infid.write('{0}'.format(endofline))
+
+    # Maximal proportion of nodes with inequality data in pattern if the maximal number of nodes is reached
+    if verbose > 0:
+        infid.write('\
+/* MAXIMAL PROPORTION OF NEIGHBORING NODES WITH INEQUALITY DATA (WHEN THE MAXIMAL NUMBER OF NEIGHBORING{0}\
+   NODES IS REACHED) FOR EACH VARIABLE (as many number(s) as number of variable(s)) */{0}'.format(endofline))
+
+    for v in deesse_input.maxPropInequalityNode:
         infid.write('{1}{0}'.format(endofline, v))
     infid.write('{0}'.format(endofline))
 
