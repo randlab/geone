@@ -5228,5 +5228,219 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
     infid.write('END{0}'.format(endofline))
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
+class DeesseEstimator():
+    """ DS estimator: scikit-learn compatible wrapper for DeesseInput
+    and DeesseRun
+    """
+
+    def __init__(self, varnames=None, nthreads=-1, **kwargs):
+        """
+        :param varnames: must be specified, list of all variables
+            (including X, Y, Z) in the conditioning data
+        :param kwargs: parameters of DeesseInput
+        """
+        if varnames is None:
+            raise ValueError("Please specify varnames: list of all variables in the observation set")
+        self.deesse_parameters = kwargs
+        self.varnames = varnames
+        self.nthreads = nthreads
+
+    def set_params(self, **parameters):
+        """
+        Sets simulation parameters according to a dictionary
+        for compatibility with scikit-learn
+        """
+        for parameter, value in parameters.items():
+            self.deesse_parameters[parameter] = value
+        return self
+
+    def get_params(self, deep=True):
+        """
+        Returns all parameters in a dictionary fo compatibility with scikit-learn
+        """
+        return {'varnames': self.varnames, **self.deesse_parameters, 'nthreads': self.nthreads}
+
+    def fit(self, X, y):
+        """An implementation of DS fitting function.
+        Set ups all parametes and reads the TI for the DS.
+        Constructs DS input. Converts X,y into hard data
+
+        :param X : array-like (provides __array__ method) shape (n_samples, n_features)
+            The training input samples.
+        :param y : array-like, shape (n_samples,)
+            The target values (class labels)
+
+        :return self: returns self
+        """
+
+        # Convert X,y into the hard conditioning Point
+        if y.ndim == 1:
+            y = y[:, np.newaxis]
+        array = np.hstack([X, y])
+        self.hd = img.PointSet(npt=array.shape[0],
+                nv=array.shape[1],
+                val=array.transpose(),
+                varname=self.varnames)
+
+        self.deesse_input = DeesseInput(dataPointSet=self.hd, **self.deesse_parameters)
+
+        # set properties for compatibility with scikit-learn
+        self.classes_,y = np.unique(y, return_inverse=True)
+        self.is_fitted_ = True
+        self.X_ = X
+        self.y_ = y
+
+        # predict_proba remembers last prediction to avoid recomputing it
+        # for multiple custom scorers
+        # fitting invalidates last prediction
+        try:
+            del self.previous_X_
+            del self.previous_y_
+        except AttributeError:
+            pass
+
+        # `fit` should always return `self`
+        return self
+
+    def simulate(self, verbose=0, unconditional=False):
+        """
+        Return DeeSse simulation
+
+        :param verbose=0: (int) 0, 1, 2 specifies verbosity of deesseRun
+        :param unconditional=False: if True, performs unconditional simulation
+            ignores the fitted parameters
+
+        :return deesse_output:  (dictionary) {'sim':sim, 'path':path, 'error':error}
+            With nreal = deesse_input.nrealization:
+            sim:    (1-dimensional array of Img (class) of size nreal)
+                        sim[i]: i-th realisation
+            path:   (1-dimensional array of Img (class) of size nreal or None)
+                        path[i]: path index map for the i-th realisation
+                        (path is None if deesse_input.outputPathIndexFlag is False)
+            error:  (1-dimensional array of Img (class) of size nreal or None)
+                        error[i]: error map for the i-th realisation
+                        (path is None if deesse_input.outputErrorFlag is False)
+        """
+        if unconditional is True:
+            deesse_input = DeesseInput(**self.deesse_parameters)
+        else:
+            try:
+                deesse_input = self.deesse_input
+            except AttributeError:
+                deesse_input = DeesseInput(**self.deesse_parameters)
+
+        return deesseRun(deesse_input, verbose=verbose, nthreads=self.nthreads)
+
+
+# ----------------------------------------------------------------------------
+class DeesseRegressor(DeesseEstimator):
+    def predict(self, X):
+        X = X.__array__()
+
+        deesse_output = self.simulate()
+
+    def sample_y(self, X):
+        """ Implementation of a predicting function, probabilities for each category.
+        Uses pixel-wise average proportion of DS predictions.
+        Number od DS simulations corresponds to number of realisations.
+
+        :param X: array-like (must implement __array__ method)
+            containing spatial coordinates
+
+        :return y:  (ndarray) probability predictions
+            shape (n_samples, n_features)
+        """
+        X = X.__array__()
+
+        deesse_output = self.simulate()
+
+        # compute pixel-wise proportions
+        all_sim = img.gatherImages(deesse_output['sim'])
+
+        p = self.deesse_parameters
+        # get only relevant pixels for comparison
+        y = np.zeros((X.shape[0], p['nrealization']))
+        for counter, point in enumerate(X):
+            # get index of predicted point
+            index = img.pointToGridIndex(point[0], point[1], point[2],
+                    nx=p['nx'], ny=p['ny'], nz=p['nz'],
+                    sx=p['sx'], sy=p['sy'], sz=p['sz'],
+                    ox=p['ox'], oy=p['oy'], oz=p['oz'])
+            y[counter, :] = all_sim.val[:,
+                                              index[2],
+                                              index[1],
+                                              index[0]]
+
+        # This is a workaround for scorers to reuse results
+        # because our scorers call predict_proba always
+        # we want to reuse the results for the same X if no fitting
+        # was done in the meantime
+        self.previous_X_ = X
+        self.previous_y_ = y
+
+        return y
+# ----------------------------------------------------------------------------
+class DeesseClassifier(DeesseEstimator):
+    def predict(self, X):
+        """ Implementation of a predicting function.
+        Returns predicted facies by taking the biggest probability
+        eveluated by the predict_proba method
+
+        :param X: array-like (must implement __array__ method)
+            containing spatial coordinates
+
+        :return y:  (ndarray) predicted classes
+            shape (n_samples, )
+        """
+        y = self.predict_proba(X)
+        return self.classes_.take(np.argmax(y, axis=1), axis=0)
+
+    def predict_proba(self, X):
+        """ Implementation of a predicting function, probabilities for each category.
+        Uses pixel-wise average proportion of DS predictions.
+        Number od DS simulations corresponds to number of realisations.
+
+        :param X: array-like (must implement __array__ method)
+            containing spatial coordinates
+
+        :return y:  (ndarray) probability predictions
+            shape (n_samples, n_features)
+        """
+        X = X.__array__()
+
+        # suppress print bevause license check is still printed :(
+        deesse_output = self.simulate()
+
+        # compute pixel-wise proportions
+        all_sim = img.gatherImages(deesse_output['sim'])
+        all_sim_stats = img.imageCategProp(all_sim, self.classes_)
+
+        p = self.deesse_parameters
+        # get only relevant pixels for comparison
+        y = np.zeros((X.shape[0], len(self.classes_)))
+        for counter, point in enumerate(X):
+            # get index of predicted point
+            index = img.pointToGridIndex(point[0], point[1], point[2],
+                    nx=p['nx'], ny=p['ny'], nz=p['nz'],
+                    sx=p['sx'], sy=p['sy'], sz=p['sz'],
+                    ox=p['ox'], oy=p['oy'], oz=p['oz'])
+            # retrieve the facies probability
+            for i in range(len(self.classes_)):
+                y[counter, i] = all_sim_stats.val[i,
+                                                  index[2],
+                                                  index[1],
+                                                  index[0]]
+
+        # This is a workaround for scorers to reuse results
+        # because our scorers call predict_proba always
+        # we want to reuse the results for the same X if no fitting
+        # was done in the meantime
+        self.previous_X_ = X
+        self.previous_y_ = y
+
+        return y
+# ----------------------------------------------------------------------------
+
 if __name__ == "__main__":
     print("Module 'geone.deesseinterface'.")
