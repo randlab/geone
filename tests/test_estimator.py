@@ -1,10 +1,6 @@
 import unittest
 import geone
 import pandas as pd
-#import numpy as np
-
-#import os
-#TEST_DIR = os.path.dirname(__file__)
 
 class TestDeesseClassifier(unittest.TestCase):
     def setUp(self):
