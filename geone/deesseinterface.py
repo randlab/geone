@@ -5285,8 +5285,6 @@ class DeesseEstimator():
 
         self.deesse_input = DeesseInput(dataPointSet=self.hd, **self.deesse_parameters)
 
-        img.writePointSetGslib(self.deesse_input.dataPointSet[0], 'test.gslib')
-
         # set properties for compatibility with scikit-learn
         self.classes_,y = np.unique(y, return_inverse=True)
         self.is_fitted_ = True
@@ -5324,9 +5322,6 @@ class DeesseEstimator():
                         error[i]: error map for the i-th realisation
                         (path is None if deesse_input.outputErrorFlag is False)
         """
-        # Verbose == 1 only print warning and error
-        # TODO https://stackoverflow.com/questions/8391411/
-        # suppress-calls-to-print-python
         if unconditional is True:
             deesse_input = DeesseInput(**self.deesse_parameters)
         else:
@@ -5343,7 +5338,6 @@ class DeesseRegressor(DeesseEstimator):
     def predict(self, X):
         X = X.__array__()
 
-        # suppress print bevause license check is still printed :(
         deesse_output = self.simulate()
 
     def sample_y(self, X):
@@ -5359,7 +5353,6 @@ class DeesseRegressor(DeesseEstimator):
         """
         X = X.__array__()
 
-        # suppress print bevause license check is still printed :(
         deesse_output = self.simulate()
 
         # compute pixel-wise proportions
