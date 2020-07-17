@@ -189,9 +189,11 @@ cmapB2W = custom_cmap(['black', 'white'], cunder=(0.0, 0.0, 1.0, 0.5), cover=(1.
 # # To get current rcParams (matplotlib)
 # import matplotlib as mpl
 # mpl.rcParams
-# # To customize existing colormap from matplotlib, example:
-# nn = 20
-# cmap_new_terrain = ccol.custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0,1,nn)], ncol=nn, cunder='pink', cover='orange', cbad='red')
+
+# To customize existing colormap from matplotlib:
+# Example, add specific colors for under values, over values and bad values in map 'terrain' with nn colors
+#cmap_new_terrain = custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0,1,nn)], ncol=nn, cunder='pink', cover='orange', cbad='red')
+cmap_new_terrain = custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0,1,256)], ncol=256, cunder='pink', cover='orange', cbad='red')
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":

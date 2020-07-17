@@ -2164,4 +2164,4 @@ def extractRandomPointFromImage (im, npt, seed=None):
 
 if __name__ == "__main__":
     print("Module 'geone.img' example:")
-    print("Run the module 'geone.imgplot'...")
+    print("   run the module 'geone.imgplot'...")

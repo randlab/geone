@@ -692,7 +692,7 @@ class DeesseInput(object):
         homothetyXLocal:
                     (bool) indicates if homothety according to X axis is local
                         (True) or global (False)
-                        (unused if homothetyFlag is False)
+                        (unused if homothetyUsage == 0)
         homothetyXRatio:
                     (nd array or None) homothety ratio according to X axis:
                         if homothetyUsage == 1:
@@ -720,7 +720,7 @@ class DeesseInput(object):
         rotationAzimuthLocal:
                     (bool) indicates if azimuth angle is local (True) or
                         global (False)
-                        (unused if rotationFlag is False)
+                        (unused if rotationUsage == 0)
         rotationAzimuth:
                     (nd array or None) azimuth angle in degrees:
                         if rotationUsage == 1:

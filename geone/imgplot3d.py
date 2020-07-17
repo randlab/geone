@@ -435,7 +435,7 @@ def drawImage3D_slice (
                     (int/float or sequence or None) values of the (real) z
                         coordinate where a slice normal to z-axis is drawn
 
-    :param slice_normal_normal:
+    :param slice_normal_custom:
                     ((sequence of) sequence containing 2 tuple of length 3 or None)
                         slice_normal[i] = ((vx, vy, vz), (px, py, pz))
                         means that a slice normal to the vector (vx, vy, vz) and
@@ -939,9 +939,7 @@ if __name__ == "__main__":
     # Example with a 3D gaussian random field
 
     import geone.covModel as gcm
-    import geone.grf as grf
-
-    from geone import img
+    from geone import grf, img
 
     # Define grid
     nx, ny, nz = 85, 56, 34
@@ -958,26 +956,21 @@ if __name__ == "__main__":
                     ('nugget', {'w':0.1})                      # elementary contribution
                     ], alpha=-30, beta=-45, gamma=20, name='')
 
-    # Get covariance function and range
-    cov_fun = cov_model.func()
-
-    # Set minimal extension according to the size of the grid and the range
-    extensionMin = [grf.extension_min(r, n, s) for r, n, s in zip(cov_model.rxyz(), dimension, spacing)]
-
     # Set seed
     np.random.seed(123)
 
     # Generate GRF
-    v = grf.grf3D(cov_fun, (nx, ny, nz), (dx, dy, dz), (ox, oy, oz), extensionMin=extensionMin)
+    v = grf.grf3D(cov_model, (nx, ny, nz), (dx, dy, dz), (ox, oy, oz))
     im = img.Img(nx, ny, nz, dx, dy, dz, ox, oy, oz, nv=1, val=v)
 
+    # ===== Ex1 =====
     # Simple plot
     # ------
-    drawImage3D_volume(im, text='im - 1: volume')
+    drawImage3D_volume(im, text='Ex1: volume (continuous var.)')
 
     # # Equivalent:
     # pp = pv.Plotter()
-    # drawImage3D_volume(im, text='im - 1')
+    # drawImage3D_volume(im, text='Ex1')
     # pp.show()
 
     # # For saving screenshot (png)
@@ -986,16 +979,17 @@ if __name__ == "__main__":
     # drawImage3D_volume(im, plotter=pp)
     # pp.show(screenshot='test.png')
 
+    # ===== Ex2 =====
     # Multiple plot
     # ------
     # Note: scalar bar and axes may be not displayed in all plots (even if show_... option is set to True)
     pp = pv.Plotter(shape=(2,2))
 
     pp.subplot(0,0)
-    drawImage3D_surface(im, plotter=pp, text='im - 2: surface' )
+    drawImage3D_surface(im, plotter=pp, text='Ex2: surface (continuous var.)' )
 
     pp.subplot(0,1)
-    drawImage3D_volume(im, plotter=pp, text='im - 2: volume')
+    drawImage3D_volume(im, plotter=pp, text='Ex2: volume (continuous var.)')
 
     cx, cy, cz = im.ox+0.5*im.nx*im.sx, im.oy+0.5*im.ny*im.sy, im.oz+0.5*im.nz*im.sz # center of image
     pp.subplot(1,0)
@@ -1003,12 +997,12 @@ if __name__ == "__main__":
         slice_normal_x=cx,
         slice_normal_y=cy,
         slice_normal_z=cz,
-        text='im - 2: slice')
+        text='Ex2: slice (continuous var.)')
 
     pp.subplot(1,1)
     drawImage3D_slice(im, plotter=pp,
         slice_normal_custom=[[(1, 1, 0), (cx, cy, cz)], [(1, -1, 0), (cx, cy, cz)]],
-        text='im - 2: slice')
+        text='Ex2: slice (continuous var.)')
 
     pp.link_views()
     pp.show(cpos=(1,2,.5))
@@ -1022,13 +1016,14 @@ if __name__ == "__main__":
     np.putmask(newv, np.abs(v) > 5., 5.)
     im.set_var(newv, 'categ', 0)
 
+    # ===== Ex3 =====
     pp = pv.Plotter(shape=(2,2))
 
     pp.subplot(0,0)
-    drawImage3D_surface(im, plotter=pp, text='im - 3: surface')
+    drawImage3D_surface(im, plotter=pp, text='Ex3: surface (categ. var.)')
 
     pp.subplot(0,1)
-    drawImage3D_volume(im, plotter=pp, text='im - 3: volume')
+    drawImage3D_volume(im, plotter=pp, text='Ex3: volume (categ. var.)')
 
     cx, cy, cz = im.ox+0.5*im.nx*im.sx, im.oy+0.5*im.ny*im.sy, im.oz+0.5*im.nz*im.sz # center of image
     pp.subplot(1,0)
@@ -1036,57 +1031,77 @@ if __name__ == "__main__":
         slice_normal_x=cx,
         slice_normal_y=cy,
         slice_normal_z=cz,
-        text='im - 3: slice')
+        text='Ex3: slice (categ. var.)')
 
     pp.subplot(1,1)
     drawImage3D_slice(im, plotter=pp,
         slice_normal_custom=[[(1, 1, 0), (cx, cy, cz)], [(1, -1, 0), (cx, cy, cz)]],
-        text='im - 3: slice')
+        text='Ex3: slice (categ. var.)')
 
     pp.link_views()
     pp.show(cpos=(1,2,.5))
 
-    # 5. Using some options
-    # ------
+    # Using some options
+    # -------------------
     cols=['purple', 'blue', 'cyan', 'yellow', 'red', 'pink']
 
-    drawImage3D_surface(im, text='im - 4: surface')
-    drawImage3D_surface(im, custom_scalar_bar_for_equidistant_categories=True, text='im - 5: custom scalar bar')
-    drawImage3D_surface(im, custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, text='im - 6: custom scalar bar (2)')
-    drawImage3D_surface(im, filtering_value=[1, 5], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, text='im - 7: filtering')
+    # ===== Ex4 =====
+    drawImage3D_surface(im, text='Ex4: surface (categ. var.)')
+    # ===== Ex5 =====
+    drawImage3D_surface(im, custom_scalar_bar_for_equidistant_categories=True, text='Ex5: custom scalar bar (categ. var.)')
+    # ===== Ex6 =====
+    drawImage3D_surface(im, custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, text='Ex6: custom scalar bar (2) (categ. var.)')
+    # ===== Ex7 =====
+    drawImage3D_surface(im, filtering_value=[1, 5], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, text='Ex7: filtering value (categ. var.)')
 
-    # # filtering does not change cmin, cmax, compare:
-    # drawImage3D_surface(im, cmin=2, cmax=4, text='im - 7b')
-    # drawImage3D_surface(im, filtering_interval=[2, 4], text='im - 7c')
+    # Filtering does not change cmin, cmax, compare:
+    # ===== Ex8 =====
+    drawImage3D_surface(im, cmin=2, cmax=4, text='Ex8: using cmin / cmax')
+    # ===== Ex9 =====
+    drawImage3D_surface(im, filtering_interval=[2, 4], text='Ex9: filtering interval')
 
+    # ===== Ex10 =====
     # do not show outline
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_outline=False, text='im - 8: no outline')
+    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_outline=False, text='Ex10: no outline (categ. var.)')
 
+    # ===== Ex11 =====
     # enlarge outline
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_outline=True, outline_kwargs={'line_width':5}, text='im - 9: thick outline')
+    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_outline=True, outline_kwargs={'line_width':5}, text='Ex11: thick outline (categ. var.)')
 
+    # ===== Ex12 =====
     # show bounds
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_bounds=True, text='im - 10: bounds')
+    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_bounds=True, text='Ex12: bounds (categ. var.)')
 
+    # ===== Ex13 =====
     # show bounds with grid
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_bounds=True, bounds_kwargs={'grid':True}, text='im - 11: bounds and grid')
+    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_bounds=True, bounds_kwargs={'grid':True}, text='Ex13: bounds and grid (categ. var.)')
 
+    # ===== Ex14 =====
     # customize scalar bar
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, scalar_bar_kwargs={'vertical':True,'title_font_size':24, 'label_font_size':10}, text='im - 12: custom display of scalar bar')
+    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, scalar_bar_kwargs={'vertical':True, 'title_font_size':24, 'label_font_size':10}, text='Ex14: custom display of scalar bar (categ. var.)')
 
+    # ===== Ex15 =====
     # scalar bar: interactive position...
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, scalar_bar_kwargs={'interactive':True}, text='im - 13: interactive display of scalar bar')
+    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, scalar_bar_kwargs={'interactive':True}, text='Ex15: interactive display of scalar bar (categ. var.)')
 
+    # ===== Ex16 =====
     # customize title
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, text='im - 14: custom title', text_kwargs={'font_size':12, 'position':'upper_right'})
+    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, text='Ex16: custom title', text_kwargs={'font_size':12, 'position':'upper_right'})
 
+    # ===== Ex17 =====
     # customize axes
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, axes_kwargs={'x_color':'pink', 'zlabel':'depth'}, text='im - 15: custom axes')
+    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, axes_kwargs={'x_color':'pink', 'zlabel':'depth'}, text='Ex17: custom axes (categ. var.)')
 
+    # ===== Ex18 =====
     # changing background / foreground colors
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, background_color=(0.9, 0.9, 0.9), foreground_color='k', text='im - 16: background/foreground colors')
+    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, background_color=(0.9, 0.9, 0.9), foreground_color='k', text='Ex18: background/foreground colors (categ. var.)')
 
-    # # (less options for drawImage3D_volume)
-    # drawImage3D_volume(im, text='im - 17')
-    # drawImage3D_volume(im, cmin=2, cmax=4, text='im - 18')
-    # drawImage3D_volume(im, cmin=2, cmax=4, set_out_values_to_nan=False, text='im - 19')
+    # (less options for drawImage3D_volume)
+    # ===== Ex19 =====
+    drawImage3D_volume(im, text='Ex19: volume (categ. var.)')
+
+    # ===== Ex20 =====
+    drawImage3D_volume(im, cmin=2, cmax=4, text='Ex20: volume using cmin / cmax (categ. var.)')
+
+    # ===== Ex21 =====
+    drawImage3D_volume(im, cmin=2, cmax=4, set_out_values_to_nan=False, text='Ex21: volume using cmin / cmax, set_out_values_to_nan=False (categ. var.)')

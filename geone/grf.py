@@ -6,13 +6,31 @@ Python module:  'grf.py'
 author:         Julien Straubhaar
 date:           jan-2018
 
-Module for gaussian random fields (GRF) simulations in 1D, 2D and 3D.
+Module for gaussian random fields (GRF) simulations in 1D, 2D and 3D,
+based on Fast Fourier Transform (FFT).
 """
 
 import numpy as np
+# from geone import covModel as gcm # not necessary
 
 # ----------------------------------------------------------------------------
-def grf1D(covFun, dimension, spacing, origin=0.,
+def extension_min(r, n, s=1.):
+    """
+    Compute extension of the dimension in a direction so that a GRF reproduces
+    the covariance model appropriately:
+
+    :param r:   (float) range (max) along the considered direction
+    :param n:   (int) dimension (number of cells) in the considered direction
+    :param s:   (float) cell size in the considered direction
+
+    :return:    (int) appropriate extension in number of cells
+    """
+    k = int(np.ceil(r/s))
+    return max(k-n, 0) + k - 1
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def grf1D(cov_model, dimension, spacing, origin=0.,
           nreal=1, mean=0, var=None,
           x=None, v=None,
           extensionMin=None, crop=True,
@@ -23,7 +41,7 @@ def grf1D(covFun, dimension, spacing, origin=0.,
     Generates gaussian random fields (GRF) in 1D via FFT.
 
     The GRFs:
-        - are generated using the covariance function (covFun),
+        - are generated using the given covariance model / function,
         - have specified mean (mean) and variance (var), which can be non stationary
         - are conditioned to location x with value v
     Notes:
@@ -45,8 +63,11 @@ def grf1D(covFun, dimension, spacing, origin=0.,
         - measureErrVar could be set to a small positive value to stabilize
           the covariance matrix for conditioning locations (solving linear system)
 
-    :param covFun:      (function) covariance function f(h), where
-                            h: (1-dimensional array or float) 1D-lag(s)
+    :param cov_model:   covariance model, it can be:
+                            (function) covariance function f(h), where
+                                h: (1-dimensional array or float) are 1D-lag(s)
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) dx, spacing between two adjacent cells
     :param origin:      (float) ox, origin of the 1D field
@@ -69,7 +90,9 @@ def grf1D(covFun, dimension, spacing, origin=0.,
     :param v:           (1-dimensional array or float or None) value at
                             conditioning points (same type as x)
     :param extensionMin: (int) minimal extension in nodes for embedding (see above)
-
+                            None for default (automatically computed, based
+                            on the range if covariance model class is given
+                            as first argument)
     :param crop:        (bool) indicates if the extended generated field will
                             be cropped to original dimension; note that no cropping
                             is not valid with conditioning or non stationary mean
@@ -169,7 +192,19 @@ def grf1D(covFun, dimension, spacing, origin=0.,
             numpy.fft.fft() = DFT
             numpy.fft.ifft() = DFT^(-1)
     """
+    # Check first argument and get covariance function
+    if cov_model.__class__.__name__ == 'function':
+        # covariance function is given
+        cov_func = cov_model
+        range_known = False
+    elif cov_model.__class__.__name__ == 'CovModel1D':
+        cov_func = cov_model.func() # covariance function
+        range_known = True
+    else:
+        print("ERROR: 'cov_model' (first argument) is not valid")
+        return
 
+    # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
@@ -222,7 +257,13 @@ def grf1D(covFun, dimension, spacing, origin=0.,
             return
 
     if extensionMin is None:
-        extensionMin = dimension - 1 # default
+        # default extensionMin
+        if range_known:
+            # ... based on range of covariance model
+            extensionMin = extension_min(cov_model.r(), nx, s=dx)
+        else:
+            # ... based on dimension
+            extensionMin = dimension - 1
 
     Nmin = nx + extensionMin
 
@@ -245,7 +286,7 @@ def grf1D(covFun, dimension, spacing, origin=0.,
     # ccirc: coefficient of the embedding matrix (first line), vector of size N
     L = int (N/2)
     h = np.arange(-L, L, dtype=float) * dx # [-L ... 0 ... L-1] * dx
-    ccirc = covFun(h)
+    ccirc = cov_func(h)
 
     del(h)
 
@@ -288,7 +329,7 @@ def grf1D(covFun, dimension, spacing, origin=0.,
     # ----------------------
     # Compute updating factor
     if var is not None:
-        varUpdate = np.sqrt(var/covFun(0.))
+        varUpdate = np.sqrt(var/cov_func(0.))
 
     # Dealing with conditioning
     # -------------------------
@@ -362,7 +403,7 @@ def grf1D(covFun, dimension, spacing, origin=0.,
 
             # If a variance var is specified, then the matrix r should be updated
             # by the following operation:
-            #    diag((var/covFun(0))^1/2) * r * diag((var/covFun(0))^1/2)
+            #    diag((var/cov_func(0))^1/2) * r * diag((var/cov_func(0))^1/2)
             # Hence, if a non stationary variance is specified,
             # the matrix rBA * rAA^(-1) should be consequently updated
             # by multiplying its columns by 1/varUpdate[indc] and its rows by varUpdate[indnc]
@@ -478,18 +519,17 @@ def grf1D(covFun, dimension, spacing, origin=0.,
     elif method == 3:
         # Method C
         # --------
-        if nreal > 1:
-            for i in np.arange(0,nreal,2):
-                if printInfo:
-                    print('GRF1D: Unconditional simulation {:4d}-{:4d} of {:4d}...'.format(i+1, i+2, nreal))
+        for i in np.arange(0, nreal-1, 2):
+            if printInfo:
+                print('GRF1D: Unconditional simulation {:4d}-{:4d} of {:4d}...'.format(i+1, i+2, nreal))
 
-                W = np.array(np.random.normal(size=N), dtype=complex)
-                W.imag = np.random.normal(size=N)
-                Z = np.sqrt(N) * np.fft.ifft(lamSqrt * W)
-                #  Z = 1/sqrt(N) * np.fft.fft(lamSqrt * W)] # see above: [OR:...]
+            W = np.array(np.random.normal(size=N), dtype=complex)
+            W.imag = np.random.normal(size=N)
+            Z = np.sqrt(N) * np.fft.ifft(lamSqrt * W)
+            #  Z = 1/sqrt(N) * np.fft.fft(lamSqrt * W)] # see above: [OR:...]
 
-                grf[i] = np.real(Z[0:grfNx])
-                grf[i+1] = np.imag(Z[0:grfNx])
+            grf[i] = np.real(Z[0:grfNx])
+            grf[i+1] = np.imag(Z[0:grfNx])
 
         if np.mod(nreal, 2) == 1:
             if printInfo:
@@ -575,10 +615,10 @@ def grf1D(covFun, dimension, spacing, origin=0.,
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def krige1D(x, v, covFun, dimension, spacing, origin=0.,
+def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
             mean=0, var=None,
             extensionMin=None,
-            conditioningMethod=2,
+            conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
             measureErrVar=0., tolInvKappa=1.e-10,
             computeKrigSD=True,
             printInfo=True):
@@ -587,7 +627,7 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
 
     It is a simple kriging
         - of value v at location x,
-        - based on the covariance function (covFun),
+        - based on the covariance model / function,
         - with a specified mean (mean) and variance (var), which can be non stationary
 
     Notes:
@@ -611,8 +651,11 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
 
     :param x:           (1-dimensional array of float) coordinate of data points
     :param v:           (1-dimensional array of float) value at data points
-    :param covFun:      (function) covariance function f(h), where
-                            h: (1-dimensional array or float) 1D-lag(s)
+    :param cov_model:   covariance model, it can be:
+                            (function) covariance function f(h), where
+                                h: (1-dimensional array or float) are 1D-lag(s)
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) dx, spacing between two adjacent cells
     :param origin:      (float) ox, origin of the 1D field
@@ -630,6 +673,9 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
                                 - array for non stationary variance, must contain
                                     nx values (reshaped if needed)
     :param extensionMin: (int) minimal extension in nodes for embedding (see above)
+                            None for default (automatically computed, based
+                            on the range if covariance model class is given
+                            as third argument)
     :param conditioningMethod:
                         (int) indicates which method is used to perform kriging.
                             Let
@@ -707,7 +753,19 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
             numpy.fft.fft() = DFT
             numpy.fft.ifft() = DFT^(-1)
     """
+    # Check third argument and get covariance function
+    if cov_model.__class__.__name__ == 'function':
+        # covariance function is given
+        cov_func = cov_model
+        range_known = False
+    elif cov_model.__class__.__name__ == 'CovModel1D':
+        cov_func = cov_model.func() # covariance function
+        range_known = True
+    else:
+        print("ERROR: 'cov_model' (third argument) is not valid")
+        return
 
+    # Check conditioning method
     if conditioningMethod not in (1, 2):
         print('ERROR (KRIGE1D): invalid method!')
         return
@@ -732,7 +790,13 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
             return
 
     if extensionMin is None:
-        extensionMin = dimension - 1 # default
+        # default extensionMin
+        if range_known:
+            # ... based on range of covariance model
+            extensionMin = extension_min(cov_model.r(), nx, s=dx)
+        else:
+            # ... based on dimension
+            extensionMin = dimension - 1
 
     Nmin = nx + extensionMin
 
@@ -755,7 +819,7 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
     # ccirc: coefficient of the embedding matrix (first line), vector of size N
     L = int (N/2)
     h = np.arange(-L, L, dtype=float) * dx # [-L ... 0 ... L-1] * dx
-    ccirc = covFun(h)
+    ccirc = cov_func(h)
 
     del(h)
 
@@ -794,7 +858,7 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
     # ----------------------
     # Compute updating factor
     if var is not None:
-        varUpdate = np.sqrt(var/covFun(0.))
+        varUpdate = np.sqrt(var/cov_func(0.))
 
     # Kriging
     # -------
@@ -819,7 +883,7 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
     # Compute the part rAA of the covariance matrix
     # Note: if a variance var is specified, then the matrix r should be updated
     # by the following operation:
-    #    diag((var/covFun(0))^1/2) * r * diag((var/covFun(0))^1/2)
+    #    diag((var/cov_func(0))^1/2) * r * diag((var/cov_func(0))^1/2)
     # which is accounting in the computation of kriging estimates and standard
     # deviation below
 
@@ -908,7 +972,9 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
             if printInfo:
                 print('KRIGE1D: computing kriging standard deviation ...')
 
-            krigSD[indnc] = np.sqrt(diagEntry - np.diag(np.dot(rBArAAinv, np.transpose(rBA))))
+            for j in range(nnc):
+                krigSD[indnc[j]] = np.dot(rBArAAinv[j,:], rBA[j,:])
+            krigSD[indnc] = np.sqrt(np.maximum(diagEntry - krigSD[indnc], 0.))
 
             del(rBA)
 
@@ -951,7 +1017,7 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
 
             del(ccirc)
 
-            krigSD[indnc] = np.sqrt(diagEntry - krigSD[indnc])
+            krigSD[indnc] = np.sqrt(np.maximum(diagEntry - krigSD[indnc], 0.))
 
     # ... update if non stationary covariance is specified
     if var is not None:
@@ -969,7 +1035,7 @@ def krige1D(x, v, covFun, dimension, spacing, origin=0.,
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def grf2D(covFun, dimension, spacing, origin=[0., 0.],
+def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
           nreal=1, mean=0, var=None,
           x=None, v=None,
           extensionMin=None, crop=True,
@@ -980,7 +1046,7 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
     Generates gaussian random fields (GRF) in 2D via FFT.
 
     The GRFs:
-        - are generated using the covariance function (covFun),
+        - are generated using the given covariance model / function,
         - have specified mean (mean) and variance (var), which can be non stationary
         - are conditioned to location x with value v
     Notes:
@@ -1003,10 +1069,13 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
         - measureErrVar could be set to a small positive value to stabilize
           the covariance matrix for conditioning locations (solving linear system)
 
-    :param covFun:      (function) covariance function f(h), where
-                            h:  (2-dimensional array of dim n x 2, or
-                                1-dimensional array of dim 2) 2D-lag(s)
-    :param dimension:   (sequence of 2 int) [nx, ny], number of cells
+    :param cov_model:   covariance model, it can be:
+                            (function) covariance function f(h), where
+                                h: (2-dimensional array of dim n x 2, or
+                                    1-dimensional array of dim 2) are 2D-lag(s)
+                            (CovModel2D class) covariance model in 2D, see
+                                definition of the class in module geone.covModel
+    :param dimension:   (sequence of 2 ints) [nx, ny], number of cells
                             in x-, y-axis direction
     :param spacing:     (sequence of 2 float) [dx, dy], spacing between
                             two adjacent cells in x-, y-axis direction
@@ -1030,8 +1099,11 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
                             conditioning points (None for unconditional GRF)
     :param v:           (1-dimensional array or float or None) value at
                             conditioning points (length n)
-    :param extensionMin: (sequence of 2 int) minimal extension in nodes in
-                            x-, y-axis direction for embedding (see above)
+    :param extensionMin: (sequence of 2 ints) minimal extension in nodes in
+                            in x-, y-axis direction for embedding (see above)
+                            None for default (automatically computed, based
+                            on the ranges if covariance model class is given
+                            as first argument)
     :param crop:        (bool) indicates if the extended generated field will
                             be cropped to original dimension; note that no cropping
                             is not valid with conditioning or non stationary mean
@@ -1139,7 +1211,19 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
             numpy.fft.fft2() = DFT
             numpy.fft.ifft2() = DFT^(-1)
     """
+    # Check first argument and get covariance function
+    if cov_model.__class__.__name__ == 'function':
+        # covariance function is given
+        cov_func = cov_model
+        range_known = False
+    elif cov_model.__class__.__name__ == 'CovModel2D':
+        cov_func = cov_model.func() # covariance function
+        range_known = True
+    else:
+        print("ERROR: 'cov_model' (first argument) is not valid")
+        return
 
+    # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
@@ -1202,7 +1286,13 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
             return
 
     if extensionMin is None:
-        extensionMin = [nx-1, ny-1] # default
+        # default extensionMin
+        if range_known:
+            # ... based on range of covariance model
+            extensionMin = [extension_min(r, n, s) for r, n, s in zip(cov_model.rxy(), dimension, spacing)]
+        else:
+            # ... based on dimension
+            extensionMin = [nx-1, ny-1]
 
     N1min = nx + extensionMin[0]
     N2min = ny + extensionMin[1]
@@ -1235,7 +1325,7 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
     h2 = np.arange(-L2, L2, dtype=float) * dy # [-L2 ... 0 ... L2-1] * dy
 
     hh = np.meshgrid(h1, h2)
-    ccirc = covFun(np.hstack((hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
+    ccirc = cov_func(np.hstack((hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
     ccirc.resize(N2, N1)
 
     del(h1, h2, hh)
@@ -1281,7 +1371,7 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
     # ----------------------
     # Compute updating factor
     if var is not None:
-        varUpdate = np.sqrt(var/covFun(np.zeros(2)))
+        varUpdate = np.sqrt(var/cov_func(np.zeros(2)))
 
     # Dealing with conditioning
     # -------------------------
@@ -1365,7 +1455,7 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
 
             # If a variance var is specified, then the matrix r should be updated
             # by the following operation:
-            #    diag((var/covFun(0))^1/2) * r * diag((var/covFun(0))^1/2)
+            #    diag((var/cov_func(0))^1/2) * r * diag((var/cov_func(0))^1/2)
             # Hence, if a non stationary variance is specified,
             # the matrix rBA * rAA^(-1) should be consequently updated
             # by multiplying its columns by 1/varUpdate[indc] and its rows by varUpdate[indnc]
@@ -1447,18 +1537,17 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
     elif method == 3:
         # Method C
         # --------
-        if nreal > 1:
-            for i in np.arange(0,nreal,2):
-                if printInfo:
-                    print('GRF2D: Unconditional simulation {:4d}-{:4d} of {:4d}...'.format(i+1, i+2, nreal))
+        for i in np.arange(0, nreal-1, 2):
+            if printInfo:
+                print('GRF2D: Unconditional simulation {:4d}-{:4d} of {:4d}...'.format(i+1, i+2, nreal))
 
-                W = np.array(np.random.normal(size=(N2, N1)), dtype=complex)
-                W.imag = np.random.normal(size=(N2, N1))
-                Z = np.sqrt(N) * np.fft.ifft2(lamSqrt * W)
-                #  Z = 1/np.sqrt(N) * np.fft.fft2(lamSqrt * W)] # see above: [OR:...]
+            W = np.array(np.random.normal(size=(N2, N1)), dtype=complex)
+            W.imag = np.random.normal(size=(N2, N1))
+            Z = np.sqrt(N) * np.fft.ifft2(lamSqrt * W)
+            #  Z = 1/np.sqrt(N) * np.fft.fft2(lamSqrt * W)] # see above: [OR:...]
 
-                grf[i] = np.real(Z[0:grfNy, 0:grfNx])
-                grf[i+1] = np.imag(Z[0:grfNy, 0:grfNx])
+            grf[i] = np.real(Z[0:grfNy, 0:grfNx])
+            grf[i+1] = np.imag(Z[0:grfNy, 0:grfNx])
 
         if np.mod(nreal, 2) == 1:
             if printInfo:
@@ -1551,10 +1640,10 @@ def grf2D(covFun, dimension, spacing, origin=[0., 0.],
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
+def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
             mean=0, var=None,
             extensionMin=None,
-            conditioningMethod=2,
+            conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
             measureErrVar=0., tolInvKappa=1.e-10,
             computeKrigSD=True,
             printInfo=True):
@@ -1563,7 +1652,7 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
 
     It is a simple kriging
         - of value v at location x,
-        - based on the covariance function (covFun),
+        - based on the covariance model / function,
         - with a specified mean (mean) and variance (var), which can be non stationary
     Notes:
     1) For reproducing covariance model, the dimension of field/domain should be large
@@ -1587,10 +1676,13 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
 
     :param x:           (2-dimensional array array of dim n x 2) coordinate of data points
     :param v:           (1-dimensional array length n) value at data points
-    :param covFun:      (function) covariance function f(h), where
-                            h:  (2-dimensional array of dim n x 2, or
-                                1-dimensional array of dim 2) 2D-lag(s)
-    :param dimension:   (sequence of 2 int) [nx, ny], number of cells
+    :param cov_model:   covariance model, it can be:
+                            (function) covariance function f(h), where
+                                h: (2-dimensional array of dim n x 2, or
+                                    1-dimensional array of dim 2) are 2D-lag(s)
+                            (CovModel2D class) covariance model in 2D, see
+                                definition of the class in module geone.covModel
+    :param dimension:   (sequence of 2 ints) [nx, ny], number of cells
                             in x-, y-axis direction
     :param spacing:     (sequence of 2 float) [dx, dy], spacing between
                             two adjacent cells in x-, y-axis direction
@@ -1609,8 +1701,11 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
                                 - scalar for stationary variance
                                 - array for non stationary variance, must contain
                                     nx*ny values (reshaped if needed)
-    :param extensionMin: (sequence of 2 int) minimal extension in nodes in
-                            x-, y-axis direction for embedding (see above)
+    :param extensionMin: (sequence of 2 ints) minimal extension in nodes in
+                            in x-, y-axis direction for embedding (see above)
+                            None for default (automatically computed, based
+                            on the ranges if covariance model class is given
+                            as third argument)
     :param conditioningMethod:
                         (int) indicates which method is used to perform kriging.
                             Let
@@ -1695,7 +1790,19 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
             numpy.fft.fft2() = DFT
             numpy.fft.ifft2() = DFT^(-1)
     """
+    # Check third argument and get covariance function
+    if cov_model.__class__.__name__ == 'function':
+        # covariance function is given
+        cov_func = cov_model
+        range_known = False
+    elif cov_model.__class__.__name__ == 'CovModel2D':
+        cov_func = cov_model.func() # covariance function
+        range_known = True
+    else:
+        print("ERROR: 'cov_model' (third argument) is not valid")
+        return
 
+    # Check conditioning method
     if conditioningMethod not in (1, 2):
         print('ERROR (KRIGE2D): invalid method!')
         return
@@ -1726,7 +1833,13 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
             var = np.asarray(var).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
 
     if extensionMin is None:
-        extensionMin = [nx-1, ny-1] # default
+        # default extensionMin
+        if range_known:
+            # ... based on range of covariance model
+            extensionMin = [extension_min(r, n, s) for r, n, s in zip(cov_model.rxy(), dimension, spacing)]
+        else:
+            # ... based on dimension
+            extensionMin = [nx-1, ny-1]
 
     N1min = nx + extensionMin[0]
     N2min = ny + extensionMin[1]
@@ -1759,7 +1872,7 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
     h2 = np.arange(-L2, L2, dtype=float) * dy # [-L2 ... 0 ... L2-1] * dy
 
     hh = np.meshgrid(h1, h2)
-    ccirc = covFun(np.hstack((hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
+    ccirc = cov_func(np.hstack((hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
     ccirc.resize(N2, N1)
 
     del(h1, h2, hh)
@@ -1802,7 +1915,7 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
     # ----------------------
     # Compute updating factor
     if var is not None:
-        varUpdate = np.sqrt(var/covFun(np.zeros(2)))
+        varUpdate = np.sqrt(var/cov_func(np.zeros(2)))
 
     # Kriging
     # -------
@@ -1827,7 +1940,7 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
     # Compute the part rAA of the covariance matrix
     # Note: if a variance var is specified, then the matrix r should be updated
     # by the following operation:
-    #    diag((var/covFun(0))^1/2) * r * diag((var/covFun(0))^1/2)
+    #    diag((var/cov_func(0))^1/2) * r * diag((var/cov_func(0))^1/2)
     # which is accounting in the computation of kriging estimates and standard
     # deviation below
 
@@ -1927,7 +2040,9 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
             if printInfo:
                 print('KRIGE2D: computing kriging standard deviation ...')
 
-            krigSD[indnc] = np.sqrt(diagEntry - np.diag(np.dot(rBArAAinv, np.transpose(rBA))))
+            for j in range(nnc):
+                krigSD[indnc[j]] = np.dot(rBArAAinv[j,:], rBA[j,:])
+            krigSD[indnc] = np.sqrt(np.maximum(diagEntry - krigSD[indnc], 0.))
 
             del(rBA)
 
@@ -1970,7 +2085,7 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
 
             del(ccirc)
 
-            krigSD[indnc] = np.sqrt(diagEntry - krigSD[indnc])
+            krigSD[indnc] = np.sqrt(np.maximum(diagEntry - krigSD[indnc], 0.))
 
         del(ix, iy, kx, ky)
 
@@ -1994,7 +2109,7 @@ def krige2D(x, v, covFun, dimension, spacing, origin=[0., 0.],
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
+def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
           nreal=1, mean=0, var=None,
           x=None, v=None,
           extensionMin=None, crop=True,
@@ -2005,7 +2120,7 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
     Generates gaussian random fields (GRF) in 3D via FFT.
 
     The GRFs:
-        - are generated using the covariance function (covFun),
+        - are generated using the given covariance model / function,
         - have specified mean (mean) and variance (var), which can be non stationary
         - are conditioned to location x with value v
     Notes:
@@ -2028,10 +2143,13 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
         - measureErrVar could be set to a small positive value to stabilize
           the covariance matrix for conditioning locations (solving linear system)
 
-    :param covFun:      (function) covariance function f(h), where
-                            h:  (2-dimensional array of dim n x 3, or
-                                1-dimensional array of dim 3) 2D-lag(s)
-    :param dimension:   (sequence of 3 int) [nx, ny, nz], number of cells
+    :param cov_model:   covariance model, it can be:
+                            (function) covariance function f(h), where
+                                h: (2-dimensional array of dim n x 3, or
+                                    1-dimensional array of dim 3) are 3D-lag(s)
+                            (CovModel3D class) covariance model in 3D, see
+                                definition of the class in module geone.covModel
+    :param dimension:   (sequence of 3 ints) [nx, ny, nz], number of cells
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 float) [dx, dy, dz], spacing between
                             two adjacent cells in x-, y-, z-axis direction
@@ -2055,8 +2173,11 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
                             conditioning points (None for unconditional GRF)
     :param v:           (1-dimensional array or float or None) value at
                             conditioning points (length n)
-    :param extensionMin: (sequence of 3 int) minimal extension in nodes in
-                            x-, y-, z-axis direction for embedding (see above)
+    :param extensionMin: (sequence of 3 ints) minimal extension in nodes in
+                            in x-, y-, z-axis direction for embedding (see above)
+                            None for default (automatically computed, based
+                            on the ranges if covariance model class is given
+                            as first argument)
     :param crop:        (bool) indicates if the extended generated field will
                             be cropped to original dimension; note that no cropping
                             is not valid with conditioning or non stationary mean
@@ -2164,7 +2285,19 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
             numpy.fft.fftn() = DFT
             numpy.fft.ifftn() = DFT^(-1)
     """
+    # Check first argument and get covariance function
+    if cov_model.__class__.__name__ == 'function':
+        # covariance function is given
+        cov_func = cov_model
+        range_known = False
+    elif cov_model.__class__.__name__ == 'CovModel3D':
+        cov_func = cov_model.func() # covariance function
+        range_known = True
+    else:
+        print("ERROR: 'cov_model' (first argument) is not valid")
+        return
 
+    # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
@@ -2228,7 +2361,13 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
             return
 
     if extensionMin is None:
-        extensionMin = [nx-1, ny-1, nz-1] # default
+        # default extensionMin
+        if range_known:
+            # ... based on range of covariance model
+            extensionMin = [extension_min(r, n, s) for r, n, s in zip(cov_model.rxyz(), dimension, spacing)]
+        else:
+            # ... based on dimension
+            extensionMin = [nx-1, ny-1, nz-1] # default
 
     N1min = nx + extensionMin[0]
     N2min = ny + extensionMin[1]
@@ -2269,7 +2408,7 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
 
     hh = np.meshgrid(h2, h3, h1) # as this! hh[i]: (N3, N2, N1) array
                                  # hh[0]: y-coord, hh[1]: z-coord, hh[2]: x-coord
-    ccirc = covFun(np.hstack((hh[2].reshape(-1,1), hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
+    ccirc = cov_func(np.hstack((hh[2].reshape(-1,1), hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
     ccirc.resize(N3, N2, N1)
 
     del(h1, h2, h3, hh)
@@ -2318,7 +2457,7 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
     # ----------------------
     # Compute updating factor
     if var is not None:
-        varUpdate = np.sqrt(var/covFun(np.zeros(3)))
+        varUpdate = np.sqrt(var/cov_func(np.zeros(3)))
 
     # Dealing with conditioning
     # -------------------------
@@ -2396,7 +2535,7 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
             # rBA
             rBA = np.zeros((nnc, nc))
             for j in range(nc):
-                rBA[:,j] = ccirc[np.mod(iz[j] - kz, N3), np.mod(iy[j] - ky, N2), np.mod(ix[j] - ky, N1)]
+                rBA[:,j] = ccirc[np.mod(iz[j] - kz, N3), np.mod(iy[j] - ky, N2), np.mod(ix[j] - kx, N1)]
 
             if printInfo:
                 print('GRF3D: Computing rBA * rAA^(-1)...')
@@ -2408,7 +2547,7 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
 
             # If a variance var is specified, then the matrix r should be updated
             # by the following operation:
-            #    diag((var/covFun(0))^1/2) * r * diag((var/covFun(0))^1/2)
+            #    diag((var/cov_func(0))^1/2) * r * diag((var/cov_func(0))^1/2)
             # Hence, if a non stationary variance is specified,
             # the matrix rBA * rAA^(-1) should be consequently updated
             # by multiplying its columns by 1/varUpdate[indc] and its rows by varUpdate[indnc]
@@ -2426,7 +2565,7 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
             indcEmb =  iz * N12 + iy * N1 + ix
             indncEmb = kz * N12 + ky * N1 + kx
 
-        del(ix, iy, kx, ky)
+        del(ix, iy, iz, kx, ky, kz)
 
     del(ccirc)
     #### End of preliminary computation ####
@@ -2490,18 +2629,17 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
     elif method == 3:
         # Method C
         # --------
-        if nreal > 1:
-            for i in np.arange(0,nreal,2):
-                if printInfo:
-                    print('GRF3D: Unconditional simulation {:4d}-{:4d} of {:4d}...'.format(i+1, i+2, nreal))
+        for i in np.arange(0, nreal-1, 2):
+            if printInfo:
+                print('GRF3D: Unconditional simulation {:4d}-{:4d} of {:4d}...'.format(i+1, i+2, nreal))
 
-                W = np.array(np.random.normal(size=(N3, N2, N1)), dtype=complex)
-                W.imag = np.random.normal(size=(N3, N2, N1))
-                Z = np.sqrt(N) * np.fft.ifftn(lamSqrt * W)
-                #  Z = 1/np.sqrt(N) * np.fft.fftn(lamSqrt * W)] # see above: [OR:...]
+            W = np.array(np.random.normal(size=(N3, N2, N1)), dtype=complex)
+            W.imag = np.random.normal(size=(N3, N2, N1))
+            Z = np.sqrt(N) * np.fft.ifftn(lamSqrt * W)
+            #  Z = 1/np.sqrt(N) * np.fft.fftn(lamSqrt * W)] # see above: [OR:...]
 
-                grf[i] = np.real(Z[0:grfNz, 0:grfNy, 0:grfNx])
-                grf[i+1] = np.imag(Z[0:grfNz, 0:grfNy, 0:grfNx])
+            grf[i] = np.real(Z[0:grfNz, 0:grfNy, 0:grfNx])
+            grf[i+1] = np.imag(Z[0:grfNz, 0:grfNy, 0:grfNx])
 
         if np.mod(nreal, 2) == 1:
             if printInfo:
@@ -2594,10 +2732,10 @@ def grf3D(covFun, dimension, spacing, origin=[0., 0., 0.],
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
+def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
             mean=0, var=None,
             extensionMin=None,
-            conditioningMethod=2,
+            conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
             measureErrVar=0., tolInvKappa=1.e-10,
             computeKrigSD=True,
             printInfo=True):
@@ -2606,7 +2744,7 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
 
     It is a simple kriging
         - of value v at location x,
-        - based on the covariance function (covFun),
+        - based on the covariance model / function,
         - with a specified mean (mean) and variance (var), which can be non stationary
     Notes:
     1) For reproducing covariance model, the dimension of field/domain should be large
@@ -2630,10 +2768,13 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
 
     :param x:           (2-dimensional array array of dim n x 3) coordinate of data points
     :param v:           (1-dimensional array length n) value at data points
-    :param covFun:      (function) covariance function f(h), where
-                            h:  (2-dimensional array of dim n x 3, or
-                                1-dimensional array of dim 3) 2D-lag(s)
-    :param dimension:   (sequence of 3 int) [nx, ny, nz], number of cells
+    :param cov_model:   covariance model, it can be:
+                            (function) covariance function f(h), where
+                                h: (2-dimensional array of dim n x 3, or
+                                    1-dimensional array of dim 3) are 3D-lag(s)
+                            (CovModel3D class) covariance model in 3D, see
+                                definition of the class in module geone.covModel
+    :param dimension:   (sequence of 3 ints) [nx, ny, nz], number of cells
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 float) [dx, dy, dz], spacing between
                             two adjacent cells in x-, y-, z-axis direction
@@ -2652,8 +2793,11 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
                                 - scalar for stationary variance
                                 - array for non stationary variance, must contain
                                     nx*ny*nz values (reshaped if needed)
-    :param extensionMin: (sequence of 3 int) minimal extension in nodes in
-                            x-, y-, z-axis direction for embedding (see above)
+    :param extensionMin: (sequence of 3 ints) minimal extension in nodes in
+                            in x-, y-, z-axis direction for embedding (see above)
+                            None for default (automatically computed, based
+                            on the ranges if covariance model class is given
+                            as third argument)
     :param conditioningMethod:
                         (int) indicates which method is used to perform kriging.
                             Let
@@ -2738,7 +2882,19 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
             numpy.fft.fftn() = DFT
             numpy.fft.ifftn() = DFT^(-1)
     """
+    # Check third argument and get covariance function
+    if cov_model.__class__.__name__ == 'function':
+        # covariance function is given
+        cov_func = cov_model
+        range_known = False
+    elif cov_model.__class__.__name__ == 'CovModel3D':
+        cov_func = cov_model.func() # covariance function
+        range_known = True
+    else:
+        print("ERROR: 'cov_model' (third argument) is not valid")
+        return
 
+    # Check conditioning method
     if conditioningMethod not in (1, 2):
         print('ERROR (KRIGE3D): invalid method!')
         return
@@ -2770,7 +2926,13 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
             var = np.asarray(var).reshape(nz, ny, nx) # cast in 3-dimensional array of same shape as grid
 
     if extensionMin is None:
-        extensionMin = [nx-1, ny-1, nz-1] # default
+        # default extensionMin
+        if range_known:
+            # ... based on range of covariance model
+            extensionMin = [extension_min(r, n, s) for r, n, s in zip(cov_model.rxyz(), dimension, spacing)]
+        else:
+            # ... based on dimension
+            extensionMin = [nx-1, ny-1, nz-1] # default
 
     N1min = nx + extensionMin[0]
     N2min = ny + extensionMin[1]
@@ -2811,7 +2973,7 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
 
     hh = np.meshgrid(h2, h3, h1) # as this! hh[i]: (N3, N2, N1) array
                                  # hh[0]: y-coord, hh[1]: z-coord, hh[2]: x-coord
-    ccirc = covFun(np.hstack((hh[2].reshape(-1,1), hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
+    ccirc = cov_func(np.hstack((hh[2].reshape(-1,1), hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
     ccirc.resize(N3, N2, N1)
 
     del(h1, h2, h3, hh)
@@ -2857,7 +3019,7 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
     # ----------------------
     # Compute updating factor
     if var is not None:
-        varUpdate = np.sqrt(var/covFun(np.zeros(3)))
+        varUpdate = np.sqrt(var/cov_func(np.zeros(3)))
 
     # Kriging
     # -------
@@ -2882,7 +3044,7 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
     # Compute the part rAA of the covariance matrix
     # Note: if a variance var is specified, then the matrix r should be updated
     # by the following operation:
-    #    diag((var/covFun(0))^1/2) * r * diag((var/covFun(0))^1/2)
+    #    diag((var/cov_func(0))^1/2) * r * diag((var/cov_func(0))^1/2)
     # which is accounting in the computation of kriging estimates and standard
     # deviation below
 
@@ -2961,9 +3123,9 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
         # rBA
         rBA = np.zeros((nnc, nc))
         for j in range(nc):
-            rBA[:,j] = ccirc[np.mod(iz[j] - kz, N3), np.mod(iy[j] - ky, N2), np.mod(ix[j] - ky, N1)]
+            rBA[:,j] = ccirc[np.mod(iz[j] - kz, N3), np.mod(iy[j] - ky, N2), np.mod(ix[j] - kx, N1)]
 
-        del(ix, iy, kx, ky)
+        del(ix, iy, iz, kx, ky, kz)
         del(ccirc)
 
         if printInfo:
@@ -2988,7 +3150,9 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
             if printInfo:
                 print('KRIGE3D: computing kriging standard deviation ...')
 
-            krigSD[indnc] = np.sqrt(diagEntry - np.diag(np.dot(rBArAAinv, np.transpose(rBA))))
+            for j in range(nnc):
+                krigSD[indnc[j]] = np.dot(rBArAAinv[j,:], rBA[j,:])
+            krigSD[indnc] = np.sqrt(np.maximum(diagEntry - krigSD[indnc], 0.))
 
             del(rBA)
 
@@ -3031,9 +3195,9 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
 
             del(ccirc)
 
-            krigSD[indnc] = np.sqrt(diagEntry - krigSD[indnc])
+            krigSD[indnc] = np.sqrt(np.maximum(diagEntry - krigSD[indnc], 0.))
 
-        del(ix, iy, kx, ky)
+        del(ix, iy, iz, kx, ky, kz)
 
     # ... update if non stationary covariance is specified
     if var is not None:
@@ -3054,45 +3218,28 @@ def krige3D(x, v, covFun, dimension, spacing, origin=[0., 0., 0.],
         return (krig)
 # ----------------------------------------------------------------------------
 
-# ----------------------------------------------------------------------------
-def extension_min(r, n, s=1.):
-    """
-    Compute extension of the dimension in a direction so that a GRF reproduces
-    the covariance model appropriately:
-
-    :param r:   (float) range (max) along the considered direction
-    :param n:   (int) dimension (number of cells) in the considered direction
-    :param s:   (float) cell size in the considered direction
-
-    :return:    (int) extension in number of cells that should be specified for
-                    GRF simulation
-    """
-    k = int(np.ceil(r/s))
-    return max(k-n, 0) + k - 1
-# ----------------------------------------------------------------------------
-
 if __name__ == "__main__":
     print("Module 'geone.grf' example:")
 
     import time
-
     import matplotlib.pyplot as plt
-    import geone.covModel as gcm
+    import pyvista as pv
+
+    from geone import img
+    from geone import imgplot as imgplt
+    from geone import imgplot3d as imgplt3
+    from geone import covModel as gcm
 
     ########## 1D case ##########
     # Define grid
     nx = 2000
     dx = 0.5
     ox = 0.0
-
     # Define covariance model
-    cov_model = gcm.CovModel1D(elem=[
+    cov_model1 = gcm.CovModel1D(elem=[
                     ('gaussian', {'w':8.95, 'r':100}), # elementary contribution
                     ('nugget', {'w':0.05})             # elementary contribution
                     ], name='')
-
-    # Get covariance function and range
-    cov_fun = cov_model.func()
 
     # Define mean and variance of GRF
     mean = 10.
@@ -3105,9 +3252,6 @@ if __name__ == "__main__":
     v = [ 8.,  9.,   8.,  12.]
     # x, v = None, None
 
-    # Set minimal extension according to the size of the grid and the range
-    extensionMin = extension_min(cov_model.r(), nx, s=dx)
-
     # Set number of realizations
     nreal = 2000
 
@@ -3116,48 +3260,52 @@ if __name__ == "__main__":
 
     # Generate GRF
     t1 = time.time()
-    grf = grf1D(cov_fun, nx, dx, origin=ox,
-                nreal=nreal, mean=mean, var=var,
-                x=x, v=v,
-                method=3, conditioningMethod=2,
-                extensionMin=extensionMin) # grf: (nreal,nx) array
+    grf1 = grf1D(cov_model1, nx, dx, origin=ox,
+                 nreal=nreal, mean=mean, var=var,
+                 x=x, v=v,
+                 method=3, conditioningMethod=2 ) # grf1: (nreal,nx) array
     t2 = time.time()
+
     time_case1D = t2-t1
     nreal_case1D = nreal
     infogrid_case1D = 'grid: {} cells'.format(nx)
-    print('Elapsed time: {} sec'.format(time_case1D))
+    # print('Elapsed time: {} sec'.format(time_case1D))
 
-    # Compute mean and sd over the realizations
-    grfMean = np.mean(grf, axis=0) # mean along axis 0
-    grfSD = np.std(grf, axis=0) # standard deviation along axis 0
+    grf1_mean = np.mean(grf1, axis=0) # mean along axis 0
+    grf1_std = np.std(grf1, axis=0) # standard deviation along axis 0
 
     if x is not None:
         # Kriging
         t1 = time.time()
-        krig, krigSD = krige1D(x, v, cov_fun, nx, dx, origin=ox,
+        krig1, krig1_std = krige1D(x, v, cov_model1, nx, dx, origin=ox,
                                mean=mean, var=var,
-                               conditioningMethod=2,
-                               extensionMin=extensionMin)
+                               conditioningMethod=2)
         t2 = time.time()
         time_krig_case1D = t2-t1
-        print('Elapsed time for kriging: {} sec'.format(time_krig_case1D))
+        #print('Elapsed time for kriging: {} sec'.format(time_krig_case1D))
+
+        peak_to_peak_mean1 = np.ptp(grf1_mean - krig1)
+        peak_to_peak_std1  = np.ptp(grf1_std - krig1_std)
+        krig1D_done = True
+    else:
+        krig1D_done = False
 
     # Display
     # -------
     # xg: center of grid points
-    xg = ox + 0.5 * dx + dx * np.arange(nx)
+    xg = ox + dx * (0.5 + np.arange(nx))
 
     # === 4 real and mean and sd of all real
     fig, ax = plt.subplots(figsize=(20,10))
     for i in range(4):
-        plt.plot(xg, grf[i], label='real #{}'.format(i+1))
+        plt.plot(xg, grf1[i], label='real #{}'.format(i+1))
 
-    plt.plot(xg, grfMean, c='black', ls='dashed', label='mean ({} real)'.format(nreal))
-    plt.plot(xg, grfMean + grfSD, c='gray', label='mean +/- sd ({} real)'.format(nreal))
-    plt.plot(xg, grfMean - grfSD, c='gray')
+    plt.plot(xg, grf1_mean, c='black', ls='dashed', label='mean ({} real)'.format(nreal))
+    plt.fill_between(xg, grf1_mean - grf1_std, grf1_mean + grf1_std, color='gray', alpha=0.5, label='mean +/- sd ({} real)'.format(nreal))
 
     if x is not None:
-        plt.plot(x,v,'+k', markersize=10)
+        plt.plot(x, v,'+k', markersize=10)
+
     plt.legend()
     plt.title('GRF1D')
 
@@ -3168,39 +3316,36 @@ if __name__ == "__main__":
         # === 4 real and kriging estimates and sd
         fig, ax = plt.subplots(figsize=(20,10))
         for i in range(4):
-            plt.plot(xg, grf[i], label='real #{}'.format(i+1))
+            plt.plot(xg, grf1[i], label='real #{}'.format(i+1))
 
-        plt.plot(xg, krig, c='black', ls='dashed', label='kriging')
-        plt.plot(xg, krig + krigSD, c='gray', label='kriging +/- sd')
-        plt.plot(xg, krig - krigSD, c='gray')
+        plt.plot(xg, krig1, c='black', ls='dashed', label='kriging')
+        plt.fill_between(xg, krig1 - krig1_std, krig1 + krig1_std, color='gray', alpha=0.5, label='kriging +/- sd')
 
         plt.plot(x,v,'+k', markersize=10)
         plt.legend()
-        plt.title('GRF1D')
+        plt.title('GRF1D AND KRIGE1D')
 
         # fig.show()
         plt.show()
 
         # === comparison of mean and sd of all real, with kriging estimates and sd
         fig, ax = plt.subplots(figsize=(20,10))
-        plt.plot(xg, grfMean - krig, c='black', label='grfMean-krig')
-        plt.plot(xg, grfSD - krigSD, c='red', label='grfSD-krigSD')
+        plt.plot(xg, grf1_mean - krig1, c='black', label='grf1_mean - krig')
+        plt.plot(xg, grf1_std - krig1_std, c='red', label='grf1_std - krig1_std')
 
         plt.axhline(y=0)
         for xx in x:
             plt.axvline(x=xx)
+
         plt.legend()
         plt.title('GRF1D and KRIGE1D / nreal={}'.format(nreal))
 
         # fig.show()
         plt.show()
 
-        print('Peak to peak for "grfMean - krig": {}'.format(np.ptp(grfMean-krig)))
-        print('Peak to peak for "grfSD - krigSD": {}'.format(np.ptp(grfSD-krigSD)))
+        del(krig1, krig1_std)
 
-        del(krig, krigSD)
-
-    del (grf, grfMean, grfSD)
+    del (grf1, grf1_mean, grf1_std)
 
     ########## 2D case ##########
     # Define grid
@@ -3213,13 +3358,10 @@ if __name__ == "__main__":
     origin = [ox, oy]
 
     # Define covariance model
-    cov_model = gcm.CovModel2D(elem=[
+    cov_model2 = gcm.CovModel2D(elem=[
                     ('gaussian', {'w':8.5, 'r':[150, 40]}), # elementary contribution
                     ('nugget', {'w':0.5})                   # elementary contribution
-                    ], alpha=-30, name='')
-
-    # Get covariance function and range
-    cov_fun = cov_model.func()
+                    ], alpha=-30., name='')
 
     # Define mean and variance of GRF
     mean = 10.
@@ -3235,165 +3377,135 @@ if __name__ == "__main__":
     v = [ 8.,  9.,   8.,  12.] # values
     # x, v = None, None
 
-    # Set minimal extension according to the size of the grid and the range
-    extensionMin = [extension_min(r, n, s) for r, n, s in zip(cov_model.rxy(), dimension, spacing)]
-
     # Set number of realizations
-    nreal = 200
+    nreal = 1000
 
     # Set seed
     np.random.seed(123)
 
     # Generate GRF
     t1 = time.time()
-    grf = grf2D(cov_fun, dimension, spacing, origin=origin,
+    grf2 = grf2D(cov_model2, dimension, spacing, origin=origin,
                 nreal=nreal, mean=mean, var = var,
                 x=x, v=v,
-                method=3, conditioningMethod=2,
-                extensionMin=extensionMin) # grf: (nreal,ny,nx) array
+                method=3, conditioningMethod=2) # grf2: (nreal,ny,nx) array
     t2 = time.time()
     nreal_case2D = nreal
     time_case2D = t2-t1
     infogrid_case2D = 'grid: {} cells ({} x {})'.format(nx*ny, nx, ny)
-    print('Elapsed time: {} sec'.format(time_case2D))
+    # print('Elapsed time: {} sec'.format(time_case2D))
 
-    # Compute mean and sd over the realizations
-    grfMean = np.mean(grf.reshape(nreal, -1), axis=0).reshape(ny, nx)
-    grfSD = np.std(grf.reshape(nreal, -1), axis=0).reshape(ny, nx)
+    # Fill an image (Img class) (for display, see below)
+    im2 = img.Img(nx, ny, 1, dx, dy, 1., ox, oy, 0., nv=nreal, val=grf2)
+    del(grf2)
+
+    # Compute mean and standard deviation over the realizations
+    im2_mean = img.imageContStat(im2, op='mean') # pixel-wise mean
+    im2_std = img.imageContStat(im2, op='std')   # pixel-wise standard deviation
+    # grf2_mean = np.mean(grf.reshape(nreal, -1), axis=0).reshape(ny, nx)
+    # grf2_std = np.std(grf.reshape(nreal, -1), axis=0).reshape(ny, nx)
 
     if x is not None:
         # Kriging
         t1 = time.time()
-        krig, krigSD = krige2D(x, v, cov_fun, dimension, spacing, origin=origin,
-                               mean=mean, var=var,
-                               conditioningMethod=2,
-                               extensionMin=extensionMin)
+        krig2, krig2_std = krige2D(x, v, cov_model2, dimension, spacing, origin=origin,
+                                mean=mean, var=var,
+                                conditioningMethod=2)
         t2 = time.time()
         time_krig_case2D = t2-t1
-        print('Elapsed time for kriging: {} sec'.format(time_krig_case2D))
+        # print('Elapsed time for kriging: {} sec'.format(time_krig_case2D))
 
-    # Display
+        # Fill an image (Img class) (for display, see below)
+        im2_krig = img.Img(nx, ny, 1, dx, dy, 1., ox, oy, 0., nv=2, val=np.array((krig2, krig2_std)))
+        del(krig2, krig2_std)
+
+        peak_to_peak_mean2 = np.ptp(im2_mean.val[0] - im2_krig.val[0])
+        peak_to_peak_std2  = np.ptp(im2_mean.val[0] - im2_krig.val[1])
+        krig2D_done = True
+    else:
+        krig2D_done = False
+
+    # Display (using geone.imgplot)
     # -------
-    # xg, yg: center of grid points
-    xg = ox + 0.5 * dx + dx * np.arange(nx)
-    yg = oy + 0.5 * dy + dy * np.arange(ny)
-    xmin, xmax = ox, ox + nx * dx
-    ymin, ymax = oy, oy + ny * dy
+    # === 4 real and mean and standard deviation of all real
+    #     and kriging estimates and standard deviation (if conditional)
+    if x is not None:
+        nc = 4
+    else:
+        nc = 3
 
-    # === 4 real and mean and sd of all real
-    fig, ax = plt.subplots(2,3,figsize=(24,12))
-
+    fig, ax = plt.subplots(2, nc, figsize=(24,12))
     # 4 first real ...
-    pnum = [1, 2, 4, 5]
+    pnum = [1, 2, nc+1, nc+2]
     for i in range(4):
-        plt.subplot(2,3,pnum[i])
-        im_plot = plt.imshow(grf[i],
-                             origin='lower', extent=[xmin,xmax,ymin,ymax],
-                             interpolation='none')
-        plt.colorbar()
-
+        plt.subplot(2, nc, pnum[i])
+        imgplt.drawImage2D(im2, iv=i)
         if x is not None:
             plt.plot(x[:,0],x[:,1],'+k', markersize=10)
 
-        plt.title('GRF2D {}: real #{}'.format(cov_model.name, i+1))
+        plt.title('GRF2D {}: real #{}'.format(cov_model2.name, i+1))
 
-    # mean...
-    plt.subplot(2,3,3)
-    im_plot = plt.imshow(grfMean,
-                         origin='lower', extent=[xmin,xmax,ymin,ymax],
-                         interpolation='none')
-    plt.colorbar()
-
+    # mean of all real
+    plt.subplot(2, nc, 3)
+    imgplt.drawImage2D(im2_mean)
     if x is not None:
         plt.plot(x[:,0],x[:,1],'+k', markersize=10)
 
     plt.title('Mean over {} real'.format(nreal))
 
-    # sd...
-    plt.subplot(2,3,6)
-    im_plot = plt.imshow(grfSD,
-                         origin='lower', extent=[xmin,xmax,ymin,ymax],
-                         interpolation='none')
-    plt.colorbar()
-
+    # standard deviation of all real
+    plt.subplot(2, nc, nc+3)
+    imgplt.drawImage2D(im2_std, cmap='viridis')
     if x is not None:
         plt.plot(x[:,0],x[:,1],'+k', markersize=10)
-    plt.title('SD over {} real'.format(nreal))
+
+    plt.title('St. dev. over {} real'.format(nreal))
+
+    if x is not None:
+        # kriging estimates
+        plt.subplot(2, nc, 4)
+        imgplt.drawImage2D(im2_krig, iv=0)
+        plt.plot(x[:,0],x[:,1],'+k', markersize=10)
+        plt.title('Kriging estimates')
+
+        # kriging standard deviation
+        plt.subplot(2, nc, nc+4)
+        imgplt.drawImage2D(im2_krig, iv=1, cmap='viridis')
+        plt.plot(x[:,0],x[:,1],'+k', markersize=10)
+        plt.title('Kriging st. dev.')
+
+    plt.suptitle('GRF2D and KRIGE2D')
 
     # fig.show()
     plt.show()
 
     if x is not None:
-        # === 4 real and kriging estimates and sd
-        fig, ax = plt.subplots(2,3,figsize=(24,12))
-
-        # 4 first real ...
-        pnum = [1, 2, 4, 5]
-        for i in range(4):
-            plt.subplot(2,3,pnum[i])
-            im_plot = plt.imshow(grf[i],
-                                 origin='lower', extent=[xmin,xmax,ymin,ymax],
-                                 interpolation='none')
-            plt.colorbar()
-            plt.plot(x[:,0],x[:,1],'+k', markersize=10)
-
-            plt.title('GRF2D {}: real #{}'.format(cov_model.name, i+1))
-
-        # kriging estimates...
-        plt.subplot(2,3,3)
-        im_plot = plt.imshow(krig,
-                             origin='lower', extent=[xmin,xmax,ymin,ymax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.plot(x[:,0],x[:,1],'+k', markersize=10)
-
-        plt.title('Kriging')
-
-        # kiging sd...
-        plt.subplot(2,3,6)
-        im_plot = plt.imshow(krigSD,
-                             origin='lower', extent=[xmin,xmax,ymin,ymax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.plot(x[:,0],x[:,1],'+k', markersize=10)
-
-        plt.title('Kriging SD')
-
-        # fig.show()
-        plt.show()
-
-        # === comparison of mean and sd of all real, with kriging estimates and sd
+        # === comparison of mean and st. dev. of all real, with kriging estimates and st. dev.
         fig, ax = plt.subplots(1,2,figsize=(15,5))
 
-        # grfMean - krig
+        # grf mean - kriging estimates
+        im_tmp = img.copyImg(im2_mean)
+        im_tmp.val[0] = im_tmp.val[0] - im2_krig.val[0]
         plt.subplot(1,2,1)
-        im_plot = plt.imshow(grfMean - krig,
-                             origin='lower', extent=[xmin,xmax,ymin,ymax],
-                             interpolation='none')
-        plt.colorbar()
+        imgplt.drawImage2D(im_tmp, cmap='viridis')
         plt.plot(x[:,0],x[:,1],'+k', markersize=10)
+        plt.title('grf mean - kriging estimates / nreal={}'.format(nreal))
 
-        plt.title('2D: grfMean - krig / nreal={}'.format(nreal))
-
-        # grfMean - krig
+        # grf st. dev. - kriging st. dev.
+        im_tmp = img.copyImg(im2_std)
+        im_tmp.val[0] = im_tmp.val[0] - im2_krig.val[1]
         plt.subplot(1,2,2)
-        im_plot = plt.imshow(grfSD - krigSD,
-                             origin='lower', extent=[xmin,xmax,ymin,ymax],
-                             interpolation='none')
-        plt.colorbar()
+        imgplt.drawImage2D(im_tmp, cmap='viridis')
         plt.plot(x[:,0],x[:,1],'+k', markersize=10)
+        plt.title('grf st. dev. - kriging st. dev. / nreal={}'.format(nreal))
 
-        plt.title('2D: grfSD - krigSD / nreal={}'.format(nreal))
-
+        plt.suptitle('GRF2D and KRIGE2D: comparisons')
         # fig.show()
         plt.show()
 
-        print('Peak to peak for "grfMean - krig": {}'.format(np.ptp(grfMean-krig)))
-        print('Peak to peak for "grfSD - krigSD": {}'.format(np.ptp(grfSD-krigSD)))
+        del(im2_krig)
 
-        del(krig, krigSD)
-
-    del (grf, grfMean, grfSD)
+    del(im2, im2_mean, im2_std)
 
     ########## 3D case ##########
     # Define grid
@@ -3406,13 +3518,10 @@ if __name__ == "__main__":
     origin = [ox, oy, oz]
 
     # Define covariance model
-    cov_model = gcm.CovModel3D(elem=[
+    cov_model3 = gcm.CovModel3D(elem=[
                     ('gaussian', {'w':8.5, 'r':[40, 20, 10]}), # elementary contribution
                     ('nugget', {'w':0.5})                      # elementary contribution
-                    ], alpha=-30, beta=-45, gamma=20, name='')
-
-    # Get covariance function and range
-    cov_fun = cov_model.func()
+                    ], alpha=-30., beta=-40., gamma=20., name='')
 
     # Define mean and variance of GRF
     mean = 10.
@@ -3425,338 +3534,264 @@ if __name__ == "__main__":
                   [ 40.5,  10.5, 10.5], # 2nd point
                   [ 30.5,  40.5, 20.5], # 3rd point
                   [ 30.5,  30.5, 30.5]]) # 4th point
-    v = [ 8.,  9.,   8.,  12.] # values
+    v = [ -3.,  2.,   5.,  -1.] # values
     # x, v = None, None
 
-    # Set minimal extension according to the size of the grid and the range
-    extensionMin = [extension_min(r, n, s) for r, n, s in zip(cov_model.rxyz(), dimension, spacing)]
-
     # Set number of realizations
-    nreal = 50
+    nreal = 500
 
     # Set seed
     np.random.seed(123)
 
     # Generate GRF
     t1 = time.time()
-    grf = grf3D(cov_fun, dimension, spacing, origin=origin,
+    grf3 = grf3D(cov_model3, dimension, spacing, origin=origin,
                 nreal=nreal, mean=mean, var=var,
                 x=x, v=v,
-                method=3, conditioningMethod=2,
-                extensionMin=extensionMin) # grf: (nreal,nz,ny,nx) array
+                method=3, conditioningMethod=2) # grf: (nreal,nz,ny,nx) array
     t2 = time.time()
     nreal_case3D = nreal
     time_case3D = t2-t1
     infogrid_case3D = 'grid: {} cells ({} x {} x {})'.format(nx*ny*nz, nx, ny, nz)
-    print('Elapsed time: {} sec'.format(time_case3D))
+    # print('Elapsed time: {} sec'.format(time_case3D))
 
-    # Compute mean and sd over the realizations
-    grfMean = np.mean(grf.reshape(nreal, -1), axis=0).reshape(nz, ny, nx)
-    grfSD = np.std(grf.reshape(nreal, -1), axis=0).reshape(nz, ny, nx)
+    # Fill an image (Img class) (for display, see below)
+    im3 = img.Img(nx, ny, nz, dx, dy, dz, ox, oy, oz, nv=nreal, val=grf3)
+    del(grf3)
+
+    # Compute mean and standard deviation over the realizations
+    im3_mean = img.imageContStat(im3, op='mean') # pixel-wise mean
+    im3_std = img.imageContStat(im3, op='std')   # pixel-wise standard deviation
+    # grf3_mean = np.mean(grf.reshape(nreal, -1), axis=0).reshape(nz, ny, nx)
+    # grf3_std = np.std(grf.reshape(nreal, -1), axis=0).reshape(nz, ny, nx)
 
     if x is not None:
         # Kriging
         t1 = time.time()
-        krig, krigSD = krige3D(x, v, cov_fun, dimension, spacing, origin=origin,
+        krig3, krig3_std = krige3D(x, v, cov_model3, dimension, spacing, origin=origin,
                                mean=mean, var=var,
-                               conditioningMethod=2,
-                               extensionMin=extensionMin)
+                               conditioningMethod=2)
         t2 = time.time()
         time_krig_case3D = t2-t1
-        print('Elapsed time for kriging: {} sec'.format(time_krig_case3D))
+        # print('Elapsed time for kriging: {} sec'.format(time_krig_case3D))
 
-    # Display: slices going through the cell index ix0, iy0, iz0
+        # Fill an image (Img class) (for display, see below)
+        im3_krig = img.Img(nx, ny, nz, dx, dy, dz, ox, oy, oz, nv=2, val=np.array((krig3, krig3_std)))
+        del(krig3, krig3_std)
+
+        peak_to_peak_mean3 = np.ptp(im3_mean.val[0] - im3_krig.val[0])
+        peak_to_peak_std3  = np.ptp(im3_mean.val[0] - im3_krig.val[1])
+        krig3D_done = True
+    else:
+        krig3D_done = False
+
+    # Display (using geone.imgplot3d)
     # -------
-    ix0, iy0, iz0 = [30, 30, 30]
-    # xg, yg, zg: center of grid points
-    xg = ox + 0.5 * dx + dx * np.arange(nx)
-    yg = oy + 0.5 * dy + dy * np.arange(ny)
-    zg = oz + 0.5 * dz + dz * np.arange(nz)
-    xmin, xmax = ox, ox + nx * dx
-    ymin, ymax = oy, oy + ny * dy
-    zmin, zmax = oz, oz + nz * dz
+    # === Show first real - volume in 3D
+    imgplt3.drawImage3D_volume(im3, iv=0,
+        text='GRF3D: real #1',
+        cmap='nipy_spectral', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-    # === first real and mean and sd of all real
-    fig, ax = plt.subplots(3,3,figsize=(20,12))
+    # === Show first real - (out) surface in 3D
+    imgplt3.drawImage3D_surface(im3, iv=0,
+        text='GRF3D: real #1',
+        cmap='nipy_spectral', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-    # first real ...
-    # ... xy slice
-    plt.subplot(3,3,1)
-    im_plot = plt.imshow(grf[0,iz0,:,:],
-                         origin='lower', extent=[xmin,xmax,ymin,ymax],
-                         interpolation='none')
-    plt.colorbar()
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('GRF3D {}: real #{}, iz = {}'.format(cov_model.name, 1, iz0))
+    # === Show first real - slices in 3D block
+    # ... slices orthogonal to axes and going through the center of image
+    cx = im3.ox + 0.5 * im3.nx * im3.sx
+    cy = im3.oy + 0.5 * im3.ny * im3.sy
+    cz = im3.oz + 0.5 * im3.nz * im3.sz # center of image (cx, cy, cz)
+    imgplt3.drawImage3D_slice(im3, iv=0,
+        slice_normal_x=cx,
+        slice_normal_y=cy,
+        slice_normal_z=cz,
+        text='GRF3D: real #1',
+        cmap='nipy_spectral', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-    # ... xz slice
-    plt.subplot(3,3,2)
-    im_plot = plt.imshow(grf[0,:,iy0,:],
-                         origin='lower', extent=[xmin,xmax,zmin,zmax],
-                         interpolation='none')
-    plt.colorbar()
-    plt.xlabel('x')
-    plt.ylabel('z')
-    plt.title('GRF3D {}: real #{}, iy = {}'.format(cov_model.name, 1, iy0))
+    # === Show first real - slices in 3D block
+    # ... slices orthogonal to axes and going through the first data point
+    #     + display the data points
+    cmap = plt.get_cmap('nipy_spectral') # color map
+    cmin=im3.vmin()[0] # min value for real 0
+    cmax=im3.vmax()[0] # max value for real 0
+    data_points_col = [cmap((vv-cmin)/(cmax-cmin)) for vv in v] # color for data points according to their value
 
-    # ... yz slice
-    plt.subplot(3,3,3)
-    im_plot = plt.imshow(grf[0,:,:,ix0],
-                         origin='lower', extent=[ymin,ymax,zmin,zmax],
-                         interpolation='none')
-    plt.colorbar()
-    plt.xlabel('y')
-    plt.ylabel('z')
-    plt.title('GRF3D {}: real #{}, ix = {}'.format(cov_model.name, 1, ix0))
+    pp = pv.Plotter()
+    imgplt3.drawImage3D_slice(im3, iv=0, plotter=pp,
+        slice_normal_x=x[0,0],
+        slice_normal_y=x[0,1],
+        slice_normal_z=x[0,2],
+        show_bounds=True,
+        text='GRF3D: real #1',
+        cmap=cmap, cmin=cmin, cmax=cmax, scalar_bar_kwargs={'vertical':True, 'title':None}) # specify color map and cmin, cmax
+    data_points = pv.PolyData(x)
+    data_points['colors'] = data_points_col
+    pp.add_mesh(data_points, cmap=cmap, rgb=True,
+        point_size=20., render_points_as_spheres=True)
+    pp.show()
 
-    # mean...
-    # ... xy slice
-    plt.subplot(3,3,4)
-    im_plot = plt.imshow(grfMean[iz0,:,:],
-                         origin='lower', extent=[xmin,xmax,ymin,ymax],
-                         interpolation='none')
-    plt.colorbar()
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('Mean over {} real, iz = {}'.format(nreal, iz0))
+    # === Show first real - slices in 3D block
+    # ... slices orthogonal to axes supporting the ranges according to rotation
+    #     defined in the covariance model and going through the center of image
+    mrot = cov_model3.mrot()
+    imgplt3.drawImage3D_slice(im3, iv=0,
+        slice_normal_custom=[[mrot[:,0], (cx, cy, cz)], [mrot[:,1], (cx, cy, cz)], [mrot[:,2], (cx, cy, cz)]],
+        text='GRF3D: real #1',
+        cmap='nipy_spectral', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-    # ... xz slice
-    plt.subplot(3,3,5)
-    im_plot = plt.imshow(grfMean[:,iy0,:],
-                         origin='lower', extent=[xmin,xmax,zmin,zmax],
-                         interpolation='none')
-    plt.colorbar()
-    plt.xlabel('x')
-    plt.ylabel('z')
-    plt.title('Mean over {} real, iy = {}'.format(nreal, iy0))
+    # === Show two first reals, mean and st. dev. over real,
+    #     and kriging estimates and standard deviation (if conditional)
+    #     - volume in 3D
+    if x is not None:
+        nc = 3
+    else:
+        nc = 2
 
-    # ... yz slice
-    plt.subplot(3,3,6)
-    im_plot = plt.imshow(grfMean[:,:,ix0],
-                         origin='lower', extent=[ymin,ymax,zmin,zmax],
-                         interpolation='none')
-    plt.colorbar()
-    plt.xlabel('y')
-    plt.ylabel('z')
-    plt.title('Mean over {} real, ix = {}'.format(nreal, ix0))
+    pp = pv.Plotter(shape=(2, nc))
+    # 2 first reals
+    for i in (0, 1):
+        pp.subplot(i, 0)
+        imgplt3.drawImage3D_volume(im3, iv=i, plotter=pp,
+            text='GRF3D: real #{}'.format(i+1),
+            cmap='nipy_spectral', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-    # sd...
-    # ... xy slice
-    plt.subplot(3,3,7)
-    im_plot = plt.imshow(grfSD[iz0,:,:],
-                         origin='lower', extent=[xmin,xmax,ymin,ymax],
-                         interpolation='none')
-    plt.colorbar()
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('SD over {} real, iz = {}'.format(nreal, iz0))
+    # mean of all real
+    pp.subplot(0, 1)
+    imgplt3.drawImage3D_volume(im3_mean, plotter=pp,
+        text='GRF3D: mean over {} real'.format(nreal),
+        cmap='nipy_spectral', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-    # ... xz slice
-    plt.subplot(3,3,8)
-    im_plot = plt.imshow(grfSD[:,iy0,:],
-                         origin='lower', extent=[xmin,xmax,zmin,zmax],
-                         interpolation='none')
-    plt.colorbar()
-    plt.xlabel('x')
-    plt.ylabel('z')
-    plt.title('SD over {} real, iy = {}'.format(nreal, iy0))
-
-    # ... yz slice
-    plt.subplot(3,3,9)
-    im_plot = plt.imshow(grfSD[:,:,ix0],
-                         origin='lower', extent=[ymin,ymax,zmin,zmax],
-                         interpolation='none')
-    plt.colorbar()
-    plt.xlabel('y')
-    plt.ylabel('z')
-    plt.title('SD over {} real, ix = {}'.format(nreal, ix0))
-
-    # fig.show()
-    plt.show()
+    # standard deviation of all real
+    pp.subplot(1, 1)
+    imgplt3.drawImage3D_volume(im3_std, plotter=pp,
+        text='GRF3D: st. dev. over {} real'.format(nreal),
+        cmap='viridis', scalar_bar_kwargs={'vertical':True, 'title':None})
 
     if x is not None:
-        # === first real and kriging estimates and sd
-        fig, ax = plt.subplots(3,3,figsize=(20,12))
+        # kriging estimates
+        pp.subplot(0, 2)
+        imgplt3.drawImage3D_volume(im3_krig, iv=0, plotter=pp,
+            text='GRF3D: kriging estimates',
+            cmap='nipy_spectral', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-        # first real ...
-        # ... xy slice
-        plt.subplot(3,3,1)
-        im_plot = plt.imshow(grf[0,iz0,:,:],
-                             origin='lower', extent=[xmin,xmax,ymin,ymax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.title('GRF3D {}: real #{}, iz = {}'.format(cov_model.name, 1, iz0))
+        # kriging standard deviation
+        pp.subplot(1, 2)
+        imgplt3.drawImage3D_volume(im3_krig, iv=1, plotter=pp,
+            text='GRF3D: kriging st. dev.',
+            cmap='viridis', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-        # ... xz slice
-        plt.subplot(3,3,2)
-        im_plot = plt.imshow(grf[0,:,iy0,:],
-                             origin='lower', extent=[xmin,xmax,zmin,zmax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('x')
-        plt.ylabel('z')
-        plt.title('GRF3D {}: real #{}, iy = {}'.format(cov_model.name, 1, iy0))
+    pp.link_views()
+    pp.show()
 
-        # ... yz slice
-        plt.subplot(3,3,3)
-        im_plot = plt.imshow(grf[0,:,:,ix0],
-                             origin='lower', extent=[ymin,ymax,zmin,zmax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('y')
-        plt.ylabel('z')
-        plt.title('GRF3D {}: real #{}, ix = {}'.format(cov_model.name, 1, ix0))
+    # === Show two first reals, mean and st. dev. over real,
+    #     and kriging estimates and standard deviation (if conditional)
+    #     - slices in 3D block
+    # ... slices orthogonal to axes and going through the center of image
+    if x is not None:
+        nc = 3
+    else:
+        nc = 2
 
-        # Kriging..
-        # ... xy slice
-        plt.subplot(3,3,4)
-        im_plot = plt.imshow(krig[iz0,:,:],
-                             origin='lower', extent=[xmin,xmax,ymin,ymax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.title('Kriging, iz = {}'.format(iz0))
+    pp = pv.Plotter(shape=(2, nc))
+    # 2 first reals
+    for i in (0, 1):
+        pp.subplot(i, 0)
+        imgplt3.drawImage3D_slice(im3, iv=i, plotter=pp,
+            slice_normal_x=cx,
+            slice_normal_y=cy,
+            slice_normal_z=cz,
+            text='GRF3D: real #{}'.format(i+1),
+            cmap='nipy_spectral', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-        # ... xz slice
-        plt.subplot(3,3,5)
-        im_plot = plt.imshow(krig[:,iy0,:],
-                             origin='lower', extent=[xmin,xmax,zmin,zmax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('x')
-        plt.ylabel('z')
-        plt.title('Kriging, iy = {}'.format(iy0))
+    # mean of all real
+    pp.subplot(0, 1)
+    imgplt3.drawImage3D_slice(im3_mean, plotter=pp,
+        slice_normal_x=cx,
+        slice_normal_y=cy,
+        slice_normal_z=cz,
+        text='GRF3D: mean over {} real'.format(nreal),
+        cmap='nipy_spectral', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-        # ... yz slice
-        plt.subplot(3,3,6)
-        im_plot = plt.imshow(krig[:,:,ix0],
-                             origin='lower', extent=[ymin,ymax,zmin,zmax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('y')
-        plt.ylabel('z')
-        plt.title('Kriging, ix = {}'.format(ix0))
+    # mean of all real
+    pp.subplot(1, 1)
+    imgplt3.drawImage3D_slice(im3_std, plotter=pp,
+        slice_normal_x=cx,
+        slice_normal_y=cy,
+        slice_normal_z=cz,
+        text='GRF3D: st. dev. over {} real'.format(nreal),
+        cmap='viridis', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-        # Kriging sd...
-        # ... xy slice
-        plt.subplot(3,3,7)
-        im_plot = plt.imshow(krigSD[iz0,:,:],
-                             origin='lower', extent=[xmin,xmax,ymin,ymax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.title('Kriging SD, iz = {}'.format(iz0))
+    if x is not None:
+        # kriging estimates
+        pp.subplot(0, 2)
+        imgplt3.drawImage3D_slice(im3_krig, iv=0, plotter=pp,
+            slice_normal_x=cx,
+            slice_normal_y=cy,
+            slice_normal_z=cz,
+            text='GRF3D: kriging estimates',
+            cmap='nipy_spectral', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-        # ... xz slice
-        plt.subplot(3,3,8)
-        im_plot = plt.imshow(krigSD[:,iy0,:],
-                             origin='lower', extent=[xmin,xmax,zmin,zmax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('x')
-        plt.ylabel('z')
-        plt.title('Kriging SD, iy = {}'.format(iy0))
+        # kriging standard deviation
+        pp.subplot(1, 2)
+        imgplt3.drawImage3D_slice(im3_krig, iv=1, plotter=pp,
+            slice_normal_x=cx,
+            slice_normal_y=cy,
+            slice_normal_z=cz,
+            text='GRF3D: kriging st. dev.',
+            cmap='viridis', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-        # ... yz slice
-        plt.subplot(3,3,9)
-        im_plot = plt.imshow(krigSD[:,:,ix0],
-                             origin='lower', extent=[ymin,ymax,zmin,zmax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('y')
-        plt.ylabel('z')
-        plt.title('Kriging SD, ix = {}'.format(ix0))
+    pp.link_views()
+    pp.show()
 
-        # fig.show()
-        plt.show()
+    if x is not None:
+        # === Show comparison of mean and st. dev. of all real, with kriging estimates and st. dev.
+        #     - volume in 3D
+        pp = pv.Plotter(shape=(1, 2))
+        # grf mean - kriging estimates
+        im_tmp = img.copyImg(im3_mean)
+        im_tmp.val[0] = im_tmp.val[0] - im3_krig.val[0]
+        pp.subplot(0, 0)
+        imgplt3.drawImage3D_volume(im_tmp, plotter=pp,
+            text='GRF3D: grf mean - kriging estimates / nreal={}'.format(nreal),
+            cmap='viridis', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-        # === comparison of mean and sd of all real, with kriging estimates and sd
-        fig, ax = plt.subplots(2,3,figsize=(20,10))
+        # grf st. dev. - kriging st. dev.
+        im_tmp = img.copyImg(im3_std)
+        im_tmp.val[0] = im_tmp.val[0] - im3_krig.val[1]
+        pp.subplot(0, 1)
+        imgplt3.drawImage3D_volume(im_tmp, plotter=pp,
+            text='GRF3D: grf st. dev. - kriging st. dev. / nreal={}'.format(nreal),
+            cmap='viridis', scalar_bar_kwargs={'vertical':True, 'title':None})
 
-        # grfMean - krig ...
-        # ... xy slice
-        plt.subplot(2,3,1)
-        im_plot = plt.imshow(grfMean[iz0,:,:]-krig[iz0,:,:],
-                             origin='lower', extent=[xmin,xmax,ymin,ymax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.title('3D: grfMean - krig / nreal={} / iz = {}'.format(nreal, iz0))
+        pp.link_views()
+        pp.show()
 
-        # ... xz slice
-        plt.subplot(2,3,2)
-        im_plot = plt.imshow(grfMean[:,iy0,:]-krig[:,iy0,:],
-                             origin='lower', extent=[xmin,xmax,zmin,zmax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('x')
-        plt.ylabel('z')
-        plt.title('3D: grfMean - krig / nreal={} / iy = {}'.format(nreal, iy0))
+        del(im3_krig)
 
-        # ... yz slice
-        plt.subplot(2,3,3)
-        im_plot = plt.imshow(grfMean[:,:,ix0]-krig[:,:,ix0],
-                             origin='lower', extent=[ymin,ymax,zmin,zmax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('y')
-        plt.ylabel('z')
-        plt.title('3D: grfMean - krig / nreal={} / ix = {}'.format(nreal, ix0))
+    del(im3, im3_mean, im3_std)
 
-        # grfSD - krigSD ...
-        # ... xy slice
-        plt.subplot(2,3,4)
-        im_plot = plt.imshow(grfSD[iz0,:,:]-krigSD[iz0,:,:],
-                             origin='lower', extent=[xmin,xmax,ymin,ymax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.title('3D: grfSD - krigSD / nreal={} / iz = {}'.format(nreal, iz0))
-
-        # ... xz slice
-        plt.subplot(2,3,5)
-        im_plot = plt.imshow(grfSD[:,iy0,:]-krigSD[:,iy0,:],
-                             origin='lower', extent=[xmin,xmax,zmin,zmax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('x')
-        plt.ylabel('z')
-        plt.title('3D: grfSD - krigSD / nreal={} / iy = {}'.format(nreal, iy0))
-
-        # ... yz slice
-        plt.subplot(2,3,6)
-        im_plot = plt.imshow(grfSD[:,:,ix0]-krigSD[:,:,ix0],
-                             origin='lower', extent=[ymin,ymax,zmin,zmax],
-                             interpolation='none')
-        plt.colorbar()
-        plt.xlabel('y')
-        plt.ylabel('z')
-        plt.title('3D: grfSD - krigSD / nreal={} / ix = {}'.format(nreal, ix0))
-
-        # fig.show()
-        plt.show()
-
-        print('Peak to peak for "grfMean - krig": {}'.format(np.ptp(grfMean-krig)))
-        print('Peak to peak for "grfSD - krigSD": {}'.format(np.ptp(grfSD-krigSD)))
-
-        del(krig, krigSD)
-
-    del (grf, grfMean, grfSD)
-
-    ######### Elapsed time for all cases ##########
-    print('Case 1D: elapsed time: {:5.2f} sec  ({} real, {})'.format(time_case1D, nreal_case1D, infogrid_case1D))
-    print('Case 2D: elapsed time: {:5.2f} sec  ({} real, {})'.format(time_case2D, nreal_case2D, infogrid_case2D))
-    print('Case 3D: elapsed time: {:5.2f} sec  ({} real, {})'.format(time_case3D, nreal_case3D, infogrid_case3D))
-    print('Kriging Case 1D: elapsed time: {:5.2f} sec'.format(time_krig_case1D))
-    print('Kriging Case 2D: elapsed time: {:5.2f} sec'.format(time_krig_case2D))
-    print('Kriging Case 3D: elapsed time: {:5.2f} sec'.format(time_krig_case3D))
+    ######### Print info: elapsed time, peak to peak for "mean of real - krig est." and "std. of real - krig std." ##########
+    print('Case 1D\n-------')
+    print('   Simulation - elapsed time: {:5.2f} sec  ({} real, {})'.format(time_case1D, nreal_case1D, infogrid_case1D))
+    print('   Kriging    - elapsed time: {:5.2f} sec'.format(time_krig_case1D))
+    if krig1D_done:
+        print('   Peak to peak for "grf1_mean - krig1"    : {}'.format(peak_to_peak_mean1))
+        print('   Peak to peak for "grf1_std  - krig1_std": {}'.format(peak_to_peak_std1))
+    print('\n')
+    print('Case 2D\n-------')
+    print('   Simulation - elapsed time: {:5.2f} sec  ({} real, {})'.format(time_case2D, nreal_case2D, infogrid_case2D))
+    print('   Kriging    - elapsed time: {:5.2f} sec'.format(time_krig_case2D))
+    if krig2D_done:
+        print('   Peak to peak for "grf2_mean - krig2"    : {}'.format(peak_to_peak_mean2))
+        print('   Peak to peak for "grf2_std  - krig2_std": {}'.format(peak_to_peak_std2))
+    print('\n')
+    print('Case 3D\n-------')
+    print('   Simulation - elapsed time: {:5.2f} sec  ({} real, {})'.format(time_case3D, nreal_case3D, infogrid_case3D))
+    print('   Kriging    - elapsed time: {:5.2f} sec'.format(time_krig_case3D))
+    if krig3D_done:
+        print('   Peak to peak for "grf3_mean - krig3"    : {}'.format(peak_to_peak_mean3))
+        print('   Peak to peak for "grf3_std  - krig3_std": {}'.format(peak_to_peak_std3))
 
     ######### END ##########
     a = input("Press enter to continue...")

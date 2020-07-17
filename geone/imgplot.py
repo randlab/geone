@@ -839,6 +839,7 @@ if __name__ == "__main__":
                 cticks=np.arange(0,.8,.1), cticklabels=['{:4.2f}'.format(i) for i in np.arange(0,.8,.1)],
                 cticklabels_fontweight='bold')
 
+    plt.suptitle('Categorized images...')
     # plt.tight_layout()
 
     # fig.show()
