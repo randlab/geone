@@ -33,7 +33,8 @@ def extension_min(r, n, s=1.):
 def grf1D(cov_model, dimension, spacing, origin=0.,
           nreal=1, mean=0, var=None,
           x=None, v=None,
-          extensionMin=None, crop=True,
+          extensionMin=None, rangeFactorForExtensionMin=1.0,
+          crop=True,
           method=3, conditioningMethod=2,
           measureErrVar=0., tolInvKappa=1.e-10,
           printInfo=True):
@@ -89,10 +90,17 @@ def grf1D(cov_model, dimension, spacing, origin=0.,
                             conditioning points (None for unconditional GRF)
     :param v:           (1-dimensional array or float or None) value at
                             conditioning points (same type as x)
-    :param extensionMin: (int) minimal extension in nodes for embedding (see above)
-                            None for default (automatically computed, based
-                            on the range if covariance model class is given
-                            as first argument)
+    :param extensionMin:(int) minimal extension in nodes for embedding (see above)
+                            None for default, automatically computed:
+                                - based on the range of covariance model,
+                                    if covariance model class is given as first argument,
+                                - set to nx-1 (dimension-1),
+                                    if covariance function is given as first argument
+    :param rangeFactorForExtensionMin:
+                        (float) factor by which the range is multiplied before
+                            computing the default minimal extension, when
+                            covariance model class is given as first argument and
+                            extensionMin is None (not used otherwise)
     :param crop:        (bool) indicates if the extended generated field will
                             be cropped to original dimension; note that no cropping
                             is not valid with conditioning or non stationary mean
@@ -260,7 +268,7 @@ def grf1D(cov_model, dimension, spacing, origin=0.,
         # default extensionMin
         if range_known:
             # ... based on range of covariance model
-            extensionMin = extension_min(cov_model.r(), nx, s=dx)
+            extensionMin = extension_min(rangeFactorForExtensionMin*cov_model.r(), nx, s=dx)
         else:
             # ... based on dimension
             extensionMin = dimension - 1
@@ -617,7 +625,7 @@ def grf1D(cov_model, dimension, spacing, origin=0.,
 # ----------------------------------------------------------------------------
 def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
             mean=0, var=None,
-            extensionMin=None,
+            extensionMin=None, rangeFactorForExtensionMin=1.0,
             conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
             measureErrVar=0., tolInvKappa=1.e-10,
             computeKrigSD=True,
@@ -672,10 +680,17 @@ def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
                                 - scalar for stationary variance
                                 - array for non stationary variance, must contain
                                     nx values (reshaped if needed)
-    :param extensionMin: (int) minimal extension in nodes for embedding (see above)
-                            None for default (automatically computed, based
-                            on the range if covariance model class is given
-                            as third argument)
+    :param extensionMin:(int) minimal extension in nodes for embedding (see above)
+                            None for default, automatically computed:
+                                - based on the range of covariance model,
+                                    if covariance model class is given as third argument,
+                                - set to nx-1 (dimension-1),
+                                    if covariance function is given as third argument
+    :param rangeFactorForExtensionMin:
+                        (float) factor by which the range is multiplied before
+                            computing the default minimal extension, when
+                            covariance model class is given as third argument and
+                            extensionMin is None (not used otherwise)
     :param conditioningMethod:
                         (int) indicates which method is used to perform kriging.
                             Let
@@ -793,7 +808,7 @@ def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
         # default extensionMin
         if range_known:
             # ... based on range of covariance model
-            extensionMin = extension_min(cov_model.r(), nx, s=dx)
+            extensionMin = extension_min(rangeFactorForExtensionMin*cov_model.r(), nx, s=dx)
         else:
             # ... based on dimension
             extensionMin = dimension - 1
@@ -1038,7 +1053,8 @@ def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
 def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
           nreal=1, mean=0, var=None,
           x=None, v=None,
-          extensionMin=None, crop=True,
+          extensionMin=None, rangeFactorForExtensionMin=1.0,
+          crop=True,
           method=3, conditioningMethod=2,
           measureErrVar=0., tolInvKappa=1.e-10,
           printInfo=True):
@@ -1099,11 +1115,18 @@ def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
                             conditioning points (None for unconditional GRF)
     :param v:           (1-dimensional array or float or None) value at
                             conditioning points (length n)
-    :param extensionMin: (sequence of 2 ints) minimal extension in nodes in
+    :param extensionMin:(sequence of 2 ints) minimal extension in nodes in
                             in x-, y-axis direction for embedding (see above)
-                            None for default (automatically computed, based
-                            on the ranges if covariance model class is given
-                            as first argument)
+                            None for default, automatically computed:
+                                - based on the ranges of covariance model,
+                                    if covariance model class is given as first argument,
+                                - set to [nx-1, ny-1] (where dimension=[nx, ny]),
+                                    if covariance function is given as first argument
+    :param rangeFactorForExtensionMin:
+                        (float) factor by which the range is multiplied before
+                            computing the default minimal extension, when
+                            covariance model class is given as first argument and
+                            extensionMin is None (not used otherwise)
     :param crop:        (bool) indicates if the extended generated field will
                             be cropped to original dimension; note that no cropping
                             is not valid with conditioning or non stationary mean
@@ -1289,7 +1312,7 @@ def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
         # default extensionMin
         if range_known:
             # ... based on range of covariance model
-            extensionMin = [extension_min(r, n, s) for r, n, s in zip(cov_model.rxy(), dimension, spacing)]
+            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_model.rxy(), dimension, spacing)]
         else:
             # ... based on dimension
             extensionMin = [nx-1, ny-1]
@@ -1642,7 +1665,7 @@ def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
 # ----------------------------------------------------------------------------
 def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
             mean=0, var=None,
-            extensionMin=None,
+            extensionMin=None, rangeFactorForExtensionMin=1.0,
             conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
             measureErrVar=0., tolInvKappa=1.e-10,
             computeKrigSD=True,
@@ -1701,11 +1724,18 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
                                 - scalar for stationary variance
                                 - array for non stationary variance, must contain
                                     nx*ny values (reshaped if needed)
-    :param extensionMin: (sequence of 2 ints) minimal extension in nodes in
+    :param extensionMin:(sequence of 2 ints) minimal extension in nodes in
                             in x-, y-axis direction for embedding (see above)
-                            None for default (automatically computed, based
-                            on the ranges if covariance model class is given
-                            as third argument)
+                            None for default, automatically computed:
+                                - based on the ranges of covariance model,
+                                    if covariance model class is given as third argument,
+                                - set to [nx-1, ny-1] (where dimension=[nx, ny]),
+                                    if covariance function is given as third argument
+    :param rangeFactorForExtensionMin:
+                        (float) factor by which the range is multiplied before
+                            computing the default minimal extension, when
+                            covariance model class is given as third argument and
+                            extensionMin is None (not used otherwise)
     :param conditioningMethod:
                         (int) indicates which method is used to perform kriging.
                             Let
@@ -1836,7 +1866,7 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
         # default extensionMin
         if range_known:
             # ... based on range of covariance model
-            extensionMin = [extension_min(r, n, s) for r, n, s in zip(cov_model.rxy(), dimension, spacing)]
+            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_model.rxy(), dimension, spacing)]
         else:
             # ... based on dimension
             extensionMin = [nx-1, ny-1]
@@ -2112,7 +2142,8 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
 def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
           nreal=1, mean=0, var=None,
           x=None, v=None,
-          extensionMin=None, crop=True,
+          extensionMin=None, rangeFactorForExtensionMin=1.0,
+          crop=True,
           method=3, conditioningMethod=2,
           measureErrVar=0., tolInvKappa=1.e-10,
           printInfo=True):
@@ -2173,11 +2204,18 @@ def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
                             conditioning points (None for unconditional GRF)
     :param v:           (1-dimensional array or float or None) value at
                             conditioning points (length n)
-    :param extensionMin: (sequence of 3 ints) minimal extension in nodes in
+    :param extensionMin:(sequence of 3 ints) minimal extension in nodes in
                             in x-, y-, z-axis direction for embedding (see above)
-                            None for default (automatically computed, based
-                            on the ranges if covariance model class is given
-                            as first argument)
+                            None for default, automatically computed:
+                                - based on the ranges of covariance model,
+                                    if covariance model class is given as first argument,
+                                - set to [nx-1, ny-1, nz-1] (where dimension=[nx, ny, nz]),
+                                    if covariance function is given as first argument
+    :param rangeFactorForExtensionMin:
+                        (float) factor by which the range is multiplied before
+                            computing the default minimal extension, when
+                            covariance model class is given as first argument and
+                            extensionMin is None (not used otherwise)
     :param crop:        (bool) indicates if the extended generated field will
                             be cropped to original dimension; note that no cropping
                             is not valid with conditioning or non stationary mean
@@ -2364,7 +2402,7 @@ def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
         # default extensionMin
         if range_known:
             # ... based on range of covariance model
-            extensionMin = [extension_min(r, n, s) for r, n, s in zip(cov_model.rxyz(), dimension, spacing)]
+            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_model.rxyz(), dimension, spacing)]
         else:
             # ... based on dimension
             extensionMin = [nx-1, ny-1, nz-1] # default
@@ -2734,7 +2772,7 @@ def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
 # ----------------------------------------------------------------------------
 def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
             mean=0, var=None,
-            extensionMin=None,
+            extensionMin=None, rangeFactorForExtensionMin=1.0,
             conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
             measureErrVar=0., tolInvKappa=1.e-10,
             computeKrigSD=True,
@@ -2793,11 +2831,18 @@ def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
                                 - scalar for stationary variance
                                 - array for non stationary variance, must contain
                                     nx*ny*nz values (reshaped if needed)
-    :param extensionMin: (sequence of 3 ints) minimal extension in nodes in
+    :param extensionMin:(sequence of 3 ints) minimal extension in nodes in
                             in x-, y-, z-axis direction for embedding (see above)
-                            None for default (automatically computed, based
-                            on the ranges if covariance model class is given
-                            as third argument)
+                            None for default, automatically computed:
+                                - based on the ranges of covariance model,
+                                    if covariance model class is given as third argument,
+                                - set to [nx-1, ny-1, nz-1] (where dimension=[nx, ny, nz]),
+                                    if covariance function is given as third argument
+    :param rangeFactorForExtensionMin:
+                        (float) factor by which the range is multiplied before
+                            computing the default minimal extension, when
+                            covariance model class is given as third argument and
+                            extensionMin is None (not used otherwise)
     :param conditioningMethod:
                         (int) indicates which method is used to perform kriging.
                             Let
@@ -2929,7 +2974,7 @@ def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
         # default extensionMin
         if range_known:
             # ... based on range of covariance model
-            extensionMin = [extension_min(r, n, s) for r, n, s in zip(cov_model.rxyz(), dimension, spacing)]
+            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_model.rxyz(), dimension, spacing)]
         else:
             # ... based on dimension
             extensionMin = [nx-1, ny-1, nz-1] # default

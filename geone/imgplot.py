@@ -31,9 +31,9 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                  aspect='equal',
                  frame=True, xaxis=True, yaxis=True,
                  title=None,
-                 xlabel=None, xticks=None, xticklabels=None,
-                 ylabel=None, yticks=None, yticklabels=None,
-                 clabel=None, cticks=None, cticklabels=None,
+                 xlabel=None, xticks=None, xticklabels=None, xticklabels_max_decimal=None,
+                 ylabel=None, yticks=None, yticklabels=None, yticklabels_max_decimal=None,
+                 clabel=None, cticks=None, cticklabels=None, cticklabels_max_decimal=None,
                  colorbar_extend='neither',
                  colorbar_aspect=20, colorbar_pad_fraction=1.0,
                  showColorbar=True,
@@ -100,15 +100,22 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
     :param title:       (string or None) title of the figure
     :param xlabel, ylabel, clabel:
                         (string or None) label for x-axis, y-axis, colorbar
-                        respectively
+                            respectively
     :param xticks, yticks, cticks:
                         (sequence or None) sequence where to place ticks along
-                        x-axis, y-axis, colorbar respectively,
-                        None by default
+                            x-axis, y-axis, colorbar respectively,
+                            None by default
     :param xticklabels, yticklabels, cticklabels:
                         (sequence or None) sequence of labels for ticks along
-                        x-axis, y-axis, colorbar respectively,
-                        None by default
+                            x-axis, y-axis, colorbar respectively,
+                            None by default
+    :param xticklabels_max_decimal, yticklabels_decimal, cticklabels_max_decimal:
+                        (int or None) maximal number of decimals (fractional part)
+                            for ticks labels along x-axis, y-axis, colorbar
+                            respectively,
+                            (not used if xticklabels, yticklabels, cticklabels
+                            are respectively given)
+                            None by default
     :param colorbar_extend: (string)
                                 -- used only if categ is False --
                                 keyword argument 'extend' to be passed
@@ -164,7 +171,11 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         Notes:
             - default value for font size is matplotlib.rcParams['font.size']
             - default value for font weight is matplotlib.rcParams['font.weight']
+
+    :return:    (ax, cbar) axis and colorbar of the plot
     """
+    # Initialization for output
+    ax, cbar = None, None
 
     # Check iv
     if iv < 0:
@@ -172,7 +183,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
     if iv < 0 or iv >= im.nv:
         print("ERROR: invalid iv index!")
-        return
+        return (ax, cbar)
 
     # Check slice direction and indices
     n = int(ix is not None) + int(iy is not None) + int(iz is not None)
@@ -188,7 +199,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
             if ix < 0 or ix >= im.nx:
                 print("ERROR: invalid ix index!")
-                return
+                return (ax, cbar)
 
             sliceDir = 'x'
 
@@ -198,7 +209,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
             if iy < 0 or iy >= im.ny:
                 print("ERROR: invalid iy index!")
-                return
+                return (ax, cbar)
 
             sliceDir = 'y'
 
@@ -208,13 +219,13 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
             if iz < 0 or iz >= im.nz:
                 print("ERROR: invalid iz index!")
-                return
+                return (ax, cbar)
 
             sliceDir = 'z'
 
     else: # n > 1
         print("ERROR: slice specified in more than one direction!")
-        return
+        return (ax, cbar)
 
     # Extract what to be plotted
     if sliceDir == 'x':
@@ -254,7 +265,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
             cmap = plt.get_cmap(cmap)
         except:
             print("ERROR: invalid cmap string!")
-            return
+            return (ax, cbar)
 
     if categ:
         # --- Treat categorical variable ---
@@ -262,7 +273,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
             print("ERROR: 'categCol' must be a list or a tuple (if not None)!")
-            return
+            return (ax, cbar)
 
         # Get array 'dval' of displayed values
         if categVal is not None:
@@ -270,12 +281,12 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
             if len(np.unique(dval)) != len(dval):
                 print("ERROR: 'categVal' contains duplicated entries!")
-                return
+                return (ax, cbar)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 print("ERROR: length of 'categVal' and 'categCol' differs!")
-                return
+                return (ax, cbar)
 
         else:
             # Possibly exclude values from zz
@@ -414,8 +425,13 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
     if xticklabels is not None:
         ax.set_xticklabels(xticklabels, **xticklabels_kwargs)
+    elif xticklabels_max_decimal is not None:
+        s = 10**xticklabels_max_decimal
+        labels = [np.round(t*s)/s for t in ax.get_xticks()]
+        ax.set_xticklabels(labels, **xticklabels_kwargs)
     elif len(xticklabels_kwargs):
         ax.set_xticklabels(ax.get_xticks(), **xticklabels_kwargs)
+    # else... default xticklabels....
 
     # ylabel, yticks and yticklabels
     if ylabel is not None:
@@ -426,11 +442,13 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
     if yticklabels is not None:
         ax.set_yticklabels(yticklabels, **yticklabels_kwargs)
+    elif yticklabels_max_decimal is not None:
+        s = 10**yticklabels_max_decimal
+        labels = [np.round(t*s)/s for t in ax.get_yticks()]
+        ax.set_yticklabels(labels, **yticklabels_kwargs)
     elif len(yticklabels_kwargs):
         ax.set_yticklabels(ax.get_yticks(), **yticklabels_kwargs)
-
-    if ylabel is not None:
-        ax.set_ylabel(ylabel, **ylabel_kwargs)
+    # else... default yticklabels....
 
     # Display or hide: frame, xaxis, yaxis
     if not frame:
@@ -457,8 +475,13 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
         if cticklabels is not None:
             cbar.ax.set_yticklabels(cticklabels, **cticklabels_kwargs)
+        elif cticklabels_max_decimal is not None:
+            s = 10**cticklabels_max_decimal
+            labels = [np.round(t*s)/s for t in cbar.get_ticks()]
+            cbar.ax.set_yticklabels(labels, **cticklabels_kwargs)
         elif len(cticklabels_kwargs):
             cbar.ax.set_yticklabels(cbar.get_ticks(), **cticklabels_kwargs)
+        # else... default cticklabels....
 
         if removeColorbar:
             cbar.ax.get_xaxis().set_visible(False)
@@ -471,14 +494,17 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         else:
             # Trick: redraw the image in background color...
             zz[...] = 0
-            bg_color = mpl_rcParams['figure.facecolor'] # background color
-            # ax.get_facecolor() # background color
+            # bg_color = mpl_rcParams['figure.facecolor'] # background color
+            bg_color = ax.get_facecolor() # background color
+            # bg_color = plt.gcf().get_facecolor()  # background color
             ncmap = ccol.custom_cmap([bg_color,bg_color], ncol=2)
             ax.imshow(zz, cmap=ncmap)
             ax.set_frame_on(True)
             for pos in ('bottom', 'top', 'right', 'left'):
                 ax.spines[pos].set_color(bg_color)
                 ax.spines[pos].set_linewidth(10)
+
+    return (ax, cbar)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------

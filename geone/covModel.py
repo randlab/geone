@@ -1703,32 +1703,18 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
         print('No point to fit!')
         return (cov_model_opt, np.nan * np.ones(nparam))
 
-    # Defines a function that returns a covariance model in 1D, given a vector of parameters
-    # (for the parameters to fit)
-    def cov_model_param(ielem, key, p):
-        """
-        :param ielem:   (sequence of ints of length m) indexes
-        :param key:     (sequence of strings of length m) keys
-        :param p:       (sequence of floats of length m) parameters of covariance model
-        :return:        cov_model_opt with
-                            cov_model_opt.elem[ielem[i]][key[i]] set to p[i], i=0,..., m-1
-        """
-        for i, (iel, k) in enumerate(zip(ielem, key)):
-            cov_model_opt.elem[iel][1][k] = p[i]
-        return cov_model_opt
-
-    # Defines the function to optimize in a format compatible with curve_fit from scipy.optimize
     def func(d, *p):
         """
         Function whose p is the vector of parameters to optimize.
-        :param d:   (tuple of length 3) with
-                        - d[0] = x, coordinates of the data points (see above)
-                        - d[1] = ielem, sequence of indexes of length m
-                        - d[2] = keys, sequence of strings (keys) of length m
-        :param p:   vector of parameters of length m, for the covariance model (variables to fit identified with d)
-        :return: variogram function of the corresponding covariance model evaluated at x
+        :param d:   (array) data: x, coordinates of the data points (see above)
+        :param p:   vector of parameters (floats) to optimize for the covariance model,
+                        variables to fit identified with ielem_to_fit, key_to_fit, computed
+                        above
+        :return: variogram function of the corresponding covariance model evaluated at data d
         """
-        return cov_model_param(d[1], d[2], p).vario_func()(d[0])
+        for i, (iel, k) in enumerate(zip(ielem_to_fit, key_to_fit)):
+            cov_model_opt.elem[iel][1][k] = p[i]
+        return cov_model_opt.vario_func()(d)
 
     # Optimize parameters with curve_fit: initial vector of parameters (p0) must be given
     #   because number of parameter to fit in function func is not known in its expression
@@ -1758,9 +1744,7 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
             return (None, None)
 
     # Fit with curve_fit
-    popt, pcov = curve_fit(func, (h, ielem_to_fit, key_to_fit), g, **kwargs)
-    # Retrieve the optimized covariance model (in cov_model_opt)
-    cov_model_opt = cov_model_param(ielem_to_fit, key_to_fit, popt)
+    popt, pcov = curve_fit(func, h, g, **kwargs)
 
     if make_plot:
         cov_model_opt.plot_model(vario=True, hmax=np.max(h), label='vario opt.')
@@ -2316,40 +2300,24 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
         print('No point to fit!')
         return (cov_model_opt, np.nan * np.ones(nparam))
 
-    # Defines a function that returns a covariance model in 2D, given a vector of parameters
-    # (for the parameters to fit)
-    def cov_model_param(ielem, key, ir, alpha_given, p):
-        """
-        :param ielem:   (sequence of ints of length m) indexes
-        :param key:     (sequence of strings of length m) keys
-        :param ir:      (sequence of ints of length m) index of ranges (nan if not for a range)
-        :param alpha_given: (bool) indicates if alpha is given (in last component of vector p)
-        :param p:       (sequence of floats of length m) parameters of covariance model
-        :return:        cov_model_opt with parameters idientified by ielem, key, ir set to values given by p
-        """
-        for i, (iel, k, j) in enumerate(zip(ielem, key, ir)):
-            if k == 'r':
-                cov_model_opt.elem[iel][1]['r'][j] = p[i]
-            else:
-                cov_model_opt.elem[iel][1][k] = p[i]
-        if alpha_given:
-            cov_model_opt.alpha = p[-1]
-        return cov_model_opt
-
     # Defines the function to optimize in a format compatible with curve_fit from scipy.optimize
     def func(d, *p):
         """
         Function whose p is the vector of parameters to optimize.
-        :param d:   (tuple of length 5) with
-                        - d[0] = h, lag vector for pair of data points (see above)
-                        - d[1] = ielem, sequence of indexes of length m
-                        - d[2] = keys, sequence of strings (keys) of length m
-                        - d[3] = ir, sequence of indexes of ranges (nan if not for a range) of length m
-                        - d[4] = alpha_to_set, bool indicating if alpha is given (in last component of vector p)
-        :param p:   vector of parameters of length m, for the covariance model (variables to fit identified with d)
-        :return: variogram function of the corresponding covariance model evaluated at x
+        :param d:   (array) data: h, lag vector for pair of data points (see above)
+        :param p:   vector of parameters (floats) to optimize for the covariance model,
+                        variables to fit identified with ielem_to_fit, key_to_fit, ir_to_fit
+                        and alpha_to_fitm, computed above
+        :return: variogram function of the corresponding covariance model evaluated at data d
         """
-        return cov_model_param(d[1], d[2], d[3], d[4], p).vario_func()(d[0])
+        for i, (iel, k, j) in enumerate(zip(ielem_to_fit, key_to_fit, ir_to_fit)):
+            if k == 'r':
+                cov_model_opt.elem[iel][1]['r'][j] = p[i]
+            else:
+                cov_model_opt.elem[iel][1][k] = p[i]
+        if alpha_to_fit:
+            cov_model_opt.alpha = p[-1]
+        return cov_model_opt.vario_func()(d)
 
     # Optimize parameters with curve_fit: initial vector of parameters (p0) must be given
     #   because number of parameter to fit in function func is not known in its expression
@@ -2379,9 +2347,7 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
             return (None, None)
 
     # Fit with curve_fit
-    popt, pcov = curve_fit(func, (h, ielem_to_fit, key_to_fit, ir_to_fit, alpha_to_fit), g, **kwargs)
-    # Retrieve the optimized covariance model (in cov_model_opt)
-    cov_model_opt = cov_model_param(ielem_to_fit, key_to_fit, ir_to_fit, alpha_to_fit, popt)
+    popt, pcov = curve_fit(func, h, g, **kwargs)
 
     if make_plot:
         cov_model_opt.plot_model(vario=True, figsize=figsize)
@@ -2871,48 +2837,28 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
         print('No point to fit!')
         return (cov_model_opt, np.nan * np.ones(nparam))
 
-    # Defines a function that returns a covariance model in 3D, given a vector of parameters
-    # (for the parameters to fit)
-    def cov_model_param(ielem, key, ir, alpha_given, beta_given, gamma_given, p):
-        """
-        :param ielem:   (sequence of ints of length m) indexes
-        :param key:     (sequence of strings of length m) keys
-        :param ir:      (sequence of ints of length m) index of ranges (nan if not for a range)
-        :param alpha_given: (bool) indicates if alpha is given (at the end of vector p)
-        :param beta_given:  (bool) indicates if beta is given (at the end of vector p)
-        :param gamma_given: (bool) indicates if gamma is given (at the end of vector p)
-        :param p:       (sequence of floats of length m) parameters of covariance model
-        :return:        cov_model_opt with parameters idientified by ielem, key, ir set to values given by p
-        """
-        for i, (iel, k, j) in enumerate(zip(ielem, key, ir)):
-            if k == 'r':
-                cov_model_opt.elem[iel][1]['r'][j] = p[i]
-            else:
-                cov_model_opt.elem[iel][1][k] = p[i]
-        if alpha_given:
-            cov_model_opt.alpha = p[-1-int(beta_given)-int(gamma_given)]
-        if beta_given:
-            cov_model_opt.beta = p[-1-int(gamma_given)]
-        if gamma_given:
-            cov_model_opt.gamma = p[-1]
-        return cov_model_opt
-
     # Defines the function to optimize in a format compatible with curve_fit from scipy.optimize
     def func(d, *p):
         """
         Function whose p is the vector of parameters to optimize.
-        :param d:   (tuple of length 7) with
-                        - d[0] = h, lag vector for pair of data points (see above)
-                        - d[1] = ielem, sequence of indexes of length m
-                        - d[2] = keys, sequence of strings (keys) of length m
-                        - d[3] = ir, sequence of indexes of ranges (nan if not for a range) of length m
-                        - d[4] = alpha_to_set, bool indicating if alpha is given (at the end of vector p)
-                        - d[5] = beta_to_set, bool indicating if beta is given (at the end of vector p)
-                        - d[6] = gamma_to_set, bool indicating if gamma is given (at the end of vector p)
-        :param p:   vector of parameters of length m, for the covariance model (variables to fit identified with d)
-        :return: variogram function of the corresponding covariance model evaluated at x
+        :param d:   (array) data: h, lag vector for pair of data points (see above)
+        :param p:   vector of parameters (floats) to optimize for the covariance model,
+                        variables to fit identified with ielem_to_fit, key_to_fit, ir_to_fit
+                        and alpha_to_fit, beta_to_fit, gamma_to_fit, computed above
+        :return: variogram function of the corresponding covariance model evaluated at data d
         """
-        return cov_model_param(d[1], d[2], d[3], d[4], d[5], d[6], p).vario_func()(d[0])
+        for i, (iel, k, j) in enumerate(zip(ielem_to_fit, key_to_fit, ir_to_fit)):
+            if k == 'r':
+                cov_model_opt.elem[iel][1]['r'][j] = p[i]
+            else:
+                cov_model_opt.elem[iel][1][k] = p[i]
+        if alpha_to_fit:
+            cov_model_opt.alpha = p[-1-int(beta_to_fit)-int(gamma_to_fit)]
+        if beta_to_fit:
+            cov_model_opt.beta = p[-1-int(gamma_to_fit)]
+        if gamma_to_fit:
+            cov_model_opt.gamma = p[-1]
+        return cov_model_opt.vario_func()(d)
 
     # Optimize parameters with curve_fit: initial vector of parameters (p0) must be given
     #   because number of parameter to fit in function func is not known in its expression
@@ -2942,9 +2888,7 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
             return (None, None)
 
     # Fit with curve_fit
-    popt, pcov = curve_fit(func, (h, ielem_to_fit, key_to_fit, ir_to_fit, alpha_to_fit, beta_to_fit, gamma_to_fit), g, **kwargs)
-    # Retrieve the optimized covariance model (in cov_model_opt)
-    cov_model_opt = cov_model_param(ielem_to_fit, key_to_fit, ir_to_fit, alpha_to_fit, beta_to_fit, gamma_to_fit, popt)
+    popt, pcov = curve_fit(func, h, g, **kwargs)
 
     if make_plot:
         # plt.suptitle(textwrap.TextWrapper(width=50).fill(s))

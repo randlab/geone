@@ -181,6 +181,8 @@ MPDS_SUFFIX_FOR_TRANSIOGRAM = _deesse.MPDS_SUFFIX_FOR_TRANSIOGRAM
 MPDS_SUFFIX_FOR_VARIOGRAM = _deesse.MPDS_SUFFIX_FOR_VARIOGRAM
 MPDS_EXTENSION_FOR_IMAGE_FILE = _deesse.MPDS_EXTENSION_FOR_IMAGE_FILE
 MPDS_EXTENSION_FOR_TEXT_FILE = _deesse.MPDS_EXTENSION_FOR_TEXT_FILE
+MPDS_EXTENSION_FOR_INPUT_FILE = _deesse.MPDS_EXTENSION_FOR_INPUT_FILE
+MPDS_EXTENSION_FOR_BLOCK_DATA_FILE = _deesse.MPDS_EXTENSION_FOR_BLOCK_DATA_FILE
 MPDS_NAME_FOR_PGM_VAR = _deesse.MPDS_NAME_FOR_PGM_VAR
 MPDS_NAME_FOR_PPM_VAR0 = _deesse.MPDS_NAME_FOR_PPM_VAR0
 MPDS_NAME_FOR_PPM_VAR1 = _deesse.MPDS_NAME_FOR_PPM_VAR1
@@ -353,6 +355,10 @@ MPDSPrintBlockData = _deesse.MPDSPrintBlockData
 def MPDSValidateBlockData(arg1, arg2, arg3, arg4):
     return _deesse.MPDSValidateBlockData(arg1, arg2, arg3, arg4)
 MPDSValidateBlockData = _deesse.MPDSValidateBlockData
+
+def MPDSWriteBlockData(arg1, arg2):
+    return _deesse.MPDSWriteBlockData(arg1, arg2)
+MPDSWriteBlockData = _deesse.MPDSWriteBlockData
 MPDS_MIN_CLASS_OF_VALUES_NCLASS = _deesse.MPDS_MIN_CLASS_OF_VALUES_NCLASS
 MPDS_MAX_CLASS_OF_VALUES_NCLASS = _deesse.MPDS_MAX_CLASS_OF_VALUES_NCLASS
 MPDS_MIN_CLASS_OF_VALUES_NINTERVAL = _deesse.MPDS_MIN_CLASS_OF_VALUES_NINTERVAL
@@ -898,6 +904,7 @@ MPDS_WARNING_MSG_05045 = _deesse.MPDS_WARNING_MSG_05045
 MPDS_WARNING_MSG_05100 = _deesse.MPDS_WARNING_MSG_05100
 MPDS_WARNING_MSG_05101 = _deesse.MPDS_WARNING_MSG_05101
 MPDS_WARNING_MSG_05102 = _deesse.MPDS_WARNING_MSG_05102
+MPDS_WARNING_MSG_05200 = _deesse.MPDS_WARNING_MSG_05200
 MPDS_WARNING_MSG_08001 = _deesse.MPDS_WARNING_MSG_08001
 MPDS_WARNING_MSG_99998 = _deesse.MPDS_WARNING_MSG_99998
 MPDS_MAX_NWARNING = _deesse.MPDS_MAX_NWARNING
@@ -1622,6 +1629,10 @@ class mpds_simInput(_object):
     __swig_getmethods__["consoleAppFlag"] = _deesse.mpds_simInput_consoleAppFlag_get
     if _newclass:
         consoleAppFlag = _swig_property(_deesse.mpds_simInput_consoleAppFlag_get, _deesse.mpds_simInput_consoleAppFlag_set)
+    __swig_setmethods__["simName"] = _deesse.mpds_simInput_simName_set
+    __swig_getmethods__["simName"] = _deesse.mpds_simInput_simName_get
+    if _newclass:
+        simName = _swig_property(_deesse.mpds_simInput_simName_get, _deesse.mpds_simInput_simName_set)
     __swig_setmethods__["simImage"] = _deesse.mpds_simInput_simImage_set
     __swig_getmethods__["simImage"] = _deesse.mpds_simInput_simImage_get
     if _newclass:
@@ -1954,6 +1965,10 @@ class mpds_simInput(_object):
 mpds_simInput_swigregister = _deesse.mpds_simInput_swigregister
 mpds_simInput_swigregister(mpds_simInput)
 
+
+def MPDSExportSimInput(arg1, arg2, arg3, arg4, arg5):
+    return _deesse.MPDSExportSimInput(arg1, arg2, arg3, arg4, arg5)
+MPDSExportSimInput = _deesse.MPDSExportSimInput
 
 def MPDSFreeSimInput(arg1):
     return _deesse.MPDSFreeSimInput(arg1)

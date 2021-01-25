@@ -3465,7 +3465,7 @@ def exportDeesseInput(deesse_input,
                       suffix_outputTiGridNodeIndex='_tiGridNodeIndex',
                       suffix_outputTiIndex='_tiIndex',
                       suffix_TI='_ti',
-                      suffix_pdfTI='_ti',
+                      suffix_pdfTI='_pdfti',
                       suffix_mask='_mask',
                       suffix_homothetyXRatio='_homothetyXRatio',
                       suffix_homothetyYRatio='_homothetyYRatio',
@@ -3515,9 +3515,9 @@ def exportDeesseInput(deesse_input,
 
     if verbose == 2:
         infid.write('\
-{1} {2} {3} //dimension{0}\
-{4} {5} {6} //cell size{0}\
-{7} {8} {9} //origin{0}\
+{1} {2} {3} // dimension{0}\
+{4} {5} {6} // cell size{0}\
+{7} {8} {9} // origin{0}\
 {0}'.format(endofline,
             deesse_input.nx, deesse_input.ny, deesse_input.nz,
             deesse_input.sx, deesse_input.sy, deesse_input.sz,
@@ -3725,7 +3725,8 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
 
     if verbose == 2:
         infid.write('\
-/* Number of image file(s) (n >= 0), followed by n file(s). */{0}'.format(endofline))
+/* Number of image file(s) (n >= 0), followed by n file(s){0}\
+   (such image(s) must be defined on the simulation grid (same support)). */{0}'.format(endofline))
 
     if deesse_input.dataImage is not None:
         infid.write('{1}{0}'.format(endofline, len(deesse_input.dataImage)))
@@ -4289,7 +4290,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
     # Rescaling mode
     if verbose > 0:
         infid.write('\
-/* RESCALING MODE FOR EACH VARIABLE (as many specification as number of variable(s))*/{0}'.format(endofline))
+/* RESCALING MODE FOR EACH VARIABLE (as many specification as number of variable(s)) */{0}'.format(endofline))
 
     if verbose == 2:
         infid.write('\
@@ -4324,9 +4325,9 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
         if m == 'none':
             infid.write('RESCALING_NONE{0}'.format(endofline))
         elif m == 'min_max':
-            infid.write('RESCALING_MIN_MAX{0}'.format(endofline))
+            infid.write('RESCALING_MIN_MAX {1} {2} {0}'.format(endofline, deesse_input.rescalingTargetMin[i], deesse_input.rescalingTargetMax[i]))
         elif m == 'mean_length':
-            infid.write('RESCALING_MEAN_LENGTH{0}'.format(endofline))
+            infid.write('RESCALING_MEAN_LENGTH {1} {2} {0}'.format(endofline, deesse_input.rescalingTargetMean[i], deesse_input.rescalingTargetLength[i]))
 
     infid.write('{0}'.format(endofline))
 
@@ -4353,8 +4354,11 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
       - 3: L-p distance, requires the real positive parameter p{0}\
       - 4: L-infinity distance */{0}'.format(endofline))
 
-    for v in deesse_input.distanceType:
-        infid.write('{1}{0}'.format(endofline, v))
+    for i, v in enumerate(deesse_input.distanceType):
+        if v == 3:
+            infid.write('{1} {2}{0}'.format(endofline, v, deesse_input.powerLpDistance[i]))
+        else:
+            infid.write('{1}{0}'.format(endofline, v))
     infid.write('{0}'.format(endofline))
 
     # Weight factor for conditioning data
@@ -4615,11 +4619,6 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             else:
                 infid.write('{0}'.format(endofline))
 
-            if verbose == 2:
-                infid.write('{1} // comparing pdf method{0}'.format(endofline, sp.comparingPdfMethod))
-            else:
-                infid.write('{1}{0}'.format(endofline, sp.comparingPdfMethod))
-
         elif sp.probabilityConstraintUsage == 2:
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
@@ -4634,17 +4633,17 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
                 infid.write('{1} // local pdf file{0}'.format(endofline, fname))
                 infid.write('{1} // support radius{0}'.format(endofline, sp.localPdfSupportRadius))
                 infid.write('{1} // computing local current pdf mode{0}'.format(endofline, sp.localCurrentPdfComputation))
-                infid.write('{1} // comparing pdf method{0}'.format(endofline, sp.comparingPdfMethod))
             else:
                 infid.write('{1}{0}'.format(endofline, fname))
                 infid.write('{1}{0}'.format(endofline, sp.localPdfSupportRadius))
                 infid.write('{1}{0}'.format(endofline, sp.localCurrentPdfComputation))
-                infid.write('{1}{0}'.format(endofline, sp.comparingPdfMethod))
 
         if verbose == 2:
+            infid.write('{1} // comparing pdf method{0}'.format(endofline, sp.comparingPdfMethod))
             infid.write('{1} // deactivation distance{0}'.format(endofline, sp.deactivationDistance))
             infid.write('{1} // threshold type{0}'.format(endofline, sp.probabilityConstraintThresholdType))
         else:
+            infid.write('{1}{0}'.format(endofline, sp.comparingPdfMethod))
             infid.write('{1}{0}'.format(endofline, sp.deactivationDistance))
             infid.write('{1}{0}'.format(endofline, sp.probabilityConstraintThresholdType))
 
@@ -4725,13 +4724,13 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
 
         elif co.connectivityConstraintUsage == 1:
             if verbose == 2:
-                infid.write('{1} // connectivity set before simulation (random order){0}'.format(endofline, co.connectivityConstraintUsage))
+                infid.write('{1} // pasting connecting paths (before simulation) (random order){0}'.format(endofline, co.connectivityConstraintUsage))
             else:
                 infid.write('{1}{0}'.format(endofline, co.connectivityConstraintUsage))
 
         elif co.connectivityConstraintUsage == 2:
             if verbose == 2:
-                infid.write('{1} // connectivity set before simulation (distance order){0}'.format(endofline, co.connectivityConstraintUsage))
+                infid.write('{1} // pasting connecting paths (before simulation) (order according to distance){0}'.format(endofline, co.connectivityConstraintUsage))
             else:
                 infid.write('{1}{0}'.format(endofline, co.connectivityConstraintUsage))
 
@@ -4823,7 +4822,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             continue
 
         elif bd.blockDataUsage == 1:
-            fname = '{}{}{}.gslib'.format(fileprefix, suffix_blockData, i)
+            fname = '{}{}{}.dat'.format(fileprefix, suffix_blockData, i)
             blockdata.writeBlockData(bd, dirname + '/' + fname)
             if verbose == 2:
                 infid.write('1 {1} // block data file{0}'.format(endofline, fname))

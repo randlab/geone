@@ -12,6 +12,7 @@ functions.
 
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 
 # ============================================================================
 class Img(object):
@@ -472,7 +473,7 @@ class Img(object):
             print("Nothing is done! (invalid index)")
             return
 
-        uv, cv = list(np.unique(self.val[ind,...],return_counts=True))
+        uv, cv = np.unique(self.val[ind,...],return_counts=True)
 
         cv = cv[~np.isnan(uv)]
         uv = uv[~np.isnan(uv)]
@@ -1336,7 +1337,7 @@ def imCategFromPgm(filename, flip_vertical=True, cmap='binary'):
     col = [cmap_func(c/255.) for c in pgm]
 
     # Set image
-    im = img.Img(im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz, nv=1, val=code, varname='code')
+    im = Img(im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz, nv=1, val=code, varname='code')
 
     return (im, col, pgm)
 # ----------------------------------------------------------------------------
@@ -1349,10 +1350,11 @@ def imCategFromPpm(filename, flip_vertical=True):
     :param filename:        (string) name of the file
     :param flip_vertical:   (bool) if True: flip the image vertically after reading the image
 
-    :return:    (tuple) (im, code, col)
-                    im: (Img class) image with categories 0, 1, ..., n-1 as values
-                    col  : list of colors (rgba tuple, for each category) (length n)
-                    rgb  : list of initial rgb values (length n)
+    :return:    (tuple) (im, col)
+                    im  : (Img class) image with categories 0, 1, ..., n-1 as values
+                    col : list of colors (rgb[a] tuple (values in [0,1]), for each category) (length n)
+                          Note: considering the image categorical, it can be drawn (plotted) directly
+                            by using: geone.imgplot.drawImage2D(im, categ=True, categCol=col)
     """
 
     # Read image
@@ -1363,17 +1365,63 @@ def imCategFromPpm(filename, flip_vertical=True):
         im.flipy()
 
     # Get colors and set color codes
-    v = np.array((1, 256, 256**2)).dot(im.val.reshape(3,-1))
-    x, code = np.unique(v, return_inverse=True)
-    x,     ired   = np.divmod(x, 256)
-    iblue, igreen = np.divmod(x, 256)
-    rgb = np.array((ired, igreen, iblue)).T
-    col = [[c/255. for c in irgb] for irgb in rgb]
+    vv = im.val.reshape(im.nv, -1).T # array where each line is a color code (rgb[a])
+    col, code = np.unique(vv, axis=0, return_inverse=True)
+    col = list(col/255.)
+
+    # # Get colors and set color codes
+    # v = np.array((1, 256, 256**2)).dot(im.val.reshape(3,-1))
+    # x, code = np.unique(v, return_inverse=True)
+    # x,     ired   = np.divmod(x, 256)
+    # iblue, igreen = np.divmod(x, 256)
+    # rgb = np.array((ired, igreen, iblue)).T
+    # col = [[c/255. for c in irgb] for irgb in rgb]
 
     # Set image
-    im = img.Img(im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz, nv=1, val=code, varname='code')
+    im = Img(im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz, nv=1, val=code, varname='code')
 
-    return (im, col, rgb)
+    return (im, col)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def readImageCateg(filename, flip_vertical=True):
+    """
+    Reads an image from a file (ppm (raw), pgm (raw), png format, e.g. created by Gimp) (using plt.imread):
+
+    :param filename:        (string) name of the file
+    :param flip_vertical:   (bool) if True: flip the image vertically after reading the image
+
+    :return:    (tuple) (im, col)
+                    im  : (Img class) image with categories 0, 1, ..., n-1 as values
+                    col : list of colors (rgb[a] tuple (values in [0,1]), for each category) (length n)
+                          Note: considering the image categorical, it can be drawn (plotted) directly
+                            by using: geone.imgplot.drawImage2D(im, categ=True, categCol=col)
+    """
+
+    # Read image
+    vv = plt.imread(filename)
+    ny, nx = vv.shape[0:2]
+
+    # Get colors and set color codes
+    if len(vv.shape) == 2: # pgm image
+        col, code = np.unique(vv, return_inverse=True)
+        col = [1/255.*np.array([i, i, i]) for i in col] # gray scale
+
+    else: # vv.shape of length 3 (ppm, png image)
+        vv = vv.reshape(-1, vv.shape[-1]) # array where each line is a color code (rgb[a])
+        col, code = np.unique(vv, axis=0, return_inverse=True)
+        if col.dtype == 'uint8':
+            col = col/255.
+        col = list(col)
+
+    if flip_vertical:
+        code = code.reshape(ny, nx)
+        code = code[::-1,:] # vertical flip
+
+    # Set image
+    im = Img(nx, ny, 1, nv=1, val=code, varname='code')
+
+    return (im, col)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------

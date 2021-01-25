@@ -5,7 +5,7 @@ GEONE is a python package providing a set of tools for geostatistical and multip
    - variogram analysis tools and ordinary kriging
 
 ## Installation
-To install the package: `python3 -m pip install install .`
+To install the package: `python3 -m pip install .`
 
 To uninstall the package: `python3 -m pip uninstall -y geone`
 
@@ -22,7 +22,7 @@ The following python packages are used by 'geone':
 **Important note**:  
 GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The DEESSE version provided with GEONE is a test version with restricted capabilities. To unlock the full capabilities of DEESSE, the user must obtain a commercial or academic license from the University of Neuchâtel. See LICENSE file for details.
 
-Note also that the DEESSE wrapper is built for python3.6 / python3.7 / python3.8.
+Note also that the DEESSE wrapper is built for python3.6 / python3.7 / python3.8 / python3.9.
 
 ## Examples
 Most of the modules in the package GEONE can be run as a script ('\_\_main\_\_' scope) and provide examples by this way.
@@ -42,11 +42,14 @@ Various examples are provided in notebooks, as described below.
    - `ex_deesse_11_using_mask.ipynb`: simulation using a mask
    - `ex_deesse_12_multiple_TIs.ipynb`: simulation using multiple training images
    - `ex_deesse_13_inequality_data.ipynb`: simulations with inequality data
+   - `ex_deesse_14_rotation3D.ipynb`: simulations with rotation in 3D
 - Gaussian random fields (GRF):
    - `ex_grf_1d.ipynb`: example for the generation of 1D fields
    - `ex_grf_2d.ipynb`: example for the generation of 2D fields
    - `ex_grf_3d.ipynb`: example for the generation of 3D fields
 - Variogram analysis tools and ordinary kriging:
    - `ex_vario_analysis_data1D.ipynb`: example for variogram analysis and ordinary kriging for data in 1D
-   - `ex_vario_analysis_data2D.ipynb`: example for variogram analysis and ordinary kriging for data in 2D
-   - `ex_vario_analysis_data3D.ipynb`: example for variogram analysis and ordinary kriging for data in 3D
+   - `ex_vario_analysis_data2D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 2D (omni-directional)
+   - `ex_vario_analysis_data2D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 2D (general)
+   - `ex_vario_analysis_data3D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (omni-directional)
+   - `ex_vario_analysis_data3D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (general)
