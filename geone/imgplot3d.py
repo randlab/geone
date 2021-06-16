@@ -44,6 +44,7 @@ def drawImage3D_surface (
                  show_axes=True,
                  text=None,
                  scalar_bar_annotations=None,
+                 scalar_bar_annotations_max=None,
                  scalar_bar_kwargs=None,
                  outline_kwargs=None,
                  bounds_kwargs=None,
@@ -136,6 +137,10 @@ def drawImage3D_surface (
     :param scalar_bar_annotations:
                     (dict) annotation on the scalar bar (color bar)
                         (used if show_scalar_bar is True)
+    :param scalar_bar_annotations_max:
+                    (int or None) maximal number of annotations on the scalar bar
+                    when custom_scalar_bar_for_equidistant_categories is True
+                    and scalar_bar_annotations is None
 
     :param scalar_bar_kwargs:
                     (dict) kwargs passed to function 'plotter.add_scalar_bar'
@@ -252,8 +257,16 @@ def drawImage3D_surface (
         cmin = all_val[0]
         cmax = all_val[-1] + s
         if scalar_bar_annotations == {}:
-            for v in all_val:
+            if scalar_bar_annotations_max is None:
+                v_annoted = all_val
+            elif scalar_bar_annotations_max==0:
+                v_annoted = []
+            else:
+                v_annoted = all_val[0::np.int(np.ceil(len(all_val)/scalar_bar_annotations_max))]
+            for v in v_annoted:
                 scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
+            # for v in all_val:
+            #     scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
             scalar_bar_kwargs['n_labels'] = 0
 
         scalar_bar_kwargs['n_colors'] = n_all_val
@@ -263,7 +276,7 @@ def drawImage3D_surface (
                 print ('ERROR: custom_colors length is not equal to the total number of categories')
                 return
             # set cmap (as in geone.customcolor.custom_cmap)
-            cols = custom_colors + [custom_colors[-1]] # duplicate last col...
+            cols = list(custom_colors) + [custom_colors[-1]] # duplicate last col...
 
             cseqRGB = []
             for c in cols:
@@ -395,6 +408,7 @@ def drawImage3D_slice (
                  show_axes=True,
                  text=None,
                  scalar_bar_annotations=None,
+                 scalar_bar_annotations_max=None,
                  scalar_bar_kwargs=None,
                  outline_kwargs=None,
                  bounds_kwargs=None,
@@ -507,6 +521,10 @@ def drawImage3D_slice (
     :param scalar_bar_annotations:
                     (dict) annotation on the scalar bar (color bar)
                         (used if show_scalar_bar is True)
+    :param scalar_bar_annotations_max:
+                    (int or None) maximal number of annotations on the scalar bar
+                    when custom_scalar_bar_for_equidistant_categories is True
+                    and scalar_bar_annotations is None
 
     :param scalar_bar_kwargs:
                     (dict) kwargs passed to function 'plotter.add_scalar_bar'
@@ -623,8 +641,16 @@ def drawImage3D_slice (
         cmin = all_val[0]
         cmax = all_val[-1] + s
         if scalar_bar_annotations == {}:
-            for v in all_val:
+            if scalar_bar_annotations_max is None:
+                v_annoted = all_val
+            elif scalar_bar_annotations_max==0:
+                v_annoted = []
+            else:
+                v_annoted = all_val[0::np.int(np.ceil(len(all_val)/scalar_bar_annotations_max))]
+            for v in v_annoted:
                 scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
+            # for v in all_val:
+            #     scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
             scalar_bar_kwargs['n_labels'] = 0
 
         scalar_bar_kwargs['n_colors'] = n_all_val
@@ -634,7 +660,7 @@ def drawImage3D_slice (
                 print ('ERROR: custom_colors length is not equal to the total number of categories')
                 return
             # set cmap (as in geone.customcolor.custom_cmap)
-            cols = custom_colors + [custom_colors[-1]] # duplicate last col...
+            cols = list(custom_colors) + [custom_colors[-1]] # duplicate last col...
 
             cseqRGB = []
             for c in cols:
@@ -762,6 +788,7 @@ def drawImage3D_volume (
                  iv=0,
                  cmap='viridis',
                  cmin=None, cmax=None,
+                 opacity='linear',
                  set_out_values_to_nan=True,
                  show_scalar_bar=True,
                  show_outline=True,
@@ -809,6 +836,9 @@ def drawImage3D_volume (
     :param cmin, cmax:
                     (float) min and max values for the color bar
                         automatically computed if None
+
+    :param opacity: (float or string) opacity for colors (see doc of pyvista.add_volume),
+                        default: 'linear', (set 'linear_r' to invert opacity)
 
     :param set_out_values_to_nan:
                     (bool) indicates if values out of the range [cmin, cmax]
@@ -970,7 +1000,7 @@ def drawImage3D_volume (
         pp = pv.Plotter()
 
     # pp.add_volume(pg.ctp(), cmap=cmap, clim=(cmin, cmax), annotations=scalar_bar_annotations, show_scalar_bar=show_scalar_bar, scalar_bar_args=scalar_bar_kwargs)
-    pp.add_volume(pg.ctp(), cmap=cmap, clim=(cmin, cmax), annotations=scalar_bar_annotations, show_scalar_bar=False)
+    pp.add_volume(pg.ctp(), cmap=cmap, clim=(cmin, cmax), opacity=opacity, annotations=scalar_bar_annotations, show_scalar_bar=False)
 
     if background_color is not None:
         pp.background_color = background_color

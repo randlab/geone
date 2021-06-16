@@ -1,0 +1,739 @@
+/* SIMULATION GRID (SG) */
+400 300 1 // dimension
+1.0 1.0 1.0 // cell size
+0.0 0.0 0.0 // origin
+
+/* SIMULATION VARIABLES */
+/* Number of simulation variable(s), and for each variable:
+      variable name, output flag (0 / 1), and if output flag is 1: format string (as passed to fprintf).
+   Write DEFAULT_FORMAT for format string to use default format.
+   Example (with 3 variables):
+      3
+      varName1  1  %10.5E
+      varName2  0
+      varName3  1  DEFAULT_FORMAT
+*/
+1
+code 1 DEFAULT_FORMAT
+
+/* OUTPUT SETTINGS FOR SIMULATION */
+/* Key word and required name(s) or prefix, for output of the realizations:
+      - OUTPUT_SIM_NO_FILE:
+           no file in output
+      - OUTPUT_SIM_ALL_IN_ONE_FILE
+           one file in output (every variable in output (flagged as 1 above),
+           for all realizations will be written),
+           - requires one file name
+      - OUTPUT_SIM_ONE_FILE_PER_VARIABLE:
+            one file per variable in output (flagged as 1 above),
+            - requires as many file name(s) as variable(s) flagged as 1 above
+      - OUTPUT_SIM_ONE_FILE_PER_REALIZATION:
+           one file per realization,
+           - requires one prefix (for file name, the string "_real#####.gslib"
+             will be appended where "######" is the realization index)
+*/
+OUTPUT_SIM_ONE_FILE_PER_REALIZATION
+ds
+
+/* OUTPUT: ADDITIONAL MAPS */
+/* Additional maps (images) can be retrieved in output.
+   An output map is defined on the simulation grid and contains information
+   on the simulation but excluding possible post-processing path(s).
+   The following output maps are proposed:
+      - path index map         : index in the simulation path
+      - error map              : error e (see TOLERANCE below)
+      - TI grid node index map : index of the grid node of the retained
+                                 candidate in the TI
+      - TI index map           : index of the TI used (makes sense if number of
+                                 TIs (nTI) is greater than 1)
+   For each of these 4 cases (in the order exposed above), specify:
+      - flag (0 / 1) indicating if the output is desired
+      - and if the flag is set to 1, a prefix for the name of the output files
+   Note: for any output map, one file per realization is generated, the string
+         "_real#####.gslib" will be appended to the given prefix, where "######"
+         is the realization index.
+*/
+0 // path index map
+0 // error map
+0 // TI grid node index map
+0 // TI index map
+
+/* OUTPUT REPORT */
+/* Flag (0 / 1), and if 1, output report file. */
+0
+
+/* TRAINING IMAGE */
+/* Number of training image(s) (nTI >= 1), followed by nTI file(s)
+   (a file can be replaced by the string "_DATA_" which means that the
+   simulation grid itself is taken as training image), and
+   if nTI > 1, one pdf image file (for training images, nTI variables). */
+1
+ds_ti0.gslib
+
+/* CONDITIONING DATA FILES (IMAGE FILE OR POINT SET FILE) (below)
+   In such files, the name of a variable should correspond to a variable name
+   specified above to give usual conditioning (hard) data for that variable.
+   Moreover, inequality conditioning data can be given for a variable by
+   appending the suffix "_min" (resp. "_max") to the variable name: the given
+   values are then minimal (resp. maximal) bounds, i.e. indicating that the
+   simulated values should be greater than or equal to (resp. less than or equal
+   to) the given values. */
+
+/* DATA IMAGE FILE FOR SG */
+/* Number of image file(s) (n >= 0), followed by n file(s)
+   (such image(s) must be defined on the simulation grid (same support)). */
+0
+
+/* DATA POINT SET FILE FOR SG */
+/* Number of point set file(s) (n >= 0), followed by n file(s). */
+0
+
+/* MASK IMAGE */
+/* Flag (0: mask not used / 1: mask used) and if 1, mask image file
+   (this image contains one variable on the simulation grid: flag (0 / 1)
+   for each node of the simulation grid that indicates if the variable(s)
+   will be simulated at the corresponding node (flag 1) or not (flag 0). */
+0
+
+/* HOMOTHETY */
+/* 1. Homothety usage, integer (homothetyUsage):
+        - 0: no homothety
+        - 1: homothety without tolerance
+        - 2: homothety with tolerance
+   2a. If homothetyUsage == 1,
+          then for homothety ratio in each direction,
+          first for x, then for y, and then for z-axis direction:
+             - Flag (0 / 1) indicating if given in an image file,
+               followed by
+                  - one value (real) if flag is 0
+                  - name of the image file (one variable) if flag is 1
+   2b. If homothetyUsage == 2,
+          then for homothety ratio in each direction,
+          first for x, then for y, and then for z-axis direction:
+             - Flag (0 / 1) indicating if given in an image file,
+               followed by
+                  - two values (lower and upper bounds) (real) if flag is 0
+                  - name of the image file (two variables) if flag is 1
+*/
+2
+0 1.0 1.0
+0 .5 2.0
+0 1.0 1.0
+
+/* ROTATION */
+/* 1. Rotation usage, integer (rotationUsage):
+        - 0: no rotation
+        - 1: rotation without tolerance
+        - 2: rotation with tolerance
+   2a. If rotationUsage == 1,
+          then for each angle,
+          first for azimuth, then for dip, and then for plunge:
+             - Flag (0 / 1) indicating if given in an image file,
+               followed by
+                  - one value (real) if flag is 0
+                  - name of the image file (one variable) if flag is 1
+   2b. If rotationUsage == 2,
+          then for each angle,
+          first for azimuth, then for dip, and then for plunge:
+             - Flag (0 / 1) indicating if given in an image file,
+               followed by
+                  - two values (lower and upper bounds) (real) if flag is 0
+                  - name of the image file (two variables) if flag is 1
+*/
+0
+
+/* CONSISTENCY OF CONDITIONING DATA (TOLERANCE RELATIVELY TO THE RANGE OF TRAINING VALUES) */
+/* Maximal expansion (expMax): real number (negative to not check consistency).
+   The following is applied for each variable separetely:
+      - For variable with distance type set to 0 (see below):
+           * expMax >= 0:
+                if a conditioning data value is not in the set of training image values,
+                an error occurs
+           * expMax < 0:
+                if a conditioning data value is not in the set of training image values,
+                a warning is displayed (no error occurs)
+      - For variable with distance type not set to 0 (see below): if relative distance
+        flag is set to 1 (see below), nothing is done, else:
+           * expMax >= 0: maximal accepted expansion of the range of the training image values
+                for covering the conditioning data values:
+                - if conditioning data values are within the range of the training image values:
+                     nothing is done
+                - if a conditioning data value is out of the range of the training image values:
+                     let
+                        new_min_ti = min ( min_cd, min_ti )
+                        new_max_ti = max ( max_cd, max_ti )
+                     with
+                        min_cd, max_cd, the min and max of the conditioning values,
+                        min_ti, max_ti, the min and max of the training imges values.
+                     If new_max_ti - new_min_ti <= (1 + expMax) * (ti_max - ti_min), then
+                     the training image values are linearly rescaled from [ti_min, ti_max] to
+                     [new_ti_min, new_ti_max], and a warning is displayed (no error occurs).
+                     Otherwise, an error occurs.
+           * expMax < 0: if a conditioning data value is out of the range of the training image
+                values, a warning is displayed (no error occurs), the training image values are
+                not modified.
+*/
+0.05
+
+/* NORMALIZATION TYPE (FOR VARIABLES FOR WHICH DISTANCE TYPE IS NOT 0 AND DISTANCE IS ABSOLUTE) */
+/* Available types:
+      - NORMALIZING_LINEAR
+      - NORMALIZING_UNIFORM
+      - NORMALIZING_NORMAL */
+NORMALIZING_LINEAR
+
+/* SEARCH NEIGHBORHOOD PARAMETERS */
+/* A search neighborhood is a 3D ellipsoid, defined by:
+      - (rx, ry, rz): search radius (in number of nodes) for each direction
+      - (ax, ay, az): anisotropy ratio or inverse distance unit for each direction;
+        the distance to the central node is computed as the Euclidean distance by
+        considering the nodes with the unit 1/ax x 1/ay x 1/az;
+      - (angle1, angle2, angle3): angles (azimuth, dip and plunge) defining the
+        rotation that sends the coordinates system xyz onto the coordinates
+        system x'y'z' in which the search radii and the anisotropy ratios are given.
+      - power: at which the distance is elevated for computing the weight of each
+        node in the search neighborhood.
+   Note that
+     - the search neighborhood is delimited by the search radii and the angles
+     - the anisotropy ratios are used only for computing the distance to the central
+       node, from each node in the search neighborhood
+     - the nodes inside the search neighborhood are sorted according to their
+       distance to the central node, from the closest one to the furthest one
+
+   FOR EACH VARIABLE:
+      1. search radii, available specifications (format: key word [parameters]):
+            SEARCHNEIGHBORHOOD_RADIUS_LARGE_DEFAULT
+            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_DEFAULT
+            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE
+            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XY
+            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XZ
+            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_YZ
+            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XYZ
+            SEARCHNEIGHBORHOOD_RADIUS_MANUAL rx ry rz
+         with the following meaning, where tx, ty, tz denote the ranges of the
+         variogram of the TI(s) in x-, y-, z-directions:
+            - SEARCHNEIGHBORHOOD_RADIUS_LARGE_DEFAULT:
+                 large radii set according to the size of the SG and the TI(s),
+                 and the use of homothethy and/or rotation for the simulation
+                 (automatically computed)
+            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_DEFAULT:
+                 search radii set according to the TI(s) variogram ranges,
+                 one of the 5 next modes SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE* will be
+                 used according to the use of homothethy and/or rotation for the
+                 simulation
+                 (automatically computed)
+            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE:
+                 rx prop. to tx, ry prop. to ty, rz prop. to tz,
+                 independently in each direction
+                 (automatically computed)
+            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XY:
+                 rx = ry  prop. to max(tx, ty), independently from rz prop. to tz
+                 (automatically computed)
+            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XZ:
+                 rx = rz  prop. to max(tx, tz), independently from ry prop. to ty
+                 (automatically computed)
+            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_YZ:
+                 ry = rz  prop. to max(ty, tz), independently from rx prop. to tx
+                 (automatically computed)
+            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XYZ:
+                 rx = ry = rz prop. to max(tx, ty, tz)
+                 (automatically computed)
+            - SEARCHNEIGHBORHOOD_RADIUS_MANUAL:
+                 search radii are explicitly given
+
+      2. anisotropy ratios, available specifications (format: key word [parameters]):
+            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE
+            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS
+            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XY
+            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XZ
+            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_YZ
+            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XYZ
+            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_MANUAL ax ay az
+         with the following meaning:
+            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE:
+                 ax = ay = az = 1
+                 (isotropic distance:
+                 maximal distance for search neighborhood nodes will be equal to the
+                 maximum of the search radii)
+            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS:
+                 ax = rx, ay = ry, az = rz
+                 (anisotropic distance:
+                 nodes at distance one on the border of the search neighborhood,
+                 maximal distance for search neighborhood nodes will be 1)
+            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XY:
+                 ax = ay = max(rx, ry), az = rz
+                 (anisotropic distance:
+                 maximal distance for search neighborhood nodes will be 1)
+            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XZ:
+                 ax = az = max(rx, rz), ay = ry
+                 (anisotropic distance:
+                 maximal distance for search neighborhood nodes will be 1)
+            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_YZ:
+                 ay = az = max(ry, rz), ax = rx
+                 (anisotropic distance:
+                 maximal distance for search neighborhood nodes will be 1)
+            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XYZ:
+                 ax = ay = az = max(rx, ry, rz)
+                 (isotropic distance:
+                 maximal distance for search neighborhood nodes will be 1)
+            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_MANUAL:
+                 anisotropy ratios are explicitly given
+
+      3. rotation, available specifications (format: key word [parameters]):
+            SEARCHNEIGHBORHOOD_ROTATION_OFF
+            SEARCHNEIGHBORHOOD_ROTATION_ON angle1 angle2 angle3
+         with the following meaning:
+            - SEARCHNEIGHBORHOOD_ROTATION_OFF:
+                 search neighborhood is not rotated
+            - SEARCHNEIGHBORHOOD_ROTATION_ON:
+                 search neighborhood is rotated, the rotation is described by
+                 angle1 (azimuth), angle2 (dip) and angle3 (plunge)
+
+      4. power (real number)
+*/
+/* SEARCH NEIGHBORHOOD PARAMETERS FOR VARIABLE #0 */
+SEARCHNEIGHBORHOOD_RADIUS_LARGE_DEFAULT // search radii
+SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE // anisotropy ratios
+SEARCHNEIGHBORHOOD_ROTATION_OFF // rotation
+0.0 // power for computing weight according to distance
+
+/* MAXIMAL NUMBER OF NEIGHBORING NODES FOR EACH VARIABLE (as many number(s) as number of variable(s)) */
+24
+
+/* MAXIMAL PROPORTION OF NEIGHBORING NODES WITH INEQUALITY DATA (WHEN THE MAXIMAL NUMBER OF NEIGHBORING
+   NODES IS REACHED) FOR EACH VARIABLE (as many number(s) as number of variable(s)) */
+//0.25
+
+/* MAXIMAL DENSITY OF NEIGHBORING NODES IN SEARCH NEIGHBORHOOD FOR EACH VARIABLE (as many number(s)
+   as number of variable(s)) */
+1.0
+
+/* RESCALING MODE FOR EACH VARIABLE (as many specification as number of variable(s)) */
+/* Available specifications (format: key word [parameters]):
+      RESCALING_NONE
+      RESCALING_MIN_MAX min_value max_value
+      RESCALING_MEAN_LENGTH mean_value length_value
+   with the following meaning:
+      - RESCALING_NONE:
+           target interval for simulated values = interval of training image(s) value(s)
+           (standard mode)
+      - RESCALING_MIN_MAX:
+           target interval for simulated values given by min_value and max_value
+      - RESCALING_MEAN_LENGTH:
+           target interval for simulated values given by mean_value and length_value
+   For the two last modes, a linear correspondence is set between the target interval
+   for simulated values and the interval of the training image(s):
+      - for mode RESCALING_MIN_MAX, min_value and max_value are set in correspondence
+        with the min and max training image(s) values respectively
+      - for mode RESCALING_MEAN_LENGTH, mean_value is set in correspondence
+        with the mean training image(s) value, and length_value is the length
+        of the target interval.
+   Note that:
+      - conditioning data values (if any) must be in the target interval.
+      - the two last modes are not compatible with distance type 0
+        (non-matching nodes), or with relative distance mode (see below)
+      - class of values (for other options such probability constraints or
+        connectivity constraints) are given according to the target interval.
+*/
+RESCALING_NONE
+
+/* RELATIVE DISTANCE FLAG FOR EACH VARIABLE (as many flag(s) (0 / 1) as number of variable(s)) */
+0
+
+/* DISTANCE TYPE FOR EACH VARIABLE (as many number(s) as number of variable(s)) */
+/* Available distance (between data events):
+      - 0: non-matching nodes (typically for categorical variable)
+      - 1: L-1 distance
+      - 2: L-2 distance
+      - 3: L-p distance, requires the real positive parameter p
+      - 4: L-infinity distance */
+0
+
+/* WEIGHT FACTOR FOR CONDITIONING DATA, FOR EACH VARIABLE (as many number(s) as number of variable(s)) */
+/* For the computation of distance between data events, if a value is a conditioning
+   data, its corresponding contribution is multiplied by the factor given here. */
+1.0
+
+/* SIMULATION TYPE */
+/* Key word:
+      - SIM_ONE_BY_ONE:
+           successive simulation of one variable at one node in the simulation grid (4D path)
+      - SIM_VARIABLE_VECTOR:
+           successive simulation of all variable(s) at one node in the simulation grid (3D path) */
+SIM_ONE_BY_ONE
+
+/* SIMULATION PATH */
+/* Available paths (format: key word [parameters]):
+      - PATH_RANDOM
+      - PATH_RANDOM_HD_DISTANCE_PDF s
+      - PATH_RANDOM_HD_DISTANCE_SORT s
+      - PATH_RANDOM_HD_DISTANCE_SUM_PDF p s
+      - PATH_RANDOM_HD_DISTANCE_SUM_SORT p s
+      - PATH_UNILATERAL u (vector)
+   with the following meaning:
+      - PATH_RANDOM:
+           Random path, for simulation type:
+              - SIM_ONE_BY_ONE     : path visiting all nodes and variables in a random order
+              - SIM_VARIABLE_VECTOR: path visiting all nodes in a random order
+      - PATH_RANDOM_HD_DISTANCE_PDF:
+           This path preferentially visits first the SG nodes close to the conditioning nodes.
+           For any uninformed node, the distance d to the set of conditioning nodes is computed,
+           and a weight proportional to a^d is attached, with 0 < a = 1 + s*(a0-1) <= 1, a0
+           being the minimal value for a.
+           The path is then built by successively drawing nodes according to their weight.
+           The required parameter s in [0,1] controls the strength of the distance
+           (s = 0: random, s = 1: most guided by the distance).
+           Notes: 1) in absence of conditioning node, one random node in the path is considered
+           to compute the distances, 2) if simulation type is SIM_VARIABLE_VECTOR, variables
+           exhaustively informed are not considered as conditioning data for computing distance.
+     - PATH_RANDOM_HD_DISTANCE_SORT:
+           This path preferentially visits first the SG nodes close to the conditioning nodes.
+           For any uninformed node, the distance d to the set of conditioning nodes is computed,
+           and the normalized distance d' in [0,1] is combined with a random number r in [0,1]
+           to define a weight w = s*d' + (1-s)*r.
+           The path is then built by sorting the nodes such that the weight are in increasing order.
+           The required parameter s in [0,1] controls the strength of the distance
+           (s = 0: random, s = 1: most guided by the distance - quasi deterministic).
+           Notes: 1) in absence of conditioning node, one random node in the path is considered
+           to compute the distances, 2) if simulation type is SIM_VARIABLE_VECTOR, variables
+           exhaustively informed are not considered as conditioning data for computing distance.
+      - PATH_RANDOM_HD_DISTANCE_SUM_PDF:
+           The path is built as for PATH_RANDOM_HD_DISTANCE_PDF, but the distance to the set of
+           conditioning nodes is replaced by the sum of the distances to every conditioning node,
+           each distance being raised to a power p.
+           Two parameters are required: p > 0 controls the computation of the distances,
+           and s in [0,1] controls the strength of the distance
+           (s = 0: random, s = 1: most guided by the distance).
+           Note: 1) in absence of conditioning node, random path is considered.
+      - PATH_RANDOM_HD_DISTANCE_SUM_SORT:
+           The path is built as for PATH_RANDOM_HD_DISTANCE_SORT, but the distance to the set of
+           conditioning nodes is replaced by the sum of the distances to every conditioning node,
+           each distance being raised to a power p.
+           Two parameters are required: p > 0 controls the computation of the distances,
+           and s in [0,1] controls the strength of the distance
+           (s = 0: random, s = 1: most guided by the distance - quasi deterministic).
+           Note: 1) in absence of conditioning node, random path is considered.
+      - PATH_UNILATERAL:
+           It requires a vector u of parameters of size n=4 (resp. n=3) for simulation type set to
+           SIM_ONE_BY_ONE (resp. SIM_VARIABLE_VECTOR), given as ux uy uz uv (resp. ux uy uz).
+           Some components of u can be equal to 0, and the other ones must be the integer 1,...,m,
+           with sign +/-. For
+               u[j(1)] = ... = u[j(n-m)] = 0 and (u[i(1)], ..., u[i(m)]) = (+/-1,...,+/-m),
+           the path visits all nodes in sections of coordinates j(1),...,j(n-m) randomly,
+           and makes varying the i(1)-th coordinate first (most rapidly), ..., the i(m)-th coordinate
+           last, each one in increasing or decreasing order according to the sign (+ or - resp.).
+           Examples:
+             - for simulation type SIM_ONE_BY_ONE, and u = (0, -2, 1, 0), then the path will visit
+               all nodes: randomly in xv-sections, with increasing z-coordinate first (most rapidly),
+               and decreasing y-coordinate.
+             - for simulation type SIM_VARIABLE_VECTOR, and u = (0, 2, 1), then the path will visit
+               all nodes: randomly in x-direction, with increasing z-coordinate first (most rapidly),
+               and increasing y-coordinate.
+*/
+PATH_RANDOM
+
+/* DISTANCE THRESHOLD FOR EACH VARIABLE (as many number(s) as number of variable(s)) */
+0.05
+
+/* PROBABILITY CONSTRAINTS */
+/* FOR EACH VARIABLE:
+   1. Probability constraint usage, integer (probabilityConstraintUsage):
+        - 0: no probability constraint
+        - 1: global probability constraint
+        - 2: local probability constraint
+
+   2. If probabilityConstraintUsage > 0, then the classes of values (for which the
+         probability constraints will be given) have to be defined; a class of values
+         is given by a union of interval(s): [inf_1,sup_1[ U ... U [inf_n,sup_n[;
+         Here are given:
+            - nclass: number of classes of values
+            - for i in 1,..., nclass: definition of the i-th class of values:
+                 - ninterval: number of interval(s)
+                 - inf_1 sup_1 ... inf_ninterval sup_ninterval: inf and sup for each interval
+                      these values should satisfy inf_i < sup_i
+
+   3a. If probabilityConstraintUsage == 1, then
+          - global probability for each class (defined in 2. above), i.e.
+            nclass numbers in [0,1] of sum 1
+   3b. If probabilityConstraintUsage == 2, then
+          - one pdf image file (for every class, nclass variables)
+            (image of same dimensions as the simulation grid)
+          - support radius for probability maps (i.e. distance according to
+            the unit defined in the search neighborhood parameters for the
+            considered variable)
+          - method for computing the current pdf (in the simulation grid),
+             integer (localCurrentPdfComputation):
+               - 0: "COMPLETE" mode: all the informed node in the search neighborhood
+                    for the considered variable, and within the support are taken into account
+               - 1: "APPROXIMATE" mode: only the neighboring nodes (used for the
+                    search in the TI) within the support are taken into account
+
+   4. If probabilityConstraintUsage > 0, then
+         method for comparing pdf's, integer (comparingPdfMethod):
+            - 0: MAE (Mean Absolute Error)
+            - 1: RMSE (Root Mean Squared Error)
+            - 2: KLD (Kullback Leibler Divergence)
+            - 3: JSD (JSD (Jensen-Shannon Divergence)
+            - 4: MLikRsym (Mean Likelihood Ratio (over each class indicator, symmetric target interval))
+            - 5: MLikRopt (Mean Likelihood Ratio (over each class indicator, optimal target interval))
+
+   5. If probabilityConstraintUsage > 0, then
+         - deactivation distance, i.e. one positive number
+           (the probability constraint is deactivated if the distance between
+           the current simulated node and the last node in its neighbors (used
+           for the search in the TI) (distance computed according to the corresponding
+           search neighborhood parameters) is below the given deactivation distance)
+
+   6. If probabilityConstraintUsage > 0, then
+         - threshold type for pdf's comparison, integer (probabilityConstraintThresholdType)
+              - 0: constant threshold
+              - 1: dynamic threshold
+           note: if comparingPdfMethod is set to 4 or 5, probabilityConstraintThresholdType must be set to 0
+         6.1a If probabilityConstraintThresholdType == 0, then
+                 - threshold value
+         6.1b If probabilityConstraintThresholdType == 1, then the 7 parameters:
+                 - M1 M2 M3
+                 - T1 T2 T3
+                 - W
+              These parameters should satisfy:
+                 0 <= M1 <= M2 < M3,
+                 T1 >= T2 >= T3,
+                 w != 0.
+              The threshold value t is defined as a function of the number M
+              of nodes used for computing the current pdf (in the simulation grid)
+              including the candidate (i.e. current simulated) node by:
+                 t(M) = T1, if M < M1
+                 t(M) = T2, if M1 <= M < M2
+                 t(M) = (T3 - T2) / (M3^W - M2^W) * (M^W - M2^W) + T2, if M2 <= M < M3
+                 t(M) = T3, if M3 <= M
+*/
+/* PROBABILITY CONSTRAINTS FOR VARIABLE #0 */
+0
+
+/* CONNECTIVITY CONSTRAINTS */
+/* FOR EACH VARIABLE:
+   1. Connectivity constraint usage, integer (connectivityConstraintUsage):
+         - 0: no connectivity constraint
+         - 1: set connecting paths before simulation by successively
+              binding the nodes to be connected in a random order
+         - 2: set connecting paths before simulation by successively
+              binding the nodes to be connected beginning with
+              the pair of nodes with the smallest distance and then
+              the remaining nodes in increasing order according to
+              their distance to the set of nodes already connected.
+         - 3: check connectivity pattern during simulation
+   2. If connectivityConstraintUsage > 0, then key word for type of connectivity:
+         - CONNECT_FACE             : 6-neighbors connected (by face)
+         - CONNECT_FACE_EDGE        : 18-neighbors connected (by face or edge)
+         - CONNECT_FACE_EDGE_CORNER : 26-neighbors connected (by face, edge or corner)
+   3. If connectivityConstraintUsage > 0, then the classes of values (that can
+         be considered in the same connected components) have to be defined; a
+         class of values is given by a union of interval(s):
+            [inf_1,sup_1[ U ... U [inf_n,sup_n[;
+         Here are given:
+            - nclass: number of classes of values
+            - for i in 1,..., nclass: definition of the i-th class of values:
+                 - ninterval: number of interval(s)
+                 - inf_1 sup_1 ... inf_ninterval sup_ninterval: inf and sup for each interval
+                      these values should satisfy inf_i < sup_i
+   4. If connectivityConstraintUsage > 0, then:
+         - variable name for connected component label
+           (included in data image / data point set above)
+           (Note: label negative or zero means no connectivity constraint)
+   5a. If connectivityConstraintUsage == 1 or connectivityConstraintUsage == 2, then:
+         - name of the image file and name of the variable for the search of
+           connected paths (set string "_TI_" instead for searching in the (first)
+           training image and the corresponding variable index)
+   5b. If connectivityConstraintUsage == 3, then:
+         - deactivation distance, i.e. one positive number
+           (the connectivity constraint is deactivated if the distance between
+           the current simulated node and the last node in its neighbors (used
+           for the search in the TI) (distance computed according to the corresponding
+           search neighborhood parameters) is below the given deactivation distance)
+         - threshold: threshold value for acceptation of connectivity pattern
+*/
+/* CONNECTIVITY CONSTRAINTS FOR VARIABLE #0 */
+0
+
+/* BLOCK DATA */
+/* FOR EACH VARIABLE:
+   1. Block data usage, integer (blockDataUsage):
+         - 0: no block data
+         - 1: use of block data (mean value)
+
+   2. If blockDataUsage == 1, then
+         - block data file name
+*/
+/* BLOCK DATA FOR VARIABLE #0 */
+0
+
+/* MAXIMAL SCAN FRACTION FOR EACH TI (as many number(s) as number of training image(s)) */
+0.25
+
+/* PYRAMIDS */
+/* I. PYRAMID GENERAL PARAMETERS:
+      I.1. Number of pyramid level(s) (in addition to original simulation grid, i.e. number of
+           reduction operations), integer (npyramidLevel):
+              - = 0: no use of pyramids
+              - > 0: use pyramids, npyramidLevel should be equal to the max of "nlevel" entries
+                     in pyramid parameters for every variable (point II.1 below);
+                     pyramid levels are indexed from fine to coarse:
+                        * index 0            : original simulation grid
+                        * index npyramidLevel: coarsest level
+      If npyramidLevel > 0:
+         I.2. for each level, i.e. for i = 1,..., npyramidLevel:
+                 - kx, ky, kz (3 integer): reduction step along x,y,z-direction for the i-th reduction:
+                      k[x|y|z] = 0: nothing is done, same dimension in output
+                      k[x|y|z] = 1: same dimension in output (with weighted average over 3 nodes)
+                      k[x|y|z] = 2: classical gaussian pyramid
+                      k[x|y|z] > 2: generalized gaussian pyramid
+         I.3. pyramid simulation mode, key work (pyramidSimulationMode):
+                 - PYRAMID_SIM_HIERARCHICAL:
+                      (a) spreading conditioning data through the pyramid by simulation at each
+                          level, from fine to coarse, conditioned to the level one rank finer
+                      (b) simulation at the coarsest level, then simulation of each level, from coarse
+                          to fine, conditioned to the level one rank coarser
+                 - PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION:
+                      (a) spreading conditioning data through the pyramid by simulation at each
+                          level, from fine to coarse, conditioned to the level one rank finer
+                      (b) simulation at the coarsest level, then simulation of each level, from coarse
+                          to fine, conditioned to the gaussian expansion of the level one rank coarser
+                 - PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE:
+                      co-simulation of all levels, simulation done at one level at a time
+         I.4. Factors to adapt the maximal number of neighboring nodes:
+              I.4.1. Setting mode, key word (factorNneighboringNodeSettingMode):
+                        - PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_DEFAULT: set by default
+                        - PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL : read in input
+              If factorNneighboringNodeSettingMode == PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL:
+                 I.4.2. The factors, depending on pyramid simulation mode:
+                    - if pyramidSimulationMode == PYRAMID_SIM_HIERARCHICAL
+                      or PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION:
+                         - faCond[0], faSim[0], fbCond[0], fbSim[0],
+                           ...,
+                           faCond[n-1], faSim[n-1], fbCond[n-1], fbSim[n-1],
+                           fbSim[n]:
+                              I.e. (4*n+1) positive numbers where n = npyramidLevel, with the following
+                              meaning. The maximal number of neighboring nodes (according to each variable)
+                              is multiplied by
+                                (a) faCond[j] and faSim[j] for the conditioning level (level j)
+                                    and the simulated level (level j+1) resp. during step (a) above
+                                (b) fbCond[j] and fbSim[j] for the conditioning level (level j+1) (expanded
+                                    if pyramidSimulationMode == PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION)
+                                    and the simulated level (level j) resp. during step (b) above
+                    - if pyramidSimulationMode == PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE:
+                         - f[0],..., f[npyramidLevel-1], f[npyramidLevel]:
+                              I.e. (npyramidLevel + 1) positive numbers, with the following meaning. The
+                              maximal number of neighboring nodes (according to each variable) is
+                              multiplied by f[j] for the j-th pyramid level.
+         I.5. Factors to adapt the distance threshold (similar to I.4):
+              I.5.1. Setting mode, key word (factorDistanceThresholdSettingMode):
+                        - PYRAMID_THRESHOLD_ADAPTING_FACTOR_DEFAULT: set by default
+                        - PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL : read in input
+              If factorDistanceThresholdSettingMode == PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL:
+                 I.5.2. The factors, depending on pyramid simulation mode (similar to I.4.2).
+         I.6. Factors to adapt the maximal scan fraction:
+              I.6.1. Setting mode, key word (factorMaxScanFractionSettingMode):
+                        - PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_DEFAULT: set by default
+                        - PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL : read in input
+              If factorMaxScanFractionSettingMode == PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL:
+                 I.6.2. The factors:
+                    - f[0],..., f[npyramidLevel-1], f[npyramidLevel]:
+                         I.e. (npyramidLevel + 1) positive numbers, with the following meaning. The
+                      maximal scan fraction (according to each training image) is
+                      multiplied by f[j] for the j-th pyramid level.
+
+         II. PYRAMID PARAMETERS FOR EACH VARIABLE:
+
+         II.1. nlevel: number of pyramid level(s) (number of reduction operations)
+                          - = 0: no use of pyramid for the considered variable
+                          - > 0: use pyramids for the considered variable, with nlevel level
+
+         If nlevel > 0:
+            II.2. Pyramid type, key word (pyramidType):
+                     - PYRAMID_CONTINUOUS        : pyramid applied to continuous variable (direct)
+                     - PYRAMID_CATEGORICAL_AUTO  : pyramid for categorical variable
+                                                      - pyramid for indicator variable of each category
+                                                        except one (one pyramid per indicator variable)
+                     - PYRAMID_CATEGORICAL_CUSTOM: pyramid for categorical variable
+                                                      - pyramid for indicator variable of each class
+                                                        of values given explicitly (one pyramid per
+                                                        indicator variable)
+                     - PYRAMID_CATEGORICAL_TO_CONTINUOUS:
+                                                   pyramid for categorical variable
+                                                      - the variable is transformed to a continuous
+                                                        variable (according to connection between adjacent
+                                                        nodes, the new values are ordered such that close
+                                                        values correspond to the most connected categories),
+                                                        then one pyramid for the transformed variable
+                                                        is used
+            If pyramidType == PYRAMID_CATEGORICAL_CUSTOM:
+               II.3.  The classes of values (for which the indicator variables are
+                  considered for pyramids) have to be defined; a class of values is given by a union
+                  of interval(s): [inf_1,sup_1[ U ... U [inf_n,sup_n[.
+                  Here are given:
+                     - nclass: number of classes of values
+                     - for i in 1,..., nclass: definition of the i-th class of values:
+                          - ninterval: number of interval(s)
+                          - inf_1 sup_1 ... inf_ninterval sup_ninterval: inf and sup for each interval
+                               these values should satisfy inf_i < sup_i
+                  Then, for each class, the number of pyramid levels (number of reduction operations) is
+                     - nlevel_i (for i in 1,..., nclass)
+*/
+/* PYRAMID GENERAL PARAMETERS */
+0
+
+/* TOLERANCE */
+/* Tolerance t on the threshold value for flagging nodes (for post-processing):
+   let d(i) be the distance between the data event in the simulation grid and in the training
+   image for the i-th variable and s(i) be the distance threshold for the i-th variable, and let
+   e(i) = max(0, (d(i)-s(i))/s(i)) be the relative error for the i-th variable, i.e. the relative
+   part of the distance d(i) beyond the threshold s(i); during the scan of the training image, a node
+   that minimizes e = sum (e(i)) is retained (the scan is stopped if e = 0); if e is greater than the
+   tolerance t (given here), then the current simulated node and all non-conditioning nodes of the
+   data events (one per variable) in the simulation grid are flagged for resimulation (post-processing).
+   Note that if probability / connectivity / block data constraints used a similar error as e(i) that
+   contributes in the sum defining the error e.
+*/
+0.0
+
+/* POST-PROCESSING */
+/* 1. Maximal number of path(s) (npostProcessingPathMax)
+   2. If npostProcessingPathMax > 0:
+      key word for post-processing parameters (i. e. number of neighboring nodes, distance threshold,
+      maximal scan fraction, and tolerance):
+         - POST_PROCESSING_PARAMETERS_DEFAULT: for default parameters
+         - POST_PROCESSING_PARAMETERS_SAME   : for same parameters as given above
+         - POST_PROCESSING_PARAMETERS_MANUAL : for manual settings
+   3. If npostProcessingPathMax > 0 and POST_PROCESSING_PARAMETERS_MANUAL:
+         MAXIMAL NUMBER OF NEIGHBORING NODES FOR EACH VARIABLE (as many number(s) as number of variable(s))
+         MAXIMAL DENSITY OF NEIGHBORING NODES IN SEARCH NEIGHBORHOOD FOR EACH VARIABLE (as many number(s)
+            as number of variable(s))
+         DISTANCE THRESHOLD FOR EACH VARIABLE (as many number(s) as number of variable(s))
+         MAXIMAL SCAN FRACTION FOR EACH TI (as many number(s) as number of training image(s))
+         TOLERANCE
+*/
+1
+POST_PROCESSING_PARAMETERS_MANUAL
+/* POST-PROCESSING: MAXIMAL NUMBER OF NEIGHBORING NODES FOR EACH VARIABLE */
+6
+
+/* POST-PROCESSING: MAXIMAL DENSITY OF NEIGHBORING NODES IN SEARCH NEIGHBORHOOD FOR EACH VARIABLE */
+1.0
+
+/* POST-PROCESSING: DISTANCE THRESHOLD FOR EACH VARIABLE */
+0.02
+
+/* POST-PROCESSING: MAXIMAL SCAN FRACTION FOR EACH TI */
+0.2
+
+/* POST-PROCESSING: TOLERANCE */
+0.0
+
+/* SEED NUMBER AND SEED INCREMENT */
+444
+1
+
+/* NUMBER OF REALIZATION(S) */
+1
+
+END

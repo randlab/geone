@@ -15,7 +15,7 @@ import sys, os, re, copy
 
 from geone import img, blockdata
 from geone.deesse_core import deesse
-from geone.img import Img, PointSet, copyImg
+from geone.img import Img, PointSet
 from geone.blockdata import BlockData
 
 # ============================================================================
@@ -1755,7 +1755,7 @@ def ps_py2C(ps_py):
     """
     Converts a point set from python to C.
 
-    :param ps_py:   (img.PointSet class) point set (python class)
+    :param ps_py:   (PointSet class) point set (python class)
     :return ps_c:   (MPDS_POINTSET *) point set converted (C struct)
     """
 
@@ -1797,7 +1797,7 @@ def ps_C2py(ps_c):
     Converts a point set from C to python.
 
     :param ps_c:    (MPDS_POINTSET *) point set (C struct)
-    :return ps_py:  (img.PointSet class) point set converted (python class)
+    :return ps_py:  (PointSet class) point set converted (python class)
     """
 
     varname = ['X', 'Y', 'Z'] + [deesse.mpds_get_varname(ps_c.varName, i) for i in range(ps_c.nvar)]
@@ -1813,8 +1813,8 @@ def ps_C2py(ps_c):
     deesse.mpds_get_array_from_real_vector(ps_c.x, 0, coord)
     v = np.hstack(coord,v)
 
-    ps_py = img.PointSet(npt=ps_c.npoint,
-                         nv=ps_c.nvar+3, val=v, varname=varname)
+    ps_py = PointSet(npt=ps_c.npoint,
+                     nv=ps_c.nvar+3, val=v, varname=varname)
 
     np.putmask(ps_py.val, ps_py.val == deesse.MPDS_MISSING_VALUE, np.nan)
 
@@ -2498,7 +2498,7 @@ def deesse_input_py2C(deesse_input):
 
         if not co.tiAsRefFlag:
             # ... refConnectivityImage
-            im = copyImg(co.refConnectivityImage)
+            im = img.copyImg(co.refConnectivityImage)
             im.extract_var([co.refConnectivityVarIndex])
             co_c.refConnectivityImage = img_py2C(im)
 
@@ -2719,7 +2719,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
     :param mpds_progressMonitor:
                             (MPDS_PROGRESSMONITOR *) progress monitor - (C struct)
 
-    :return deesse_output:  (dictionary)
+    :return deesse_output:  (dict)
             {'sim':sim,
              'path':path,
              'error':error,
@@ -2882,7 +2882,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
                     - 2 (or >1): warning and progress
 
     :return deesse_output:
-        (dictionary)
+        (dict)
                 {'sim':sim,
                  'path':path,
                  'error':error,
@@ -2928,7 +2928,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
         nth = nthreads
 
     if verbose >= 2:
-        print('Deesse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
+        print('DeeSse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
         sys.stdout.flush() # so that the previous print is flushed before launching deesse...
 
     # Convert deesse input from python to C
@@ -2992,11 +2992,11 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
     #deesse.MPDSFree(mpds_progressMonitor)
     deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2:
-        print('Deesse run complete')
+    if verbose >= 2 and deesse_output:
+        print('DeeSse run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and deesse_output['nwarning']:
+    if verbose >= 1 and deesse_output and deesse_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(deesse_output['nwarning']))
         for i, warning_message in enumerate(deesse_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -3025,7 +3025,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #                     - 2 (or >1): warning and progress
 #
 #     :return (deesse_output, err, err_message):
-#         deesse_output: (dictionary)
+#         deesse_output: (dict)
 #                 {'sim':sim,
 #                  'path':path,
 #                  'error':error,
@@ -3161,7 +3161,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #                     - 2 (or >1): warning and progress
 #
 #     :return deesse_output:
-#         (dictionary)
+#         (dict)
 #                 {'sim':sim,
 #                  'path':path,
 #                  'error':error,
@@ -3264,7 +3264,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #                     - 2 (or >1): warning and progress
 #
 #     :return deesse_output:
-#         (dictionary)
+#         (dict)
 #                 {'sim':sim,
 #                  'path':path,
 #                  'error':error,
@@ -5277,7 +5277,7 @@ class DeesseEstimator():
         if y.ndim == 1:
             y = y[:, np.newaxis]
         array = np.hstack([X, y])
-        self.hd = img.PointSet(npt=array.shape[0],
+        self.hd = PointSet(npt=array.shape[0],
                 nv=array.shape[1],
                 val=array.transpose(),
                 varname=self.varnames)
@@ -5310,7 +5310,7 @@ class DeesseEstimator():
         :param unconditional=False: if True, performs unconditional simulation
             ignores the fitted parameters
 
-        :return deesse_output:  (dictionary) {'sim':sim, 'path':path, 'error':error}
+        :return deesse_output:  (dict) {'sim':sim, 'path':path, 'error':error}
             With nreal = deesse_input.nrealization:
             sim:    (1-dimensional array of Img (class) of size nreal)
                         sim[i]: i-th realisation

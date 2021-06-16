@@ -161,7 +161,8 @@ MPDS_SUFFIX_FOR_DISTANCE_L2_SIGN = _deesse.MPDS_SUFFIX_FOR_DISTANCE_L2_SIGN
 MPDS_SUFFIX_FOR_ERODING = _deesse.MPDS_SUFFIX_FOR_ERODING
 MPDS_SUFFIX_FOR_GEOBODY = _deesse.MPDS_SUFFIX_FOR_GEOBODY
 MPDS_SUFFIX_FOR_INDICATOR = _deesse.MPDS_SUFFIX_FOR_INDICATOR
-MPDS_SUFFIX_FOR_MOBILE_AVERAGE = _deesse.MPDS_SUFFIX_FOR_MOBILE_AVERAGE
+MPDS_SUFFIX_FOR_MOVING_SN_AVERAGE = _deesse.MPDS_SUFFIX_FOR_MOVING_SN_AVERAGE
+MPDS_SUFFIX_FOR_MOVING_BOX_AVERAGE = _deesse.MPDS_SUFFIX_FOR_MOVING_BOX_AVERAGE
 MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_EXP = _deesse.MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_EXP
 MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_LAP = _deesse.MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_LAP
 MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_RED = _deesse.MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_RED
@@ -207,6 +208,7 @@ MPDS_NODEPATH_WEIGHT_MIN = _deesse.MPDS_NODEPATH_WEIGHT_MIN
 MPDS_NODEPATH_A0_MIN = _deesse.MPDS_NODEPATH_A0_MIN
 MPDS_NODEPATH_A0_MAX = _deesse.MPDS_NODEPATH_A0_MAX
 MPDS_MIN_SPACING = _deesse.MPDS_MIN_SPACING
+MPDS_MAX_NSIMVAR = _deesse.MPDS_MAX_NSIMVAR
 MPDS_MAX_NVAR = _deesse.MPDS_MAX_NVAR
 MPDS_MAX_NXYZ = _deesse.MPDS_MAX_NXYZ
 MPDS_MAX_NXYZV = _deesse.MPDS_MAX_NXYZV
@@ -899,22 +901,42 @@ MPDS_WARNING_MSG_00160 = _deesse.MPDS_WARNING_MSG_00160
 MPDS_WARNING_MSG_00210 = _deesse.MPDS_WARNING_MSG_00210
 MPDS_WARNING_MSG_00212 = _deesse.MPDS_WARNING_MSG_00212
 MPDS_WARNING_MSG_00214 = _deesse.MPDS_WARNING_MSG_00214
+MPDS_WARNING_MSG_02001 = _deesse.MPDS_WARNING_MSG_02001
+MPDS_WARNING_MSG_02002 = _deesse.MPDS_WARNING_MSG_02002
+MPDS_WARNING_MSG_02005 = _deesse.MPDS_WARNING_MSG_02005
+MPDS_WARNING_MSG_02012 = _deesse.MPDS_WARNING_MSG_02012
+MPDS_WARNING_MSG_02015 = _deesse.MPDS_WARNING_MSG_02015
+MPDS_WARNING_MSG_02016 = _deesse.MPDS_WARNING_MSG_02016
 MPDS_WARNING_MSG_05044 = _deesse.MPDS_WARNING_MSG_05044
 MPDS_WARNING_MSG_05045 = _deesse.MPDS_WARNING_MSG_05045
+MPDS_WARNING_MSG_05125 = _deesse.MPDS_WARNING_MSG_05125
+MPDS_WARNING_MSG_05127 = _deesse.MPDS_WARNING_MSG_05127
+MPDS_WARNING_MSG_05126 = _deesse.MPDS_WARNING_MSG_05126
 MPDS_WARNING_MSG_05100 = _deesse.MPDS_WARNING_MSG_05100
 MPDS_WARNING_MSG_05101 = _deesse.MPDS_WARNING_MSG_05101
 MPDS_WARNING_MSG_05102 = _deesse.MPDS_WARNING_MSG_05102
+MPDS_WARNING_MSG_05103 = _deesse.MPDS_WARNING_MSG_05103
+MPDS_WARNING_MSG_05104 = _deesse.MPDS_WARNING_MSG_05104
+MPDS_WARNING_MSG_05105 = _deesse.MPDS_WARNING_MSG_05105
+MPDS_WARNING_MSG_05120 = _deesse.MPDS_WARNING_MSG_05120
+MPDS_WARNING_MSG_05130 = _deesse.MPDS_WARNING_MSG_05130
+MPDS_WARNING_MSG_05131 = _deesse.MPDS_WARNING_MSG_05131
 MPDS_WARNING_MSG_05200 = _deesse.MPDS_WARNING_MSG_05200
 MPDS_WARNING_MSG_08001 = _deesse.MPDS_WARNING_MSG_08001
 MPDS_WARNING_MSG_99998 = _deesse.MPDS_WARNING_MSG_99998
 MPDS_MAX_NWARNING = _deesse.MPDS_MAX_NWARNING
 MPDS_SHOW_PROGRESS_MONITOR = _deesse.MPDS_SHOW_PROGRESS_MONITOR
+MPDS_MAX_PROGRESS_NAME_LENGTH = _deesse.MPDS_MAX_PROGRESS_NAME_LENGTH
 class mpds_progressMonitor(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_progressMonitor, name, value)
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, mpds_progressMonitor, name)
     __repr__ = _swig_repr
+    __swig_setmethods__["progressName"] = _deesse.mpds_progressMonitor_progressName_set
+    __swig_getmethods__["progressName"] = _deesse.mpds_progressMonitor_progressName_get
+    if _newclass:
+        progressName = _swig_property(_deesse.mpds_progressMonitor_progressName_get, _deesse.mpds_progressMonitor_progressName_set)
     __swig_setmethods__["warningNumber"] = _deesse.mpds_progressMonitor_warningNumber_set
     __swig_getmethods__["warningNumber"] = _deesse.mpds_progressMonitor_warningNumber_get
     if _newclass:
@@ -1331,6 +1353,10 @@ MPDSReadSearchNeighborhoodParameters = _deesse.MPDSReadSearchNeighborhoodParamet
 def MPDSReallocSearchNeighborhood(arg1, arg2):
     return _deesse.MPDSReallocSearchNeighborhood(arg1, arg2)
 MPDSReallocSearchNeighborhood = _deesse.MPDSReallocSearchNeighborhood
+
+def MPDSSearchNeighborhoodToImage(arg1, arg2):
+    return _deesse.MPDSSearchNeighborhoodToImage(arg1, arg2)
+MPDSSearchNeighborhoodToImage = _deesse.MPDSSearchNeighborhoodToImage
 
 def MPDSSearchNeighborhoodApproxBound(arg1, arg2, arg3, arg4):
     return _deesse.MPDSSearchNeighborhoodApproxBound(arg1, arg2, arg3, arg4)
@@ -2426,6 +2452,57 @@ def MPDS_PYRAMIDPARAMETERS_array_setitem(ary, index, value):
     return _deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(ary, index, value)
 MPDS_PYRAMIDPARAMETERS_array_setitem = _deesse.MPDS_PYRAMIDPARAMETERS_array_setitem
 
+def malloc_MPDS_BLOCKDATA(*args):
+    return _deesse.malloc_MPDS_BLOCKDATA(*args)
+malloc_MPDS_BLOCKDATA = _deesse.malloc_MPDS_BLOCKDATA
+
+def calloc_MPDS_BLOCKDATA(*args):
+    return _deesse.calloc_MPDS_BLOCKDATA(*args)
+calloc_MPDS_BLOCKDATA = _deesse.calloc_MPDS_BLOCKDATA
+
+def realloc_MPDS_BLOCKDATA(ptr, nitems):
+    return _deesse.realloc_MPDS_BLOCKDATA(ptr, nitems)
+realloc_MPDS_BLOCKDATA = _deesse.realloc_MPDS_BLOCKDATA
+
+def free_MPDS_BLOCKDATA(ptr):
+    return _deesse.free_MPDS_BLOCKDATA(ptr)
+free_MPDS_BLOCKDATA = _deesse.free_MPDS_BLOCKDATA
+sizeof_MPDS_BLOCKDATA = _deesse.sizeof_MPDS_BLOCKDATA
+
+def malloc_MPDS_CLASSOFVALUES(*args):
+    return _deesse.malloc_MPDS_CLASSOFVALUES(*args)
+malloc_MPDS_CLASSOFVALUES = _deesse.malloc_MPDS_CLASSOFVALUES
+
+def calloc_MPDS_CLASSOFVALUES(*args):
+    return _deesse.calloc_MPDS_CLASSOFVALUES(*args)
+calloc_MPDS_CLASSOFVALUES = _deesse.calloc_MPDS_CLASSOFVALUES
+
+def realloc_MPDS_CLASSOFVALUES(ptr, nitems):
+    return _deesse.realloc_MPDS_CLASSOFVALUES(ptr, nitems)
+realloc_MPDS_CLASSOFVALUES = _deesse.realloc_MPDS_CLASSOFVALUES
+
+def free_MPDS_CLASSOFVALUES(ptr):
+    return _deesse.free_MPDS_CLASSOFVALUES(ptr)
+free_MPDS_CLASSOFVALUES = _deesse.free_MPDS_CLASSOFVALUES
+sizeof_MPDS_CLASSOFVALUES = _deesse.sizeof_MPDS_CLASSOFVALUES
+
+def malloc_MPDS_CONNECTIVITY(*args):
+    return _deesse.malloc_MPDS_CONNECTIVITY(*args)
+malloc_MPDS_CONNECTIVITY = _deesse.malloc_MPDS_CONNECTIVITY
+
+def calloc_MPDS_CONNECTIVITY(*args):
+    return _deesse.calloc_MPDS_CONNECTIVITY(*args)
+calloc_MPDS_CONNECTIVITY = _deesse.calloc_MPDS_CONNECTIVITY
+
+def realloc_MPDS_CONNECTIVITY(ptr, nitems):
+    return _deesse.realloc_MPDS_CONNECTIVITY(ptr, nitems)
+realloc_MPDS_CONNECTIVITY = _deesse.realloc_MPDS_CONNECTIVITY
+
+def free_MPDS_CONNECTIVITY(ptr):
+    return _deesse.free_MPDS_CONNECTIVITY(ptr)
+free_MPDS_CONNECTIVITY = _deesse.free_MPDS_CONNECTIVITY
+sizeof_MPDS_CONNECTIVITY = _deesse.sizeof_MPDS_CONNECTIVITY
+
 def malloc_MPDS_IMAGE(*args):
     return _deesse.malloc_MPDS_IMAGE(*args)
 malloc_MPDS_IMAGE = _deesse.malloc_MPDS_IMAGE
@@ -2460,159 +2537,6 @@ def free_MPDS_POINTSET(ptr):
 free_MPDS_POINTSET = _deesse.free_MPDS_POINTSET
 sizeof_MPDS_POINTSET = _deesse.sizeof_MPDS_POINTSET
 
-def malloc_MPDS_SIMINPUT(*args):
-    return _deesse.malloc_MPDS_SIMINPUT(*args)
-malloc_MPDS_SIMINPUT = _deesse.malloc_MPDS_SIMINPUT
-
-def calloc_MPDS_SIMINPUT(*args):
-    return _deesse.calloc_MPDS_SIMINPUT(*args)
-calloc_MPDS_SIMINPUT = _deesse.calloc_MPDS_SIMINPUT
-
-def realloc_MPDS_SIMINPUT(ptr, nitems):
-    return _deesse.realloc_MPDS_SIMINPUT(ptr, nitems)
-realloc_MPDS_SIMINPUT = _deesse.realloc_MPDS_SIMINPUT
-
-def free_MPDS_SIMINPUT(ptr):
-    return _deesse.free_MPDS_SIMINPUT(ptr)
-free_MPDS_SIMINPUT = _deesse.free_MPDS_SIMINPUT
-sizeof_MPDS_SIMINPUT = _deesse.sizeof_MPDS_SIMINPUT
-
-def malloc_MPDS_SIMOUTPUT(*args):
-    return _deesse.malloc_MPDS_SIMOUTPUT(*args)
-malloc_MPDS_SIMOUTPUT = _deesse.malloc_MPDS_SIMOUTPUT
-
-def calloc_MPDS_SIMOUTPUT(*args):
-    return _deesse.calloc_MPDS_SIMOUTPUT(*args)
-calloc_MPDS_SIMOUTPUT = _deesse.calloc_MPDS_SIMOUTPUT
-
-def realloc_MPDS_SIMOUTPUT(ptr, nitems):
-    return _deesse.realloc_MPDS_SIMOUTPUT(ptr, nitems)
-realloc_MPDS_SIMOUTPUT = _deesse.realloc_MPDS_SIMOUTPUT
-
-def free_MPDS_SIMOUTPUT(ptr):
-    return _deesse.free_MPDS_SIMOUTPUT(ptr)
-free_MPDS_SIMOUTPUT = _deesse.free_MPDS_SIMOUTPUT
-sizeof_MPDS_SIMOUTPUT = _deesse.sizeof_MPDS_SIMOUTPUT
-
-def malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(*args):
-    return _deesse.malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(*args)
-malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS = _deesse.malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS
-
-def calloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(*args):
-    return _deesse.calloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(*args)
-calloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS = _deesse.calloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS
-
-def realloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(ptr, nitems):
-    return _deesse.realloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(ptr, nitems)
-realloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS = _deesse.realloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS
-
-def free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(ptr):
-    return _deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(ptr)
-free_MPDS_SEARCHNEIGHBORHOODPARAMETERS = _deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS
-sizeof_MPDS_SEARCHNEIGHBORHOODPARAMETERS = _deesse.sizeof_MPDS_SEARCHNEIGHBORHOODPARAMETERS
-
-def malloc_MPDS_RESCALINGMODE(*args):
-    return _deesse.malloc_MPDS_RESCALINGMODE(*args)
-malloc_MPDS_RESCALINGMODE = _deesse.malloc_MPDS_RESCALINGMODE
-
-def calloc_MPDS_RESCALINGMODE(*args):
-    return _deesse.calloc_MPDS_RESCALINGMODE(*args)
-calloc_MPDS_RESCALINGMODE = _deesse.calloc_MPDS_RESCALINGMODE
-
-def realloc_MPDS_RESCALINGMODE(ptr, nitems):
-    return _deesse.realloc_MPDS_RESCALINGMODE(ptr, nitems)
-realloc_MPDS_RESCALINGMODE = _deesse.realloc_MPDS_RESCALINGMODE
-
-def free_MPDS_RESCALINGMODE(ptr):
-    return _deesse.free_MPDS_RESCALINGMODE(ptr)
-free_MPDS_RESCALINGMODE = _deesse.free_MPDS_RESCALINGMODE
-sizeof_MPDS_RESCALINGMODE = _deesse.sizeof_MPDS_RESCALINGMODE
-
-def malloc_MPDS_SIMANDPATHPARAMETERS(*args):
-    return _deesse.malloc_MPDS_SIMANDPATHPARAMETERS(*args)
-malloc_MPDS_SIMANDPATHPARAMETERS = _deesse.malloc_MPDS_SIMANDPATHPARAMETERS
-
-def calloc_MPDS_SIMANDPATHPARAMETERS(*args):
-    return _deesse.calloc_MPDS_SIMANDPATHPARAMETERS(*args)
-calloc_MPDS_SIMANDPATHPARAMETERS = _deesse.calloc_MPDS_SIMANDPATHPARAMETERS
-
-def realloc_MPDS_SIMANDPATHPARAMETERS(ptr, nitems):
-    return _deesse.realloc_MPDS_SIMANDPATHPARAMETERS(ptr, nitems)
-realloc_MPDS_SIMANDPATHPARAMETERS = _deesse.realloc_MPDS_SIMANDPATHPARAMETERS
-
-def free_MPDS_SIMANDPATHPARAMETERS(ptr):
-    return _deesse.free_MPDS_SIMANDPATHPARAMETERS(ptr)
-free_MPDS_SIMANDPATHPARAMETERS = _deesse.free_MPDS_SIMANDPATHPARAMETERS
-sizeof_MPDS_SIMANDPATHPARAMETERS = _deesse.sizeof_MPDS_SIMANDPATHPARAMETERS
-
-def malloc_MPDS_CLASSOFVALUES(*args):
-    return _deesse.malloc_MPDS_CLASSOFVALUES(*args)
-malloc_MPDS_CLASSOFVALUES = _deesse.malloc_MPDS_CLASSOFVALUES
-
-def calloc_MPDS_CLASSOFVALUES(*args):
-    return _deesse.calloc_MPDS_CLASSOFVALUES(*args)
-calloc_MPDS_CLASSOFVALUES = _deesse.calloc_MPDS_CLASSOFVALUES
-
-def realloc_MPDS_CLASSOFVALUES(ptr, nitems):
-    return _deesse.realloc_MPDS_CLASSOFVALUES(ptr, nitems)
-realloc_MPDS_CLASSOFVALUES = _deesse.realloc_MPDS_CLASSOFVALUES
-
-def free_MPDS_CLASSOFVALUES(ptr):
-    return _deesse.free_MPDS_CLASSOFVALUES(ptr)
-free_MPDS_CLASSOFVALUES = _deesse.free_MPDS_CLASSOFVALUES
-sizeof_MPDS_CLASSOFVALUES = _deesse.sizeof_MPDS_CLASSOFVALUES
-
-def malloc_MPDS_SOFTPROBABILITY(*args):
-    return _deesse.malloc_MPDS_SOFTPROBABILITY(*args)
-malloc_MPDS_SOFTPROBABILITY = _deesse.malloc_MPDS_SOFTPROBABILITY
-
-def calloc_MPDS_SOFTPROBABILITY(*args):
-    return _deesse.calloc_MPDS_SOFTPROBABILITY(*args)
-calloc_MPDS_SOFTPROBABILITY = _deesse.calloc_MPDS_SOFTPROBABILITY
-
-def realloc_MPDS_SOFTPROBABILITY(ptr, nitems):
-    return _deesse.realloc_MPDS_SOFTPROBABILITY(ptr, nitems)
-realloc_MPDS_SOFTPROBABILITY = _deesse.realloc_MPDS_SOFTPROBABILITY
-
-def free_MPDS_SOFTPROBABILITY(ptr):
-    return _deesse.free_MPDS_SOFTPROBABILITY(ptr)
-free_MPDS_SOFTPROBABILITY = _deesse.free_MPDS_SOFTPROBABILITY
-sizeof_MPDS_SOFTPROBABILITY = _deesse.sizeof_MPDS_SOFTPROBABILITY
-
-def malloc_MPDS_CONNECTIVITY(*args):
-    return _deesse.malloc_MPDS_CONNECTIVITY(*args)
-malloc_MPDS_CONNECTIVITY = _deesse.malloc_MPDS_CONNECTIVITY
-
-def calloc_MPDS_CONNECTIVITY(*args):
-    return _deesse.calloc_MPDS_CONNECTIVITY(*args)
-calloc_MPDS_CONNECTIVITY = _deesse.calloc_MPDS_CONNECTIVITY
-
-def realloc_MPDS_CONNECTIVITY(ptr, nitems):
-    return _deesse.realloc_MPDS_CONNECTIVITY(ptr, nitems)
-realloc_MPDS_CONNECTIVITY = _deesse.realloc_MPDS_CONNECTIVITY
-
-def free_MPDS_CONNECTIVITY(ptr):
-    return _deesse.free_MPDS_CONNECTIVITY(ptr)
-free_MPDS_CONNECTIVITY = _deesse.free_MPDS_CONNECTIVITY
-sizeof_MPDS_CONNECTIVITY = _deesse.sizeof_MPDS_CONNECTIVITY
-
-def malloc_MPDS_BLOCKDATA(*args):
-    return _deesse.malloc_MPDS_BLOCKDATA(*args)
-malloc_MPDS_BLOCKDATA = _deesse.malloc_MPDS_BLOCKDATA
-
-def calloc_MPDS_BLOCKDATA(*args):
-    return _deesse.calloc_MPDS_BLOCKDATA(*args)
-calloc_MPDS_BLOCKDATA = _deesse.calloc_MPDS_BLOCKDATA
-
-def realloc_MPDS_BLOCKDATA(ptr, nitems):
-    return _deesse.realloc_MPDS_BLOCKDATA(ptr, nitems)
-realloc_MPDS_BLOCKDATA = _deesse.realloc_MPDS_BLOCKDATA
-
-def free_MPDS_BLOCKDATA(ptr):
-    return _deesse.free_MPDS_BLOCKDATA(ptr)
-free_MPDS_BLOCKDATA = _deesse.free_MPDS_BLOCKDATA
-sizeof_MPDS_BLOCKDATA = _deesse.sizeof_MPDS_BLOCKDATA
-
 def malloc_MPDS_PYRAMIDGENERALPARAMETERS(*args):
     return _deesse.malloc_MPDS_PYRAMIDGENERALPARAMETERS(*args)
 malloc_MPDS_PYRAMIDGENERALPARAMETERS = _deesse.malloc_MPDS_PYRAMIDGENERALPARAMETERS
@@ -2646,6 +2570,108 @@ def free_MPDS_PYRAMIDPARAMETERS(ptr):
     return _deesse.free_MPDS_PYRAMIDPARAMETERS(ptr)
 free_MPDS_PYRAMIDPARAMETERS = _deesse.free_MPDS_PYRAMIDPARAMETERS
 sizeof_MPDS_PYRAMIDPARAMETERS = _deesse.sizeof_MPDS_PYRAMIDPARAMETERS
+
+def malloc_MPDS_RESCALINGMODE(*args):
+    return _deesse.malloc_MPDS_RESCALINGMODE(*args)
+malloc_MPDS_RESCALINGMODE = _deesse.malloc_MPDS_RESCALINGMODE
+
+def calloc_MPDS_RESCALINGMODE(*args):
+    return _deesse.calloc_MPDS_RESCALINGMODE(*args)
+calloc_MPDS_RESCALINGMODE = _deesse.calloc_MPDS_RESCALINGMODE
+
+def realloc_MPDS_RESCALINGMODE(ptr, nitems):
+    return _deesse.realloc_MPDS_RESCALINGMODE(ptr, nitems)
+realloc_MPDS_RESCALINGMODE = _deesse.realloc_MPDS_RESCALINGMODE
+
+def free_MPDS_RESCALINGMODE(ptr):
+    return _deesse.free_MPDS_RESCALINGMODE(ptr)
+free_MPDS_RESCALINGMODE = _deesse.free_MPDS_RESCALINGMODE
+sizeof_MPDS_RESCALINGMODE = _deesse.sizeof_MPDS_RESCALINGMODE
+
+def malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(*args):
+    return _deesse.malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(*args)
+malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS = _deesse.malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS
+
+def calloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(*args):
+    return _deesse.calloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(*args)
+calloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS = _deesse.calloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS
+
+def realloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(ptr, nitems):
+    return _deesse.realloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS(ptr, nitems)
+realloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS = _deesse.realloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS
+
+def free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(ptr):
+    return _deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(ptr)
+free_MPDS_SEARCHNEIGHBORHOODPARAMETERS = _deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS
+sizeof_MPDS_SEARCHNEIGHBORHOODPARAMETERS = _deesse.sizeof_MPDS_SEARCHNEIGHBORHOODPARAMETERS
+
+def malloc_MPDS_SIMANDPATHPARAMETERS(*args):
+    return _deesse.malloc_MPDS_SIMANDPATHPARAMETERS(*args)
+malloc_MPDS_SIMANDPATHPARAMETERS = _deesse.malloc_MPDS_SIMANDPATHPARAMETERS
+
+def calloc_MPDS_SIMANDPATHPARAMETERS(*args):
+    return _deesse.calloc_MPDS_SIMANDPATHPARAMETERS(*args)
+calloc_MPDS_SIMANDPATHPARAMETERS = _deesse.calloc_MPDS_SIMANDPATHPARAMETERS
+
+def realloc_MPDS_SIMANDPATHPARAMETERS(ptr, nitems):
+    return _deesse.realloc_MPDS_SIMANDPATHPARAMETERS(ptr, nitems)
+realloc_MPDS_SIMANDPATHPARAMETERS = _deesse.realloc_MPDS_SIMANDPATHPARAMETERS
+
+def free_MPDS_SIMANDPATHPARAMETERS(ptr):
+    return _deesse.free_MPDS_SIMANDPATHPARAMETERS(ptr)
+free_MPDS_SIMANDPATHPARAMETERS = _deesse.free_MPDS_SIMANDPATHPARAMETERS
+sizeof_MPDS_SIMANDPATHPARAMETERS = _deesse.sizeof_MPDS_SIMANDPATHPARAMETERS
+
+def malloc_MPDS_SOFTPROBABILITY(*args):
+    return _deesse.malloc_MPDS_SOFTPROBABILITY(*args)
+malloc_MPDS_SOFTPROBABILITY = _deesse.malloc_MPDS_SOFTPROBABILITY
+
+def calloc_MPDS_SOFTPROBABILITY(*args):
+    return _deesse.calloc_MPDS_SOFTPROBABILITY(*args)
+calloc_MPDS_SOFTPROBABILITY = _deesse.calloc_MPDS_SOFTPROBABILITY
+
+def realloc_MPDS_SOFTPROBABILITY(ptr, nitems):
+    return _deesse.realloc_MPDS_SOFTPROBABILITY(ptr, nitems)
+realloc_MPDS_SOFTPROBABILITY = _deesse.realloc_MPDS_SOFTPROBABILITY
+
+def free_MPDS_SOFTPROBABILITY(ptr):
+    return _deesse.free_MPDS_SOFTPROBABILITY(ptr)
+free_MPDS_SOFTPROBABILITY = _deesse.free_MPDS_SOFTPROBABILITY
+sizeof_MPDS_SOFTPROBABILITY = _deesse.sizeof_MPDS_SOFTPROBABILITY
+
+def malloc_MPDS_SIMINPUT(*args):
+    return _deesse.malloc_MPDS_SIMINPUT(*args)
+malloc_MPDS_SIMINPUT = _deesse.malloc_MPDS_SIMINPUT
+
+def calloc_MPDS_SIMINPUT(*args):
+    return _deesse.calloc_MPDS_SIMINPUT(*args)
+calloc_MPDS_SIMINPUT = _deesse.calloc_MPDS_SIMINPUT
+
+def realloc_MPDS_SIMINPUT(ptr, nitems):
+    return _deesse.realloc_MPDS_SIMINPUT(ptr, nitems)
+realloc_MPDS_SIMINPUT = _deesse.realloc_MPDS_SIMINPUT
+
+def free_MPDS_SIMINPUT(ptr):
+    return _deesse.free_MPDS_SIMINPUT(ptr)
+free_MPDS_SIMINPUT = _deesse.free_MPDS_SIMINPUT
+sizeof_MPDS_SIMINPUT = _deesse.sizeof_MPDS_SIMINPUT
+
+def malloc_MPDS_SIMOUTPUT(*args):
+    return _deesse.malloc_MPDS_SIMOUTPUT(*args)
+malloc_MPDS_SIMOUTPUT = _deesse.malloc_MPDS_SIMOUTPUT
+
+def calloc_MPDS_SIMOUTPUT(*args):
+    return _deesse.calloc_MPDS_SIMOUTPUT(*args)
+calloc_MPDS_SIMOUTPUT = _deesse.calloc_MPDS_SIMOUTPUT
+
+def realloc_MPDS_SIMOUTPUT(ptr, nitems):
+    return _deesse.realloc_MPDS_SIMOUTPUT(ptr, nitems)
+realloc_MPDS_SIMOUTPUT = _deesse.realloc_MPDS_SIMOUTPUT
+
+def free_MPDS_SIMOUTPUT(ptr):
+    return _deesse.free_MPDS_SIMOUTPUT(ptr)
+free_MPDS_SIMOUTPUT = _deesse.free_MPDS_SIMOUTPUT
+sizeof_MPDS_SIMOUTPUT = _deesse.sizeof_MPDS_SIMOUTPUT
 
 def malloc_MPDS_PROGRESSMONITOR(*args):
     return _deesse.malloc_MPDS_PROGRESSMONITOR(*args)

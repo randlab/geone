@@ -167,8 +167,10 @@ cbad_def = (.9, .9, .9, 0.5)
 # colormaps
 # ... default color map
 cbad1   = (.9, .9, .9, 0.5)
-cunder1 = [x/255. for x in (160, 40, 160)] + [0.5] # +[0.5] ... for appending alpha channel
-cover1  = [x/255. for x in (250,  80, 120)] + [0.5] # +[0.5] ... for appending alpha channel
+# cunder1 = [x/255. for x in (160, 40, 160)] + [0.5] # +[0.5] ... for appending alpha channel
+# cover1  = [x/255. for x in (250,  80, 120)] + [0.5] # +[0.5] ... for appending alpha channel
+cunder1 = [x/255. for x in (200, 10, 250)] + [0.5] # +[0.5] ... for appending alpha channel
+cover1  = [x/255. for x in (250,  10, 10)] + [0.5] # +[0.5] ... for appending alpha channel
 cmaplist1 = ([x/255. for x in (160,  40, 240)],
              [x/255. for x in (  0, 240, 240)],
              [x/255. for x in (240, 240,   0)],
@@ -199,6 +201,7 @@ cmapB2W = custom_cmap(['black', 'white'], cunder=(0.0, 0.0, 1.0, 0.5), cover=(1.
 # Example, add specific colors for under values, over values and bad values in map 'terrain' with nn colors
 #cmap_new_terrain = custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0,1,nn)], ncol=nn, cunder='pink', cover='orange', cbad='red')
 cmap_new_terrain = custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0,1,256)], ncol=256, cunder='pink', cover='orange', cbad='red')
+#####cmap_details = ccol.custom_cmap(ccol.cmaplist1, alpha=np.linspace(0, 1, len(ccol.cmaplist1), cunder=ccol.cunder1, cover=ccol.cover1, cbad=ccol.cbad1)
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":

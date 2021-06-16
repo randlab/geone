@@ -14,7 +14,7 @@ import numpy as np
 # from geone import covModel as gcm # not necessary
 
 # ----------------------------------------------------------------------------
-def extension_min(r, n, s=1.):
+def extension_min(r, n, s=1.0):
     """
     Compute extension of the dimension in a direction so that a GRF reproduces
     the covariance model appropriately:
@@ -30,13 +30,15 @@ def extension_min(r, n, s=1.):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def grf1D(cov_model, dimension, spacing, origin=0.,
-          nreal=1, mean=0, var=None,
+def grf1D(cov_model,
+          dimension, spacing=1.0, origin=0.0,
+          nreal=1,
+          mean=None, var=None,
           x=None, v=None,
           extensionMin=None, rangeFactorForExtensionMin=1.0,
           crop=True,
           method=3, conditioningMethod=2,
-          measureErrVar=0., tolInvKappa=1.e-10,
+          measureErrVar=0.0, tolInvKappa=1.e-10,
           printInfo=True):
     """
     Generates gaussian random fields (GRF) in 1D via FFT.
@@ -74,18 +76,20 @@ def grf1D(cov_model, dimension, spacing, origin=0.,
     :param origin:      (float) ox, origin of the 1D field
                             - used for localizing the conditioning points
     :param nreal:       (int) number of realizations
-    :param mean:        (float or ndarray) mean of the GRF:
-                            - scalar for stationary mean
-                            - ndarray for non stationary mean, must contain
-                                nx values (reshaped if needed)
-    :param var:         (float or ndarray or None) variance of the GRF,
-                            if not None: variance of GRF is updated
-                            depending on the specified variance and the covariance
-                            function, otherwise: only the covariance function is
-                            used
-                                - scalar for stationary variance
-                                - array for non stationary variance, must contain
-                                    nx values (reshaped if needed)
+    :param mean:        (None or float or ndarray) mean of the GRF:
+                            - None   : mean of hard data values (stationary),
+                                       (0 if no hard data)
+                            - float  : for stationary mean (set manually)
+                            - ndarray: for non stationary mean, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+    :param var:         (None or float or ndarray) variance of the GRF:
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
     :param x:           (1-dimensional array or float or None) coordinate of
                             conditioning points (None for unconditional GRF)
     :param v:           (1-dimensional array or float or None) value at
@@ -209,16 +213,16 @@ def grf1D(cov_model, dimension, spacing, origin=0.,
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
-        print("ERROR: 'cov_model' (first argument) is not valid")
-        return
+        print("ERROR (GRF1D): 'cov_model' (first argument) is not valid")
+        return None
 
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
         if printInfo:
-            print('GRF1D: nreal = 0: nothing to do!')
-        return()
+            print('GRF1D: nreal <= 0: nothing to do!')
+        return None
 
     if printInfo:
         print('GRF1D: Preliminary computation...')
@@ -230,39 +234,46 @@ def grf1D(cov_model, dimension, spacing, origin=0.,
 
     if method not in (1, 2, 3):
         print('ERROR (GRF1D): invalid method')
-        return
+        return None
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             print('ERROR (GRF1D): invalid method for conditioning')
-            return
-        x = np.asarray(x).reshape(-1) # cast in 1-dimensional array if needed
-        v = np.asarray(v).reshape(-1) # cast in 1-dimensional array if needed
+            return None
+        x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(v) != x.shape[0]:
+            print("ERROR (GRF1D): length of 'v' is not valid")
+            return None
 
-    mean = np.asarray(mean).reshape(-1) # cast in 1-dimensional array if needed
-
-    if mean.size not in (1, nx):
-        print('ERROR (GRF1D): number of entry for "mean"...')
-        return
+    if mean is not None:
+        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if mean.size not in (1, nx):
+            print("ERROR (GRF1D): size of 'mean' is not valid")
+            return None
+    elif v is not None and not np.all(np.isnan(v)):
+        mean = np.array([np.nanmean(v)])
+    else:
+        mean = np.array([0.0])
 
     if var is not None:
-        var = np.asarray(var).reshape(-1) # cast in 1-dimensional array if needed
+        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nx):
-            print('ERROR (GRF1D): number of entry for "var"...')
-            return
+            print("ERROR (GRF1D): size of 'var' is not valid")
+            return None
 
     if not crop:
         if x is not None: # conditional simulation
             print('ERROR (GRF1D): "no crop" is not valid with conditional simulation')
-            return
+            return None
 
         if mean.size > 1:
             print('ERROR (GRF1D): "no crop" is not valid with non stationary mean')
-            return
+            return None
 
         if var is not None and var.size > 1:
             print('ERROR (GRF1D): "no crop" is not valid with non stationary variance')
-            return
+            return None
 
     if extensionMin is None:
         # default extensionMin
@@ -359,12 +370,13 @@ def grf1D(cov_model, dimension, spacing, origin=0.,
         # Compute
         #    indc: node index of conditioning node (nearest node)
         indc = np.asarray(np.floor((x-origin)/spacing), dtype=int)
-        if sum(indc < 0) > 0 or sum(indc >= nx):
+        if sum(indc < 0) or sum(indc >= nx):
             print('ERROR (GRF1D): a conditioning point is out of the grid')
-            return
+            return None
 
         if len(np.unique(indc)) != len(x):
             print('ERROR (GRF1D): more than one conditioning point in a same grid cell')
+            return None
 
         nc = len(x)
 
@@ -381,7 +393,7 @@ def grf1D(cov_model, dimension, spacing, origin=0.,
         # Test if rAA is almost singular...
         if 1./np.linalg.cond(rAA) < tolInvKappa:
             print('ERROR (GRF1D): conditioning issue: condition number of matrix rAA is too big')
-            return
+            return None
 
         # Compute:
         #    indnc: node index of non-conditioning node (nearest node)
@@ -619,15 +631,16 @@ def grf1D(cov_model, dimension, spacing, origin=0.,
                 grf[i, indnc] = grf[i, indnc] + Z
                 grf[i, indc] = v
 
-    return (grf)
+    return grf
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
-            mean=0, var=None,
+def krige1D(x, v, cov_model,
+            dimension, spacing=1.0, origin=0.0,
+            mean=None, var=None,
             extensionMin=None, rangeFactorForExtensionMin=1.0,
             conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
-            measureErrVar=0., tolInvKappa=1.e-10,
+            measureErrVar=0.0, tolInvKappa=1.e-10,
             computeKrigSD=True,
             printInfo=True):
     """
@@ -668,18 +681,20 @@ def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
     :param spacing:     (float) dx, spacing between two adjacent cells
     :param origin:      (float) ox, origin of the 1D field
                             - used for localizing the conditioning points
-    :param mean:        (float or ndarray) mean of the variable:
-                            - scalar for stationary mean
-                            - ndarray for non stationary mean, must contain
-                                nx values (reshaped if needed)
-    :param var:         (float or ndarray or None) variance of the variable,
-                            if not None: variance in the field is updated
-                            depending on the specified variance and the covariance
-                            function, otherwise: only the covariance function is
-                            used
-                                - scalar for stationary variance
-                                - array for non stationary variance, must contain
-                                    nx values (reshaped if needed)
+    :param mean:        (None or float or ndarray) mean of the GRF:
+                            - None   : mean of hard data values (stationary),
+                                       (0 if no hard data)
+                            - float  : for stationary mean (set manually)
+                            - ndarray: for non stationary mean, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+    :param var:         (None or float or ndarray) variance of the variable:
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
     :param extensionMin:(int) minimal extension in nodes for embedding (see above)
                             None for default, automatically computed:
                                 - based on the range of covariance model,
@@ -741,7 +756,7 @@ def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
     :param printInfo:   (bool) indicates if some info is printed in stdout
 
     :return ret:        two possible cases:
-                            ret = [krig, krigSD] if computeKrigSD is equal to True
+                            ret = (krig, krigSD) if computeKrigSD is equal to True
                             ret = krig           if computeKrigSD is equal to False
                         where
                             krig:   (1-dimensional array of dim nx)
@@ -777,32 +792,39 @@ def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
-        print("ERROR: 'cov_model' (third argument) is not valid")
-        return
+        print("ERROR (KRIGE1D): 'cov_model' (third argument) is not valid")
+        return None
 
     # Check conditioning method
     if conditioningMethod not in (1, 2):
         print('ERROR (KRIGE1D): invalid method!')
-        return
+        return None
 
     nx = dimension
     dx = spacing
     # ox = origin
 
-    x = np.asarray(x).reshape(-1) # cast in 1-dimensional array if needed
-    v = np.asarray(v).reshape(-1) # cast in 1-dimensional array if needed
+    x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+    v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+    if len(v) != x.shape[0]:
+        print("ERROR (KRIGE1D): length of 'v' is not valid")
+        return None
 
-    mean = np.asarray(mean).reshape(-1) # cast in 1-dimensional array if needed
-
-    if mean.size not in (1, nx):
-        print('ERROR (KRIGE1D): number of entry for "mean"...')
-        return
+    if mean is not None:
+        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if mean.size not in (1, nx):
+            print("ERROR (KRIGE1D): size of 'mean' is not valid")
+            return None
+    elif v is not None and not np.all(np.isnan(v)):
+        mean = np.array([np.nanmean(v)])
+    else:
+        mean = np.array([0.0])
 
     if var is not None:
-        var = np.asarray(var).reshape(-1) # cast in 1-dimensional array if needed
+        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nx):
-            print('ERROR (KRIGE1D): number of entry for "var"...')
-            return
+            print("ERROR (KRIGE1D): size of 'var' is not valid")
+            return None
 
     if extensionMin is None:
         # default extensionMin
@@ -908,12 +930,13 @@ def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
     # Compute
     #    indc: node index of conditioning node (nearest node)
     indc = np.asarray(np.floor((x-origin)/spacing), dtype=int)
-    if sum(indc < 0) > 0 or sum(indc >= nx):
+    if sum(indc < 0) or sum(indc >= nx):
         print('ERROR (KRIGE1D): a conditioning point is out of the grid')
-        return
+        return None
 
     if len(np.unique(indc)) != len(x):
         print('ERROR (KRIGE1D): more than one conditioning point in a same grid cell')
+        return None
 
     nc = len(x)
 
@@ -930,7 +953,7 @@ def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
     # Test if rAA is almost singular...
     if 1./np.linalg.cond(rAA) < tolInvKappa:
         print('ERROR (KRIGE1D): conditioning issue: condition number of matrix rAA is too big')
-        return
+        return None
 
     # Compute:
     #    indnc: node index of non-conditioning node (nearest node)
@@ -1044,19 +1067,21 @@ def krige1D(x, v, cov_model, dimension, spacing, origin=0.,
     krig = krig + mean
 
     if computeKrigSD:
-        return ([krig, krigSD])
+        return krig, krigSD
     else:
-        return (krig)
+        return krig
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
-          nreal=1, mean=0, var=None,
+def grf2D(cov_model,
+          dimension, spacing=(1.0, 1.0), origin=(0.0, 0.0),
+          nreal=1,
+          mean=None, var=None,
           x=None, v=None,
           extensionMin=None, rangeFactorForExtensionMin=1.0,
           crop=True,
           method=3, conditioningMethod=2,
-          measureErrVar=0., tolInvKappa=1.e-10,
+          measureErrVar=0.0, tolInvKappa=1.e-10,
           printInfo=True):
     """
     Generates gaussian random fields (GRF) in 2D via FFT.
@@ -1093,23 +1118,25 @@ def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
                                 definition of the class in module geone.covModel
     :param dimension:   (sequence of 2 ints) [nx, ny], number of cells
                             in x-, y-axis direction
-    :param spacing:     (sequence of 2 float) [dx, dy], spacing between
+    :param spacing:     (sequence of 2 floats) [dx, dy], spacing between
                             two adjacent cells in x-, y-axis direction
-    :param origin:      (sequence of 2 float) [ox, oy], origin of the 2D field
+    :param origin:      (sequence of 2 floats) [ox, oy], origin of the 2D field
                             - used for localizing the conditioning points
     :param nreal:       (int) number of realizations
-    :param mean:        (float or ndarray) mean of the GRF:
-                            - scalar for stationary mean
-                            - ndarray for non stationary mean, must contain
-                                nx*ny values (reshaped if needed)
-    :param var:         (float or ndarray or None) variance of the GRF,
-                            if not None: variance of GRF is updated
-                            depending on the specified variance and the covariance
-                            function, otherwise: only the covariance function is
-                            used
-                                - scalar for stationary variance
-                                - array for non stationary variance, must contain
-                                    nx*ny values (reshaped if needed)
+    :param mean:        (None or float or ndarray) mean of the GRF:
+                            - None   : mean of hard data values (stationary),
+                                       (0 if no hard data)
+                            - float  : for stationary mean (set manually)
+                            - ndarray: for non stationary mean, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+    :param var:         (None or float or ndarray) variance of the GRF:
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
     :param x:           (2-dimensional array of dim n x 2, or
                             1-dimensional array of dim 2 or None) coordinate of
                             conditioning points (None for unconditional GRF)
@@ -1243,16 +1270,16 @@ def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
-        print("ERROR: 'cov_model' (first argument) is not valid")
-        return
+        print("ERROR (GRF2D): 'cov_model' (first argument) is not valid")
+        return None
 
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
         if printInfo:
-            print('GRF2D: nreal = 0: nothing to do!')
-        return()
+            print('GRF2D: nreal <= 0: nothing to do!')
+        return None
 
     if printInfo:
         print('GRF2D: Preliminary computation...')
@@ -1266,47 +1293,54 @@ def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
 
     if method not in (1, 2, 3):
         print('ERROR (GRF2D): invalid method')
-        return
+        return None
 
     if method == 2:
         print('ERROR (GRF2D): Unconditional simulation: "method=2" not implemented...')
-        return
+        return None
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             print('ERROR (GRF2D): invalid method for conditioning')
-            return
-        x = np.asarray(x).reshape(-1,2) # cast in 1-dimensional array if needed
-        v = np.asarray(v).reshape(-1) # cast in 1-dimensional array if needed
+            return None
+        x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
+        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(v) != x.shape[0]:
+            print("ERROR (GRF2D): length of 'v' is not valid")
+            return None
 
-    mean = np.asarray(mean).reshape(-1) # cast in 1-dimensional array if needed
-
-    if mean.size != 1:
-        if mean.size != nxy:
-            print('ERROR (GRF2D): number of entry for "mean"...')
-            return
-        mean = np.asarray(mean).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
+    if mean is not None:
+        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if mean.size not in (1, nxy):
+            print("ERROR (GRF2D): size of 'mean' is not valid")
+            return None
+        if mean.size == nxy:
+            mean = np.asarray(mean).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
+    elif v is not None and not np.all(np.isnan(v)):
+        mean = np.array([np.nanmean(v)])
+    else:
+        mean = np.array([0.0])
 
     if var is not None:
-        var = np.asarray(var).reshape(-1) # cast in 1-dimensional array if needed
-        if var.size != 1:
-            if var.size != nxy:
-                print('ERROR (GRF2D): number of entry for "var"...')
-                return
+        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if var.size not in (1, nxy):
+            print("ERROR (GRF2D): size of 'var' is not valid")
+            return None
+        if var.size == nxy:
             var = np.asarray(var).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
 
     if not crop:
         if x is not None: # conditional simulation
             print('ERROR (GRF2D): "no crop" is not valid with conditional simulation')
-            return
+            return None
 
         if mean.size > 1:
             print('ERROR (GRF2D): "no crop" is not valid with non stationary mean')
-            return
+            return None
 
         if var is not None and var.size > 1:
             print('ERROR (GRF2D): "no crop" is not valid with non stationary variance')
-            return
+            return None
 
     if extensionMin is None:
         # default extensionMin
@@ -1419,17 +1453,18 @@ def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
 
         ix, iy = indc[:, 0], indc[:, 1]
 
-        if sum(ix < 0) > 0 or sum(ix >= nx):
+        if sum(ix < 0) or sum(ix >= nx):
             print('ERROR (GRF2D): a conditioning point is out of the grid (x-direction)')
-            return
-        if sum(iy < 0) > 0 or sum(iy >= ny):
+            return None
+        if sum(iy < 0) or sum(iy >= ny):
             print('ERROR (GRF2D): a conditioning point is out of the grid (y-direction)')
-            return
+            return None
 
         indc = ix + iy * nx # single-indices
 
         if len(np.unique(indc)) != len(x):
             print('ERROR (GRF2D): more than one conditioning point in a same grid cell')
+            return None
 
         nc = len(x)
 
@@ -1446,7 +1481,7 @@ def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
         # Test if rAA is almost singular...
         if 1./np.linalg.cond(rAA) < tolInvKappa:
             print('ERROR (GRF2D): conditioning issue: condition number of matrix rAA is too big')
-            return
+            return None
 
         # Compute:
         #    indnc: node index of non-conditioning node (nearest node)
@@ -1555,7 +1590,7 @@ def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
         # Method B
         # --------
         print('ERROR (GRF2D): Unconditional simulation: "method=2" not implemented...')
-        return
+        return None
 
     elif method == 3:
         # Method C
@@ -1659,15 +1694,16 @@ def grf2D(cov_model, dimension, spacing, origin=[0., 0.],
         # Reshape grf as initially
         grf.resize(nreal, grfNy, grfNx)
 
-    return (grf)
+    return grf
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
-            mean=0, var=None,
+def krige2D(x, v, cov_model,
+            dimension, spacing=(1.0, 1.0), origin=(0.0, 0.0),
+            mean=None, var=None,
             extensionMin=None, rangeFactorForExtensionMin=1.0,
             conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
-            measureErrVar=0., tolInvKappa=1.e-10,
+            measureErrVar=0.0, tolInvKappa=1.e-10,
             computeKrigSD=True,
             printInfo=True):
     """
@@ -1697,7 +1733,9 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
         - measureErrVar could be set to a small positive value to stabilize
           the covariance matrix (solving linear system)
 
-    :param x:           (2-dimensional array array of dim n x 2) coordinate of data points
+    :param x:           (2-dimensional array of dim n x 2, or
+                            1-dimensional array of dim 2) coordinate of
+                            data points
     :param v:           (1-dimensional array length n) value at data points
     :param cov_model:   covariance model, it can be:
                             (function) covariance function f(h), where
@@ -1707,23 +1745,25 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
                                 definition of the class in module geone.covModel
     :param dimension:   (sequence of 2 ints) [nx, ny], number of cells
                             in x-, y-axis direction
-    :param spacing:     (sequence of 2 float) [dx, dy], spacing between
+    :param spacing:     (sequence of 2 floats) [dx, dy], spacing between
                             two adjacent cells in x-, y-axis direction
-    :param origin:      (sequence of 2 float) [ox, oy], origin of the 2D field
+    :param origin:      (sequence of 2 floats) [ox, oy], origin of the 2D field
                             - used for localizing the conditioning points
     :param nreal:       (int) number of realizations
-    :param mean:        (float or ndarray) mean of the GRF:
-                            - scalar for stationary mean
-                            - ndarray for non stationary mean, must contain
-                                nx*ny values (reshaped if needed)
-    :param var:         (float or ndarray or None) variance of the GRF,
-                            if not None: variance of GRF is updated
-                            depending on the specified variance and the covariance
-                            function, otherwise: only the covariance function is
-                            used
-                                - scalar for stationary variance
-                                - array for non stationary variance, must contain
-                                    nx*ny values (reshaped if needed)
+    :param mean:        (None or float or ndarray) mean of the GRF:
+                            - None   : mean of hard data values (stationary),
+                                       (0 if no hard data)
+                            - float  : for stationary mean (set manually)
+                            - ndarray: for non stationary mean, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+    :param var:         (None or float or ndarray) variance of the variable:
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
     :param extensionMin:(sequence of 2 ints) minimal extension in nodes in
                             in x-, y-axis direction for embedding (see above)
                             None for default, automatically computed:
@@ -1786,7 +1826,7 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
     :param printInfo:   (bool) indicates if some info is printed in stdout
 
     :return ret:        two possible cases:
-                            ret = [krig, krigSD] if computeKrigSD is equal to True
+                            ret = (krig, krigSD) if computeKrigSD is equal to True
                             ret = krig           if computeKrigSD is equal to False
                         where
                             krig:   (2-dimensional array of dim ny x nx)
@@ -1829,13 +1869,13 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
-        print("ERROR: 'cov_model' (third argument) is not valid")
-        return
+        print("ERROR (KRIGE2D): 'cov_model' (third argument) is not valid")
+        return None
 
     # Check conditioning method
     if conditioningMethod not in (1, 2):
         print('ERROR (KRIGE2D): invalid method!')
-        return
+        return None
 
     nx, ny = dimension
     dx, dy = spacing
@@ -1843,23 +1883,30 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
 
     nxy = nx*ny
 
-    x = np.asarray(x).reshape(-1,2) # cast in 1-dimensional array if needed
-    v = np.asarray(v).reshape(-1) # cast in 1-dimensional array if needed
+    x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
+    v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+    if len(v) != x.shape[0]:
+        print("ERROR (KRIGE2D): length of 'v' is not valid")
+        return None
 
-    mean = np.asarray(mean).reshape(-1) # cast in 1-dimensional array if needed
-
-    if mean.size != 1:
-        if mean.size != nxy:
-            print('ERROR (KRIGE2D): number of entry for "mean"...')
-            return
-        mean = np.asarray(mean).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
+    if mean is not None:
+        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if mean.size not in (1, nxy):
+            print("ERROR (KRIGE2D): size of 'mean' is not valid")
+            return None
+        if mean.size == nxy:
+            mean = np.asarray(mean).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
+    elif v is not None and not np.all(np.isnan(v)):
+        mean = np.array([np.nanmean(v)])
+    else:
+        mean = np.array([0.0])
 
     if var is not None:
-        var = np.asarray(var).reshape(-1) # cast in 1-dimensional array if needed
-        if var.size != 1:
-            if var.size != nxy:
-                print('ERROR (KRIGE2D): number of entry for "var"...')
-                return
+        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if var.size not in (1, nxy):
+            print("ERROR (KRIGE2D): size of 'var' is not valid")
+            return None
+        if var.size == nxy:
             var = np.asarray(var).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
 
     if extensionMin is None:
@@ -1983,17 +2030,18 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
 
     ix, iy = indc[:, 0], indc[:, 1]
 
-    if sum(ix < 0) > 0 or sum(ix >= nx):
+    if sum(ix < 0) or sum(ix >= nx):
         print('ERROR (KRIGE2D): a conditioning point is out of the grid (x-direction)')
-        return
-    if sum(iy < 0) > 0 or sum(iy >= ny):
+        return None
+    if sum(iy < 0) or sum(iy >= ny):
         print('ERROR (KRIGE2D): a conditioning point is out of the grid (y-direction)')
-        return
+        return None
 
     indc = ix + iy * nx # single-indices
 
     if len(np.unique(indc)) != len(x):
         print('ERROR (KRIGE2D): more than one conditioning point in a same grid cell')
+        return None
 
     nc = len(x)
 
@@ -2010,7 +2058,7 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
     # Test if rAA is almost singular...
     if 1./np.linalg.cond(rAA) < tolInvKappa:
         print('ERROR (GRF2D): conditioning issue: condition number of matrix rAA is too big')
-        return
+        return None
 
     # Compute:
     #    indnc: node index of non-conditioning node (nearest node)
@@ -2133,19 +2181,21 @@ def krige2D(x, v, cov_model, dimension, spacing, origin=[0., 0.],
     krig = krig + mean
 
     if computeKrigSD:
-        return ([krig, krigSD])
+        return krig, krigSD
     else:
-        return (krig)
+        return krig
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
-          nreal=1, mean=0, var=None,
+def grf3D(cov_model,
+          dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
+          nreal=1,
+          mean=None, var=None,
           x=None, v=None,
           extensionMin=None, rangeFactorForExtensionMin=1.0,
           crop=True,
           method=3, conditioningMethod=2,
-          measureErrVar=0., tolInvKappa=1.e-10,
+          measureErrVar=0.0, tolInvKappa=1.e-10,
           printInfo=True):
     """
     Generates gaussian random fields (GRF) in 3D via FFT.
@@ -2182,23 +2232,25 @@ def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
                                 definition of the class in module geone.covModel
     :param dimension:   (sequence of 3 ints) [nx, ny, nz], number of cells
                             in x-, y-, z-axis direction
-    :param spacing:     (sequence of 3 float) [dx, dy, dz], spacing between
+    :param spacing:     (sequence of 3 floats) [dx, dy, dz], spacing between
                             two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 float) [ox, oy, oz], origin of the 2D field
+    :param origin:      (sequence of 3 floats) [ox, oy, oz], origin of the 2D field
                             - used for localizing the conditioning points
     :param nreal:       (int) number of realizations
-    :param mean:        (float or ndarray) mean of the GRF:
-                            - scalar for stationary mean
-                            - ndarray for non stationary mean, must contain
-                                nx*ny*nz values (reshaped if needed)
-    :param var:         (float or ndarray or None) variance of the GRF,
-                            if not None: variance of GRF is updated
-                            depending on the specified variance and the covariance
-                            function, otherwise: only the covariance function is
-                            used
-                                - scalar for stationary variance
-                                - array for non stationary variance, must contain
-                                    nx*ny*nz values (reshaped if needed)
+    :param mean:        (None or float or ndarray) mean of the GRF:
+                            - None   : mean of hard data values (stationary),
+                                       (0 if no hard data)
+                            - float  : for stationary mean (set manually)
+                            - ndarray: for non stationary mean, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+    :param var:         (None or float or ndarray) variance of the GRF:
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
     :param x:           (2-dimensional array of dim n x 3, or
                             1-dimensional array of dim 3 or None) coordinate of
                             conditioning points (None for unconditional GRF)
@@ -2332,16 +2384,16 @@ def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
-        print("ERROR: 'cov_model' (first argument) is not valid")
-        return
+        print("ERROR (GRF3D): 'cov_model' (first argument) is not valid")
+        return None
 
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
         if printInfo:
-            print('GRF3D: nreal = 0: nothing to do!')
-        return()
+            print('GRF3D: nreal <= 0: nothing to do!')
+        return None
 
     if printInfo:
         print('GRF3D: Preliminary computation...')
@@ -2356,47 +2408,54 @@ def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
 
     if method not in (1, 2, 3):
         print('ERROR (GRF3D): invalid method')
-        return
+        return None
 
     if method == 2:
         print('ERROR (GRF3D): Unconditional simulation: "method=2" not implemented...')
-        return
+        return None
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             print('ERROR (GRF3D): invalid method for conditioning')
-            return
-        x = np.asarray(x).reshape(-1,3) # cast in 1-dimensional array if needed
-        v = np.asarray(v).reshape(-1) # cast in 1-dimensional array if needed
+            return None
+        x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 3-dimensional array if needed
+        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(v) != x.shape[0]:
+            print("ERROR (GRF3D): length of 'v' is not valid")
+            return None
 
-    mean = np.asarray(mean).reshape(-1) # cast in 1-dimensional array if needed
-
-    if mean.size != 1:
-        if mean.size != nxyz:
-            print('ERROR (GRF3D): number of entry for "mean"...')
-            return
-        mean = np.asarray(mean).reshape(nz, ny, nx) # cast in 3-dimensional array of same shape as grid
+    if mean is not None:
+        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if mean.size not in (1, nxyz):
+            print("ERROR (GRF3D): size of 'mean' is not valid")
+            return None
+        if mean.size == nxyz:
+            mean = np.asarray(mean).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
+    elif v is not None and not np.all(np.isnan(v)):
+        mean = np.array([np.nanmean(v)])
+    else:
+        mean = np.array([0.0])
 
     if var is not None:
-        var = np.asarray(var).reshape(-1) # cast in 1-dimensional array if needed
-        if var.size != 1:
-            if var.size != nxyz:
-                print('ERROR (GRF3D): number of entry for "var"...')
-                return
-            var = np.asarray(var).reshape(nz, ny, nx) # cast in 3-dimensional array of same shape as grid
+        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if var.size not in (1, nxyz):
+            print("ERROR (GRF3D): size of 'var' is not valid")
+            return None
+        if var.size == nxyz:
+            var = np.asarray(var).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
 
     if not crop:
         if x is not None: # conditional simulation
             print('ERROR (GRF3D): "no crop" is not valid with conditional simulation')
-            return
+            return None
 
         if mean.size > 1:
             print('ERROR (GRF3D): "no crop" is not valid with non stationary mean')
-            return
+            return None
 
         if var is not None and var.size > 1:
             print('ERROR (GRF3D): "no crop" is not valid with non stationary variance')
-            return
+            return None
 
     if extensionMin is None:
         # default extensionMin
@@ -2520,20 +2579,21 @@ def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
 
         ix, iy, iz = indc[:, 0], indc[:, 1], indc[:, 2]
 
-        if sum(ix < 0) > 0 or sum(ix >= nx):
+        if sum(ix < 0) or sum(ix >= nx):
             print('ERROR (GRF3D): a conditioning point is out of the grid (x-direction)')
-            return
-        if sum(iy < 0) > 0 or sum(iy >= ny):
+            return None
+        if sum(iy < 0) or sum(iy >= ny):
             print('ERROR (GRF3D): a conditioning point is out of the grid (y-direction)')
-            return
-        if sum(iz < 0) > 0 or sum(iz >= nz):
+            return None
+        if sum(iz < 0) or sum(iz >= nz):
             print('ERROR (GRF3D): a conditioning point is out of the grid (z-direction)')
-            return
+            return None
 
         indc = ix + iy * nx + iz * nxy # single-indices
 
         if len(np.unique(indc)) != len(x):
             print('ERROR (GRF3D): more than one conditioning point in a same grid cell')
+            return None
 
         nc = len(x)
 
@@ -2550,7 +2610,7 @@ def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
         # Test if rAA is almost singular...
         if 1./np.linalg.cond(rAA) < tolInvKappa:
             print('ERROR (GRF3D): conditioning issue: condition number of matrix rAA is too big')
-            return
+            return None
 
         # Compute:
         #    indnc: node index of non-conditioning node (nearest node)
@@ -2662,7 +2722,7 @@ def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
         # Method B
         # --------
         print('ERROR (GRF3D): Unconditional simulation: "method=2" not implemented...')
-        return
+        return None
 
     elif method == 3:
         # Method C
@@ -2766,15 +2826,16 @@ def grf3D(cov_model, dimension, spacing, origin=[0., 0., 0.],
         # Reshape grf as initially
         grf.resize(nreal, grfNz, grfNy, grfNx)
 
-    return (grf)
+    return grf
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
-            mean=0, var=None,
+def krige3D(x, v, cov_model,
+            dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
+            mean=None, var=None,
             extensionMin=None, rangeFactorForExtensionMin=1.0,
             conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
-            measureErrVar=0., tolInvKappa=1.e-10,
+            measureErrVar=0.0, tolInvKappa=1.e-10,
             computeKrigSD=True,
             printInfo=True):
     """
@@ -2804,7 +2865,9 @@ def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
         - measureErrVar could be set to a small positive value to stabilize
           the covariance matrix (solving linear system)
 
-    :param x:           (2-dimensional array array of dim n x 3) coordinate of data points
+    :param x:           (2-dimensional array of dim n x 3, or
+                            1-dimensional array of dim 3) coordinate of
+                            data points
     :param v:           (1-dimensional array length n) value at data points
     :param cov_model:   covariance model, it can be:
                             (function) covariance function f(h), where
@@ -2814,23 +2877,25 @@ def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
                                 definition of the class in module geone.covModel
     :param dimension:   (sequence of 3 ints) [nx, ny, nz], number of cells
                             in x-, y-, z-axis direction
-    :param spacing:     (sequence of 3 float) [dx, dy, dz], spacing between
+    :param spacing:     (sequence of 3 floats) [dx, dy, dz], spacing between
                             two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 float) [ox, oy, oz], origin of the 2D field
+    :param origin:      (sequence of 3 floats) [ox, oy, oz], origin of the 2D field
                             - used for localizing the conditioning points
     :param nreal:       (int) number of realizations
-    :param mean:        (float or ndarray) mean of the GRF:
-                            - scalar for stationary mean
-                            - ndarray for non stationary mean, must contain
-                                nx*ny*nz values (reshaped if needed)
-    :param var:         (float or ndarray or None) variance of the GRF,
-                            if not None: variance of GRF is updated
-                            depending on the specified variance and the covariance
-                            function, otherwise: only the covariance function is
-                            used
-                                - scalar for stationary variance
-                                - array for non stationary variance, must contain
-                                    nx*ny*nz values (reshaped if needed)
+    :param mean:        (None or float or ndarray) mean of the GRF:
+                            - None   : mean of hard data values (stationary),
+                                       (0 if no hard data)
+                            - float  : for stationary mean (set manually)
+                            - ndarray: for non stationary mean, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+    :param var:         (None or float or ndarray) variance of the variable:
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
     :param extensionMin:(sequence of 3 ints) minimal extension in nodes in
                             in x-, y-, z-axis direction for embedding (see above)
                             None for default, automatically computed:
@@ -2893,7 +2958,7 @@ def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
     :param printInfo:   (bool) indicates if some info is printed in stdout
 
     :return ret:        two possible cases:
-                            ret = [krig, krigSD] if computeKrigSD is equal to True
+                            ret = (krig, krigSD) if computeKrigSD is equal to True
                             ret = krig           if computeKrigSD is equal to False
                         where
                             krig:   (3-dimensional array of dim nz x ny x nx)
@@ -2936,13 +3001,13 @@ def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
-        print("ERROR: 'cov_model' (third argument) is not valid")
-        return
+        print("ERROR (KRIGE3D): 'cov_model' (third argument) is not valid")
+        return None
 
     # Check conditioning method
     if conditioningMethod not in (1, 2):
         print('ERROR (KRIGE3D): invalid method!')
-        return
+        return None
 
     nx, ny, nz = dimension
     dx, dy, dz = spacing
@@ -2951,24 +3016,31 @@ def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
     nxy = nx*ny
     nxyz = nxy * nz
 
-    x = np.asarray(x).reshape(-1,3) # cast in 1-dimensional array if needed
-    v = np.asarray(v).reshape(-1) # cast in 1-dimensional array if needed
+    x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 3-dimensional array if needed
+    v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+    if len(v) != x.shape[0]:
+        print("ERROR (KRIGE3D): length of 'v' is not valid")
+        return None
 
-    mean = np.asarray(mean).reshape(-1) # cast in 1-dimensional array if needed
-
-    if mean.size != 1:
-        if mean.size != nxyz:
-            print('ERROR (KRIGE3D): number of entry for "mean"...')
-            return
-        mean = np.asarray(mean).reshape(nz, ny, nx) # cast in 3-dimensional array of same shape as grid
+    if mean is not None:
+        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if mean.size not in (1, nxyz):
+            print("ERROR (KRIGE3D): size of 'mean' is not valid")
+            return None
+        if mean.size == nxyz:
+            mean = np.asarray(mean).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
+    elif v is not None and not np.all(np.isnan(v)):
+        mean = np.array([np.nanmean(v)])
+    else:
+        mean = np.array([0.0])
 
     if var is not None:
-        var = np.asarray(var).reshape(-1) # cast in 1-dimensional array if needed
-        if var.size != 1:
-            if var.size != nxyz:
-                print('ERROR (KRIGE3D): number of entry for "var"...')
-                return
-            var = np.asarray(var).reshape(nz, ny, nx) # cast in 3-dimensional array of same shape as grid
+        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if var.size not in (1, nxyz):
+            print("ERROR (KRIGE3D): size of 'var' is not valid")
+            return None
+        if var.size == nxyz:
+            var = np.asarray(var).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
 
     if extensionMin is None:
         # default extensionMin
@@ -3102,20 +3174,21 @@ def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
 
     ix, iy, iz = indc[:, 0], indc[:, 1], indc[:, 2]
 
-    if sum(ix < 0) > 0 or sum(ix >= nx):
+    if sum(ix < 0) or sum(ix >= nx):
         print('ERROR (KRIGE3D): a conditioning point is out of the grid (x-direction)')
-        return
-    if sum(iy < 0) > 0 or sum(iy >= ny):
+        return None
+    if sum(iy < 0) or sum(iy >= ny):
         print('ERROR (KRIGE3D): a conditioning point is out of the grid (y-direction)')
-        return
-    if sum(iz < 0) > 0 or sum(iz >= nz):
+        return None
+    if sum(iz < 0) or sum(iz >= nz):
         print('ERROR (KRIGE3D): a conditioning point is out of the grid (z-direction)')
-        return
+        return None
 
     indc = ix + iy * nx + iz * nxy # single-indices
 
     if len(np.unique(indc)) != len(x):
         print('ERROR (KRIGE3D): more than one conditioning point in a same grid cell')
+        return None
 
     nc = len(x)
 
@@ -3132,7 +3205,7 @@ def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
     # Test if rAA is almost singular...
     if 1./np.linalg.cond(rAA) < tolInvKappa:
         print('ERROR (GRF3D): conditioning issue: condition number of matrix rAA is too big')
-        return
+        return None
 
     # Compute:
     #    indnc: node index of non-conditioning node (nearest node)
@@ -3258,9 +3331,9 @@ def krige3D(x, v, cov_model, dimension, spacing, origin=[0., 0., 0.],
     krig = krig + mean
 
     if computeKrigSD:
-        return ([krig, krigSD])
+        return krig, krigSD
     else:
-        return (krig)
+        return krig
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":

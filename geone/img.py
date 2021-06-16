@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Python module:  'img.py'
@@ -13,6 +13,7 @@ functions.
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 # ============================================================================
 class Img(object):
@@ -40,7 +41,8 @@ class Img(object):
                         variable:
                         if type is int/float: constant variable
                         if tuple/list/ndarray: must contain nv*nx*ny*nz values,
-                            which are put in the image (after reshape if needed)
+                            which are put in the image (after reshape if
+                            needed)
         """
 
         self.nx = int(nx)
@@ -54,7 +56,7 @@ class Img(object):
         self.oz = float(oz)
         self.nv = int(nv)
 
-        valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
+        valarr = np.asarray(val, dtype=float)  # possibly 0-dimensional
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(nx*ny*nz*nv)
         elif valarr.size != nx*ny*nz*nv:
@@ -2041,29 +2043,38 @@ def pointSetToImage(ps, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def pointToGridIndex(x, y, z, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
+def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
     """
     Convert real point coordinates to index grid:
 
-    :param x, y, z:    (float) coordinates of a point
-    :param nx, ny, nz: (int) number of grid cells in each direction
-    :param sx, sy, sz: (float) cell size in each direction
-    :param ox, oy, oz: (float) origin of the grid (bottom-lower-left corner)
+    :param x, y, z:     (float) coordinates of a point
+    :param nx, ny, nz:  (int) number of grid cells in each direction
+    :param sx, sy, sz:  (float) cell size in each direction
+    :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
 
-    :return: [ix, iy, iz]:
-                       (list of int of size 3) ix, iy, iz are the grid node index
-                           in x-, y-, z-axis direction respectively
-                           Warning: no check if the node is within the grid
-                           Note: x, y, z can be ndarray of same shape, then
-                           ix, iy, iz in output are ndarray of that shape
+    :return: ix, iy, iz:
+                        (3-tuple) grid node index
+                            in x-, y-, z-axis direction respectively
+                            Warning: no check if the node is within the grid
     """
 
-    ix = int((x-ox)/sx)
-    iy = int((y-oy)/sy)
-    iz = int((z-oz)/sz)
-    i = ix + nx * (iy + ny * iz)
+    jx = (x-ox)/sx
+    jy = (y-oy)/sy
+    jz = (z-oz)/sz
 
-    return ([ix, iy, iz])
+    ix = int(jx)
+    iy = int(jy)
+    iz = int(jz)
+
+    # round to lower index if between two grid node
+    if ix == jx and ix > 0:
+        ix = ix -1
+    if iy == jy and iy > 0:
+        iy = iy -1
+    if iz == jz and iz > 0:
+        iz = iz -1
+
+    return ix, iy, iz
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -2071,14 +2082,14 @@ def gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz):
     """
     Convert a grid index (3 indices) into a single grid index:
 
-    :param ix, iy, iz: (int) grid index in x-, y-, z-axis direction
-    :param nx, ny, nz: (int) number of grid cells in each direction
+    :param ix, iy, iz:  (int) grid index in x-, y-, z-axis direction
+    :param nx, ny, nz:  (int) number of grid cells in each direction
 
-    :return: i:        (int) single grid index
-                           Note: ix, iy, iz can be ndarray of same shape, then
-                           i in output is ndarray of that shape
+    :return: i:         (int) single grid index
+                            Note: ix, iy, iz can be ndarray of same shape, then
+                            i in output is ndarray of that shape
     """
-    return (ix + nx * (iy + ny * iz))
+    return ix + nx * (iy + ny * iz)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -2086,13 +2097,13 @@ def singleGridIndexToGridIndex(i, nx, ny, nz):
     """
     Convert a single into a grid index (3 indices):
 
-    :param i:          (int) single grid index
-    :param nx, ny, nz: (int) number of grid cells in each direction
+    :param i:           (int) single grid index
+    :param nx, ny, nz:  (int) number of grid cells in each direction
 
-    :return: [ix, iy, iz]:
-                       (list of 3 int) grid index in x-, y-, z-axis direction
-                           Note: i can be a ndarray, then
-                           ix, iy, iz in output are ndarray (of same shape)
+    :return: ix, iy, iz:
+                        (3-tuple) grid index in x-, y-, z-axis direction
+                            Note: i can be a ndarray, then
+                            ix, iy, iz in output are ndarray (of same shape)
     """
     nxy = nx*ny
     iz = i//nxy
@@ -2100,7 +2111,7 @@ def singleGridIndexToGridIndex(i, nx, ny, nz):
     iy = j//nx
     ix = j%nx
 
-    return ([ix, iy, iz])
+    return ix, iy, iz
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
