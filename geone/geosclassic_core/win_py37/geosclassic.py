@@ -286,10 +286,14 @@ MPDS_GEOS_CLASSIC_BUILD_NUMBER = _geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER
 MPDS_GEOS_CLASSIC_SUFFIX_FOR_REALIZATION = _geosclassic.MPDS_GEOS_CLASSIC_SUFFIX_FOR_REALIZATION
 MPDS_GEOS_CLASSIC_SUFFIX_FOR_ESTIMATE = _geosclassic.MPDS_GEOS_CLASSIC_SUFFIX_FOR_ESTIMATE
 MPDS_GEOS_CLASSIC_SUFFIX_FOR_ST_DEV = _geosclassic.MPDS_GEOS_CLASSIC_SUFFIX_FOR_ST_DEV
+MPDS_GEOS_CLASSIC_SUFFIX_FOR_PROBABILITY = _geosclassic.MPDS_GEOS_CLASSIC_SUFFIX_FOR_PROBABILITY
 MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER = _geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_CATEGORY_INDEX = _geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_CATEGORY_INDEX
+MPDS_GEOSCLASSIC_NCATEGORY_MAX = _geosclassic.MPDS_GEOSCLASSIC_NCATEGORY_MAX
 MPDS_GEOSCLASSIC_COV_RANGE_MIN = _geosclassic.MPDS_GEOSCLASSIC_COV_RANGE_MIN
 MPDS_GEOSCLASSIC_COV_POWER_MIN = _geosclassic.MPDS_GEOSCLASSIC_COV_POWER_MIN
 MPDS_GEOSCLASSIC_COV_TOTAL_WEIGHT_MIN = _geosclassic.MPDS_GEOSCLASSIC_COV_TOTAL_WEIGHT_MIN
+MPDS_GEOSCLASSIC_TOLEREANCE_ON_SUM_PROBABILITY = _geosclassic.MPDS_GEOSCLASSIC_TOLEREANCE_ON_SUM_PROBABILITY
 MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN = _geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN
 MPDS_GEOSCLASSIC_NGIBBSSAMPLERPATH_MIN = _geosclassic.MPDS_GEOSCLASSIC_NGIBBSSAMPLERPATH_MIN
 MPDS_GEOSCLASSIC_NGIBBSSAMPLERPATH_MAX = _geosclassic.MPDS_GEOSCLASSIC_NGIBBSSAMPLERPATH_MAX
@@ -310,26 +314,66 @@ class mpds_covModelElem(_object):
     __swig_getmethods__["covModelType"] = _geosclassic.mpds_covModelElem_covModelType_get
     if _newclass:
         covModelType = _swig_property(_geosclassic.mpds_covModelElem_covModelType_get, _geosclassic.mpds_covModelElem_covModelType_set)
-    __swig_setmethods__["weight"] = _geosclassic.mpds_covModelElem_weight_set
-    __swig_getmethods__["weight"] = _geosclassic.mpds_covModelElem_weight_get
+    __swig_setmethods__["weightImageFlag"] = _geosclassic.mpds_covModelElem_weightImageFlag_set
+    __swig_getmethods__["weightImageFlag"] = _geosclassic.mpds_covModelElem_weightImageFlag_get
     if _newclass:
-        weight = _swig_property(_geosclassic.mpds_covModelElem_weight_get, _geosclassic.mpds_covModelElem_weight_set)
-    __swig_setmethods__["rx"] = _geosclassic.mpds_covModelElem_rx_set
-    __swig_getmethods__["rx"] = _geosclassic.mpds_covModelElem_rx_get
+        weightImageFlag = _swig_property(_geosclassic.mpds_covModelElem_weightImageFlag_get, _geosclassic.mpds_covModelElem_weightImageFlag_set)
+    __swig_setmethods__["rxImageFlag"] = _geosclassic.mpds_covModelElem_rxImageFlag_set
+    __swig_getmethods__["rxImageFlag"] = _geosclassic.mpds_covModelElem_rxImageFlag_get
     if _newclass:
-        rx = _swig_property(_geosclassic.mpds_covModelElem_rx_get, _geosclassic.mpds_covModelElem_rx_set)
-    __swig_setmethods__["ry"] = _geosclassic.mpds_covModelElem_ry_set
-    __swig_getmethods__["ry"] = _geosclassic.mpds_covModelElem_ry_get
+        rxImageFlag = _swig_property(_geosclassic.mpds_covModelElem_rxImageFlag_get, _geosclassic.mpds_covModelElem_rxImageFlag_set)
+    __swig_setmethods__["ryImageFlag"] = _geosclassic.mpds_covModelElem_ryImageFlag_set
+    __swig_getmethods__["ryImageFlag"] = _geosclassic.mpds_covModelElem_ryImageFlag_get
     if _newclass:
-        ry = _swig_property(_geosclassic.mpds_covModelElem_ry_get, _geosclassic.mpds_covModelElem_ry_set)
-    __swig_setmethods__["rz"] = _geosclassic.mpds_covModelElem_rz_set
-    __swig_getmethods__["rz"] = _geosclassic.mpds_covModelElem_rz_get
+        ryImageFlag = _swig_property(_geosclassic.mpds_covModelElem_ryImageFlag_get, _geosclassic.mpds_covModelElem_ryImageFlag_set)
+    __swig_setmethods__["rzImageFlag"] = _geosclassic.mpds_covModelElem_rzImageFlag_set
+    __swig_getmethods__["rzImageFlag"] = _geosclassic.mpds_covModelElem_rzImageFlag_get
     if _newclass:
-        rz = _swig_property(_geosclassic.mpds_covModelElem_rz_get, _geosclassic.mpds_covModelElem_rz_set)
-    __swig_setmethods__["s"] = _geosclassic.mpds_covModelElem_s_set
-    __swig_getmethods__["s"] = _geosclassic.mpds_covModelElem_s_get
+        rzImageFlag = _swig_property(_geosclassic.mpds_covModelElem_rzImageFlag_get, _geosclassic.mpds_covModelElem_rzImageFlag_set)
+    __swig_setmethods__["sImageFlag"] = _geosclassic.mpds_covModelElem_sImageFlag_set
+    __swig_getmethods__["sImageFlag"] = _geosclassic.mpds_covModelElem_sImageFlag_get
     if _newclass:
-        s = _swig_property(_geosclassic.mpds_covModelElem_s_get, _geosclassic.mpds_covModelElem_s_set)
+        sImageFlag = _swig_property(_geosclassic.mpds_covModelElem_sImageFlag_get, _geosclassic.mpds_covModelElem_sImageFlag_set)
+    __swig_setmethods__["weightValue"] = _geosclassic.mpds_covModelElem_weightValue_set
+    __swig_getmethods__["weightValue"] = _geosclassic.mpds_covModelElem_weightValue_get
+    if _newclass:
+        weightValue = _swig_property(_geosclassic.mpds_covModelElem_weightValue_get, _geosclassic.mpds_covModelElem_weightValue_set)
+    __swig_setmethods__["rxValue"] = _geosclassic.mpds_covModelElem_rxValue_set
+    __swig_getmethods__["rxValue"] = _geosclassic.mpds_covModelElem_rxValue_get
+    if _newclass:
+        rxValue = _swig_property(_geosclassic.mpds_covModelElem_rxValue_get, _geosclassic.mpds_covModelElem_rxValue_set)
+    __swig_setmethods__["ryValue"] = _geosclassic.mpds_covModelElem_ryValue_set
+    __swig_getmethods__["ryValue"] = _geosclassic.mpds_covModelElem_ryValue_get
+    if _newclass:
+        ryValue = _swig_property(_geosclassic.mpds_covModelElem_ryValue_get, _geosclassic.mpds_covModelElem_ryValue_set)
+    __swig_setmethods__["rzValue"] = _geosclassic.mpds_covModelElem_rzValue_set
+    __swig_getmethods__["rzValue"] = _geosclassic.mpds_covModelElem_rzValue_get
+    if _newclass:
+        rzValue = _swig_property(_geosclassic.mpds_covModelElem_rzValue_get, _geosclassic.mpds_covModelElem_rzValue_set)
+    __swig_setmethods__["sValue"] = _geosclassic.mpds_covModelElem_sValue_set
+    __swig_getmethods__["sValue"] = _geosclassic.mpds_covModelElem_sValue_get
+    if _newclass:
+        sValue = _swig_property(_geosclassic.mpds_covModelElem_sValue_get, _geosclassic.mpds_covModelElem_sValue_set)
+    __swig_setmethods__["weightImage"] = _geosclassic.mpds_covModelElem_weightImage_set
+    __swig_getmethods__["weightImage"] = _geosclassic.mpds_covModelElem_weightImage_get
+    if _newclass:
+        weightImage = _swig_property(_geosclassic.mpds_covModelElem_weightImage_get, _geosclassic.mpds_covModelElem_weightImage_set)
+    __swig_setmethods__["rxImage"] = _geosclassic.mpds_covModelElem_rxImage_set
+    __swig_getmethods__["rxImage"] = _geosclassic.mpds_covModelElem_rxImage_get
+    if _newclass:
+        rxImage = _swig_property(_geosclassic.mpds_covModelElem_rxImage_get, _geosclassic.mpds_covModelElem_rxImage_set)
+    __swig_setmethods__["ryImage"] = _geosclassic.mpds_covModelElem_ryImage_set
+    __swig_getmethods__["ryImage"] = _geosclassic.mpds_covModelElem_ryImage_get
+    if _newclass:
+        ryImage = _swig_property(_geosclassic.mpds_covModelElem_ryImage_get, _geosclassic.mpds_covModelElem_ryImage_set)
+    __swig_setmethods__["rzImage"] = _geosclassic.mpds_covModelElem_rzImage_set
+    __swig_getmethods__["rzImage"] = _geosclassic.mpds_covModelElem_rzImage_get
+    if _newclass:
+        rzImage = _swig_property(_geosclassic.mpds_covModelElem_rzImage_get, _geosclassic.mpds_covModelElem_rzImage_set)
+    __swig_setmethods__["sImage"] = _geosclassic.mpds_covModelElem_sImage_set
+    __swig_getmethods__["sImage"] = _geosclassic.mpds_covModelElem_sImage_get
+    if _newclass:
+        sImage = _swig_property(_geosclassic.mpds_covModelElem_sImage_get, _geosclassic.mpds_covModelElem_sImage_set)
 
     def __init__(self):
         this = _geosclassic.new_mpds_covModelElem()
@@ -358,18 +402,42 @@ class mpds_covModel(_object):
     __swig_getmethods__["covModelElem"] = _geosclassic.mpds_covModel_covModelElem_get
     if _newclass:
         covModelElem = _swig_property(_geosclassic.mpds_covModel_covModelElem_get, _geosclassic.mpds_covModel_covModelElem_set)
-    __swig_setmethods__["angle1"] = _geosclassic.mpds_covModel_angle1_set
-    __swig_getmethods__["angle1"] = _geosclassic.mpds_covModel_angle1_get
+    __swig_setmethods__["angle1ImageFlag"] = _geosclassic.mpds_covModel_angle1ImageFlag_set
+    __swig_getmethods__["angle1ImageFlag"] = _geosclassic.mpds_covModel_angle1ImageFlag_get
     if _newclass:
-        angle1 = _swig_property(_geosclassic.mpds_covModel_angle1_get, _geosclassic.mpds_covModel_angle1_set)
-    __swig_setmethods__["angle2"] = _geosclassic.mpds_covModel_angle2_set
-    __swig_getmethods__["angle2"] = _geosclassic.mpds_covModel_angle2_get
+        angle1ImageFlag = _swig_property(_geosclassic.mpds_covModel_angle1ImageFlag_get, _geosclassic.mpds_covModel_angle1ImageFlag_set)
+    __swig_setmethods__["angle2ImageFlag"] = _geosclassic.mpds_covModel_angle2ImageFlag_set
+    __swig_getmethods__["angle2ImageFlag"] = _geosclassic.mpds_covModel_angle2ImageFlag_get
     if _newclass:
-        angle2 = _swig_property(_geosclassic.mpds_covModel_angle2_get, _geosclassic.mpds_covModel_angle2_set)
-    __swig_setmethods__["angle3"] = _geosclassic.mpds_covModel_angle3_set
-    __swig_getmethods__["angle3"] = _geosclassic.mpds_covModel_angle3_get
+        angle2ImageFlag = _swig_property(_geosclassic.mpds_covModel_angle2ImageFlag_get, _geosclassic.mpds_covModel_angle2ImageFlag_set)
+    __swig_setmethods__["angle3ImageFlag"] = _geosclassic.mpds_covModel_angle3ImageFlag_set
+    __swig_getmethods__["angle3ImageFlag"] = _geosclassic.mpds_covModel_angle3ImageFlag_get
     if _newclass:
-        angle3 = _swig_property(_geosclassic.mpds_covModel_angle3_get, _geosclassic.mpds_covModel_angle3_set)
+        angle3ImageFlag = _swig_property(_geosclassic.mpds_covModel_angle3ImageFlag_get, _geosclassic.mpds_covModel_angle3ImageFlag_set)
+    __swig_setmethods__["angle1Value"] = _geosclassic.mpds_covModel_angle1Value_set
+    __swig_getmethods__["angle1Value"] = _geosclassic.mpds_covModel_angle1Value_get
+    if _newclass:
+        angle1Value = _swig_property(_geosclassic.mpds_covModel_angle1Value_get, _geosclassic.mpds_covModel_angle1Value_set)
+    __swig_setmethods__["angle2Value"] = _geosclassic.mpds_covModel_angle2Value_set
+    __swig_getmethods__["angle2Value"] = _geosclassic.mpds_covModel_angle2Value_get
+    if _newclass:
+        angle2Value = _swig_property(_geosclassic.mpds_covModel_angle2Value_get, _geosclassic.mpds_covModel_angle2Value_set)
+    __swig_setmethods__["angle3Value"] = _geosclassic.mpds_covModel_angle3Value_set
+    __swig_getmethods__["angle3Value"] = _geosclassic.mpds_covModel_angle3Value_get
+    if _newclass:
+        angle3Value = _swig_property(_geosclassic.mpds_covModel_angle3Value_get, _geosclassic.mpds_covModel_angle3Value_set)
+    __swig_setmethods__["angle1Image"] = _geosclassic.mpds_covModel_angle1Image_set
+    __swig_getmethods__["angle1Image"] = _geosclassic.mpds_covModel_angle1Image_get
+    if _newclass:
+        angle1Image = _swig_property(_geosclassic.mpds_covModel_angle1Image_get, _geosclassic.mpds_covModel_angle1Image_set)
+    __swig_setmethods__["angle2Image"] = _geosclassic.mpds_covModel_angle2Image_set
+    __swig_getmethods__["angle2Image"] = _geosclassic.mpds_covModel_angle2Image_get
+    if _newclass:
+        angle2Image = _swig_property(_geosclassic.mpds_covModel_angle2Image_get, _geosclassic.mpds_covModel_angle2Image_set)
+    __swig_setmethods__["angle3Image"] = _geosclassic.mpds_covModel_angle3Image_set
+    __swig_getmethods__["angle3Image"] = _geosclassic.mpds_covModel_angle3Image_get
+    if _newclass:
+        angle3Image = _swig_property(_geosclassic.mpds_covModel_angle3Image_get, _geosclassic.mpds_covModel_angle3Image_set)
 
     def __init__(self):
         this = _geosclassic.new_mpds_covModel()
@@ -383,25 +451,29 @@ mpds_covModel_swigregister = _geosclassic.mpds_covModel_swigregister
 mpds_covModel_swigregister(mpds_covModel)
 
 
-def MPDSGeosClassicCopyCovModel(arg1, arg2):
-    return _geosclassic.MPDSGeosClassicCopyCovModel(arg1, arg2)
-MPDSGeosClassicCopyCovModel = _geosclassic.MPDSGeosClassicCopyCovModel
-
-def MPDSGeosClassicCopyCovModelElem(arg1, arg2):
-    return _geosclassic.MPDSGeosClassicCopyCovModelElem(arg1, arg2)
-MPDSGeosClassicCopyCovModelElem = _geosclassic.MPDSGeosClassicCopyCovModelElem
-
-def MPDSGeosClassicEvaluateCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSGeosClassicEvaluateCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+def MPDSGeosClassicEvaluateCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSGeosClassicEvaluateCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 MPDSGeosClassicEvaluateCovModel = _geosclassic.MPDSGeosClassicEvaluateCovModel
 
-def MPDSGeosClassicEvaluateCovModelNoRotation(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _geosclassic.MPDSGeosClassicEvaluateCovModelNoRotation(arg1, arg2, arg3, arg4, arg5, arg6)
+def MPDSGeosClassicEvaluateCovModelFixParam(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSGeosClassicEvaluateCovModelFixParam(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSGeosClassicEvaluateCovModelFixParam = _geosclassic.MPDSGeosClassicEvaluateCovModelFixParam
+
+def MPDSGeosClassicEvaluateCovModelFixParamNoRotation(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _geosclassic.MPDSGeosClassicEvaluateCovModelFixParamNoRotation(arg1, arg2, arg3, arg4, arg5, arg6)
+MPDSGeosClassicEvaluateCovModelFixParamNoRotation = _geosclassic.MPDSGeosClassicEvaluateCovModelFixParamNoRotation
+
+def MPDSGeosClassicEvaluateCovModelNoRotation(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _geosclassic.MPDSGeosClassicEvaluateCovModelNoRotation(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 MPDSGeosClassicEvaluateCovModelNoRotation = _geosclassic.MPDSGeosClassicEvaluateCovModelNoRotation
 
 def MPDSGeosClassicFreeCovModel(arg1):
     return _geosclassic.MPDSGeosClassicFreeCovModel(arg1)
 MPDSGeosClassicFreeCovModel = _geosclassic.MPDSGeosClassicFreeCovModel
+
+def MPDSGeosClassicFreeCovModelElem(arg1):
+    return _geosclassic.MPDSGeosClassicFreeCovModelElem(arg1)
+MPDSGeosClassicFreeCovModelElem = _geosclassic.MPDSGeosClassicFreeCovModelElem
 
 def MPDSGeosClassicInitCovModel(arg1):
     return _geosclassic.MPDSGeosClassicInitCovModel(arg1)
@@ -419,20 +491,12 @@ def MPDSGeosClassicPrintCovModelElem(arg1, arg2, arg3):
     return _geosclassic.MPDSGeosClassicPrintCovModelElem(arg1, arg2, arg3)
 MPDSGeosClassicPrintCovModelElem = _geosclassic.MPDSGeosClassicPrintCovModelElem
 
-def MPDSGeosClassicReadCovModel(arg1, arg2):
-    return _geosclassic.MPDSGeosClassicReadCovModel(arg1, arg2)
-MPDSGeosClassicReadCovModel = _geosclassic.MPDSGeosClassicReadCovModel
-
-def MPDSGeosClassicReadCovModelElem(arg1, arg2):
-    return _geosclassic.MPDSGeosClassicReadCovModelElem(arg1, arg2)
-MPDSGeosClassicReadCovModelElem = _geosclassic.MPDSGeosClassicReadCovModelElem
-
-def MPDSGeosClassicValidateCovModel(arg1, arg2):
-    return _geosclassic.MPDSGeosClassicValidateCovModel(arg1, arg2)
+def MPDSGeosClassicValidateCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSGeosClassicValidateCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
 MPDSGeosClassicValidateCovModel = _geosclassic.MPDSGeosClassicValidateCovModel
 
-def MPDSGeosClassicValidateCovModelElem(arg1, arg2):
-    return _geosclassic.MPDSGeosClassicValidateCovModelElem(arg1, arg2)
+def MPDSGeosClassicValidateCovModelElem(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _geosclassic.MPDSGeosClassicValidateCovModelElem(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 MPDSGeosClassicValidateCovModelElem = _geosclassic.MPDSGeosClassicValidateCovModelElem
 GEOS_CLASSIC_OK = _geosclassic.GEOS_CLASSIC_OK
 GEOS_CLASSIC_SK = _geosclassic.GEOS_CLASSIC_SK
@@ -579,26 +643,172 @@ class mpds_geosClassicInput(_object):
 mpds_geosClassicInput_swigregister = _geosclassic.mpds_geosClassicInput_swigregister
 mpds_geosClassicInput_swigregister(mpds_geosClassicInput)
 
+class mpds_geosClassicIndicatorInput(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_geosClassicIndicatorInput, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, mpds_geosClassicIndicatorInput, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["consoleAppFlag"] = _geosclassic.mpds_geosClassicIndicatorInput_consoleAppFlag_set
+    __swig_getmethods__["consoleAppFlag"] = _geosclassic.mpds_geosClassicIndicatorInput_consoleAppFlag_get
+    if _newclass:
+        consoleAppFlag = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_consoleAppFlag_get, _geosclassic.mpds_geosClassicIndicatorInput_consoleAppFlag_set)
+    __swig_setmethods__["simName"] = _geosclassic.mpds_geosClassicIndicatorInput_simName_set
+    __swig_getmethods__["simName"] = _geosclassic.mpds_geosClassicIndicatorInput_simName_get
+    if _newclass:
+        simName = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_simName_get, _geosclassic.mpds_geosClassicIndicatorInput_simName_set)
+    __swig_setmethods__["simGrid"] = _geosclassic.mpds_geosClassicIndicatorInput_simGrid_set
+    __swig_getmethods__["simGrid"] = _geosclassic.mpds_geosClassicIndicatorInput_simGrid_get
+    if _newclass:
+        simGrid = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_simGrid_get, _geosclassic.mpds_geosClassicIndicatorInput_simGrid_set)
+    __swig_setmethods__["varName"] = _geosclassic.mpds_geosClassicIndicatorInput_varName_set
+    __swig_getmethods__["varName"] = _geosclassic.mpds_geosClassicIndicatorInput_varName_get
+    if _newclass:
+        varName = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_varName_get, _geosclassic.mpds_geosClassicIndicatorInput_varName_set)
+    __swig_setmethods__["formatString"] = _geosclassic.mpds_geosClassicIndicatorInput_formatString_set
+    __swig_getmethods__["formatString"] = _geosclassic.mpds_geosClassicIndicatorInput_formatString_get
+    if _newclass:
+        formatString = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_formatString_get, _geosclassic.mpds_geosClassicIndicatorInput_formatString_set)
+    __swig_setmethods__["ncategory"] = _geosclassic.mpds_geosClassicIndicatorInput_ncategory_set
+    __swig_getmethods__["ncategory"] = _geosclassic.mpds_geosClassicIndicatorInput_ncategory_get
+    if _newclass:
+        ncategory = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_ncategory_get, _geosclassic.mpds_geosClassicIndicatorInput_ncategory_set)
+    __swig_setmethods__["categoryValue"] = _geosclassic.mpds_geosClassicIndicatorInput_categoryValue_set
+    __swig_getmethods__["categoryValue"] = _geosclassic.mpds_geosClassicIndicatorInput_categoryValue_get
+    if _newclass:
+        categoryValue = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_categoryValue_get, _geosclassic.mpds_geosClassicIndicatorInput_categoryValue_set)
+    __swig_setmethods__["outputMode"] = _geosclassic.mpds_geosClassicIndicatorInput_outputMode_set
+    __swig_getmethods__["outputMode"] = _geosclassic.mpds_geosClassicIndicatorInput_outputMode_get
+    if _newclass:
+        outputMode = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_outputMode_get, _geosclassic.mpds_geosClassicIndicatorInput_outputMode_set)
+    __swig_setmethods__["outputImageFileName"] = _geosclassic.mpds_geosClassicIndicatorInput_outputImageFileName_set
+    __swig_getmethods__["outputImageFileName"] = _geosclassic.mpds_geosClassicIndicatorInput_outputImageFileName_get
+    if _newclass:
+        outputImageFileName = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_outputImageFileName_get, _geosclassic.mpds_geosClassicIndicatorInput_outputImageFileName_set)
+    __swig_setmethods__["outputReportFlag"] = _geosclassic.mpds_geosClassicIndicatorInput_outputReportFlag_set
+    __swig_getmethods__["outputReportFlag"] = _geosclassic.mpds_geosClassicIndicatorInput_outputReportFlag_get
+    if _newclass:
+        outputReportFlag = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_outputReportFlag_get, _geosclassic.mpds_geosClassicIndicatorInput_outputReportFlag_set)
+    __swig_setmethods__["outputReportFileName"] = _geosclassic.mpds_geosClassicIndicatorInput_outputReportFileName_set
+    __swig_getmethods__["outputReportFileName"] = _geosclassic.mpds_geosClassicIndicatorInput_outputReportFileName_get
+    if _newclass:
+        outputReportFileName = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_outputReportFileName_get, _geosclassic.mpds_geosClassicIndicatorInput_outputReportFileName_set)
+    __swig_setmethods__["computationMode"] = _geosclassic.mpds_geosClassicIndicatorInput_computationMode_set
+    __swig_getmethods__["computationMode"] = _geosclassic.mpds_geosClassicIndicatorInput_computationMode_get
+    if _newclass:
+        computationMode = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_computationMode_get, _geosclassic.mpds_geosClassicIndicatorInput_computationMode_set)
+    __swig_setmethods__["covModel"] = _geosclassic.mpds_geosClassicIndicatorInput_covModel_set
+    __swig_getmethods__["covModel"] = _geosclassic.mpds_geosClassicIndicatorInput_covModel_get
+    if _newclass:
+        covModel = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_covModel_get, _geosclassic.mpds_geosClassicIndicatorInput_covModel_set)
+    __swig_setmethods__["searchRadiusRelative"] = _geosclassic.mpds_geosClassicIndicatorInput_searchRadiusRelative_set
+    __swig_getmethods__["searchRadiusRelative"] = _geosclassic.mpds_geosClassicIndicatorInput_searchRadiusRelative_get
+    if _newclass:
+        searchRadiusRelative = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_searchRadiusRelative_get, _geosclassic.mpds_geosClassicIndicatorInput_searchRadiusRelative_set)
+    __swig_setmethods__["nneighborMax"] = _geosclassic.mpds_geosClassicIndicatorInput_nneighborMax_set
+    __swig_getmethods__["nneighborMax"] = _geosclassic.mpds_geosClassicIndicatorInput_nneighborMax_get
+    if _newclass:
+        nneighborMax = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_nneighborMax_get, _geosclassic.mpds_geosClassicIndicatorInput_nneighborMax_set)
+    __swig_setmethods__["searchNeighborhoodSortMode"] = _geosclassic.mpds_geosClassicIndicatorInput_searchNeighborhoodSortMode_set
+    __swig_getmethods__["searchNeighborhoodSortMode"] = _geosclassic.mpds_geosClassicIndicatorInput_searchNeighborhoodSortMode_get
+    if _newclass:
+        searchNeighborhoodSortMode = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_searchNeighborhoodSortMode_get, _geosclassic.mpds_geosClassicIndicatorInput_searchNeighborhoodSortMode_set)
+    __swig_setmethods__["ndataImage"] = _geosclassic.mpds_geosClassicIndicatorInput_ndataImage_set
+    __swig_getmethods__["ndataImage"] = _geosclassic.mpds_geosClassicIndicatorInput_ndataImage_get
+    if _newclass:
+        ndataImage = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_ndataImage_get, _geosclassic.mpds_geosClassicIndicatorInput_ndataImage_set)
+    __swig_setmethods__["dataImage"] = _geosclassic.mpds_geosClassicIndicatorInput_dataImage_set
+    __swig_getmethods__["dataImage"] = _geosclassic.mpds_geosClassicIndicatorInput_dataImage_get
+    if _newclass:
+        dataImage = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_dataImage_get, _geosclassic.mpds_geosClassicIndicatorInput_dataImage_set)
+    __swig_setmethods__["ndataPointSet"] = _geosclassic.mpds_geosClassicIndicatorInput_ndataPointSet_set
+    __swig_getmethods__["ndataPointSet"] = _geosclassic.mpds_geosClassicIndicatorInput_ndataPointSet_get
+    if _newclass:
+        ndataPointSet = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_ndataPointSet_get, _geosclassic.mpds_geosClassicIndicatorInput_ndataPointSet_set)
+    __swig_setmethods__["dataPointSet"] = _geosclassic.mpds_geosClassicIndicatorInput_dataPointSet_set
+    __swig_getmethods__["dataPointSet"] = _geosclassic.mpds_geosClassicIndicatorInput_dataPointSet_get
+    if _newclass:
+        dataPointSet = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_dataPointSet_get, _geosclassic.mpds_geosClassicIndicatorInput_dataPointSet_set)
+    __swig_setmethods__["maskImageFlag"] = _geosclassic.mpds_geosClassicIndicatorInput_maskImageFlag_set
+    __swig_getmethods__["maskImageFlag"] = _geosclassic.mpds_geosClassicIndicatorInput_maskImageFlag_get
+    if _newclass:
+        maskImageFlag = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_maskImageFlag_get, _geosclassic.mpds_geosClassicIndicatorInput_maskImageFlag_set)
+    __swig_setmethods__["maskImage"] = _geosclassic.mpds_geosClassicIndicatorInput_maskImage_set
+    __swig_getmethods__["maskImage"] = _geosclassic.mpds_geosClassicIndicatorInput_maskImage_get
+    if _newclass:
+        maskImage = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_maskImage_get, _geosclassic.mpds_geosClassicIndicatorInput_maskImage_set)
+    __swig_setmethods__["probabilityUsage"] = _geosclassic.mpds_geosClassicIndicatorInput_probabilityUsage_set
+    __swig_getmethods__["probabilityUsage"] = _geosclassic.mpds_geosClassicIndicatorInput_probabilityUsage_get
+    if _newclass:
+        probabilityUsage = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_probabilityUsage_get, _geosclassic.mpds_geosClassicIndicatorInput_probabilityUsage_set)
+    __swig_setmethods__["probabilityValue"] = _geosclassic.mpds_geosClassicIndicatorInput_probabilityValue_set
+    __swig_getmethods__["probabilityValue"] = _geosclassic.mpds_geosClassicIndicatorInput_probabilityValue_get
+    if _newclass:
+        probabilityValue = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_probabilityValue_get, _geosclassic.mpds_geosClassicIndicatorInput_probabilityValue_set)
+    __swig_setmethods__["probabilityImage"] = _geosclassic.mpds_geosClassicIndicatorInput_probabilityImage_set
+    __swig_getmethods__["probabilityImage"] = _geosclassic.mpds_geosClassicIndicatorInput_probabilityImage_get
+    if _newclass:
+        probabilityImage = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_probabilityImage_get, _geosclassic.mpds_geosClassicIndicatorInput_probabilityImage_set)
+    __swig_setmethods__["seed"] = _geosclassic.mpds_geosClassicIndicatorInput_seed_set
+    __swig_getmethods__["seed"] = _geosclassic.mpds_geosClassicIndicatorInput_seed_get
+    if _newclass:
+        seed = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_seed_get, _geosclassic.mpds_geosClassicIndicatorInput_seed_set)
+    __swig_setmethods__["seedIncrement"] = _geosclassic.mpds_geosClassicIndicatorInput_seedIncrement_set
+    __swig_getmethods__["seedIncrement"] = _geosclassic.mpds_geosClassicIndicatorInput_seedIncrement_get
+    if _newclass:
+        seedIncrement = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_seedIncrement_get, _geosclassic.mpds_geosClassicIndicatorInput_seedIncrement_set)
+    __swig_setmethods__["nrealization"] = _geosclassic.mpds_geosClassicIndicatorInput_nrealization_set
+    __swig_getmethods__["nrealization"] = _geosclassic.mpds_geosClassicIndicatorInput_nrealization_get
+    if _newclass:
+        nrealization = _swig_property(_geosclassic.mpds_geosClassicIndicatorInput_nrealization_get, _geosclassic.mpds_geosClassicIndicatorInput_nrealization_set)
+
+    def __init__(self):
+        this = _geosclassic.new_mpds_geosClassicIndicatorInput()
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _geosclassic.delete_mpds_geosClassicIndicatorInput
+    __del__ = lambda self: None
+mpds_geosClassicIndicatorInput_swigregister = _geosclassic.mpds_geosClassicIndicatorInput_swigregister
+mpds_geosClassicIndicatorInput_swigregister(mpds_geosClassicIndicatorInput)
+
 
 def MPDSGeosClassicFreeGeosClassicInput(arg1):
     return _geosclassic.MPDSGeosClassicFreeGeosClassicInput(arg1)
 MPDSGeosClassicFreeGeosClassicInput = _geosclassic.MPDSGeosClassicFreeGeosClassicInput
 
+def MPDSGeosClassicFreeGeosClassicIndicatorInput(arg1):
+    return _geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(arg1)
+MPDSGeosClassicFreeGeosClassicIndicatorInput = _geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput
+
 def MPDSGeosClassicInitGeosClassicInput(arg1):
     return _geosclassic.MPDSGeosClassicInitGeosClassicInput(arg1)
 MPDSGeosClassicInitGeosClassicInput = _geosclassic.MPDSGeosClassicInitGeosClassicInput
+
+def MPDSGeosClassicInitGeosClassicIndicatorInput(arg1):
+    return _geosclassic.MPDSGeosClassicInitGeosClassicIndicatorInput(arg1)
+MPDSGeosClassicInitGeosClassicIndicatorInput = _geosclassic.MPDSGeosClassicInitGeosClassicIndicatorInput
 
 def MPDSGeosClassicPrintGeosClassicInput(arg1, arg2, arg3):
     return _geosclassic.MPDSGeosClassicPrintGeosClassicInput(arg1, arg2, arg3)
 MPDSGeosClassicPrintGeosClassicInput = _geosclassic.MPDSGeosClassicPrintGeosClassicInput
 
+def MPDSGeosClassicPrintGeosClassicIndicatorInput(arg1, arg2, arg3):
+    return _geosclassic.MPDSGeosClassicPrintGeosClassicIndicatorInput(arg1, arg2, arg3)
+MPDSGeosClassicPrintGeosClassicIndicatorInput = _geosclassic.MPDSGeosClassicPrintGeosClassicIndicatorInput
+
 def MPDSGeosClassicPrintVersion(arg1, arg2, arg3, arg4, arg5):
     return _geosclassic.MPDSGeosClassicPrintVersion(arg1, arg2, arg3, arg4, arg5)
 MPDSGeosClassicPrintVersion = _geosclassic.MPDSGeosClassicPrintVersion
 
-def MPDSGeosClassicValidateGeosClassicInput(arg1, arg2, arg3, arg4):
-    return _geosclassic.MPDSGeosClassicValidateGeosClassicInput(arg1, arg2, arg3, arg4)
+def MPDSGeosClassicValidateGeosClassicInput(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSGeosClassicValidateGeosClassicInput(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
 MPDSGeosClassicValidateGeosClassicInput = _geosclassic.MPDSGeosClassicValidateGeosClassicInput
+
+def MPDSGeosClassicValidateGeosClassicIndicatorInput(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSGeosClassicValidateGeosClassicIndicatorInput(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSGeosClassicValidateGeosClassicIndicatorInput = _geosclassic.MPDSGeosClassicValidateGeosClassicIndicatorInput
 class mpds_geosClassicOutput(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_geosClassicOutput, name, value)
@@ -630,9 +840,13 @@ def MPDSGeosClassicInitGeosClassicOutput(arg1):
     return _geosclassic.MPDSGeosClassicInitGeosClassicOutput(arg1)
 MPDSGeosClassicInitGeosClassicOutput = _geosclassic.MPDSGeosClassicInitGeosClassicOutput
 
-def MPDSGeosClassicBuildSearchNeighborhoodForCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _geosclassic.MPDSGeosClassicBuildSearchNeighborhoodForCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+def MPDSGeosClassicBuildSearchNeighborhoodForCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18):
+    return _geosclassic.MPDSGeosClassicBuildSearchNeighborhoodForCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18)
 MPDSGeosClassicBuildSearchNeighborhoodForCovModel = _geosclassic.MPDSGeosClassicBuildSearchNeighborhoodForCovModel
+
+def MPDSGeosClassicIndicatorIntegrateConditioningData(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _geosclassic.MPDSGeosClassicIndicatorIntegrateConditioningData(arg1, arg2, arg3, arg4, arg5, arg6)
+MPDSGeosClassicIndicatorIntegrateConditioningData = _geosclassic.MPDSGeosClassicIndicatorIntegrateConditioningData
 
 def MPDSGeosClassicIntegrateConditioningData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
     return _geosclassic.MPDSGeosClassicIntegrateConditioningData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
@@ -646,16 +860,28 @@ def MPDSGeosClassicSim(arg1, arg2, arg3, arg4):
     return _geosclassic.MPDSGeosClassicSim(arg1, arg2, arg3, arg4)
 MPDSGeosClassicSim = _geosclassic.MPDSGeosClassicSim
 
-def MPDSGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17):
-    return _geosclassic.MPDSGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17)
+def MPDSGeosClassicIndicatorSim(arg1, arg2, arg3, arg4):
+    return _geosclassic.MPDSGeosClassicIndicatorSim(arg1, arg2, arg3, arg4)
+MPDSGeosClassicIndicatorSim = _geosclassic.MPDSGeosClassicIndicatorSim
+
+def MPDSGeosClassicIndicatorSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21):
+    return _geosclassic.MPDSGeosClassicIndicatorSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21)
+MPDSGeosClassicIndicatorSimEstimation = _geosclassic.MPDSGeosClassicIndicatorSimEstimation
+
+def MPDSGeosClassicIndicatorSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22):
+    return _geosclassic.MPDSGeosClassicIndicatorSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22)
+MPDSGeosClassicIndicatorSimSimulation = _geosclassic.MPDSGeosClassicIndicatorSimSimulation
+
+def MPDSGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21):
+    return _geosclassic.MPDSGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21)
 MPDSGeosClassicSimEstimation = _geosclassic.MPDSGeosClassicSimEstimation
 
 def MPDSGeosClassicSimEstimationUniqueSN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
     return _geosclassic.MPDSGeosClassicSimEstimationUniqueSN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
 MPDSGeosClassicSimEstimationUniqueSN = _geosclassic.MPDSGeosClassicSimEstimationUniqueSN
 
-def MPDSGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22):
-    return _geosclassic.MPDSGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22)
+def MPDSGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26):
+    return _geosclassic.MPDSGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26)
 MPDSGeosClassicSimSimulation = _geosclassic.MPDSGeosClassicSimSimulation
 class mpds_grid(_object):
     __swig_setmethods__ = {}
@@ -1060,6 +1286,7 @@ MPDS_WARNING_MSG_02005 = _geosclassic.MPDS_WARNING_MSG_02005
 MPDS_WARNING_MSG_02012 = _geosclassic.MPDS_WARNING_MSG_02012
 MPDS_WARNING_MSG_02015 = _geosclassic.MPDS_WARNING_MSG_02015
 MPDS_WARNING_MSG_02016 = _geosclassic.MPDS_WARNING_MSG_02016
+MPDS_WARNING_MSG_02020 = _geosclassic.MPDS_WARNING_MSG_02020
 MPDS_WARNING_MSG_05044 = _geosclassic.MPDS_WARNING_MSG_05044
 MPDS_WARNING_MSG_05045 = _geosclassic.MPDS_WARNING_MSG_05045
 MPDS_WARNING_MSG_05125 = _geosclassic.MPDS_WARNING_MSG_05125
@@ -1187,16 +1414,28 @@ def MPDSOMPGeosClassicSim(arg1, arg2, arg3, arg4, arg5):
     return _geosclassic.MPDSOMPGeosClassicSim(arg1, arg2, arg3, arg4, arg5)
 MPDSOMPGeosClassicSim = _geosclassic.MPDSOMPGeosClassicSim
 
-def MPDSOMPGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18):
-    return _geosclassic.MPDSOMPGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18)
+def MPDSOMPGeosClassicIndicatorSim(arg1, arg2, arg3, arg4, arg5):
+    return _geosclassic.MPDSOMPGeosClassicIndicatorSim(arg1, arg2, arg3, arg4, arg5)
+MPDSOMPGeosClassicIndicatorSim = _geosclassic.MPDSOMPGeosClassicIndicatorSim
+
+def MPDSOMPGeosClassicIndicatorSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22):
+    return _geosclassic.MPDSOMPGeosClassicIndicatorSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22)
+MPDSOMPGeosClassicIndicatorSimEstimation = _geosclassic.MPDSOMPGeosClassicIndicatorSimEstimation
+
+def MPDSOMPGeosClassicIndicatorSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23):
+    return _geosclassic.MPDSOMPGeosClassicIndicatorSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23)
+MPDSOMPGeosClassicIndicatorSimSimulation = _geosclassic.MPDSOMPGeosClassicIndicatorSimSimulation
+
+def MPDSOMPGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22):
+    return _geosclassic.MPDSOMPGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22)
 MPDSOMPGeosClassicSimEstimation = _geosclassic.MPDSOMPGeosClassicSimEstimation
 
 def MPDSOMPGeosClassicSimEstimationUniqueSN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15):
     return _geosclassic.MPDSOMPGeosClassicSimEstimationUniqueSN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15)
 MPDSOMPGeosClassicSimEstimationUniqueSN = _geosclassic.MPDSOMPGeosClassicSimEstimationUniqueSN
 
-def MPDSOMPGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23):
-    return _geosclassic.MPDSOMPGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23)
+def MPDSOMPGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27):
+    return _geosclassic.MPDSOMPGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27)
 MPDSOMPGeosClassicSimSimulation = _geosclassic.MPDSOMPGeosClassicSimSimulation
 
 def new_int_array(nelements):
@@ -1278,6 +1517,22 @@ realp_array_getitem = _geosclassic.realp_array_getitem
 def realp_array_setitem(ary, index, value):
     return _geosclassic.realp_array_setitem(ary, index, value)
 realp_array_setitem = _geosclassic.realp_array_setitem
+
+def new_MPDS_COVMODEL_array(nelements):
+    return _geosclassic.new_MPDS_COVMODEL_array(nelements)
+new_MPDS_COVMODEL_array = _geosclassic.new_MPDS_COVMODEL_array
+
+def delete_MPDS_COVMODEL_array(ary):
+    return _geosclassic.delete_MPDS_COVMODEL_array(ary)
+delete_MPDS_COVMODEL_array = _geosclassic.delete_MPDS_COVMODEL_array
+
+def MPDS_COVMODEL_array_getitem(ary, index):
+    return _geosclassic.MPDS_COVMODEL_array_getitem(ary, index)
+MPDS_COVMODEL_array_getitem = _geosclassic.MPDS_COVMODEL_array_getitem
+
+def MPDS_COVMODEL_array_setitem(ary, index, value):
+    return _geosclassic.MPDS_COVMODEL_array_setitem(ary, index, value)
+MPDS_COVMODEL_array_setitem = _geosclassic.MPDS_COVMODEL_array_setitem
 
 def new_MPDS_COVMODELELEM_array(nelements):
     return _geosclassic.new_MPDS_COVMODELELEM_array(nelements)
@@ -1429,6 +1684,23 @@ def free_MPDS_GEOSCLASSICINPUT(ptr):
 free_MPDS_GEOSCLASSICINPUT = _geosclassic.free_MPDS_GEOSCLASSICINPUT
 sizeof_MPDS_GEOSCLASSICINPUT = _geosclassic.sizeof_MPDS_GEOSCLASSICINPUT
 
+def malloc_MPDS_GEOSCLASSICINDICATORINPUT(*args):
+    return _geosclassic.malloc_MPDS_GEOSCLASSICINDICATORINPUT(*args)
+malloc_MPDS_GEOSCLASSICINDICATORINPUT = _geosclassic.malloc_MPDS_GEOSCLASSICINDICATORINPUT
+
+def calloc_MPDS_GEOSCLASSICINDICATORINPUT(*args):
+    return _geosclassic.calloc_MPDS_GEOSCLASSICINDICATORINPUT(*args)
+calloc_MPDS_GEOSCLASSICINDICATORINPUT = _geosclassic.calloc_MPDS_GEOSCLASSICINDICATORINPUT
+
+def realloc_MPDS_GEOSCLASSICINDICATORINPUT(ptr, nitems):
+    return _geosclassic.realloc_MPDS_GEOSCLASSICINDICATORINPUT(ptr, nitems)
+realloc_MPDS_GEOSCLASSICINDICATORINPUT = _geosclassic.realloc_MPDS_GEOSCLASSICINDICATORINPUT
+
+def free_MPDS_GEOSCLASSICINDICATORINPUT(ptr):
+    return _geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(ptr)
+free_MPDS_GEOSCLASSICINDICATORINPUT = _geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT
+sizeof_MPDS_GEOSCLASSICINDICATORINPUT = _geosclassic.sizeof_MPDS_GEOSCLASSICINDICATORINPUT
+
 def malloc_MPDS_GEOSCLASSICOUTPUT(*args):
     return _geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT(*args)
 malloc_MPDS_GEOSCLASSICOUTPUT = _geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT
@@ -1508,9 +1780,17 @@ def mpds_set_geosClassicInput_varname(geosClassicInput, STRING):
     return _geosclassic.mpds_set_geosClassicInput_varname(geosClassicInput, STRING)
 mpds_set_geosClassicInput_varname = _geosclassic.mpds_set_geosClassicInput_varname
 
-def mpds_set_outputReportFileName(geosClassicInput, STRING):
-    return _geosclassic.mpds_set_outputReportFileName(geosClassicInput, STRING)
-mpds_set_outputReportFileName = _geosclassic.mpds_set_outputReportFileName
+def mpds_set_geosClassicIndicatorInput_varname(geosClassicIndicatorInput, STRING):
+    return _geosclassic.mpds_set_geosClassicIndicatorInput_varname(geosClassicIndicatorInput, STRING)
+mpds_set_geosClassicIndicatorInput_varname = _geosclassic.mpds_set_geosClassicIndicatorInput_varname
+
+def mpds_set_geosClassicInput_outputReportFileName(geosClassicInput, STRING):
+    return _geosclassic.mpds_set_geosClassicInput_outputReportFileName(geosClassicInput, STRING)
+mpds_set_geosClassicInput_outputReportFileName = _geosclassic.mpds_set_geosClassicInput_outputReportFileName
+
+def mpds_set_geosClassicIndicatorInput_outputReportFileName(geosClassicIndicatorInput, STRING):
+    return _geosclassic.mpds_set_geosClassicIndicatorInput_outputReportFileName(geosClassicIndicatorInput, STRING)
+mpds_set_geosClassicIndicatorInput_outputReportFileName = _geosclassic.mpds_set_geosClassicIndicatorInput_outputReportFileName
 
 def mpds_set_varname(varname, index, STRING):
     return _geosclassic.mpds_set_varname(varname, index, STRING)

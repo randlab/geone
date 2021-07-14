@@ -47,9 +47,17 @@ Various examples are provided in notebooks, as described below.
    - `ex_grf_1d.ipynb`: example for the generation of 1D fields
    - `ex_grf_2d.ipynb`: example for the generation of 2D fields
    - `ex_grf_3d.ipynb`: example for the generation of 3D fields
-- Variogram analysis tools and ordinary kriging:
+- Variogram analysis tools and kriging:
    - `ex_vario_analysis_data1D.ipynb`: example for variogram analysis and ordinary kriging for data in 1D
    - `ex_vario_analysis_data2D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 2D (omni-directional)
    - `ex_vario_analysis_data2D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 2D (general)
    - `ex_vario_analysis_data3D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (omni-directional)
    - `ex_vario_analysis_data3D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (general)
+- Simulation and estimation with kriging (GeosClassic wrapper):
+   - `ex_geosclassic_1d.ipynb`:example in 1D
+   - `ex_geosclassic_1d_non_stat_cov.ipynb`:example in 1D with non-stationary covariance model
+   - `ex_geosclassic_2d.ipynb`:example in 2D
+   - `ex_geosclassic_2d_non_stat_cov.ipynb`:example in 2D with non-stationary covariance model
+   - `ex_geosclassic_3d.ipynb`:example in 3D
+   - `ex_geosclassic_3d_non_stat_cov.ipynb`:example in 3D with non-stationary covariance model
+   - `ex_geosclassic_indicator.ipynb`:example (in 2D) for indicator variables

@@ -11,7 +11,7 @@ based on Fast Fourier Transform (FFT).
 """
 
 import numpy as np
-# from geone import covModel as gcm # not necessary
+from geone import covModel as gcm
 
 # ----------------------------------------------------------------------------
 def extension_min(r, n, s=1.0):
@@ -209,7 +209,11 @@ def grf1D(cov_model,
         # covariance function is given
         cov_func = cov_model
         range_known = False
-    elif cov_model.__class__.__name__ == 'CovModel1D':
+    elif isinstance(cov_model, gcm.CovModel1D):
+        # Prevent calculation if covariance model is not stationary
+        if not cov_model.is_stationary():
+            print("ERROR (GRF1D): 'cov_model' is not stationary")
+            return None
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
@@ -788,7 +792,11 @@ def krige1D(x, v, cov_model,
         # covariance function is given
         cov_func = cov_model
         range_known = False
-    elif cov_model.__class__.__name__ == 'CovModel1D':
+    elif isinstance(cov_model, gcm.CovModel1D):
+        # Prevent calculation if covariance model is not stationary
+        if not cov_model.is_stationary():
+            print("ERROR (KRIGE1D): 'cov_model' is not stationary")
+            return None
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
@@ -1266,7 +1274,11 @@ def grf2D(cov_model,
         # covariance function is given
         cov_func = cov_model
         range_known = False
-    elif cov_model.__class__.__name__ == 'CovModel2D':
+    elif isinstance(cov_model, gcm.CovModel2D):
+        # Prevent calculation if covariance model is not stationary
+        if not cov_model.is_stationary():
+            print("ERROR (GRF2D): 'cov_model' is not stationary")
+            return None
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
@@ -1865,7 +1877,11 @@ def krige2D(x, v, cov_model,
         # covariance function is given
         cov_func = cov_model
         range_known = False
-    elif cov_model.__class__.__name__ == 'CovModel2D':
+    elif isinstance(cov_model, gcm.CovModel2D):
+        # Prevent calculation if covariance model is not stationary
+        if not cov_model.is_stationary():
+            print("ERROR (KRIGE2D): 'cov_model' is not stationary")
+            return None
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
@@ -2380,7 +2396,11 @@ def grf3D(cov_model,
         # covariance function is given
         cov_func = cov_model
         range_known = False
-    elif cov_model.__class__.__name__ == 'CovModel3D':
+    elif isinstance(cov_model, gcm.CovModel3D):
+        # Prevent calculation if covariance model is not stationary
+        if not cov_model.is_stationary():
+            print("ERROR (GRF3D): 'cov_model' is not stationary")
+            return None
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:
@@ -2997,7 +3017,11 @@ def krige3D(x, v, cov_model,
         # covariance function is given
         cov_func = cov_model
         range_known = False
-    elif cov_model.__class__.__name__ == 'CovModel3D':
+    elif isinstance(cov_model, gcm.CovModel3D):
+        # Prevent calculation if covariance model is not stationary
+        if not cov_model.is_stationary():
+            print("ERROR (KRIGE3D): 'cov_model' is not stationary")
+            return None
         cov_func = cov_model.func() # covariance function
         range_known = True
     else:

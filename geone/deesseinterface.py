@@ -2261,19 +2261,19 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.nneighboringNode = deesse.new_int_array(int(deesse_input.nv))
     deesse.mpds_set_int_vector_from_array(
         mpds_siminput.nneighboringNode, 0,
-        np.asarray(deesse_input.nneighboringNode, dtype='intc').reshape(deesse_input.nv))
+        np.asarray(deesse_input.nneighboringNode, dtype='intc').reshape(int(deesse_input.nv)))
 
     # mpds_siminput.maxPropInequalityNode
     mpds_siminput.maxPropInequalityNode = deesse.new_double_array(int(deesse_input.nv))
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.maxPropInequalityNode, 0,
-        np.asarray(deesse_input.maxPropInequalityNode).reshape(deesse_input.nv))
+        np.asarray(deesse_input.maxPropInequalityNode).reshape(int(deesse_input.nv)))
 
     # mpds_siminput.neighboringNodeDensity
     mpds_siminput.neighboringNodeDensity = deesse.new_double_array(int(deesse_input.nv))
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.neighboringNodeDensity, 0,
-        np.asarray(deesse_input.neighboringNodeDensity).reshape(deesse_input.nv))
+        np.asarray(deesse_input.neighboringNodeDensity).reshape(int(deesse_input.nv)))
 
     # mpds_siminput.rescalingMode
     mpds_siminput.rescalingMode = deesse.new_MPDS_RESCALINGMODE_array(int(deesse_input.nv))
@@ -2292,25 +2292,25 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.rescalingTargetMin = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetMin, 0,
-        np.asarray(deesse_input.rescalingTargetMin).reshape(deesse_input.nv))
+        np.asarray(deesse_input.rescalingTargetMin).reshape(int(deesse_input.nv)))
 
     # mpds_simInput.rescalingTargetMax
     mpds_siminput.rescalingTargetMax = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetMax, 0,
-        np.asarray(deesse_input.rescalingTargetMax).reshape(deesse_input.nv))
+        np.asarray(deesse_input.rescalingTargetMax).reshape(int(deesse_input.nv)))
 
     # mpds_simInput.rescalingTargetMean
     mpds_siminput.rescalingTargetMean = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetMean, 0,
-        np.asarray(deesse_input.rescalingTargetMean).reshape(deesse_input.nv))
+        np.asarray(deesse_input.rescalingTargetMean).reshape(int(deesse_input.nv)))
 
     # mpds_simInput.rescalingTargetLength
     mpds_siminput.rescalingTargetLength = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetLength, 0,
-        np.asarray(deesse_input.rescalingTargetLength).reshape(deesse_input.nv))
+        np.asarray(deesse_input.rescalingTargetLength).reshape(int(deesse_input.nv)))
 
     # mpds_siminput.relativeDistanceFlag
     deesse.mpds_set_relativeDistanceFlag(mpds_siminput, np.array([int(i) for i in deesse_input.relativeDistanceFlag], dtype='intc'))
@@ -2319,25 +2319,25 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.distanceType = deesse.new_int_array(int(deesse_input.nv))
     deesse.mpds_set_int_vector_from_array(
         mpds_siminput.distanceType, 0,
-        np.asarray(deesse_input.distanceType, dtype='intc').reshape(deesse_input.nv))
+        np.asarray(deesse_input.distanceType, dtype='intc').reshape(int(deesse_input.nv)))
 
     # mpds_siminput.powerLpDistance
     mpds_siminput.powerLpDistance = deesse.new_double_array(int(deesse_input.nv))
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.powerLpDistance, 0,
-        np.asarray(deesse_input.powerLpDistance).reshape(deesse_input.nv))
+        np.asarray(deesse_input.powerLpDistance).reshape(int(deesse_input.nv)))
 
     # mpds_siminput.powerLpDistanceInv
     mpds_siminput.powerLpDistanceInv = deesse.new_double_array(int(deesse_input.nv))
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.powerLpDistanceInv, 0,
-        np.asarray(deesse_input.powerLpDistanceInv).reshape(deesse_input.nv))
+        np.asarray(deesse_input.powerLpDistanceInv).reshape(int(deesse_input.nv)))
 
     # mpds_siminput.conditioningWeightFactor
     mpds_siminput.conditioningWeightFactor = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.conditioningWeightFactor, 0,
-        np.asarray(deesse_input.conditioningWeightFactor).reshape(deesse_input.nv))
+        np.asarray(deesse_input.conditioningWeightFactor).reshape(int(deesse_input.nv)))
 
     # mpds_siminput.simAndPathParameters
     # ... simType
@@ -2383,7 +2383,7 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.distanceThreshold = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.distanceThreshold, 0,
-        np.asarray(deesse_input.distanceThreshold).reshape(deesse_input.nv))
+        np.asarray(deesse_input.distanceThreshold).reshape(int(deesse_input.nv)))
 
     # mpds_siminput.softProbability ...
     mpds_siminput.softProbability = deesse.new_MPDS_SOFTPROBABILITY_array(int(deesse_input.nv))
@@ -2675,19 +2675,19 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.postProcessingNneighboringNode = deesse.new_int_array(int(deesse_input.nv))
     deesse.mpds_set_int_vector_from_array(
         mpds_siminput.postProcessingNneighboringNode, 0,
-            np.asarray(deesse_input.postProcessingNneighboringNode, dtype='intc').reshape(deesse_input.nv))
+            np.asarray(deesse_input.postProcessingNneighboringNode, dtype='intc').reshape(int(deesse_input.nv)))
 
     # mpds_siminput.postProcessingNeighboringNodeDensity
     mpds_siminput.postProcessingNeighboringNodeDensity = deesse.new_double_array(int(deesse_input.nv))
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.postProcessingNeighboringNodeDensity, 0,
-            np.asarray(deesse_input.postProcessingNeighboringNodeDensity).reshape(deesse_input.nv))
+            np.asarray(deesse_input.postProcessingNeighboringNodeDensity).reshape(int(deesse_input.nv)))
 
     # mpds_siminput.postProcessingDistanceThreshold
     mpds_siminput.postProcessingDistanceThreshold = deesse.new_real_array(int(deesse_input.nv))
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.postProcessingDistanceThreshold, 0,
-            np.asarray(deesse_input.postProcessingDistanceThreshold).reshape(deesse_input.nv))
+            np.asarray(deesse_input.postProcessingDistanceThreshold).reshape(int(deesse_input.nv)))
 
     # mpds_siminput.postProcessingMaxScanFraction
     mpds_siminput.postProcessingMaxScanFraction = deesse.new_double_array(deesse_input.nTI)

@@ -60,7 +60,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(nx*ny*nz*nv)
         elif valarr.size != nx*ny*nz*nv:
-            print ('ERROR: val has not an acceptable size')
+            print ('ERROR: val does not have an acceptable size')
             return
 
         self.val = valarr.reshape(nv, nz, ny, nx)
@@ -288,7 +288,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
-            print ('ERROR: val has not an acceptable size')
+            print ('ERROR: val does not have an acceptable size')
             return
 
         # Extend val
@@ -388,7 +388,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
-            print ('ERROR: val has not an acceptable size')
+            print ('ERROR: val does not have an acceptable size')
             return
 
         # Set variable of index ii
@@ -698,7 +698,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(npt*nv)
         elif valarr.size != npt*nv:
-            print ('ERROR: val has not an acceptable size')
+            print ('ERROR: val does not have an acceptable size')
             return
 
         self.val = valarr.reshape(nv, npt)
@@ -798,7 +798,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
-            print ('ERROR: val has not an acceptable size')
+            print ('ERROR: val does not have an acceptable size')
             return
 
         # Extend val
@@ -899,7 +899,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
-            print ('ERROR: val has not an acceptable size')
+            print ('ERROR: val does not have an acceptable size')
             return
 
         # Set variable of index ii

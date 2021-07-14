@@ -155,12 +155,57 @@ class CovModel1D (object):
                 s = s + "\n"
         return s
 
+    def is_orientation_stationary(self):
+        """Returns True (the orientation is stationary)."""
+        return True
+
+    def is_weight_stationary(self):
+        """Returns a bool (True / False) indicating if the weight is stationary
+        - i.e. the weight (sill) of any elementary contribution is defined as a
+        unique value - (True), or not (False)."""
+        for el in self.elem:
+            if np.size(el[1]['w']) > 1:
+                return False
+        return True
+
+    def is_range_stationary(self):
+        """Returns a bool (True / False) indicating if the range in every direction
+        is stationary - i.e. the range in of any elementary contribution is defined
+        as a unique value - (True), or not (False)."""
+        flag = True
+        for el in self.elem:
+            if 'r' in el[1].keys():
+                if np.size(el[1]['r']) > 1:
+                    return False
+        return True
+
+    def is_stationary(self):
+        """Returns a bool (True / False) indicating if all the parameters are
+        stationary - i.e. defined as a unique value - (True), or not (False)."""
+        if not self.is_orientation_stationary():
+            return False
+        if not self.is_weight_stationary():
+            return False
+        if not self.is_range_stationary():
+            return False
+        for el in self.elem:
+            if el[0] == 'power':
+                if np.size(el[1]['s']) > 1:
+                    return False
+        return True
+
     def sill(self):
         """Returns the sill."""
+        # Prevent calculation if weight is not stationary
+        if not self.is_weight_stationary():
+            return None
         return sum([d['w'] for t, d in self.elem if 'w' in d])
 
     def r(self):
         """Returns the range (max)."""
+        # Prevent calculation if range is not stationary
+        if not self.is_range_stationary():
+            return None
         r = 0.
         for t, d in self.elem:
             if 'r' in d:
@@ -175,6 +220,9 @@ class CovModel1D (object):
             f(h):   (1-dimensional array) evaluation of the model at h
                         note that the result is casted to a 1-dimensional array
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         def f(h):
             h = np.array(h).reshape(-1)  # cast to 1-dimensional array if needed
             s = np.zeros(len(h))
@@ -208,6 +256,9 @@ class CovModel1D (object):
             f(h):   (1-dimensional array) evaluation of the model at h
                         note that the result is casted to a 1-dimensional array
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         def f(h):
             h = np.array(h).reshape(-1)  # cast to 1-dimensional array if needed
             s = np.zeros(len(h))
@@ -251,6 +302,9 @@ class CovModel1D (object):
                             is displayed
         :kwargs:        keyword arguments passed to the funtion plt.plot
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         # In kwargs:
         #   - add default 'label' if not given
         if 'label' not in kwargs.keys():
@@ -352,13 +406,61 @@ class CovModel2D (object):
         s = s + "         angle -alpha."
         return s
 
+    def is_orientation_stationary(self):
+        """Returns a bool (True / False) indicating if the orientation is
+        stationary - i.e. the angle alpha is defined as a unique value - (True),
+        or not (False)."""
+        return np.size(self.alpha) == 1
+
+    def is_weight_stationary(self):
+        """Returns a bool (True / False) indicating if the weight is stationary
+        - i.e. the weight (sill) of any elementary contribution is defined as a
+        unique value - (True), or not (False)."""
+        for el in self.elem:
+            if np.size(el[1]['w']) > 1:
+                return False
+        return True
+
+    def is_range_stationary(self):
+        """Returns a bool (True / False) indicating if the range in every direction
+        is stationary - i.e. the range in any direction and of any elementary
+        contribution is defined as a unique value - (True), or not (False)."""
+        flag = True
+        for el in self.elem:
+            if 'r' in el[1].keys():
+                for r in el[1]['r']:
+                    if np.size(r) > 1:
+                        return False
+        return True
+
+    def is_stationary(self):
+        """Returns a bool (True / False) indicating if all the parameters are
+        stationary - i.e. defined as a unique value - (True), or not (False)."""
+        if not self.is_orientation_stationary():
+            return False
+        if not self.is_weight_stationary():
+            return False
+        if not self.is_range_stationary():
+            return False
+        for el in self.elem:
+            if el[0] == 'power':
+                if np.size(el[1]['s']) > 1:
+                    return False
+        return True
+
     def sill(self):
         """Returns the sill."""
+        # Prevent calculation if weight is not stationary
+        if not self.is_weight_stationary():
+            return None
         return sum([d['w'] for t, d in self.elem if 'w' in d])
 
     def mrot(self):
         """Returns the 2x2 matrix m for changing the coordinate system from Ox'y'
         to Oxy, where Ox' and Oy' are the axes supporting the ranges of the model."""
+        # Prevent calculation if orientation is not stationary
+        if not self.is_orientation_stationary():
+            return None
         a = self.alpha * np.pi/180.
         ca, sa = np.cos(a), np.sin(a)
         return (np.array([[ca, sa], [-sa, ca]]))
@@ -367,6 +469,9 @@ class CovModel2D (object):
         """Returns the range (max) along each axis in the new coordinate system
         (corresponding the axes of the ellipse supporting the covariance model).
         """
+        # Prevent calculation if range is not stationary
+        if not self.is_range_stationary():
+            return None
         r = [0., 0.]
         for t, d in self.elem:
             if 'r' in d:
@@ -378,6 +483,9 @@ class CovModel2D (object):
         """Returns the range (max) along each axis in the original coordinate
         system.
         """
+        # Prevent calculation if range or orientation is not stationary
+        if not self.is_range_stationary() or not self.is_orientation_stationary():
+            return None
         r12 = self.r12()
         m = np.abs(self.mrot())
 
@@ -390,6 +498,9 @@ class CovModel2D (object):
                         1-dimensional array of dim 2) 2D-lag(s)
             f(h):   (1-dimensional array of dim n) evaluation of the model at h
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         def f(h):
             h = np.array(h).reshape(-1,2)  # cast to 2-dimensional array with 2 columns if needed
             if self.alpha != 0:
@@ -431,6 +542,9 @@ class CovModel2D (object):
                         1-dimensional array of dim 2) 2D-lag(s)
             f(h):   (1-dimensional array of dim n) evaluation of the model at h
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         def f(h):
             h = np.array(h).reshape(-1,2)  # cast to 2-dimensional array with 2 columns if needed
             if self.alpha != 0:
@@ -471,6 +585,9 @@ class CovModel2D (object):
 
         :param color0, color1:  colors for main axes x', y'
         """
+        # Prevent calculation if orientation is not stationary
+        if not self.is_orientation_stationary():
+            return None
         mrot = self.mrot()
         # Plot system Oxy and Ox'y'
         # This:
@@ -549,8 +666,11 @@ class CovModel2D (object):
         :param figsize: (tuple of 2 ints) size of the figure, used if a new 1x2 figure is created
                             (i.e. if plot_map and plot_curves are set to True)
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         if not plot_map and not plot_curves:
-            return
+            return None
 
         # Set hr to 1.2 * max of ranges, used as default in extent and h1max, h2max below
         r = max(self.r12())
@@ -675,9 +795,12 @@ class CovModel2D (object):
                             is displayed (True by default)
         :kwargs:        keyword arguments passed to the funtion plt.plot
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         if main_axis not in (1, 2):
             print('ERROR: main_axis not valid (should be 1 or 2)')
-            return
+            return None
 
         # In kwargs:
         #   - add default 'label' if not given
@@ -697,9 +820,9 @@ class CovModel2D (object):
         # Evaluate function along selected axis
         h = np.linspace(hmin, hmax, npts)
         if main_axis == 1:
-            hh = np.hstack((h.reshape(-1,1), np.zeros((len(h),1)))) # (npts,2) array) 2D-lags along x' expressed in system Ox'y'
+            hh = np.hstack((h.reshape(-1,1), np.zeros((len(h),1)))) # (npts,2) array of 2D-lags along x' expressed in system Ox'y'
         else:
-            hh = np.hstack((np.zeros((len(h),1)), h.reshape(-1,1))) # (npts,2) array) 2D-lags along y' expressed in system Ox'y'
+            hh = np.hstack((np.zeros((len(h),1)), h.reshape(-1,1))) # (npts,2) array of 2D-lags along y' expressed in system Ox'y'
         if vario:
             g = self.vario_func()(hh.dot(mrot.T)) # hh.dot(mrot.T): 2D-lags in system Oxy (what is taken by the function)
         else:
@@ -799,14 +922,62 @@ class CovModel3D (object):
         s = s + "         Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''"
         return s
 
+    def is_orientation_stationary(self):
+        """Returns a bool (True / False) indicating if the orientation is
+        stationary - i.e. the angles alpha, beta and gamma are defined as a
+        unique value - (True), or not (False)."""
+        return np.size(self.alpha) == 1 and np.size(self.beta) == 1 and np.size(self.gamma) == 1
+
+    def is_weight_stationary(self):
+        """Returns a bool (True / False) indicating if the weight is stationary
+        - i.e. the weight (sill) of any elementary contribution is defined as a
+        unique value - (True), or not (False)."""
+        for el in self.elem:
+            if np.size(el[1]['w']) > 1:
+                return False
+        return True
+
+    def is_range_stationary(self):
+        """Returns a bool (True / False) indicating if the range in every direction
+        is stationary - i.e. the range in any direction and of any elementary
+        contribution is defined as a unique value - (True), or not (False)."""
+        flag = True
+        for el in self.elem:
+            if 'r' in el[1].keys():
+                for r in el[1]['r']:
+                    if np.size(r) > 1:
+                        return False
+        return True
+
+    def is_stationary(self):
+        """Returns a bool (True / False) indicating if all the parameters are
+        stationary - i.e. defined as a unique value - (True), or not (False)."""
+        if not self.is_orientation_stationary():
+            return False
+        if not self.is_weight_stationary():
+            return False
+        if not self.is_range_stationary():
+            return False
+        for el in self.elem:
+            if el[0] == 'power':
+                if np.size(el[1]['s']) > 1:
+                    return False
+        return True
+
     def sill(self):
         """Returns the sill."""
+        # Prevent calculation if weight is not stationary
+        if not self.is_weight_stationary():
+            return None
         return sum([d['w'] for t, d in self.elem if 'w' in d])
 
     def mrot(self):
         """Returns the 3x3 matrix m for changing the coordinate system from
         Ox'''y'''z''' to Oxyz, where Ox''', Oy''', Oz''' are the axes supporting
         the ranges of the model."""
+        # Prevent calculation if orientation is not stationary
+        if not self.is_orientation_stationary():
+            return None
         a = self.alpha * np.pi/180.
         b = self.beta * np.pi/180.
         c = self.gamma * np.pi/180.
@@ -822,6 +993,9 @@ class CovModel3D (object):
         """Returns the range (max) along each axis in the new coordinate system
         (corresponding the axes of the ellipse supporting the covariance model).
         """
+        # Prevent calculation if range is not stationary
+        if not self.is_range_stationary():
+            return None
         r = [0., 0., 0.]
         for t, d in self.elem:
             if 'r' in d:
@@ -833,6 +1007,9 @@ class CovModel3D (object):
         """Returns the range (max) along each axis in the original coordinate
         system.
         """
+        # Prevent calculation if range or orientation is not stationary
+        if not self.is_range_stationary() or not self.is_orientation_stationary():
+            return None
         r123 = self.r123()
         m = np.abs(self.mrot())
 
@@ -845,6 +1022,9 @@ class CovModel3D (object):
                         1-dimensional array of dim 3) 2D-lag(s)
             f(h):   (1-dimensional array of dim n) evaluation of the model at h
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         def f(h):
             h = np.array(h).reshape(-1,3)  # cast to 2-dimensional array with 3 columns if needed
             if self.alpha != 0 or self.beta != 0 or self.gamma != 0:
@@ -886,6 +1066,9 @@ class CovModel3D (object):
                         1-dimensional array of dim 3) 2D-lag(s)
             f(h):   (1-dimensional array of dim n) evaluation of the model at h
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         def f(h):
             h = np.array(h).reshape(-1,3)  # cast to 2-dimensional array with 3 columns if needed
             if self.alpha != 0 or self.beta != 0 or self.gamma != 0:
@@ -935,6 +1118,9 @@ class CovModel3D (object):
 
         :param figsize: (tuple of 2 ints) size of the figure, not used if set_polar_subplot is False
         """
+        # Prevent calculation if orientation is not stationary
+        if not self.is_orientation_stationary():
+            return None
         mrot = self.mrot()
 
         if set_3d_subplot:
@@ -989,6 +1175,9 @@ class CovModel3D (object):
         :param kwargs:  keyword arguments passed to the funtion drawImage3D_volume from geone.imgplot3d
                             (cmap, ...)
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         # Set extent if needed
         r = max(self.r123())
         hr = 1.1 * r
@@ -1080,6 +1269,9 @@ class CovModel3D (object):
         :param kwargs:  keyword arguments passed to the funtion drawImage3D_slice from geone.imgplot3d
                             (cmap, ...)
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         # Set extent if needed
         r = max(self.r123())
         hr = 1.2 * r
@@ -1168,6 +1360,9 @@ class CovModel3D (object):
                         (bool) indicates if label for x axis (resp. y axis) is displayed (True by default)
         :param grid:    (bool) indicates if a grid is plotted (True by default)
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         # Set h1max, h2max, h3max if needed
         r = max(self.r123())
         hr = 1.2 * r
@@ -1247,9 +1442,12 @@ class CovModel3D (object):
                             is displayed (True by default)
         :kwargs:        keyword arguments passed to the funtion plt.plot
         """
+        # Prevent calculation if covariance model is not stationary
+        if not self.is_stationary():
+            return None
         if main_axis not in (1, 2, 3):
             print('ERROR: main_axis not valid (should be 1, 2 or 3)')
-            return
+            return None
 
         # In kwargs:
         #   - add default 'label' if not given
@@ -1671,10 +1869,18 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
                         - popt:             (sequence of floats) vector of optimized parameters
                                                 returned by curve_fit
     """
-    # Check dimension of cov_model and set if used as omni-directional model
-    if cov_model.__class__.__name__ != 'CovModel1D':
-        print("ERROR: 'cov_model' is incompatible with dimension (1D)")
-        return (None, None)
+    # Check cov_model
+    if not isinstance(cov_model, CovModel1D):
+        print("ERROR: 'cov_model' is not a covariance model in 1D")
+        return None, None
+    # if cov_model.__class__.__name__ != 'CovModel1D':
+    #     print("ERROR: 'cov_model' is incompatible with dimension (1D)")
+    #     return None, None
+
+    # Prevent calculation if covariance model is not stationary
+    if not cov_model.is_stationary():
+        print("ERROR: 'cov_model' is not stationary: fit can not be applied")
+        return None, None
 
     # Work on a (deep) copy of cov_model
     cov_model_opt = copy.deepcopy(cov_model)
@@ -1741,7 +1947,7 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
     else:
         if len(kwargs['p0']) != nparam:
             print("ERROR: length of 'p0' not compatible")
-            return (None, None)
+            return None, None
 
     # Fit with curve_fit
     popt, pcov = curve_fit(func, h, g, **kwargs)
@@ -2232,10 +2438,18 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
                         - popt:             (sequence of floats) vector of optimized parameters
                                                 returned by curve_fit
     """
-    # Check dimension of cov_model and set if used as omni-directional model
-    if cov_model.__class__.__name__ != 'CovModel2D':
-        print("ERROR: 'cov_model' is incompatible with dimension (2D)")
-        return (None, None)
+    # Check cov_model
+    if not isinstance(cov_model, CovModel2D):
+        print("ERROR: 'cov_model' is not a covariance model in 2D")
+        return None, None
+    # if cov_model.__class__.__name__ != 'CovModel2D':
+    #     print("ERROR: 'cov_model' is incompatible with dimension (2D)")
+    #     return None, None
+
+    # Prevent calculation if covariance model is not stationary
+    if not cov_model.is_stationary():
+        print("ERROR: 'cov_model' is not stationary: fit can not be applied")
+        return None, None
 
     # Work on a (deep) copy of cov_model
     cov_model_opt = copy.deepcopy(cov_model)
@@ -2344,7 +2558,7 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
     else:
         if len(kwargs['p0']) != nparam:
             print("ERROR: length of 'p0' not compatible")
-            return (None, None)
+            return None, None
 
     # Fit with curve_fit
     popt, pcov = curve_fit(func, h, g, **kwargs)
@@ -2767,10 +2981,18 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
                         - popt:             (sequence of floats) vector of optimized parameters
                                                 returned by curve_fit
     """
-    # Check dimension of cov_model and set if used as omni-directional model
-    if cov_model.__class__.__name__ != 'CovModel3D':
-        print("ERROR: 'cov_model' is incompatible with dimension (3D)")
-        return (None, None)
+    # Check cov_model
+    if not isinstance(cov_model, CovModel3D):
+        print("ERROR: 'cov_model' is not a covariance model in 3D")
+        return None, None
+    # if cov_model.__class__.__name__ != 'CovModel3D':
+    #     print("ERROR: 'cov_model' is incompatible with dimension (3D)")
+    #     return None, None
+
+    # Prevent calculation if covariance model is not stationary
+    if not cov_model.is_stationary():
+        print("ERROR: 'cov_model' is not stationary: fit can not be applied")
+        return None, None
 
     # Work on a (deep) copy of cov_model
     cov_model_opt = copy.deepcopy(cov_model)
@@ -2885,7 +3107,7 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
     else:
         if len(kwargs['p0']) != nparam:
             print("ERROR: length of 'p0' not compatible")
-            return (None, None)
+            return None, None
 
     # Fit with curve_fit
     popt, pcov = curve_fit(func, h, g, **kwargs)
@@ -2947,6 +3169,11 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
                         vu:     (1-dimensional array of shape (nu,)) kriged values (estimates) at points xu
                         vu_std: (1-dimensional array of shape (nu,)) kriged standard deviation at points xu
     """
+    # Prevent calculation if covariance model is not stationary
+    if not cov_model.is_stationary():
+        print("ERROR: 'cov_model' is not stationary: krige can not be applied")
+        return None, None
+
     # Get dimension (d) from x
     if np.asarray(x).ndim == 1:
         # x is a 1-dimensional array
@@ -2972,7 +3199,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
 
     # Check dimension of cov_model and set if used as omni-directional model
     if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
-        if cov_model.__class__.__name__ == 'CovModel1D':
+        if isinstance(cov_model, CovModel1D):
             omni_dir = True
         else:
             print("ERROR: 'cov_model' is incompatible with dimension of points")
@@ -3121,6 +3348,11 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
                     test_normal:    (bool) result of test (1) (normal law), True if success, False otherwise
                     test_chi2:      (bool) result of test (1) (chi2), True if success, False otherwise
     """
+    # Prevent calculation if covariance model is not stationary
+    if not cov_model.is_stationary():
+        print("ERROR: 'cov_model' is not stationary: cross validation can not be applied")
+        return None, None
+
     # Get dimension (d) from x
     if np.asarray(x).ndim == 1:
         # x is a 1-dimensional array
@@ -3132,7 +3364,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
 
     # Check dimension of cov_model and set if used as omni-directional model
     if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
-        if cov_model.__class__.__name__ == 'CovModel1D':
+        if isinstance(cov_model, CovModel1D):
             omni_dir = True
         else:
             print("ERROR: 'cov_model' is incompatible with dimension of points")
@@ -3263,7 +3495,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
 #     # Check dimension of x and xu
 #     if d != du:
 #         print("ERROR: 'x' and 'xu' do not have same dimension")
-#         return (None, None)
+#         return None, None
 #
 #     # Check dimension of cov_model and set if used as omni-directional model
 #     if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
@@ -3271,7 +3503,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
 #             omni_dir = True
 #         else:
 #             print("ERROR: 'cov_model' is incompatible with dimension of points")
-#             return (None, None)
+#             return None, None
 #     else:
 #         omni_dir = False
 #
@@ -3283,7 +3515,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
 #     # Check length of v
 #     if len(v) != n:
 #         print("ERROR: length of 'v' is not valid")
-#         return (None, None)
+#         return None, None
 #
 #     # Covariance function
 #     cov_func = cov_model.func() # covariance function
@@ -3384,7 +3616,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
 #     # Check dimension of x and xu
 #     if d != du:
 #         print("ERROR: 'x' and 'xu' do not have same dimension")
-#         return (None, None)
+#         return None, None
 #
 #     # Check dimension of cov_model and set if used as omni-directional model
 #     if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
@@ -3392,7 +3624,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
 #             omni_dir = True
 #         else:
 #             print("ERROR: 'cov_model' is incompatible with dimension of points")
-#             return (None, None)
+#             return None, None
 #     else:
 #         omni_dir = False
 #
@@ -3404,7 +3636,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
 #     # Check length of v
 #     if len(v) != n:
 #         print("ERROR: length of 'v' is not valid")
-#         return (None, None)
+#         return None, None
 #
 #     # Covariance function
 #     cov_func = cov_model.func() # covariance function
@@ -3654,7 +3886,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
 #             omni_dir = True
 #         else:
 #             print("ERROR: 'cov_model' is incompatible with dimension of points")
-#             return (None, None)
+#             return None, None
 #     else:
 #         omni_dir = False
 #
@@ -3664,7 +3896,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
 #     # Check length of v
 #     if len(v) != n:
 #         print("ERROR: length of 'v' is not valid")
-#         return (None, None)
+#         return None, None
 #
 #     # Leave-one-out (loo) cross validation
 #     v_est, v_std = np.zeros(n), np.zeros(n)
