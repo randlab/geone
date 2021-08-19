@@ -4621,8 +4621,8 @@ def simulateIndicator1D(
         searchRadiusRelative,
         nneighborMax,
         searchNeighborhoodSortMode,
-        0,
-        0)
+        seed,
+        nreal)
 
     if not flag:
         print("ERROR (SIMUL_INDIC_1D): can not fill input structure!")
@@ -5303,7 +5303,7 @@ def simulateIndicator3D(
     nxyz = nxy * nz
 
     # spatial dimension
-    space_dim = 2
+    space_dim = 3
 
     # Set varname
     varname = 'V0'
@@ -6674,7 +6674,7 @@ def estimateIndicator3D(
     nxyz = nxy * nz
 
     # spatial dimension
-    space_dim = 2
+    space_dim = 3
 
     # Set varname
     varname = 'V0'
