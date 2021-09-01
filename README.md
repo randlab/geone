@@ -2,14 +2,14 @@
 GEONE is a python package providing a set of tools for geostatistical and multiple-point statistics modeling, comprising:
    - multiple-point statistics (MPS) - DEESSE wrapper
    - gaussian random fields (GRF)
-   - variogram analysis tools and ordinary kriging
+   - other classical geostatistical tools (two-point statistics analysis (covariance, variogram, connectivity) / simulation (SGS, SIS) / estimation (kriging))
 
 ## Installation
 To install the package: `python3 -m pip install .`
 
 To uninstall the package: `python3 -m pip uninstall -y geone`
 
-To install the package in development mode (enable editing): `python3 -m pip install -e .`
+(To install the package in development mode (enable editing): `python3 -m pip install -e .`)
 
 ## Requirements
 The following python packages are used by 'geone':
@@ -25,9 +25,9 @@ GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The D
 Note also that the DEESSE wrapper is built for python3.6 / python3.7 / python3.8 / python3.9.
 
 ## Examples
-Most of the modules in the package GEONE can be run as a script ('\_\_main\_\_' scope) and provide examples by this way.
+Some modules in the package GEONE can be run as a script ('\_\_main\_\_' scope) and provide examples by this way.
 
-Various examples are provided in notebooks, as described below.
+Various examples are provided (notebooks in 'examples' directory) to get started with GEONE, as described below.
 - Multiple-point statistics - simulation using the DEESSE wrapper:
    - `ex_deesse_01_basics.ipynb`: basic DEESSE (categorical) simulations
    - `ex_deesse_02_additional_outputs_and_simulation_paths.ipynb`: retrieving additional output maps and setting the simulation path
@@ -54,10 +54,13 @@ Various examples are provided in notebooks, as described below.
    - `ex_vario_analysis_data3D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (omni-directional)
    - `ex_vario_analysis_data3D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (general)
 - Simulation and estimation with kriging (GeosClassic wrapper):
-   - `ex_geosclassic_1d.ipynb`:example in 1D
+   - `ex_geosclassic_1d.ipynb`:example in 1D for two-point statistics simulation and estimation
    - `ex_geosclassic_1d_non_stat_cov.ipynb`:example in 1D with non-stationary covariance model
-   - `ex_geosclassic_2d.ipynb`:example in 2D
+   - `ex_geosclassic_2d.ipynb`:example in 2D for two-point statistics simulation and estimation
    - `ex_geosclassic_2d_non_stat_cov.ipynb`:example in 2D with non-stationary covariance model
-   - `ex_geosclassic_3d.ipynb`:example in 3D
+   - `ex_geosclassic_3d.ipynb`:example in 3D for two-point statistics simulation and estimation
    - `ex_geosclassic_3d_non_stat_cov.ipynb`:example in 3D with non-stationary covariance model
-   - `ex_geosclassic_indicator.ipynb`:example (in 2D) for indicator variables
+   - `ex_geosclassic_indicator_1d.ipynb`:example in 1D for two-point statistics simulation and estimation of indicator variables
+   - `ex_geosclassic_indicator_2d.ipynb`:example in 2D for two-point statistics simulation and estimation of indicator variables
+   - `ex_geosclassic_indicator_3d.ipynb`:example in 3D for two-point statistics simulation and estimation of indicator variables
+   - `ex_geosclassic_image_analysis.ipynb`:example for two-point statistics analysis (covariance, variogram, connectivity, ...) of images (maps)

@@ -1131,6 +1131,42 @@ MPDSWriteImage = _geosclassic.MPDSWriteImage
 def MPDSWriteImageGslibBinary(arg1, arg2):
     return _geosclassic.MPDSWriteImageGslibBinary(arg1, arg2)
 MPDSWriteImageGslibBinary = _geosclassic.MPDSWriteImageGslibBinary
+
+def MPDSFree(arg1):
+    return _geosclassic.MPDSFree(arg1)
+MPDSFree = _geosclassic.MPDSFree
+
+def MPDSFreeArray2D(arg1):
+    return _geosclassic.MPDSFreeArray2D(arg1)
+MPDSFreeArray2D = _geosclassic.MPDSFreeArray2D
+
+def MPDSFreeArray3D(arg1):
+    return _geosclassic.MPDSFreeArray3D(arg1)
+MPDSFreeArray3D = _geosclassic.MPDSFreeArray3D
+
+def MPDSFreeArray4D(arg1):
+    return _geosclassic.MPDSFreeArray4D(arg1)
+MPDSFreeArray4D = _geosclassic.MPDSFreeArray4D
+
+def MPDSMalloc(arg1, arg2, arg3):
+    return _geosclassic.MPDSMalloc(arg1, arg2, arg3)
+MPDSMalloc = _geosclassic.MPDSMalloc
+
+def MPDSMallocArray2D(arg1, arg2, arg3, arg4):
+    return _geosclassic.MPDSMallocArray2D(arg1, arg2, arg3, arg4)
+MPDSMallocArray2D = _geosclassic.MPDSMallocArray2D
+
+def MPDSMallocArray3D(arg1, arg2, arg3, arg4, arg5):
+    return _geosclassic.MPDSMallocArray3D(arg1, arg2, arg3, arg4, arg5)
+MPDSMallocArray3D = _geosclassic.MPDSMallocArray3D
+
+def MPDSMallocArray4D(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _geosclassic.MPDSMallocArray4D(arg1, arg2, arg3, arg4, arg5, arg6)
+MPDSMallocArray4D = _geosclassic.MPDSMallocArray4D
+
+def MPDSRealloc(arg1, arg2, arg3, arg4):
+    return _geosclassic.MPDSRealloc(arg1, arg2, arg3, arg4)
+MPDSRealloc = _geosclassic.MPDSRealloc
 class mpds_pointSet(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_pointSet, name, value)
@@ -1410,6 +1446,206 @@ def MPDSUpdateProgressMonitorWarningOnlyStdout(arg1):
     return _geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout(arg1)
 MPDSUpdateProgressMonitorWarningOnlyStdout = _geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout
 
+def MPDSFindLink(arg1, arg2):
+    return _geosclassic.MPDSFindLink(arg1, arg2)
+MPDSFindLink = _geosclassic.MPDSFindLink
+
+def MPDSImageConnectivityEulerNumber(arg1, arg2, arg3):
+    return _geosclassic.MPDSImageConnectivityEulerNumber(arg1, arg2, arg3)
+MPDSImageConnectivityEulerNumber = _geosclassic.MPDSImageConnectivityEulerNumber
+
+def MPDSImageConnectivityFunction0(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
+    return _geosclassic.MPDSImageConnectivityFunction0(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+MPDSImageConnectivityFunction0 = _geosclassic.MPDSImageConnectivityFunction0
+
+def MPDSImageConnectivityFunction1(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
+    return _geosclassic.MPDSImageConnectivityFunction1(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+MPDSImageConnectivityFunction1 = _geosclassic.MPDSImageConnectivityFunction1
+
+def MPDSImageConnectivityFunction2(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
+    return _geosclassic.MPDSImageConnectivityFunction2(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+MPDSImageConnectivityFunction2 = _geosclassic.MPDSImageConnectivityFunction2
+
+def MPDSImageConnectivityGlobalIndicator(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _geosclassic.MPDSImageConnectivityGlobalIndicator(arg1, arg2, arg3, arg4, arg5, arg6)
+MPDSImageConnectivityGlobalIndicator = _geosclassic.MPDSImageConnectivityGlobalIndicator
+
+def MPDSImageConnectivity6EulerNumberCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSImageConnectivity6EulerNumberCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSImageConnectivity6EulerNumberCurve = _geosclassic.MPDSImageConnectivity6EulerNumberCurve
+
+def MPDSImageConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSImageConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSImageConnectivity6GlobalIndicatorCurve = _geosclassic.MPDSImageConnectivity6GlobalIndicatorCurve
+
+def MPDSImageConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSImageConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSImageConnectivity18GlobalIndicatorCurve = _geosclassic.MPDSImageConnectivity18GlobalIndicatorCurve
+
+def MPDSImageConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSImageConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSImageConnectivity26GlobalIndicatorCurve = _geosclassic.MPDSImageConnectivity26GlobalIndicatorCurve
+
+def MPDSImageCorrelogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
+    return _geosclassic.MPDSImageCorrelogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+MPDSImageCorrelogram = _geosclassic.MPDSImageCorrelogram
+
+def MPDSImageCovariance(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
+    return _geosclassic.MPDSImageCovariance(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+MPDSImageCovariance = _geosclassic.MPDSImageCovariance
+
+def MPDSImageCovarianceNotCentred(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
+    return _geosclassic.MPDSImageCovarianceNotCentred(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+MPDSImageCovarianceNotCentred = _geosclassic.MPDSImageCovarianceNotCentred
+
+def MPDSImageDilate(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSImageDilate(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSImageDilate = _geosclassic.MPDSImageDilate
+
+def MPDSImageDistanceByDilation(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _geosclassic.MPDSImageDistanceByDilation(arg1, arg2, arg3, arg4, arg5, arg6)
+MPDSImageDistanceByDilation = _geosclassic.MPDSImageDistanceByDilation
+
+def MPDSImageDistanceEuclidean(arg1, arg2):
+    return _geosclassic.MPDSImageDistanceEuclidean(arg1, arg2)
+MPDSImageDistanceEuclidean = _geosclassic.MPDSImageDistanceEuclidean
+
+def MPDSImageDistanceEuclideanBruteForce(arg1, arg2, arg3):
+    return _geosclassic.MPDSImageDistanceEuclideanBruteForce(arg1, arg2, arg3)
+MPDSImageDistanceEuclideanBruteForce = _geosclassic.MPDSImageDistanceEuclideanBruteForce
+
+def MPDSImageDistanceEuclideanSign(arg1, arg2):
+    return _geosclassic.MPDSImageDistanceEuclideanSign(arg1, arg2)
+MPDSImageDistanceEuclideanSign = _geosclassic.MPDSImageDistanceEuclideanSign
+
+def MPDSImageDistanceEuclideanConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _geosclassic.MPDSImageDistanceEuclideanConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+MPDSImageDistanceEuclideanConnectivity6GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceEuclideanConnectivity6GlobalIndicatorCurve
+
+def MPDSImageDistanceEuclideanConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _geosclassic.MPDSImageDistanceEuclideanConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+MPDSImageDistanceEuclideanConnectivity18GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceEuclideanConnectivity18GlobalIndicatorCurve
+
+def MPDSImageDistanceEuclideanConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _geosclassic.MPDSImageDistanceEuclideanConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+MPDSImageDistanceEuclideanConnectivity26GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceEuclideanConnectivity26GlobalIndicatorCurve
+
+def MPDSImageDistanceL1(arg1, arg2):
+    return _geosclassic.MPDSImageDistanceL1(arg1, arg2)
+MPDSImageDistanceL1 = _geosclassic.MPDSImageDistanceL1
+
+def MPDSImageDistanceL1BruteForce(arg1, arg2, arg3):
+    return _geosclassic.MPDSImageDistanceL1BruteForce(arg1, arg2, arg3)
+MPDSImageDistanceL1BruteForce = _geosclassic.MPDSImageDistanceL1BruteForce
+
+def MPDSImageDistanceL1Connectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _geosclassic.MPDSImageDistanceL1Connectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+MPDSImageDistanceL1Connectivity6GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceL1Connectivity6GlobalIndicatorCurve
+
+def MPDSImageDistanceL1Connectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _geosclassic.MPDSImageDistanceL1Connectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+MPDSImageDistanceL1Connectivity18GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceL1Connectivity18GlobalIndicatorCurve
+
+def MPDSImageDistanceL1Connectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _geosclassic.MPDSImageDistanceL1Connectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+MPDSImageDistanceL1Connectivity26GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceL1Connectivity26GlobalIndicatorCurve
+
+def MPDSImageDistanceL1Sign(arg1, arg2):
+    return _geosclassic.MPDSImageDistanceL1Sign(arg1, arg2)
+MPDSImageDistanceL1Sign = _geosclassic.MPDSImageDistanceL1Sign
+
+def MPDSImageErode(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSImageErode(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSImageErode = _geosclassic.MPDSImageErode
+
+def MPDSImageExtract1D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSImageExtract1D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSImageExtract1D = _geosclassic.MPDSImageExtract1D
+
+def MPDSImageExtract2D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
+    return _geosclassic.MPDSImageExtract2D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+MPDSImageExtract2D = _geosclassic.MPDSImageExtract2D
+
+def MPDSImageExtract3D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17):
+    return _geosclassic.MPDSImageExtract3D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17)
+MPDSImageExtract3D = _geosclassic.MPDSImageExtract3D
+
+def MPDSImageGeobody6(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageGeobody6(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageGeobody6 = _geosclassic.MPDSImageGeobody6
+
+def MPDSImageGeobody18(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageGeobody18(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageGeobody18 = _geosclassic.MPDSImageGeobody18
+
+def MPDSImageGeobody26(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageGeobody26(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageGeobody26 = _geosclassic.MPDSImageGeobody26
+
+def MPDSImageGeobodySize(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _geosclassic.MPDSImageGeobodySize(arg1, arg2, arg3, arg4, arg5, arg6)
+MPDSImageGeobodySize = _geosclassic.MPDSImageGeobodySize
+
+def MPDSImageGeobody6Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageGeobody6Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageGeobody6Vector = _geosclassic.MPDSImageGeobody6Vector
+
+def MPDSImageGeobody18Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageGeobody18Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageGeobody18Vector = _geosclassic.MPDSImageGeobody18Vector
+
+def MPDSImageGeobody26Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageGeobody26Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageGeobody26Vector = _geosclassic.MPDSImageGeobody26Vector
+
+def MPDSImageIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageIndicator = _geosclassic.MPDSImageIndicator
+
+def MPDSImageIndicatorVector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageIndicatorVector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageIndicatorVector = _geosclassic.MPDSImageIndicatorVector
+
+def MPDSImageMaxGeobody6SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageMaxGeobody6SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageMaxGeobody6SizeCurve = _geosclassic.MPDSImageMaxGeobody6SizeCurve
+
+def MPDSImageMaxGeobody18SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageMaxGeobody18SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageMaxGeobody18SizeCurve = _geosclassic.MPDSImageMaxGeobody18SizeCurve
+
+def MPDSImageMaxGeobody26SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageMaxGeobody26SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSImageMaxGeobody26SizeCurve = _geosclassic.MPDSImageMaxGeobody26SizeCurve
+
+def MPDSImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSImagePyramidExpand = _geosclassic.MPDSImagePyramidExpand
+
+def MPDSImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSImagePyramidReduce = _geosclassic.MPDSImagePyramidReduce
+
+def MPDSImageTransiogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
+    return _geosclassic.MPDSImageTransiogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+MPDSImageTransiogram = _geosclassic.MPDSImageTransiogram
+
+def MPDSImageVariogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
+    return _geosclassic.MPDSImageVariogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+MPDSImageVariogram = _geosclassic.MPDSImageVariogram
+
+def MPDSMovingBoxAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSMovingBoxAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSMovingBoxAverageImage = _geosclassic.MPDSMovingBoxAverageImage
+
+def MPDSMovingSearchNeighborhoodAverageImage(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _geosclassic.MPDSMovingSearchNeighborhoodAverageImage(arg1, arg2, arg3, arg4, arg5, arg6)
+MPDSMovingSearchNeighborhoodAverageImage = _geosclassic.MPDSMovingSearchNeighborhoodAverageImage
+
+def MPDSResizeImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSResizeImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSResizeImage = _geosclassic.MPDSResizeImage
+
 def MPDSOMPGeosClassicSim(arg1, arg2, arg3, arg4, arg5):
     return _geosclassic.MPDSOMPGeosClassicSim(arg1, arg2, arg3, arg4, arg5)
 MPDSOMPGeosClassicSim = _geosclassic.MPDSOMPGeosClassicSim
@@ -1437,6 +1673,142 @@ MPDSOMPGeosClassicSimEstimationUniqueSN = _geosclassic.MPDSOMPGeosClassicSimEsti
 def MPDSOMPGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27):
     return _geosclassic.MPDSOMPGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27)
 MPDSOMPGeosClassicSimSimulation = _geosclassic.MPDSOMPGeosClassicSimSimulation
+
+def MPDSOMPImageConnectivityEulerNumber(arg1, arg2, arg3, arg4):
+    return _geosclassic.MPDSOMPImageConnectivityEulerNumber(arg1, arg2, arg3, arg4)
+MPDSOMPImageConnectivityEulerNumber = _geosclassic.MPDSOMPImageConnectivityEulerNumber
+
+def MPDSOMPImageConnectivityFunction0(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _geosclassic.MPDSOMPImageConnectivityFunction0(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageConnectivityFunction0 = _geosclassic.MPDSOMPImageConnectivityFunction0
+
+def MPDSOMPImageConnectivityFunction1(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _geosclassic.MPDSOMPImageConnectivityFunction1(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageConnectivityFunction1 = _geosclassic.MPDSOMPImageConnectivityFunction1
+
+def MPDSOMPImageConnectivityFunction2(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _geosclassic.MPDSOMPImageConnectivityFunction2(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageConnectivityFunction2 = _geosclassic.MPDSOMPImageConnectivityFunction2
+
+def MPDSOMPImageConnectivityGlobalIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _geosclassic.MPDSOMPImageConnectivityGlobalIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+MPDSOMPImageConnectivityGlobalIndicator = _geosclassic.MPDSOMPImageConnectivityGlobalIndicator
+
+def MPDSOMPImageConnectivity6EulerNumberCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSOMPImageConnectivity6EulerNumberCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageConnectivity6EulerNumberCurve = _geosclassic.MPDSOMPImageConnectivity6EulerNumberCurve
+
+def MPDSOMPImageConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSOMPImageConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageConnectivity6GlobalIndicatorCurve = _geosclassic.MPDSOMPImageConnectivity6GlobalIndicatorCurve
+
+def MPDSOMPImageConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSOMPImageConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageConnectivity18GlobalIndicatorCurve = _geosclassic.MPDSOMPImageConnectivity18GlobalIndicatorCurve
+
+def MPDSOMPImageConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSOMPImageConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageConnectivity26GlobalIndicatorCurve = _geosclassic.MPDSOMPImageConnectivity26GlobalIndicatorCurve
+
+def MPDSOMPImageCorrelogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _geosclassic.MPDSOMPImageCorrelogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageCorrelogram = _geosclassic.MPDSOMPImageCorrelogram
+
+def MPDSOMPImageCovariance(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _geosclassic.MPDSOMPImageCovariance(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageCovariance = _geosclassic.MPDSOMPImageCovariance
+
+def MPDSOMPImageCovarianceNotCentred(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _geosclassic.MPDSOMPImageCovarianceNotCentred(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageCovarianceNotCentred = _geosclassic.MPDSOMPImageCovarianceNotCentred
+
+def MPDSOMPImageDilate(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSOMPImageDilate(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageDilate = _geosclassic.MPDSOMPImageDilate
+
+def MPDSOMPImageDistanceEuclidean(arg1, arg2, arg3):
+    return _geosclassic.MPDSOMPImageDistanceEuclidean(arg1, arg2, arg3)
+MPDSOMPImageDistanceEuclidean = _geosclassic.MPDSOMPImageDistanceEuclidean
+
+def MPDSOMPImageDistanceEuclideanConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSOMPImageDistanceEuclideanConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceEuclideanConnectivity6GlobalIndicatorCurve = _geosclassic.MPDSOMPImageDistanceEuclideanConnectivity6GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceEuclideanConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSOMPImageDistanceEuclideanConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceEuclideanConnectivity18GlobalIndicatorCurve = _geosclassic.MPDSOMPImageDistanceEuclideanConnectivity18GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceEuclideanConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSOMPImageDistanceEuclideanConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceEuclideanConnectivity26GlobalIndicatorCurve = _geosclassic.MPDSOMPImageDistanceEuclideanConnectivity26GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceEuclideanSign(arg1, arg2, arg3):
+    return _geosclassic.MPDSOMPImageDistanceEuclideanSign(arg1, arg2, arg3)
+MPDSOMPImageDistanceEuclideanSign = _geosclassic.MPDSOMPImageDistanceEuclideanSign
+
+def MPDSOMPImageDistanceL1(arg1, arg2, arg3):
+    return _geosclassic.MPDSOMPImageDistanceL1(arg1, arg2, arg3)
+MPDSOMPImageDistanceL1 = _geosclassic.MPDSOMPImageDistanceL1
+
+def MPDSOMPImageDistanceL1Connectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSOMPImageDistanceL1Connectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceL1Connectivity6GlobalIndicatorCurve = _geosclassic.MPDSOMPImageDistanceL1Connectivity6GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceL1Connectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSOMPImageDistanceL1Connectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceL1Connectivity18GlobalIndicatorCurve = _geosclassic.MPDSOMPImageDistanceL1Connectivity18GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceL1Connectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _geosclassic.MPDSOMPImageDistanceL1Connectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceL1Connectivity26GlobalIndicatorCurve = _geosclassic.MPDSOMPImageDistanceL1Connectivity26GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceL1Sign(arg1, arg2, arg3):
+    return _geosclassic.MPDSOMPImageDistanceL1Sign(arg1, arg2, arg3)
+MPDSOMPImageDistanceL1Sign = _geosclassic.MPDSOMPImageDistanceL1Sign
+
+def MPDSOMPImageErode(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSOMPImageErode(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageErode = _geosclassic.MPDSOMPImageErode
+
+def MPDSOMPImageIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _geosclassic.MPDSOMPImageIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
+MPDSOMPImageIndicator = _geosclassic.MPDSOMPImageIndicator
+
+def MPDSOMPImageMaxGeobody6SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _geosclassic.MPDSOMPImageMaxGeobody6SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
+MPDSOMPImageMaxGeobody6SizeCurve = _geosclassic.MPDSOMPImageMaxGeobody6SizeCurve
+
+def MPDSOMPImageMaxGeobody18SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _geosclassic.MPDSOMPImageMaxGeobody18SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
+MPDSOMPImageMaxGeobody18SizeCurve = _geosclassic.MPDSOMPImageMaxGeobody18SizeCurve
+
+def MPDSOMPImageMaxGeobody26SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _geosclassic.MPDSOMPImageMaxGeobody26SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
+MPDSOMPImageMaxGeobody26SizeCurve = _geosclassic.MPDSOMPImageMaxGeobody26SizeCurve
+
+def MPDSOMPImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSOMPImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImagePyramidExpand = _geosclassic.MPDSOMPImagePyramidExpand
+
+def MPDSOMPImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSOMPImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImagePyramidReduce = _geosclassic.MPDSOMPImagePyramidReduce
+
+def MPDSOMPImageTransiogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _geosclassic.MPDSOMPImageTransiogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageTransiogram = _geosclassic.MPDSOMPImageTransiogram
+
+def MPDSOMPImageVariogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _geosclassic.MPDSOMPImageVariogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageVariogram = _geosclassic.MPDSOMPImageVariogram
+
+def MPDSOMPMovingBoxAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _geosclassic.MPDSOMPMovingBoxAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPMovingBoxAverageImage = _geosclassic.MPDSOMPMovingBoxAverageImage
+
+def MPDSOMPMovingSearchNeighborhoodAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _geosclassic.MPDSOMPMovingSearchNeighborhoodAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+MPDSOMPMovingSearchNeighborhoodAverageImage = _geosclassic.MPDSOMPMovingSearchNeighborhoodAverageImage
 
 def new_int_array(nelements):
     return _geosclassic.new_int_array(nelements)

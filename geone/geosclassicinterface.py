@@ -1,5 +1,5 @@
-#!/usr/bin/python3
-#-*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 Python module:  'geosclassicinterface.py'
@@ -1457,7 +1457,7 @@ def geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor):
     nwarning = mpds_progressMonitor.nwarning
     warnings = []
     if mpds_progressMonitor.nwarningNumber:
-        tmp = np.zeros(mpds_progressMonitor.nwarningNumber, dtype='int32') # 'int32' for C-compatibility
+        tmp = np.zeros(mpds_progressMonitor.nwarningNumber, dtype='intc') # 'intc' for C-compatibility
         geosclassic.mpds_get_array_from_int_vector(mpds_progressMonitor.warningNumberList, 0, tmp)
         warningNumberList = np.asarray(tmp, dtype='int') # 'int' or equivalently 'int64'
         for iwarn in warningNumberList:
@@ -2026,9 +2026,9 @@ def simulate1D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicInput
     geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
@@ -2454,9 +2454,9 @@ def simulate2D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicInput
     geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
@@ -2894,9 +2894,9 @@ def simulate3D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicInput
     geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
@@ -3270,9 +3270,9 @@ def estimate1D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicInput
     geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
@@ -3657,9 +3657,9 @@ def estimate2D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicInput
     geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
@@ -4056,9 +4056,9 @@ def estimate3D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicInput
     geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
@@ -4664,9 +4664,9 @@ def simulateIndicator1D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
@@ -5099,9 +5099,9 @@ def simulateIndicator2D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
@@ -5546,9 +5546,9 @@ def simulateIndicator3D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
@@ -5996,9 +5996,9 @@ def estimateIndicator1D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
@@ -6454,9 +6454,9 @@ def estimateIndicator2D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
@@ -6924,9 +6924,9 @@ def estimateIndicator3D(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
-    # --- Launch "GeosClassicSim"
+    # --- Launch "GeosClassicSim" (launch C code)
     # err = geosclassic.MPDSGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = geosclassic.MPDSOMPGeosClassicIndicatorSim(mpds_geosClassicIndicatorInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
@@ -6960,6 +6960,1000 @@ def estimateIndicator3D(
             print('#{:3d}: {}'.format(i+1, warning_message))
 
     return geosclassic_output
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imgDistanceImage(
+        input_image,
+        distance_type='L2',
+        distance_negative=False,
+        nthreads=-1):
+    """
+    Computes the image of the distances to the set of non zero values in the input image.
+    The distances are computed for each variable v over the image grid: distance to the
+    set S = {v!=0}. Distance is equal to zero for all cells in S if the keyword argument
+    distance_negative is False (default). If distance_negative is True, the distance
+    to the border of S is computed for the cells in the interior of S (i.e. in S but not
+    on the border), and the opposite (negative) is retrieved for that cells.
+    The output image has the same number of variable(s) and the same size (grid geometry)
+    as the input image.
+
+    Algorithm from "A GENERAL ALGORITHM FOR COMPUTING DISTANCE TRANSFORMS IN LINEAR TIME"
+    by A. MEIJSTER, J.B.T.M. ROERDINK, and W.H. HESSELINK
+
+    :param input_image:     (Img class) input image
+    :param distance_type:   (string) type of distance, available types:
+                                'L1', 'L2' (default)
+
+    :param distance_negative:
+                            (bool) indicates what is computed for cell in the set S = {v!=0}
+                                (for a variable v):
+                                    False (default): distance set to zero for all cells in S
+                                    True: zero for cells on the border of S, and negative
+                                        distance to the border of S for cells in the interior
+                                        of S (i.e. in S but not in the border)
+
+    :param nthreads:        (int) number of thread(s) to use for program (C),
+                                (nthreads = -n <= 0: for maximal number of threads except n,
+                                but at least 1)
+
+    :return output_image:   (Img class) output image containing the computed distances.
+    """
+
+    # --- Check
+    if distance_type not in ('L1', 'L2'):
+        print("ERROR: unknown 'distance_type'")
+        return None
+
+    # Set input image "in C"
+    input_image_c = img_py2C(input_image)
+
+    # Allocate output image "in C"
+    output_image_c = geosclassic.malloc_MPDS_IMAGE()
+    geosclassic.MPDSInitImage(output_image_c)
+
+    # --- Set number of threads
+    if nthreads <= 0:
+        nth = max(os.cpu_count() + nthreads, 1)
+    else:
+        nth = nthreads
+
+    # --- Compute distances (launch C code)
+    if distance_type == 'L1':
+        if distance_negative:
+            err = geosclassic.MPDSOMPImageDistanceL1Sign(input_image_c, output_image_c, nth)
+        else:
+            err = geosclassic.MPDSOMPImageDistanceL1(input_image_c, output_image_c, nth)
+    elif distance_type == 'L2':
+        if distance_negative:
+            err = geosclassic.MPDSOMPImageDistanceEuclideanSign(input_image_c, output_image_c, nth)
+        else:
+            err = geosclassic.MPDSOMPImageDistanceEuclidean(input_image_c, output_image_c, nth)
+    else:
+        print("ERROR: 'distance_type' not valid")
+        return None
+
+    # --- Retrieve output image "in python"
+    if err:
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        print(err_message)
+        output_image = None
+    else:
+        output_image = img_C2py(output_image_c)
+
+    # Free memory on C side: input_image_c
+    geosclassic.MPDSFreeImage(input_image_c)
+    #geosclassic.MPDSFree (input_image_c)
+    geosclassic.free_MPDS_IMAGE(input_image_c)
+
+    # Free memory on C side: output_image_c
+    geosclassic.MPDSFreeImage(output_image_c)
+    #geosclassic.MPDSFree (output_image_c)
+    geosclassic.free_MPDS_IMAGE(output_image_c)
+
+    return output_image
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imgGeobodyImage(
+        input_image,
+        var_index=0,
+        bound_inf=0.0,
+        bound_sup=None,
+        bound_inf_excluded=True,
+        bound_sup_excluded=True,
+        complementary_set=False,
+        connect_type='connect_face'):
+    """
+    Computes the geobody image (map) for one variable of the input image.
+    For the considered variable v, an indicator I is defined as
+        I(x) = 1 if v(x) is between bound_inf and bound_sup
+        I(x) = 0 otherwise
+    Then lower (resp. upper) bound bound_inf (resp. bound_sup) is exluded from
+    the set I=1 if bound_inf_excluded (resp. bound_sup_excluded) is True or
+    included if bound_inf_excluded (resp. bound_sup_excluded) is False.
+    Hence:
+        - with bound_inf_excluded, bound_sup_excluded = (True, True):
+            I(x) = 1 iff bound_inf < v(x) < bound_sup
+            default: I(x) = 1 iff 0 < v(x)
+        - with bound_inf_excluded, bound_sup_excluded = (True, False):
+            I(x) = 1 iff bound_inf < v(x) <= bound_sup
+        - with bound_inf_excluded, bound_sup_excluded = (False, True):
+            I(x) = 1 iff bound_inf <= v(x) < bound_sup
+        - with bound_inf_excluded, bound_sup_excluded = (False, False):
+            I(x) = 1 iff bound_inf <= v(x) <= bound_sup
+
+    If complementary_set is True, the variable IC(x) = 1 - I(x) is used
+    instead of variable I, i.e. the set I=0 and I=1 are swapped.
+
+    The geobody image (map) is computed for the indicator variable I, which
+    consists in labelling the connected components from 1 to n, i.e.
+        C(x) = 0     if I(x) = 0
+        C(x) = k > 0 if I(x) = 1 and x is in the k-th connected component
+
+    Two cells x and y in the grid are said connected, x <-> y, if there exists
+    a path between x and y going composed of adjacent cells all in the set I=1.
+    Following this definition, we have
+        x <-> y iff C(x) = C(y) > 0
+
+    The definition of adjacent cells depends on the keyword argument connect_type:
+        - connect_type = connect_face (default):
+            two grid cells are adjacent if they have a common face
+        - connect_type = connect_face_edge:
+            two grid cells are adjacent if they have a common face
+            or a common edge
+        - connect_type = connect_face_edge_corner:
+            two grid cells are adjacent if they have a common face
+            or a common edge or a common corner
+
+    Algorithm used is described in: Hoshen and Kopelman (1976) Physical Review B,
+    14(8):3438.
+
+    :param input_image:     (Img class) input image
+    :param var_index:       (int) index of the considered variable in input image
+                                (default: 0)
+    :param bound_inf:       (float) lower bound of the interval defining the indicator
+                                variable (default: 0.0)
+    :param bound_sup:       (float) upper bound of the interval defining the indicator
+                                variable (default: None, bound_sup is set to "infinity")
+    :param bound_inf_excluded:
+                            (bool) lower bound is excluded from the interval defining the
+                                indicator variable (True, default) or included (False)
+    :param bound_sup_excluded:
+                            (bool) upper bound is excluded from the interval defining the
+                                indicator variable (True, default) or included (False)
+    :param complementary_set:
+                            (bool) the complementary indicator variable (IC = 1-I) is used
+                                if True, indicator variable I is used if False (default)
+    :param connect_type:    (string) indicates which definition of adjacent cells is used
+                                (see above), available mode:
+                                    'connect_face' (default),
+                                    'connect_face_edge',
+                                    'connect_face_edge_corner'
+
+    :return output_image:   (Img class) output image containing the geobody labels.
+    """
+
+    # --- Check
+    if connect_type not in ('connect_face', 'connect_face_edge', 'connect_face_edge_corner'):
+        print("ERROR: unknown 'connect_type'")
+        return None
+
+    if var_index < 0 or var_index >= input_image.nv:
+        print("ERROR: 'var_index' not valid")
+        return None
+
+    if bound_sup is None:
+        bound_sup = 1. + np.nanmax(input_image.val[var_index])
+
+    # Allocate variable in C
+    rangeValueMin_c = geosclassic.new_real_array(1)
+    geosclassic.mpds_set_real_vector_from_array(rangeValueMin_c, 0, np.array([bound_inf], dtype='float'))
+
+    rangeValueMax_c = geosclassic.new_real_array(1)
+    geosclassic.mpds_set_real_vector_from_array(rangeValueMax_c, 0, np.array([bound_sup], dtype='float'))
+
+    ngeobody_c = geosclassic.new_int_array(1)
+
+    # Set input image "in C"
+    input_image_c = img_py2C(input_image)
+
+    # Allocate output image "in C"
+    output_image_c = geosclassic.malloc_MPDS_IMAGE()
+    geosclassic.MPDSInitImage(output_image_c)
+
+    # --- Compute geobody image (launch C code)
+    if connect_type == 'connect_face':
+        g = geosclassic.MPDSImageGeobody6
+    elif connect_type == 'connect_face_edge':
+        g = geosclassic.MPDSImageGeobody18
+    elif connect_type == 'connect_face_edge_corner':
+        g = geosclassic.MPDSImageGeobody26
+    else:
+        print("ERROR: 'connect_type' not valid")
+        return None
+
+    err = g(input_image_c, output_image_c, var_index,
+            complementary_set,
+            1, rangeValueMin_c, rangeValueMax_c, bound_inf_excluded, bound_sup_excluded,
+            ngeobody_c)
+
+    # --- Retrieve output image "in python"
+    if err:
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        print(err_message)
+        output_image = None
+    else:
+        output_image = img_C2py(output_image_c)
+        # # Retrieve the number of geobody (not used, this is simple the max of the output image (max label))
+        # ngeobody = np.zeros(1, dtype='intc') # 'intc' for C-compatibility
+        # geosclassic.mpds_get_array_from_int_vector(ngeobody_c, 0, ngeobody)
+        # ngeobody = ngeobody[0]
+
+    # Free memory on C side: input_image_c
+    geosclassic.MPDSFreeImage(input_image_c)
+    #geosclassic.MPDSFree (input_image_c)
+    geosclassic.free_MPDS_IMAGE(input_image_c)
+
+    # Free memory on C side: output_image_c
+    geosclassic.MPDSFreeImage(output_image_c)
+    #geosclassic.MPDSFree (output_image_c)
+    geosclassic.free_MPDS_IMAGE(output_image_c)
+
+    # Free memory on C side: rangeValueMin_c, rangeValueMax_c, ngeobody_c
+    geosclassic.MPDSFree(rangeValueMin_c)
+    geosclassic.MPDSFree(rangeValueMax_c)
+    geosclassic.MPDSFree(ngeobody_c)
+
+    return output_image
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imgTwoPointStatisticsImage(
+        input_image,
+        var_index=0,
+        hx_min=None,
+        hx_max=None,
+        hx_step=1,
+        hy_min=None,
+        hy_max=None,
+        hy_step=1,
+        hz_min=None,
+        hz_max=None,
+        hz_step=1,
+        stat_type='covariance',
+        show_progress=False,
+        nthreads=-1):
+    """
+    Computes two-point statistics image (map) for one variable of the input image,
+    i.e. g(h) (see below) for given lag vector h.
+    The type of two-point statistics is indicated by the keyword argument stat_type.
+    Available two-point statistics (h is a lag vector, v(x) is the value of the
+    variable at cell x):
+        correlogram            :    g(h) = cor(v(x), v(x+h))   (linear correlation)
+        connectivity_func0     :    g(h) = P(v(x) = v(x+h) > 0)
+        connectivity_func1     :    g(h) = P(v(x) = v(x+h) > 0 | v(x) > 0)
+        connectivity_func2     :    g(h) = P(v(x) = v(x+h) > 0 | v(x) > 0, v(x+h) > 0)
+        covariance (default)   :    g(h) = cov(v(x), v(x+h))
+        covariance_not_centered:    g(h) = E[v(x)*v(x+h)]
+        transiogram            :    g(h) = P(v(x+h) > 0 | v(x) > 0)
+        variogram              :    g(h) = 0.5 * E[(v(x)-v(x+h))**2]
+
+    Notes:
+        - a transiogram can be applied a binary variable
+        - a connectivity function (connectivity_func[012]) should be applied on
+            a variable consisting of geobody (connected component) labels,
+            i.e. input_image should be the output image returned by the function
+            imgGeobodyImage;
+            in that case, denoting I(x) is the indicator variable defined as
+            I(x) = 1 iff v(x)>0, the variable v is the geobody label for the
+            indicator variable I an we have the relations
+                P(v(x) = v(x+h) > 0)
+                    = P(v(x) = v(x+h) > 0 | v(x) > 0, v(x+h) > 0) * P(v(x) > 0, v(x+h) > 0)
+                    = P(v(x) = v(x+h) > 0 | v(x) > 0, v(x+h) > 0) * P(I(x)*I(x+h))
+                    = P(v(x) = v(x+h) > 0 | v(x) > 0, v(x+h) > 0) * E(I(x)*I(x+h))
+            i.e.
+                P(x <-> x+h) = P(x <-> x+h | x, x+h in {I=1}) * E(I(x)*I(x+h))
+                "connectivity_func0(v) = connectivity_func2(v) * covariance_not_centered(I)"
+            (see definition of "is connected to" (<->) in the function imgGeobodyImage).
+            See reference:
+                Renard P, Allard D (2013), Connectivity metrics for subsurface flow
+                and transport. Adv Water Resour 51:168–196.
+                https://doi.org/10.1016/j.advwatres.2011.12.001
+
+    The output image has one variable and its grid is defined according the
+    considered lags h given through the arguments:
+        hx_min, hx_max, hx_step,
+        hy_min, hy_max, hy_step,
+        hz_min, hz_max, hz_step.
+
+    The minimal (resp. maximal) lag in x direction, expressed in number of cells
+    (in the input image), is given by hx_min (resp. hx_max); every hx_step cells
+    from hx_min up to at most hx_max are considered as lag in x direction.
+    Hence, the output image grid will have 1 + (hx_max-hx_min)//hx_step cells
+    in x direction. This is similar for y and z direction.
+
+    For example, hx_min=-10, hx_max=10, hx_step=2 implies that lags in x direction
+    of -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10 cells (in input image) will be
+    considered.
+
+    :param input_image:     (Img class) input image
+    :param var_index:       (int) index of the considered variable in input image
+                                (default: 0)
+    :param hx_min, hy_min, hz_min:
+                            (int) minimal lags in x, y, z directions, expressed in
+                                number of cells,
+                                default (None):
+                                    hx_min = - (input_image.nx // 2)
+                                    hy_min = - (input_image.ny // 2)
+                                    hz_min = - (input_image.nz // 2)
+
+    :param hx_max, hy_max, hz_max:
+                            (int) maximal lags in x, y, z directions, expressed in
+                                number of cells,
+                                default (None):
+                                    hx_max = input_image.nx // 2
+                                    hy_max = input_image.ny // 2
+                                    hz_max = input_image.nz // 2
+                                of cells, default (None): input_image.nx // 2
+
+    :param hx_step, hy_step, hz_step:
+                            (int) steps for considered lags in x, y, z directions,
+                                expressed in number of cells, default: 1
+
+    :param stat_type:       (string) type of two-point statistics that is computed,
+                                available type (see above):
+                                    'correlogram',
+                                    'connectivity_func0',
+                                    'connectivity_func1',
+                                    'connectivity_func2',
+                                    'covariance',
+                                    'covariance_not_centered',
+                                    'transiogram',
+                                    'variogram'
+                                For type 'connectivity_func[012]', the input image
+                                is assumed to be a geobody image (see above)
+
+    :param show_progress:   (bool) indicates if progress is displayed (True) or
+                                not (False), default: False
+
+    :param nthreads:        (int) number of thread(s) to use for program (C),
+                                (nthreads = -n <= 0: for maximal number of threads except n,
+                                but at least 1)
+
+    :return output_image:   (Img class) output image containing the computed distances.
+    """
+
+    # --- Check
+    if stat_type not in ('correlogram',
+                         'connectivity_func0',
+                         'connectivity_func1',
+                         'connectivity_func2',
+                         'covariance',
+                         'covariance_not_centered',
+                         'transiogram',
+                         'variogram'):
+        print("ERROR: unknown 'stat_type'")
+        return None
+
+    if var_index < 0 or var_index >= input_image.nv:
+        print("ERROR: 'var_index' not valid")
+        return None
+
+    # --- Prepare parameters
+    if hx_min is None:
+        hx_min = -(input_image.nx // 2)
+    else:
+        hx_min = int(hx_min) # ensure int type
+
+    if hx_max is None:
+        hx_max = input_image.nx // 2
+    else:
+        hx_max = int(hx_max) # ensure int type
+
+    hx_step = int(hx_step) # ensure int type
+
+    if hy_min is None:
+        hy_min = -(input_image.ny // 2)
+    else:
+        hy_min = int(hy_min) # ensure int type
+
+    if hy_max is None:
+        hy_max = input_image.ny // 2
+    else:
+        hy_max = int(hy_max) # ensure int type
+
+    hy_step = int(hy_step) # ensure int type
+
+    if hz_min is None:
+        hz_min = -(input_image.nz // 2)
+    else:
+        hz_min = int(hz_min) # ensure int type
+
+    if hz_max is None:
+        hz_max = input_image.nz // 2
+    else:
+        hz_max = int(hz_max) # ensure int type
+
+    hz_step = int(hz_step) # ensure int type
+
+    # Set input image "in C"
+    input_image_c = img_py2C(input_image)
+
+    # Allocate output image "in C"
+    output_image_c = geosclassic.malloc_MPDS_IMAGE()
+    geosclassic.MPDSInitImage(output_image_c)
+
+    # --- Set number of threads
+    if nthreads <= 0:
+        nth = max(os.cpu_count() + nthreads, 1)
+    else:
+        nth = nthreads
+
+    # --- Compute two-point statistics (launch C code)
+    if stat_type == 'correlogram':
+        g = geosclassic.MPDSOMPImageCorrelogram
+    elif stat_type == 'covariance':
+        g = geosclassic.MPDSOMPImageCovariance
+    elif stat_type == 'connectivity_func0':
+        g = geosclassic.MPDSOMPImageConnectivityFunction0
+    elif stat_type == 'connectivity_func1':
+        g = geosclassic.MPDSOMPImageConnectivityFunction1
+    elif stat_type == 'connectivity_func2':
+        g = geosclassic.MPDSOMPImageConnectivityFunction2
+    elif stat_type == 'covariance_not_centered':
+        g = geosclassic.MPDSOMPImageCovarianceNotCentred
+    elif stat_type == 'transiogram':
+        g = geosclassic.MPDSOMPImageTransiogram
+    elif stat_type == 'variogram':
+        g = geosclassic.MPDSOMPImageVariogram
+    else:
+        print("ERROR: 'stat_type' not valid")
+        return None
+
+    err = g(input_image_c, output_image_c, var_index,
+            hx_min, hx_max, hx_step,
+            hy_min, hy_max, hy_step,
+            hz_min, hz_max, hz_step,
+            show_progress, nth)
+
+    # --- Retrieve output image "in python"
+    if err:
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        print(err_message)
+        output_image = None
+    else:
+        output_image = img_C2py(output_image_c)
+
+    # Free memory on C side: input_image_c
+    geosclassic.MPDSFreeImage(input_image_c)
+    #geosclassic.MPDSFree (input_image_c)
+    geosclassic.free_MPDS_IMAGE(input_image_c)
+
+    # Free memory on C side: output_image_c
+    geosclassic.MPDSFreeImage(output_image_c)
+    #geosclassic.MPDSFree (output_image_c)
+    geosclassic.free_MPDS_IMAGE(output_image_c)
+
+    return output_image
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imgConnectivityGammaValue(
+        input_image,
+        var_index=0,
+        geobody_image_in_input=False,
+        complementary_set=False,
+        connect_type='connect_face'):
+    """
+    Computes the Gamma value for one variable v of the input image:
+        Gamma = 1/m^2 * sum_{i=1,...,N} n(i)^2,
+    where
+        N is the number of connected components (geobodies)
+            of the set {v>0}
+        n(i) is the size (number of cells) in the i-th connected component
+        m is the size (number of cells) of the set {v>0},
+    i.e. the indicator variable I(x) = 1 iff v(x) > 0, is considered.
+    The Gamma value is a global indicator of the connectivity for the binary
+    image of variable I
+    See reference:
+        Renard P, Allard D (2013), Connectivity metrics for subsurface flow
+        and transport. Adv Water Resour 51:168–196.
+        https://doi.org/10.1016/j.advwatres.2011.12.001
+
+    The definition of adjacent cells, required to compute the connected components,
+    depends on the keyword argument connect_type:
+        - connect_type = connect_face (default):
+            two grid cells are adjacent if they have a common face
+        - connect_type = connect_face_edge:
+            two grid cells are adjacent if they have a common face
+            or a common edge
+        - connect_type = connect_face_edge_corner:
+            two grid cells are adjacent if they have a common face
+            or a common edge or a common corner
+
+    :param input_image:     (Img class) input image
+    :param var_index:       (int) index of the considered variable in input image
+                                (default: 0)
+    :param geobody_image_in_input:
+                            (bool)
+                                - True: the input image is already the geobody image,
+                                    (variable 'var_index' is the geobody label)
+                                    in this case the keyword arguments 'complementary_set'
+                                    and 'connect_type' are ignored, the geobody image
+                                    is not computed
+                                - False: the geobody image for the indicator variable {v>0}
+                                    (v variable of index 'var_index') is computed (default)
+    :param complementary_set:
+                            (bool) the complementary indicator variable (IC = 1-I) is used
+                                if True, indicator variable I is used if False (default)
+    :param connect_type:    (string) indicates which definition of adjacent cells is used
+                                to compute connected component (see above), available mode:
+                                    'connect_face' (default),
+                                    'connect_face_edge',
+                                    'connect_face_edge_corner'
+    :return:                (float) Gamma value (see above)
+    """
+
+    # --- Check and prepare
+    if var_index < 0 or var_index >= input_image.nv:
+        print("ERROR: 'var_index' not valid")
+        return None
+
+    if not geobody_image_in_input and connect_type not in ('connect_face', 'connect_face_edge', 'connect_face_edge_corner'):
+        print("ERROR: unknown 'connect_type'")
+        return None
+
+    # Compute geobody image
+    if not geobody_image_in_input:
+        im_geobody = imgGeobodyImage(input_image,
+                                     var_index,
+                                     bound_inf=0.0,
+                                     bound_sup=None,
+                                     bound_inf_excluded=True,
+                                     bound_sup_excluded=True,
+                                     complementary_set=complementary_set,
+                                     connect_type=connect_type)
+        iv = 0
+    else:
+        im_geobody = input_image
+        iv = var_index
+
+    # Compute Gamma value
+    if im_geobody is not None:
+        ngeo = int(im_geobody.val[iv].max())
+        gamma = np.sum(np.array([float(np.sum(im_geobody.val[iv] == i))**2 for i in np.arange(1, ngeo+1)])) / float(np.sum(im_geobody.val[iv] != 0))**2
+    else:
+        return None
+
+    return gamma
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imgConnectivityGammaCurves(
+        input_image,
+        threshold_min=None,
+        threshold_max=None,
+        nthreshold=50,
+        connect_type='connect_face',
+        show_progress=False,
+        nthreads=-1):
+    """
+    Computes Gamma curves for an input image containing one variable v
+    (continuous).
+    For a threshold t:
+        - we consider the indicator variable I(t) defined as
+            I(t)(x) = 1 iif v(x) <= t
+        - we compute
+            gamma(t) = 1/m^2 * sum_{i=1,...,N} n(i)^2,
+          where
+            N is the number of connected components (geobodies)
+                of the set {I(t)=1}
+            n(i) is the size (number of cells) in the i-th connected component
+            m is the size (number of cells) of the set {I(t)=1}
+        - we compute also gammaC(t), the gamma value for the complementary set
+            {IC(t)=1} where IC(t)(x) = 1 - I(t)(x)
+    This is repeated for different threshold values t, which gives the curves
+    gamma(t) and gammaC(t).
+    The Gamma value gamma(t) (resp. gammaC(t)) is a global indicator of the
+    connectivity for the binary variable I(t) (resp. IC(t)).
+    See reference:
+        Renard P, Allard D (2013), Connectivity metrics for subsurface flow
+        and transport. Adv Water Resour 51:168–196.
+        https://doi.org/10.1016/j.advwatres.2011.12.001
+
+    The definition of adjacent cells, required to compute the connected components,
+    depends on the keyword argument connect_type:
+        - connect_type = connect_face (default):
+            two grid cells are adjacent if they have a common face
+        - connect_type = connect_face_edge:
+            two grid cells are adjacent if they have a common face
+            or a common edge
+        - connect_type = connect_face_edge_corner:
+            two grid cells are adjacent if they have a common face
+            or a common edge or a common corner
+
+    :param input_image:     (Img class) input image, should have only one variable
+    :param threshold_min:   (float) minimal value of the threshold,
+                                default (None): min of the input variable values
+                                                minus 1.e-10
+    :param threshold_max:   (float) maximal value of the threshold,
+                                default (None): max of the input variable values
+                                                plus 1.e-10
+    :param nthreshold:      (int) number of thresholds considered (default: 50),
+                                the threshold values will be:
+                                numpy.linspace(threshold_min, threshold_max, nthreshold)
+    :param connect_type:    (string) indicates which definition of adjacent cells is used
+                                (see above), available mode:
+                                    'connect_face' (default),
+                                    'connect_face_edge',
+                                    'connect_face_edge_corner'
+
+    :param show_progress:   (bool) indicates if progress is displayed (True) or
+                                not (False), default: False
+
+    :param nthreads:        (int) number of thread(s) to use for program (C),
+                                (nthreads = -n <= 0: for maximal number of threads except n,
+                                but at least 1)
+
+    :return out_array:      (numpy 2d-array of floats) array of shape (nthreshold, 3),
+                                with the threshold values in the column of index 0, and
+                                the corresponding gamma and gammaC values in the column
+                                of index 1 and column of index 2, i.e.:
+                                    out_array[:,0]: numpy.linspace(threshold_min, threshold_max, nthreshold)
+                                    out_array[i,1]: gamma(out_array[i,0])
+                                    out_array[i,2]: gammaC(out_array[i,0])
+    """
+
+    # --- Check and prepare
+    if input_image.nv != 1:
+        print("ERROR: input image must have one variable only")
+        return None
+
+    if threshold_min is None:
+        threshold_min = np.nanmin(input_image.val) - 1.e-10
+
+    if threshold_max is None:
+        threshold_max = np.nanmax(input_image.val) + 1.e-10
+
+    if threshold_min > threshold_max:
+        print("ERROR: 'threshold_min' is greater than 'threshold_max'")
+        return None
+
+    if nthreshold < 0:
+        print("ERROR: 'nthreshold' is negative")
+        return None
+    elif nthreshold == 1:
+        threshold_step = 1.0
+    else:
+        threshold_step = (threshold_max - threshold_min) / (nthreshold - 1)
+
+    if threshold_step < geosclassic.MPDS_EPSILON:
+        print("ERROR: threshold step too small")
+        return None
+
+    if connect_type not in ('connect_face', 'connect_face_edge', 'connect_face_edge_corner'):
+        print("ERROR: unknown 'connect_type'")
+        return None
+
+    # Set input image "in C"
+    input_image_c = img_py2C(input_image)
+
+    # Allocate output variable in C
+    threshold_c = geosclassic.new_real_array(nthreshold)
+    gamma_c = geosclassic.new_real_array(nthreshold)
+    gammaC_c = geosclassic.new_real_array(nthreshold)
+
+    # --- Set number of threads
+    if nthreads <= 0:
+        nth = max(os.cpu_count() + nthreads, 1)
+    else:
+        nth = nthreads
+
+    # --- Compute Gamma curves (launch C code)
+    if connect_type == 'connect_face':
+        g = geosclassic.MPDSOMPImageConnectivity6GlobalIndicatorCurve
+    elif connect_type == 'connect_face_edge':
+        g = geosclassic.MPDSOMPImageConnectivity18GlobalIndicatorCurve
+    elif connect_type == 'connect_face_edge_corner':
+        g = geosclassic.MPDSOMPImageConnectivity26GlobalIndicatorCurve
+    else:
+        print("ERROR: 'connect_type' not valid")
+        return None
+
+    err = g(input_image_c, nthreshold, threshold_min, threshold_step,
+            threshold_c, gamma_c, gammaC_c,
+            show_progress, nth)
+
+    # --- Retrieve output "in python"
+    if err:
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        print(err_message)
+        out_array = None
+    else:
+        threshold = np.zeros(nthreshold)
+        geosclassic.mpds_get_array_from_real_vector(threshold_c, 0, threshold)
+
+        gamma = np.zeros(nthreshold)
+        geosclassic.mpds_get_array_from_real_vector(gamma_c, 0, gamma)
+
+        gammaC = np.zeros(nthreshold)
+        geosclassic.mpds_get_array_from_real_vector(gammaC_c, 0, gammaC)
+
+        out_array = np.array((threshold, gamma, gammaC)).reshape(3, -1).T
+
+    # Free memory on C side: input_image_c
+    geosclassic.MPDSFreeImage(input_image_c)
+    #geosclassic.MPDSFree (input_image_c)
+    geosclassic.free_MPDS_IMAGE(input_image_c)
+
+    # Free memory on C side: threshold_c, gamma_c, gammaC_c
+    geosclassic.MPDSFree(threshold_c)
+    geosclassic.MPDSFree(gamma_c)
+    geosclassic.MPDSFree(gammaC_c)
+
+    return out_array
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imgConnectivityEulerNumber(
+        input_image,
+        var_index=0,
+        geobody_image_in_input=False,
+        complementary_set=False,
+        nthreads=-1):
+    """
+    Computes the Euler number defined related to one variable v of the input image,
+    defined for the 3D image grid as
+        E = number of connected components (geobodies)
+            + number of "holes"
+            - number of "handles"
+    for the set {v>0}, i.e. the indicator variable I(x) = 1 iff v(x)>0, is
+    considered.
+    The Euler number E can be computed by the formula:
+        E = sum_{i=1,...,N} (e0(i) - e1(i) + e2(i) - e3(i)),
+    where
+        - N the number of connected component (geobodies) in the set {I=1}
+        - for a geobody i:
+            e0(i) : the number of vertices (dim 0) in the i-th geobody
+            e1(i) : the number of edges (dim 1) in the i-th geobody
+            e2(i) : the number of faces (dim 2) in the i-th geobody
+            e3(i) : the number of volumes (dim 3) in the i-th geobody
+        where vertices, edges, faces, and volumes of each grid cell
+        (3D parallelepiped element) are considered.
+    See reference:
+        Renard P, Allard D (2013), Connectivity metrics for subsurface flow
+        and transport. Adv Water Resour 51:168–196.
+        https://doi.org/10.1016/j.advwatres.2011.12.001
+
+    Note that the connected components are computed considering two cells as
+    adjacent as soon as they have a common face (connect_type='connect_face'
+    for the computation of the geobody image (see function imgGeobodyImage).
+
+    :param input_image:     (Img class) input image
+    :param var_index:       (int) index of the considered variable in input image
+                                (default: 0)
+    :param geobody_image_in_input:
+                            (bool)
+                                - True: the input image is already the geobody image,
+                                    (variable 'var_index' is the geobody label)
+                                    in this case the keyword argument 'complementary_set'
+                                    is ignored, the geobody image is not computed
+                                - False: the geobody image for the indicator variable {v>0}
+                                    (v variable of index 'var_index') is computed (default)
+    :param complementary_set:
+                            (bool) the complementary indicator variable (IC = 1-I) is used
+                                if True, indicator variable I is used if False (default)
+
+    :param nthreads:        (int) number of thread(s) to use for program (C),
+                                (nthreads = -n <= 0: for maximal number of threads except n,
+                                but at least 1)
+
+    :return:                (float) Euler number (see above)
+    """
+
+    # --- Check and prepare
+    if var_index < 0 or var_index >= input_image.nv:
+        print("ERROR: 'var_index' not valid")
+        return None
+
+    # Compute geobody image
+    if not geobody_image_in_input:
+        im_geobody = imgGeobodyImage(input_image,
+                                     var_index,
+                                     bound_inf=0.0,
+                                     bound_sup=None,
+                                     bound_inf_excluded=True,
+                                     bound_sup_excluded=True,
+                                     complementary_set=complementary_set,
+                                     connect_type='connect_face')
+        iv = 0
+    else:
+        im_geobody = input_image
+        iv = var_index
+
+    # Compute Euler Number
+    if im_geobody is not None:
+        # Set geobody image "in C"
+        im_geobody_c = img_py2C(im_geobody)
+
+        # Allocate euler number "in C"
+        euler_number_c = geosclassic.new_int_array(1)
+
+        # --- Set number of threads
+        if nthreads <= 0:
+            nth = max(os.cpu_count() + nthreads, 1)
+        else:
+            nth = nthreads
+
+        # Compute Euler number (launch C code)
+        err = geosclassic.MPDSOMPImageConnectivityEulerNumber(im_geobody_c, var_index, euler_number_c, nth)
+
+        # --- Retrieve output "in python"
+        if err:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
+            euler_number = None
+        else:
+            euler_number = np.zeros(1, dtype='intc') # 'intc' for C-compatibility
+            geosclassic.mpds_get_array_from_int_vector(euler_number_c, 0, euler_number)
+            euler_number = euler_number[0]
+
+        # Free memory on C side: im_geobody_c
+        geosclassic.MPDSFreeImage(im_geobody_c)
+        #geosclassic.MPDSFree (im_geobody_c)
+        geosclassic.free_MPDS_IMAGE(im_geobody_c)
+
+        # Free memory on C side: euler_number_c
+        geosclassic.MPDSFree(euler_number_c)
+
+    else:
+        return None
+
+    return euler_number
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imgConnectivityEulerNumberCurves(
+        input_image,
+        threshold_min=None,
+        threshold_max=None,
+        nthreshold=50,
+        show_progress=False,
+        nthreads=-1):
+    """
+    Computes the curves of Euler number for an input image containing one
+    variable v (continuous).
+    For a threshold t:
+        - we consider the indicator variable I(t) defined as
+            I(t)(x) = 1 iif v(x) <= t
+        - we compute the Euler number
+            E(t) = number of connected components (geobodies)
+                  + number of "holes"
+                  - number of "handles",
+                  for the set {I(t)=1}
+        - we compute also EC(t), the Euler number for the complementary set
+            {IC(t)=1} where IC(t)(x) = 1 - I(t)(x)
+    This is repeated for different threshold values t, which gives the curves
+    of Euler numbers E(t) and EC(t).
+    See function imgConnectivityEulerNumber for detail about Euler number.
+    See reference:
+        Renard P, Allard D (2013), Connectivity metrics for subsurface flow
+        and transport. Adv Water Resour 51:168–196.
+        https://doi.org/10.1016/j.advwatres.2011.12.001
+
+    Note that the connected components are computed considering two cells as
+    adjacent as soon as they have a common face (connect_type='connect_face'
+    for the computation of the geobody image (see function imgGeobodyImage)).
+
+    :param input_image:     (Img class) input image, should have only one variable
+    :param threshold_min:   (float) minimal value of the threshold,
+                                default (None): min of the input variable values
+                                                minus 1.e-10
+    :param threshold_max:   (float) maximal value of the threshold,
+                                default (None): max of the input variable values
+                                                plus 1.e-10
+    :param nthreshold:      (int) number of thresholds considered (default: 50),
+                                the threshold values will be:
+                                numpy.linspace(threshold_min, threshold_max, nthreshold)
+
+    :param show_progress:   (bool) indicates if progress is displayed (True) or
+                                not (False), default: False
+
+    :param nthreads:        (int) number of thread(s) to use for program (C),
+                                (nthreads = -n <= 0: for maximal number of threads except n,
+                                but at least 1)
+
+    :return out_array:      (numpy 2d-array of floats) array of shape (nthreshold, 3),
+                                with the threshold values in the column of index 0, and
+                                the corresponding Euler numbers E and EC in the column
+                                of index 1 and column of index 2, i.e.:
+                                    out_array[:,0]: numpy.linspace(threshold_min, threshold_max, nthreshold)
+                                    out_array[i,1]: E(out_array[i,0])
+                                    out_array[i,2]: EC(out_array[i,0])
+    """
+
+    # --- Check and prepare
+    if input_image.nv != 1:
+        print("ERROR: input image must have one variable only")
+        return None
+
+    if threshold_min is None:
+        threshold_min = np.nanmin(input_image.val) - 1.e-10
+
+    if threshold_max is None:
+        threshold_max = np.nanmax(input_image.val) + 1.e-10
+
+    if threshold_min > threshold_max:
+        print("ERROR: 'threshold_min' is greater than 'threshold_max'")
+        return None
+
+    if nthreshold < 0:
+        print("ERROR: 'nthreshold' is negative")
+        return None
+    elif nthreshold == 1:
+        threshold_step = 1.0
+    else:
+        threshold_step = (threshold_max - threshold_min) / (nthreshold - 1)
+
+    if threshold_step < geosclassic.MPDS_EPSILON:
+        print("ERROR: threshold step too small")
+        return None
+
+    # Set input image "in C"
+    input_image_c = img_py2C(input_image)
+
+    # Allocate output variable in C
+    threshold_c = geosclassic.new_real_array(nthreshold)
+    euler_number_c = geosclassic.new_int_array(nthreshold)
+    euler_numberC_c = geosclassic.new_int_array(nthreshold)
+
+    # --- Set number of threads
+    if nthreads <= 0:
+        nth = max(os.cpu_count() + nthreads, 1)
+    else:
+        nth = nthreads
+
+    # --- Compute Euler number curves (launch C code)
+    err = geosclassic.MPDSOMPImageConnectivity6EulerNumberCurve(
+            input_image_c, nthreshold, threshold_min, threshold_step,
+            threshold_c, euler_number_c, euler_numberC_c,
+            show_progress, nth)
+
+    # --- Retrieve output "in python"
+    if err:
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        print(err_message)
+        out_array = None
+    else:
+        threshold = np.zeros(nthreshold)
+        geosclassic.mpds_get_array_from_real_vector(threshold_c, 0, threshold)
+
+        euler_number = np.zeros(nthreshold, dtype='intc') # 'intc' for C-compatibility
+        geosclassic.mpds_get_array_from_int_vector(euler_number_c, 0, euler_number)
+
+        euler_numberC = np.zeros(nthreshold, dtype='intc') # 'intc' for C-compatibility
+        geosclassic.mpds_get_array_from_int_vector(euler_numberC_c, 0, euler_numberC)
+
+        out_array = np.array((threshold, euler_number, euler_numberC)).reshape(3, -1).T
+
+    # Free memory on C side: input_image_c
+    geosclassic.MPDSFreeImage(input_image_c)
+    #geosclassic.MPDSFree (input_image_c)
+    geosclassic.free_MPDS_IMAGE(input_image_c)
+
+    # Free memory on C side: threshold_c, gamma_c, gammaC_c
+    geosclassic.MPDSFree(threshold_c)
+    geosclassic.MPDSFree(euler_number_c)
+    geosclassic.MPDSFree(euler_numberC_c)
+
+    return out_array
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":

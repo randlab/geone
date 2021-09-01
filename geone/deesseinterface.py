@@ -1,5 +1,5 @@
-#!/usr/bin/python3
-#-*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 Python module:  'deesseinterface.py'
@@ -2853,7 +2853,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
     nwarning = mpds_progressMonitor.nwarning
     warnings = []
     if mpds_progressMonitor.nwarningNumber:
-        tmp = np.zeros(mpds_progressMonitor.nwarningNumber, dtype='int32') # 'int32' for C-compatibility
+        tmp = np.zeros(mpds_progressMonitor.nwarningNumber, dtype='intc') # 'intc' for C-compatibility
         deesse.mpds_get_array_from_int_vector(mpds_progressMonitor.warningNumberList, 0, tmp)
         warningNumberList = np.asarray(tmp, dtype='int') # 'int' or equivalently 'int64'
         for iwarn in warningNumberList:
