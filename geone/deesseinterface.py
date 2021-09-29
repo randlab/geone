@@ -18,6 +18,8 @@ from geone.deesse_core import deesse
 from geone.img import Img, PointSet
 from geone.blockdata import BlockData
 
+version = [deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER]
+
 # ============================================================================
 class SearchNeighborhoodParameters(object):
     """
@@ -2865,7 +2867,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseRun(deesse_input, nthreads=-1, verbose=2):
+def deesseRun(deesse_input, nthreads=-1, verbose=1):
     """
     Launches deesse.
 
@@ -2877,9 +2879,9 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the deesse run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return deesse_output:
         (dict)
@@ -2927,9 +2929,10 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('DeeSse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
-        sys.stdout.flush() # so that the previous print is flushed before launching deesse...
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
 
     # Convert deesse input from python to C
     try:
@@ -2962,7 +2965,8 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
     if verbose == 0:
         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -2992,7 +2996,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
     #deesse.MPDSFree(mpds_progressMonitor)
     deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and deesse_output:
+    if verbose >= 1 and deesse_output:
         print('DeeSse run complete')
 
     # Show (print) encountered warnings
@@ -3020,9 +3024,9 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #                 (int) number of thread(s) to use for deesse (C), nthreads > 0
 #     :param verbose:
 #                 (int) indicates what is displayed during the deesse run:
-#                     - 0: nothing
-#                     - 1: warning only
-#                     - 2 (or >1): warning and progress
+#                     - 0: mininal display
+#                     - 1: version and warning(s) encountered
+#                     - 2 (or >1): version, progress, and warning(s) encountered
 #
 #     :return (deesse_output, err, err_message):
 #         deesse_output: (dict)
@@ -3112,7 +3116,8 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #     if verbose == 0:
 #         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
 #     elif verbose == 1:
-#         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+#         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
+#         # mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
 #     else:
 #         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 #
@@ -3144,7 +3149,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 # # ----------------------------------------------------------------------------
 #
 # # ----------------------------------------------------------------------------
-# def deesseRun_sp(deesse_input, nthreads=-1, verbose=2):
+# def deesseRun_sp(deesse_input, nthreads=-1, verbose=1):
 #     """
 #     Launches deesse through a single process.
 #
@@ -3156,9 +3161,9 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #                     but at least 1)
 #     :param verbose:
 #                 (int) indicates what is displayed during the deesse run:
-#                     - 0: nothing
-#                     - 1: warning only
-#                     - 2 (or >1): warning and progress
+#                     - 0: mininal display
+#                     - 1: version and warning(s) encountered
+#                     - 2 (or >1): version, progress, and warning(s) encountered
 #
 #     :return deesse_output:
 #         (dict)
@@ -3206,7 +3211,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #     else:
 #         nth = nthreads
 #
-#     if verbose >= 2:
+#     if verbose >= 1:
 #         print('Deesse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
 #         # print('********************************************************************************')
 #         # print('DEESSE VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
@@ -3226,7 +3231,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #         print(err_message)
 #         return
 #
-#     if verbose >= 2:
+#     if verbose >= 1:
 #         print('Deesse run complete')
 #
 #     # Show (print) encountered warnings
@@ -3239,7 +3244,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 # # ----------------------------------------------------------------------------
 #
 # # ----------------------------------------------------------------------------
-# def deesseRun_mp(deesse_input, nprocesses=1, nthreads=None, verbose=2):
+# def deesseRun_mp(deesse_input, nprocesses=1, nthreads=None, verbose=1):
 #     """
 #     Launches deesse through mutliple processes, i.e. nprocesses parallel deesse
 #     run(s) using each one nthreads threads will be launched. The set of
@@ -3259,9 +3264,9 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #                         where nmax is the number of threads of the system
 #     :param verbose:
 #                 (int) indicates what is displayed during the deesse run:
-#                     - 0: nothing
-#                     - 1: warning only
-#                     - 2 (or >1): warning and progress
+#                     - 0: mininal display
+#                     - 1: version and warning(s) encountered
+#                     - 2 (or >1): version, progress, and warning(s) encountered
 #
 #     :return deesse_output:
 #         (dict)
@@ -3328,7 +3333,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #     q, r = np.divmod(deesse_input.nrealization, nprocesses)
 #     real_index_proc = [i*q + min(i, r) + np.arange(q+(i<r)) for i in range(nprocesses)]
 #
-#     if verbose >= 2:
+#     if verbose >= 1:
 #         print('Deesse running in {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]...'.format(nprocesses, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
 #         # print('********************************************************************************')
 #         # print('DEESSE VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
@@ -3351,7 +3356,8 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #         if i==0:
 #             verb = verbose
 #         else:
-#             verb = min(verbose, 1) # keep only printing of warning if verbose >= 1
+#             # verb = min(verbose, 1) # keep only printing of warning if verbose >= 1
+#             verb = 0
 #         # Launch deesse (i-th process)
 #         out_pool.append(pool.apply_async(deesseRunC, args=(input, nth, verb)))
 #
@@ -3442,7 +3448,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 #     tmp, id = np.unique(tmp, return_index=True)
 #     deesse_output['warnings'] = [tmp[id[i]] for i in id]
 #
-#     if verbose >= 2:
+#     if verbose >= 1:
 #         print('Deesse run complete')
 #
 #     # Show (print) encountered warnings

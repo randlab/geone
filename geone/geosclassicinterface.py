@@ -19,6 +19,8 @@ from geone.geosclassic_core import geosclassic
 from geone import covModel as gcm
 from geone.img import Img, PointSet
 
+version = [geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER]
+
 # ----------------------------------------------------------------------------
 def img_py2C(im_py):
     """
@@ -1666,7 +1668,7 @@ def simulate1D(
         nGibbsSamplerPath=50,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Generates 1D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
@@ -1779,9 +1781,9 @@ def simulate1D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -1960,7 +1962,7 @@ def simulate1D(
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
+        if verbose >= 1:
             print('SIMUL_1D: nreal <= 0: nothing to do!')
         return None
 
@@ -2011,7 +2013,8 @@ def simulate1D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -2021,7 +2024,7 @@ def simulate1D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -2052,7 +2055,7 @@ def simulate1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -2081,7 +2084,7 @@ def simulate2D(
         nGibbsSamplerPath=50,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Generates 2D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
@@ -2201,9 +2204,9 @@ def simulate2D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -2388,7 +2391,7 @@ def simulate2D(
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
+        if verbose >= 1:
             print('SIMUL_2D: nreal <= 0: nothing to do!')
         return None
 
@@ -2439,7 +2442,8 @@ def simulate2D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -2449,7 +2453,7 @@ def simulate2D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -2480,7 +2484,7 @@ def simulate2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -2509,7 +2513,7 @@ def simulate3D(
         nGibbsSamplerPath=50,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Generates 3D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
@@ -2629,9 +2633,9 @@ def simulate3D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -2828,7 +2832,7 @@ def simulate3D(
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
+        if verbose >= 1:
             print('SIMUL_3D: nreal <= 0: nothing to do!')
         return None
 
@@ -2879,7 +2883,8 @@ def simulate3D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -2889,7 +2894,7 @@ def simulate3D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -2920,7 +2925,7 @@ def simulate3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -2945,7 +2950,7 @@ def estimate1D(
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Computes estimate and standard deviation for 1D grid of simple or ordinary kriging.
 
@@ -3051,9 +3056,9 @@ def estimate1D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -3255,7 +3260,8 @@ def estimate1D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -3265,7 +3271,7 @@ def estimate1D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -3296,7 +3302,7 @@ def estimate1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -3321,7 +3327,7 @@ def estimate2D(
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Computes estimate and standard deviation for 2D grid of simple or ordinary kriging.
 
@@ -3432,9 +3438,9 @@ def estimate2D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -3642,7 +3648,8 @@ def estimate2D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -3652,7 +3659,7 @@ def estimate2D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -3683,7 +3690,7 @@ def estimate2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -3708,7 +3715,7 @@ def estimate3D(
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Computes estimate and standard deviation for 3D grid of simple or ordinary kriging.
 
@@ -3819,9 +3826,9 @@ def estimate3D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -4041,7 +4048,8 @@ def estimate3D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -4051,7 +4059,7 @@ def estimate3D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -4082,7 +4090,7 @@ def estimate3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -4293,7 +4301,7 @@ def simulateIndicator1D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Generates 1D simulations (Sequential Indicator Simulation, SIS) based on
     simple or ordinary kriging.
@@ -4410,9 +4418,9 @@ def simulateIndicator1D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -4598,7 +4606,7 @@ def simulateIndicator1D(
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
+        if verbose >= 1:
             print('SIMUL_INDIC_1D: nreal <= 0: nothing to do!')
         return None
 
@@ -4649,7 +4657,8 @@ def simulateIndicator1D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -4659,7 +4668,7 @@ def simulateIndicator1D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -4690,7 +4699,7 @@ def simulateIndicator1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -4717,7 +4726,7 @@ def simulateIndicator2D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Generates 2D simulations (Sequential Indicator Simulation, SIS) based on
     simple or ordinary kriging.
@@ -4839,9 +4848,9 @@ def simulateIndicator2D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -5033,7 +5042,7 @@ def simulateIndicator2D(
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
+        if verbose >= 1:
             print('SIMUL_INDIC_2D: nreal <= 0: nothing to do!')
         return None
 
@@ -5084,7 +5093,8 @@ def simulateIndicator2D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -5094,7 +5104,7 @@ def simulateIndicator2D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -5125,7 +5135,7 @@ def simulateIndicator2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -5152,7 +5162,7 @@ def simulateIndicator3D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Generates 3D simulations (Sequential Indicator Simulation, SIS) based on
     simple or ordinary kriging.
@@ -5274,9 +5284,9 @@ def simulateIndicator3D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -5480,7 +5490,7 @@ def simulateIndicator3D(
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
+        if verbose >= 1:
             print('SIMUL_INDIC_3D: nreal <= 0: nothing to do!')
         return None
 
@@ -5531,7 +5541,8 @@ def simulateIndicator3D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -5541,7 +5552,7 @@ def simulateIndicator3D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -5572,7 +5583,7 @@ def simulateIndicator3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -5599,7 +5610,7 @@ def estimateIndicator1D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Computes estimate probabilities of categories (indicators) for 1D grid
     based on simple or ordinary kriging.
@@ -5732,9 +5743,9 @@ def estimateIndicator1D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -5981,7 +5992,8 @@ def estimateIndicator1D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -5991,7 +6003,7 @@ def estimateIndicator1D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -6022,7 +6034,7 @@ def estimateIndicator1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -6049,7 +6061,7 @@ def estimateIndicator2D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Computes estimate probabilities of categories (indicators) for 2D grid
     based on simple or ordinary kriging.
@@ -6187,9 +6199,9 @@ def estimateIndicator2D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -6439,7 +6451,8 @@ def estimateIndicator2D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -6449,7 +6462,7 @@ def estimateIndicator2D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -6480,7 +6493,7 @@ def estimateIndicator2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
@@ -6507,7 +6520,7 @@ def estimateIndicator3D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1, verbose=1):
     """
     Computes estimate probabilities of categories (indicators) for 3D grid
     based on simple or ordinary kriging.
@@ -6645,9 +6658,9 @@ def estimateIndicator3D(
                     but at least 1)
     :param verbose:
                 (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: nothing
-                    - 1: warning only
-                    - 2 (or >1): warning and progress
+                    - 0: mininal display
+                    - 1: version and warning(s) encountered
+                    - 2 (or >1): version, progress, and warning(s) encountered
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -6909,7 +6922,8 @@ def estimateIndicator3D(
     if verbose == 0:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
     elif verbose == 1:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -6919,7 +6933,7 @@ def estimateIndicator3D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
+    if verbose >= 1:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -6950,7 +6964,7 @@ def estimateIndicator3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and geosclassic_output:
+    if verbose >= 1 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings

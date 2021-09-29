@@ -241,11 +241,14 @@ MPDS_MIN_HOMOTHETY_RATIO = _deesse.MPDS_MIN_HOMOTHETY_RATIO
 MPDS_MAX_HOMOTHETY_RATIO = _deesse.MPDS_MAX_HOMOTHETY_RATIO
 MPDS_MIN_SOFT_PROBABILITY_NCLASS = _deesse.MPDS_MIN_SOFT_PROBABILITY_NCLASS
 MPDS_MAX_SOFT_PROBABILITY_NCLASS = _deesse.MPDS_MAX_SOFT_PROBABILITY_NCLASS
+MPDS_GLOBAL_PROBABILITY_SYNC_STEP_MIN = _deesse.MPDS_GLOBAL_PROBABILITY_SYNC_STEP_MIN
+MPDS_GLOBAL_PROBABILITY_SYNC_STEP_MAX = _deesse.MPDS_GLOBAL_PROBABILITY_SYNC_STEP_MAX
+MPDS_GLOBAL_PROBABILITY_SYNC_STEP_FACTOR = _deesse.MPDS_GLOBAL_PROBABILITY_SYNC_STEP_FACTOR
 MPDS_MAX_RATIO_TEMPLATE_SIZE_PRODUCT_OVER_IMAGE_SIZE_PRODUCT = _deesse.MPDS_MAX_RATIO_TEMPLATE_SIZE_PRODUCT_OVER_IMAGE_SIZE_PRODUCT
 MPDS_TOLEREANCE_ON_SUM_SOFT_PROBABILITY = _deesse.MPDS_TOLEREANCE_ON_SUM_SOFT_PROBABILITY
 MPDS_MIN_PROBABILITY_CONSTRAINT_CONSTANT_THRESHOLD = _deesse.MPDS_MIN_PROBABILITY_CONSTRAINT_CONSTANT_THRESHOLD
 MPDS_MAX_PROBABILITY_CONSTRAINT_CONSTANT_THRESHOLD = _deesse.MPDS_MAX_PROBABILITY_CONSTRAINT_CONSTANT_THRESHOLD
-MPDS_MIN_PROBABILITY_CONSTRAINT_INDICATOR_VAR = _deesse.MPDS_MIN_PROBABILITY_CONSTRAINT_INDICATOR_VAR
+MPDS_MIN_PROBABILITY_CONSTRAINT_INDICATOR_VARIANCE = _deesse.MPDS_MIN_PROBABILITY_CONSTRAINT_INDICATOR_VARIANCE
 MPDS_MAX_PROBABILITY_CONSTRAINT_MISMATCH = _deesse.MPDS_MAX_PROBABILITY_CONSTRAINT_MISMATCH
 MPDS_LOCAL_PROBABILITY_CONSTRAINT_TABLE_LENGTH = _deesse.MPDS_LOCAL_PROBABILITY_CONSTRAINT_TABLE_LENGTH
 MPDS_MIN_CONNECTIVITY_CONSTRAINT_THRESHOLD = _deesse.MPDS_MIN_CONNECTIVITY_CONSTRAINT_THRESHOLD
@@ -893,7 +896,7 @@ MPDS_WARNING_MSG_00070 = _deesse.MPDS_WARNING_MSG_00070
 MPDS_WARNING_MSG_00071 = _deesse.MPDS_WARNING_MSG_00071
 MPDS_WARNING_MSG_00080 = _deesse.MPDS_WARNING_MSG_00080
 MPDS_WARNING_MSG_00100 = _deesse.MPDS_WARNING_MSG_00100
-MPDS_WARNING_MSG_00110 = _deesse.MPDS_WARNING_MSG_00110
+MPDS_WARNING_MSG_00111 = _deesse.MPDS_WARNING_MSG_00111
 MPDS_WARNING_MSG_00115 = _deesse.MPDS_WARNING_MSG_00115
 MPDS_WARNING_MSG_00120 = _deesse.MPDS_WARNING_MSG_00120
 MPDS_WARNING_MSG_00150 = _deesse.MPDS_WARNING_MSG_00150
@@ -2177,12 +2180,12 @@ def MPDSOMPSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7,
     return _deesse.MPDSOMPSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21)
 MPDSOMPSimComputePyramidInitialSim = _deesse.MPDSOMPSimComputePyramidInitialSim
 
-def MPDSOMPSimOneReal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74):
-    return _deesse.MPDSOMPSimOneReal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74)
+def MPDSOMPSimOneReal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76):
+    return _deesse.MPDSOMPSimOneReal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76)
 MPDSOMPSimOneReal = _deesse.MPDSOMPSimOneReal
 
-def MPDSOMPSimOneRealWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74):
-    return _deesse.MPDSOMPSimOneRealWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74)
+def MPDSOMPSimOneRealWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76):
+    return _deesse.MPDSOMPSimOneRealWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76)
 MPDSOMPSimOneRealWithVariableTransform = _deesse.MPDSOMPSimOneRealWithVariableTransform
 
 def MPDSOMPSimPrepareBlockData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20):

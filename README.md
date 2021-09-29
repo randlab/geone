@@ -9,15 +9,12 @@ To install the package: `python3 -m pip install .`
 
 To uninstall the package: `python3 -m pip uninstall -y geone`
 
-(To install the package in development mode (enable editing): `python3 -m pip install -e .`)
-
 ## Requirements
 The following python packages are used by 'geone':
-   - numpy
-   - scipy
    - matplotlib
-   - mpl_toolkits
+   - numpy
    - pyvista
+   - scipy
 
 **Important note**:  
 GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The DEESSE version provided with GEONE is a test version with restricted capabilities. To unlock the full capabilities of DEESSE, the user must obtain a commercial or academic license from the University of Neuchâtel. See LICENSE file for details.

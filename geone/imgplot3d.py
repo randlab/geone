@@ -146,6 +146,8 @@ def drawImage3D_surface (
                     (dict) kwargs passed to function 'plotter.add_scalar_bar'
                         (useful for customization,
                         used if show_scalar_bar is True)
+                        Note: in subplots (multi-sub-window), key 'title' should
+                        be distinct for each subplot
 
     :param outline_kwargs:
                     (dict) kwargs passed to function 'plotter.add_mesh'
@@ -530,6 +532,8 @@ def drawImage3D_slice (
                     (dict) kwargs passed to function 'plotter.add_scalar_bar'
                         (useful for customization,
                         used if show_scalar_bar is True)
+                        Note: in subplots (multi-sub-window), key 'title' should
+                        be distinct for each subplot
 
     :param outline_kwargs:
                     (dict) kwargs passed to function 'plotter.add_mesh'
@@ -866,6 +870,8 @@ def drawImage3D_volume (
                     (dict) kwargs passed to function 'plotter.add_scalar_bar'
                         (useful for customization,
                         used if show_scalar_bar is True)
+                        Note: in subplots (multi-sub-window), key 'title' should
+                        be distinct for each subplot
 
     :param outline_kwargs:
                     (dict) kwargs passed to function 'plotter.add_mesh'

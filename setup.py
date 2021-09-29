@@ -49,7 +49,7 @@ setuptools.setup(
     author_email="julien.straubhaar@unine.ch",
     description="Geostatistics simulation tools",
     long_description=long_description,
-    install_requires=['numpy'],
+    install_requires=['matplotlib', 'numpy', 'pyvista', 'scipy'],
     packages=['geone', 'geone.deesse_core', 'geone.geosclassic_core'],
     package_dir={'geone':'geone', 'geone.deesse_core':deesse_core_dir, 'geone.geosclassic_core':geosclassic_core_dir},
     package_data={'geone.deesse_core':['*'], 'geone.geosclassic_core':['*']},
