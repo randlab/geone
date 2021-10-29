@@ -174,9 +174,18 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     :param covModelElem_py: (2-tuple) elementary covariance model 1D in python:
                                 (t, d) corresponds to an elementary model with:
-                                    t: (string) the type, could be
-                                        'nugget', 'spherical', 'exponential',
-                                        'gaussian', 'cubic', 'power'
+                                    t: (string) the type, can be
+                                        'nugget'         (see func geone.covModel.cov_nug)
+                                        'spherical'      (see func geone.covModel.cov_sph)
+                                        'exponential'    (see func geone.covModel.cov_exp)
+                                        'gaussian'       (see func geone.covModel.cov_gau)
+                                        'linear'         (see func geone.covModel.cov_lin)
+                                        'cubic'          (see func geone.covModel.cov_cub)
+                                        'sinus_cardinal' (see func geone.covModel.cov_sinc)
+                                        'gamma'          (see func geone.covModel.cov_gamma)
+                                        'power'          (see func geone.covModel.cov_pow)
+                                        'exponential_generalized'
+                                                         (see func geone.covModel.cov_exp_gen)
                                     d: (dict) dictionary of required parameters
                                         to be passed to the elementary model
                                         (value can be a "singe value" or an
@@ -196,206 +205,38 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModelElem_c = geosclassic.malloc_MPDS_COVMODELELEM()
     geosclassic.MPDSGeosClassicInitCovModelElem(covModelElem_c)
 
+    w_flag = True   # weight to be set if True
+    r_flag = True   # ranges to be set if True
+    s_flag = False  # s (power) to be set if True
+
+    # type
     if covModelElem_py[0] == 'nugget':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_NUGGET
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel1D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
+        r_flag = False
     elif covModelElem_py[0] == 'spherical':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_SPHERICAL
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel1D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r']
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel1D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        covModelElem_c.ryImageFlag = geosclassic.FALSE
-        covModelElem_c.ryValue = 0.0
-        # ... range rz
-        covModelElem_c.rzImageFlag = geosclassic.FALSE
-        covModelElem_c.rzValue = 0.0
     elif covModelElem_py[0] == 'exponential':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_EXPONENTIAL
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel1D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r']
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel1D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        covModelElem_c.ryImageFlag = geosclassic.FALSE
-        covModelElem_c.ryValue = 0.0
-        # ... range rz
-        covModelElem_c.rzImageFlag = geosclassic.FALSE
-        covModelElem_c.rzValue = 0.0
     elif covModelElem_py[0] == 'gaussian':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_GAUSSIAN
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel1D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r']
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel1D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        covModelElem_c.ryImageFlag = geosclassic.FALSE
-        covModelElem_c.ryValue = 0.0
-        # ... range rz
-        covModelElem_c.rzImageFlag = geosclassic.FALSE
-        covModelElem_c.rzValue = 0.0
+    elif covModelElem_py[0] == 'linear':
+        covModelElem_c.covModelType = geosclassic.COV_LINEAR
     elif covModelElem_py[0] == 'cubic':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_CUBIC
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel1D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r']
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel1D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        covModelElem_c.ryImageFlag = geosclassic.FALSE
-        covModelElem_c.ryValue = 0.0
-        # ... range rz
-        covModelElem_c.rzImageFlag = geosclassic.FALSE
-        covModelElem_c.rzValue = 0.0
+    elif covModelElem_py[0] == 'sinus_cardinal':
+        covModelElem_c.covModelType = geosclassic.COV_SINUS_CARDINAL
+    elif covModelElem_py[0] == 'gamma':
+        covModelElem_c.covModelType = geosclassic.COV_GAMMA
+        s_flag = True
     elif covModelElem_py[0] == 'power':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_POWER
-        # weight
+        s_flag = True
+    elif covModelElem_py[0] == 'exponential_generalized':
+        covModelElem_c.covModelType = geosclassic.COV_EXPONENTIAL_GENERALIZED
+        s_flag = True
+
+    # weight
+    if w_flag:
         param = covModelElem_py[1]['w']
         if np.size(param) == 1:
             covModelElem_c.weightImageFlag = geosclassic.FALSE
@@ -412,7 +253,9 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
             covModelElem_c.weightImage = img_py2C(im)
-        # ranges
+
+    # ranges
+    if r_flag:
         # ... range rx
         param = covModelElem_py[1]['r']
         if np.size(param) == 1:
@@ -436,8 +279,9 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         # ... range rz
         covModelElem_c.rzImageFlag = geosclassic.FALSE
         covModelElem_c.rzValue = 0.0
-        # other parameters
-        # ... range s
+
+    # s (power)
+    if s_flag:
         param = covModelElem_py[1]['s']
         if np.size(param) == 1:
             covModelElem_c.sImageFlag = geosclassic.FALSE
@@ -466,9 +310,18 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     :param covModelElem_py: (2-tuple) elementary covariance model 2D in python:
                                 (t, d) corresponds to an elementary model with:
-                                    t: (string) the type, could be
-                                        'nugget', 'spherical', 'exponential',
-                                        'gaussian', 'cubic', 'power'
+                                    t: (string) the type, can be
+                                        'nugget'         (see func geone.covModel.cov_nug)
+                                        'spherical'      (see func geone.covModel.cov_sph)
+                                        'exponential'    (see func geone.covModel.cov_exp)
+                                        'gaussian'       (see func geone.covModel.cov_gau)
+                                        'linear'         (see func geone.covModel.cov_lin)
+                                        'cubic'          (see func geone.covModel.cov_cub)
+                                        'sinus_cardinal' (see func geone.covModel.cov_sinc)
+                                        'gamma'          (see func geone.covModel.cov_gamma)
+                                        'power'          (see func geone.covModel.cov_pow)
+                                        'exponential_generalized'
+                                                         (see func geone.covModel.cov_exp_gen)
                                     d: (dict) dictionary of required parameters
                                         to be passed to the elementary model
                                         (value can be a "singe value" or an
@@ -488,262 +341,38 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModelElem_c = geosclassic.malloc_MPDS_COVMODELELEM()
     geosclassic.MPDSGeosClassicInitCovModelElem(covModelElem_c)
 
+    w_flag = True   # weight to be set if True
+    r_flag = True   # ranges to be set if True
+    s_flag = False  # s (power) to be set if True
+
+    # type
     if covModelElem_py[0] == 'nugget':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_NUGGET
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
+        r_flag = False
     elif covModelElem_py[0] == 'spherical':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_SPHERICAL
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r'][0]
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        param = covModelElem_py[1]['r'][1]
-        if np.size(param) == 1:
-            covModelElem_c.ryImageFlag = geosclassic.FALSE
-            covModelElem_c.ryValue = float(param)
-        else:
-            covModelElem_c.ryImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('r(y)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.ryImage = img_py2C(im)
-        # ... range rz
-        covModelElem_c.rzImageFlag = geosclassic.FALSE
-        covModelElem_c.rzValue = 0.0
     elif covModelElem_py[0] == 'exponential':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_EXPONENTIAL
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r'][0]
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        param = covModelElem_py[1]['r'][1]
-        if np.size(param) == 1:
-            covModelElem_c.ryImageFlag = geosclassic.FALSE
-            covModelElem_c.ryValue = float(param)
-        else:
-            covModelElem_c.ryImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('r(y)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.ryImage = img_py2C(im)
-        # ... range rz
-        covModelElem_c.rzImageFlag = geosclassic.FALSE
-        covModelElem_c.rzValue = 0.0
     elif covModelElem_py[0] == 'gaussian':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_GAUSSIAN
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r'][0]
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        param = covModelElem_py[1]['r'][1]
-        if np.size(param) == 1:
-            covModelElem_c.ryImageFlag = geosclassic.FALSE
-            covModelElem_c.ryValue = float(param)
-        else:
-            covModelElem_c.ryImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('r(y)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.ryImage = img_py2C(im)
-        # ... range rz
-        covModelElem_c.rzImageFlag = geosclassic.FALSE
-        covModelElem_c.rzValue = 0.0
+    elif covModelElem_py[0] == 'linear':
+        covModelElem_c.covModelType = geosclassic.COV_LINEAR
     elif covModelElem_py[0] == 'cubic':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_CUBIC
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r'][0]
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        param = covModelElem_py[1]['r'][1]
-        if np.size(param) == 1:
-            covModelElem_c.ryImageFlag = geosclassic.FALSE
-            covModelElem_c.ryValue = float(param)
-        else:
-            covModelElem_c.ryImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel2D from python to C ('r(y)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.ryImage = img_py2C(im)
-        # ... range rz
-        covModelElem_c.rzImageFlag = geosclassic.FALSE
-        covModelElem_c.rzValue = 0.0
+    elif covModelElem_py[0] == 'sinus_cardinal':
+        covModelElem_c.covModelType = geosclassic.COV_SINUS_CARDINAL
+    elif covModelElem_py[0] == 'gamma':
+        covModelElem_c.covModelType = geosclassic.COV_GAMMA
+        s_flag = True
     elif covModelElem_py[0] == 'power':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_POWER
-        # weight
+        s_flag = True
+    elif covModelElem_py[0] == 'exponential_generalized':
+        covModelElem_c.covModelType = geosclassic.COV_EXPONENTIAL_GENERALIZED
+        s_flag = True
+
+    # weight
+    if w_flag:
         param = covModelElem_py[1]['w']
         if np.size(param) == 1:
             covModelElem_c.weightImageFlag = geosclassic.FALSE
@@ -760,7 +389,9 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
             covModelElem_c.weightImage = img_py2C(im)
-        # ranges
+
+    # ranges
+    if r_flag:
         # ... range rx
         param = covModelElem_py[1]['r'][0]
         if np.size(param) == 1:
@@ -798,8 +429,9 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         # ... range rz
         covModelElem_c.rzImageFlag = geosclassic.FALSE
         covModelElem_c.rzValue = 0.0
-        # other parameters
-        # ... range s
+
+    # s (power)
+    if s_flag:
         param = covModelElem_py[1]['s']
         if np.size(param) == 1:
             covModelElem_c.sImageFlag = geosclassic.FALSE
@@ -828,9 +460,18 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     :param covModelElem_py: (2-tuple) elementary covariance model 3D in python:
                                 (t, d) corresponds to an elementary model with:
-                                    t: (string) the type, could be
-                                        'nugget', 'spherical', 'exponential',
-                                        'gaussian', 'cubic', 'power'
+                                    t: (string) the type, can be
+                                        'nugget'         (see func geone.covModel.cov_nug)
+                                        'spherical'      (see func geone.covModel.cov_sph)
+                                        'exponential'    (see func geone.covModel.cov_exp)
+                                        'gaussian'       (see func geone.covModel.cov_gau)
+                                        'linear'         (see func geone.covModel.cov_lin)
+                                        'cubic'          (see func geone.covModel.cov_cub)
+                                        'sinus_cardinal' (see func geone.covModel.cov_sinc)
+                                        'gamma'          (see func geone.covModel.cov_gamma)
+                                        'power'          (see func geone.covModel.cov_pow)
+                                        'exponential_generalized'
+                                                         (see func geone.covModel.cov_exp_gen)
                                     d: (dict) dictionary of required parameters
                                         to be passed to the elementary model
                                         (value can be a "singe value" or an
@@ -850,318 +491,38 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModelElem_c = geosclassic.malloc_MPDS_COVMODELELEM()
     geosclassic.MPDSGeosClassicInitCovModelElem(covModelElem_c)
 
+    w_flag = True   # weight to be set if True
+    r_flag = True   # ranges to be set if True
+    s_flag = False  # s (power) to be set if True
+
+    # type
     if covModelElem_py[0] == 'nugget':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_NUGGET
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
+        r_flag = False
     elif covModelElem_py[0] == 'spherical':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_SPHERICAL
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r'][0]
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        param = covModelElem_py[1]['r'][1]
-        if np.size(param) == 1:
-            covModelElem_c.ryImageFlag = geosclassic.FALSE
-            covModelElem_c.ryValue = float(param)
-        else:
-            covModelElem_c.ryImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(y)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.ryImage = img_py2C(im)
-        # ... range rz
-        param = covModelElem_py[1]['r'][2]
-        if np.size(param) == 1:
-            covModelElem_c.rzImageFlag = geosclassic.FALSE
-            covModelElem_c.rzValue = float(param)
-        else:
-            covModelElem_c.rzImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(z)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rzImage = img_py2C(im)
     elif covModelElem_py[0] == 'exponential':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_EXPONENTIAL
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r'][0]
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        param = covModelElem_py[1]['r'][1]
-        if np.size(param) == 1:
-            covModelElem_c.ryImageFlag = geosclassic.FALSE
-            covModelElem_c.ryValue = float(param)
-        else:
-            covModelElem_c.ryImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(y)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.ryImage = img_py2C(im)
-        # ... range rz
-        param = covModelElem_py[1]['r'][2]
-        if np.size(param) == 1:
-            covModelElem_c.rzImageFlag = geosclassic.FALSE
-            covModelElem_c.rzValue = float(param)
-        else:
-            covModelElem_c.rzImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(z)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rzImage = img_py2C(im)
     elif covModelElem_py[0] == 'gaussian':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_GAUSSIAN
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r'][0]
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        param = covModelElem_py[1]['r'][1]
-        if np.size(param) == 1:
-            covModelElem_c.ryImageFlag = geosclassic.FALSE
-            covModelElem_c.ryValue = float(param)
-        else:
-            covModelElem_c.ryImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(y)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.ryImage = img_py2C(im)
-        # ... range rz
-        param = covModelElem_py[1]['r'][2]
-        if np.size(param) == 1:
-            covModelElem_c.rzImageFlag = geosclassic.FALSE
-            covModelElem_c.rzValue = float(param)
-        else:
-            covModelElem_c.rzImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(z)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rzImage = img_py2C(im)
+    elif covModelElem_py[0] == 'linear':
+        covModelElem_c.covModelType = geosclassic.COV_LINEAR
     elif covModelElem_py[0] == 'cubic':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_CUBIC
-        # weight
-        param = covModelElem_py[1]['w']
-        if np.size(param) == 1:
-            covModelElem_c.weightImageFlag = geosclassic.FALSE
-            covModelElem_c.weightValue = float(param)
-        else:
-            covModelElem_c.weightImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
-        # ranges
-        # ... range rx
-        param = covModelElem_py[1]['r'][0]
-        if np.size(param) == 1:
-            covModelElem_c.rxImageFlag = geosclassic.FALSE
-            covModelElem_c.rxValue = float(param)
-        else:
-            covModelElem_c.rxImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
-        # ... range ry
-        param = covModelElem_py[1]['r'][1]
-        if np.size(param) == 1:
-            covModelElem_c.ryImageFlag = geosclassic.FALSE
-            covModelElem_c.ryValue = float(param)
-        else:
-            covModelElem_c.ryImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(y)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.ryImage = img_py2C(im)
-        # ... range rz
-        param = covModelElem_py[1]['r'][2]
-        if np.size(param) == 1:
-            covModelElem_c.rzImageFlag = geosclassic.FALSE
-            covModelElem_c.rzValue = float(param)
-        else:
-            covModelElem_c.rzImageFlag = geosclassic.TRUE
-            try:
-                param = np.asarray(param).reshape(nz, ny, nx)
-            except:
-                print("ERROR: can not convert covModel3D from python to C ('r(z)' not compatible with simulation grid)")
-                return covModelElem_c, False
-            im = Img(nx=nx, ny=ny, nz=nz,
-                     sx=sx, sy=sy, sz=sz,
-                     ox=ox, oy=oy, oz=oz,
-                     nv=1, val=param)
-            covModelElem_c.rzImage = img_py2C(im)
+    elif covModelElem_py[0] == 'sinus_cardinal':
+        covModelElem_c.covModelType = geosclassic.COV_SINUS_CARDINAL
+    elif covModelElem_py[0] == 'gamma':
+        covModelElem_c.covModelType = geosclassic.COV_GAMMA
+        s_flag = True
     elif covModelElem_py[0] == 'power':
-        # type
         covModelElem_c.covModelType = geosclassic.COV_POWER
-        # weight
+        s_flag = True
+    elif covModelElem_py[0] == 'exponential_generalized':
+        covModelElem_c.covModelType = geosclassic.COV_EXPONENTIAL_GENERALIZED
+        s_flag = True
+
+    # weight
+    if w_flag:
         param = covModelElem_py[1]['w']
         if np.size(param) == 1:
             covModelElem_c.weightImageFlag = geosclassic.FALSE
@@ -1178,7 +539,9 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
             covModelElem_c.weightImage = img_py2C(im)
-        # ranges
+
+    # ranges
+    if r_flag:
         # ... range rx
         param = covModelElem_py[1]['r'][0]
         if np.size(param) == 1:
@@ -1230,8 +593,9 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
             covModelElem_c.rzImage = img_py2C(im)
-        # other parameters
-        # ... range s
+
+    # s (power)
+    if s_flag:
         param = covModelElem_py[1]['s']
         if np.size(param) == 1:
             covModelElem_c.sImageFlag = geosclassic.FALSE

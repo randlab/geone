@@ -27,6 +27,13 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                  categ=False, categVal=None,
                  categCol=None, categColCycle=False, categColbad=ccol.cbad_def,
                  vmin=None, vmax=None,
+                 contourf=False,
+                 contour=False,
+                 contour_clabel=False,
+                 levels=None,
+                 contourf_kwargs={},
+                 contour_kwargs={'colors':'gray'},
+                 contour_clabel_kwargs={'inline':1},
                  interpolation='none',
                  aspect='equal',
                  frame=True, xaxis=True, yaxis=True,
@@ -89,6 +96,32 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
     :param vmin, vmax:      (float) min and max values to be plotted
                                 -- used only if categ is False --
+    :param contourf:        (bool) indicates if plot with plt.contourf, i.e.
+                                contour map with filled area between levels,
+                                instead of standard plot (plt.imshow)
+    :param contour:         (bool) indicates if contour levels are added to the
+                                plot (plt.contour)
+                            (dict) keyword arguments passed to plt.contour
+    :param contour_clabel:  (bool) indicates if labels are added to contour
+                                (ignored if 'contour' is False)
+    :param levels:          (bool) keyword argument 'levels' passed to
+                                plt.contourf (used if 'contourf' is True) and/or
+                                plt.contour (used if 'contour' is True),
+                                can be: None (default), number of levels, or
+                                sequence of level values
+    :param contourf_kwargs: (dict) keyword arguments passed to plt.contourf
+                                (the argument 'levels' (see above) is used as
+                                keyword argument for plt.contourf, i.e. it
+                                prevails over the key 'levels' in
+                                'contourf_kwargs' (if given))
+    :param contour_kwargs:  (dict) keyword arguments passed to plt.contour
+                                (the argument 'levels' (see above) is used as
+                                keyword argument for plt.contourf, i.e. it
+                                prevails over the key 'levels' in
+                                'contourf_kwargs' (if given))
+    :param contour_clabel_kwargs:
+                            (dict) keyword arguments passed to plt.clabel relying
+                                on the contour plot
     :param interpolation:   (string) 'interpolation' parameters to be passed
                                 to plt.imshow()
     :param aspect:          (string or scalar) 'aspect' parameters to be passed
@@ -407,10 +440,27 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
     # Get current axis (for plotting)
     ax = plt.gca()
 
-    # image plot
+    # # image plot
     im_plot = ax.imshow(zz, cmap=cmap, vmin=vmin, vmax=vmax,
                         origin='lower', extent=[min0, max0, min1, max1],
                         interpolation=interpolation, aspect=aspect)
+
+    if contourf:
+        # imshow is still used above to account for 'aspect'
+        # Set key word argument 'levels' from the argument 'levels'
+        contourf_kwargs['levels']=levels
+        im_plot = ax.contourf(zz, cmap=cmap, vmin=vmin, vmax=vmax,
+                              origin='lower', extent=[min0, max0, min1, max1],
+                              **contourf_kwargs)
+
+    if contour:
+        # Set key word argument 'levels' from the argument 'levels'
+        contour_kwargs['levels']=levels
+        im_cont = plt.contour(zz,
+                              origin='lower', extent=[min0, max0, min1, max1],
+                              **contour_kwargs)
+        if contour_clabel:
+            plt.clabel(im_cont, **contour_clabel_kwargs)
 
     # title
     if title is not None:
@@ -462,10 +512,10 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
     # Colorbar
     if showColorbar:
-        cbar = add_colorbar(im_plot,
-                            extend=colorbar_extend,
-                            aspect=colorbar_aspect,
-                            pad_fraction=colorbar_pad_fraction)
+        cbar_kwargs = {'aspect':colorbar_aspect, 'pad_fraction':colorbar_pad_fraction}
+        if not contourf:
+            cbar_kwargs['extend']=colorbar_extend
+        cbar = add_colorbar(im_plot, **cbar_kwargs)
 
         if clabel is not None:
             cbar.set_label(clabel, **clabel_kwargs)

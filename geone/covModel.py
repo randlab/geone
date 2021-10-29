@@ -38,9 +38,12 @@ def cov_nug(h, w=1.0):
 
     :param h:   (1-dimensional array or float): lag(s)
     :param w:   (float >0): weight (sill)
-    :return:    (1-dimensional array or float) evaluation of the model at h
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * f(h), where
+                    f(h) = 1, if h=0
+                    f(h) = 0, otherwise
     """
-    return (w * np.asarray(h==0., dtype=float))
+    return w * np.asarray(h==0., dtype=float)
 
 def cov_sph(h, w=1.0, r=1.0):
     """
@@ -49,57 +52,132 @@ def cov_sph(h, w=1.0, r=1.0):
     :param h:   (1-dimensional array or float): lag(s)
     :param w:   (float >0): weight (sill)
     :param r:   (float >0): range
-    :return:    (1-dimensional array or float) evaluation of the model at h
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * f(|h|/r), where
+                    f(t) = 1 - 3/2 * t + 1/2 * t**3, if 0 <= t < 1
+                    f(t) = 0,                        if t >= 1
     """
     t = np.minimum(np.abs(h)/r, 1.) # "parallel or element-wise minimum"
-    return (w * (1 - 0.5 * t * (3. - t**2))) # w * (1 - 3/2 * t + 1/2 * t^3)
+    return w * (1 - 0.5 * t * (3. - t**2))
 
 def cov_exp(h, w=1.0, r=1.0):
     """
-    1D-gaussian covariance model (with sill=1 and range=1):
+    1D-exponential covariance model:
 
     :param h:   (1-dimensional array or float): lag(s)
     :param w:   (float >0): weight (sill)
     :param r:   (float >0): range
-    :return:    (1-dimensional array or float) evaluation of the model at h
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * f(|h|/r), where
+                    f(t) = exp(-3*t)
     """
-    return (w * np.exp(-3. * np.abs(h)/r)) # w * exp(-3*|h|/r)
+    return w * np.exp(-3. * np.abs(h)/r)
 
 def cov_gau(h, w=1.0, r=1.0):
     """
-    1D-gaussian covariance model (with sill=1 and range=1):
+    1D-gaussian covariance model:
 
     :param h:   (1-dimensional array or float): lag(s)
     :param w:   (float >0): weight (sill)
     :param r:   (float >0): range
-    :return:    (1-dimensional array or float) evaluation of the model at h
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * f(h/r), where
+                    f(t) = exp(-3*t**2)
     """
-    return (w * np.exp(-3. * (h/r)**2)) # w * exp(-3*(h/r)^2)
+    return w * np.exp(-3. * (h/r)**2)
+
+def cov_lin(h, w=1.0, r=1.0):
+    """
+    1D-linear covariance model:
+
+    :param h:   (1-dimensional array or float): lag(s)
+    :param w:   (float >0): weight (sill)
+    :param r:   (float >0): range
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * f(|h|/r), where
+                    f(t) = 1 - t, if 0 <= t < 1
+                    f(t) = 0,     if t >= 1
+
+    """
+    t = np.minimum(np.abs(h)/r, 1.) # "parallel or element-wise minimum"
+    return w * (1.0 - t)
 
 def cov_cub(h, w=1.0, r=1.0):
     """
-    1D-cubic covariance model (with sill=1 and range=1):
+    1D-cubic covariance model:
 
     :param h:   (1-dimensional array or float): lag(s)
     :param w:   (float >0): weight (sill)
     :param r:   (float >0): range
-    :return:    (1-dimensional array or float) evaluation of the model at h
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * f(|h|/r), where
+                    f(t) = 1 - 7 * t**2 + 35/4 * t**3 - 7/2 * t**5 + 3/4 * t**7, if 0 <= t < 1
+                    f(t) = 0,                                                     if t >= 1
     """
     t = np.minimum(np.abs(h)/r, 1.) # "parallel or element-wise minimum"
     t2 = t**2
-    return (w * (1 + t2 * (-7. + t * (8.75 + t2 * (-3.5 + 0.75 * t2))))) # w * (1 - 7 * t^2 + 35/4 * t^3 - 7/2 * t^5 + 3/4 * t^7)
+    return w * (1 + t2 * (-7. + t * (8.75 + t2 * (-3.5 + 0.75 * t2))))
+
+def cov_sinc(h, w=1.0, r=1.0):
+    """
+    1D-sinus-cardinal (normalized) covariance model:
+
+    :param h:   (1-dimensional array or float): lag(s)
+    :param w:   (float >0): weight (sill)
+    :param r:   (float >0): range
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * f(h/r), where
+                    f(t) = sin(pi*t)/(pi*t)
+
+    """
+    # np.sinc(x) = np.sin(np.pi*x)/(np.pi*x)
+    return w * np.sinc(h/r)
+
+def cov_gamma(h, w=1.0, r=1.0, s=1.0):
+    """
+    1D-gamma covariance model:
+
+    :param h:   (1-dimensional array or float): lag(s)
+    :param w:   (float >0): weight (sill)
+    :param r:   (float >0): range
+    :param s:   (float >0): power
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * f(|h|/r), where
+                    f(t) = 1 / (1 + alpha*t)**s, with alpha = 20**(1/s) - 1
+
+    """
+    alpha = 20.0**(1.0/s) - 1.0
+    return w / (1.0 + alpha * np.abs(h)/r)**s
 
 def cov_pow(h, w=1.0, r=1.0, s=1.0):
     """
-    1D-power covariance model (with sill=1 and range=1):
+    1D-power covariance model (no really sill and range):
 
     :param h:   (1-dimensional array or float): lag(s)
     :param w:   (float >0): weight (sill)
     :param r:   (float >0): range
     :param s:   (float btw 0 and 2): power
-    :return:    (1-dimensional array or float) evaluation of the model at h
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * f(|h|/r), where
+                    f(t) = 1 - t**s
+
     """
-    return (w * (1. - (h/r)**s))
+    return w * (1. - (np.abs(h)/r)**s)
+
+def cov_exp_gen(h, w=1.0, r=1.0, s=1.0):
+    """
+    1D-exponential-generalized covariance model:
+
+    :param h:   (1-dimensional array or float): lag(s)
+    :param w:   (float >0): weight (sill)
+    :param r:   (float >0): range
+    :param s:   (float >0): power
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * f(|h|/r), where
+                    f(t) = exp(-3*t**s)
+
+    """
+    return w * np.exp(-3. * (np.abs(h)/r)**s)
 # ----------------------------------------------------------------------------
 
 # ============================================================================
@@ -112,9 +190,18 @@ class CovModel1D (object):
     Defines a covariance model in 1D:
         elem:   (sequence of 2-tuple) an entry (t, d) of the sequence
                     corresponds to an elementary model with:
-                        t: (string) the type, could be
-                           'nugget', 'spherical', 'exponential', 'gaussian',
-                           'cubic', 'power'
+                        t: (string) the type, can be
+                           'nugget'         (see func geone.covModel.cov_nug)
+                           'spherical'      (see func geone.covModel.cov_sph)
+                           'exponential'    (see func geone.covModel.cov_exp)
+                           'gaussian'       (see func geone.covModel.cov_gau)
+                           'linear'         (see func geone.covModel.cov_lin)
+                           'cubic'          (see func geone.covModel.cov_cub)
+                           'sinus_cardinal' (see func geone.covModel.cov_sinc)
+                           'gamma'          (see func geone.covModel.cov_gamma)
+                           'power'          (see func geone.covModel.cov_pow)
+                           'exponential_generalized'
+                                            (see func geone.covModel.cov_exp_gen)
                         d: (dict) dictionary of required parameters to be
                             passed to the elementary model,
                     e.g.
@@ -189,7 +276,7 @@ class CovModel1D (object):
         if not self.is_range_stationary():
             return False
         for el in self.elem:
-            if el[0] == 'power':
+            if el[0] in ('gamma', 'power', 'exponential_generalized'):
                 if np.size(el[1]['s']) > 1:
                     return False
         return True
@@ -215,9 +302,9 @@ class CovModel1D (object):
 
     def func(self):
         """
-        Returns the covariance model function f(h) where:
+        Returns the covariance model function f where:
             h:      (1-dimensional array or float) 1D-lag(s)
-            f(h):   (1-dimensional array) evaluation of the model at h
+            f(h):   (1-dimensional array) evaluation of the covariance model at h
                         note that the result is casted to a 1-dimensional array
         """
         # Prevent calculation if covariance model is not stationary
@@ -239,11 +326,23 @@ class CovModel1D (object):
                 elif t == 'gaussian':
                     s = s + cov_gau(h, **d)
 
+                elif t == 'linear':
+                    s = s + cov_lin(h, **d)
+
                 elif t == 'cubic':
                     s = s + cov_cub(h, **d)
 
+                elif t == 'sinus_cardinal':
+                    s = s + cov_sinc(h, **d)
+
+                elif t == 'gamma':
+                    s = s + cov_gamma(h, **d)
+
                 elif t == 'power':
                     s = s + cov_pow(h, **d)
+
+                elif t == 'exponential_generalized':
+                    s = s + cov_exp_gen(h, **d)
 
             return s
 
@@ -253,7 +352,7 @@ class CovModel1D (object):
         """
         Returns the varioram model function f(h) where:
             h:      (1-dimensional array or float) 1D-lag(s)
-            f(h):   (1-dimensional array) evaluation of the model at h
+            f(h):   (1-dimensional array) evaluation of the variogram model at h
                         note that the result is casted to a 1-dimensional array
         """
         # Prevent calculation if covariance model is not stationary
@@ -275,11 +374,23 @@ class CovModel1D (object):
                 elif t == 'gaussian':
                     s = s + d['w'] - cov_gau(h, **d)
 
+                elif t == 'linear':
+                    s = s + d['w'] - cov_lin(h, **d)
+
                 elif t == 'cubic':
                     s = s + d['w'] - cov_cub(h, **d)
 
+                elif t == 'sinus_cardinal':
+                    s = s + d['w'] - cov_sinc(h, **d)
+
+                elif t == 'gamma':
+                    s = s + d['w'] - cov_gamma(h, **d)
+
                 elif t == 'power':
                     s = s + d['w'] - cov_pow(h, **d)
+
+                elif t == 'exponential_generalized':
+                    s = s + d['w'] - cov_exp_gen(h, **d)
 
             return s
 
@@ -343,9 +454,18 @@ class CovModel2D (object):
     Defines a covariance model in 2D:
         elem:   (sequence of 2-tuple) an entry (t, d) of the sequence
                     corresponds to an elementary model with:
-                        t: (string) the type, could be
-                           'nugget','spherical','exponential', 'gaussian',
-                           'cubic', 'power'
+                        t: (string) the type, can be
+                           'nugget'         (see func geone.covModel.cov_nug)
+                           'spherical'      (see func geone.covModel.cov_sph)
+                           'exponential'    (see func geone.covModel.cov_exp)
+                           'gaussian'       (see func geone.covModel.cov_gau)
+                           'linear'         (see func geone.covModel.cov_lin)
+                           'cubic'          (see func geone.covModel.cov_cub)
+                           'sinus_cardinal' (see func geone.covModel.cov_sinc)
+                           'gamma'          (see func geone.covModel.cov_gamma)
+                           'power'          (see func geone.covModel.cov_pow)
+                           'exponential_generalized'
+                                            (see func geone.covModel.cov_exp_gen)
                         d: (dict) dictionary of required parameters to be
                             passed to the elementary model, excepting
                             the parameter 'r' which must be given here
@@ -425,7 +545,6 @@ class CovModel2D (object):
         """Returns a bool (True / False) indicating if the range in every direction
         is stationary - i.e. the range in any direction and of any elementary
         contribution is defined as a unique value - (True), or not (False)."""
-        flag = True
         for el in self.elem:
             if 'r' in el[1].keys():
                 for r in el[1]['r']:
@@ -443,7 +562,7 @@ class CovModel2D (object):
         if not self.is_range_stationary():
             return False
         for el in self.elem:
-            if el[0] == 'power':
+            if el[0] in ('gamma', 'power', 'exponential_generalized'):
                 if np.size(el[1]['s']) > 1:
                     return False
         return True
@@ -525,11 +644,23 @@ class CovModel2D (object):
                 elif t == 'gaussian':
                     s = s + cov_gau(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
+                elif t == 'linear':
+                    s = s + cov_lin(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
                 elif t == 'cubic':
                     s = s + cov_cub(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
+                elif t == 'sinus_cardinal':
+                    s = s + cov_sinc(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'gamma':
+                    s = s + cov_gamma(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
                 elif t == 'power':
                     s = s + cov_pow(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'exponential_generalized':
+                    s = s + cov_exp_gen(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
             return s
 
@@ -569,11 +700,23 @@ class CovModel2D (object):
                 elif t == 'gaussian':
                     s = s + d['w'] - cov_gau(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
+                elif t == 'linear':
+                    s = s + d['w'] - cov_lin(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
                 elif t == 'cubic':
                     s = s + d['w'] - cov_cub(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
+                elif t == 'sinus_cardinal':
+                    s = s + d['w'] - cov_sinc(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'gamma':
+                    s = s + d['w'] - cov_gamma(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
                 elif t == 'power':
                     s = s + d['w'] - cov_pow(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'exponential_generalized':
+                    s = s + d['w'] - cov_exp_gen(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
             return s
 
@@ -848,9 +991,18 @@ class CovModel3D (object):
     Defines a covariance model in 3D:
         elem:   (sequence of 2-tuple) an entry (t, d) of the sequence
                     corresponds to an elementary model with:
-                        t: (string) the type, could be
-                           'nugget','spherical','exponential', 'gaussian',
-                           'cubic', 'power'
+                        t: (string) the type, can be
+                           'nugget'         (see func geone.covModel.cov_nug)
+                           'spherical'      (see func geone.covModel.cov_sph)
+                           'exponential'    (see func geone.covModel.cov_exp)
+                           'gaussian'       (see func geone.covModel.cov_gau)
+                           'linear'         (see func geone.covModel.cov_lin)
+                           'cubic'          (see func geone.covModel.cov_cub)
+                           'sinus_cardinal' (see func geone.covModel.cov_sinc)
+                           'gamma'          (see func geone.covModel.cov_gamma)
+                           'power'          (see func geone.covModel.cov_pow)
+                           'exponential_generalized'
+                                            (see func geone.covModel.cov_exp_gen)
                         d: (dict) dictionary of required parameters to be
                             passed to the elementary model, excepting
                             the parameter 'r' which must be given here
@@ -941,7 +1093,6 @@ class CovModel3D (object):
         """Returns a bool (True / False) indicating if the range in every direction
         is stationary - i.e. the range in any direction and of any elementary
         contribution is defined as a unique value - (True), or not (False)."""
-        flag = True
         for el in self.elem:
             if 'r' in el[1].keys():
                 for r in el[1]['r']:
@@ -959,7 +1110,7 @@ class CovModel3D (object):
         if not self.is_range_stationary():
             return False
         for el in self.elem:
-            if el[0] == 'power':
+            if el[0] in ('gamma', 'power', 'exponential_generalized'):
                 if np.size(el[1]['s']) > 1:
                     return False
         return True
@@ -1049,11 +1200,23 @@ class CovModel3D (object):
                 elif t == 'gaussian':
                     s = s + cov_gau(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
+                elif t == 'linear':
+                    s = s + cov_lin(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
                 elif t == 'cubic':
                     s = s + cov_cub(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
+                elif t == 'sinus_cardinal':
+                    s = s + cov_sinc(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'gamma':
+                    s = s + cov_gamma(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
                 elif t == 'power':
                     s = s + cov_pow(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'exponential_generalized':
+                    s = s + cov_exp_gen(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
             return s
 
@@ -1093,11 +1256,23 @@ class CovModel3D (object):
                 elif t == 'gaussian':
                     s = s + d['w'] - cov_gau(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
+                elif t == 'linear':
+                    s = s + d['w'] - cov_lin(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
                 elif t == 'cubic':
                     s = s + d['w'] - cov_cub(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
+                elif t == 'sinus_cardinal':
+                    s = s + d['w'] - cov_sinc(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'gamma':
+                    s = s + d['w'] - cov_gamma(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
                 elif t == 'power':
                     s = s + d['w'] - cov_pow(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'exponential_generalized':
+                    s = s + d['w'] - cov_exp_gen(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
             return s
 
