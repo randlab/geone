@@ -38,7 +38,7 @@ def custom_cmap(cseq,
                 cunder=None,
                 cover=None,
                 cbad=None,
-                alpha=1.0,
+                alpha=None,
                 cmap_name='custom_cmap'):
     """
     Defines a custom colormap given colors at transition values:
@@ -51,15 +51,18 @@ def custom_cmap(cseq,
     :param cunder:  (string or rgb-tuple or rgba-tuple) color for 'under' values
     :param cover:   (string or rgb-tuple or rgba-tuple) color for 'over' values
     :param cbad:    (string or rgb-tuple or rgba-tuple) color for 'bad' values
-    :param alpha:   (float or list of floats) values of alpha channel for
+    :param alpha:   (float or list of floats or None) values of alpha channel for
                         transparency, for each color in cseq (if a single float
-                        is given, the same value is used for each color)
+                        is given, the same value is used for each color, if None
+                        the single value 1.0 is used (no transparency))
     :param cmap_name: (string) colormap name
 
     :return: (LinearSegmentedColormap) colormap
     """
 
     # Set alpha sequence
+    if alpha is None:
+        alpha = 1.0
     aseq = np.asarray(alpha, dtype=float) # numpy.ndarray (possibly 0-dimensional)
     if aseq.size == 1:
         aseq = aseq.flat[0] * np.ones(len(cseq))

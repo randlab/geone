@@ -23,6 +23,7 @@ from matplotlib import rcParams as mpl_rcParams
 # ----------------------------------------------------------------------------
 def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                  cmap=ccol.cmap1,
+                 alpha=None,
                  excludedVal=None,
                  categ=False, categVal=None,
                  categCol=None, categColCycle=False, categColbad=ccol.cbad_def,
@@ -32,7 +33,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                  contour_clabel=False,
                  levels=None,
                  contourf_kwargs={},
-                 contour_kwargs={'colors':'gray'},
+                 contour_kwargs={'linestyles':'solid', 'colors':'gray'},
                  contour_clabel_kwargs={'inline':1},
                  interpolation='none',
                  aspect='equal',
@@ -60,6 +61,9 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
     :param cmap:    colormap (can be a string: in this case the color map
                         matplotlib.pyplot.get_cmap(cmap) is used)
+
+    :param alpha:   (float or None) values of alpha channel for transparency
+                        (if None, value 1.0 is used (no transparency))
 
     :param excludedVal: (int/float or sequence or None) values to be
                             excluded from the plot.
@@ -365,12 +369,12 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         # Set the colormap: 'cmap'
         if len(dval) == 1:
             cmap = ccol.custom_cmap([colorList[0], colorList[0]], ncol=2,
-                                    cbad=categColbad)
+                                    cbad=categColbad, alpha=alpha)
 
         else: # len(dval) == len(colorList) > 1
             # cmap = mcolors.ListedColormap(colorList)
             cmap = ccol.custom_cmap(colorList, ncol=len(colorList),
-                                    cbad=categColbad)
+                                    cbad=categColbad, alpha=alpha)
 
         # Set the min and max of the colorbar
         vmin, vmax = -0.5, len(dval) - 0.5
@@ -380,7 +384,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
             cticks = range(len(dval))
 
         if cticklabels is None:
-            cticklabels = ['{:.3g}'.format(v) for v in dval]
+            cticklabels = ['{:.3g}'.format(v) for v in cticks]
 
         # Reset cextend if needed
         colorbar_extend = 'neither'
@@ -441,7 +445,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
     ax = plt.gca()
 
     # # image plot
-    im_plot = ax.imshow(zz, cmap=cmap, vmin=vmin, vmax=vmax,
+    im_plot = ax.imshow(zz, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax,
                         origin='lower', extent=[min0, max0, min1, max1],
                         interpolation=interpolation, aspect=aspect)
 
@@ -449,7 +453,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         # imshow is still used above to account for 'aspect'
         # Set key word argument 'levels' from the argument 'levels'
         contourf_kwargs['levels']=levels
-        im_plot = ax.contourf(zz, cmap=cmap, vmin=vmin, vmax=vmax,
+        im_plot = ax.contourf(zz, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax,
                               origin='lower', extent=[min0, max0, min1, max1],
                               **contourf_kwargs)
 

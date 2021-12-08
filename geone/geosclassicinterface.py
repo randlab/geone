@@ -4768,7 +4768,7 @@ def simulateIndicator3D(
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (SIMUL_3D): length of 'v' is not valid")
+            print("(ERROR (SIMUL_INDIC_3D): length of 'v' is not valid")
             return None
         xc = x[:,0]
         yc = x[:,1]

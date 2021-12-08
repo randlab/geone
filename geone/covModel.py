@@ -3335,10 +3335,10 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
                             - None   : mean of hard data values (stationary),
                                        i.e. mean of v
                             - float  : for stationary mean (set manually)
-                            - ndarray: of of shape (nu,) for non stationary mean,
-                                mean at point xu
-                        For ordinary kriging (method = 'ordinary_kriging'),
-                        this parameter ignored (not used)
+                            - ndarray: of of shape (n + nu,) for non stationary mean,
+                                mean at point x and xu
+                        For ordinary kriging (method='ordinary_kriging'),
+                        this parameter must be set to None
 
     :return:        (vu, vu_std) with:
                         vu:     (1-dimensional array of shape (nu,)) kriged values (estimates) at points xu
@@ -3397,16 +3397,25 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
     ordinary_kriging = False
     if method == 'simple_kriging':
         if mean is None:
-            mean = np.mean(v)
+            mean = np.mean(v) * np.ones(n + nu)
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-            if mean.size not in (1, nu):
+            if mean.size == 1:
+                mean = mean * np.ones(n + nu)
+            elif mean.size != n + nu:
                 print("ERROR: size of 'mean' is not valid")
                 return None, None
+            # if mean.size not in (1, n + nu):
+            #     print("ERROR: size of 'mean' is not valid")
+            #     return None, None
+
         nmat = n # order of the kriging matrix
     elif method == 'ordinary_kriging':
+        if mean is not None:
+            print("ERROR: 'mean' must be None with 'method' set to 'ordinary_kriging'")
+            return None, None
         ordinary_kriging = True
-        nmat = n+1 # order of the kriging matrix
+        nmat = n + 1 # order of the kriging matrix
     else:
         print("ERROR: 'method' is not valid")
         return None, None
@@ -3433,7 +3442,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
         cov_h = cov_func(h)
         mat[i, (i+1):n] = cov_h
         mat[(i+1):n, i] = cov_h
-        mat[i,i] = cov0
+        mat[i, i] = cov0
 
     b = np.ones((nmat, nu))
     for i in range(n):
@@ -3455,7 +3464,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
 
     # Kriged values at unknown points
     if mean is not None:
-        vu = mean + (v-mean).dot(w[:n,:])
+        vu = mean[n:] + (v-mean[:n]).dot(w[:n,:])
     else:
         vu = v.dot(w[:n,:])
 
@@ -3611,6 +3620,239 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
         # plt.show()
 
     return (v_est, v_std, test_normal, test_chi2)
+# ----------------------------------------------------------------------------
+
+# ============================================================================
+# Sequential Gaussian Simulation based an simple or ordinary kriging
+# ============================================================================
+# ----------------------------------------------------------------------------
+def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
+    """
+    Performs Sequential Gaussian Simulation (SGS) - simulates at locations xu the values
+    of a variable from the measured values v at locations x. A full neighborhood is used!
+    Covariance model given should be:
+        - in same dimension as dimension of locations x, xu
+        - in 1D, it is then used as an omni-directional covariance model
+    (see below).
+
+    :param x:       (2-dimensional array of shape (n, d)) coordinates
+                        of the data points (n: number of points, d: dimension)
+                        Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
+    :param v:       (1-dimensional array of shape (n,)) values at data points
+
+    :param xu:      (2-dimensional array of shape (nu, d)) coordinates
+                        of the points where the interpolation has to be done
+                        (nu: number of points, d: dimension same as for x),
+                        called unknown points
+                        Note: for data in 1D, it can be a 1-dimensional array of shape (nu,)
+
+    :param cov_model:
+                    covariance model:
+                        - in same dimension as dimension of points (d), i.e.:
+                            - CovModel1D class if data in 1D (d=1)
+                            - CovModel2D class if data in 2D (d=2)
+                            - CovModel3D class if data in 3D (d=3)
+                        - or CovModel1D whatever dimension of points (d):
+                            - used as an omni-directional covariance model
+
+    :param method:  (string) indicates the method used:
+                        - 'simple_kriging': interpolation by simple kriging
+                        - 'ordinary_kriging': interpolation by ordinary kriging
+
+    :param mean:    (None or float or ndarray) mean of the simulation
+                        (for simple kriging only):
+                            - None   : mean of hard data values (stationary),
+                                       i.e. mean of v
+                            - float  : for stationary mean (set manually)
+                            - ndarray: of of shape (n + nu,) for non stationary mean,
+                                mean at point x and xu
+                        For ordinary kriging (method='ordinary_kriging'),
+                        this parameter must be set to None
+
+    :return:        vu: (2-dimensional array of shape (nreal, nu)):
+                        vu[i] are the simulated values at points xu for the i-th realization
+    """
+    # Prevent calculation if covariance model is not stationary
+    if not cov_model.is_stationary():
+        print("ERROR: 'cov_model' is not stationary: sgs can not be applied")
+        return None
+
+    # Get dimension (d) from x
+    if np.asarray(x).ndim == 1:
+        # x is a 1-dimensional array
+        x = np.asarray(x).reshape(-1, 1)
+        d = 1
+    else:
+        # x is a 2-dimensional array
+        d = x.shape[1]
+
+    # Get dimension (du) from xu
+    if np.asarray(xu).ndim == 1:
+        # xu is a 1-dimensional array
+        xu = np.asarray(xu).reshape(-1, 1)
+        du = 1
+    else:
+        # xu is a 2-dimensional array
+        du = xu.shape[1]
+
+    # Check dimension of x and xu
+    if d != du:
+        print("ERROR: 'x' and 'xu' do not have same dimension")
+        return None
+
+    # Check dimension of cov_model and set if used as omni-directional model
+    if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
+        if isinstance(cov_model, CovModel1D):
+            omni_dir = True
+        else:
+            print("ERROR: 'cov_model' is incompatible with dimension of points")
+            return None
+    else:
+        omni_dir = False
+
+    # Number of data points
+    n = x.shape[0]
+    # Number of unknown points
+    nu = xu.shape[0]
+
+    # Check size of v
+    v = np.asarray(v).reshape(-1)
+    if v.size != n:
+        print("ERROR: size of 'v' is not valid")
+        return None
+
+    # Method
+    ordinary_kriging = False
+    if method == 'simple_kriging':
+        if mean is None:
+            if n == 0:
+                # no data point
+                mean = np.zeros(nu)
+            else:
+                mean = np.mean(v) * np.ones(n + nu)
+        else:
+            mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if mean.size == 1:
+                mean = mean * np.ones(n + nu)
+            elif mean.size != n + nu:
+                print("ERROR: size of 'mean' is not valid")
+                return None
+            # if mean.size not in (1, n + nu):
+            #     print("ERROR: size of 'mean' is not valid")
+            #     return None
+    elif method == 'ordinary_kriging':
+        if mean is not None:
+            print("ERROR: 'mean' must be None with 'method' set to 'ordinary_kriging'")
+            return None
+        ordinary_kriging = True
+        # nmat = n + 1 # order of the kriging matrix
+    else:
+        print("ERROR: 'method' is not valid")
+        return None
+
+    # Allocate memory for output
+    vu = np.zeros((nreal, nu))
+    if vu.size == 0:
+        return vu
+
+    # Covariance function
+    cov_func = cov_model.func() # covariance function
+    if omni_dir:
+        # covariance model in 1D is used
+        cov0 = cov_func(0.) # covariance function at origin (lag=0)
+    else:
+        cov0 = cov_func(np.zeros(d)) # covariance function at origin (lag=0)
+
+    # Set (simple) kriging matrix (mat) of order nmat = n + nu:
+    #     mat = mat_x_x,  mat_x_xu,
+    #           mat_xu_x, mat_xu_xu,
+    # where
+    #     mat_x_x:    covariance matrix for location x and x, of size n x n
+    #                 (symmetric)
+    #     mat_x_xu:   covariance matrix for location x and xu, of size n x nu
+    #     mat_xu_x:   covariance matrix for location xu and x, of size nu x n
+    #                 (transpose of mat_x_xu)
+    #     mat_xu_xu:  covariance matrix for location xu and xu, of size nu x nu
+    #                 (symmetric)
+    nmat = n + nu
+    mat = np.ones((nmat, nmat))
+    # mat_x_x
+    for i in range(n-1):
+        # lag between x[i] and x[j], j=i+1, ..., n-1
+        h = x[(i+1):] - x[i]
+        if omni_dir:
+            # compute norm of lag
+            h = np.sqrt(np.sum(h**2, axis=1))
+        cov_h = cov_func(h)
+        mat[i, (i+1):n] = cov_h
+        mat[(i+1):n, i] = cov_h
+        mat[i, i] = cov0
+    mat[n-1, n-1] = cov0
+
+    # mat_x_xu, mat_xu_x
+    for i in range(n):
+        # lag between x[i] and xu[j], j=0, ..., n-1
+        h = xu - x[i]
+        if omni_dir:
+            # compute norm of lag
+            h = np.sqrt(np.sum(h**2, axis=1))
+        cov_h = cov_func(h)
+        mat[i, n:] = cov_h
+        mat[n:, i] = cov_h
+
+    # mat_xu_xu
+    for i in range(nu-1):
+        # lag between xu[i] and xu[j], j=i+1, ..., nu-1
+        h = xu[(i+1):] - xu[i]
+        if omni_dir:
+            # compute norm of lag
+            h = np.sqrt(np.sum(h**2, axis=1))
+        cov_h = cov_func(h)
+        mat[n+i, (n+i+1):(n+nu)] = cov_h
+        mat[(n+i+1):(n+nu), n+i] = cov_h
+        mat[n+i, n+i] = cov0
+    mat[-1,-1] = cov0
+
+    for i in range(nreal):
+        # set index path visiting xu
+        indu = np.random.permutation(nu)
+
+        ind = np.hstack((np.arange(n), n + indu))
+        for j, k in enumerate(indu):
+            # Simulate value at xu[k] (= xu[indu[j]])
+            nj = n + j
+            # Solve the kriging system
+            if ordinary_kriging:
+                try:
+                    w = np.linalg.solve(
+                            np.vstack((np.hstack((mat[ind[:nj], :][:, ind[:nj]], np.ones((nj, 1)))), np.hstack((np.ones(nj), np.array([0.]))))), # kriging matrix
+                            np.hstack((mat[ind[:nj], ind[nj]], np.array([1.]))) # second member
+                        )
+                except:
+                    print("ERROR: unable to solve kriging system...")
+                    return None
+                # Mean (kriged) value at xu[k]
+                mu = np.hstack((v, vu[i, indu[:j]])).dot(w[:nj])
+                # Standard deviation (of kriging) at xu[k]
+                std = np.sqrt(np.maximum(0, cov0 - np.dot(w, np.hstack((mat[ind[:nj], ind[nj]], np.array([1.]))))))
+            else:
+                try:
+                    w = np.linalg.solve(
+                            mat[ind[:nj], :][:, ind[:nj]], # kriging matrix
+                            mat[ind[:nj], ind[nj]], # second member
+                        )
+                except:
+                    print("ERROR: unable to solve kriging system...")
+                # Mean (kriged) value at xu[k]
+                mu = mean[ind[nj]] + (np.hstack((v, vu[i, indu[:j]])) - mean[ind[:nj]]).dot(w[:nj])
+                # else:
+                #     mu = np.hstack((v, vu[ind[:nj]])).dot(w)
+                # Standard deviation (of kriging) at xu[k]
+                std = np.sqrt(np.maximum(0, cov0 - np.dot(w, mat[ind[:nj], ind[nj]])))
+            # Draw value in N(mu, std^2)
+            vu[i, k] = np.random.normal(loc=mu, scale=std)
+
+    return vu
 # ----------------------------------------------------------------------------
 
 # --- OLD ---
