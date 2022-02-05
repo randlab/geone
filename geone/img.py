@@ -69,11 +69,13 @@ class Img(object):
             self.varname = ["V{:d}".format(i) for i in range(nv)]
         else:
             varname = list(np.asarray(varname).reshape(-1))
-            if len(varname) != nv:
+            if len(varname) == nv:
+                self.varname = varname
+            elif len(varname) == 1: # more than one variable and only one varname
+                self.varname = ["{}{:d}".format(varname[0], i) for i in range(nv)]
+            else:
                 print ('ERROR: varname has not an acceptable size')
                 return
-
-            self.varname = list(np.asarray(varname).reshape(-1))
 
         self.name = name
 

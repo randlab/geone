@@ -3843,10 +3843,9 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
                         )
                 except:
                     print("ERROR: unable to solve kriging system...")
+                    return None
                 # Mean (kriged) value at xu[k]
                 mu = mean[ind[nj]] + (np.hstack((v, vu[i, indu[:j]])) - mean[ind[:nj]]).dot(w[:nj])
-                # else:
-                #     mu = np.hstack((v, vu[ind[:nj]])).dot(w)
                 # Standard deviation (of kriging) at xu[k]
                 std = np.sqrt(np.maximum(0, cov0 - np.dot(w, mat[ind[:nj], ind[nj]])))
             # Draw value in N(mu, std^2)

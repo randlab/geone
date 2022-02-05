@@ -47,6 +47,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                  showColorbar=True,
                  removeColorbar=False,
                  showColorbarOnly=0,
+                 #animated=False,
                  **kwargs):
     """
     Draws an 2D image (can be a slice of a 3D image):
@@ -108,9 +109,9 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                             (dict) keyword arguments passed to plt.contour
     :param contour_clabel:  (bool) indicates if labels are added to contour
                                 (ignored if 'contour' is False)
-    :param levels:          (bool) keyword argument 'levels' passed to
-                                plt.contourf (used if 'contourf' is True) and/or
-                                plt.contour (used if 'contour' is True),
+    :param levels:          (int or array-like or None) keyword argument 'levels'
+                                passed to plt.contourf (used if 'contourf' is True)
+                                and/or plt.contour (used if 'contour' is True),
                                 can be: None (default), number of levels, or
                                 sequence of level values
     :param contourf_kwargs: (dict) keyword arguments passed to plt.contourf
@@ -182,6 +183,8 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                                          - 2: an image of same color as the
                                               background is drawn onto the
                                               plotted image
+    # :param animated:        (bool) passed to imshow for for matplotlib animation...
+    #                             default: False
 
     :param kwargs: additional keyword arguments:
         Each keyword argument with the key "xxx_<name>" will be passed as
@@ -209,10 +212,12 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
             - default value for font size is matplotlib.rcParams['font.size']
             - default value for font weight is matplotlib.rcParams['font.weight']
 
-    :return:    (ax, cbar) axis and colorbar of the plot
+    :return:    imout: "list of matplotlib object"
+                #   (ax, cbar) axis and colorbar of the plot
     """
     # Initialization for output
-    ax, cbar = None, None
+    imout = []
+    #ax, cbar = None, None
 
     # Check iv
     if iv < 0:
@@ -220,7 +225,8 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
     if iv < 0 or iv >= im.nv:
         print("ERROR: invalid iv index!")
-        return (ax, cbar)
+        return imout
+        #return (ax, cbar)
 
     # Check slice direction and indices
     n = int(ix is not None) + int(iy is not None) + int(iz is not None)
@@ -236,7 +242,8 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
             if ix < 0 or ix >= im.nx:
                 print("ERROR: invalid ix index!")
-                return (ax, cbar)
+                return imout
+                #return (ax, cbar)
 
             sliceDir = 'x'
 
@@ -246,7 +253,8 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
             if iy < 0 or iy >= im.ny:
                 print("ERROR: invalid iy index!")
-                return (ax, cbar)
+                return imout
+                #return (ax, cbar)
 
             sliceDir = 'y'
 
@@ -256,13 +264,15 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
             if iz < 0 or iz >= im.nz:
                 print("ERROR: invalid iz index!")
-                return (ax, cbar)
+                return imout
+                #return (ax, cbar)
 
             sliceDir = 'z'
 
     else: # n > 1
         print("ERROR: slice specified in more than one direction!")
-        return (ax, cbar)
+        return imout
+        #return (ax, cbar)
 
     # Extract what to be plotted
     if sliceDir == 'x':
@@ -302,7 +312,8 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
             cmap = plt.get_cmap(cmap)
         except:
             print("ERROR: invalid cmap string!")
-            return (ax, cbar)
+            return imout
+            #return (ax, cbar)
 
     if categ:
         # --- Treat categorical variable ---
@@ -310,7 +321,8 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
             print("ERROR: 'categCol' must be a list or a tuple (if not None)!")
-            return (ax, cbar)
+            return imout
+            #return (ax, cbar)
 
         # Get array 'dval' of displayed values
         if categVal is not None:
@@ -318,12 +330,14 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
             if len(np.unique(dval)) != len(dval):
                 print("ERROR: 'categVal' contains duplicated entries!")
-                return (ax, cbar)
+                return imout
+                #return (ax, cbar)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 print("ERROR: length of 'categVal' and 'categCol' differs!")
-                return (ax, cbar)
+                return imout
+                #return (ax, cbar)
 
         else:
             # Possibly exclude values from zz
@@ -384,7 +398,8 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
             cticks = range(len(dval))
 
         if cticklabels is None:
-            cticklabels = ['{:.3g}'.format(v) for v in cticks]
+            #cticklabels = ['{:.3g}'.format(v) for v in cticks]
+            cticklabels = ['{:.3g}'.format(v) for v in dval]
 
         # Reset cextend if needed
         colorbar_extend = 'neither'
@@ -444,27 +459,30 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
     # Get current axis (for plotting)
     ax = plt.gca()
 
-    # # image plot
+    # image plot
     im_plot = ax.imshow(zz, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax,
                         origin='lower', extent=[min0, max0, min1, max1],
-                        interpolation=interpolation, aspect=aspect)
+                        interpolation=interpolation, aspect=aspect) #, animated=animated)
+    imout.append(im_plot)
 
     if contourf:
         # imshow is still used above to account for 'aspect'
         # Set key word argument 'levels' from the argument 'levels'
         contourf_kwargs['levels']=levels
-        im_plot = ax.contourf(zz, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax,
+        im_contf = ax.contourf(zz, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax,
                               origin='lower', extent=[min0, max0, min1, max1],
                               **contourf_kwargs)
+        imout.append(im_contf)
 
     if contour:
         # Set key word argument 'levels' from the argument 'levels'
         contour_kwargs['levels']=levels
-        im_cont = plt.contour(zz,
+        im_cont = ax.contour(zz,
                               origin='lower', extent=[min0, max0, min1, max1],
                               **contour_kwargs)
+        imout.append(im_cont)
         if contour_clabel:
-            plt.clabel(im_cont, **contour_clabel_kwargs)
+            ax.clabel(im_cont, **contour_clabel_kwargs)
 
     # title
     if title is not None:
@@ -558,7 +576,42 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                 ax.spines[pos].set_color(bg_color)
                 ax.spines[pos].set_linewidth(10)
 
-    return (ax, cbar)
+    return imout
+    #return (ax, cbar)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def drawGeobodyMap2D(im, iv=0):
+    """
+    Draws a geobody map 2D, with adapted color bar.
+
+    :param im:  (img.Img class) image with variables being geobody label
+                    (value 0: not in considered medium, value n > 0: n-th geobody
+                    (connected component))
+    :param iv:  (int) index of the variable to be drawn
+    """
+    categ = True
+    ngeo = int(im.val[iv].max())
+    categVal = [i for i in range(1, ngeo+1)]
+    categCol = None
+    if ngeo <= 10:
+        categCol = plt.get_cmap('tab10').colors[:ngeo]
+        cticks = np.arange(ngeo)
+        cticklabels = 1 + cticks
+    elif ngeo <= 20:
+        categCol = plt.get_cmap('tab20').colors[:ngeo]
+        cticks = np.arange(ngeo)
+        cticklabels = 1 + cticks
+    elif ngeo <= 40:
+        categCol = plt.get_cmap('tab20b').colors + plt.get_cmap('tab20c').colors[:ngeo-20]
+        cticks = np.arange(0,ngeo,5)
+        cticklabels = 1 + cticks
+    else:
+        categ = Falsed
+        cticks = None
+        cticklabels = None
+    drawImage2D(im, iv=iv, excludedVal=0, categ=categ, categVal=categVal, categCol=categCol,
+                cticks=cticks, cticklabels=cticklabels)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
