@@ -5369,7 +5369,6 @@ class DeesseRegressor(DeesseEstimator):
         for counter, point in enumerate(X):
             # get index of predicted point
             index = img.pointToGridIndex(point[0], point[1], point[2],
-                    nx=p['nx'], ny=p['ny'], nz=p['nz'],
                     sx=p['sx'], sy=p['sy'], sz=p['sz'],
                     ox=p['ox'], oy=p['oy'], oz=p['oz'])
             y[counter, :] = all_sim.val[:,
@@ -5427,7 +5426,6 @@ class DeesseClassifier(DeesseEstimator):
         for counter, point in enumerate(X):
             # get index of predicted point
             index = img.pointToGridIndex(point[0], point[1], point[2],
-                    nx=p['nx'], ny=p['ny'], nz=p['nz'],
                     sx=p['sx'], sy=p['sy'], sz=p['sz'],
                     ox=p['ox'], oy=p['oy'], oz=p['oz'])
             # retrieve the facies probability
