@@ -6620,7 +6620,7 @@ def imgTwoPointStatisticsImage(
         variogram              :    g(h) = 0.5 * E[(v(x)-v(x+h))**2]
 
     Notes:
-        - a transiogram can be applied a binary variable
+        - a transiogram can be applied on a binary variable
         - a connectivity function (connectivity_func[012]) should be applied on
             a variable consisting of geobody (connected component) labels,
             i.e. input_image should be the output image returned by the function

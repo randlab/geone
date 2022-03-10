@@ -61,7 +61,7 @@ class Img(object):
             valarr = valarr.flat[0] * np.ones(nx*ny*nz*nv)
         elif valarr.size != nx*ny*nz*nv:
             print ('ERROR: val does not have an acceptable size')
-            return
+            return None
 
         self.val = valarr.reshape(nv, nz, ny, nx)
 
@@ -75,7 +75,7 @@ class Img(object):
                 self.varname = ["{}{:d}".format(varname[0], i) for i in range(nv)]
             else:
                 print ('ERROR: varname has not an acceptable size')
-                return
+                return None
 
         self.name = name
 
@@ -106,7 +106,7 @@ class Img(object):
 
         if ii < 0 or ii >= self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         if varname is None:
             varname = "V{:d}".format(ii)
@@ -209,19 +209,19 @@ class Img(object):
 
         if ix0 >= ix1:
             print("Nothing is done! (invalid indices along x)")
-            return
+            return None
 
         if iy0 >= iy1:
             print("Nothing is done! (invalid indices along y)")
-            return
+            return None
 
         if iz0 >= iz1:
             print("Nothing is done! (invalid indices along z)")
-            return
+            return None
 
         if iv0 >= iv1:
             print("Nothing is done! (invalid indices along v)")
-            return
+            return None
 
         initShape = self.val.shape
 
@@ -284,14 +284,14 @@ class Img(object):
 
         if ii < 0 or ii > self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
             print ('ERROR: val does not have an acceptable size')
-            return
+            return None
 
         # Extend val
         self.val = np.concatenate((self.val[0:ii,...],
@@ -334,7 +334,7 @@ class Img(object):
 
         if ii < 0 or ii >= self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         # Update val array
         iv =[i for i in range(self.nv)]
@@ -384,14 +384,14 @@ class Img(object):
 
         if ii < 0 or ii >= self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
             print ('ERROR: val does not have an acceptable size')
-            return
+            return None
 
         # Set variable of index ii
         self.val[ii,...] = valarr.reshape(self.nz, self.ny, self.nx)
@@ -415,7 +415,7 @@ class Img(object):
 
         if sum([i >= self.nv or i < 0 for i in indlist]) > 0:
             print("Nothing is done! (invalid index list)")
-            return
+            return None
 
         # Update val array
         self.val = self.val[indlist,...]
@@ -444,12 +444,12 @@ class Img(object):
 
         if ii < 0 or ii >= self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         uval = [val for val in np.unique(self.val[ind,...]).reshape(-1)
                 if ~np.isnan(val)]
 
-        return (uval)
+        return uval
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -475,7 +475,7 @@ class Img(object):
 
         if ii < 0 or ii >= self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         uv, cv = np.unique(self.val[ind,...],return_counts=True)
 
@@ -485,7 +485,7 @@ class Img(object):
         if density:
             cv = cv / np.sum(cv)
 
-        return ([uv, cv])
+        return [uv, cv]
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -499,7 +499,7 @@ class Img(object):
         uval = [val for val in np.unique(self.val).reshape(-1)
                 if ~np.isnan(val)]
 
-        return (uval)
+        return uval
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -527,7 +527,7 @@ class Img(object):
             for j in range(n):
                 cv_all[i, uv_all==uv[j]] = cv[j]
 
-        return ([uv_all, cv_all])
+        return [uv_all, cv_all]
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -612,61 +612,61 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     def nxyzv(self):
-        return (self.nx * self.ny * self.nz * self.nv)
+        return self.nx * self.ny * self.nz * self.nv
 
     def nxyz(self):
-        return (self.nx * self.ny * self.nz)
+        return self.nx * self.ny * self.nz
 
     def nxy(self):
-        return (self.nx * self.ny)
+        return self.nx * self.ny
 
     def nxz(self):
-        return (self.nx * self.nz)
+        return self.nx * self.nz
 
     def nyz(self):
-        return (self.ny * self.nz)
+        return self.ny * self.nz
 
     def xmin(self):
-        return (self.ox)
+        return self.ox
 
     def ymin(self):
-        return (self.oy)
+        return self.oy
 
     def zmin(self):
-        return (self.oz)
+        return self.oz
 
     def xmax(self):
-        return (self.ox + self.nx * self.sx)
+        return self.ox + self.nx * self.sx
 
     def ymax(self):
-        return (self.oy + self.ny * self.sy)
+        return self.oy + self.ny * self.sy
 
     def zmax(self):
-        return (self.oz + self.nz * self.sz)
+        return self.oz + self.nz * self.sz
 
     def x(self):
         """
         Returns 1-dimensional array of x coordinates.
         """
-        return (self.ox + 0.5 * self.sx + self.sx * np.arange(self.nx))
+        return self.ox + 0.5 * self.sx + self.sx * np.arange(self.nx)
 
     def y(self):
         """
         Returns 1-dimensional array of y coordinates.
         """
-        return (self.oy + 0.5 * self.sy + self.sy * np.arange(self.ny))
+        return self.oy + 0.5 * self.sy + self.sy * np.arange(self.ny)
 
     def z(self):
         """
         Returns 1-dimensional array of z coordinates.
         """
-        return (self.oz + 0.5 * self.sz + self.sz * np.arange(self.nz))
+        return self.oz + 0.5 * self.sz + self.sz * np.arange(self.nz)
 
     def vmin(self):
-        return (np.nanmin(self.val.reshape(self.nv,self.nxyz()),axis=1))
+        return np.nanmin(self.val.reshape(self.nv,self.nxyz()),axis=1)
 
     def vmax(self):
-        return (np.nanmax(self.val.reshape(self.nv,self.nxyz()),axis=1))
+        return np.nanmax(self.val.reshape(self.nv,self.nxyz()),axis=1)
 # ============================================================================
 
 # ============================================================================
@@ -701,7 +701,7 @@ class PointSet(object):
             valarr = valarr.flat[0] * np.ones(npt*nv)
         elif valarr.size != npt*nv:
             print ('ERROR: val does not have an acceptable size')
-            return
+            return None
 
         self.val = valarr.reshape(nv, npt)
 
@@ -725,7 +725,7 @@ class PointSet(object):
             varname = list(np.asarray(varname).reshape(-1))
             if len(varname) != nv:
                 print ('ERROR: varname has not an acceptable size')
-                return
+                return None
 
             self.varname = list(np.asarray(varname).reshape(-1))
 
@@ -767,7 +767,7 @@ class PointSet(object):
 
         if ii < 0 or ii >= self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         if varname is None:
             varname = "V{:d}".format(ii)
@@ -794,14 +794,14 @@ class PointSet(object):
 
         if ii < 0 or ii > self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
             print ('ERROR: val does not have an acceptable size')
-            return
+            return None
 
         # Extend val
         self.val = np.concatenate((self.val[0:ii,...],
@@ -845,7 +845,7 @@ class PointSet(object):
 
         if ii < 0 or ii >= self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         # Update val array
         iv =[i for i in range(self.nv)]
@@ -895,14 +895,14 @@ class PointSet(object):
 
         if ii < 0 or ii >= self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
             print ('ERROR: val does not have an acceptable size')
-            return
+            return None
 
         # Set variable of index ii
         self.val[ii,...] = valarr.reshape(self.npt)
@@ -926,7 +926,7 @@ class PointSet(object):
 
         if sum([i >= self.nv or i < 0 for i in indlist]) > 0:
             print("Nothing is done! (invalid index list)")
-            return
+            return None
 
         # Update val array
         self.val = self.val[indlist,...]
@@ -955,9 +955,9 @@ class PointSet(object):
 
         if ii < 0 or ii >= self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
-        return (np.unique(self.val[ind,...]))
+        return np.unique(self.val[ind,...])
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -983,7 +983,7 @@ class PointSet(object):
 
         if ii < 0 or ii >= self.nv:
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         uv, cv = list(np.unique(self.val[ind,...],return_counts=True))
 
@@ -993,7 +993,7 @@ class PointSet(object):
         if density:
             cv = cv / np.sum(cv)
 
-        return ([uv, cv])
+        return [uv, cv]
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -1005,31 +1005,31 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     def x(self):
-        return(self.val[0])
+        return self.val[0]
 
     def y(self):
-        return(self.val[1])
+        return self.val[1]
 
     def z(self):
-        return(self.val[2])
+        return self.val[2]
 
     def xmin(self):
-        return (np.min(self.val[0]))
+        return np.min(self.val[0])
 
     def ymin(self):
-        return (np.min(self.val[1]))
+        return np.min(self.val[1])
 
     def zmin(self):
-        return (np.min(self.val[2]))
+        return np.min(self.val[2])
 
     def xmax(self):
-        return (np.max(self.val[0]))
+        return np.max(self.val[0])
 
     def ymax(self):
-        return (np.max(self.val[1]))
+        return np.max(self.val[1])
 
     def zmax(self):
-        return (np.max(self.val[2]))
+        return np.max(self.val[2])
 # ============================================================================
 
 # ----------------------------------------------------------------------------
@@ -1049,7 +1049,7 @@ def copyImg(im, varIndList=None):
         # Check if each index is valid
         if sum([iv in range(im.nv) for iv in varIndList]) != len(varIndList):
             print("ERROR: invalid index-es")
-            return
+            return None
     else:
         varIndList = range(im.nv)
 
@@ -1062,7 +1062,7 @@ def copyImg(im, varIndList=None):
     for i, iv in enumerate(varIndList):
         imOut.set_var(val=im.val[iv,...], varname=im.varname[iv], ind=i)
 
-    return (imOut)
+    return imOut
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1090,7 +1090,7 @@ def readImageGslib(filename, missing_value=None):
     # Check if the file exists
     if not os.path.isfile(filename):
         print("ERROR: invalid filename ({})".format(filename))
-        return
+        return None
 
     # Open the file in read mode
     with open(filename,'r') as ff:
@@ -1130,7 +1130,7 @@ def readImageGslib(filename, missing_value=None):
     # Set image
     im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr.T, varname, filename)
 
-    return (im)
+    return im
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1147,7 +1147,7 @@ def readImageVtk(filename, missing_value=None):
     # Check if the file exists
     if not os.path.isfile(filename):
         print("ERROR: invalid filename ({})".format(filename))
-        return
+        return None
 
     # Open the file in read mode
     with open(filename,'r') as ff:
@@ -1177,7 +1177,7 @@ def readImageVtk(filename, missing_value=None):
     # Set image
     im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr.T, varname, filename)
 
-    return (im)
+    return im
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1194,7 +1194,7 @@ def readImagePgm(filename, missing_value=None, varname=['pgmValue']):
     # Check if the file exists
     if not os.path.isfile(filename):
         print("ERROR: invalid filename ({})".format(filename))
-        return
+        return None
 
     # Open the file in read mode
     with open(filename,'r') as ff:
@@ -1202,7 +1202,7 @@ def readImagePgm(filename, missing_value=None, varname=['pgmValue']):
         line = ff.readline()
         if line[:2] != 'P2':
             print("ERROR: invalid format (first line)")
-            return
+            return None
 
         # Read 2nd line
         line = ff.readline()
@@ -1217,7 +1217,7 @@ def readImagePgm(filename, missing_value=None, varname=['pgmValue']):
         line = ff.readline()
         if line[:3] != '255':
             print("ERROR: invalid format (number of colors / max val)")
-            return
+            return None
 
         # Read the rest of the file
         vv = [x.split() for x in ff.readlines()]
@@ -1241,7 +1241,7 @@ def readImagePgm(filename, missing_value=None, varname=['pgmValue']):
     # Set image
     im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr, varname, filename)
 
-    return (im)
+    return im
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1258,7 +1258,7 @@ def readImagePpm(filename, missing_value=None, varname=['ppmR', 'ppmG', 'ppmB'])
     # Check if the file exists
     if not os.path.isfile(filename):
         print("ERROR: invalid filename ({})".format(filename))
-        return
+        return None
 
     # Open the file in read mode
     with open(filename,'r') as ff:
@@ -1266,7 +1266,7 @@ def readImagePpm(filename, missing_value=None, varname=['ppmR', 'ppmG', 'ppmB'])
         line = ff.readline()
         if line[:2] != 'P3':
             print("ERROR: invalid format (first line)")
-            return
+            return None
 
         # Read 2nd line
         line = ff.readline()
@@ -1281,7 +1281,7 @@ def readImagePpm(filename, missing_value=None, varname=['ppmR', 'ppmG', 'ppmB'])
         line = ff.readline()
         if line[:3] != '255':
             print("ERROR: invalid format (number of colors / max val)")
-            return
+            return None
 
         # Read the rest of the file
         vv = [x.split() for x in ff.readlines()]
@@ -1305,7 +1305,7 @@ def readImagePpm(filename, missing_value=None, varname=['ppmR', 'ppmG', 'ppmB'])
     # Set image
     im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr.T, varname, filename)
 
-    return (im)
+    return im
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1343,7 +1343,7 @@ def imCategFromPgm(filename, flip_vertical=True, cmap='binary'):
     # Set image
     im = Img(im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz, nv=1, val=code, varname='code')
 
-    return (im, col, pgm)
+    return im, col, pgm
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1384,7 +1384,7 @@ def imCategFromPpm(filename, flip_vertical=True):
     # Set image
     im = Img(im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz, nv=1, val=code, varname='code')
 
-    return (im, col)
+    return im, col
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1425,7 +1425,7 @@ def readImageCateg(filename, flip_vertical=True):
     # Set image
     im = Img(nx, ny, 1, nv=1, val=code, varname='code')
 
-    return (im, col)
+    return im, col
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1588,7 +1588,7 @@ def isImageDimensionEqual (im1, im2):
     Checks if grid dimensions of two images are equal.
     """
 
-    return (im1.nx == im2.nx and im1.ny == im2.ny and im1.nz == im2.nz)
+    return im1.nx == im2.nx and im1.ny == im2.ny and im1.nz == im2.nz
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1609,20 +1609,23 @@ def gatherImages (imlist, varInd=None, remVarFromInput=False):
     :return: (Img class) output image containing variables of images of imlist
     """
 
+    if len(imlist) == 0:
+        return None
+
     for i in range(1,len(imlist)):
         if not isImageDimensionEqual(imlist[0], imlist[i]):
             print("ERROR: grid dimensions differ, nothing done!")
-            return
+            return None
 
     if varInd is not None:
         if varInd < 0:
             print("ERROR: invalid index (negative), nothing done!")
-            return
+            return None
 
         for i in range(len(imlist)):
             if varInd >= imlist[i].nv:
                 print("ERROR: invalid index, nothing done!")
-                return
+                return None
 
     im = Img(nx=imlist[0].nx, ny=imlist[0].ny, nz=imlist[0].nz,
              sx=imlist[0].sx, sy=imlist[0].sy, sz=imlist[0].sz,
@@ -1644,7 +1647,7 @@ def gatherImages (imlist, varInd=None, remVarFromInput=False):
             if remVarFromInput:
                 imlist[i].remove_allvar()
 
-    return (im)
+    return im
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1689,11 +1692,11 @@ def imageContStat (im, op='mean', **kwargs):
         func = np.nanquantile
         if 'q' not in kwargs:
             print("ERROR: keyword argument 'q' required for op='quantile', nothing done!")
-            return
+            return None
         varname = [op + '_' + str(v) for v in kwargs['q']]
     else:
         print("ERROR: unkown operation {}, nothing done!".format(op))
-        return
+        return None
 
     imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
              sx=im.sx, sy=im.sy, sz=im.sz,
@@ -1705,7 +1708,7 @@ def imageContStat (im, op='mean', **kwargs):
     for v, name in zip(vv, varname):
         imOut.append_var(v, varname=name)
 
-    return (imOut)
+    return imOut
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1737,7 +1740,7 @@ def imageCategProp (im, categ):
         np.putmask(x, np.isnan(im.val.reshape(im.nv,-1)), np.nan)
         imOut.append_var(np.mean(x, axis=0))
 
-    return (imOut)
+    return imOut
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1762,13 +1765,13 @@ def imageEntropy (im, varIndList=None):
         # Check if each index is valid
         if sum([iv in range(im.nv) for iv in varIndList]) != len(varIndList):
             print("ERROR: invalid index-es")
-            return
+            return None
     else:
         varIndList = range(im.nv)
 
     if len(varIndList) < 2:
         print("ERROR: at least 2 indexes should be given")
-        return
+        return None
 
     imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
                 sx=im.sx, sy=im.sy, sz=im.sz,
@@ -1798,7 +1801,7 @@ def imageEntropy (im, varIndList=None):
                 if ok:
                     imOut.val[0][iz][iy][ix] = t*e
 
-    return (imOut)
+    return imOut
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1818,7 +1821,7 @@ def copyPointSet(ps, varIndList=None):
         # Check if each index is valid
         if sum([iv in range(ps.nv) for iv in varIndList]) != len(varIndList):
             print("ERROR: invalid index-es")
-            return
+            return None
     else:
         varIndList = range(ps.nv)
 
@@ -1827,7 +1830,7 @@ def copyPointSet(ps, varIndList=None):
     for i, iv in enumerate(varIndList):
         psOut.set_var(val=ps.val[iv,...], varname=ps.varname[iv], ind=i)
 
-    return (psOut)
+    return psOut
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1858,7 +1861,7 @@ def readPointSetGslib(filename, missing_value=None):
     # Check if the file exists
     if not os.path.isfile(filename):
         print("ERROR: invalid filename ({})".format(filename))
-        return
+        return None
 
     # Open the file in read mode
     with open(filename,'r') as ff:
@@ -1887,7 +1890,7 @@ def readPointSetGslib(filename, missing_value=None):
     # Set point set
     ps = PointSet(npt=npt, nv=nv, val=valarr.T, varname=varname)
 
-    return (ps)
+    return ps
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1965,7 +1968,7 @@ def imageToPointSet(im):
     for i in range(im.nv):
         ps.set_var(val=im.val[i,...], varname=im.varname[i], ind=3+i)
 
-    return (ps)
+    return ps
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1991,7 +1994,7 @@ def pointSetToImage(ps, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0
 
     if ps.nv < 3:
         print("ERROR: invalid number of variable (should be > 3)")
-        return
+        return None
 
     # Initialize image
     im = Img(nx=nx, ny=ny, nz=nz,
@@ -2034,14 +2037,14 @@ def pointSetToImage(ps, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0
 
     if not job and sum(iout) > 0:
         print ("ERROR: point out of the image grid!")
-        return
+        return None
 
     # Set values in the image
     for i in range(ps.npt): # ps.npt is equal to iout.size
         if not iout[i]:
             im.val[:,iz[i], iy[i], ix[i]] = ps.val[3:ps.nv,i]
 
-    return (im)
+    return im
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -2186,7 +2189,7 @@ def extractRandomPointFromImage (im, npt, seed=None):
 
     if npt <= 0:
         print("ERROR: number of points negative or zero (npt={}), nothing done!".format(npt))
-        return
+        return None
 
     if npt >= im.nxyz():
         return imageToPointSet(im)
@@ -2220,7 +2223,7 @@ def extractRandomPointFromImage (im, npt, seed=None):
     for i in range(im.nv):
         ps.set_var(val=v[:,i], varname=im.varname[i], ind=3+i)
 
-    return (ps)
+    return ps
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":

@@ -607,7 +607,7 @@ def drawGeobodyMap2D(im, iv=0):
         cticks = np.arange(0,ngeo,5)
         cticklabels = 1 + cticks
     else:
-        categ = Falsed
+        categ = False
         cticks = None
         cticklabels = None
     drawImage2D(im, iv=iv, excludedVal=0, categ=categ, categVal=categVal, categCol=categCol,

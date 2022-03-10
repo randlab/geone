@@ -442,8 +442,25 @@ def drawImage3D_slice (
                         indices iz0:iz1 will be considered for plotting
                         if iz1 is None (default): iz1 will be set to im.nz
 
-
     :param iv:      (int) index of the variable to be drawn
+
+    :param slice_normal_x:
+                    (int/float or sequence or None) values of the (real) x
+                        coordinate where a slice normal to x-axis is drawn
+
+    :param slice_normal_y:
+                    (int/float or sequence or None) values of the (real) y
+                        coordinate where a slice normal to y-axis is drawn
+
+    :param slice_normal_z:
+                    (int/float or sequence or None) values of the (real) z
+                        coordinate where a slice normal to z-axis is drawn
+
+    :param slice_normal_custom:
+                    ((sequence of) sequence containing 2 tuple of length 3 or None)
+                        slice_normal[i] = ((vx, vy, vz), (px, py, pz))
+                        means that a slice normal to the vector (vx, vy, vz) and
+                        going through the point (px, py, pz) is drawn
 
     :param cmap:    colormap (e.g. plt.get_cmap('viridis'), or equivalently,
                         just the string 'viridis' (default))
@@ -467,24 +484,6 @@ def drawImage3D_slice (
     :param opacity: (float) between 0.0 and 1.0, opacity used for the plot
     :param nan_color, nan_opacity:
                     color and opacity (float) used for np.nan value
-
-    :param slice_normal_x:
-                    (int/float or sequence or None) values of the (real) x
-                        coordinate where a slice normal to x-axis is drawn
-
-    :param slice_normal_y:
-                    (int/float or sequence or None) values of the (real) y
-                        coordinate where a slice normal to y-axis is drawn
-
-    :param slice_normal_z:
-                    (int/float or sequence or None) values of the (real) z
-                        coordinate where a slice normal to z-axis is drawn
-
-    :param slice_normal_custom:
-                    ((sequence of) sequence containing 2 tuple of length 3 or None)
-                        slice_normal[i] = ((vx, vy, vz), (px, py, pz))
-                        means that a slice normal to the vector (vx, vy, vz) and
-                        going through the point (px, py, pz) is drawn
 
     :param filtering_value:
                     (int/float or sequence or None) values to be plotted

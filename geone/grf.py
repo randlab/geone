@@ -299,8 +299,8 @@ def grf1D(cov_model,
     # the covariance function.
     # To take a maximal benefit of Fast Fourier Transform (FFT) for computing DFT,
     # we choose
-    #    N = 2^g (a power of 2), with N >= Nmin
-    g = int(np.ceil(np.log2(Nmin)))
+    #    N = 2^g (a power of 2), with N >= Nmin, N >= 2
+    g = int(max(np.ceil(np.log2(Nmin)), 1.0))
     N = int(2**g)
 
     if printInfo:
@@ -854,8 +854,8 @@ def krige1D(x, v, cov_model,
     # the covariance function.
     # To take a maximal benefit of Fast Fourier Transform (FFT) for computing DFT,
     # we choose
-    #    N = 2^g (a power of 2), with N >= Nmin
-    g = int(np.ceil(np.log2(Nmin)))
+    #    N = 2^g (a power of 2), with N >= Nmin, N >= 2
+    g = int(max(np.ceil(np.log2(Nmin)), 1.0))
     N = int(2**g)
 
     if printInfo:
@@ -1375,10 +1375,10 @@ def grf2D(cov_model,
     # the covariance function.
     # To take a maximal benefit of Fast Fourier Transform (FFT) for computing DFT,
     # we choose
-    #     N1 = 2^g1 (a power of 2), with N1 >= N1min
-    #     N2 = 2^g2 (a power of 2), with N2 >= N2min
-    g1 = int(np.ceil(np.log2(N1min)))
-    g2 = int(np.ceil(np.log2(N2min)))
+    #     N1 = 2^g1 (a power of 2), with N1 >= N1min, N1 >= 2
+    #     N2 = 2^g2 (a power of 2), with N2 >= N2min, N2 >= 2
+    g1 = int(max(np.ceil(np.log2(N1min)), 1.0))
+    g2 = int(max(np.ceil(np.log2(N2min)), 1.0))
     N1 = int(2**g1)
     N2 = int(2**g2)
 
@@ -1946,10 +1946,10 @@ def krige2D(x, v, cov_model,
     # the covariance function.
     # To take a maximal benefit of Fast Fourier Transform (FFT) for computing DFT,
     # we choose
-    #     N1 = 2^g1 (a power of 2), with N1 >= N1min
-    #     N2 = 2^g2 (a power of 2), with N2 >= N2min
-    g1 = int(np.ceil(np.log2(N1min)))
-    g2 = int(np.ceil(np.log2(N2min)))
+    #     N1 = 2^g1 (a power of 2), with N1 >= N1min, N1 >= 2
+    #     N2 = 2^g2 (a power of 2), with N2 >= N2min, N2 >= 2
+    g1 = int(max(np.ceil(np.log2(N1min)), 1.0))
+    g2 = int(max(np.ceil(np.log2(N2min)), 1.0))
     N1 = int(2**g1)
     N2 = int(2**g2)
 
@@ -2499,12 +2499,12 @@ def grf3D(cov_model,
     # the covariance function.
     # To take a maximal benefit of Fast Fourier Transform (FFT) for computing DFT,
     # we choose
-    #     N1 = 2^g1 (a power of 2), with N1 >= N1min
-    #     N2 = 2^g2 (a power of 2), with N2 >= N2min
-    #     N3 = 2^g3 (a power of 2), with N3 >= N3min
-    g1 = int(np.ceil(np.log2(N1min)))
-    g2 = int(np.ceil(np.log2(N2min)))
-    g3 = int(np.ceil(np.log2(N3min)))
+    #     N1 = 2^g1 (a power of 2), with N1 >= N1min, N1 >= 2
+    #     N2 = 2^g2 (a power of 2), with N2 >= N2min, N2 >= 2
+    #     N3 = 2^g3 (a power of 2), with N3 >= N3min, N3 >= 2
+    g1 = int(max(np.ceil(np.log2(N1min)), 1.0))
+    g2 = int(max(np.ceil(np.log2(N2min)), 1.0))
+    g3 = int(max(np.ceil(np.log2(N3min)), 1.0))
     N1 = int(2**g1)
     N2 = int(2**g2)
     N3 = int(2**g3)
@@ -3088,12 +3088,12 @@ def krige3D(x, v, cov_model,
     # the covariance function.
     # To take a maximal benefit of Fast Fourier Transform (FFT) for computing DFT,
     # we choose
-    #     N1 = 2^g1 (a power of 2), with N1 >= N1min
-    #     N2 = 2^g2 (a power of 2), with N2 >= N2min
-    #     N3 = 2^g3 (a power of 2), with N3 >= N3min
-    g1 = int(np.ceil(np.log2(N1min)))
-    g2 = int(np.ceil(np.log2(N2min)))
-    g3 = int(np.ceil(np.log2(N3min)))
+    #     N1 = 2^g1 (a power of 2), with N1 >= N1min, N1 >= 2
+    #     N2 = 2^g2 (a power of 2), with N2 >= N2min, N2 >= 2
+    #     N3 = 2^g3 (a power of 2), with N3 >= N3min, N3 >= 2
+    g1 = int(max(np.ceil(np.log2(N1min)), 1.0))
+    g2 = int(max(np.ceil(np.log2(N2min)), 1.0))
+    g3 = int(max(np.ceil(np.log2(N3min)), 1.0))
     N1 = int(2**g1)
     N2 = int(2**g2)
     N3 = int(2**g3)

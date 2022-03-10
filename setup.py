@@ -42,9 +42,13 @@ elif platform_system == 'Linux':
 else:
     exit()
 
+# Load version
+with open('geone/_version.py', 'r') as f:
+    exec(f.read())
+
 setuptools.setup(
     name='geone',
-    version='0.1.0',
+    version=__version__,
     author="Julien Straubhaar",
     author_email="julien.straubhaar@unine.ch",
     description="Geostatistics simulation tools",
