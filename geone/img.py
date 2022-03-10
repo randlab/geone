@@ -2050,7 +2050,6 @@ def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
     Convert real point coordinates to index grid:
 
     :param x, y, z:     (float) coordinates of a point
-    :param nx, ny, nz:  (int) number of grid cells in each direction
     :param sx, sy, sz:  (float) cell size in each direction
     :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
 
