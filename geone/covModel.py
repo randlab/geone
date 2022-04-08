@@ -17,7 +17,8 @@ Module for:
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from scipy.optimize import curve_fit
+import scipy.special
+import scipy.optimize
 from scipy import stats
 import pyvista as pv
 import copy
@@ -28,8 +29,12 @@ from geone import imgplot3d as imgplt3
 
 # ============================================================================
 # Definition of 1D elementary covariance models:
-#   - nugget, spherical, exponential, gaussian, cubic,
-#   - power (non-stationary)
+#   - nugget, spherical, exponential, gaussian, linear, cubic, sinus_cardinal
+#       parameters: w, r
+#   - gamma, exponential_generalized, power (non-stationary)
+#       parameters: w, r, s (power)
+#   - matern
+#       parameters: w, r, nu
 # ============================================================================
 # ----------------------------------------------------------------------------
 def cov_nug(h, w=1.0):
@@ -151,11 +156,11 @@ def cov_gamma(h, w=1.0, r=1.0, s=1.0):
 
 def cov_pow(h, w=1.0, r=1.0, s=1.0):
     """
-    1D-power covariance model (no really sill and range):
+    1D-power covariance model (not really sill and range):
 
     :param h:   (1-dimensional array or float): lag(s)
-    :param w:   (float >0): weight (sill)
-    :param r:   (float >0): range
+    :param w:   (float >0): weight
+    :param r:   (float >0): scale
     :param s:   (float btw 0 and 2): power
     :return:    (1-dimensional array or float) evaluation of the model at h:
                     w * f(|h|/r), where
@@ -178,6 +183,67 @@ def cov_exp_gen(h, w=1.0, r=1.0, s=1.0):
 
     """
     return w * np.exp(-3. * (np.abs(h)/r)**s)
+
+def cov_matern(h, w=1.0, r=1.0, nu=0.5):
+    """
+    1D-Matern covariance model (the effective range depends on nu):
+
+    :param h:   (1-dimensional array or float): lag(s)
+    :param w:   (float >0): weight (sill)
+    :param r:   (float >0): scale (the effective range depends on nu)
+    :param nu:  (float >0): parameter for Matern covariance
+    :return:    (1-dimensional array or float) evaluation of the model at h:
+                    w * 1.0/(2.0**(nu-1.0)*Gamma(nu)) * u**nu * K_{nu}(u), where
+                    u = np.sqrt(2.0*nu)/r * |h|
+                    Gamma is the function gamma
+                    K_{nu} is the modified Bessel function of the second kind of parameter nu
+                Note that
+                    1) cov_matern(h, w, r, nu=0.5) = cov_exp(h, w, 3*r)
+                    2) cov_matern(h, w, r, nu) tends to cov_gau(h, w, np.sqrt(6)*r)
+                    when nu tends to infinity
+    """
+    v = np.zeros_like(h).astype(float) # be sure that the type is float to avoid truncation
+    u = np.sqrt(2.0*nu)/r * np.abs(h)
+    u1 = (0.5*u)**nu
+    u2 = scipy.special.kv(nu, u)
+    i1 = np.isinf(u1)
+    i2 = np.isinf(u2)
+    if isinstance(h, np.ndarray):
+        # array
+        ii = ~np.any((i1, i2), axis=0)
+        v[ii] = w * 2.0/scipy.special.gamma(nu) * u1[ii] * u2[ii]
+        v[i2] = w
+    else:
+        # one number (float or int)
+        if i2:
+            v = w
+        elif not i1:
+            v = w * 2.0/scipy.special.gamma(nu) * u1 * u2
+    return v
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# Utility function for Matern covariance model
+def cov_matern_get_r_param(nu, r_eff):
+    """
+    Computes the parameter 'r' (scale) such that the 1D-Matern covariance model
+    of parameter 'nu' (given) has an effective range of 'r_eff' (given).
+
+    :param nu:      (float >0): parameter for Matern covariance
+    :param r_eff:   (float >0): effective range
+    :return r:      (float): parameter r (scale) of the corresponding Matern covariance
+    """
+    def g_tmp(r):
+        def f_tmp(h):
+            return cov_matern(h, w=1.0, r=r, nu=nu) - 0.05
+        res = scipy.optimize.root_scalar(f_tmp, bracket=[0, 4*r])
+        rr_eff = res.root
+        return (rr_eff - r_eff)**2
+    # def g_tmp(r):
+    #     cov_model = gn.covModel.CovModel1D(elem=[('matern', {'w':1., 'r':r, 'nu':nu})])
+    #     return np.fabs(cov_model.r() - r_eff)
+    res = scipy.optimize.minimize_scalar(g_tmp, bracket=[1.e-1, 4*r_eff])
+    return res.x
 # ----------------------------------------------------------------------------
 
 # ============================================================================
@@ -202,10 +268,13 @@ class CovModel1D (object):
                            'power'          (see func geone.covModel.cov_pow)
                            'exponential_generalized'
                                             (see func geone.covModel.cov_exp_gen)
+                           'matern'         (see func geone.covModel.cov_matern)
                         d: (dict) dictionary of required parameters to be
                             passed to the elementary model,
                     e.g.
-                       (t, d) = ('power', {w:2.0, r:1.5, s:1.7})
+                       (t, d) = ('spherical', {'w':2.0, 'r':1.5})
+                       (t, d) = ('power', {'w':2.0, 'r':1.5, 's':1.7})
+                       (t, d) = ('matern', {'w':2.0, 'r':1.5, 'nu':1.5})
                     the final model is the sum of the elementary models
         name:   (string) name of the model
 
@@ -222,9 +291,38 @@ class CovModel1D (object):
 
     def __init__(self,
                  elem=[],
-                 name=""):
+                 name=None):
+        for el in elem:
+            if el[0] not in (
+                    'nugget',
+                    'spherical',
+                    'exponential',
+                    'gaussian',
+                    'linear',
+                    'cubic',
+                    'sinus_cardinal',
+                    'gamma',
+                    'power',
+                    'exponential_generalized',
+                    'matern'
+                    ):
+                print('ERROR: unknown elementary contribution')
+                return None
         self.elem = elem
+        if name is None:
+            if len(elem) == 1:
+                name = 'cov1D-' + elem[0][0]
+            elif len(elem) > 1:
+                name = 'cov1D-multi-contribution'
+            else:
+                name = 'cov1D-zero'
         self.name = name
+        self._r = None  # initialize "internal" variable _r for effective range
+        self._sill = None  # initialize "internal" variable _sill for sill (sum of weight(s))
+        self._is_orientation_stationary = None
+        self._is_weight_stationary = None
+        self._is_range_stationary = None
+        self._is_stationary = None
 
     def __repr__(self):
         s = "Covariance model 1D: (Name = {})\n".format(self.name)
@@ -242,63 +340,119 @@ class CovModel1D (object):
                 s = s + "\n"
         return s
 
-    def is_orientation_stationary(self):
-        """Returns True (the orientation is stationary)."""
-        return True
+    def is_orientation_stationary(self, recompute=False):
+        """Returns a bool (True / False) indicating if the orientation is
+        stationary - always True for 1D covariance model.
 
-    def is_weight_stationary(self):
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_orientation_stationary
+        """
+        self._is_orientation_stationary = True
+        return self._is_orientation_stationary
+
+    def is_weight_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the weight is stationary
         - i.e. the weight (sill) of any elementary contribution is defined as a
-        unique value - (True), or not (False)."""
-        for el in self.elem:
-            if np.size(el[1]['w']) > 1:
-                return False
-        return True
+        unique value - (True), or not (False).
 
-    def is_range_stationary(self):
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_weight_stationary
+        """
+        if self._is_weight_stationary is None or recompute:
+            self._is_weight_stationary = not np.any([np.size(el[1]['w']) > 1 for el in self.elem])
+        return self._is_weight_stationary
+
+    def is_range_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the range in every direction
         is stationary - i.e. the range in of any elementary contribution is defined
-        as a unique value - (True), or not (False)."""
-        flag = True
-        for el in self.elem:
-            if 'r' in el[1].keys():
-                if np.size(el[1]['r']) > 1:
-                    return False
-        return True
+        as a unique value - (True), or not (False).
 
-    def is_stationary(self):
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_range_stationary
+        """
+        if self._is_range_stationary is None or recompute:
+            self._is_range_stationary = True
+            for el in self.elem:
+                if 'r' in el[1].keys() and np.size(el[1]['r']) > 1:
+                    self._is_range_stationary = False
+                    break
+        return self._is_range_stationary
+
+    def is_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if all the parameters are
-        stationary - i.e. defined as a unique value - (True), or not (False)."""
-        if not self.is_orientation_stationary():
-            return False
-        if not self.is_weight_stationary():
-            return False
-        if not self.is_range_stationary():
-            return False
-        for el in self.elem:
-            if el[0] in ('gamma', 'power', 'exponential_generalized'):
-                if np.size(el[1]['s']) > 1:
-                    return False
-        return True
+        stationary - i.e. defined as a unique value - (True), or not (False).
 
-    def sill(self):
-        """Returns the sill."""
-        # Prevent calculation if weight is not stationary
-        if not self.is_weight_stationary():
-            return None
-        return sum([d['w'] for t, d in self.elem if 'w' in d])
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_stationary
+        """
+        if self._is_stationary is None or recompute:
+            self._is_stationary = self.is_orientation_stationary(recompute) and self.is_weight_stationary(recompute) and self.is_range_stationary(recompute)
+            if self._is_stationary:
+                for t, d in self.elem:
+                    flag = True
+                    for k, v in d.items():
+                        if k in ('w', 'r'):
+                            continue
+                        if np.size(v) > 1:
+                            flag = False
+                            break
+                    if not flag:
+                        self._is_stationary = False
+                        break
+        return self._is_stationary
 
-    def r(self):
-        """Returns the range (max)."""
-        # Prevent calculation if range is not stationary
-        if not self.is_range_stationary():
-            return None
-        r = 0.
-        for t, d in self.elem:
-            if 'r' in d:
-                r = max(r, d['r'])
+    def sill(self, recompute=False):
+        """Returns the sill (sum of weight of each elementary contribution).
 
-        return r
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (float) self._sill
+        """
+        if self._sill is None or recompute:
+            # Prevent calculation if weight is not stationary
+            if not self.is_weight_stationary(recompute):
+                self._sill = None
+                return self._sill
+            # print('Computing sill...')
+            self._sill = sum([d['w'] for t, d in self.elem if 'w' in d])
+        return self._sill
+
+    def r(self, recompute=False):
+        """Returns the range (max over elementary contributions).
+        For each elementary contribution the "effective" range is retrieved,
+        i.e. the distance beyond which the covariance is zero or below 5% of
+        the weight (this corresponds to the parameter r for most of covariance
+        types).
+
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (float) self._r
+        """
+        if self._r is None or recompute:
+            # Prevent calculation if range is not stationary
+            if not self.is_range_stationary(recompute):
+                self._r = None
+                return self._r
+            # print('Computing effective range (max)...')
+            r = 0.
+            for t, d in self.elem:
+                if t in (
+                        'spherical',
+                        'exponential',
+                        'gaussian',
+                        'linear',
+                        'cubic',
+                        'sinus_cardinal',
+                        'gamma',
+                        'power', # not really the range for this case
+                        'exponential_generalized',
+                        ):
+                    r = max(r, d['r'])
+                elif t == 'matern':
+                    def f_tmp(h):
+                        return cov_matern(h, w=1.0, r=d['r'], nu=d['nu']) - 0.05
+                    res = scipy.optimize.root_scalar(f_tmp, bracket=[0, 4.0*d['r']])
+                    r = max(r, res.root)
+            self._r = r
+        return self._r
 
     def func(self):
         """
@@ -343,6 +497,9 @@ class CovModel1D (object):
 
                 elif t == 'exponential_generalized':
                     s = s + cov_exp_gen(h, **d)
+
+                elif t == 'matern':
+                    s = s + cov_matern(h, **d)
 
             return s
 
@@ -392,6 +549,9 @@ class CovModel1D (object):
                 elif t == 'exponential_generalized':
                     s = s + d['w'] - cov_exp_gen(h, **d)
 
+                elif t == 'matern':
+                    s = s + d['w'] - cov_matern(h, **d)
+
             return s
 
         return f
@@ -428,7 +588,7 @@ class CovModel1D (object):
         if hmax is None:
             hmax = 1.2*self.r()
 
-        h = np.linspace(0, hmax, npts)
+        h = np.linspace(hmin, hmax, npts)
         if vario:
             g = self.vario_func()(h)
         else:
@@ -466,12 +626,15 @@ class CovModel2D (object):
                            'power'          (see func geone.covModel.cov_pow)
                            'exponential_generalized'
                                             (see func geone.covModel.cov_exp_gen)
+                           'matern'         (see func geone.covModel.cov_matern)
                         d: (dict) dictionary of required parameters to be
                             passed to the elementary model, excepting
                             the parameter 'r' which must be given here
-                            as a sequence of ranges along each axis
+                            as a sequence (array) of ranges along each axis
                     e.g.
-                       (t, d) = ('power', {w:2.0, r:[1.5, 2.5], s:1.7})
+                       (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5]})
+                       (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5], 's':1.7})
+                       (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5], 'nu':1.5})
                     the final model is the sum of the elementary models
         alpha:  (float) azimuth angle in degrees:
                     the system Ox'y', supporting the axes of the model (ranges),
@@ -500,10 +663,40 @@ class CovModel2D (object):
     def __init__(self,
                  elem=[],
                  alpha=0.,
-                 name=""):
+                 name=None):
+        for el in elem:
+            if el[0] not in (
+                    'nugget',
+                    'spherical',
+                    'exponential',
+                    'gaussian',
+                    'linear',
+                    'cubic',
+                    'sinus_cardinal',
+                    'gamma',
+                    'power',
+                    'exponential_generalized',
+                    'matern'
+                    ):
+                print('ERROR: unknown elementary contribution')
+                return None
         self.elem = elem
         self.alpha = alpha
+        if name is None:
+            if len(elem) == 1:
+                name = 'cov2D-' + elem[0][0]
+            elif len(elem) > 1:
+                name = 'cov2D-multi-contribution'
+            else:
+                name = 'cov2D-zero'
         self.name = name
+        self._r = None  # initialize "internal" variable _r for effective range
+        self._sill = None  # initialize "internal" variable _sill for sill (sum of weight(s))
+        self._mrot = None  # initialize "internal" variable _mrot for rotation matrix
+        self._is_orientation_stationary = None
+        self._is_weight_stationary = None
+        self._is_range_stationary = None
+        self._is_stationary = None
 
     def __repr__(self):
         s = "Covariance model 2D: (Name = {})\n".format(self.name)
@@ -526,88 +719,160 @@ class CovModel2D (object):
         s = s + "         angle -alpha."
         return s
 
-    def is_orientation_stationary(self):
+    def is_orientation_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the orientation is
         stationary - i.e. the angle alpha is defined as a unique value - (True),
-        or not (False)."""
-        return np.size(self.alpha) == 1
+        or not (False).
 
-    def is_weight_stationary(self):
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_orientation_stationary
+        """
+        if self._is_orientation_stationary is None or recompute:
+            self._is_orientation_stationary = np.size(self.alpha) == 1
+        return self._is_orientation_stationary
+
+    def is_weight_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the weight is stationary
         - i.e. the weight (sill) of any elementary contribution is defined as a
-        unique value - (True), or not (False)."""
-        for el in self.elem:
-            if np.size(el[1]['w']) > 1:
-                return False
-        return True
+        unique value - (True), or not (False).
 
-    def is_range_stationary(self):
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_weight_stationary
+        """
+        if self._is_weight_stationary is None or recompute:
+            self._is_weight_stationary = not np.any([np.size(el[1]['w']) > 1 for el in self.elem])
+        return self._is_weight_stationary
+
+    def is_range_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the range in every direction
         is stationary - i.e. the range in any direction and of any elementary
-        contribution is defined as a unique value - (True), or not (False)."""
-        for el in self.elem:
-            if 'r' in el[1].keys():
-                for r in el[1]['r']:
-                    if np.size(r) > 1:
-                        return False
-        return True
+        contribution is defined as a unique value - (True), or not (False).
 
-    def is_stationary(self):
-        """Returns a bool (True / False) indicating if all the parameters are
-        stationary - i.e. defined as a unique value - (True), or not (False)."""
-        if not self.is_orientation_stationary():
-            return False
-        if not self.is_weight_stationary():
-            return False
-        if not self.is_range_stationary():
-            return False
-        for el in self.elem:
-            if el[0] in ('gamma', 'power', 'exponential_generalized'):
-                if np.size(el[1]['s']) > 1:
-                    return False
-        return True
-
-    def sill(self):
-        """Returns the sill."""
-        # Prevent calculation if weight is not stationary
-        if not self.is_weight_stationary():
-            return None
-        return sum([d['w'] for t, d in self.elem if 'w' in d])
-
-    def mrot(self):
-        """Returns the 2x2 matrix m for changing the coordinate system from Ox'y'
-        to Oxy, where Ox' and Oy' are the axes supporting the ranges of the model."""
-        # Prevent calculation if orientation is not stationary
-        if not self.is_orientation_stationary():
-            return None
-        a = self.alpha * np.pi/180.
-        ca, sa = np.cos(a), np.sin(a)
-        return (np.array([[ca, sa], [-sa, ca]]))
-
-    def r12(self):
-        """Returns the range (max) along each axis in the new coordinate system
-        (corresponding the axes of the ellipse supporting the covariance model).
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_range_stationary
         """
-        # Prevent calculation if range is not stationary
-        if not self.is_range_stationary():
-            return None
-        r = [0., 0.]
-        for t, d in self.elem:
-            if 'r' in d:
-                r = np.maximum(r, d['r']) # element-wise maximum
+        if self._is_range_stationary is None or recompute:
+            self._is_range_stationary = True
+            for el in self.elem:
+                if 'r' in el[1].keys() and np.any([np.size(ri) > 1 for ri in el[1]['r']]):
+                    self._is_range_stationary = False
+                    break
+        return self._is_range_stationary
 
-        return r
+    def is_stationary(self, recompute=False):
+        """Returns a bool (True / False) indicating if all the parameters are
+        stationary - i.e. defined as a unique value - (True), or not (False).
 
-    def rxy(self):
-        """Returns the range (max) along each axis in the original coordinate
-        system.
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_stationary
+        """
+        if self._is_stationary is None or recompute:
+            self._is_stationary = self.is_orientation_stationary(recompute) and self.is_weight_stationary(recompute) and self.is_range_stationary(recompute)
+            if self._is_stationary:
+                for t, d in self.elem:
+                    flag = True
+                    for k, v in d.items():
+                        if k in ('w', 'r'):
+                            continue
+                        if np.size(v) > 1:
+                            flag = False
+                            break
+                    if not flag:
+                        self._is_stationary = False
+                        break
+        return self._is_stationary
+
+    def sill(self, recompute=False):
+        """Returns the sill (sum of weight of each elementary contribution).
+
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (float) self._sill
+        """
+        if self._sill is None or recompute:
+            # Prevent calculation if weight is not stationary
+            if not self.is_weight_stationary(recompute):
+                self._sill = None
+                return self._sill
+            # print('Computing sill...')
+            self._sill = sum([d['w'] for t, d in self.elem if 'w' in d])
+        return self._sill
+
+    def mrot(self, recompute=False):
+        """Returns the 2x2 matrix m for changing the coordinate system from Ox'y'
+        to Oxy, where Ox' and Oy' are the axes supporting the ranges of the model.
+
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (2d ndarray of shape (2,2)) self._mrot
+        """
+        if self._mrot is None or recompute:
+            # Prevent calculation if orientation is not stationary
+            if not self.is_orientation_stationary(recompute):
+                self._mrot = None
+                return self._mrot
+            # print('Computing rotation matrix...')
+            a = self.alpha * np.pi/180.
+            ca, sa = np.cos(a), np.sin(a)
+            self._mrot = np.array([[ca, sa], [-sa, ca]])
+        return self._mrot
+
+    def r12(self, recompute=False):
+        """Returns the range (max over elementary contributions) along each axis
+        in the new coordinate system (corresponding to the axes of the ellipse
+        supporting the covariance model).
+        For each elementary contribution the "effective" range is retrieved,
+        i.e. the distance beyond which the covariance is zero or below 5% of
+        the weight (this corresponds to the parameter r for most of covariance
+        types).
+
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (1d ndarray of 2 floats) self._r
+        """
+        if self._r is None or recompute:
+            # Prevent calculation if range is not stationary
+            if not self.is_range_stationary(recompute):
+                self._r = None
+                return self._r
+            # print('Computing effective range (max)...')
+            r = np.array([0., 0.])
+            for t, d in self.elem:
+                if t in (
+                        'spherical',
+                        'exponential',
+                        'gaussian',
+                        'linear',
+                        'cubic',
+                        'sinus_cardinal',
+                        'gamma',
+                        'power', # not really the range for this case
+                        'exponential_generalized',
+                        ):
+                    r = np.maximum(r, d['r']) # element-wise maximum
+                elif t == 'matern':
+                    for i, ri in enumerate(d['r']):
+                        def f_tmp(h):
+                            return cov_matern(h, w=1.0, r=ri, nu=d['nu']) - 0.05
+                        res = scipy.optimize.root_scalar(f_tmp, bracket=[0, 4*ri])
+                        r[i] = max(r[i], res.root)
+            self._r = r
+        return self._r
+
+    def rxy(self, recompute=False):
+        """Returns the range (max over elementary contributions) along each axis
+        in the original coordinate system.
+        For each elementary contribution the "effective" range is retrieved,
+        i.e. the distance beyond which the covariance is zero or below 5% of
+        the weight (this corresponds to the parameter r for most of covariance
+        types).
+
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (1d ndarray of 2 floats) effective range along
+                                original system axes
         """
         # Prevent calculation if range or orientation is not stationary
-        if not self.is_range_stationary() or not self.is_orientation_stationary():
+        if not self.is_range_stationary(recompute) or not self.is_orientation_stationary(recompute):
             return None
-        r12 = self.r12()
-        m = np.abs(self.mrot())
-
+        r12 = self.r12(recompute)
+        m = np.abs(self.mrot(recompute))
         return np.maximum(r12[0] * m[:,0], r12[1] * m[:,1]) # element-wise maximum
 
     def func(self):
@@ -661,6 +926,9 @@ class CovModel2D (object):
 
                 elif t == 'exponential_generalized':
                     s = s + cov_exp_gen(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'matern':
+                    s = s + cov_matern(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
             return s
 
@@ -717,6 +985,9 @@ class CovModel2D (object):
 
                 elif t == 'exponential_generalized':
                     s = s + d['w'] - cov_exp_gen(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'matern':
+                    s = s + d['w'] - cov_matern(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
             return s
 
@@ -1003,12 +1274,15 @@ class CovModel3D (object):
                            'power'          (see func geone.covModel.cov_pow)
                            'exponential_generalized'
                                             (see func geone.covModel.cov_exp_gen)
+                           'matern'         (see func geone.covModel.cov_matern)
                         d: (dict) dictionary of required parameters to be
                             passed to the elementary model, excepting
                             the parameter 'r' which must be given here
-                            as a sequence of ranges along each axis
+                            as a sequence (array) of ranges along each axis
                     e.g.
-                       (t, d) = ('power', {w:2.0, r:[1.5, 2.5, 3.0], s:1.7})
+                       (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5, 3.0]})
+                       (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5, 3.0], 's':1.7})
+                       (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5, 3.0], 'nu':1.5})
                     the final model is the sum of the elementary models
         alpha, beta, gamma:
                 (floats) azimuth, dip and plunge angles in degrees:
@@ -1044,12 +1318,42 @@ class CovModel3D (object):
     def __init__(self,
                  elem=[],
                  alpha=0., beta=0., gamma=0.,
-                 name=""):
+                 name=None):
+        for el in elem:
+            if el[0] not in (
+                    'nugget',
+                    'spherical',
+                    'exponential',
+                    'gaussian',
+                    'linear',
+                    'cubic',
+                    'sinus_cardinal',
+                    'gamma',
+                    'power',
+                    'exponential_generalized',
+                    'matern'
+                    ):
+                print('ERROR: unknown elementary contribution')
+                return None
         self.elem = elem
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
+        if name is None:
+            if len(elem) == 1:
+                name = 'cov3D-' + elem[0][0]
+            elif len(elem) > 1:
+                name = 'cov3D-multi-contribution'
+            else:
+                name = 'cov3D-zero'
         self.name = name
+        self._r = None  # initialize "internal" variable _r for effective range
+        self._sill = None  # initialize "internal" variable _sill for sill (sum of weight(s))
+        self._mrot = None  # initialize "internal" variable _mrot for rotation matrix
+        self._is_orientation_stationary = None
+        self._is_weight_stationary = None
+        self._is_range_stationary = None
+        self._is_stationary = None
 
     def __repr__(self):
         s = "Covariance model 3D: (Name = {})\n".format(self.name)
@@ -1074,96 +1378,168 @@ class CovModel3D (object):
         s = s + "         Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''"
         return s
 
-    def is_orientation_stationary(self):
+    def is_orientation_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the orientation is
         stationary - i.e. the angles alpha, beta and gamma are defined as a
-        unique value - (True), or not (False)."""
-        return np.size(self.alpha) == 1 and np.size(self.beta) == 1 and np.size(self.gamma) == 1
+        unique value - (True), or not (False).
 
-    def is_weight_stationary(self):
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_orientation_stationary
+        """
+        if self._is_orientation_stationary is None or recompute:
+            self._is_orientation_stationary = np.size(self.alpha) == 1 and np.size(self.beta) == 1 and np.size(self.gamma) == 1
+        return self._is_orientation_stationary
+
+    def is_weight_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the weight is stationary
         - i.e. the weight (sill) of any elementary contribution is defined as a
-        unique value - (True), or not (False)."""
-        for el in self.elem:
-            if np.size(el[1]['w']) > 1:
-                return False
-        return True
+        unique value - (True), or not (False).
 
-    def is_range_stationary(self):
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_weight_stationary
+        """
+        if self._is_weight_stationary is None or recompute:
+            self._is_weight_stationary = not np.any([np.size(el[1]['w']) > 1 for el in self.elem])
+        return self._is_weight_stationary
+
+    def is_range_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the range in every direction
         is stationary - i.e. the range in any direction and of any elementary
-        contribution is defined as a unique value - (True), or not (False)."""
-        for el in self.elem:
-            if 'r' in el[1].keys():
-                for r in el[1]['r']:
-                    if np.size(r) > 1:
-                        return False
-        return True
+        contribution is defined as a unique value - (True), or not (False).
 
-    def is_stationary(self):
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_range_stationary
+        """
+        if self._is_range_stationary is None or recompute:
+            self._is_range_stationary = True
+            for el in self.elem:
+                if 'r' in el[1].keys() and np.any([np.size(ri) > 1 for ri in el[1]['r']]):
+                    self._is_range_stationary = False
+                    break
+        return self._is_range_stationary
+
+    def is_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if all the parameters are
-        stationary - i.e. defined as a unique value - (True), or not (False)."""
-        if not self.is_orientation_stationary():
-            return False
-        if not self.is_weight_stationary():
-            return False
-        if not self.is_range_stationary():
-            return False
-        for el in self.elem:
-            if el[0] in ('gamma', 'power', 'exponential_generalized'):
-                if np.size(el[1]['s']) > 1:
-                    return False
-        return True
+        stationary - i.e. defined as a unique value - (True), or not (False).
 
-    def sill(self):
-        """Returns the sill."""
-        # Prevent calculation if weight is not stationary
-        if not self.is_weight_stationary():
-            return None
-        return sum([d['w'] for t, d in self.elem if 'w' in d])
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (bool) self._is_stationary
+        """
+        if self._is_stationary is None or recompute:
+            self._is_stationary = self.is_orientation_stationary(recompute) and self.is_weight_stationary(recompute) and self.is_range_stationary(recompute)
+            if self._is_stationary:
+                for t, d in self.elem:
+                    flag = True
+                    for k, v in d.items():
+                        if k in ('w', 'r'):
+                            continue
+                        if np.size(v) > 1:
+                            flag = False
+                            break
+                    if not flag:
+                        self._is_stationary = False
+                        break
+        return self._is_stationary
 
-    def mrot(self):
+    def sill(self, recompute=False):
+        """Returns the sill (sum of weight of each elementary contribution).
+
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (float) self._sill
+        """
+        if self._sill is None or recompute:
+            # Prevent calculation if weight is not stationary
+            if not self.is_weight_stationary(recompute):
+                self._sill = None
+                return self._sill
+            # print('Computing sill...')
+            self._sill = sum([d['w'] for t, d in self.elem if 'w' in d])
+        return self._sill
+
+    def mrot(self, recompute=False):
         """Returns the 3x3 matrix m for changing the coordinate system from
         Ox'''y'''z''' to Oxyz, where Ox''', Oy''', Oz''' are the axes supporting
-        the ranges of the model."""
-        # Prevent calculation if orientation is not stationary
-        if not self.is_orientation_stationary():
-            return None
-        a = self.alpha * np.pi/180.
-        b = self.beta * np.pi/180.
-        c = self.gamma * np.pi/180.
-        ca, sa = np.cos(a), np.sin(a)
-        cb, sb = np.cos(b), np.sin(b)
-        cc, sc = np.cos(c), np.sin(c)
+        the ranges of the model.
 
-        return np.array([[  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc],
-                         [- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc],
-                         [                 cb * sc,     - sb,                  cb * cc ]])
-
-    def r123(self):
-        """Returns the range (max) along each axis in the new coordinate system
-        (corresponding the axes of the ellipse supporting the covariance model).
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (2d ndarray of shape (3,3)) self._mrot
         """
-        # Prevent calculation if range is not stationary
-        if not self.is_range_stationary():
-            return None
-        r = [0., 0., 0.]
-        for t, d in self.elem:
-            if 'r' in d:
-                r = np.maximum(r, d['r']) # element-wise maximum
+        if self._mrot is None or recompute:
+            # Prevent calculation if orientation is not stationary
+            if not self.is_orientation_stationary(recompute):
+                self._mrot = None
+                return self._mrot
+            # print('Computing rotation matrix...')
+            a = self.alpha * np.pi/180.
+            b = self.beta * np.pi/180.
+            c = self.gamma * np.pi/180.
+            ca, sa = np.cos(a), np.sin(a)
+            cb, sb = np.cos(b), np.sin(b)
+            cc, sc = np.cos(c), np.sin(c)
+            self._mrot = np.array([
+                            [  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc],
+                            [- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc],
+                            [                 cb * sc,     - sb,                  cb * cc ]])
+        return self._mrot
 
-        return r
+    def r123(self, recompute=False):
+        """Returns the range (max over elementary contributions) along each axis
+        in the new coordinate system (corresponding to the axes of the ellipse
+        supporting the covariance model).
+        For each elementary contribution the "effective" range is retrieved,
+        i.e. the distance beyond which the covariance is zero or below 5% of
+        the weight (this corresponds to the parameter r for most of covariance
+        types).
 
-    def rxyz(self):
-        """Returns the range (max) along each axis in the original coordinate
-        system.
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (1d ndarray of 3 floats) self._r
+        """
+        if self._r is None or recompute:
+            # Prevent calculation if range is not stationary
+            if not self.is_range_stationary(recompute):
+                self._r = None
+                return self._r
+            # print('Computing effective range (max)...')
+            r = np.array([0., 0., 0.])
+            for t, d in self.elem:
+                if t in (
+                        'spherical',
+                        'exponential',
+                        'gaussian',
+                        'linear',
+                        'cubic',
+                        'sinus_cardinal',
+                        'gamma',
+                        'power', # not really the range for this case
+                        'exponential_generalized',
+                        ):
+                    r = np.maximum(r, d['r']) # element-wise maximum
+                elif t == 'matern':
+                    for i, ri in enumerate(d['r']):
+                        def f_tmp(h):
+                            return cov_matern(h, w=1.0, r=ri, nu=d['nu']) - 0.05
+                        res = scipy.optimize.root_scalar(f_tmp, bracket=[0, 4*ri])
+                        r[i] = max(r[i], res.root)
+            self._r = r
+        return self._r
+
+    def rxyz(self, recompute=False):
+        """Returns the range (max over elementary contributions) along each axis
+        in the original coordinate system.
+        For each elementary contribution the "effective" range is retrieved,
+        i.e. the distance beyond which the covariance is zero or below 5% of
+        the weight (this corresponds to the parameter r for most of covariance
+        types).
+
+        :param recompute:   (bool) True to force (re-)computing
+        :return:            (1d ndarray of 2 floats) effective range along
+                                original system axes
         """
         # Prevent calculation if range or orientation is not stationary
-        if not self.is_range_stationary() or not self.is_orientation_stationary():
+        if not self.is_range_stationary(recompute) or not self.is_orientation_stationary(recompute):
             return None
-        r123 = self.r123()
-        m = np.abs(self.mrot())
-
+        r123 = self.r123(recompute)
+        m = np.abs(self.mrot(recompute))
         return np.maximum(r123[0] * m[:,0], r123[1] * m[:,1], r123[2] * m[:,2]) # element-wise maximum
 
     def func(self):
@@ -1217,6 +1593,9 @@ class CovModel3D (object):
 
                 elif t == 'exponential_generalized':
                     s = s + cov_exp_gen(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'matern':
+                    s = s + cov_matern(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
             return s
 
@@ -1273,6 +1652,9 @@ class CovModel3D (object):
 
                 elif t == 'exponential_generalized':
                     s = s + d['w'] - cov_exp_gen(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+
+                elif t == 'matern':
+                    s = s + d['w'] - cov_matern(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
             return s
 
@@ -2125,7 +2507,7 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
             return None, None
 
     # Fit with curve_fit
-    popt, pcov = curve_fit(func, h, g, **kwargs)
+    popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
 
     if make_plot:
         cov_model_opt.plot_model(vario=True, hmax=np.max(h), label='vario opt.')
@@ -2736,7 +3118,7 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
             return None, None
 
     # Fit with curve_fit
-    popt, pcov = curve_fit(func, h, g, **kwargs)
+    popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
 
     if make_plot:
         cov_model_opt.plot_model(vario=True, figsize=figsize)
@@ -3285,7 +3667,7 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
             return None, None
 
     # Fit with curve_fit
-    popt, pcov = curve_fit(func, h, g, **kwargs)
+    popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
 
     if make_plot:
         # plt.suptitle(textwrap.TextWrapper(width=50).fill(s))

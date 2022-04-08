@@ -2047,36 +2047,72 @@ def pointSetToImage(ps, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0
     return im
 # ----------------------------------------------------------------------------
 
+# # ----------------------------------------------------------------------------
+# def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
+#     """
+#     Convert real point coordinates to index grid:
+#
+#     :param x, y, z:     (float) coordinates of a point
+#     :param sx, sy, sz:  (float) cell size in each direction
+#     :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
+#
+#     :return: ix, iy, iz:
+#                         (3-tuple) grid node index
+#                             in x-, y-, z-axis direction respectively
+#                             Warning: no check if the node is within the grid
+#     """
+#     jx = (x-ox)/sx
+#     jy = (y-oy)/sy
+#     jz = (z-oz)/sz
+#
+#     ix = int(jx)
+#     iy = int(jy)
+#     iz = int(jz)
+#
+#     # round to lower index if between two grid node
+#     if ix == jx and ix > 0:
+#         ix = ix - 1
+#     if iy == jy and iy > 0:
+#         iy = iy - 1
+#     if iz == jz and iz > 0:
+#         iz = iz - 1
+#
+#     return ix, iy, iz
+# # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
     """
-    Convert real point coordinates to index grid:
+    Convert real point coordinates to index grid.
 
-    :param x, y, z:     (float) coordinates of a point
+    :param x, y, z:     (float, or 1-d array of floats) coordinates of point(s)
     :param sx, sy, sz:  (float) cell size in each direction
     :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
 
     :return: ix, iy, iz:
-                        (3-tuple) grid node index
-                            in x-, y-, z-axis direction respectively
-                            Warning: no check if the node is within the grid
+                        (3-tuple of floats or 1-d of floats) grid node index
+                            in x-, y-, z-axis direction respectively for each
+                            point given in input
+                            Warning: no check if the node(s) is within the grid
     """
+    # Get node index (nearest node)
+    c = np.array((np.atleast_1d(x), np.atleast_1d(y), np.atleast_1d(z))).T
+    jc = (c - np.array([ox, oy, oz]))/np.array([sx, sy, sz])
+    ic = jc.astype(int)
 
-    jx = (x-ox)/sx
-    jy = (y-oy)/sy
-    jz = (z-oz)/sz
+    # Round to lower index if between two grid node and index is positive
+    ic = ic - 1 * np.all((ic == jc, ic > 0), axis=0)
 
-    ix = int(jx)
-    iy = int(jy)
-    iz = int(jz)
+    ix = ic[:, 0]
+    iy = ic[:, 1]
+    iz = ic[:, 2]
 
-    # round to lower index if between two grid node
-    if ix == jx and ix > 0:
-        ix = ix -1
-    if iy == jy and iy > 0:
-        iy = iy -1
-    if iz == jz and iz > 0:
-        iz = iz -1
+    # Set ix (resp. iy, iz) as int if x (resp. y, z) is float (or int) in input
+    if np.asarray(x).ndim == 0:
+        ix = ix[0]
+    if np.asarray(y).ndim == 0:
+        iy = iy[0]
+    if np.asarray(z).ndim == 0:
+        iz = iz[0]
 
     return ix, iy, iz
 # ----------------------------------------------------------------------------
@@ -2084,7 +2120,7 @@ def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
 # ----------------------------------------------------------------------------
 def gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz):
     """
-    Convert a grid index (3 indices) into a single grid index:
+    Convert a grid index (3 indices) into a single grid index.
 
     :param ix, iy, iz:  (int) grid index in x-, y-, z-axis direction
     :param nx, ny, nz:  (int) number of grid cells in each direction
@@ -2099,7 +2135,7 @@ def gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz):
 # ----------------------------------------------------------------------------
 def singleGridIndexToGridIndex(i, nx, ny, nz):
     """
-    Convert a single into a grid index (3 indices):
+    Convert a single into a grid index (3 indices).
 
     :param i:           (int) single grid index
     :param nx, ny, nz:  (int) number of grid cells in each direction
@@ -2116,6 +2152,73 @@ def singleGridIndexToGridIndex(i, nx, ny, nz):
     ix = j%nx
 
     return ix, iy, iz
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def aggregateDataPointsInGrid(x, y, z, v, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
+    """
+    Remove points out of the grid and aggregate data points falling in a same grid cell
+    by taking the mean coordinates and the mean value for each variable.
+
+    :param x, y, z:     (1-d array of floats) coordinates of point(s)
+    :param v:           (float, or 1-d array of floats, or 2-d array of floats)
+                            values attached to point(s), each row of v (if 2-d array)
+                            corresponds to a same variable
+    :param nx, ny, nz:  (int) number of grid cells in each direction
+    :param sx, sy, sz:  (float) cell size in each direction
+    :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
+
+    :return: x, y, z, v:
+                        (4-tuple): points with aggregated information
+                            x, y, z: 1-d arrays of floats
+                            v: 1- or 2-d arrays of floats
+    """
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    z = np.atleast_1d(z)
+    v = np.atleast_2d(v)
+
+    # Keep only the points within the grid
+    ind = np.all((x >= ox, x <= ox+sx*nx, y >= oy, y <= oy+sy*ny, z >= oz, z <= oz+sz*nz), axis=0)
+    if not np.any(ind):
+        # no point in the grid
+        x = np.zeros(0)
+        y = np.zeros(0)
+        z = np.zeros(0)
+        v = np.zeros(shape=np.repeat(0, v.ndim))
+        return x, y, z, v
+
+    x = x[ind]
+    y = y[ind]
+    z = z[ind]
+    v = v[:, ind].T
+
+    # Get node index (nearest node)
+    c = np.array((x, y, z)).T
+    jc = (c - np.array([ox, oy, oz]))/np.array([sx, sy, sz])
+    ic = jc.astype(int)
+
+    # Round to lower index if between two grid node and index is positive
+    ic = ic - 1 * np.all((ic == jc, ic > 0), axis=0)
+
+    ix, iy, iz = ic[:, 0], ic[:, 1], ic[:, 2]
+    ic = ix + nx * (iy + ny * iz) # single-indices
+
+    ic_unique, ic_inv = np.unique(ic, return_inverse=True)
+    if len(ic_unique) != len(ic):
+        nxy = nx*ny
+        ic = ic_unique
+        iz = ic//nxy
+        j = ic%nxy
+        iy = j//nx
+        ix = j%nx
+        c = np.array([c[ic_inv==j].mean(axis=0) for j in range(len(ic_unique))])
+        v = np.array([v[ic_inv==j].mean(axis=0) for j in range(len(ic_unique))])
+
+    x, y, z = c.T # unpack
+    v = v.T
+
+    return x, y, z, v
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------

@@ -294,8 +294,11 @@ MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER = _geosclassic.MPDS_GEOS_CLASS
 MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_CATEGORY_INDEX = _geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_CATEGORY_INDEX
 MPDS_GEOSCLASSIC_NCATEGORY_MAX = _geosclassic.MPDS_GEOSCLASSIC_NCATEGORY_MAX
 MPDS_GEOSCLASSIC_COV_RANGE_MIN = _geosclassic.MPDS_GEOSCLASSIC_COV_RANGE_MIN
-MPDS_GEOSCLASSIC_COV_POWER_MIN = _geosclassic.MPDS_GEOSCLASSIC_COV_POWER_MIN
 MPDS_GEOSCLASSIC_COV_TOTAL_WEIGHT_MIN = _geosclassic.MPDS_GEOSCLASSIC_COV_TOTAL_WEIGHT_MIN
+MPDS_GEOSCLASSIC_COV_POWER_MIN = _geosclassic.MPDS_GEOSCLASSIC_COV_POWER_MIN
+MPDS_GEOSCLASSIC_COV_POWER_MAX = _geosclassic.MPDS_GEOSCLASSIC_COV_POWER_MAX
+MPDS_GEOSCLASSIC_COV_MATERN_NU_MIN = _geosclassic.MPDS_GEOSCLASSIC_COV_MATERN_NU_MIN
+MPDS_GEOSCLASSIC_COV_MATERN_NU_MAX = _geosclassic.MPDS_GEOSCLASSIC_COV_MATERN_NU_MAX
 MPDS_GEOSCLASSIC_TOLEREANCE_ON_SUM_PROBABILITY = _geosclassic.MPDS_GEOSCLASSIC_TOLEREANCE_ON_SUM_PROBABILITY
 MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN = _geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN
 MPDS_GEOSCLASSIC_NGIBBSSAMPLERPATH_MIN = _geosclassic.MPDS_GEOSCLASSIC_NGIBBSSAMPLERPATH_MIN
@@ -311,6 +314,7 @@ COV_SINUS_CARDINAL = _geosclassic.COV_SINUS_CARDINAL
 COV_GAMMA = _geosclassic.COV_GAMMA
 COV_POWER = _geosclassic.COV_POWER
 COV_EXPONENTIAL_GENERALIZED = _geosclassic.COV_EXPONENTIAL_GENERALIZED
+COV_MATERN = _geosclassic.COV_MATERN
 class mpds_covModelElem(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_covModelElem, name, value)
@@ -622,10 +626,14 @@ class mpds_geosClassicInput(_object):
     __swig_getmethods__["varianceImage"] = _geosclassic.mpds_geosClassicInput_varianceImage_get
     if _newclass:
         varianceImage = _swig_property(_geosclassic.mpds_geosClassicInput_varianceImage_get, _geosclassic.mpds_geosClassicInput_varianceImage_set)
-    __swig_setmethods__["nGibbsSamplerPath"] = _geosclassic.mpds_geosClassicInput_nGibbsSamplerPath_set
-    __swig_getmethods__["nGibbsSamplerPath"] = _geosclassic.mpds_geosClassicInput_nGibbsSamplerPath_get
+    __swig_setmethods__["nGibbsSamplerPathMin"] = _geosclassic.mpds_geosClassicInput_nGibbsSamplerPathMin_set
+    __swig_getmethods__["nGibbsSamplerPathMin"] = _geosclassic.mpds_geosClassicInput_nGibbsSamplerPathMin_get
     if _newclass:
-        nGibbsSamplerPath = _swig_property(_geosclassic.mpds_geosClassicInput_nGibbsSamplerPath_get, _geosclassic.mpds_geosClassicInput_nGibbsSamplerPath_set)
+        nGibbsSamplerPathMin = _swig_property(_geosclassic.mpds_geosClassicInput_nGibbsSamplerPathMin_get, _geosclassic.mpds_geosClassicInput_nGibbsSamplerPathMin_set)
+    __swig_setmethods__["nGibbsSamplerPathMax"] = _geosclassic.mpds_geosClassicInput_nGibbsSamplerPathMax_set
+    __swig_getmethods__["nGibbsSamplerPathMax"] = _geosclassic.mpds_geosClassicInput_nGibbsSamplerPathMax_get
+    if _newclass:
+        nGibbsSamplerPathMax = _swig_property(_geosclassic.mpds_geosClassicInput_nGibbsSamplerPathMax_get, _geosclassic.mpds_geosClassicInput_nGibbsSamplerPathMax_set)
     __swig_setmethods__["seed"] = _geosclassic.mpds_geosClassicInput_seed_set
     __swig_getmethods__["seed"] = _geosclassic.mpds_geosClassicInput_seed_get
     if _newclass:
@@ -1345,6 +1353,13 @@ MPDS_WARNING_MSG_05120 = _geosclassic.MPDS_WARNING_MSG_05120
 MPDS_WARNING_MSG_05130 = _geosclassic.MPDS_WARNING_MSG_05130
 MPDS_WARNING_MSG_05131 = _geosclassic.MPDS_WARNING_MSG_05131
 MPDS_WARNING_MSG_05200 = _geosclassic.MPDS_WARNING_MSG_05200
+MPDS_WARNING_MSG_06830 = _geosclassic.MPDS_WARNING_MSG_06830
+MPDS_WARNING_MSG_06835 = _geosclassic.MPDS_WARNING_MSG_06835
+MPDS_WARNING_MSG_06836 = _geosclassic.MPDS_WARNING_MSG_06836
+MPDS_WARNING_MSG_06837 = _geosclassic.MPDS_WARNING_MSG_06837
+MPDS_WARNING_MSG_06838 = _geosclassic.MPDS_WARNING_MSG_06838
+MPDS_WARNING_MSG_06839 = _geosclassic.MPDS_WARNING_MSG_06839
+MPDS_WARNING_MSG_06840 = _geosclassic.MPDS_WARNING_MSG_06840
 MPDS_WARNING_MSG_08001 = _geosclassic.MPDS_WARNING_MSG_08001
 MPDS_WARNING_MSG_99998 = _geosclassic.MPDS_WARNING_MSG_99998
 MPDS_MAX_NWARNING = _geosclassic.MPDS_MAX_NWARNING

@@ -53,6 +53,8 @@ setuptools.setup(
     author_email="julien.straubhaar@unine.ch",
     description="Geostatistics simulation tools",
     long_description=long_description,
+    long_description_content_type='text/markdown',
+    url='https://github.com/randlab/geone',
     install_requires=['matplotlib', 'numpy', 'pyvista', 'scipy'],
     packages=['geone', 'geone.deesse_core', 'geone.geosclassic_core'],
     package_dir={'geone':'geone', 'geone.deesse_core':deesse_core_dir, 'geone.geosclassic_core':geosclassic_core_dir},

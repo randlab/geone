@@ -207,7 +207,7 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     w_flag = True   # weight to be set if True
     r_flag = True   # ranges to be set if True
-    s_flag = False  # s (power) to be set if True
+    s_flag = False  # s (additional parameter) to be set if True
 
     # type
     if covModelElem_py[0] == 'nugget':
@@ -228,12 +228,19 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     elif covModelElem_py[0] == 'gamma':
         covModelElem_c.covModelType = geosclassic.COV_GAMMA
         s_flag = True
+        s_name = 's'
     elif covModelElem_py[0] == 'power':
         covModelElem_c.covModelType = geosclassic.COV_POWER
         s_flag = True
+        s_name = 's'
     elif covModelElem_py[0] == 'exponential_generalized':
         covModelElem_c.covModelType = geosclassic.COV_EXPONENTIAL_GENERALIZED
         s_flag = True
+        s_name = 's'
+    elif covModelElem_py[0] == 'matern':
+        covModelElem_c.covModelType = geosclassic.COV_MATERN
+        s_flag = True
+        s_name = 'nu'
 
     # weight
     if w_flag:
@@ -280,9 +287,9 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         covModelElem_c.rzImageFlag = geosclassic.FALSE
         covModelElem_c.rzValue = 0.0
 
-    # s (power)
+    # s (additional parameter)
     if s_flag:
-        param = covModelElem_py[1]['s']
+        param = covModelElem_py[1][s_name]
         if np.size(param) == 1:
             covModelElem_c.sImageFlag = geosclassic.FALSE
             covModelElem_c.sValue = float(param)
@@ -343,7 +350,7 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     w_flag = True   # weight to be set if True
     r_flag = True   # ranges to be set if True
-    s_flag = False  # s (power) to be set if True
+    s_flag = False  # s (additional parameter) to be set if True
 
     # type
     if covModelElem_py[0] == 'nugget':
@@ -364,12 +371,19 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     elif covModelElem_py[0] == 'gamma':
         covModelElem_c.covModelType = geosclassic.COV_GAMMA
         s_flag = True
+        s_name = 's'
     elif covModelElem_py[0] == 'power':
         covModelElem_c.covModelType = geosclassic.COV_POWER
         s_flag = True
+        s_name = 's'
     elif covModelElem_py[0] == 'exponential_generalized':
         covModelElem_c.covModelType = geosclassic.COV_EXPONENTIAL_GENERALIZED
         s_flag = True
+        s_name = 's'
+    elif covModelElem_py[0] == 'matern':
+        covModelElem_c.covModelType = geosclassic.COV_MATERN
+        s_flag = True
+        s_name = 'nu'
 
     # weight
     if w_flag:
@@ -430,9 +444,9 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         covModelElem_c.rzImageFlag = geosclassic.FALSE
         covModelElem_c.rzValue = 0.0
 
-    # s (power)
+    # s (additional parameter)
     if s_flag:
-        param = covModelElem_py[1]['s']
+        param = covModelElem_py[1][s_name]
         if np.size(param) == 1:
             covModelElem_c.sImageFlag = geosclassic.FALSE
             covModelElem_c.sValue = float(param)
@@ -493,7 +507,7 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     w_flag = True   # weight to be set if True
     r_flag = True   # ranges to be set if True
-    s_flag = False  # s (power) to be set if True
+    s_flag = False  # s (additional parameter) to be set if True
 
     # type
     if covModelElem_py[0] == 'nugget':
@@ -514,12 +528,19 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     elif covModelElem_py[0] == 'gamma':
         covModelElem_c.covModelType = geosclassic.COV_GAMMA
         s_flag = True
+        s_name = 's'
     elif covModelElem_py[0] == 'power':
         covModelElem_c.covModelType = geosclassic.COV_POWER
         s_flag = True
+        s_name = 's'
     elif covModelElem_py[0] == 'exponential_generalized':
         covModelElem_c.covModelType = geosclassic.COV_EXPONENTIAL_GENERALIZED
         s_flag = True
+        s_name = 's'
+    elif covModelElem_py[0] == 'matern':
+        covModelElem_c.covModelType = geosclassic.COV_MATERN
+        s_flag = True
+        s_name = 'nu'
 
     # weight
     if w_flag:
@@ -594,9 +615,9 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
                      nv=1, val=param)
             covModelElem_c.rzImage = img_py2C(im)
 
-    # s (power)
+    # s (additional parameter)
     if s_flag:
-        param = covModelElem_py[1]['s']
+        param = covModelElem_py[1][s_name]
         if np.size(param) == 1:
             covModelElem_c.sImageFlag = geosclassic.FALSE
             covModelElem_c.sValue = float(param)
@@ -852,7 +873,8 @@ def fill_mpds_geosClassicInput(
         searchRadiusRelative,
         nneighborMax,
         searchNeighborhoodSortMode,
-        nGibbsSamplerPath,
+        nGibbsSamplerPathMin,
+        nGibbsSamplerPathMax,
         seed,
         nreal):
     """
@@ -998,8 +1020,11 @@ def fill_mpds_geosClassicInput(
         print("ERROR: can not integrate 'var' (not compatible with simulation grid)")
         return mpds_geosClassicInput, False
 
-    # mpds_geosClassicInput.nGibbsSamplerPath
-    mpds_geosClassicInput.nGibbsSamplerPath = int(nGibbsSamplerPath)
+    # mpds_geosClassicInput.nGibbsSamplerPathMin
+    mpds_geosClassicInput.nGibbsSamplerPathMin = int(nGibbsSamplerPathMin)
+
+    # mpds_geosClassicInput.nGibbsSamplerPathMax
+    mpds_geosClassicInput.nGibbsSamplerPathMax = int(nGibbsSamplerPathMax)
 
     # mpds_geosClassicInput.seed
     if seed is None:
@@ -1029,7 +1054,8 @@ def simulate1D(
         searchRadiusRelative=1.0,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
-        nGibbsSamplerPath=50,
+        nGibbsSamplerPathMin=50,
+        nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
         nthreads=-1, verbose=1):
@@ -1125,13 +1151,12 @@ def simulate1D(
                                   then searchNeighborhoodSortMode must be set to 0
                                 - greatest possible value as default
 
-    :param nGibbsSamplerPath:
-                        (int) number of Gibbs sampler paths to deal with inequality data
-                            the conditioning locations with inequality data are first simulated
-                            (with truncated gaussian distribution) sequentially; then, these
-                            locations are re-simulated following a new path as many times as
-                            desired; this parameter (nGibbsSamplerPath) is the total number
-                            of path(s)
+    :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
+                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
+                            data; the conditioning locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially; then, these locations
+                            are re-simulated following a new path as many times as needed; the total
+                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
 
     :param seed:        (int or None) initial seed, if None an initial seed between
                             1 and 999999 is generated with numpy.random.randint
@@ -1348,7 +1373,8 @@ def simulate1D(
         searchRadiusRelative,
         nneighborMax,
         searchNeighborhoodSortMode,
-        nGibbsSamplerPath,
+        nGibbsSamplerPathMin,
+        nGibbsSamplerPathMax,
         seed,
         nreal)
 
@@ -1445,7 +1471,8 @@ def simulate2D(
         searchRadiusRelative=1.0,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
-        nGibbsSamplerPath=50,
+        nGibbsSamplerPathMin=50,
+        nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
         nthreads=-1, verbose=1):
@@ -1548,13 +1575,12 @@ def simulate2D(
                                   then searchNeighborhoodSortMode must be set to 0
                                 - greatest possible value as default
 
-    :param nGibbsSamplerPath:
-                        (int) number of Gibbs sampler paths to deal with inequality data
-                            the conditioning locations with inequality data are first simulated
-                            (with truncated gaussian distribution) sequentially; then, these
-                            locations are re-simulated following a new path as many times as
-                            desired; this parameter (nGibbsSamplerPath) is the total number
-                            of path(s)
+    :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
+                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
+                            data; the conditioning locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially; then, these locations
+                            are re-simulated following a new path as many times as needed; the total
+                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
 
     :param seed:        (int or None) initial seed, if None an initial seed between
                             1 and 999999 is generated with numpy.random.randint
@@ -1777,7 +1803,8 @@ def simulate2D(
         searchRadiusRelative,
         nneighborMax,
         searchNeighborhoodSortMode,
-        nGibbsSamplerPath,
+        nGibbsSamplerPathMin,
+        nGibbsSamplerPathMax,
         seed,
         nreal)
 
@@ -1874,7 +1901,8 @@ def simulate3D(
         searchRadiusRelative=1.0,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
-        nGibbsSamplerPath=50,
+        nGibbsSamplerPathMin=50,
+        nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
         nthreads=-1, verbose=1):
@@ -1977,13 +2005,12 @@ def simulate3D(
                                   then searchNeighborhoodSortMode must be set to 0
                                 - greatest possible value as default
 
-    :param nGibbsSamplerPath:
-                        (int) number of Gibbs sampler paths to deal with inequality data
-                            the conditioning locations with inequality data are first simulated
-                            (with truncated gaussian distribution) sequentially; then, these
-                            locations are re-simulated following a new path as many times as
-                            desired; this parameter (nGibbsSamplerPath) is the total number
-                            of path(s)
+    :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
+                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
+                            data; the conditioning locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially; then, these locations
+                            are re-simulated following a new path as many times as needed; the total
+                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
 
     :param seed:        (int or None) initial seed, if None an initial seed between
                             1 and 999999 is generated with numpy.random.randint
@@ -2218,7 +2245,8 @@ def simulate3D(
         searchRadiusRelative,
         nneighborMax,
         searchNeighborhoodSortMode,
-        nGibbsSamplerPath,
+        nGibbsSamplerPathMin,
+        nGibbsSamplerPathMax,
         seed,
         nreal)
 
@@ -2595,6 +2623,7 @@ def estimate1D(
         searchRadiusRelative,
         nneighborMax,
         searchNeighborhoodSortMode,
+        0,
         0,
         0,
         0)
@@ -2983,6 +3012,7 @@ def estimate2D(
         searchRadiusRelative,
         nneighborMax,
         searchNeighborhoodSortMode,
+        0,
         0,
         0,
         0)
@@ -3383,6 +3413,7 @@ def estimate3D(
         searchRadiusRelative,
         nneighborMax,
         searchNeighborhoodSortMode,
+        0,
         0,
         0,
         0)
