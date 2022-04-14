@@ -498,7 +498,9 @@ def grf1D(cov_model,
             mean = np.array([np.mean(v)])
 
     else: # x is None (unconditional)
-        mean = np.array([0.0])
+        if mean is None:
+            # Set mean for grf
+            mean = np.array([0.0])
 
     del(ccirc)
     #### End of preliminary computation ####
@@ -1700,7 +1702,9 @@ def grf2D(cov_model,
             mean = np.array([np.mean(v)])
 
     else: # x is None (unconditional)
-        mean = np.array([0.0])
+        if mean is None:
+            # Set mean for grf
+            mean = np.array([0.0])
 
     del(ccirc)
     #### End of preliminary computation ####
@@ -2939,7 +2943,9 @@ def grf3D(cov_model,
             mean = np.array([np.mean(v)])
 
     else: # x is None (unconditional)
-        mean = np.array([0.0])
+        if mean is None:
+            # Set mean for grf
+            mean = np.array([0.0])
 
     del(ccirc)
     #### End of preliminary computation ####

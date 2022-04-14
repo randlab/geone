@@ -5,9 +5,11 @@ GEONE is a python package providing a set of tools for geostatistical and multip
    - other classical geostatistical tools (two-point statistics analysis (covariance, variogram, connectivity) / simulation (SGS, SIS) / estimation (kriging))
 
 ## Installation
-To install the package: `python3 -m pip install .`
+*Note: package for python 3*
 
-To uninstall the package: `python3 -m pip uninstall -y geone`
+To install the package: `python -m pip install .`
+
+To uninstall the package: `python -m pip uninstall -y geone`
 
 ## Requirements
 The following python packages are used by 'geone':
@@ -40,6 +42,8 @@ Various examples are provided (notebooks in 'examples' directory) to get started
    - `ex_deesse_12_multiple_TIs.ipynb`: simulation using multiple training images
    - `ex_deesse_13_inequality_data.ipynb`: simulations with inequality data
    - `ex_deesse_14_rotation3D.ipynb`: simulations with rotation in 3D
+- Elementary covariance models:
+   - `ex_elementary_cov_model.ipynb`: illustrations of elementary covariance/variogram models (in 1D)
 - Gaussian random fields (GRF):
    - `ex_grf_1d.ipynb`: example for the generation of 1D fields
    - `ex_grf_2d.ipynb`: example for the generation of 2D fields
