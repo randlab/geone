@@ -1000,7 +1000,7 @@ def fill_mpds_geosClassicInput(
                  nv=1, val=mean)
         mpds_geosClassicInput.meanImage = img_py2C(im)
     else:
-        print("ERROR: can not integrate 'mean' (not compatible with simulation grid)")
+        # print("ERROR: can not integrate 'mean' (not compatible with simulation grid)")
         return mpds_geosClassicInput, False
 
     # mpds_geosClassicInput.varianceUsage, mpds_geosClassicInput.varianceValue, mpds_geosClassicInput.varianceImage
@@ -1017,7 +1017,7 @@ def fill_mpds_geosClassicInput(
                  nv=1, val=var)
         mpds_geosClassicInput.varianceImage = img_py2C(im)
     else:
-        print("ERROR: can not integrate 'var' (not compatible with simulation grid)")
+        # print("ERROR: can not integrate 'var' (not compatible with simulation grid)")
         return mpds_geosClassicInput, False
 
     # mpds_geosClassicInput.nGibbsSamplerPathMin
@@ -1058,7 +1058,7 @@ def simulate1D(
         nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Generates 1D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
@@ -1077,24 +1077,30 @@ def simulate1D(
                                 simulation based on ordinary kriging
     :param nreal:       (int) number of realizations
 
-    :param mean:        (None or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
+                            - callable (function):
+                                       function of one argument (xi) that returns
+                                       the mean at xi (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
-                                as many entries as number of grid cells
-                                (reshaped if needed)
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or float or ndarray) variance of the simulation
+    :param var:         (None or callable (function) or float or ndarray) variance  of the simulation
                             (for simple kriging only):
-                                - None   : variance not modified
-                                           (only covariance model is used)
-                                - float  : for stationary variance (set manually)
-                                - ndarray: for non stationary variance, must contain
-                                    as many entries as number of grid cells
-                                    (reshaped if needed)
+                            - None   : variance not modified
+                                       (only covariance model is used)
+                            - callable (function):
+                                       function of one argument (xi) that returns
+                                       the variance at xi (in the grid)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             this parameter must be None (only covariance model
                             is used)
@@ -1169,10 +1175,11 @@ def simulate1D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -1207,26 +1214,30 @@ def simulate1D(
     # --- Check and prepare parameters
     # cov_model
     if not isinstance(cov_model, gcm.CovModel1D):
-        print("ERROR (SIMUL_1D): 'cov_model' (first argument) is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE1D): 'cov_model' (first argument) is not valid")
         return None
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            print("ERROR (SIMUL_1D): 'cov_model': weight ('w') not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (SIMULATE1D): 'cov_model': weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             r  = el[1]['r']
             if np.size(r) != 1 and np.size(r) != nxyz:
-                print("ERROR (SIMUL_1D): 'cov_model': range ('r') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (SIMULATE1D): 'cov_model': range ('r') not compatible with simulation grid")
                 return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                print("ERROR (SIMUL_1D): 'cov_model': parameter ('s') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (SIMULATE1D): 'cov_model': parameter ('s') not compatible with simulation grid")
                 return None
 
     # method
@@ -1235,14 +1246,16 @@ def simulate1D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (SIMUL_1D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (SIMULATE1D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        print("ERROR (SIMUL_1D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE1D): 'method' is not valid")
         return None
 
     # data points: x, v, xIneqMin, vIneqMin, xIneqMax, vIneqMax
@@ -1253,7 +1266,8 @@ def simulate1D(
         x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (SIMUL_1D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE1D): length of 'v' is not valid")
             return None
         xc = x
         yc = np.ones_like(xc) * oy + 0.5 * sy
@@ -1267,7 +1281,8 @@ def simulate1D(
         xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMin) != xIneqMin.shape[0]:
-            print("(ERROR (SIMUL_1D): length of 'vIneqMin' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE1D): length of 'vIneqMin' is not valid")
             return None
         xc = xIneqMin
         yc = np.ones_like(xc) * oy + 0.5 * sy
@@ -1281,7 +1296,8 @@ def simulate1D(
         xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMax) != xIneqMax.shape[0]:
-            print("(ERROR (SIMUL_1D): length of 'vIneqMax' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE1D): length of 'vIneqMax' is not valid")
             return None
         xc = xIneqMax
         yc = np.ones_like(xc) * oy + 0.5 * sy
@@ -1295,17 +1311,20 @@ def simulate1D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (SIMUL_1D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE1D): 'mask' is not valid")
             return None
 
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-        print("ERROR (SIMUL_1D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+        if verbose > 0:
+            print("ERROR (SIMULATE1D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
         return None
 
     # Check parameters - nneighborMax
     if nneighborMax != -1 and nneighborMax <= 0:
-        print("ERROR (SIMUL_1D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+        if verbose > 0:
+            print("ERROR (SIMULATE1D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
         return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -1320,39 +1339,53 @@ def simulate1D(
     else:
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
-                print("ERROR (SIMUL_1D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                if verbose > 0:
+                    print("ERROR (SIMULATE1D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
                 return None
         elif searchNeighborhoodSortMode == 1:
             if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                print("ERROR (SIMUL_1D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                if verbose > 0:
+                    print("ERROR (SIMULATE1D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                 return None
 
     # Check parameters - mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (SIMUL_1D): specifying 'mean' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (SIMULATE1D): specifying 'mean' not allowed with ordinary kriging")
         #     return None
-        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(mean):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            mean = mean(xi) # replace function 'mean' by its evaluation on the grid
+        else:
+            mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nxyz):
-            print("ERROR (SIMUL_1D): size of 'mean' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE1D): size of 'mean' is not valid")
             return None
 
     # Check parameters - var
     if var is not None:
         if method == 'ordinary_kriging':
-            print("ERROR (SIMUL_1D): specifying 'var' not allowed with ordinary kriging")
+            if verbose > 0:
+                print("ERROR (SIMULATE1D): specifying 'var' not allowed with ordinary kriging")
             return None
-        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(var):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            var = var(xi) # replace function 'var' by its evaluation on the grid
+        else:
+            var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nxyz):
-            print("ERROR (SIMUL_1D): size of 'var' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE1D): size of 'var' is not valid")
             return None
 
     # Check parameters - nreal
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 1:
-            print('SIMUL_1D: nreal <= 0: nothing to do!')
+        if verbose >= 2:
+            print('SIMULATE1D: nreal <= 0: nothing to do!')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -1379,7 +1412,8 @@ def simulate1D(
         nreal)
 
     if not flag:
-        print("ERROR (SIMUL_1D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (SIMULATE1D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -1400,9 +1434,9 @@ def simulate1D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -1414,7 +1448,7 @@ def simulate1D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -1429,9 +1463,10 @@ def simulate1D(
     geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -1445,11 +1480,11 @@ def simulate1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -1475,7 +1510,7 @@ def simulate2D(
         nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Generates 2D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
@@ -1496,24 +1531,30 @@ def simulate2D(
                                 simulation based on ordinary kriging
     :param nreal:       (int) number of realizations
 
-    :param mean:        (None or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
+                            - callable (function):
+                                       function of two arguments (xi, yi) that returns
+                                       the mean at (xi, yi) (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
-                                as many entries as number of grid cells
-                                (reshaped if needed)
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or float or ndarray) variance of the simulation
+    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
                             (for simple kriging only):
-                                - None   : variance not modified
-                                           (only covariance model is used)
-                                - float  : for stationary variance (set manually)
-                                - ndarray: for non stationary variance, must contain
-                                    as many entries as number of grid cells
-                                    (reshaped if needed)
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - callable (function):
+                                       function of two arguments (xi, yi) that returns
+                                       the variance at (xi, yi) (in the grid)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             this parameter must be None (only covariance model
                             is used)
@@ -1593,10 +1634,11 @@ def simulate2D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -1631,32 +1673,37 @@ def simulate2D(
     # --- Check and prepare parameters
     # cov_model
     if not isinstance(cov_model, gcm.CovModel2D):
-        print("ERROR (SIMUL_2D): 'cov_model' (first argument) is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE2D): 'cov_model' (first argument) is not valid")
         return None
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            print("ERROR (SIMUL_2D): 'cov_model': weight ('w') not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (SIMULATE2D): 'cov_model': weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    print("ERROR (SIMUL_2D): 'cov_model': range ('r') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE2D): 'cov_model': range ('r') not compatible with simulation grid")
                     return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                print("ERROR (SIMUL_2D): 'cov_model': parameter ('s') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (SIMULATE2D): 'cov_model': parameter ('s') not compatible with simulation grid")
                 return None
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        print("ERROR (SIMUL_2D): 'cov_model': angle (alpha) not compatible with simulation grid")
+        if verbose > 0:
+            print("ERROR (SIMULATE2D): 'cov_model': angle (alpha) not compatible with simulation grid")
         return None
 
     # method
@@ -1665,14 +1712,16 @@ def simulate2D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (SIMUL_2D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (SIMULATE2D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        print("ERROR (SIMUL_2D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE2D): 'method' is not valid")
         return None
 
     # data points: x, v, xIneqMin, vIneqMin, xIneqMax, vIneqMax
@@ -1683,7 +1732,8 @@ def simulate2D(
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (SIMUL_2D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE2D): length of 'v' is not valid")
             return None
         xc = x[:,0]
         yc = x[:,1]
@@ -1697,7 +1747,8 @@ def simulate2D(
         xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMin) != xIneqMin.shape[0]:
-            print("(ERROR (SIMUL_2D): length of 'vIneqMin' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE2D): length of 'vIneqMin' is not valid")
             return None
         xc = xIneqMin[:,0]
         yc = xIneqMin[:,1]
@@ -1711,7 +1762,8 @@ def simulate2D(
         xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMax) != xIneqMax.shape[0]:
-            print("(ERROR (SIMUL_2D): length of 'vIneqMax' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE2D): length of 'vIneqMax' is not valid")
             return None
         xc = xIneqMax[:,0]
         yc = xIneqMax[:,1]
@@ -1725,17 +1777,20 @@ def simulate2D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (SIMUL_2D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE2D): 'mask' is not valid")
             return None
 
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-        print("ERROR (SIMUL_2D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+        if verbose > 0:
+            print("ERROR (SIMULATE2D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
         return None
 
     # Check parameters - nneighborMax
     if nneighborMax != -1 and nneighborMax <= 0:
-        print("ERROR (SIMUL_2D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+        if verbose > 0:
+            print("ERROR (SIMULATE2D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
         return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -1750,39 +1805,57 @@ def simulate2D(
     else:
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
-                print("ERROR (SIMUL_2D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                if verbose > 0:
+                    print("ERROR (SIMULATE2D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
                 return None
         elif searchNeighborhoodSortMode == 1:
             if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                print("ERROR (SIMUL_2D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                if verbose > 0:
+                    print("ERROR (SIMULATE2D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                 return None
 
     # Check parameters - mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (SIMUL_2D): specifying 'mean' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (SIMULATE2D): specifying 'mean' not allowed with ordinary kriging")
         #     return None
-        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(mean):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            xxi, yyi = np.meshgrid(xi, yi)
+            mean = mean(xxi, yyi) # replace function 'mean' by its evaluation on the grid
+        else:
+            mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nxyz):
-            print("ERROR (SIMUL_2D): size of 'mean' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE2D): size of 'mean' is not valid")
             return None
 
     # Check parameters - var
     if var is not None:
         if method == 'ordinary_kriging':
-            print("ERROR (SIMUL_2D): specifying 'var' not allowed with ordinary kriging")
+            if verbose > 0:
+                print("ERROR (SIMULATE2D): specifying 'var' not allowed with ordinary kriging")
             return None
-        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(var):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            xxi, yyi = np.meshgrid(xi, yi)
+            var = var(xxi, yyi) # replace function 'var' by its evaluation on the grid
+        else:
+            var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nxyz):
-            print("ERROR (SIMUL_2D): size of 'var' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE2D): size of 'var' is not valid")
             return None
 
     # Check parameters - nreal
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 1:
-            print('SIMUL_2D: nreal <= 0: nothing to do!')
+        if verbose >= 2:
+            print('SIMULATE2D: nreal <= 0: nothing to do!')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -1809,7 +1882,8 @@ def simulate2D(
         nreal)
 
     if not flag:
-        print("ERROR (SIMUL_2D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (SIMULATE2D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -1830,9 +1904,9 @@ def simulate2D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -1844,7 +1918,7 @@ def simulate2D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -1859,9 +1933,10 @@ def simulate2D(
     geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -1875,11 +1950,11 @@ def simulate2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -1905,7 +1980,7 @@ def simulate3D(
         nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Generates 3D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
@@ -1926,24 +2001,30 @@ def simulate3D(
                                 simulation based on ordinary kriging
     :param nreal:       (int) number of realizations
 
-    :param mean:        (None or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
+                            - callable (function):
+                                       function of three arguments (xi, yi, zi) that returns
+                                       the mean at (xi, yi, zi) (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
-                                as many entries as number of grid cells
-                                (reshaped if needed)
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or float or ndarray) variance of the simulation
+    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
                             (for simple kriging only):
-                                - None   : variance not modified
-                                           (only covariance model is used)
-                                - float  : for stationary variance (set manually)
-                                - ndarray: for non stationary variance, must contain
-                                    as many entries as number of grid cells
-                                    (reshaped if needed)
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - callable (function):
+                                       function of three arguments (xi, yi, zi) that returns
+                                       the variance at (xi, yi, zi) (in the grid)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             this parameter must be None (only covariance model
                             is used)
@@ -2023,10 +2104,11 @@ def simulate3D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -2061,44 +2143,51 @@ def simulate3D(
     # --- Check and prepare parameters
     # cov_model
     if not isinstance(cov_model, gcm.CovModel3D):
-        print("ERROR (SIMUL_3D): 'cov_model' (first argument) is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE3D): 'cov_model' (first argument) is not valid")
         return None
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            print("ERROR (SIMUL_3D): 'cov_model': weight ('w') not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (SIMULATE3D): 'cov_model': weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    print("ERROR (SIMUL_3D): 'cov_model': range ('r') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE3D): 'cov_model': range ('r') not compatible with simulation grid")
                     return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                print("ERROR (SIMUL_3D): 'cov_model': parameter ('s') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (SIMULATE3D): 'cov_model': parameter ('s') not compatible with simulation grid")
                 return None
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        print("ERROR (SIMUL_3D): 'cov_model': angle (alpha) not compatible with simulation grid")
+        if verbose > 0:
+            print("ERROR (SIMULATE3D): 'cov_model': angle (alpha) not compatible with simulation grid")
         return None
 
     # beta
     angle = cov_model.beta
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        print("ERROR (SIMUL_3D): 'cov_model': angle (beta) not compatible with simulation grid")
+        if verbose > 0:
+            print("ERROR (SIMULATE3D): 'cov_model': angle (beta) not compatible with simulation grid")
         return None
 
     # gamma
     angle = cov_model.gamma
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        print("ERROR (SIMUL_3D): 'cov_model': angle (gamma) not compatible with simulation grid")
+        if verbose > 0:
+            print("ERROR (SIMULATE3D): 'cov_model': angle (gamma) not compatible with simulation grid")
         return None
 
     # method
@@ -2107,14 +2196,16 @@ def simulate3D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (SIMUL_3D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (SIMULATE3D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        print("ERROR (SIMUL_3D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE3D): 'method' is not valid")
         return None
 
     # data points: x, v, xIneqMin, vIneqMin, xIneqMax, vIneqMax
@@ -2125,7 +2216,8 @@ def simulate3D(
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (SIMUL_3D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE3D): length of 'v' is not valid")
             return None
         xc = x[:,0]
         yc = x[:,1]
@@ -2139,7 +2231,8 @@ def simulate3D(
         xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMin) != xIneqMin.shape[0]:
-            print("(ERROR (SIMUL_3D): length of 'vIneqMin' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE3D): length of 'vIneqMin' is not valid")
             return None
         xc = xIneqMin[:,0]
         yc = xIneqMin[:,1]
@@ -2153,7 +2246,8 @@ def simulate3D(
         xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMax) != xIneqMax.shape[0]:
-            print("(ERROR (SIMUL_3D): length of 'vIneqMax' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE3D): length of 'vIneqMax' is not valid")
             return None
         xc = xIneqMax[:,0]
         yc = xIneqMax[:,1]
@@ -2167,17 +2261,20 @@ def simulate3D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (SIMUL_3D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE3D): 'mask' is not valid")
             return None
 
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-        print("ERROR (SIMUL_3D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+        if verbose > 0:
+            print("ERROR (SIMULATE3D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
         return None
 
     # Check parameters - nneighborMax
     if nneighborMax != -1 and nneighborMax <= 0:
-        print("ERROR (SIMUL_3D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+        if verbose > 0:
+            print("ERROR (SIMULATE3D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
         return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -2192,39 +2289,59 @@ def simulate3D(
     else:
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
-                print("ERROR (SIMUL_3D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                if verbose > 0:
+                    print("ERROR (SIMULATE3D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
                 return None
         elif searchNeighborhoodSortMode == 1:
             if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                print("ERROR (SIMUL_3D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                if verbose > 0:
+                    print("ERROR (SIMULATE3D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                 return None
 
     # Check parameters - mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (SIMUL_3D): specifying 'mean' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (SIMULATE3D): specifying 'mean' not allowed with ordinary kriging")
         #     return None
-        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(mean):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
+            zzi, yyi, xxi = np.meshgrid(zi, yi, xi, indexing='ij')
+            mean = mean(xxi, yyi, zzi) # replace function 'mean' by its evaluation on the grid
+        else:
+            mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nxyz):
-            print("ERROR (SIMUL_3D): size of 'mean' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE3D): size of 'mean' is not valid")
             return None
 
     # Check parameters - var
     if var is not None:
         if method == 'ordinary_kriging':
-            print("ERROR (SIMUL_3D): specifying 'var' not allowed with ordinary kriging")
+            if verbose > 0:
+                print("ERROR (SIMULATE3D): specifying 'var' not allowed with ordinary kriging")
             return None
-        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(var):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
+            zzi, yyi, xxi = np.meshgrid(zi, yi, xi, indexing='ij')
+            var = var(xxi, yyi, zzi) # replace function 'var' by its evaluation on the grid
+        else:
+            var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nxyz):
-            print("ERROR (SIMUL_3D): size of 'var' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE3D): size of 'var' is not valid")
             return None
 
     # Check parameters - nreal
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 1:
-            print('SIMUL_3D: nreal <= 0: nothing to do!')
+        if verbose >= 2:
+            print('SIMULATE3D: nreal <= 0: nothing to do!')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -2251,7 +2368,8 @@ def simulate3D(
         nreal)
 
     if not flag:
-        print("ERROR (SIMUL_3D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (SIMULATE3D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -2272,9 +2390,9 @@ def simulate3D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -2286,7 +2404,7 @@ def simulate3D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -2301,9 +2419,10 @@ def simulate3D(
     geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -2317,11 +2436,11 @@ def simulate3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -2342,7 +2461,7 @@ def estimate1D(
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Computes estimate and standard deviation for 1D grid of simple or ordinary kriging.
 
@@ -2359,24 +2478,30 @@ def estimate1D(
                             - 'ordinary_kriging':
                                 simulation based on ordinary kriging
 
-    :param mean:        (None or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
+                            - callable (function):
+                                       function of one argument (xi) that returns
+                                       the mean at xi (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
-                                as many entries as number of grid cells
-                                (reshaped if needed)
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or float or ndarray) variance of the simulation
+    :param var:         (None or callable (function) or float or ndarray) variance  of the simulation
                             (for simple kriging only):
-                                - None   : variance not modified
-                                           (only covariance model is used)
-                                - float  : for stationary variance (set manually)
-                                - ndarray: for non stationary variance, must contain
-                                    as many entries as number of grid cells
-                                    (reshaped if needed)
+                            - None   : variance not modified
+                                       (only covariance model is used)
+                            - callable (function):
+                                       function of one argument (xi) that returns
+                                       the variance at xi (in the grid)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             this parameter must be None (only covariance model
                             is used)
@@ -2447,10 +2572,11 @@ def estimate1D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -2485,26 +2611,30 @@ def estimate1D(
     # --- Check and prepare parameters
     # cov_model
     if not isinstance(cov_model, gcm.CovModel1D):
-        print("ERROR (ESTIM_1D): 'cov_model' (first argument) is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE1D): 'cov_model' (first argument) is not valid")
         return None
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            print("ERROR (ESTIM_1D): 'cov_model': weight ('w') not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE1D): 'cov_model': weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             r  = el[1]['r']
             if np.size(r) != 1 and np.size(r) != nxyz:
-                print("ERROR (ESTIM_1D): 'cov_model': range ('r') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (ESTIMATE1D): 'cov_model': range ('r') not compatible with simulation grid")
                 return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                print("ERROR (ESTIM_1D): 'cov_model': parameter ('s') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (ESTIMATE1D): 'cov_model': parameter ('s') not compatible with simulation grid")
                 return None
 
     # method
@@ -2513,14 +2643,16 @@ def estimate1D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (ESTIM_1D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (ESTIMATE1D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        print("ERROR (ESTIM_1D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE1D): 'method' is not valid")
         return None
 
     # data points: x, v
@@ -2531,7 +2663,8 @@ def estimate1D(
         x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (ESTIM_1D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (ESTIMATE1D): length of 'v' is not valid")
             return None
         xc = x
         yc = np.ones_like(xc) * oy + 0.5 * sy
@@ -2545,7 +2678,8 @@ def estimate1D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (ESTIM_1D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE1D): 'mask' is not valid")
             return None
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
@@ -2558,12 +2692,14 @@ def estimate1D(
     else:
        # Check parameters - searchRadiusRelative
        if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-           print("ERROR (ESTIM_1D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+           if verbose > 0:
+               print("ERROR (ESTIMATE1D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
            return None
 
        # Check parameters - nneighborMax
        if nneighborMax != -1 and nneighborMax <= 0:
-           print("ERROR (ESTIM_1D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+           if verbose > 0:
+               print("ERROR (ESTIMATE1D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
            return None
 
        # Check parameters - searchNeighborhoodSortMode
@@ -2578,31 +2714,45 @@ def estimate1D(
        else:
            if searchNeighborhoodSortMode == 2:
                if not cov_model.is_stationary():
-                   print("ERROR (ESTIM_1D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                   if verbose > 0:
+                       print("ERROR (ESTIMATE1D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
                    return None
            elif searchNeighborhoodSortMode == 1:
                if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                   print("ERROR (ESTIM_1D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                   if verbose > 0:
+                       print("ERROR (ESTIMATE1D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                    return None
 
     # Check parameters - mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (ESTIM_1D): specifying 'mean' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (ESTIMATE1D): specifying 'mean' not allowed with ordinary kriging")
         #     return None
-        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(mean):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            mean = mean(xi) # replace function 'mean' by its evaluation on the grid
+        else:
+            mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nxyz):
-            print("ERROR (ESTIM_1D): size of 'mean' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE1D): size of 'mean' is not valid")
             return None
 
     # Check parameters - var
     if var is not None:
         if method == 'ordinary_kriging':
-            print("ERROR (ESTIM_1D): specifying 'var' not allowed with ordinary kriging")
+            if verbose > 0:
+                print("ERROR (ESTIMATE1D): specifying 'var' not allowed with ordinary kriging")
             return None
-        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(var):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            var = var(xi) # replace function 'var' by its evaluation on the grid
+        else:
+            var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nxyz):
-            print("ERROR (ESTIM_1D): size of 'var' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE1D): size of 'var' is not valid")
             return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -2629,7 +2779,8 @@ def estimate1D(
         0)
 
     if not flag:
-        print("ERROR (ESTIM_1D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (ESTIMATE1D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -2650,9 +2801,9 @@ def estimate1D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -2664,7 +2815,7 @@ def estimate1D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -2679,9 +2830,10 @@ def estimate1D(
     geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -2695,11 +2847,11 @@ def estimate1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -2720,7 +2872,7 @@ def estimate2D(
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Computes estimate and standard deviation for 2D grid of simple or ordinary kriging.
 
@@ -2739,24 +2891,30 @@ def estimate2D(
                             - 'ordinary_kriging':
                                 simulation based on ordinary kriging
 
-    :param mean:        (None or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
+                            - callable (function):
+                                       function of two arguments (xi, yi) that returns
+                                       the mean at (xi, yi) (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
-                                as many entries as number of grid cells
-                                (reshaped if needed)
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or float or ndarray) variance of the simulation
+    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
                             (for simple kriging only):
-                                - None   : variance not modified
-                                           (only covariance model is used)
-                                - float  : for stationary variance (set manually)
-                                - ndarray: for non stationary variance, must contain
-                                    as many entries as number of grid cells
-                                    (reshaped if needed)
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - callable (function):
+                                       function of two arguments (xi, yi) that returns
+                                       the variance at (xi, yi) (in the grid)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             this parameter must be None (only covariance model
                             is used)
@@ -2830,10 +2988,11 @@ def estimate2D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -2868,32 +3027,37 @@ def estimate2D(
     # --- Check and prepare parameters
     # cov_model
     if not isinstance(cov_model, gcm.CovModel2D):
-        print("ERROR (ESTIM_2D): 'cov_model' (first argument) is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE2D): 'cov_model' (first argument) is not valid")
         return None
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            print("ERROR (ESTIM_2D): 'cov_model': weight ('w') not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE2D): 'cov_model': weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    print("ERROR (ESTIM_2D): 'cov_model': range ('r') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (ESTIMATE2D): 'cov_model': range ('r') not compatible with simulation grid")
                     return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                print("ERROR (ESTIM_2D): 'cov_model': parameter ('s') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (ESTIMATE2D): 'cov_model': parameter ('s') not compatible with simulation grid")
                 return None
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        print("ERROR (ESTIM_2D): 'cov_model': angle (alpha) not compatible with simulation grid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE2D): 'cov_model': angle (alpha) not compatible with simulation grid")
         return None
 
     # method
@@ -2902,14 +3066,16 @@ def estimate2D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (ESTIM_2D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (ESTIMATE2D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        print("ERROR (ESTIM_2D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE2D): 'method' is not valid")
         return None
 
     # data points: x, v
@@ -2920,7 +3086,8 @@ def estimate2D(
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (ESTIM_2D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (ESTIMATE2D): length of 'v' is not valid")
             return None
         xc = x[:,0]
         yc = x[:,1]
@@ -2934,7 +3101,8 @@ def estimate2D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (ESTIM_2D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE2D): 'mask' is not valid")
             return None
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
@@ -2947,12 +3115,14 @@ def estimate2D(
     else:
        # Check parameters - searchRadiusRelative
        if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-           print("ERROR (ESTIM_2D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+           if verbose > 0:
+               print("ERROR (ESTIMATE2D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
            return None
 
        # Check parameters - nneighborMax
        if nneighborMax != -1 and nneighborMax <= 0:
-           print("ERROR (ESTIM_2D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+           if verbose > 0:
+               print("ERROR (ESTIMATE2D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
            return None
 
        # Check parameters - searchNeighborhoodSortMode
@@ -2967,31 +3137,49 @@ def estimate2D(
        else:
            if searchNeighborhoodSortMode == 2:
                if not cov_model.is_stationary():
-                   print("ERROR (ESTIM_2D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                   if verbose > 0:
+                       print("ERROR (ESTIMATE2D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
                    return None
            elif searchNeighborhoodSortMode == 1:
                if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                   print("ERROR (ESTIM_2D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                   if verbose > 0:
+                       print("ERROR (ESTIMATE2D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                    return None
 
     # Check parameters - mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (ESTIM_2D): specifying 'mean' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (ESTIMATE2D): specifying 'mean' not allowed with ordinary kriging")
         #     return None
-        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(mean):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            xxi, yyi = np.meshgrid(xi, yi)
+            mean = mean(xxi, yyi) # replace function 'mean' by its evaluation on the grid
+        else:
+            mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nxyz):
-            print("ERROR (ESTIM_2D): size of 'mean' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE2D): size of 'mean' is not valid")
             return None
 
     # Check parameters - var
     if var is not None:
         if method == 'ordinary_kriging':
-            print("ERROR (ESTIM_2D): specifying 'var' not allowed with ordinary kriging")
+            if verbose > 0:
+                print("ERROR (ESTIMATE2D): specifying 'var' not allowed with ordinary kriging")
             return None
-        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(var):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            xxi, yyi = np.meshgrid(xi, yi)
+            var = var(xxi, yyi) # replace function 'var' by its evaluation on the grid
+        else:
+            var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nxyz):
-            print("ERROR (ESTIM_2D): size of 'var' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE2D): size of 'var' is not valid")
             return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -3018,7 +3206,8 @@ def estimate2D(
         0)
 
     if not flag:
-        print("ERROR (ESTIM_2D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (ESTIMATE2D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -3039,9 +3228,9 @@ def estimate2D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -3053,7 +3242,7 @@ def estimate2D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -3068,9 +3257,10 @@ def estimate2D(
     geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -3084,11 +3274,11 @@ def estimate2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -3109,7 +3299,7 @@ def estimate3D(
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Computes estimate and standard deviation for 3D grid of simple or ordinary kriging.
 
@@ -3128,24 +3318,30 @@ def estimate3D(
                             - 'ordinary_kriging':
                                 simulation based on ordinary kriging
 
-    :param mean:        (None or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
+                            - callable (function):
+                                       function of three arguments (xi, yi, zi) that returns
+                                       the mean at (xi, yi, zi) (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
-                                as many entries as number of grid cells
-                                (reshaped if needed)
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or float or ndarray) variance of the simulation
+    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
                             (for simple kriging only):
-                                - None   : variance not modified
-                                           (only covariance model is used)
-                                - float  : for stationary variance (set manually)
-                                - ndarray: for non stationary variance, must contain
-                                    as many entries as number of grid cells
-                                    (reshaped if needed)
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - callable (function):
+                                       function of three arguments (xi, yi, zi) that returns
+                                       the variance at (xi, yi, zi) (in the grid)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
                             For ordinary kriging (method='ordinary_kriging'),
                             this parameter must be None (only covariance model
                             is used)
@@ -3219,10 +3415,11 @@ def estimate3D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -3257,44 +3454,51 @@ def estimate3D(
     # --- Check and prepare parameters
     # cov_model
     if not isinstance(cov_model, gcm.CovModel3D):
-        print("ERROR (ESTIM_3D): 'cov_model' (first argument) is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE3D): 'cov_model' (first argument) is not valid")
         return None
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            print("ERROR (ESTIM_3D): 'cov_model': weight ('w') not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE3D): 'cov_model': weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    print("ERROR (ESTIM_3D): 'cov_model': range ('r') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (ESTIMATE3D): 'cov_model': range ('r') not compatible with simulation grid")
                     return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                print("ERROR (ESTIM_3D): 'cov_model': parameter ('s') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (ESTIMATE3D): 'cov_model': parameter ('s') not compatible with simulation grid")
                 return None
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        print("ERROR (ESTIM_3D): 'cov_model': angle (alpha) not compatible with simulation grid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE3D): 'cov_model': angle (alpha) not compatible with simulation grid")
         return None
 
     # beta
     angle = cov_model.beta
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        print("ERROR (ESTIM_3D): 'cov_model': angle (beta) not compatible with simulation grid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE3D): 'cov_model': angle (beta) not compatible with simulation grid")
         return None
 
     # gamma
     angle = cov_model.gamma
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        print("ERROR (ESTIM_3D): 'cov_model': angle (gamma) not compatible with simulation grid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE3D): 'cov_model': angle (gamma) not compatible with simulation grid")
         return None
 
     # method
@@ -3303,14 +3507,16 @@ def estimate3D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (ESTIM_3D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (ESTIMATE3D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        print("ERROR (ESTIM_3D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE3D): 'method' is not valid")
         return None
 
     # data points: x, v
@@ -3321,7 +3527,8 @@ def estimate3D(
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (ESTIM_3D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (ESTIMATE3D): length of 'v' is not valid")
             return None
         xc = x[:,0]
         yc = x[:,1]
@@ -3335,7 +3542,8 @@ def estimate3D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (ESTIM_3D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE3D): 'mask' is not valid")
             return None
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
@@ -3348,12 +3556,14 @@ def estimate3D(
     else:
        # Check parameters - searchRadiusRelative
        if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-           print("ERROR (ESTIM_3D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+           if verbose > 0:
+               print("ERROR (ESTIMATE3D): 'searchRadiusRelative' too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
            return None
 
        # Check parameters - nneighborMax
        if nneighborMax != -1 and nneighborMax <= 0:
-           print("ERROR (ESTIM_3D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+           if verbose > 0:
+               print("ERROR (ESTIMATE3D): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
            return None
 
        # Check parameters - searchNeighborhoodSortMode
@@ -3368,31 +3578,51 @@ def estimate3D(
        else:
            if searchNeighborhoodSortMode == 2:
                if not cov_model.is_stationary():
-                   print("ERROR (ESTIM_3D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                   if verbose > 0:
+                       print("ERROR (ESTIMATE3D): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
                    return None
            elif searchNeighborhoodSortMode == 1:
                if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                   print("ERROR (ESTIM_3D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                   if verbose > 0:
+                       print("ERROR (ESTIMATE3D): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                    return None
 
     # Check parameters - mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (ESTIM_3D): specifying 'mean' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (ESTIMATE3D): specifying 'mean' not allowed with ordinary kriging")
         #     return None
-        mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(mean):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
+            zzi, yyi, xxi = np.meshgrid(zi, yi, xi, indexing='ij')
+            mean = mean(xxi, yyi, zzi) # replace function 'mean' by its evaluation on the grid
+        else:
+            mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nxyz):
-            print("ERROR (ESTIM_3D): size of 'mean' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE3D): size of 'mean' is not valid")
             return None
 
     # Check parameters - var
     if var is not None:
         if method == 'ordinary_kriging':
-            print("ERROR (ESTIM_3D): specifying 'var' not allowed with ordinary kriging")
+            if verbose > 0:
+                print("ERROR (ESTIMATE3D): specifying 'var' not allowed with ordinary kriging")
             return None
-        var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if callable(var):
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
+            zzi, yyi, xxi = np.meshgrid(zi, yi, xi, indexing='ij')
+            var = var(xxi, yyi, zzi) # replace function 'var' by its evaluation on the grid
+        else:
+            var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nxyz):
-            print("ERROR (ESTIM_3D): size of 'var' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE3D): size of 'var' is not valid")
             return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -3419,7 +3649,8 @@ def estimate3D(
         0)
 
     if not flag:
-        print("ERROR (ESTIM_3D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (ESTIMATE3D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -3440,9 +3671,9 @@ def estimate3D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -3454,7 +3685,7 @@ def estimate3D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -3469,9 +3700,10 @@ def estimate3D(
     geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -3485,11 +3717,11 @@ def estimate3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -3696,7 +3928,7 @@ def simulateIndicator1D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Generates 1D simulations (Sequential Indicator Simulation, SIS) based on
     simple or ordinary kriging.
@@ -3812,10 +4044,11 @@ def simulateIndicator1D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -3852,12 +4085,14 @@ def simulateIndicator1D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        print("ERROR (SIMUL_INDIC_1D): 'category_values' is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR1D): 'category_values' is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        print("ERROR (SIMUL_INDIC_1D): 'category_values' is empty")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR1D): 'category_values' is empty")
         return None
 
     # cov_model_for_category
@@ -3865,10 +4100,12 @@ def simulateIndicator1D(
     if len(cov_model_for_category) == 1:
         cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
     elif len(cov_model_for_category) != ncategory:
-        print("ERROR (SIMUL_INDIC_1D): 'cov_model_for_category' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR1D): 'cov_model_for_category' of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel1D) for c in cov_model_for_category]):
-        print("ERROR (SIMUL_INDIC_1D): 'cov_model_for_category' should contains CovModel1D objects")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR1D): 'cov_model_for_category' should contains CovModel1D objects")
         return None
 
     for cov_model in cov_model_for_category:
@@ -3876,19 +4113,22 @@ def simulateIndicator1D(
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                print("ERROR (SIMUL_INDIC_1D): covariance model: weight ('w') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (SIMULATE_INDICATOR1D): covariance model: weight ('w') not compatible with simulation grid")
                 return None
             # ranges
             if 'r' in el[1].keys():
                 r  = el[1]['r']
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    print("ERROR (SIMUL_INDIC_1D): covariance model: range ('r') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE_INDICATOR1D): covariance model: range ('r') not compatible with simulation grid")
                     return None
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    print("ERROR (SIMUL_INDIC_1D): covariance model: parameter ('s') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE_INDICATOR1D): covariance model: parameter ('s') not compatible with simulation grid")
                     return None
 
     # method
@@ -3897,14 +4137,16 @@ def simulateIndicator1D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (SIMUL_INDIC_1D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (SIMULATE_INDICATOR1D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        print("ERROR (SIMUL_INDIC_1D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR1D): 'method' is not valid")
         return None
 
     # data points: x, v
@@ -3915,7 +4157,8 @@ def simulateIndicator1D(
         x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (SIMUL_1D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE_INDICATOR1D): length of 'v' is not valid")
             return None
         xc = x
         yc = np.ones_like(xc) * oy + 0.5 * sy
@@ -3929,7 +4172,8 @@ def simulateIndicator1D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (SIMUL_INDIC_1D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR1D): 'mask' is not valid")
             return None
 
     # Check parameters - searchRadiusRelative
@@ -3937,12 +4181,14 @@ def simulateIndicator1D(
     if len(searchRadiusRelative) == 1:
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
-        print("ERROR (SIMUL_INDIC_1D): 'searchRadiusRelative' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR1D): 'searchRadiusRelative' of invalid length")
         return None
 
     for srr in searchRadiusRelative:
         if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-            print("ERROR (SIMUL_INDIC_1D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR1D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
             return None
 
     # Check parameters - nneighborMax
@@ -3950,12 +4196,14 @@ def simulateIndicator1D(
     if len(nneighborMax) == 1:
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
-        print("ERROR (SIMUL_INDIC_1D): 'nneighborMax' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR1D): 'nneighborMax' of invalid length")
         return None
 
     for nn in nneighborMax:
         if nn != -1 and nn <= 0:
-            print("ERROR (SIMUL_INDIC_1D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR1D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
             return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -3963,7 +4211,8 @@ def simulateIndicator1D(
     if len(searchNeighborhoodSortMode) == 1:
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
-        print("ERROR (SIMUL_INDIC_1D): 'searchNeighborhoodSortMode' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR1D): 'searchNeighborhoodSortMode' of invalid length")
         return None
 
     for i in range(ncategory):
@@ -3978,11 +4227,13 @@ def simulateIndicator1D(
         else:
             if searchNeighborhoodSortMode[i] == 2:
                 if not cov_model_for_category[i].is_stationary():
-                    print("ERROR (SIMUL_INDIC_1D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE_INDICATOR1D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                     return None
             elif searchNeighborhoodSortMode[i] == 1:
                 if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
-                    print("ERROR (SIMUL_INDIC_1D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE_INDICATOR1D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                     return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -3990,11 +4241,13 @@ def simulateIndicator1D(
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (SIMUL_INDIC_1D): specifying 'probability' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (SIMULATE_INDICATOR1D): specifying 'probability' not allowed with ordinary kriging")
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            print("ERROR (SIMUL_INDIC_1D): size of 'probability' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR1D): size of 'probability' is not valid")
             return None
 
     # Check parameters - nreal
@@ -4002,7 +4255,8 @@ def simulateIndicator1D(
 
     if nreal <= 0:
         if verbose >= 1:
-            print('SIMUL_INDIC_1D: nreal <= 0: nothing to do!')
+            if verbose > 0:
+                print('SIMULATE_INDICATOR1D: nreal <= 0: nothing to do!')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -4028,7 +4282,8 @@ def simulateIndicator1D(
         nreal)
 
     if not flag:
-        print("ERROR (SIMUL_INDIC_1D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR1D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -4049,9 +4304,9 @@ def simulateIndicator1D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -4063,7 +4318,7 @@ def simulateIndicator1D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -4078,9 +4333,10 @@ def simulateIndicator1D(
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -4094,11 +4350,11 @@ def simulateIndicator1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -4121,7 +4377,7 @@ def simulateIndicator2D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Generates 2D simulations (Sequential Indicator Simulation, SIS) based on
     simple or ordinary kriging.
@@ -4242,10 +4498,11 @@ def simulateIndicator2D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -4282,12 +4539,14 @@ def simulateIndicator2D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        print("ERROR (SIMUL_INDIC_2D): 'category_values' is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR2D): 'category_values' is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        print("ERROR (SIMUL_INDIC_2D): 'category_values' is empty")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR2D): 'category_values' is empty")
         return None
 
     # cov_model_for_category
@@ -4295,10 +4554,12 @@ def simulateIndicator2D(
     if len(cov_model_for_category) == 1:
         cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
     elif len(cov_model_for_category) != ncategory:
-        print("ERROR (SIMUL_INDIC_2D): 'cov_model_for_category' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR2D): 'cov_model_for_category' of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel2D) for c in cov_model_for_category]):
-        print("ERROR (SIMUL_INDIC_2D): 'cov_model_for_category' should contains CovModel2D objects")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR2D): 'cov_model_for_category' should contains CovModel2D objects")
         return None
 
     for cov_model in cov_model_for_category:
@@ -4306,25 +4567,29 @@ def simulateIndicator2D(
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                print("ERROR (SIMUL_INDIC_2D): covariance model: weight ('w') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (SIMULATE_INDICATOR2D): covariance model: weight ('w') not compatible with simulation grid")
                 return None
             # ranges
             if 'r' in el[1].keys():
                 for r in el[1]['r']:
                     if np.size(r) != 1 and np.size(r) != nxyz:
-                        print("ERROR (SIMUL_INDIC_2D): covariance model: range ('r') not compatible with simulation grid")
+                        if verbose > 0:
+                            print("ERROR (SIMULATE_INDICATOR2D): covariance model: range ('r') not compatible with simulation grid")
                         return None
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    print("ERROR (SIMUL_INDIC_2D): covariance model: parameter ('s') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE_INDICATOR2D): covariance model: parameter ('s') not compatible with simulation grid")
                     return None
 
         # alpha
         angle = cov_model.alpha
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            print("ERROR (SIMUL_INDIC_2D): covariance model: angle (alpha) not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR2D): covariance model: angle (alpha) not compatible with simulation grid")
             return None
 
     # method
@@ -4333,14 +4598,16 @@ def simulateIndicator2D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (SIMUL_INDIC_2D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (SIMULATE_INDICATOR2D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        print("ERROR (SIMUL_INDIC_2D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR2D): 'method' is not valid")
         return None
 
     # data points: x, v
@@ -4351,7 +4618,8 @@ def simulateIndicator2D(
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (SIMUL_INDIC_2D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE_INDICATOR2D): length of 'v' is not valid")
             return None
         xc = x[:,0]
         yc = x[:,1]
@@ -4365,7 +4633,8 @@ def simulateIndicator2D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (SIMUL_INDIC_2D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR2D): 'mask' is not valid")
             return None
 
     # Check parameters - searchRadiusRelative
@@ -4373,12 +4642,14 @@ def simulateIndicator2D(
     if len(searchRadiusRelative) == 1:
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
-        print("ERROR (SIMUL_INDIC_2D): 'searchRadiusRelative' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR2D): 'searchRadiusRelative' of invalid length")
         return None
 
     for srr in searchRadiusRelative:
         if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-            print("ERROR (SIMUL_INDIC_2D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR2D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
             return None
 
     # Check parameters - nneighborMax
@@ -4386,12 +4657,14 @@ def simulateIndicator2D(
     if len(nneighborMax) == 1:
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
-        print("ERROR (SIMUL_INDIC_2D): 'nneighborMax' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR2D): 'nneighborMax' of invalid length")
         return None
 
     for nn in nneighborMax:
         if nn != -1 and nn <= 0:
-            print("ERROR (SIMUL_INDIC_2D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR2D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
             return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -4399,7 +4672,8 @@ def simulateIndicator2D(
     if len(searchNeighborhoodSortMode) == 1:
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
-        print("ERROR (SIMUL_INDIC_2D): 'searchNeighborhoodSortMode' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR2D): 'searchNeighborhoodSortMode' of invalid length")
         return None
 
     for i in range(ncategory):
@@ -4414,11 +4688,13 @@ def simulateIndicator2D(
         else:
             if searchNeighborhoodSortMode[i] == 2:
                 if not cov_model_for_category[i].is_stationary():
-                    print("ERROR (SIMUL_INDIC_2D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE_INDICATOR2D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                     return None
             elif searchNeighborhoodSortMode[i] == 1:
                 if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
-                    print("ERROR (SIMUL_INDIC_2D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE_INDICATOR2D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                     return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -4426,19 +4702,21 @@ def simulateIndicator2D(
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (SIMUL_INDIC_2D): specifying 'probability' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (SIMULATE_INDICATOR2D): specifying 'probability' not allowed with ordinary kriging")
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            print("ERROR (SIMUL_INDIC_2D): size of 'probability' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR2D): size of 'probability' is not valid")
             return None
 
     # Check parameters - nreal
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 1:
-            print('SIMUL_INDIC_2D: nreal <= 0: nothing to do!')
+        if verbose >= 2:
+            print('SIMULATE_INDICATOR2D: nreal <= 0: nothing to do!')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -4464,7 +4742,8 @@ def simulateIndicator2D(
         nreal)
 
     if not flag:
-        print("ERROR (SIMUL_INDIC_2D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR2D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -4485,9 +4764,9 @@ def simulateIndicator2D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -4499,7 +4778,7 @@ def simulateIndicator2D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -4514,9 +4793,10 @@ def simulateIndicator2D(
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -4530,11 +4810,11 @@ def simulateIndicator2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -4557,7 +4837,7 @@ def simulateIndicator3D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Generates 3D simulations (Sequential Indicator Simulation, SIS) based on
     simple or ordinary kriging.
@@ -4678,10 +4958,11 @@ def simulateIndicator3D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -4718,12 +4999,14 @@ def simulateIndicator3D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        print("ERROR (SIMUL_INDIC_3D): 'category_values' is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR3D): 'category_values' is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        print("ERROR (SIMUL_INDIC_3D): 'category_values' is empty")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR3D): 'category_values' is empty")
         return None
 
     # cov_model_for_category
@@ -4731,10 +5014,12 @@ def simulateIndicator3D(
     if len(cov_model_for_category) == 1:
         cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
     elif len(cov_model_for_category) != ncategory:
-        print("ERROR (SIMUL_INDIC_3D): 'cov_model_for_category' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR3D): 'cov_model_for_category' of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel3D) for c in cov_model_for_category]):
-        print("ERROR (SIMUL_INDIC_3D): 'cov_model_for_category' should contains CovModel3D objects")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR3D): 'cov_model_for_category' should contains CovModel3D objects")
         return None
 
     for cov_model in cov_model_for_category:
@@ -4742,37 +5027,43 @@ def simulateIndicator3D(
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                print("ERROR (SIMUL_INDIC_3D): covariance model: weight ('w') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (SIMULATE_INDICATOR3D): covariance model: weight ('w') not compatible with simulation grid")
                 return None
             # ranges
             if 'r' in el[1].keys():
                 for r in el[1]['r']:
                     if np.size(r) != 1 and np.size(r) != nxyz:
-                        print("ERROR (SIMUL_INDIC_3D): covariance model: range ('r') not compatible with simulation grid")
+                        if verbose > 0:
+                            print("ERROR (SIMULATE_INDICATOR3D): covariance model: range ('r') not compatible with simulation grid")
                         return None
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    print("ERROR (SIMUL_INDIC_3D): covariance model: parameter ('s') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE_INDICATOR3D): covariance model: parameter ('s') not compatible with simulation grid")
                     return None
 
         # alpha
         angle = cov_model.alpha
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            print("ERROR (SIMUL_INDIC_3D): covariance model: angle (alpha) not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR3D): covariance model: angle (alpha) not compatible with simulation grid")
             return None
 
         # beta
         angle = cov_model.beta
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            print("ERROR (SIMUL_INDIC_3D): covariance model: angle (beta) not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR3D): covariance model: angle (beta) not compatible with simulation grid")
             return None
 
         # gamma
         angle = cov_model.gamma
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            print("ERROR (SIMUL_INDIC_3D): covariance model: angle (gamma) not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR3D): covariance model: angle (gamma) not compatible with simulation grid")
             return None
 
     # method
@@ -4781,14 +5072,16 @@ def simulateIndicator3D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (SIMUL_INDIC_3D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (SIMULATE_INDICATOR3D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        print("ERROR (SIMUL_INDIC_3D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR3D): 'method' is not valid")
         return None
 
     # data points: x, v
@@ -4799,7 +5092,8 @@ def simulateIndicator3D(
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (SIMUL_INDIC_3D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMULATE_INDICATOR3D): length of 'v' is not valid")
             return None
         xc = x[:,0]
         yc = x[:,1]
@@ -4813,7 +5107,8 @@ def simulateIndicator3D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (SIMUL_INDIC_3D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR3D): 'mask' is not valid")
             return None
 
     # Check parameters - searchRadiusRelative
@@ -4821,12 +5116,14 @@ def simulateIndicator3D(
     if len(searchRadiusRelative) == 1:
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
-        print("ERROR (SIMUL_INDIC_3D): 'searchRadiusRelative' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR3D): 'searchRadiusRelative' of invalid length")
         return None
 
     for srr in searchRadiusRelative:
         if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-            print("ERROR (SIMUL_INDIC_3D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR3D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
             return None
 
     # Check parameters - nneighborMax
@@ -4834,12 +5131,14 @@ def simulateIndicator3D(
     if len(nneighborMax) == 1:
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
-        print("ERROR (SIMUL_INDIC_3D): 'nneighborMax' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR3D): 'nneighborMax' of invalid length")
         return None
 
     for nn in nneighborMax:
         if nn != -1 and nn <= 0:
-            print("ERROR (SIMUL_INDIC_3D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR3D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
             return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -4847,7 +5146,8 @@ def simulateIndicator3D(
     if len(searchNeighborhoodSortMode) == 1:
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
-        print("ERROR (SIMUL_INDIC_3D): 'searchNeighborhoodSortMode' of invalid length")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR3D): 'searchNeighborhoodSortMode' of invalid length")
         return None
 
     for i in range(ncategory):
@@ -4862,11 +5162,13 @@ def simulateIndicator3D(
         else:
             if searchNeighborhoodSortMode[i] == 2:
                 if not cov_model_for_category[i].is_stationary():
-                    print("ERROR (SIMUL_INDIC_3D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE_INDICATOR3D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                     return None
             elif searchNeighborhoodSortMode[i] == 1:
                 if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
-                    print("ERROR (SIMUL_INDIC_3D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                    if verbose > 0:
+                        print("ERROR (SIMULATE_INDICATOR3D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                     return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -4874,19 +5176,21 @@ def simulateIndicator3D(
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (SIMUL_INDIC_3D): specifying 'probability' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (SIMULATE_INDICATOR3D): specifying 'probability' not allowed with ordinary kriging")
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            print("ERROR (SIMUL_INDIC_3D): size of 'probability' is not valid")
+            if verbose > 0:
+                print("ERROR (SIMULATE_INDICATOR3D): size of 'probability' is not valid")
             return None
 
     # Check parameters - nreal
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 1:
-            print('SIMUL_INDIC_3D: nreal <= 0: nothing to do!')
+        if verbose >= 2:
+            print('SIMULATE_INDICATOR3D: nreal <= 0: nothing to do!')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -4912,7 +5216,8 @@ def simulateIndicator3D(
         nreal)
 
     if not flag:
-        print("ERROR (SIMUL_INDIC_3D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (SIMULATE_INDICATOR3D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -4933,9 +5238,9 @@ def simulateIndicator3D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -4947,7 +5252,7 @@ def simulateIndicator3D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -4962,9 +5267,10 @@ def simulateIndicator3D(
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -4978,11 +5284,11 @@ def simulateIndicator3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -5005,7 +5311,7 @@ def estimateIndicator1D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Computes estimate probabilities of categories (indicators) for 1D grid
     based on simple or ordinary kriging.
@@ -5137,10 +5443,11 @@ def estimateIndicator1D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -5180,12 +5487,14 @@ def estimateIndicator1D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        print("ERROR (ESTIM_INDIC_1D): 'category_values' is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR1D): 'category_values' is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        print("ERROR (ESTIM_INDIC_1D): 'category_values' is empty")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR1D): 'category_values' is empty")
         return None
 
     # cov_model_for_category
@@ -5193,10 +5502,12 @@ def estimateIndicator1D(
     if len(cov_model_for_category) == 1:
         cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
     elif len(cov_model_for_category) != ncategory:
-        print("ERROR (ESTIM_INDIC_1D): 'cov_model_for_category' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR1D): 'cov_model_for_category' of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel1D) for c in cov_model_for_category]):
-        print("ERROR (ESTIM_INDIC_1D): 'cov_model_for_category' should contains CovModel1D objects")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR1D): 'cov_model_for_category' should contains CovModel1D objects")
         return None
 
     for cov_model in cov_model_for_category:
@@ -5204,19 +5515,22 @@ def estimateIndicator1D(
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                print("ERROR (ESTIM_INDIC_1D): covariance model: weight ('w') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (ESTIMATE_INDICATOR1D): covariance model: weight ('w') not compatible with simulation grid")
                 return None
             # ranges
             if 'r' in el[1].keys():
                 r  = el[1]['r']
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    print("ERROR (ESTIM_INDIC_1D): covariance model: range ('r') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (ESTIMATE_INDICATOR1D): covariance model: range ('r') not compatible with simulation grid")
                     return None
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    print("ERROR (ESTIM_INDIC_1D): covariance model: parameter ('s') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (ESTIMATE_INDICATOR1D): covariance model: parameter ('s') not compatible with simulation grid")
                     return None
 
     # method
@@ -5225,14 +5539,16 @@ def estimateIndicator1D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (ESTIM_INDIC_1D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (ESTIMATE_INDICATOR1D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        print("ERROR (ESTIM_INDIC_1D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR1D): 'method' is not valid")
         return None
 
     # data points: x, v
@@ -5243,7 +5559,8 @@ def estimateIndicator1D(
         x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (SIMUL_1D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (ESTIMATE_INDICATOR1D): length of 'v' is not valid")
             return None
         xc = x
         yc = np.ones_like(xc) * oy + 0.5 * sy
@@ -5257,7 +5574,8 @@ def estimateIndicator1D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (ESTIM_INDIC_1D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE_INDICATOR1D): 'mask' is not valid")
             return None
 
     # Check parameters - use_unique_neighborhood (length)
@@ -5265,7 +5583,8 @@ def estimateIndicator1D(
     if len(use_unique_neighborhood) == 1:
         use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
     elif len(use_unique_neighborhood) != ncategory:
-        print("ERROR (ESTIM_INDIC_1D): 'use_unique_neighborhood' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR1D): 'use_unique_neighborhood' of invalid length")
         return None
 
     # Check parameters - searchRadiusRelative (length)
@@ -5273,7 +5592,8 @@ def estimateIndicator1D(
     if len(searchRadiusRelative) == 1:
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
-        print("ERROR (ESTIM_INDIC_1D): 'searchRadiusRelative' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR1D): 'searchRadiusRelative' of invalid length")
         return None
 
     # Check parameters - nneighborMax (length)
@@ -5281,7 +5601,8 @@ def estimateIndicator1D(
     if len(nneighborMax) == 1:
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
-        print("ERROR (ESTIM_INDIC_1D): 'nneighborMax' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR1D): 'nneighborMax' of invalid length")
         return None
 
     # Check parameters - searchNeighborhoodSortMode (length)
@@ -5289,7 +5610,8 @@ def estimateIndicator1D(
     if len(searchNeighborhoodSortMode) == 1:
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
-        print("ERROR (ESTIM_INDIC_1D): 'searchNeighborhoodSortMode' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR1D): 'searchNeighborhoodSortMode' of invalid length")
         return None
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
@@ -5303,11 +5625,13 @@ def estimateIndicator1D(
 
         else:
             if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-                print("ERROR (ESTIM_INDIC_1D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+                if verbose > 0:
+                    print("ERROR (ESTIMATE_INDICATOR1D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
                 return None
 
             if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
-                print("ERROR (ESTIM_INDIC_1D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+                if verbose > 0:
+                    print("ERROR (ESTIMATE_INDICATOR1D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
                 return None
 
             if searchNeighborhoodSortMode[i] is None:
@@ -5321,11 +5645,13 @@ def estimateIndicator1D(
             else:
                 if searchNeighborhoodSortMode[i] == 2:
                     if not cov_model_for_category[i].is_stationary():
-                        print("ERROR (ESTIM_INDIC_1D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                        if verbose > 0:
+                            print("ERROR (ESTIMATE_INDICATOR1D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                         return None
                 elif searchNeighborhoodSortMode[i] == 1:
                     if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
-                        print("ERROR (ESTIM_INDIC_1D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                        if verbose > 0:
+                            print("ERROR (ESTIMATE_INDICATOR1D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                         return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -5333,11 +5659,13 @@ def estimateIndicator1D(
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (ESTIM_INDIC_1D): specifying 'probability' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (ESTIMATE_INDICATOR1D): specifying 'probability' not allowed with ordinary kriging")
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            print("ERROR (ESTIM_INDIC_1D): size of 'probability' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE_INDICATOR1D): size of 'probability' is not valid")
             return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -5363,7 +5691,8 @@ def estimateIndicator1D(
         0)
 
     if not flag:
-        print("ERROR (ESTIM_INDIC_1D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR1D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -5384,9 +5713,9 @@ def estimateIndicator1D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -5398,7 +5727,7 @@ def estimateIndicator1D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -5413,9 +5742,10 @@ def estimateIndicator1D(
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -5429,11 +5759,11 @@ def estimateIndicator1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -5456,7 +5786,7 @@ def estimateIndicator2D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Computes estimate probabilities of categories (indicators) for 2D grid
     based on simple or ordinary kriging.
@@ -5593,10 +5923,11 @@ def estimateIndicator2D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -5633,12 +5964,14 @@ def estimateIndicator2D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        print("ERROR (ESTIM_INDIC_2D): 'category_values' is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR2D): 'category_values' is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        print("ERROR (ESTIM_INDIC_2D): 'category_values' is empty")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR2D): 'category_values' is empty")
         return None
 
     # cov_model_for_category
@@ -5646,10 +5979,12 @@ def estimateIndicator2D(
     if len(cov_model_for_category) == 1:
         cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
     elif len(cov_model_for_category) != ncategory:
-        print("ERROR (ESTIM_INDIC_2D): 'cov_model_for_category' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR2D): 'cov_model_for_category' of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel2D) for c in cov_model_for_category]):
-        print("ERROR (ESTIM_INDIC_2D): 'cov_model_for_category' should contains CovModel2D objects")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR2D): 'cov_model_for_category' should contains CovModel2D objects")
         return None
 
     for cov_model in cov_model_for_category:
@@ -5657,25 +5992,29 @@ def estimateIndicator2D(
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                print("ERROR (ESTIM_INDIC_2D): covariance model: weight ('w') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (ESTIMATE_INDICATOR2D): covariance model: weight ('w') not compatible with simulation grid")
                 return None
             # ranges
             if 'r' in el[1].keys():
                 for r in el[1]['r']:
                     if np.size(r) != 1 and np.size(r) != nxyz:
-                        print("ERROR (ESTIM_INDIC_2D): covariance model: range ('r') not compatible with simulation grid")
+                        if verbose > 0:
+                            print("ERROR (ESTIMATE_INDICATOR2D): covariance model: range ('r') not compatible with simulation grid")
                         return None
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    print("ERROR (ESTIM_INDIC_2D): covariance model: parameter ('s') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (ESTIMATE_INDICATOR2D): covariance model: parameter ('s') not compatible with simulation grid")
                     return None
 
         # alpha
         angle = cov_model.alpha
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            print("ERROR (ESTIM_INDIC_2D): covariance model: angle (alpha) not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE_INDICATOR2D): covariance model: angle (alpha) not compatible with simulation grid")
             return None
 
     # method
@@ -5684,14 +6023,16 @@ def estimateIndicator2D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (ESTIM_INDIC_2D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (ESTIMATE_INDICATOR2D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        print("ERROR (ESTIM_INDIC_2D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR2D): 'method' is not valid")
         return None
 
     # data points: x, v
@@ -5702,7 +6043,8 @@ def estimateIndicator2D(
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (ESTIM_INDIC_2D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (ESTIMATE_INDICATOR2D): length of 'v' is not valid")
             return None
         xc = x[:,0]
         yc = x[:,1]
@@ -5716,7 +6058,8 @@ def estimateIndicator2D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (ESTIM_INDIC_2D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE_INDICATOR2D): 'mask' is not valid")
             return None
 
     # Check parameters - use_unique_neighborhood (length)
@@ -5724,7 +6067,8 @@ def estimateIndicator2D(
     if len(use_unique_neighborhood) == 1:
         use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
     elif len(use_unique_neighborhood) != ncategory:
-        print("ERROR (ESTIM_INDIC_2D): 'use_unique_neighborhood' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR2D): 'use_unique_neighborhood' of invalid length")
         return None
 
     # Check parameters - searchRadiusRelative (length)
@@ -5732,7 +6076,8 @@ def estimateIndicator2D(
     if len(searchRadiusRelative) == 1:
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
-        print("ERROR (ESTIM_INDIC_2D): 'searchRadiusRelative' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR2D): 'searchRadiusRelative' of invalid length")
         return None
 
     # Check parameters - nneighborMax (length)
@@ -5740,7 +6085,8 @@ def estimateIndicator2D(
     if len(nneighborMax) == 1:
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
-        print("ERROR (ESTIM_INDIC_2D): 'nneighborMax' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR2D): 'nneighborMax' of invalid length")
         return None
 
     # Check parameters - searchNeighborhoodSortMode (length)
@@ -5748,7 +6094,8 @@ def estimateIndicator2D(
     if len(searchNeighborhoodSortMode) == 1:
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
-        print("ERROR (ESTIM_INDIC_2D): 'searchNeighborhoodSortMode' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR2D): 'searchNeighborhoodSortMode' of invalid length")
         return None
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
@@ -5762,11 +6109,13 @@ def estimateIndicator2D(
 
         else:
             if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-                print("ERROR (ESTIM_INDIC_2D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+                if verbose > 0:
+                    print("ERROR (ESTIMATE_INDICATOR2D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
                 return None
 
             if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
-                print("ERROR (ESTIM_INDIC_2D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+                if verbose > 0:
+                    print("ERROR (ESTIMATE_INDICATOR2D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
                 return None
 
             if searchNeighborhoodSortMode[i] is None:
@@ -5780,11 +6129,13 @@ def estimateIndicator2D(
             else:
                 if searchNeighborhoodSortMode[i] == 2:
                     if not cov_model_for_category[i].is_stationary():
-                        print("ERROR (ESTIM_INDIC_2D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                        if verbose > 0:
+                            print("ERROR (ESTIMATE_INDICATOR2D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                         return None
                 elif searchNeighborhoodSortMode[i] == 1:
                     if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
-                        print("ERROR (ESTIM_INDIC_2D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                        if verbose > 0:
+                            print("ERROR (ESTIMATE_INDICATOR2D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                         return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -5792,11 +6143,13 @@ def estimateIndicator2D(
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (ESTIM_INDIC_2D): specifying 'probability' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (ESTIMATE_INDICATOR2D): specifying 'probability' not allowed with ordinary kriging")
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            print("ERROR (ESTIM_INDIC_2D): size of 'probability' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE_INDICATOR2D): size of 'probability' is not valid")
             return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -5822,7 +6175,8 @@ def estimateIndicator2D(
         0)
 
     if not flag:
-        print("ERROR (ESTIM_INDIC_2D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR2D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -5843,9 +6197,9 @@ def estimateIndicator2D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -5857,7 +6211,7 @@ def estimateIndicator2D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -5872,9 +6226,10 @@ def estimateIndicator2D(
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -5888,11 +6243,11 @@ def estimateIndicator2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -5915,7 +6270,7 @@ def estimateIndicator3D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=1):
+        nthreads=-1, verbose=2):
     """
     Computes estimate probabilities of categories (indicators) for 3D grid
     based on simple or ordinary kriging.
@@ -6052,10 +6407,11 @@ def estimateIndicator3D(
                     (nthreads = -n <= 0: for maximal number of threads except n,
                     but at least 1)
     :param verbose:
-                (int) indicates what is displayed during the GeosClassicSim run:
-                    - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                (int) verbose mode, integer >=0, higher implies more display
+                    - 0: no display
+                    - 1: only errors
+                    - 2: errors and warnings (+ some info)
+                    - 3 (or >2): all information
 
     :return geosclassic_output: (dict)
             {'image':image,
@@ -6092,12 +6448,14 @@ def estimateIndicator3D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        print("ERROR (ESTIM_INDIC_3D): 'category_values' is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR3D): 'category_values' is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        print("ERROR (ESTIM_INDIC_3D): 'category_values' is empty")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR3D): 'category_values' is empty")
         return None
 
     # cov_model_for_category
@@ -6105,10 +6463,12 @@ def estimateIndicator3D(
     if len(cov_model_for_category) == 1:
         cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
     elif len(cov_model_for_category) != ncategory:
-        print("ERROR (ESTIM_INDIC_3D): 'cov_model_for_category' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR3D): 'cov_model_for_category' of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel3D) for c in cov_model_for_category]):
-        print("ERROR (ESTIM_INDIC_3D): 'cov_model_for_category' should contains CovModel3D objects")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR3D): 'cov_model_for_category' should contains CovModel3D objects")
         return None
 
     for cov_model in cov_model_for_category:
@@ -6116,37 +6476,43 @@ def estimateIndicator3D(
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                print("ERROR (ESTIM_INDIC_3D): covariance model: weight ('w') not compatible with simulation grid")
+                if verbose > 0:
+                    print("ERROR (ESTIMATE_INDICATOR3D): covariance model: weight ('w') not compatible with simulation grid")
                 return None
             # ranges
             if 'r' in el[1].keys():
                 for r in el[1]['r']:
                     if np.size(r) != 1 and np.size(r) != nxyz:
-                        print("ERROR (ESTIM_INDIC_3D): covariance model: range ('r') not compatible with simulation grid")
+                        if verbose > 0:
+                            print("ERROR (ESTIMATE_INDICATOR3D): covariance model: range ('r') not compatible with simulation grid")
                         return None
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    print("ERROR (ESTIM_INDIC_3D): covariance model: parameter ('s') not compatible with simulation grid")
+                    if verbose > 0:
+                        print("ERROR (ESTIMATE_INDICATOR3D): covariance model: parameter ('s') not compatible with simulation grid")
                     return None
 
         # alpha
         angle = cov_model.alpha
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            print("ERROR (ESTIM_INDIC_3D): covariance model: angle (alpha) not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE_INDICATOR3D): covariance model: angle (alpha) not compatible with simulation grid")
             return None
 
         # beta
         angle = cov_model.beta
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            print("ERROR (ESTIM_INDIC_3D): covariance model: angle (beta) not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE_INDICATOR3D): covariance model: angle (beta) not compatible with simulation grid")
             return None
 
         # gamma
         angle = cov_model.gamma
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            print("ERROR (ESTIM_INDIC_3D): covariance model: angle (gamma) not compatible with simulation grid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE_INDICATOR3D): covariance model: angle (gamma) not compatible with simulation grid")
             return None
 
     # method
@@ -6155,14 +6521,16 @@ def estimateIndicator3D(
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     print("ERROR (ESTIM_INDIC_3D): 'method' is not valid")
+    #     if verbose > 0:
+    #         print("ERROR (ESTIMATE_INDICATOR3D): 'method' is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        print("ERROR (ESTIM_INDIC_3D): 'method' is not valid")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR3D): 'method' is not valid")
         return None
 
     # data points: x, v
@@ -6173,7 +6541,8 @@ def estimateIndicator3D(
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            print("(ERROR (SIMUL_3D): length of 'v' is not valid")
+            if verbose > 0:
+                print("(ERROR (SIMUL_3D): length of 'v' is not valid")
             return None
         xc = x[:,0]
         yc = x[:,1]
@@ -6187,7 +6556,8 @@ def estimateIndicator3D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            print("ERROR (ESTIM_INDIC_3D): 'mask' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE_INDICATOR3D): 'mask' is not valid")
             return None
 
     # Check parameters - use_unique_neighborhood (length)
@@ -6195,7 +6565,8 @@ def estimateIndicator3D(
     if len(use_unique_neighborhood) == 1:
         use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
     elif len(use_unique_neighborhood) != ncategory:
-        print("ERROR (ESTIM_INDIC_3D): 'use_unique_neighborhood' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR3D): 'use_unique_neighborhood' of invalid length")
         return None
 
     # Check parameters - searchRadiusRelative (length)
@@ -6203,7 +6574,8 @@ def estimateIndicator3D(
     if len(searchRadiusRelative) == 1:
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
-        print("ERROR (ESTIM_INDIC_3D): 'searchRadiusRelative' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR3D): 'searchRadiusRelative' of invalid length")
         return None
 
     # Check parameters - nneighborMax (length)
@@ -6211,7 +6583,8 @@ def estimateIndicator3D(
     if len(nneighborMax) == 1:
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
-        print("ERROR (ESTIM_INDIC_3D): 'nneighborMax' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR3D): 'nneighborMax' of invalid length")
         return None
 
     # Check parameters - searchNeighborhoodSortMode (length)
@@ -6219,7 +6592,8 @@ def estimateIndicator3D(
     if len(searchNeighborhoodSortMode) == 1:
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
-        print("ERROR (ESTIM_INDIC_3D): 'searchNeighborhoodSortMode' of invalid length")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR3D): 'searchNeighborhoodSortMode' of invalid length")
         return None
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
@@ -6233,11 +6607,13 @@ def estimateIndicator3D(
 
         else:
             if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-                print("ERROR (ESTIM_INDIC_3D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
+                if verbose > 0:
+                    print("ERROR (ESTIMATE_INDICATOR3D): a 'searchRadiusRelative' is too small (should be at least {})".format(geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN))
                 return None
 
             if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
-                print("ERROR (ESTIM_INDIC_3D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+                if verbose > 0:
+                    print("ERROR (ESTIMATE_INDICATOR3D): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
                 return None
 
             if searchNeighborhoodSortMode[i] is None:
@@ -6251,11 +6627,13 @@ def estimateIndicator3D(
             else:
                 if searchNeighborhoodSortMode[i] == 2:
                     if not cov_model_for_category[i].is_stationary():
-                        print("ERROR (ESTIM_INDIC_3D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                        if verbose > 0:
+                            print("ERROR (ESTIMATE_INDICATOR3D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                         return None
                 elif searchNeighborhoodSortMode[i] == 1:
                     if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
-                        print("ERROR (ESTIM_INDIC_3D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                        if verbose > 0:
+                            print("ERROR (ESTIMATE_INDICATOR3D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                         return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -6263,11 +6641,13 @@ def estimateIndicator3D(
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
-        #     print("ERROR (ESTIM_INDIC_3D): specifying 'probability' not allowed with ordinary kriging")
+        #     if verbose > 0:
+        #         print("ERROR (ESTIMATE_INDICATOR3D): specifying 'probability' not allowed with ordinary kriging")
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            print("ERROR (ESTIM_INDIC_3D): size of 'probability' is not valid")
+            if verbose > 0:
+                print("ERROR (ESTIMATE_INDICATOR3D): size of 'probability' is not valid")
             return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -6293,7 +6673,8 @@ def estimateIndicator3D(
         0)
 
     if not flag:
-        print("ERROR (ESTIM_INDIC_3D): can not fill input structure!")
+        if verbose > 0:
+            print("ERROR (ESTIMATE_INDICATOR3D): can not fill input structure!")
         return None
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
@@ -6314,9 +6695,9 @@ def estimateIndicator3D(
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
+    elif verbose == 2:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
         # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
@@ -6328,7 +6709,7 @@ def estimateIndicator3D(
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
@@ -6343,9 +6724,10 @@ def estimateIndicator3D(
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        err_message = geosclassic.mpds_get_error_message(-err)
-        err_message = err_message.replace('\n', '')
-        print(err_message)
+        if verbose > 0:
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
         geosclassic_output = None
     else:
         geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
@@ -6359,11 +6741,11 @@ def estimateIndicator3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and geosclassic_output:
+    if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and geosclassic_output and geosclassic_output['nwarning']:
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
         for i, warning_message in enumerate(geosclassic_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -6865,6 +7247,7 @@ def imgConnectivityGammaValue(
             of the set {v>0}
         n(i) is the size (number of cells) in the i-th connected component
         m is the size (number of cells) of the set {v>0},
+        note: Gamma is set to 1.0 if N = 0
     i.e. the indicator variable I(x) = 1 iff v(x) > 0, is considered.
     The Gamma value is a global indicator of the connectivity for the binary
     image of variable I
@@ -6934,7 +7317,10 @@ def imgConnectivityGammaValue(
     # Compute Gamma value
     if im_geobody is not None:
         ngeo = int(im_geobody.val[iv].max())
-        gamma = np.sum(np.array([float(np.sum(im_geobody.val[iv] == i))**2 for i in np.arange(1, ngeo+1)])) / float(np.sum(im_geobody.val[iv] != 0))**2
+        if ngeo == 0:
+            gamma = 1.0
+        else:
+            gamma = np.sum(np.array([float(np.sum(im_geobody.val[iv] == i))**2 for i in np.arange(1, ngeo+1)])) / float(np.sum(im_geobody.val[iv] != 0))**2
     else:
         return None
 
@@ -6963,6 +7349,7 @@ def imgConnectivityGammaCurves(
                 of the set {I(t)=1}
             n(i) is the size (number of cells) in the i-th connected component
             m is the size (number of cells) of the set {I(t)=1}
+            note: gamma(t) is set to 1.0 if N = 0
         - we compute also gammaC(t), the gamma value for the complementary set
             {IC(t)=1} where IC(t)(x) = 1 - I(t)(x)
     This is repeated for different threshold values t, which gives the curves

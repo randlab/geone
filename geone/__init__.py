@@ -12,6 +12,9 @@ from . import img
 from . import imgplot
 from . import imgplot3d
 from . import img
+from . import multiGaussian
+from . import pgs
+from . import randProcess
 
 # # import all modules
 # import geone.blockdata
@@ -23,3 +26,4 @@ from . import img
 # import geone.img
 # import geone.imgplot
 # import geone.imgplot3d
+# import geone.multiGaussian

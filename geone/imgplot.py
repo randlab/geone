@@ -556,9 +556,10 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         # else... default cticklabels....
 
         if removeColorbar:
-            cbar.ax.get_xaxis().set_visible(False)
-            cbar.ax.get_yaxis().set_visible(False)
-            cbar.ax.clear()
+            # cbar.ax.get_xaxis().set_visible(False)
+            # cbar.ax.get_yaxis().set_visible(False)
+            # cbar.ax.clear()
+            cbar.ax.set_visible(False)
 
     if showColorbarOnly:
         if showColorbarOnly == 1:

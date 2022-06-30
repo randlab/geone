@@ -1,8 +1,11 @@
 # Package GEONE
 GEONE is a python package providing a set of tools for geostatistical and multiple-point statistics modeling, comprising:
    - multiple-point statistics (MPS) - DEESSE wrapper
-   - gaussian random fields (GRF)
+   - Gaussian random fields (GRF)
    - other classical geostatistical tools (two-point statistics analysis (covariance, variogram, connectivity) / simulation (SGS, SIS) / estimation (kriging))
+   - pluri-Gaussian simulation
+   - other algorithms based on random processes (Poisson point process, Chentsov simulation)
+
 
 ## Installation
 *Note: package for python 3*
@@ -15,7 +18,7 @@ To uninstall the package: `python -m pip uninstall -y geone`
 The following python packages are used by 'geone':
    - matplotlib
    - numpy
-   - pyvista
+   - pyvista (0.31.3)
    - scipy
 
 **Important note**:  
@@ -65,3 +68,7 @@ Various examples are provided (notebooks in 'examples' directory) to get started
    - `ex_geosclassic_indicator_2d.ipynb`:example in 2D for two-point statistics simulation and estimation of indicator variables
    - `ex_geosclassic_indicator_3d.ipynb`:example in 3D for two-point statistics simulation and estimation of indicator variables
    - `ex_geosclassic_image_analysis.ipynb`:example for two-point statistics analysis (covariance, variogram, connectivity, ...) of images (maps)
+- Pluri-Gaussian simulations:
+   - `ex_pgs.ipynb`: example of pluri-Gaussian simulations in 1D, 2D and 3D (categorical, conditional or not), based on two latent Gaussian fields
+- Ohter algorithms based on random processes:
+   - `ex_randProcess.ipynb`: example of Poisson point process, and Chentsov simulation in 1D, 2D and 3D

@@ -93,7 +93,7 @@ def cov_gau(h, w=1.0, r=1.0):
 
 def cov_lin(h, w=1.0, r=1.0):
     """
-    1D-linear covariance model:
+    1D-linear (with sill) covariance model:
 
     :param h:   (1-dimensional array or float): lag(s)
     :param w:   (float >0): weight (sill)
@@ -223,7 +223,24 @@ def cov_matern(h, w=1.0, r=1.0, nu=0.5):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-# Utility function for Matern covariance model
+# Utility functions for Matern covariance model
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def cov_matern_get_effective_range(nu, r):
+    """
+    Computes the effective range of the 1D-Matern covariance model
+    of parameters 'nu' and 'r' (scale).
+
+    :param nu:      (float >0): parameter for Matern covariance
+    :param r:       (float >0): parameter r (scale) of the Matern covariance
+    :return r:      (float): effective range
+    """
+    res = scipy.optimize.root_scalar(lambda h: cov_matern(h, w=1.0, r=r, nu=nu) - 0.05, bracket=[1.e-10*r, 4.0*r])
+    return res.root
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def cov_matern_get_r_param(nu, r_eff):
     """
     Computes the parameter 'r' (scale) such that the 1D-Matern covariance model
@@ -233,16 +250,7 @@ def cov_matern_get_r_param(nu, r_eff):
     :param r_eff:   (float >0): effective range
     :return r:      (float): parameter r (scale) of the corresponding Matern covariance
     """
-    def g_tmp(r):
-        def f_tmp(h):
-            return cov_matern(h, w=1.0, r=r, nu=nu) - 0.05
-        res = scipy.optimize.root_scalar(f_tmp, bracket=[0, 4*r])
-        rr_eff = res.root
-        return (rr_eff - r_eff)**2
-    # def g_tmp(r):
-    #     cov_model = gn.covModel.CovModel1D(elem=[('matern', {'w':1., 'r':r, 'nu':nu})])
-    #     return np.fabs(cov_model.r() - r_eff)
-    res = scipy.optimize.minimize_scalar(g_tmp, bracket=[1.e-1, 4*r_eff])
+    res = scipy.optimize.minimize_scalar(lambda r: (cov_matern_get_effective_range(nu, r) - r_eff)**2, bracket=[1.e-10*r_eff, 4*r_eff])
     return res.x
 # ----------------------------------------------------------------------------
 
@@ -447,10 +455,7 @@ class CovModel1D (object):
                         ):
                     r = max(r, d['r'])
                 elif t == 'matern':
-                    def f_tmp(h):
-                        return cov_matern(h, w=1.0, r=d['r'], nu=d['nu']) - 0.05
-                    res = scipy.optimize.root_scalar(f_tmp, bracket=[0, 4.0*d['r']])
-                    r = max(r, res.root)
+                    r = max(r, cov_matern_get_effective_range(d['nu'], d['r']))
             self._r = r
         return self._r
 
@@ -849,10 +854,7 @@ class CovModel2D (object):
                     r = np.maximum(r, d['r']) # element-wise maximum
                 elif t == 'matern':
                     for i, ri in enumerate(d['r']):
-                        def f_tmp(h):
-                            return cov_matern(h, w=1.0, r=ri, nu=d['nu']) - 0.05
-                        res = scipy.optimize.root_scalar(f_tmp, bracket=[0, 4*ri])
-                        r[i] = max(r[i], res.root)
+                        r[i] = max(r[i], cov_matern_get_effective_range(d['nu'], ri))
             self._r = r
         return self._r
 
@@ -888,7 +890,7 @@ class CovModel2D (object):
         def f(h):
             h = np.array(h).reshape(-1,2)  # cast to 2-dimensional array with 2 columns if needed
             if self.alpha != 0:
-                hnew = np.dot(h,self.mrot()).reshape(-1,2)
+                hnew = np.dot(h, self.mrot()).reshape(-1,2)
             else:
                 hnew = h.reshape(-1,2)
 
@@ -947,7 +949,7 @@ class CovModel2D (object):
         def f(h):
             h = np.array(h).reshape(-1,2)  # cast to 2-dimensional array with 2 columns if needed
             if self.alpha != 0:
-                hnew = np.dot(h,self.mrot()).reshape(-1,2)
+                hnew = np.dot(h, self.mrot()).reshape(-1,2)
             else:
                 hnew = h.reshape(-1,2)
 
@@ -1516,10 +1518,7 @@ class CovModel3D (object):
                     r = np.maximum(r, d['r']) # element-wise maximum
                 elif t == 'matern':
                     for i, ri in enumerate(d['r']):
-                        def f_tmp(h):
-                            return cov_matern(h, w=1.0, r=ri, nu=d['nu']) - 0.05
-                        res = scipy.optimize.root_scalar(f_tmp, bracket=[0, 4*ri])
-                        r[i] = max(r[i], res.root)
+                        r[i] = max(r[i], cov_matern_get_effective_range(d['nu'], ri))
             self._r = r
         return self._r
 
@@ -1555,7 +1554,7 @@ class CovModel3D (object):
         def f(h):
             h = np.array(h).reshape(-1,3)  # cast to 2-dimensional array with 3 columns if needed
             if self.alpha != 0 or self.beta != 0 or self.gamma != 0:
-                hnew = np.dot(h,self.mrot()).reshape(-1,3)
+                hnew = np.dot(h, self.mrot()).reshape(-1,3)
             else:
                 hnew = h.reshape(-1,3)
 
@@ -1614,7 +1613,7 @@ class CovModel3D (object):
         def f(h):
             h = np.array(h).reshape(-1,3)  # cast to 2-dimensional array with 3 columns if needed
             if self.alpha != 0 or self.beta != 0 or self.gamma != 0:
-                hnew = np.dot(h,self.mrot()).reshape(-1,3)
+                hnew = np.dot(h, self.mrot()).reshape(-1,3)
             else:
                 hnew = h.reshape(-1,3)
 
@@ -2239,7 +2238,7 @@ def variogramCloud1D(x, v, hmax=np.nan, make_plot=True, grid=True, **kwargs):
     # Check length of v
     if len(v) != n:
         print("ERROR: length of 'v' is not valid")
-        return (None, None, None)
+        return None, None, None
 
     if np.isnan(hmax):
         # consider all pairs of points
@@ -2339,7 +2338,7 @@ def variogramExp1D(x, v, hmax=np.nan, ncla=10, cla_center=None, cla_length=None,
 
     if npair == 0:
         print('No point in the variogram cloud (nothing is done).')
-        return (None, None, None)
+        return None, None, None
 
     # Set classes
     if cla_center is not None:
@@ -2355,7 +2354,7 @@ def variogramExp1D(x, v, hmax=np.nan, ncla=10, cla_center=None, cla_length=None,
             cla_length = np.repeat(cla_length, ncla)
         elif len(cla_length) != ncla:
             print("ERROR: 'cla_length' not valid")
-            return (None, None, None)
+            return None, None, None
     else:
         if ncla == 1:
             cla_length = np.array([np.inf], dtype='float')
@@ -3088,6 +3087,7 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
                 cov_model_opt.elem[iel][1][k] = p[i]
         if alpha_to_fit:
             cov_model_opt.alpha = p[-1]
+            cov_model_opt._mrot = None # reset attribute _mrot !
         return cov_model_opt.vario_func()(d)
 
     # Optimize parameters with curve_fit: initial vector of parameters (p0) must be given
@@ -3633,10 +3633,13 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
                 cov_model_opt.elem[iel][1][k] = p[i]
         if alpha_to_fit:
             cov_model_opt.alpha = p[-1-int(beta_to_fit)-int(gamma_to_fit)]
+            cov_model_opt._mrot = None # reset attribute _mrot !
         if beta_to_fit:
             cov_model_opt.beta = p[-1-int(gamma_to_fit)]
+            cov_model_opt._mrot = None # reset attribute _mrot !
         if gamma_to_fit:
             cov_model_opt.gamma = p[-1]
+            cov_model_opt._mrot = None # reset attribute _mrot !
         return cov_model_opt.vario_func()(d)
 
     # Optimize parameters with curve_fit: initial vector of parameters (p0) must be given
