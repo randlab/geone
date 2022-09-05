@@ -1676,6 +1676,17 @@ class DeesseInput(object):
         self.seedIncrement = seedIncrement
         self.nrealization = nrealization
         self.ok = True # flag to "validate" the class
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    def __repr__(self):
+        out = ("\n    "
+               "*** DeesseInput object ***\n    "
+               "use '.__dict__' to print details\n    "
+               .format(self))
+        # TO BE CONTINUED...
+        return out
+    # ------------------------------------------------------------------------
 # ============================================================================
 
 # ----------------------------------------------------------------------------

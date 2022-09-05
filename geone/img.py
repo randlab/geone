@@ -80,9 +80,19 @@ class Img(object):
         self.name = name
 
     # ------------------------------------------------------------------------
-    def __str__(self):
-        """Returns name of the image: string representation of Image object"""
-        return self.name
+    # def __str__(self):
+    #     """Returns name of the image: string representation of Image object"""
+    #     return self.name
+    def __repr__(self):
+        out = ("\n    "
+               "*** Img object ***\n    "
+               "name: '{0.name}'\n    "
+               "image size: ({0.nx}x{0.ny}x{0.nz})\n    "
+               "spacing: {0.sx}, {0.sy}, {0.sz}\n    "
+               "origin: {0.ox}, {0.oy}, {0.oz}\n    "
+               "nv: {0.nv}, varname: {0.varname}\n    "
+               .format(self))
+        return out
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
