@@ -8,23 +8,33 @@ GEONE is a python package providing a set of tools for geostatistical and multip
 
 
 ## Installation
-*Note: package for python 3*
+```
+git clone https://github.com/randlab/geone.git`
+cd geone
+pip install .
+```
 
-To install the package: `python -m pip install .`
+ **Remove geone**
 
-To uninstall the package: `python -m pip uninstall -y geone`
+`pip uninstall -y geone`
+
+*Note: first remove the directory 'geone.egg-info' from the current directory.*
+
+## Using GEONE
+ 
+Do not launch python from the directory where the installation has been done (with `pip`), otherwise `import geone` will fail.
 
 ## Requirements
-The following python packages are used by 'geone':
+The following python packages are used by GEONE:
    - matplotlib
-   - numpy
-   - pyvista (0.31.3)
-   - scipy
+   - numpy (tested with version 1.21.5)
+   - pyvista (tested with version 0.36.1)
+   - scipy (tested with version 1.7.3)
 
-**Important note**:  
+## Important notes 
 GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The DEESSE version provided with GEONE is a test version with restricted capabilities. To unlock the full capabilities of DEESSE, the user must obtain a commercial or academic license from the University of Neuchâtel. See LICENSE file for details.
 
-Note also that the DEESSE wrapper is built for python3.6 / python3.7 / python3.8 / python3.9.
+Note also that the DEESSE wrapper is built for python3.6 / python3.7 / python3.8 / python3.9 / python3.10.
 
 ## Examples
 Some modules in the package GEONE can be run as a script ('\_\_main\_\_' scope) and provide examples by this way.
