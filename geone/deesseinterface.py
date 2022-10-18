@@ -111,6 +111,23 @@ class SearchNeighborhoodParameters(object):
         self.angle2 = angle2
         self.angle3 = angle3
         self.power = power
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
+    def __repr__(self):
+        out = '*** SearchNeighborhoodParameters object ***'
+        out = out + '\n' + 'radiusMode = {0.radiusMode}'.format(self)
+        if self.radiusMode == 'manual':
+            out = out + '\n' + '(nx, ny, nz) = ({0.rx}, {0.ry}, {0.rz})'.format(self)
+        out = out + '\n' + 'anisotropyRatioMode = {0.anisotropyRatioMode}'.format(self)
+        if self.anisotropyRatioMode == 'manual':
+            out = out + '\n' + '(ax, ay, az) = ({0.ax}, {0.ay}, {0.az})'.format(self)
+        out = out + '\n' + '(angle1, angle2, angle3) = ({0.angle1}, {0.angle2}, {0.angle3}) # (azimuth, dip, plunge)'.format(self)
+        out = out + '\n' + 'power = {0.power}'.format(self)
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
 # ============================================================================
 
 # ============================================================================
@@ -121,7 +138,8 @@ class SoftProbability(object):
                     (int) indicates the usage of probability constraints:
                         - 0: no probability constraint
                         - 1: global probability constraints
-                        - 2: local probability constraints
+                        - 2: local probability constraints using support
+                        - 3: local probability constraints based on rejection
 
         nclass:     (int) number of classes of values
                         (unused if probabilityConstraintUsage == 0)
@@ -139,7 +157,7 @@ class SoftProbability(object):
         localPdf:   ((nclass, nz, ny, nx) array of floats) probability for
                         each class, localPdf[i] is the "map defined on the
                         simulation grid (SG)", nx x ny x nz being the dimensions
-                        of the SG, used when probabilityConstraintUsage == 2
+                        of the SG, used when probabilityConstraintUsage in [2, 3]
 
         localPdfSupportRadius:
                     (1-dimensional array of float size 1) support radius for
@@ -166,7 +184,20 @@ class SoftProbability(object):
                                     class indicator, symmetric target interval))
                             - 5: MLikRopt (Mean Likelihood Ratio (over each
                                     class indicator, optimal target interval))
-                        used when probabilityConstraintUsage > 0
+                        used when robabilityConstraintUsage in [1, 2]
+
+        rejectionMode:
+                    (int) indicates the mode of rejection (during the scan of the training image):
+                            - 0: rejection is done first (before checking pattern (and other constraint)) according
+                                 to acceptation probabilities proportional to p[i]/q[i] (for class i),
+                                 where
+                                    q is the marginal pdf of the scanned training image
+                                    p is the given local pdf at the simulated node
+                            - 1: rejection is done last (after checking pattern (and other constraint)) according
+                                 to acceptation probabilities proportional to p[i] (for class i),
+                                 where
+                                    p is the given local pdf at the simulated nodemethod used for computing the local
+                        used when probabilityConstraintUsage == 3
 
         deactivationDistance:
                     (float) deactivation distance (the probability constraint
@@ -182,16 +213,17 @@ class SoftProbability(object):
                         pdf's comparison:
                             - 0: constant threshold
                             - 1: dynamic threshold
+                        used when robabilityConstraintUsage in [1, 2]
 
         constantThreshold:
                     (float) (acceptance) threshold value for pdf's comparison,
-                        used when probabilityConstraintUsage > 0 and
+                        used when robabilityConstraintUsage in [1, 2] and
                         probabilityConstraintThresholdType == 0
 
         dynamicThresholdParameters:
                     (1-dimensional array of floats of size 7) parameters for
                         dynamic threshold (used for pdf's comparison),
-                        used when probabilityConstraintUsage > 0 and
+                        used when probabilityConstraintUsage in [1, 2] and
                         probabilityConstraintThresholdType == 1
     """
 
@@ -204,6 +236,7 @@ class SoftProbability(object):
                  localPdfSupportRadius=12.,
                  localCurrentPdfComputation=0,
                  comparingPdfMethod=5,
+                 rejectionMode=0,
                  deactivationDistance=4.,
                  probabilityConstraintThresholdType=0,
                  constantThreshold=1.e-3,
@@ -232,10 +265,90 @@ class SoftProbability(object):
         self.localPdfSupportRadius = localPdfSupportRadius
         self.localCurrentPdfComputation = localCurrentPdfComputation
         self.comparingPdfMethod = comparingPdfMethod
+        self.rejectionMode = rejectionMode
         self.deactivationDistance = deactivationDistance
         self.probabilityConstraintThresholdType = probabilityConstraintThresholdType
         self.constantThreshold = constantThreshold
         self.dynamicThresholdParameters = dynamicThresholdParameters
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
+    def __repr__(self):
+        out = '*** SoftProbability object ***'
+        out = out + '\n' + 'probabilityConstraintUsage = {0.probabilityConstraintUsage}:'.format(self)
+        if self.probabilityConstraintUsage == 0:
+            out = out + ' no probability constraint'
+        elif self.probabilityConstraintUsage == 1:
+            out = out + ' global probability constraint'
+        elif self.probabilityConstraintUsage == 2:
+            out = out + ' local probability constraint using support'
+        elif self.probabilityConstraintUsage == 3:
+            out = out + ' local probability constraint based on rejection'
+        else:
+            out = out + ' unknown'
+        if self.probabilityConstraintUsage in [1, 2, 3]:
+            out = out + '\n' + 'nclass = {0.nclass} # number of classes'.format(self)
+            for j, ci in enumerate(self.classInterval):
+                out = out + '\n' + 'class {}: '.format(j)
+                for k, inter in enumerate(ci):
+                    if k > 0:
+                        out = out + ' U '
+                    out = out + str(inter)
+        if self.probabilityConstraintUsage == 1:
+            out = out + '\n' + 'global pdf: ' + str(self.globalPdf)
+        elif self.probabilityConstraintUsage in [2, 3]:
+            out = out + '\n' + 'local pdf: array ".local_pdf"'
+        if self.probabilityConstraintUsage == 2:
+            out = out + '\n' + 'localPdfSupportRadius = {0.localPdfSupportRadius} # support radius'.format(self)
+            out = out + '\n' + 'localCurrentPdfComputation = {0.localCurrentPdfComputation}:'.format(self)
+            if self.localCurrentPdfComputation == 0:
+                out = out + ' complete'
+            elif self.localCurrentPdfComputation == 1:
+                out = out + ' approximate'
+            else:
+                out = out + ' unknown'
+        if self.probabilityConstraintUsage in [1, 2]:
+            out = out + '\n' + 'comparingPdfMethod = {0.comparingPdfMethod}:'.format(self)
+            if self.comparingPdfMethod == 0:
+                out = out + ' MAE (Mean Absolute Error)'
+            elif self.comparingPdfMethod == 1:
+                out = out + ' RMSE (Root Mean Squared Error)'
+            elif self.comparingPdfMethod == 2:
+                out = out + ' KLD (Kullback Leibler Divergence)'
+            elif self.comparingPdfMethod == 3:
+                out = out + ' JSD (Jensen-Shannon Divergence)'
+            elif self.comparingPdfMethod == 4:
+                out = out + ' MLikRsym (Mean Likelihood Ratio (over each class indicator, symmetric target interval))'
+            elif self.comparingPdfMethod == 5:
+                out = out + ' MLikRopt (Mean Likelihood Ratio (over each class indicator, optimal target interval))'
+            else:
+                out = out + ' unknown'
+        if self.probabilityConstraintUsage == 3:
+            out = out + '\n' + 'rejectionMode = {0.rejectionMode}:'.format(self)
+            if self.rejectionMode == 0:
+                out = out + ' rejection applied first'
+            elif self.rejectionMode == 1:
+                out = out + ' rejection applied last'
+            else:
+                out = out + ' unknown'
+        if self.probabilityConstraintUsage in [1, 2, 3]:
+            out = out + '\n' + 'deactivationDistance = {0.deactivationDistance} # deactivation distance'.format(self)
+        if self.probabilityConstraintUsage in [1, 2]:
+            out = out + '\n' + 'probabilityConstraintThresholdType = {0.probabilityConstraintThresholdType}:'.format(self)
+            if self.probabilityConstraintThresholdType == 0:
+                out = out + ' constant'
+            elif self.probabilityConstraintThresholdType == 1:
+                out = out + ' dynamic'
+            else:
+                out = out + ' unknown'
+            if self.probabilityConstraintThresholdType == 0:
+                out = out + '\n' + 'constantThreshold = {0.constantThreshold} # threshold value'.format(self)
+            elif self.probabilityConstraintThresholdType == 1:
+                out = out + '\n' + 'dynamic threshold parameters: ' + str(self.dynamicThresholdParameters)
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
 # ============================================================================
 
 # ============================================================================
@@ -341,6 +454,49 @@ class Connectivity(object):
         self.refConnectivityVarIndex = refConnectivityVarIndex
         self.deactivationDistance = deactivationDistance
         self.threshold = threshold
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
+    def __repr__(self):
+        out = '*** Connectivity object ***'
+        out = out + '\n' + 'connectivityConstraintUsage = {0.connectivityConstraintUsage}:'.format(self)
+        if self.connectivityConstraintUsage == 0:
+            out = out + ' no connectivity constraint'
+        elif self.connectivityConstraintUsage == 1:
+            out = out + ' set connecting paths (random order) before simulation'
+        elif self.connectivityConstraintUsage == 2:
+            out = out + ' set connecting paths ("smart" order) before simulation'
+        elif self.connectivityConstraintUsage == 3:
+            out = out + ' check connectivity pattern during simulation'
+        else:
+            out = out + ' unknown'
+        if self.connectivityConstraintUsage in [1, 2, 3]:
+            out = out + '\n' + 'connectivityType = {0.connectivityType}:'.format(self)
+            if self.connectivityConstraintUsage == 'connect_face':
+                out = out + ' 6-neighbors connection (by face)'
+            elif self.connectivityConstraintUsage == 'connect_face_edge':
+                out = out + ' 18-neighbors connection (by face or edge)'
+            elif self.connectivityConstraintUsage == 'connect_face_edge_corner':
+                out = out + ' 26-neighbors connection (by face, edge or corner)'
+            else:
+                out = out + ' unknown'
+            out = out + '\n' + 'nclass = {0.nclass} # number of classes'.format(self)
+            for j, ci in enumerate(self.classInterval):
+                out = out + '\n' + 'class {}: '.format(j)
+                for k, inter in enumerate(ci):
+                    if k > 0:
+                        out = out + ' U '
+                    out = out + str(inter)
+            out = out + '\n' + 'tiAsRefFlag = {0.tiAsRefFlag} # TI is used as referentce image for connecivity ?'.format(self)
+            if not self.tiAsRefFlag:
+                out = out + '\n' + 'refConnectivityImage = {0.refConnectivityImage}'.format(self)
+                out = out + '\n' + 'refConnectivityVarIndex = {0.refConnectivityVarIndex}'.format(self)
+            out = out + '\n' + 'deactivationDistance = {0.deactivationDistance} # deactivation distance'.format(self)
+            out = out + '\n' + 'threshold = {0.threshold}'.format(self)
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
 # ============================================================================
 
 # ============================================================================
@@ -558,6 +714,24 @@ class PyramidGeneralParameters(object):
                 except:
                     print('ERROR: (PyramidGeneralParameters) field "factorMaxScanFraction"...')
                     return
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
+    def __repr__(self):
+        out = '*** PyramidGeneralParameters object ***'
+        out = out + '\n' + 'npyramidLevel = {0.npyramidLevel} # number of pyramid level(s) (in addition to original simulation grid)'.format(self)
+        if self.npyramidLevel > 0:
+            out = out + '\n' + 'kx = ' + str(self.kx) + ' # reduction factor along x-axis for each leve'
+            out = out + '\n' + 'ky = ' + str(self.kx) + ' # reduction factor along y-axis for each leve'
+            out = out + '\n' + 'kz = ' + str(self.kx) + ' # reduction factor along z-axis for each leve'
+            out = out + '\n' + 'pyramidSimulationMode = {0.pyramidSimulationMode}'.format(self)
+            out = out + '\n' + 'factorNneighboringNode = ' + str(self.factorNneighboringNode)
+            out = out + '\n' + 'factorDistanceThreshold = ' + str(self.factorDistanceThreshold)
+            out = out + '\n' + 'factorMaxScanFraction = ' + str(self.factorMaxScanFraction)
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
 # ============================================================================
 
 # ============================================================================
@@ -615,6 +789,26 @@ class PyramidParameters(object):
 
         self.nclass = nclass
         self.classInterval = classInterval
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
+    def __repr__(self):
+        out = '*** PyramidParameters object ***'
+        out = out + '\n' + 'nlevel = {0.nlevel} # number of pyramid level(s) (in addition to original simulation grid)'.format(self)
+        if self.nlevel > 0:
+            out = out + '\n' + 'pyramidType = {0.pyramidType}'.format(self)
+            if self.pyramidType == 'categorical_custom':
+                out = out + '\n' + 'nclass = {0.nclass} # number of classes'.format(self)
+                for j, ci in enumerate(self.classInterval):
+                    out = out + '\n' + 'class {}: '.format(j)
+                    for k, inter in enumerate(ci):
+                        if k > 0:
+                            out = out + ' U '
+                        out = out + str(inter)
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
 # ============================================================================
 
 # ============================================================================
@@ -1672,6 +1866,8 @@ class DeesseInput(object):
 
         self.postProcessingTolerance = postProcessingTolerance
 
+        if seed is None:
+            seed = np.random.randint(1,1000000)
         self.seed = seed
         self.seedIncrement = seedIncrement
         self.nrealization = nrealization
@@ -1680,11 +1876,9 @@ class DeesseInput(object):
     # ------------------------------------------------------------------------
     # def __str__(self):
     def __repr__(self):
-        out = ("\n    "
-               "*** DeesseInput object ***\n    "
-               "use '.__dict__' to print details\n    "
-               .format(self))
-        # TO BE CONTINUED...
+        out = '*** DeesseInput object ***'
+        out = out + '\n' + "use '.__dict__' to print details"
+        out = out + '\n' + '*****'
         return out
     # ------------------------------------------------------------------------
 # ============================================================================
@@ -2266,6 +2460,10 @@ def deesse_input_py2C(deesse_input):
         sn_c.angle1 = sn.angle1
         sn_c.angle2 = sn.angle2
         sn_c.angle3 = sn.angle3
+        if sn_c.angle1 != 0 or sn_c.angle2 != 0 or sn_c.angle3 != 0:
+            sn_c.rotationFlag = deesse.TRUE
+        else:
+            sn_c.rotationFlag = deesse.FALSE
         sn_c.power = sn.power
         deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(
             mpds_siminput.searchNeighborhoodParameters, i, sn_c)
@@ -2437,7 +2635,7 @@ def deesse_input_py2C(deesse_input):
             deesse.mpds_set_real_vector_from_array(sp_c.globalPdf, 0,
                 np.asarray(sp.globalPdf).reshape(sp.nclass))
 
-        elif sp.probabilityConstraintUsage == 2:
+        elif sp.probabilityConstraintUsage == 2 or sp.probabilityConstraintUsage == 3:
             # ... localPdf
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
@@ -2445,6 +2643,7 @@ def deesse_input_py2C(deesse_input):
                      nv=sp.nclass, val=sp.localPdf)
             sp_c.localPdfImage = img_py2C(im)
 
+        if sp.probabilityConstraintUsage == 2:
             # ... localPdfSupportRadius
             sp_c.localPdfSupportRadius = deesse.new_real_array(1)
             deesse.mpds_set_real_vector_from_array(sp_c.localPdfSupportRadius, 0,
@@ -2453,23 +2652,28 @@ def deesse_input_py2C(deesse_input):
             # ... localCurrentPdfComputation
             sp_c.localCurrentPdfComputation = sp.localCurrentPdfComputation
 
-        # ... comparingPdfMethod
-        sp_c.comparingPdfMethod = sp.comparingPdfMethod
+        if sp.probabilityConstraintUsage == 1 or sp.probabilityConstraintUsage == 2:
+            # ... comparingPdfMethod
+            sp_c.comparingPdfMethod = sp.comparingPdfMethod
+
+            # ... probabilityConstraintThresholdType
+            sp_c.probabilityConstraintThresholdType = sp.probabilityConstraintThresholdType
+
+            # ... constantThreshold
+            sp_c.constantThreshold = sp.constantThreshold
+
+            if sp.probabilityConstraintThresholdType == 1:
+                # ... dynamicThresholdParameters
+                sp_c.dynamicThresholdParameters = deesse.new_real_array(7)
+                deesse.mpds_set_real_vector_from_array(sp_c.dynamicThresholdParameters, 0,
+                    np.asarray(sp.dynamicThresholdParameters).reshape(7))
+
+        if sp.probabilityConstraintUsage == 3:
+            # ... rejectionMode
+            sp_c.rejectionMode = sp.rejectionMode
 
         # ... deactivationDistance
         sp_c.deactivationDistance = sp.deactivationDistance
-
-        # ... probabilityConstraintThresholdType
-        sp_c.probabilityConstraintThresholdType = sp.probabilityConstraintThresholdType
-
-        # ... constantThreshold
-        sp_c.constantThreshold = sp.constantThreshold
-
-        if sp.probabilityConstraintThresholdType == 1:
-            # ... dynamicThresholdParameters
-            sp_c.dynamicThresholdParameters = deesse.new_real_array(7)
-            deesse.mpds_set_real_vector_from_array(sp_c.dynamicThresholdParameters, 0,
-                np.asarray(sp.dynamicThresholdParameters).reshape(7))
 
         deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_siminput.softProbability, i, sp_c)
 
@@ -3530,24 +3734,22 @@ def exportDeesseInput(deesse_input,
         infid.write('\
 /* SIMULATION GRID (SG) */{0}'.format(endofline))
 
-    if verbose == 2:
-        infid.write('\
-{1} {2} {3} // dimension{0}\
-{4} {5} {6} // cell size{0}\
-{7} {8} {9} // origin{0}\
-{0}'.format(endofline,
-            deesse_input.nx, deesse_input.ny, deesse_input.nz,
-            deesse_input.sx, deesse_input.sy, deesse_input.sz,
-            deesse_input.ox, deesse_input.oy, deesse_input.oz))
-    else:
-        infid.write('\
-{1} {2} {3}{0}\
-{4} {5} {6}{0}\
-{7} {8} {9}{0}\
-{0}'.format(endofline,
-            deesse_input.nx, deesse_input.ny, deesse_input.nz,
-            deesse_input.sx, deesse_input.sy, deesse_input.sz,
-            deesse_input.ox, deesse_input.oy, deesse_input.oz))
+    infid.write('{} {} {}'.format(deesse_input.nx, deesse_input.ny, deesse_input.nz))
+    if verbose > 0:
+        infid.write(' // dimension')
+    infid.write('{0}'.format(endofline))
+
+    infid.write('{} {} {}'.format(deesse_input.sx, deesse_input.sy, deesse_input.sz))
+    if verbose > 0:
+        infid.write(' // cell size')
+    infid.write('{0}'.format(endofline))
+
+    infid.write('{} {} {}'.format(deesse_input.ox, deesse_input.oy, deesse_input.oz))
+    if verbose > 0:
+        infid.write(' // origin')
+    infid.write('{0}'.format(endofline))
+
+    infid.write('{0}'.format(endofline))
 
     # Simulation variables
     if verbose > 0:
@@ -3566,13 +3768,19 @@ def exportDeesseInput(deesse_input,
       varName3  1  DEFAULT_FORMAT{0}\
 */{0}'.format(endofline))
 
-    infid.write('{1}{0}'.format(endofline, deesse_input.nv))
+    infid.write('{0}'.format(deesse_input.nv))
+    if verbose > 0:
+        infid.write(' // number of variable(s)')
+    infid.write('{0}'.format(endofline))
 
     for vname, vflag in zip(deesse_input.varname, deesse_input.outputVarFlag):
+        infid.write('{} {}'.format(vname, int(vflag)))
         if vflag:
-            infid.write('{1} {2} DEFAULT_FORMAT{0}'.format(endofline, vname, int(vflag)))
-        else:
-            infid.write('{1} {2}{0}'.format(endofline, vname, int(vflag)))
+            infid.write(' DEFAULT_FORMAT')
+        if verbose > 0:
+            infid.write(' // variable name / in output ? [/ format string]')
+        infid.write('{0}'.format(endofline))
+
     infid.write('{0}'.format(endofline))
 
     # Output settings for simulation
@@ -3599,9 +3807,13 @@ def exportDeesseInput(deesse_input,
 */{0}'.format(endofline))
 
     infid.write('\
-OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
-{1}{0}\
-{0}'.format(endofline, '{}'.format(fileprefix, suffix_outputSim)))
+OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}'.format(endofline))
+    infid.write('{}{}'.format(fileprefix, suffix_outputSim))
+    if verbose > 0:
+        infid.write(' // prefix for file name')
+    infid.write('{0}'.format(endofline))
+
+    infid.write('{0}'.format(endofline))
 
     # Output: additional maps
     if verbose > 0:
@@ -3628,46 +3840,35 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
          is the realization index.{0}\
 */{0}'.format(endofline))
 
-        if deesse_input.outputPathIndexFlag:
-            infid.write('{1} {2} // path index map{0}'.format(endofline, int(deesse_input.outputPathIndexFlag), '{}{}'.format(fileprefix, suffix_outputPathIndex)))
-        else:
-            infid.write('{1} // path index map{0}'.format(endofline, int(deesse_input.outputPathIndexFlag)))
+    infid.write('{}'.format(int(deesse_input.outputPathIndexFlag)))
+    if deesse_input.outputPathIndexFlag:
+        infid.write(' {}{}'.format(fileprefix, suffix_outputPathIndex))
+    if verbose > 0:
+        infid.write(' // path index map')
+    infid.write('{0}'.format(endofline))
 
-        if deesse_input.outputErrorFlag:
-            infid.write('{1} {2} // error map{0}'.format(endofline, int(deesse_input.outputErrorFlag), '{}{}'.format(fileprefix, suffix_outputError)))
-        else:
-            infid.write('{1} // error map{0}'.format(endofline, int(deesse_input.outputErrorFlag)))
+    infid.write('{}'.format(int(deesse_input.outputErrorFlag)))
+    if deesse_input.outputErrorFlag:
+        infid.write(' {}{}'.format(fileprefix, suffix_outputError))
+    if verbose > 0:
+        infid.write(' // error map')
+    infid.write('{0}'.format(endofline))
 
-        if deesse_input.outputTiGridNodeIndexFlag:
-            infid.write('{1} {2} // TI grid node index map{0}'.format(endofline, int(deesse_input.outputTiGridNodeIndexFlag), '{}{}'.format(fileprefix, suffix_outputTiGridNodeIndex)))
-        else:
-            infid.write('{1} // TI grid node index map{0}'.format(endofline, int(deesse_input.outputTiGridNodeIndexFlag)))
+    infid.write('{}'.format(int(deesse_input.outputTiGridNodeIndexFlag)))
+    if deesse_input.outputTiGridNodeIndexFlag:
+        infid.write(' {}{}'.format(fileprefix, suffix_outputTiGridNodeIndex))
+    if verbose > 0:
+        infid.write(' // TI grid node index map')
+    infid.write('{0}'.format(endofline))
 
-        if deesse_input.outputTiIndexFlag:
-            infid.write('{1} {2} // TI index map{0}{0}'.format(endofline, int(deesse_input.outputTiIndexFlag), '{}{}'.format(fileprefix, suffix_outputTiIndex)))
-        else:
-            infid.write('{1} // TI index map{0}{0}'.format(endofline, int(deesse_input.outputTiIndexFlag)))
+    infid.write('{}'.format(int(deesse_input.outputTiIndexFlag)))
+    if deesse_input.outputTiIndexFlag:
+        infid.write(' {}{}'.format(fileprefix, suffix_outputTiIndex))
+    if verbose > 0:
+        infid.write(' // TI index map')
+    infid.write('{0}'.format(endofline))
 
-    else:
-        if deesse_input.outputPathIndexFlag:
-            infid.write('{1} {2}{0}'.format(endofline, int(deesse_input.outputPathIndexFlag), '{}{}'.format(fileprefix, suffix_outputPathIndex)))
-        else:
-            infid.write('{1}{0}'.format(endofline, int(deesse_input.outputPathIndexFlag)))
-
-        if deesse_input.outputErrorFlag:
-            infid.write('{1} {2}{0}'.format(endofline, int(deesse_input.outputErrorFlag), '{}{}'.format(fileprefix, suffix_outputError)))
-        else:
-            infid.write('{1}{0}'.format(endofline, int(deesse_input.outputErrorFlag)))
-
-        if deesse_input.outputTiGridNodeIndexFlag:
-            infid.write('{1} {2}{0}'.format(endofline, int(deesse_input.outputTiGridNodeIndexFlag), '{}{}'.format(fileprefix, suffix_outputTiGridNodeIndex)))
-        else:
-            infid.write('{1}{0}'.format(endofline, int(deesse_input.outputTiGridNodeIndexFlag)))
-
-        if deesse_input.outputTiIndexFlag:
-            infid.write('{1} {2}{0}{0}'.format(endofline, int(deesse_input.outputTiIndexFlag), '{}{}'.format(fileprefix, suffix_outputTiIndex)))
-        else:
-            infid.write('{1}{0}{0}'.format(endofline, int(deesse_input.outputTiIndexFlag)))
+    infid.write('{0}'.format(endofline))
 
     # Output report
     if verbose > 0:
@@ -3678,9 +3879,11 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
         infid.write('\
 /* Flag (0 / 1), and if 1, output report file. */{0}'.format(endofline))
 
-    infid.write('{1}{0}'.format(endofline, int(deesse_input.outputReportFlag)))
+    infid.write('{}'.format(int(deesse_input.outputReportFlag)))
     if deesse_input.outputReportFlag:
-        infid.write('{1}{0}'.format(endofline, deesse_input.outputReportFileName))
+        infid.write(' {}'.format(deesse_input.outputReportFileName))
+    infid.write('{0}'.format(endofline))
+
     infid.write('{0}'.format(endofline))
 
     # Training image
@@ -3695,7 +3898,10 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
    simulation grid itself is taken as training image), and{0}\
    if nTI > 1, one pdf image file (for training images, nTI variables). */{0}'.format(endofline))
 
-    infid.write('{1}{0}'.format(endofline, deesse_input.nTI))
+    infid.write('{}'.format(deesse_input.nTI))
+    if verbose > 0:
+        infid.write(' // number of TI(s)')
+    infid.write('{0}'.format(endofline))
 
     for i, (f, im) in enumerate(zip(deesse_input.simGridAsTiFlag, deesse_input.TI)):
         if f:
@@ -3716,7 +3922,10 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
         fname = '{}{}.{}'.format(fileprefix, suffix_pdfTI, 'gslib')
         img.writeImageGslib(im, dirname + '/' + fname,
                             missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-        infid.write('{1}{0}'.format(endofline, fname))
+        infid.write('{}'.format(fname))
+        if verbose > 0:
+            infid.write(' // pdf for TI selection')
+        infid.write('{0}'.format(endofline))
 
     infid.write('{0}'.format(endofline))
 
@@ -3746,14 +3955,20 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
    (such image(s) must be defined on the simulation grid (same support)). */{0}'.format(endofline))
 
     if deesse_input.dataImage is not None:
-        infid.write('{1}{0}'.format(endofline, len(deesse_input.dataImage)))
+        infid.write('{}'.format(len(deesse_input.dataImage)))
+        if verbose > 0:
+            infid.write(' // number of data image(s)')
+        infid.write('{0}'.format(endofline))
         for i, im in enumerate(deesse_input.dataImage):
             fname = '{}{}{}.gslib'.format(fileprefix, suffix_dataImage, i)
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
             infid.write('{1}{0}'.format(endofline, fname))
     else:
-        infid.write('0{0}'.format(endofline))
+        infid.write('0')
+        if verbose > 0:
+            infid.write(' // number of data image(s)')
+        infid.write('{0}'.format(endofline))
 
     infid.write('{0}'.format(endofline))
 
@@ -3767,14 +3982,20 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
 /* Number of point set file(s) (n >= 0), followed by n file(s). */{0}'.format(endofline))
 
     if deesse_input.dataPointSet is not None:
-        infid.write('{1}{0}'.format(endofline, len(deesse_input.dataPointSet)))
+        infid.write('{}'.format(len(deesse_input.dataPointSet)))
+        if verbose > 0:
+            infid.write(' // number of data point set(s)')
+        infid.write('{0}'.format(endofline))
         for i, ps in enumerate(deesse_input.dataPointSet):
             fname = '{}{}{}.gslib'.format(fileprefix, suffix_dataPointSet, i)
             img.writePointSetGslib(ps, dirname + '/' + fname,
                                    missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
             infid.write('{1}{0}'.format(endofline, fname))
     else:
-        infid.write('0{0}'.format(endofline))
+        infid.write('0')
+        if verbose > 0:
+            infid.write(' // number of data point set(s)')
+        infid.write('{0}'.format(endofline))
 
     infid.write('{0}'.format(endofline))
 
@@ -3799,7 +4020,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
         fname = '{}{}.{}'.format(fileprefix, suffix_mask, 'gslib')
         img.writeImageGslib(im, dirname + '/' + fname,
                             missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-        infid.write('1{0}{1}{0}'.format(endofline, fname))
+        infid.write('1 {1}{0}'.format(endofline, fname))
     else:
         infid.write('0{0}'.format(endofline))
 
@@ -3844,10 +4065,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyXRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1}{0}'.format(endofline, deesse_input.homothetyXRatio[0]))
+            infid.write('0 {}'.format(deesse_input.homothetyXRatio[0]))
+        if verbose > 0:
+            infid.write(' // along x-axis')
+        infid.write('{0}'.format(endofline))
 
         if deesse_input.homothetyYLocal:
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
@@ -3858,10 +4081,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyYRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1}{0}'.format(endofline, deesse_input.homothetyYRatio[0]))
+            infid.write('0 {}'.format(deesse_input.homothetyYRatio[0]))
+        if verbose > 0:
+            infid.write(' // along y-axis')
+        infid.write('{0}'.format(endofline))
 
         if deesse_input.homothetyZLocal:
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
@@ -3872,10 +4097,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyZRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1}{0}'.format(endofline, deesse_input.homothetyZRatio[0]))
+            infid.write('0 {}'.format(deesse_input.homothetyZRatio[0]))
+        if verbose > 0:
+            infid.write(' // along z-axis')
+        infid.write('{0}'.format(endofline))
 
     elif deesse_input.homothetyUsage == 2:
         if deesse_input.homothetyXLocal:
@@ -3887,10 +4114,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyXRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1} {2}{0}'.format(endofline, deesse_input.homothetyXRatio[0], deesse_input.homothetyXRatio[1]))
+            infid.write('0 {} {}'.format(deesse_input.homothetyXRatio[0], deesse_input.homothetyXRatio[1]))
+        if verbose > 0:
+            infid.write(' // along x-axis')
+        infid.write('{0}'.format(endofline))
 
         if deesse_input.homothetyYLocal:
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
@@ -3901,10 +4130,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyYRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1} {2}{0}'.format(endofline, deesse_input.homothetyYRatio[0], deesse_input.homothetyYRatio[1]))
+            infid.write('0 {} {}'.format(deesse_input.homothetyYRatio[0], deesse_input.homothetyYRatio[1]))
+        if verbose > 0:
+            infid.write(' // along y-axis')
+        infid.write('{0}'.format(endofline))
 
         if deesse_input.homothetyZLocal:
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
@@ -3915,10 +4146,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_homothetyZRatio, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1} {2}{0}'.format(endofline, deesse_input.homothetyZRatio[0], deesse_input.homothetyZRatio[1]))
+            infid.write('0 {} {}'.format(deesse_input.homothetyZRatio[0], deesse_input.homothetyZRatio[1]))
+        if verbose > 0:
+            infid.write(' // along z-axis')
+        infid.write('{0}'.format(endofline))
 
     infid.write('{0}'.format(endofline))
 
@@ -3961,10 +4194,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationAzimuth, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1}{0}'.format(endofline, deesse_input.rotationAzimuth[0]))
+            infid.write('0 {}'.format(deesse_input.rotationAzimuth[0]))
+        if verbose > 0:
+            infid.write(' // azimuth angle')
+        infid.write('{0}'.format(endofline))
 
         if deesse_input.rotationDipLocal:
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
@@ -3975,10 +4210,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationDip, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1}{0}'.format(endofline, deesse_input.rotationDip[0]))
+            infid.write('0 {}'.format(deesse_input.rotationDip[0]))
+        if verbose > 0:
+            infid.write(' // dip angle')
+        infid.write('{0}'.format(endofline))
 
         if deesse_input.rotationPlungeLocal:
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
@@ -3989,10 +4226,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationPlunge, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1}{0}'.format(endofline, deesse_input.rotationPlunge[0]))
+            infid.write('0 {}'.format(deesse_input.rotationPlunge[0]))
+        if verbose > 0:
+            infid.write(' // plunge angle')
+        infid.write('{0}'.format(endofline))
 
     elif deesse_input.rotationUsage == 2:
         if deesse_input.rotationAzimuthLocal:
@@ -4004,10 +4243,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationAzimuth, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1} {2}{0}'.format(endofline, deesse_input.rotationAzimuth[0], deesse_input.rotationAzimuth[1]))
+            infid.write('0 {} {}'.format(deesse_input.rotationAzimuth[0], deesse_input.rotationAzimuth[1]))
+        if verbose > 0:
+            infid.write(' // azimuth angle')
+        infid.write('{0}'.format(endofline))
 
         if deesse_input.rotationDipLocal:
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
@@ -4018,10 +4259,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationDip, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1} {2}{0}'.format(endofline, deesse_input.rotationDip[0], deesse_input.rotationDip[1]))
+            infid.write('0 {} {}'.format(deesse_input.rotationDip[0], deesse_input.rotationDip[1]))
+        if verbose > 0:
+            infid.write(' // dip angle')
+        infid.write('{0}'.format(endofline))
 
         if deesse_input.rotationPlungeLocal:
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
@@ -4032,10 +4275,12 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}.{}'.format(fileprefix, suffix_rotationPlunge, 'gslib')
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {1}{0}'.format(endofline, fname))
-
+            infid.write('1 {}'.format(fname))
         else:
-            infid.write('0 {1} {2}{0}'.format(endofline, deesse_input.rotationPlunge[0], deesse_input.rotationPlunge[1]))
+            infid.write('0 {} {}'.format(deesse_input.rotationPlunge[0], deesse_input.rotationPlunge[1]))
+        if verbose > 0:
+            infid.write(' // plunge angle')
+        infid.write('{0}'.format(endofline))
 
     infid.write('{0}'.format(endofline))
 
@@ -4092,11 +4337,13 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
       - NORMALIZING_NORMAL */{0}'.format(endofline))
 
     if deesse_input.normalizingType == 'linear':
-        infid.write('NORMALIZING_LINEAR{0}{0}'.format(endofline))
+        infid.write('NORMALIZING_LINEAR{0}'.format(endofline))
     elif deesse_input.normalizingType == 'uniform':
-        infid.write('NORMALIZING_UNIFORM{0}{0}'.format(endofline))
+        infid.write('NORMALIZING_UNIFORM{0}'.format(endofline))
     elif deesse_input.normalizingType == 'normal':
-        infid.write('NORMALIZING_NORMAL{0}{0}'.format(endofline))
+        infid.write('NORMALIZING_NORMAL{0}'.format(endofline))
+
+    infid.write('{0}'.format(endofline))
 
     # Search neighborhood parameters
     if verbose > 0:
@@ -4234,11 +4481,10 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
         elif sn.radiusMode == 'ti_range_xyz':
             infid.write('SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XYZ')
         elif sn.radiusMode == 'manual':
-            infid.write('SEARCHNEIGHBORHOOD_RADIUS_MANUAL {0} {1} {2}'.format(sn.rx, sn.ry, sn.rz))
-        if verbose == 2:
-            infid.write(' // search radii{0}'.format(endofline))
-        else:
-            infid.write('{0}'.format(endofline))
+            infid.write('SEARCHNEIGHBORHOOD_RADIUS_MANUAL {} {} {}'.format(sn.rx, sn.ry, sn.rz))
+        if verbose > 0:
+            infid.write(' // search radii')
+        infid.write('{0}'.format(endofline))
 
         if sn.anisotropyRatioMode == 'one':
             infid.write('SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE')
@@ -4253,27 +4499,25 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
         elif sn.anisotropyRatioMode == 'radius_xyz':
             infid.write('SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XYZ')
         elif sn.anisotropyRatioMode == 'manual':
-            infid.write('SEARCHNEIGHBORHOOD_RADIUS_MANUAL {0} {1} {2}'.format(sn.ax, sn.ay, sn.az))
-        if verbose == 2:
-            infid.write(' // anisotropy ratios{0}'.format(endofline))
-        else:
-            infid.write('{0}'.format(endofline))
+            infid.write('SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_MANUAL {} {} {}'.format(sn.ax, sn.ay, sn.az))
+        if verbose > 0:
+            infid.write(' // anisotropy ratios')
+        infid.write('{0}'.format(endofline))
 
         if sn.angle1 == 0 and sn.angle2 == 0 and sn.angle3 == 0:
             infid.write('SEARCHNEIGHBORHOOD_ROTATION_OFF')
         else:
-            infid.write('SEARCHNEIGHBORHOOD_ROTATION_ON {0} {1} {2}'.format(sn.angle1, sn.angle2, sn.angle3))
-        if verbose == 2:
-            infid.write(' // rotation{0}'.format(endofline))
-        else:
-            infid.write('{0}'.format(endofline))
-
-        if verbose == 2:
-            infid.write('{1} // power for computing weight according to distance{0}'.format(endofline, sn.power))
-        else:
-            infid.write('{1}{0}'.format(endofline, sn.power))
-
+            infid.write('SEARCHNEIGHBORHOOD_ROTATION_ON {} {} {}'.format(sn.angle1, sn.angle2, sn.angle3))
+        if verbose > 0:
+            infid.write(' // rotation')
         infid.write('{0}'.format(endofline))
+
+        infid.write('{}'.format(sn.power))
+        if verbose > 0:
+            infid.write(' // power for computing weight according to distance')
+        infid.write('{0}'.format(endofline))
+
+    infid.write('{0}'.format(endofline))
 
     # Maximal number of neighbors
     if verbose > 0:
@@ -4376,6 +4620,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             infid.write('{1} {2}{0}'.format(endofline, v, deesse_input.powerLpDistance[i]))
         else:
             infid.write('{1}{0}'.format(endofline, v))
+
     infid.write('{0}'.format(endofline))
 
     # Weight factor for conditioning data
@@ -4406,9 +4651,11 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
            successive simulation of all variable(s) at one node in the simulation grid (3D path) */{0}'.format(endofline))
 
     if deesse_input.simType == 'sim_one_by_one':
-        infid.write('SIM_ONE_BY_ONE{0}{0}'.format(endofline))
+        infid.write('SIM_ONE_BY_ONE{0}'.format(endofline))
     elif deesse_input.simType == 'sim_variable_vector':
-        infid.write('SIM_VARIABLE_VECTOR{0}{0}'.format(endofline))
+        infid.write('SIM_VARIABLE_VECTOR{0}'.format(endofline))
+
+    infid.write('{0}'.format(endofline))
 
     # Simulation path
     if verbose > 0:
@@ -4523,7 +4770,8 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
    1. Probability constraint usage, integer (probabilityConstraintUsage):{0}\
         - 0: no probability constraint{0}\
         - 1: global probability constraint{0}\
-        - 2: local probability constraint{0}\
+        - 2: local probability constraint using support{0}\
+        - 3: local probability constraint based on rejection{0}\
 {0}\
    2. If probabilityConstraintUsage > 0, then the classes of values (for which the{0}\
          probability constraints will be given) have to be defined; a class of values{0}\
@@ -4538,20 +4786,22 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
    3a. If probabilityConstraintUsage == 1, then{0}\
           - global probability for each class (defined in 2. above), i.e.{0}\
             nclass numbers in [0,1] of sum 1{0}\
-   3b. If probabilityConstraintUsage == 2, then{0}\
+   3b. If probabilityConstraintUsage == 2 or 3, then{0}\
           - one pdf image file (for every class, nclass variables){0}\
             (image of same dimensions as the simulation grid){0}\
+{0}\
+   4. If probabilityConstraintUsage == 2, then{0}\
           - support radius for probability maps (i.e. distance according to{0}\
             the unit defined in the search neighborhood parameters for the{0}\
             considered variable){0}\
           - method for computing the current pdf (in the simulation grid),{0}\
-             integer (localCurrentPdfComputation):{0}\
+            integer (localCurrentPdfComputation):{0}\
                - 0: \"COMPLETE\" mode: all the informed node in the search neighborhood{0}\
                     for the considered variable, and within the support are taken into account{0}\
                - 1: \"APPROXIMATE\" mode: only the neighboring nodes (used for the{0}\
                     search in the TI) within the support are taken into account{0}\
 {0}\
-   4. If probabilityConstraintUsage > 0, then{0}\
+   5. If probabilityConstraintUsage == 1 or 2, then{0}\
          method for comparing pdf's, integer (comparingPdfMethod):{0}\
             - 0: MAE (Mean Absolute Error){0}\
             - 1: RMSE (Root Mean Squared Error){0}\
@@ -4560,21 +4810,33 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             - 4: MLikRsym (Mean Likelihood Ratio (over each class indicator, symmetric target interval)){0}\
             - 5: MLikRopt (Mean Likelihood Ratio (over each class indicator, optimal target interval)){0}\
 {0}\
-   5. If probabilityConstraintUsage > 0, then{0}\
+   6. If probabilityConstraintUsage == 3, then{0}\
+         method for indicating the mode of rejection (during the scan of the training image):{0}\
+            - 0: rejection is done first (before checking pattern (and other constraint)) according{0}\
+                 to acceptation probabilities proportional to p[i]/q[i] (for class i),{0}\
+                 where{0}\
+                    q is the marginal pdf of the scanned training image{0}\
+                    p is the given local pdf at the simulated node{0}\
+            - 1: rejection is done last (after checking pattern (and other constraint)) according{0}\
+                 to acceptation probabilities proportional to p[i] (for class i),{0}\
+                 where{0}\
+                    p is the given local pdf at the simulated node{0}\
+{0}\
+   7. If probabilityConstraintUsage > 0, then{0}\
          - deactivation distance, i.e. one positive number{0}\
            (the probability constraint is deactivated if the distance between{0}\
            the current simulated node and the last node in its neighbors (used{0}\
            for the search in the TI) (distance computed according to the corresponding{0}\
            search neighborhood parameters) is below the given deactivation distance){0}\
 {0}\
-   6. If probabilityConstraintUsage > 0, then{0}\
+   8. If probabilityConstraintUsage == 1 or 2, then{0}\
          - threshold type for pdf's comparison, integer (probabilityConstraintThresholdType){0}\
               - 0: constant threshold{0}\
               - 1: dynamic threshold{0}\
            note: if comparingPdfMethod is set to 4 or 5, probabilityConstraintThresholdType must be set to 0{0}\
-         6.1a If probabilityConstraintThresholdType == 0, then{0}\
-                 - threshold value{0}\
-         6.1b If probabilityConstraintThresholdType == 1, then the 7 parameters:{0}\
+         8.1a If probabilityConstraintThresholdType == 0, then{0}\
+                 - threshold value [can be set to 0 if comparingPdfMethod is set to 4 or 5]{0}\
+         8.1b If probabilityConstraintThresholdType == 1, then the 7 parameters:{0}\
                  - M1 M2 M3{0}\
                  - T1 T2 T3{0}\
                  - W{0}\
@@ -4596,47 +4858,42 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             infid.write('\
 /* PROBABILITY CONSTRAINTS FOR VARIABLE #{1} */{0}'.format(endofline, i))
 
+        infid.write('{}'.format(sp.probabilityConstraintUsage))
+        if verbose > 0:
+            if sp.probabilityConstraintUsage == 0:
+                infid.write(' // no probability constraint')
+            elif sp.probabilityConstraintUsage == 1:
+                infid.write(' // global probability constraint')
+            elif sp.probabilityConstraintUsage == 2:
+                infid.write(' // local probability constraint using support')
+            elif sp.probabilityConstraintUsage == 3:
+                infid.write(' // local probability constraint based on rejection')
+        infid.write('{0}'.format(endofline))
+
         if sp.probabilityConstraintUsage == 0:
-            infid.write('{1}{0}'.format(endofline, sp.probabilityConstraintUsage))
             continue
 
-        elif sp.probabilityConstraintUsage == 1:
-            if verbose == 2:
-                infid.write('{1} // global probability constraint{0}'.format(endofline, sp.probabilityConstraintUsage))
-            else:
-                infid.write('{1}{0}'.format(endofline, sp.probabilityConstraintUsage))
-
-        elif sp.probabilityConstraintUsage == 2:
-            if verbose == 2:
-                infid.write('{1} // local probability constraint{0}'.format(endofline, sp.probabilityConstraintUsage))
-            else:
-                infid.write('{1}{0}'.format(endofline, sp.probabilityConstraintUsage))
-
-        if verbose == 2:
-            infid.write('{1} // nclass{0}'.format(endofline, sp.nclass))
-        else:
-            infid.write('{1}{0}'.format(endofline, sp.nclass))
+        infid.write('{}'.format(sp.nclass))
+        if verbose > 0:
+            infid.write(' // nclass')
+        infid.write('{0}'.format(endofline))
 
         for j, ci in enumerate(sp.classInterval):
             infid.write('{}  '.format(len(ci)))
             for inter in ci:
                 infid.write(' {} {}'.format(inter[0], inter[1]))
-
-            if verbose == 2:
-                infid.write(' // class #{1} (ninterval, and interval(s)){0}'.format(endofline, j))
-            else:
-                infid.write('{0}'.format(endofline, j))
+            if verbose > 0:
+                infid.write(' // class #{} (ninterval, and interval(s))'.format(j))
+            infid.write('{0}'.format(endofline))
 
         if sp.probabilityConstraintUsage == 1:
             for v in sp.globalPdf:
                 infid.write(' {}'.format(v))
+            if verbose > 0:
+                infid.write(' // global pdf')
+            infid.write('{0}'.format(endofline))
 
-            if verbose == 2:
-                infid.write(' // global pdf{0}'.format(endofline))
-            else:
-                infid.write('{0}'.format(endofline))
-
-        elif sp.probabilityConstraintUsage == 2:
+        elif sp.probabilityConstraintUsage == 2 or sp.probabilityConstraintUsage == 3:
             im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                      sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                      ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
@@ -4645,38 +4902,55 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             fname = '{}{}{}.gslib'.format(fileprefix, suffix_localPdf, i)
             img.writeImageGslib(im, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
+            infid.write('{}'.format(fname))
+            if verbose > 0:
+                infid.write(' // local pdf file')
+            infid.write('{0}'.format(endofline))
 
-            if verbose == 2:
-                infid.write('{1} // local pdf file{0}'.format(endofline, fname))
-                infid.write('{1} // support radius{0}'.format(endofline, sp.localPdfSupportRadius))
-                infid.write('{1} // computing local current pdf mode{0}'.format(endofline, sp.localCurrentPdfComputation))
-            else:
-                infid.write('{1}{0}'.format(endofline, fname))
-                infid.write('{1}{0}'.format(endofline, sp.localPdfSupportRadius))
-                infid.write('{1}{0}'.format(endofline, sp.localCurrentPdfComputation))
+        if sp.probabilityConstraintUsage == 2:
+            infid.write('{}'.format(sp.localPdfSupportRadius))
+            if verbose > 0:
+                infid.write(' // support radius')
+            infid.write('{0}'.format(endofline))
 
-        if verbose == 2:
-            infid.write('{1} // comparing pdf method{0}'.format(endofline, sp.comparingPdfMethod))
-            infid.write('{1} // deactivation distance{0}'.format(endofline, sp.deactivationDistance))
-            infid.write('{1} // threshold type{0}'.format(endofline, sp.probabilityConstraintThresholdType))
-        else:
-            infid.write('{1}{0}'.format(endofline, sp.comparingPdfMethod))
-            infid.write('{1}{0}'.format(endofline, sp.deactivationDistance))
-            infid.write('{1}{0}'.format(endofline, sp.probabilityConstraintThresholdType))
+            infid.write('{}'.format(sp.localCurrentPdfComputation))
+            if verbose > 0:
+                infid.write(' // computing local current pdf mode')
+            infid.write('{0}'.format(endofline))
 
-        if sp.probabilityConstraintThresholdType == 0:
-            if verbose == 2:
-                infid.write('{1} // (constant) threshold{0}'.format(endofline, sp.constantThreshold))
-            else:
-                infid.write('{1}{0}'.format(endofline, sp.constantThreshold))
+        if sp.probabilityConstraintUsage == 1 or sp.probabilityConstraintUsage == 2:
+            infid.write('{}'.format(sp.comparingPdfMethod))
+            if verbose > 0:
+                infid.write(' // comparing pdf method')
+            infid.write('{0}'.format(endofline))
 
-        elif sp.probabilityConstraintThresholdType == 1:
-            for v in sp.dynamicThresholdParameters:
-                infid.write(' {}'.format(v))
+        if sp.probabilityConstraintUsage == 3:
+            infid.write('{}'.format(sp.rejectionMode))
+            if verbose > 0:
+                infid.write(' // rejection mode (0: first, 1: last)')
+            infid.write('{0}'.format(endofline))
 
-            if verbose == 2:
-                infid.write(' // dynamic threshold parameters{0}'.format(endofline))
-            else:
+        infid.write('{}'.format(sp.deactivationDistance))
+        if verbose > 0:
+            infid.write(' // deactivation distance')
+        infid.write('{0}'.format(endofline))
+
+        if sp.probabilityConstraintUsage == 1 or sp.probabilityConstraintUsage == 2:
+            infid.write('{}'.format(sp.probabilityConstraintThresholdType))
+            if verbose > 0:
+                infid.write(' // threshold type')
+            infid.write('{0}'.format(endofline))
+
+            if sp.probabilityConstraintThresholdType == 0:
+                infid.write('{}'.format(sp.constantThreshold))
+                if verbose > 0:
+                    infid.write(' // threshold value (constant)')
+                infid.write('{0}'.format(endofline))
+            elif sp.probabilityConstraintThresholdType == 1:
+                for v in sp.dynamicThresholdParameters:
+                    infid.write(' {}'.format(v))
+                if verbose > 0:
+                    infid.write(' // dynamic threshold parameters')
                 infid.write('{0}'.format(endofline))
 
     infid.write('{0}'.format(endofline))
@@ -4735,59 +5009,48 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             infid.write('\
 /* CONNECTIVITY CONSTRAINTS FOR VARIABLE #{1} */{0}'.format(endofline, i))
 
+        infid.write('{}'.format(co.connectivityConstraintUsage))
+        if verbose > 0:
+            if co.connectivityConstraintUsage == 0:
+                infid.write(' // no connectivity constraint')
+            elif co.connectivityConstraintUsage == 1:
+                infid.write(' // pasting connecting paths (before simulation) (random order)')
+            elif co.connectivityConstraintUsage == 2:
+                infid.write(' // pasting connecting paths (before simulation) (order according to distance)')
+            elif co.connectivityConstraintUsage == 3:
+                infid.write(' // connectivity set during simulation (patterns of labels)')
+        infid.write('{0}'.format(endofline))
+
         if co.connectivityConstraintUsage == 0:
-            infid.write('{1}{0}'.format(endofline, co.connectivityConstraintUsage))
             continue
 
-        elif co.connectivityConstraintUsage == 1:
-            if verbose == 2:
-                infid.write('{1} // pasting connecting paths (before simulation) (random order){0}'.format(endofline, co.connectivityConstraintUsage))
-            else:
-                infid.write('{1}{0}'.format(endofline, co.connectivityConstraintUsage))
-
-        elif co.connectivityConstraintUsage == 2:
-            if verbose == 2:
-                infid.write('{1} // pasting connecting paths (before simulation) (order according to distance){0}'.format(endofline, co.connectivityConstraintUsage))
-            else:
-                infid.write('{1}{0}'.format(endofline, co.connectivityConstraintUsage))
-
-        elif co.connectivityConstraintUsage == 3:
-            if verbose == 2:
-                infid.write('{1} // connectivity set during simulation (patterns of labels){0}'.format(endofline, co.connectivityConstraintUsage))
-            else:
-                infid.write('{1}{0}'.format(endofline, co.connectivityConstraintUsage))
-
         if co.connectivityType == 'connect_face':
-            infid.write('CONNECT_FACE'.format(endofline))
+            infid.write('CONNECT_FACE')
         elif co.connectivityType == 'connect_face_edge':
-            infid.write('CONNECT_FACE_EDGE'.format(endofline))
+            infid.write('CONNECT_FACE_EDGE')
         elif co.connectivityType == 'connect_face_edge_corner':
-            infid.write('CONNECT_FACE_EDGE_CORNER'.format(endofline))
+            infid.write('CONNECT_FACE_EDGE_CORNER')
+        if verbose > 0:
+            infid.write(' // connectivity type')
+        infid.write('{0}'.format(endofline))
 
-        if verbose == 2:
-            infid.write(' // connectivity type{0}'.format(endofline))
-        else:
-            infid.write('{0}'.format(endofline))
-
-        if verbose == 2:
-            infid.write('{1} // nclass{0}'.format(endofline, co.nclass))
-        else:
-            infid.write('{1}{0}'.format(endofline, co.nclass))
+        infid.write('{}'.format(co.nclass))
+        if verbose > 0:
+            infid.write(' // nclass')
+        infid.write('{0}'.format(endofline))
 
         for j, ci in enumerate(co.classInterval):
             infid.write('{}  '.format(len(ci)))
             for inter in ci:
                 infid.write(' {} {}'.format(inter[0], inter[1]))
+            if verbose > 0:
+                infid.write(' // class #{} (ninterval, and interval(s))'.format(j))
+            infid.write('{0}'.format(endofline))
 
-            if verbose == 2:
-                infid.write(' // class #{1} (ninterval, and interval(s)){0}'.format(endofline, j))
-            else:
-                infid.write('{0}'.format(endofline, j))
-
-        if verbose == 2:
-            infid.write('{1} // name for connected component label{0}'.format(endofline, co.varname))
-        else:
-            infid.write('{1}{0}'.format(endofline, co.varname))
+        infid.write('{}'.format(co.varname))
+        if verbose > 0:
+            infid.write(' // name for connected component label')
+        infid.write('{0}'.format(endofline))
 
         if co.connectivityConstraintUsage == 1 or co.connectivityConstraintUsage == 2:
             if co.tiAsRefFlag:
@@ -4796,20 +5059,21 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
                 fname = '{}{}{}.gslib'.format(fileprefix, suffix_refConnectivityImage, i)
                 img.writeImageGslib(co.refConnectivityImage, dirname + '/' + fname,
                                 missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-                infid.write('{0} {1}'.format(fname, co.refConnectivityImage.varname[co.refConnectivityVarIndex]))
-
-            if verbose == 2:
-                infid.write(' // reference image (and variable){0}'.format(endofline))
-            else:
-                infid.write('{0}'.format(endofline))
+                infid.write('{} {}'.format(fname, co.refConnectivityImage.varname[co.refConnectivityVarIndex]))
+            if verbose > 0:
+                infid.write(' // reference image (and variable)')
+            infid.write('{0}'.format(endofline))
 
         elif co.connectivityConstraintUsage == 3:
-            if verbose == 2:
-                infid.write('{1} // deactivation distance{0}'.format(endofline, co.deactivationDistance))
-                infid.write('{1} // threshold{0}'.format(endofline, co.threshold))
-            else:
-                infid.write('{1}{0}'.format(endofline, co.deactivationDistance))
-                infid.write('{1}{0}'.format(endofline, co.threshold))
+            infid.write('{}'.format(co.deactivationDistance))
+            if verbose > 0:
+                infid.write(' // deactivation distance')
+            infid.write('{0}'.format(endofline))
+
+            infid.write('{}'.format(co.threshold))
+            if verbose > 0:
+                infid.write(' // threshold value')
+            infid.write('{0}'.format(endofline))
 
     infid.write('{0}'.format(endofline))
 
@@ -4834,17 +5098,18 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             infid.write('\
 /* BLOCK DATA FOR VARIABLE #{1} */{0}'.format(endofline, i))
 
+        infid.write('{}'.format(bd.blockDataUsage))
         if bd.blockDataUsage == 0:
-            infid.write('{1}{0}'.format(endofline, bd.blockDataUsage))
+            infid.write('{0}'.format(endofline))
             continue
 
         elif bd.blockDataUsage == 1:
             fname = '{}{}{}.dat'.format(fileprefix, suffix_blockData, i)
             blockdata.writeBlockData(bd, dirname + '/' + fname)
-            if verbose == 2:
-                infid.write('1 {1} // block data file{0}'.format(endofline, fname))
-            else:
-                infid.write('1 {1}{0}'.format(endofline, fname))
+            infid.write(' {}'.format(fname))
+            if verbose > 0:
+                infid.write(' // block data file')
+            infid.write('{0}'.format(endofline))
 
     infid.write('{0}'.format(endofline))
 
@@ -4980,159 +5245,145 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
 
     gp = deesse_input.pyramidGeneralParameters
 
-    if gp.npyramidLevel:
-        if verbose == 2:
-            infid.write('{1} // number of level(s) additional to initial SG{0}'.format(endofline, gp.npyramidLevel))
-        else:
-            infid.write('{1}{0}'.format(endofline, gp.npyramidLevel))
+    infid.write('{}'.format(gp.npyramidLevel))
+    if verbose > 0:
+        infid.write(' // number of level(s) additional to initial SG')
+    infid.write('{0}'.format(endofline))
 
+    if gp.npyramidLevel:
         for j, (jx, jy, jz) in enumerate(zip(gp.kx, gp.ky, gp.kz)):
-            if verbose == 2:
-                infid.write('{1} {2} {3} // reduction step along x, y, z for level {4}{0}'.format(endofline, jx, jy, jz, j))
-            else:
-                infid.write('{1} {2} {3}{0}'.format(endofline, jx, jy, jz))
+            infid.write('{} {} {}'.format(jx, jy, jz))
+            if verbose > 0:
+                infid.write(' // reduction step along x, y, z for level {}'.format(j))
+            infid.write('{0}'.format(endofline))
 
         if gp.pyramidSimulationMode == 'hierarchical':
-            if verbose == 2:
-                infid.write('PYRAMID_SIM_HIERARCHICAL // pyramid simulation mode{0}'.format(endofline))
-            else:
-                infid.write('PYRAMID_SIM_HIERARCHICAL{0}'.format(endofline))
+            infid.write('PYRAMID_SIM_HIERARCHICAL')
         elif gp.pyramidSimulationMode == 'hierarchical_using_expansion':
-            if verbose == 2:
-                infid.write('PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION // pyramid simulation mode{0}'.format(endofline))
-            else:
-                infid.write('PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION{0}'.format(endofline))
+            infid.write('PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION')
         elif gp.pyramidSimulationMode == 'all_level_one_by_one':
-            if verbose == 2:
-                infid.write('PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE // pyramid simulation mode{0}'.format(endofline))
-            else:
-                infid.write('PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE{0}'.format(endofline))
+            infid.write('PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE')
         else:
-            if verbose == 2:
-                infid.write('PYRAMID_SIM_NONE // pyramid simulation mode{0}'.format(endofline))
-            else:
-                infid.write('PYRAMID_SIM_NONE{0}'.format(endofline))
+            infid.write('PYRAMID_SIM_NONE')
+        if verbose > 0:
+            infid.write(' // pyramid simulation mode')
+        infid.write('{0}'.format(endofline))
 
-        if verbose == 2:
-            infid.write('PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL // mode for adapting factors (max number of neighbors){0}'.format(endofline))
-        else:
-            infid.write('PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL{0}'.format(endofline))
+        infid.write('PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL')
+        if verbose > 0:
+            infid.write(' // mode for adapting factors (max number of neighbors)')
+        infid.write('{0}'.format(endofline))
 
         if gp.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
             for i in range(gp.npyramidLevel):
-                if verbose == 2:
-                    infid.write('{1} {2} {3} {4} // faCond[{5}], faSim[{5}], fbCond[{5}], fbSim[{5}]{0}'.format(endofline,
-                        gp.factorNneighboringNode[4*i], gp.factorNneighboringNode[4*i+1],
-                        gp.factorNneighboringNode[4*i+2], gp.factorNneighboringNode[4*i+3], i))
-                else:
-                    infid.write('{1} {2} {3} {4}{0}'.format(endofline,
-                        gp.factorNneighboringNode[4*i], gp.factorNneighboringNode[4*i+1],
-                        gp.factorNneighboringNode[4*i+2], gp.factorNneighboringNode[4*i+3]))
+                infid.write('{} {} {} {}'.format(
+                    gp.factorNneighboringNode[4*i], gp.factorNneighboringNode[4*i+1],
+                    gp.factorNneighboringNode[4*i+2], gp.factorNneighboringNode[4*i+3]))
+                if verbose > 0:
+                    infid.write(' // faCond[{0}], faSim[{0}], fbCond[{0}], fbSim[{0}]'.format(i))
+                infid.write('{0}'.format(endofline))
 
-            if verbose == 2:
-                infid.write('{1} // fbSim[{2}]{0}'.format(endofline, gp.factorNneighboringNode[4*gp.npyramidLevel], gp.npyramidLevel))
-            else:
-                infid.write('{1}{0}'.format(endofline, gp.factorNneighboringNode[4*gp.npyramidLevel]))
+            infid.write('{}'.format(gp.factorNneighboringNode[4*gp.npyramidLevel]))
+            if verbose > 0:
+                infid.write(' // fbSim[{}]'.format(gp.npyramidLevel))
+            infid.write('{0}'.format(endofline))
 
         elif gp.pyramidSimulationMode == 'all_level_one_by_one':
             for i, f in enumerate(gp.factorNneighboringNode):
-                if verbose == 2:
-                    infid.write('{1} // f[{2}]{0}'.format(endofline, f, i))
-                else:
-                    infid.write('{1}{0}'.format(endofline, f))
+                infid.write('{}'.format(f))
+                if verbose > 0:
+                    infid.write(' // f[{}]'.format(i))
+                infid.write('{0}'.format(endofline))
 
-        if verbose == 2:
-            infid.write('PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL // mode for adapting factors (distance threshold){0}'.format(endofline))
-        else:
-            infid.write('PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL{0}'.format(endofline))
+        infid.write('PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL')
+        if verbose > 0:
+            infid.write(' // mode for adapting factors (distance threshold)')
+        infid.write('{0}'.format(endofline))
 
         if gp.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
             for i in range(gp.npyramidLevel):
-                if verbose == 2:
-                    infid.write('{1} {2} {3} {4} // faCond[{5}], faSim[{5}], fbCond[{5}], fbSim[{5}]{0}'.format(endofline,
-                        gp.factorDistanceThreshold[4*i], gp.factorDistanceThreshold[4*i+1],
-                        gp.factorDistanceThreshold[4*i+2], gp.factorDistanceThreshold[4*i+3], i))
-                else:
-                    infid.write('{1} {2} {3} {4}{0}'.format(endofline,
-                        gp.factorDistanceThreshold[4*i], gp.factorDistanceThreshold[4*i+1],
-                        gp.factorDistanceThreshold[4*i+2], gp.factorDistanceThreshold[4*i+3]))
+                infid.write('{} {} {} {}'.format(
+                    gp.factorDistanceThreshold[4*i], gp.factorDistanceThreshold[4*i+1],
+                    gp.factorDistanceThreshold[4*i+2], gp.factorDistanceThreshold[4*i+3]))
+                if verbose > 0:
+                    infid.write(' // faCond[{0}], faSim[{0}], fbCond[{0}], fbSim[{0}]'.format(i))
+                infid.write('{0}'.format(endofline))
 
-            if verbose == 2:
-                infid.write('{1} // fbSim[{2}]{0}'.format(endofline, gp.factorDistanceThreshold[4*gp.npyramidLevel], gp.npyramidLevel))
-            else:
-                infid.write('{1}{0}'.format(endofline, gp.factorDistanceThreshold[4*gp.npyramidLevel]))
+            infid.write('{}'.format(gp.factorDistanceThreshold[4*gp.npyramidLevel]))
+            if verbose > 0:
+                infid.write(' // fbSim[{}]'.format(gp.npyramidLevel))
+            infid.write('{0}'.format(endofline))
 
         elif gp.pyramidSimulationMode == 'all_level_one_by_one':
             for i, f in enumerate(gp.factorDistanceThreshold):
-                if verbose == 2:
-                    infid.write('{1} // f[{2}]{0}'.format(endofline, f, i))
-                else:
-                    infid.write('{1}{0}'.format(endofline, f))
+                infid.write('{}'.format(f))
+                if verbose > 0:
+                    infid.write(' // f[{}]'.format(i))
+                infid.write('{0}'.format(endofline))
 
-        if verbose == 2:
-            infid.write('PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL // mode for adapting factors (maximal scan fraction){0}'.format(endofline))
-        else:
-            infid.write('PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL{0}'.format(endofline))
+        infid.write('PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL')
+        if verbose > 0:
+            infid.write(' // mode for adapting factors (maximal scan fraction)')
+        infid.write('{0}'.format(endofline))
 
         for i, f in enumerate(gp.factorMaxScanFraction):
-            if verbose == 2:
-                infid.write('{1} // f[{2}]{0}'.format(endofline, f, i))
-            else:
-                infid.write('{1}{0}'.format(endofline, f))
+            infid.write('{}'.format(f))
+            if verbose > 0:
+                infid.write(' // f[{}]'.format(i))
+            infid.write('{0}'.format(endofline))
 
         for i, pp in enumerate(deesse_input.pyramidParameters):
             if verbose > 0:
                 infid.write('\
 /* PYRAMID PARAMETERS FOR VARIABLE #{1} */{0}'.format(endofline, i))
 
-            if verbose == 2:
-                infid.write('{1} // nlevel{0}'.format(endofline, pp.nlevel))
-            else:
-                infid.write('{1}{0}'.format(endofline, pp.nlevel))
+            infid.write('{}'.format(pp.nlevel))
+            if verbose > 0:
+                infid.write(' // nlevel')
+            infid.write('{0}'.format(endofline))
 
             if pp.pyramidType == 'continuous':
-                if verbose == 2:
-                    infid.write('PYRAMID_CONTINUOUS // pyramid type{0}'.format(endofline))
-                else:
-                    infid.write('PYRAMID_CONTINUOUS{0}'.format(endofline))
-            elif pp.pyramidType == 'categorical_auto':
-                if verbose == 2:
-                    infid.write('PYRAMID_CATEGORICAL_AUTO // pyramid type{0}'.format(endofline))
-                else:
-                    infid.write('PYRAMID_CATEGORICAL_AUTO{0}'.format(endofline))
-            elif pp.pyramidType == 'categorical_custom':
-                if verbose == 2:
-                    infid.write('PYRAMID_CATEGORICAL_CUSTOM // pyramid type{0}'.format(endofline))
-                else:
-                    infid.write('PYRAMID_CATEGORICAL_CUSTOM{0}'.format(endofline))
+                infid.write('PYRAMID_CONTINUOUS')
+                if verbose > 0:
+                    infid.write(' // pyramid type')
+                infid.write('{0}'.format(endofline))
 
-                if verbose == 2:
-                    infid.write('{1} // nclass{0}'.format(endofline, pp.nclass))
-                else:
-                    infid.write('{1}{0}'.format(endofline, pp.nclass))
+            elif pp.pyramidType == 'categorical_auto':
+                infid.write('PYRAMID_CATEGORICAL_AUTO')
+                if verbose > 0:
+                    infid.write(' // pyramid type')
+                infid.write('{0}'.format(endofline))
+
+            elif pp.pyramidType == 'categorical_custom':
+                infid.write('PYRAMID_CATEGORICAL_CUSTOM')
+                if verbose > 0:
+                    infid.write(' // pyramid type')
+                infid.write('{0}'.format(endofline))
+
+                infid.write('{}'.format(pp.nclass))
+                if verbose > 0:
+                    infid.write(' // nclass')
+                infid.write('{0}'.format(endofline))
 
                 for j, ci in enumerate(pp.classInterval):
                     infid.write('{}  '.format(len(ci)))
                     for inter in ci:
                         infid.write(' {} {}'.format(inter[0], inter[1]))
+                    if verbose > 0:
+                        infid.write(' // class #{} (ninterval, and interval(s))'.format(j))
+                    infid.write('{0}'.format(endofline))
 
-                    if verbose == 2:
-                        infid.write(' // class #{1} (ninterval, and interval(s)){0}'.format(endofline, j))
-                    else:
-                        infid.write('{0}'.format(endofline))
             elif pp.pyramidType == 'categorical_to_continuous':
-                if verbose == 2:
-                    infid.write('PYRAMID_CATEGORICAL_TO_CONTINUOUS // pyramid type{0}'.format(endofline))
-                else:
-                    infid.write('PYRAMID_CATEGORICAL_TO_CONTINUOUS{0}'.format(endofline))
-            else:
-                if verbose == 2:
-                    infid.write('PYRAMID_NONE // pyramid type{0}'.format(endofline))
-                else:
-                    infid.write('PYRAMID_NONE{0}'.format(endofline))
+                infid.write('PYRAMID_CATEGORICAL_TO_CONTINUOUS')
+                if verbose > 0:
+                    infid.write(' // pyramid type')
+                infid.write('{0}'.format(endofline))
 
-    else: # deesse_input.pyramidGeneralParameters.npyramidLevel (gp.npyramidLevel) == 0
-        infid.write('{1}{0}'.format(endofline, gp.npyramidLevel))
+            else:
+                infid.write('PYRAMID_NONE')
+                if verbose > 0:
+                    infid.write(' // pyramid type')
+                infid.write('{0}'.format(endofline))
 
     infid.write('{0}'.format(endofline))
 
@@ -5155,7 +5406,8 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
    contributes in the sum defining the error e.{0}\
 */{0}".format(endofline))
 
-    infid.write('{1}{0}{0}'.format(endofline, deesse_input.tolerance))
+    infid.write('{1}{0}'.format(endofline, deesse_input.tolerance))
+    infid.write('{0}'.format(endofline))
 
     # Post-processing
     if verbose > 0:
@@ -5180,7 +5432,10 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
          TOLERANCE{0}\
 */{0}'.format(endofline))
 
-    infid.write('{1}{0}'.format(endofline, deesse_input.npostProcessingPathMax))
+    infid.write('{}'.format(deesse_input.npostProcessingPathMax))
+    if verbose > 0:
+        infid.write(' // number of post-processing path(s)')
+    infid.write('{0}'.format(endofline))
 
     if deesse_input.npostProcessingPathMax:
         infid.write('{1}{0}'.format(endofline, 'POST_PROCESSING_PARAMETERS_MANUAL'))
@@ -5221,24 +5476,27 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}\
             infid.write('\
 /* POST-PROCESSING: TOLERANCE */{0}'.format(endofline))
 
-        infid.write('{1}{0}{0}'.format(endofline, deesse_input.postProcessingTolerance))
-
-    else: # no post processing
+        infid.write('{1}{0}'.format(endofline, deesse_input.postProcessingTolerance))
         infid.write('{0}'.format(endofline))
+
+    infid.write('{0}'.format(endofline))
 
     # Seed number and seed increment
     if verbose > 0:
         infid.write('\
 /* SEED NUMBER AND SEED INCREMENT */{0}'.format(endofline))
 
-    infid.write('{1}{0}{2}{0}{0}'.format(endofline, deesse_input.seed, deesse_input.seedIncrement))
+    infid.write('{1}{0}'.format(endofline, deesse_input.seed))
+    infid.write('{1}{0}'.format(endofline, deesse_input.seedIncrement))
+    infid.write('{0}'.format(endofline))
 
     # Number of realization(s)
     if verbose > 0:
         infid.write('\
 /* NUMBER OF REALIZATION(S) */{0}'.format(endofline))
 
-    infid.write('{1}{0}{0}'.format(endofline, deesse_input.nrealization))
+    infid.write('{1}{0}'.format(endofline, deesse_input.nrealization))
+    infid.write('{0}'.format(endofline))
 
     # END
     infid.write('END{0}'.format(endofline))

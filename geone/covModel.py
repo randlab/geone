@@ -332,21 +332,25 @@ class CovModel1D (object):
         self._is_range_stationary = None
         self._is_stationary = None
 
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
     def __repr__(self):
-        s = "Covariance model 1D: (Name = {})\n".format(self.name)
+        out = out + '\n' + '*****'
+        out = '*** CovModel1D object ***'
+        out = out + '\n' + "name = '{0.name}'".format(self)
         nelem = len(self.elem)
-        s = s + "   {} elementary contribution(s)\n".format(nelem)
+        out = out + '\n' + 'number of elementary contribution(s): {}'.format(len(self.elem))
         for i, el in enumerate(self.elem):
-            s = s + "   Elementary contribution {}: type : {}\n".format(i, el[0])
-            s = s + "      parameters:"
+            out = out + '\n' + 'elementary contribution {}'.format(i)
+            out = out + '\n' + '    type: {}\n'.format(el[0])
+            out = out + '\n' + '    parameters:'
             nparam = len(el[1])
             for j, (k, val) in enumerate(el[1].items()):
-                s = s + "  {} = {}".format(k, val)
-                if j < nparam - 1:
-                    s = s + ","
-            if i < nelem - 1:
-                s = s + "\n"
-        return s
+                out = out + '\n' + '        {} = {}'.format(k, val)
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
 
     def is_orientation_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the orientation is
@@ -703,26 +707,28 @@ class CovModel2D (object):
         self._is_range_stationary = None
         self._is_stationary = None
 
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
     def __repr__(self):
-        s = "Covariance model 2D: (Name = {})\n".format(self.name)
+        out = out + '\n' + '*****'
+        out = '*** CovModel2D object ***'
+        out = out + '\n' + "name = '{0.name}'".format(self)
         nelem = len(self.elem)
-        s = s + "   {} elementary contribution(s)\n".format(nelem)
+        out = out + '\n' + 'number of elementary contribution(s): {}'.format(len(self.elem))
         for i, el in enumerate(self.elem):
-            s = s + "   Elementary contribution {}: type : {}\n".format(i, el[0])
-            s = s + "      parameters:"
+            out = out + '\n' + 'elementary contribution {}'.format(i)
+            out = out + '\n' + '    type: {}\n'.format(el[0])
+            out = out + '\n' + '    parameters:'
             nparam = len(el[1])
             for j, (k, val) in enumerate(el[1].items()):
-                s = s + "  {} = {}".format(k, val)
-                if j < nparam - 1:
-                    s = s + ","
-            # if i < nelem - 1:
-            #     s = s + "\n"
-            s = s + "\n"
-        s = s + "   Angle: alpha = {} deg.\n".format(self.alpha)
-        s = s + "   i.e.: the system Ox'y', supporting the axes of the model (ranges),\n"
-        s = s + "         is obtained from the system Oxy by applying a rotation of\n"
-        s = s + "         angle -alpha."
-        return s
+                out = out + '\n' + '        {} = {}'.format(k, val)
+        out = out + '\n' + 'angle: alpha = {0.alpha} deg.'.format(self)
+        out = out + '\n' + "    i.e.: the system Ox'y', supporting the axes of the model (ranges),"
+        out = out + '\n' + '    is obtained from the system Oxy by applying a rotation of angle -alpha.'
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
 
     def is_orientation_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the orientation is
@@ -1357,28 +1363,31 @@ class CovModel3D (object):
         self._is_range_stationary = None
         self._is_stationary = None
 
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
     def __repr__(self):
-        s = "Covariance model 3D: (Name = {})\n".format(self.name)
+        out = out + '\n' + '*****'
+        out = '*** CovModel3D object ***'
+        out = out + '\n' + "name = '{0.name}'".format(self)
         nelem = len(self.elem)
-        s = s + "   {} elementary contribution(s)\n".format(nelem)
+        out = out + '\n' + 'number of elementary contribution(s): {}'.format(len(self.elem))
         for i, el in enumerate(self.elem):
-            s = s + "   Elementary contribution {}: type : {}\n".format(i, el[0])
-            s = s + "      parameters:"
+            out = out + '\n' + 'elementary contribution {}'.format(i)
+            out = out + '\n' + '    type: {}\n'.format(el[0])
+            out = out + '\n' + '    parameters:'
             nparam = len(el[1])
             for j, (k, val) in enumerate(el[1].items()):
-                s = s + "  {} = {}".format(k, val)
-                if j < nparam - 1:
-                    s = s + ","
-            # if i < nelem - 1:
-            #     s = s + "\n"
-            s = s + "\n"
-        s = s + "   Angles: alpha = {} deg., beta = {} deg., gamma = {} deg.\n".format(self.alpha, self.beta, self.gamma)
-        s = s + "   i.e.: the system Ox'''y''''z''', supporting the axes of the model (ranges),\n"
-        s = s + "         is obtained from the system Oxyz as follows:\n"
-        s = s + "         Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'\n"
-        s = s + "         Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''\n"
-        s = s + "         Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''"
-        return s
+                out = out + '\n' + '        {} = {}'.format(k, val)
+        out = out + '\n' + 'angles: alpha = {0.alpha}, beta = {0.beta}, gamma = {0.gamma} (in degrees)'.format(self)
+        out = out + '\n' + "    i.e.: the system Ox'''y''''z''', supporting the axes of the model (ranges),"
+        out = out + '\n' + "    is obtained from the system Oxyz as follows:"
+        out = out + '\n' + "        Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'"
+        out = out + '\n' + "        Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''"
+        out = out + '\n' + "        Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''"
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
 
     def is_orientation_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the orientation is

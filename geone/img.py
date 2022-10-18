@@ -81,17 +81,16 @@ class Img(object):
 
     # ------------------------------------------------------------------------
     # def __str__(self):
-    #     """Returns name of the image: string representation of Image object"""
     #     return self.name
     def __repr__(self):
-        out = ("\n    "
-               "*** Img object ***\n    "
-               "name: '{0.name}'\n    "
-               "image size: ({0.nx}x{0.ny}x{0.nz})\n    "
-               "spacing: {0.sx}, {0.sy}, {0.sz}\n    "
-               "origin: {0.ox}, {0.oy}, {0.oz}\n    "
-               "nv: {0.nv}, varname: {0.varname}\n    "
-               .format(self))
+        out = '*** Img object ***'
+        out = out + '\n' + "name = '{0.name}'".format(self)
+        out = out + '\n' + '(nx, ny, nz) = ({0.nx}, {0.ny}, {0.nz}) # number of cells along each axis'.format(self)
+        out = out + '\n' + '(sx, sy, sz) = ({0.sx}, {0.sy}, {0.sz}) # cell size (spacing) along each axis'.format(self)
+        out = out + '\n' + '(ox, oy, oz) = ({0.ox}, {0.oy}, {0.oz}) # origin (coordinates of the corner)'.format(self)
+        out = out + '\n' + 'nv = {0.nv}  # number of variable(s)'.format(self)
+        out = out + '\n' + 'varname = ' + str(self.varname)
+        out = out + '\n' + '*****'
         return out
     # ------------------------------------------------------------------------
 
@@ -740,6 +739,19 @@ class PointSet(object):
             self.varname = list(np.asarray(varname).reshape(-1))
 
         self.name = name
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
+    def __repr__(self):
+        out = '*** PointSet object ***'
+        out = out + '\n' + "name = '{0.name}'".format(self)
+        out = out + '\n' + 'npt = {0.npt} # number of point(s)'.format(self)
+        out = out + '\n' + 'nv = {0.nv}  # number of variable(s) (including coordinates)'.format(self)
+        out = out + '\n' + 'varname = ' + str(self.varname)
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
     def set_default_varname(self):
