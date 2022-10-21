@@ -11,7 +11,7 @@ Module interfacing deesse for python.
 
 import numpy as np
 import sys, os, re, copy
-# import multiprocessing
+import multiprocessing
 
 from geone import img, blockdata
 from geone.deesse_core import deesse
@@ -3082,7 +3082,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseRun(deesse_input, nthreads=-1, verbose=1):
+def deesseRun(deesse_input, nthreads=-1, verbose=2):
     """
     Launches deesse.
 
@@ -3095,8 +3095,9 @@ def deesseRun(deesse_input, nthreads=-1, verbose=1):
     :param verbose:
                 (int) indicates what is displayed during the deesse run:
                     - 0: mininal display
-                    - 1: version and warning(s) encountered
-                    - 2 (or >1): version, progress, and warning(s) encountered
+                    - 1: only errors
+                    - 2: version and warning(s) encountered
+                    - 3 (or >2): version, progress, and warning(s) encountered
 
     :return deesse_output:
         (dict)
@@ -3133,9 +3134,9 @@ def deesseRun(deesse_input, nthreads=-1, verbose=1):
                         (can be empty)
     """
 
-    # Convert deesse input from python to C
     if not deesse_input.ok:
-        print('ERROR: check deesse input')
+        if verbose > 0:
+            print('ERROR (deesseRun): check deesse input')
         return
 
     # Set number of threads
@@ -3144,7 +3145,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=1):
     else:
         nth = nthreads
 
-    if verbose >= 1:
+    if verbose >= 2:
         print('DeeSse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
@@ -3177,11 +3178,8 @@ def deesseRun(deesse_input, nthreads=-1, verbose=1):
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr: no output
     #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose == 0:
+    if verbose < 3:
         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 1:
-        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
 
@@ -3211,11 +3209,11 @@ def deesseRun(deesse_input, nthreads=-1, verbose=1):
     #deesse.MPDSFree(mpds_progressMonitor)
     deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 1 and deesse_output:
+    if verbose >= 2 and deesse_output:
         print('DeeSse run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 1 and deesse_output and deesse_output['nwarning']:
+    if verbose >= 2 and deesse_output and deesse_output['nwarning']:
         print('\nWarnings encountered ({} times in all):'.format(deesse_output['nwarning']))
         for i, warning_message in enumerate(deesse_output['warnings']):
             print('#{:3d}: {}'.format(i+1, warning_message))
@@ -3223,457 +3221,215 @@ def deesseRun(deesse_input, nthreads=-1, verbose=1):
     return deesse_output
 # ----------------------------------------------------------------------------
 
-# # ----------------------------------------------------------------------------
-# # Note: the three following functions:
-# #          deesseRunC, deesseRun_sp, and deesseRun_mp
-# #       are based on multiprocessing package, but as their use implies
-# #       unwanted behaviours in notebook, they are commented...
-# # ----------------------------------------------------------------------------
-# def deesseRunC(deesse_input, nthreads, verbose):
-#     """
-#     Launches deesse in C (single process).
-#
-#     :param deesse_input:
-#                 (DeesseInput (class)): deesse input parameter (python)
-#     :param nthreads:
-#                 (int) number of thread(s) to use for deesse (C), nthreads > 0
-#     :param verbose:
-#                 (int) indicates what is displayed during the deesse run:
-#                     - 0: mininal display
-#                     - 1: version and warning(s) encountered
-#                     - 2 (or >1): version, progress, and warning(s) encountered
-#
-#     :return (deesse_output, err, err_message):
-#         deesse_output: (dict)
-#                 {'sim':sim,
-#                  'path':path,
-#                  'error':error,
-#                  'tiGridNode':tiGridNode,
-#                  'tiIndex':tiIndex,
-#                  'nwarning':nwarning,
-#                  'warnings':warnings}
-#             With nreal = deesse_input.nrealization:
-#             sim:    (1-dimensional array of Img (class) of size nreal or None)
-#                         sim[i]: i-th realisation
-#                         (sim is None if no simulation is retrieved)
-#             path:   (1-dimensional array of Img (class) of size nreal or None)
-#                         path[i]: path index map for the i-th realisation
-#                         (path is None if no path index map is retrieved)
-#             error:   (1-dimensional array of Img (class) of size nreal or None)
-#                         error[i]: error map for the i-th realisation
-#                         (error is None if no error map is retrieved)
-#             tiGridNode:
-#                     (1-dimensional array of Img (class) of size nreal or None)
-#                         tiGridNode[i]: TI grid node index map for the i-th realisation
-#                         (tiGridNode is None if no TI grid node index map is retrieved)
-#             tiIndex:
-#                     (1-dimensional array of Img (class) of size nreal or None)
-#                         tiIndex[i]: TI index map for the i-th realisation
-#                         (tiIndex is None if no TI index map is retrieved)
-#             nwarning:
-#                     (int) total number of warning(s) encountered
-#                         (same warnings can be counted several times)
-#             warnings:
-#                     (list of strings) list of distinct warnings encountered
-#                         (can be empty)
-#
-#         err: (int) error code:
-#             = 0: no error
-#             < 0: error resulting from the C function
-#             > 0: error intercepted in this function
-#
-#         err_message: (string) error message
-#
-#     :note: a call of this function should be isolated in a process (multiprocessing package)
-#     """
-#
-#     # Initialization
-#     err = 0
-#     err_message = ''
-#     deesse_output = None
-#
-#     # Check number of threads
-#     if nthreads <= 0:
-#         err = 2
-#         err_message = 'ERROR: invalid number of threads...'
-#         return (deesse_output, err, err_message)
-#
-#     # Convert deesse input from python to C
-#     try:
-#         mpds_siminput = deesse_input_py2C(deesse_input)
-#     except:
-#         err = 3
-#         err_message = 'ERROR: unable to convert deesse input from python to C...'
-#         return (deesse_output, err, err_message)
-#
-#     if mpds_siminput is None:
-#         err = 3
-#         err_message = 'ERROR: unable to convert deesse input from python to C...'
-#         return (deesse_output, err, err_message)
-#
-#     # Allocate mpds_simoutput
-#     mpds_simoutput = deesse.malloc_MPDS_SIMOUTPUT()
-#
-#     # Init mpds_simoutput
-#     deesse.MPDSInitSimOutput(mpds_simoutput)
-#
-#     # Set progress monitor
-#     mpds_progressMonitor = deesse.malloc_MPDS_PROGRESSMONITOR()
-#     deesse.MPDSInitProgressMonitor(mpds_progressMonitor)
-#
-#     # Set function to update progress monitor:
-#     # according to deesse.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
-#     # the function
-#     #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
-#     # should be used, but the following function can also be used:
-#     #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr: no output
-#     #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-#     if verbose == 0:
-#         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
-#     elif verbose == 1:
-#         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
-#         # mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
-#     else:
-#         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
-#
-#     # Launch deesse
-#     # err = deesse.MPDSSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-#     err = deesse.MPDSOMPSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor, nthreads )
-#
-#     # Free memory on C side: deesse input
-#     deesse.MPDSFreeSimInput(mpds_siminput)
-#     #deesse.MPDSFree(mpds_siminput)
-#     deesse.free_MPDS_SIMINPUT(mpds_siminput)
-#
-#     if err:
-#         err_message = deesse.mpds_get_error_message(-err)
-#         err_message = err_message.replace('\n', '')
-#     else:
-#         deesse_output = deesse_output_C2py(mpds_simoutput, mpds_progressMonitor)
-#
-#     # Free memory on C side: simulation output
-#     deesse.MPDSFreeSimOutput(mpds_simoutput)
-#     #deesse.MPDSFree (mpds_simoutput)
-#     deesse.free_MPDS_SIMOUTPUT(mpds_simoutput)
-#
-#     # Free memory on C side: progress monitor
-#     #deesse.MPDSFree(mpds_progressMonitor)
-#     deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
-#
-#     return (deesse_output, err, err_message)
-# # ----------------------------------------------------------------------------
-#
-# # ----------------------------------------------------------------------------
-# def deesseRun_sp(deesse_input, nthreads=-1, verbose=1):
-#     """
-#     Launches deesse through a single process.
-#
-#     :param deesse_input:
-#                 (DeesseInput (class)): deesse input parameter (python)
-#     :param nthreads:
-#                 (int) number of thread(s) to use for deesse (C),
-#                     (nthreads = -n <= 0: for maximal number of threads except n,
-#                     but at least 1)
-#     :param verbose:
-#                 (int) indicates what is displayed during the deesse run:
-#                     - 0: mininal display
-#                     - 1: version and warning(s) encountered
-#                     - 2 (or >1): version, progress, and warning(s) encountered
-#
-#     :return deesse_output:
-#         (dict)
-#                 {'sim':sim,
-#                  'path':path,
-#                  'error':error,
-#                  'tiGridNode':tiGridNode,
-#                  'tiIndex':tiIndex,
-#                  'nwarning':nwarning,
-#                  'warnings':warnings}
-#             With nreal = deesse_input.nrealization:
-#             sim:    (1-dimensional array of Img (class) of size nreal or None)
-#                         sim[i]: i-th realisation
-#                         (sim is None if no simulation is retrieved)
-#             path:   (1-dimensional array of Img (class) of size nreal or None)
-#                         path[i]: path index map for the i-th realisation
-#                         (path is None if no path index map is retrieved)
-#             error:   (1-dimensional array of Img (class) of size nreal or None)
-#                         error[i]: error map for the i-th realisation
-#                         (error is None if no error map is retrieved)
-#             tiGridNode:
-#                     (1-dimensional array of Img (class) of size nreal or None)
-#                         tiGridNode[i]: TI grid node index map for the i-th realisation
-#                         (tiGridNode is None if no TI grid node index map is retrieved)
-#             tiIndex:
-#                     (1-dimensional array of Img (class) of size nreal or None)
-#                         tiIndex[i]: TI index map for the i-th realisation
-#                         (tiIndex is None if no TI index map is retrieved)
-#             nwarning:
-#                     (int) total number of warning(s) encountered
-#                         (same warnings can be counted several times)
-#             warnings:
-#                     (list of strings) list of distinct warnings encountered
-#                         (can be empty)
-#     """
-#
-#     # Convert deesse input from python to C
-#     if not deesse_input.ok:
-#         print('ERROR: check deesse input')
-#         return
-#
-#     # Set number of threads
-#     if nthreads <= 0:
-#         nth = max(multiprocessing.cpu_count() + nthreads, 1)
-#     else:
-#         nth = nthreads
-#
-#     if verbose >= 1:
-#         print('Deesse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
-#         # print('********************************************************************************')
-#         # print('DEESSE VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
-#         # print('[{:d} process(es)]'.format(1))
-#         # print('********************************************************************************')
-#
-#     # Run deesse in a pool of 1 worker
-#     pool = multiprocessing.Pool(1)
-#     out = pool.apply_async(deesseRunC, args=(deesse_input, nth, verbose))
-#     # Properly end working process
-#     pool.close() # Prevents any more tasks from being submitted to the pool,
-#     pool.join()  # then, wait for the worker processes to exit.
-#
-#     deesse_output, err, err_message = out.get()
-#
-#     if err:
-#         print(err_message)
-#         return
-#
-#     if verbose >= 1:
-#         print('Deesse run complete')
-#
-#     # Show (print) encountered warnings
-#     if verbose >= 1 and deesse_output['nwarning']:
-#         print('\nWarnings encountered ({} times in all):'.format(deesse_output['nwarning']))
-#         for i, warning_message in enumerate(deesse_output['warnings']):
-#             print('#{:3d}: {}'.format(i+1, warning_message))
-#
-#     return deesse_output
-# # ----------------------------------------------------------------------------
-#
-# # ----------------------------------------------------------------------------
-# def deesseRun_mp(deesse_input, nprocesses=1, nthreads=None, verbose=1):
-#     """
-#     Launches deesse through mutliple processes, i.e. nprocesses parallel deesse
-#     run(s) using each one nthreads threads will be launched. The set of
-#     realizations (specified by deesse_input.nrealization) is distributed in
-#     a balanced way over the processes.
-#     In terms of resources, this implies the use of nprocesses * nthreads cpu(s).
-#
-#     :param deesse_input:
-#                 (DeesseInput (class)): deesse input parameter (python)
-#     :param nprocesses:
-#                 (int) number of processes, must be greater than 0
-#     :param nthreads:
-#                 (int) number of thread(s) to use for each process (C code):
-#                     nthreads = None: nthreads is automatically computed as the
-#                         maximal integer (but at least 1) such that
-#                             nprocesses * nthreads <= nmax
-#                         where nmax is the number of threads of the system
-#     :param verbose:
-#                 (int) indicates what is displayed during the deesse run:
-#                     - 0: mininal display
-#                     - 1: version and warning(s) encountered
-#                     - 2 (or >1): version, progress, and warning(s) encountered
-#
-#     :return deesse_output:
-#         (dict)
-#                 {'sim':sim,
-#                  'path':path,
-#                  'error':error,
-#                  'tiGridNode':tiGridNode,
-#                  'tiIndex':tiIndex,
-#                  'nwarning':nwarning,
-#                  'warnings':warnings}
-#             With nreal = deesse_input.nrealization:
-#             sim:    (1-dimensional array of Img (class) of size nreal or None)
-#                         sim[i]: i-th realisation
-#                         (sim is None if no simulation is retrieved)
-#             path:   (1-dimensional array of Img (class) of size nreal or None)
-#                         path[i]: path index map for the i-th realisation
-#                         (path is None if no path index map is retrieved)
-#             error:   (1-dimensional array of Img (class) of size nreal or None)
-#                         error[i]: error map for the i-th realisation
-#                         (error is None if no error map is retrieved)
-#             tiGridNode:
-#                     (1-dimensional array of Img (class) of size nreal or None)
-#                         tiGridNode[i]: TI grid node index map for the i-th realisation
-#                         (tiGridNode is None if no TI grid node index map is retrieved)
-#             tiIndex:
-#                     (1-dimensional array of Img (class) of size nreal or None)
-#                         tiIndex[i]: TI index map for the i-th realisation
-#                         (tiIndex is None if no TI index map is retrieved)
-#             nwarning:
-#                     (int) total number of warning(s) encountered
-#                         (same warnings can be counted several times)
-#             warnings:
-#                     (list of strings) list of distinct warnings encountered
-#                         (can be empty)
-#     """
-#
-#     # Convert deesse input from python to C
-#     if not deesse_input.ok:
-#         print('ERROR: check deesse input')
-#         return
-#
-#     # Set number of threads and processes
-#     nprocesses = int(nprocesses)
-#
-#     if nprocesses <= 0:
-#         print('ERROR: nprocesses not valid...')
-#         return
-#
-#     if nthreads is None:
-#         nth = max(int(np.floor(multiprocessing.cpu_count() / nprocesses)), 1)
-#     else:
-#         if nthreads <= 0:
-#             # nth = max(int(multiprocessing.cpu_count() + nthreads), 1)
-#             print('ERROR: nthreads should be positive')
-#             return
-#         else:
-#             nth = int(nthreads)
-#
-#     if nprocesses * nth > multiprocessing.cpu_count():
-#         print('WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
-#
-#     # Set the distribution of the realizations over the processes
-#     #   real_index_proc[i]: index list of the realization that will be done by i-th process
-#     q, r = np.divmod(deesse_input.nrealization, nprocesses)
-#     real_index_proc = [i*q + min(i, r) + np.arange(q+(i<r)) for i in range(nprocesses)]
-#
-#     if verbose >= 1:
-#         print('Deesse running in {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]...'.format(nprocesses, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
-#         # print('********************************************************************************')
-#         # print('DEESSE VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
-#         # print('[{:d} process(es)]'.format(nprocesses))
-#         # print('********************************************************************************')
-#
-#     # Initialize deesse input for each process
-#     deesse_input_proc = [copy.copy(deesse_input) for i in range(nprocesses)]
-#     init_seed = deesse_input.seed
-#
-#     # Set pool of nprocesses workers
-#     pool = multiprocessing.Pool(nprocesses)
-#     out_pool = []
-#
-#     for i, input in enumerate(deesse_input_proc):
-#         # Adapt deesse input for i-th process
-#         input.nrealization = len(real_index_proc[i])
-#         if input.nrealization:
-#             input.seed = init_seed + int(real_index_proc[i][0]) * input.seedIncrement
-#         if i==0:
-#             verb = verbose
-#         else:
-#             # verb = min(verbose, 1) # keep only printing of warning if verbose >= 1
-#             verb = 0
-#         # Launch deesse (i-th process)
-#         out_pool.append(pool.apply_async(deesseRunC, args=(input, nth, verb)))
-#
-#     # Properly end working process
-#     pool.close() # Prevents any more tasks from being submitted to the pool,
-#     pool.join()  # then, wait for the worker processes to exit.
-#
-#     # Get result from each process
-#     deesse_result_proc = [p.get() for p in out_pool]
-#
-#     # Gather results of every process
-#     deesse_output_proc = [result[0] for result in deesse_result_proc]
-#     deesse_err_proc = [result[1] for result in deesse_result_proc]
-#     deesse_err_message_proc = [result[2] for result in deesse_result_proc]
-#
-#     for output, err, err_message in zip(deesse_output_proc, deesse_err_proc, deesse_err_message_proc):
-#         if err:
-#             print(err_message)
-#             return
-#         if output is None:
-#             print('ERROR: output cannot be retrieved...')
-#             return
-#
-#     deesse_output = {}
-#
-#     # 'sim'
-#     tmp = [output['sim'] for output in deesse_output_proc if output['sim'] is not None]
-#     if tmp:
-#         deesse_output['sim'] = np.hstack(tmp)
-#         # ... set right index in varname
-#         for i in range(deesse_input.nrealization):
-#             for j in range(len(deesse_output['sim'][i].varname)):
-#                 deesse_output['sim'][i].varname[j] = re.sub('[0-9][0-9][0-9][0-9][0-9]$', '{:05d}'.format(i), deesse_output['sim'][i].varname[j])
-#     else:
-#         deesse_output['sim'] = None
-#
-#     # 'path'
-#     tmp = [output['path'] for output in deesse_output_proc if output['path'] is not None]
-#     if tmp:
-#         deesse_output['path'] = np.hstack(tmp)
-#         # ... set right index in varname
-#         for i in range(deesse_input.nrealization):
-#             for j in range(len(deesse_output['path'][i].varname)):
-#                 deesse_output['path'][i].varname[j] = re.sub('[0-9][0-9][0-9][0-9][0-9]$', '{:05d}'.format(i), deesse_output['path'][i].varname[j])
-#     else:
-#         deesse_output['path'] = None
-#
-#     # 'error'
-#     tmp = [output['error'] for output in deesse_output_proc if output['error'] is not None]
-#     if tmp:
-#         deesse_output['error'] = np.hstack(tmp)
-#         # ... set right index in varname
-#         for i in range(deesse_input.nrealization):
-#             for j in range(len(deesse_output['error'][i].varname)):
-#                 deesse_output['error'][i].varname[j] = re.sub('[0-9][0-9][0-9][0-9][0-9]$', '{:05d}'.format(i), deesse_output['error'][i].varname[j])
-#     else:
-#         deesse_output['error'] = None
-#
-#     # 'tiGridNode'
-#     tmp = [output['tiGridNode'] for output in deesse_output_proc if output['tiGridNode'] is not None]
-#     if tmp:
-#         deesse_output['tiGridNode'] = np.hstack(tmp)
-#         # ... set right index in varname
-#         for i in range(deesse_input.nrealization):
-#             for j in range(len(deesse_output['tiGridNode'][i].varname)):
-#                 deesse_output['tiGridNode'][i].varname[j] = re.sub('[0-9][0-9][0-9][0-9][0-9]$', '{:05d}'.format(i), deesse_output['tiGridNode'][i].varname[j])
-#     else:
-#         deesse_output['tiGridNode'] = None
-#
-#     # 'tiIndex'
-#     tmp = [output['tiIndex'] for output in deesse_output_proc if output['tiIndex'] is not None]
-#     if tmp:
-#         deesse_output['tiIndex'] = np.hstack(tmp)
-#         # ... set right index in varname
-#         for i in range(deesse_input.nrealization):
-#             for j in range(len(deesse_output['tiIndex'][i].varname)):
-#                 deesse_output['tiIndex'][i].varname[j] = re.sub('[0-9][0-9][0-9][0-9][0-9]$', '{:05d}'.format(i), deesse_output['tiIndex'][i].varname[j])
-#     else:
-#         deesse_output['tiIndex'] = None
-#
-#     # 'nwarning'
-#     deesse_output['nwarning'] = np.sum([output['nwarning'] for output in deesse_output_proc])
-#
-#     # 'warnings'
-#     tmp = []
-#     for output in deesse_output_proc:
-#         tmp = tmp + output['warnings'] # concatenation
-#     tmp, id = np.unique(tmp, return_index=True)
-#     deesse_output['warnings'] = [tmp[id[i]] for i in id]
-#
-#     if verbose >= 1:
-#         print('Deesse run complete')
-#
-#     # Show (print) encountered warnings
-#     if verbose >= 1 and deesse_output['nwarning']:
-#         print('\nWarnings encountered ({} times in all):'.format(deesse_output['nwarning']))
-#         for i, warning_message in enumerate(deesse_output['warnings']):
-#             print('#{:3d}: {}'.format(i+1, warning_message))
-#
-#     return deesse_output
-# # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
+    """
+    Launches deesse through multiple processes.
+
+    Launches multiple processes (based on multiprocessing package):
+       - nproc parallel processes using each one nthreads_per_proc threads will
+         be launched [parallel calls of the function deesseRun],
+       - the set of realizations (specified by deesse_input.nrealization) is
+         distributed in a balanced way over the processes,
+       - in terms of resources, this implies the use of
+             nproc * nthreads_per_proc cpu(s).
+
+    :param deesse_input:
+                (DeesseInput (class)): deesse input parameter (python)
+
+    :param nproc:
+                (int) number of processes (can be modified in the function)
+                    nproc = None: nproc is set to min(nmax, nreal)
+                        (but at least 1), where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+                        nreal is the number of realization
+                            (deesse_input.nrealization)
+    :param nthreads_per_proc:
+                (int) number of thread(s) per process (should be > 0 or None):
+                    nthreads_per_proc = None: nthreads_per_proc is automatically
+                    computed as the maximal integer (but at least 1) such that
+                            nproc * nthreads_per_proc <= nmax
+                        where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param verbose:
+                (int) indicates what information is displayed:
+                    - 0: mininal display
+                    - 1: only errors (and note(s))
+                    - 2: version and warning(s) encountered
+
+    :return deesse_output:
+        (dict)
+                {'sim':sim,
+                 'path':path,
+                 'error':error,
+                 'tiGridNode':tiGridNode,
+                 'tiIndex':tiIndex,
+                 'nwarning':nwarning,
+                 'warnings':warnings}
+            With nreal = deesse_input.nrealization:
+            sim:    (1-dimensional array of Img (class) of size nreal or None)
+                        sim[i]: i-th realisation
+                        (sim is None if no simulation is retrieved)
+            path:   (1-dimensional array of Img (class) of size nreal or None)
+                        path[i]: path index map for the i-th realisation
+                        (path is None if no path index map is retrieved)
+            error:   (1-dimensional array of Img (class) of size nreal or None)
+                        error[i]: error map for the i-th realisation
+                        (error is None if no error map is retrieved)
+            tiGridNode:
+                    (1-dimensional array of Img (class) of size nreal or None)
+                        tiGridNode[i]: TI grid node index map for the i-th realisation
+                        (tiGridNode is None if no TI grid node index map is retrieved)
+            tiIndex:
+                    (1-dimensional array of Img (class) of size nreal or None)
+                        tiIndex[i]: TI index map for the i-th realisation
+                        (tiIndex is None if no TI index map is retrieved)
+            nwarning:
+                    (int) total number of warning(s) encountered
+                        (same warnings can be counted several times)
+            warnings:
+                    (list of strings) list of distinct warnings encountered
+                        (can be empty)
+    """
+
+    if not deesse_input.ok:
+        if verbose > 0:
+            print('ERROR (deesseRun_mp): check deesse input')
+        return
+
+    # Set number of processes: nproc
+    if nproc is None:
+        nproc = max(min(multiprocessing.cpu_count(), deesse_input.nrealization), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), deesse_input.nrealization), 1)
+        if verbose > 0 and nproc != nproc_tmp:
+            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+
+    # Set number of threads per process: nth
+    if nthreads_per_proc is None:
+        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+    else:
+        nth = max(int(nthreads_per_proc), 1)
+        if verbose > 0 and nth != nthreads_per_proc:
+            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+
+    if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
+        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+
+    # Set the distribution of the realizations over the processes
+    # Condider the Euclidean division of nreal by nproc:
+    #     nreal = q * nproc + r, with 0 <= r < nproc
+    # Then, (q+1) realizations will be done on process 0, 1, ..., r-1, and q realization on process r, ..., nproc-1
+    # Define the list real_index_proc of length (nproc+1) such that
+    #   real_index_proc[i], ..., real_index_proc[i+1] - 1 : are the realization indices run on process i
+    q, r = np.divmod(deesse_input.nrealization, nproc)
+    real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose >= 2:
+        print('DeeSse running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+
+    # Initialize deesse input for each process
+    deesse_input_proc = [copy.copy(deesse_input) for i in range(nproc)]
+    init_seed = deesse_input.seed
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i, input in enumerate(deesse_input_proc):
+        # Adapt deesse input for i-th process
+        input.nrealization = real_index_proc[i+1] - real_index_proc[i]
+        input.seed = init_seed + int(real_index_proc[i]) * input.seedIncrement
+        input.outputReportFileName = input.outputReportFileName + f'.{i}'
+        if i==0:
+            verb = min(verbose, 1) # allow to print error for process i
+        else:
+            verb = 0
+        # Launch deesse (i-th process)
+        out_pool.append(pool.apply_async(deesseRun, args=(input, nth, verb)))
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    deesse_output_proc = [p.get() for p in out_pool]
+
+    if np.any([out is None for out in deesse_output_proc]):
+        return None
+
+    sim, path, error, tiGridNode, tiIndex = None, None, None, None, None
+    nwarning, warnings = None, None
+
+    # Gather results of every process
+    sim = np.hstack([out['sim'] for out in deesse_output_proc])
+    path = np.hstack([out['path'] for out in deesse_output_proc])
+    error = np.hstack([out['error'] for out in deesse_output_proc])
+    tiGridNode = np.hstack([out['tiGridNode'] for out in deesse_output_proc])
+    tiIndex = np.hstack([out['tiIndex'] for out in deesse_output_proc])
+
+    nwarning = np.sum([out['nwarning'] for out in deesse_output_proc])
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in deesse_output_proc])))
+
+    # Remove None entries
+    sim = sim[[x is not None for x in sim]]
+    path = path[[x is not None for x in path]]
+    error = error[[x is not None for x in error]]
+    tiGridNode = tiGridNode[[x is not None for x in tiGridNode]]
+    tiIndex = tiIndex[[x is not None for x in tiIndex]]
+
+    # Set to None if every entry is None
+    if np.all([x is None for x in sim]):
+        sim = None
+    if np.all([x is None for x in path]):
+        path = None
+    if np.all([x is None for x in error]):
+        error = None
+    if np.all([x is None for x in tiGridNode]):
+        tiGridNode = None
+    if np.all([x is None for x in tiIndex]):
+        tiIndex = None
+
+    # Adjust names
+    ndigit = deesse.MPDS_NB_DIGIT_FOR_REALIZATION_NUMBER
+    if sim is not None:
+        for i in range(deesse_input.nrealization):
+            for j in range(sim[i].nv):
+                sim[i].varname[j] = sim[i].varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+    if path is not None:
+        for i in range(deesse_input.nrealization):
+            for j in range(path[i].nv):
+                path[i].varname[j] = path[i].varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+    if error is not None:
+        for i in range(deesse_input.nrealization):
+            for j in range(error[i].nv):
+                error[i].varname[j] = error[i].varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+    if tiGridNode is not None:
+        for i in range(deesse_input.nrealization):
+            for j in range(tiGridNode[i].nv):
+                tiGridNode[i].varname[j] = tiGridNode[i].varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+    if tiIndex is not None:
+        for i in range(deesse_input.nrealization):
+            for j in range(tiIndex[i].nv):
+                tiIndex[i].varname[j] = tiIndex[i].varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+
+    deesse_output = {'sim':sim, 'path':path, 'error':error, 'tiGridNode':tiGridNode, 'tiIndex':tiIndex, 'nwarning':nwarning, 'warnings':warnings}
+
+    if verbose >= 2 and deesse_output:
+        print('DeeSse run complete (all process(es))')
+
+    # Show (print) encountered warnings
+    if verbose >= 2 and deesse_output and deesse_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(deesse_output['nwarning']))
+        for i, warning_message in enumerate(deesse_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
+
+    return deesse_output
+# ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 def exportDeesseInput(deesse_input,

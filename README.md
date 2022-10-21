@@ -21,17 +21,18 @@ pip install .
 *Note: first remove the directory 'geone.egg-info' from the current directory.*
 
 ## Using GEONE
- 
+
 Do not launch python from the directory where the installation has been done (with `pip`), otherwise `import geone` will fail.
 
 ## Requirements
 The following python packages are used by GEONE:
    - matplotlib
-   - numpy (tested with version 1.21.5)
+   - multiprocessing (for parallel processes)
+   - numpy (tested with version 1.23.1)
    - pyvista (tested with version 0.36.1)
-   - scipy (tested with version 1.7.3)
+   - scipy (tested with version 1.9.1)
 
-## Important notes 
+## Important notes
 GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The DEESSE version provided with GEONE is a test version with restricted capabilities. To unlock the full capabilities of DEESSE, the user must obtain a commercial or academic license from the University of Neuchâtel. See LICENSE file for details.
 
 Note also that the DEESSE wrapper is built for python3.6 / python3.7 / python3.8 / python3.9 / python3.10.

@@ -336,14 +336,13 @@ class CovModel1D (object):
     # def __str__(self):
     #     return self.name
     def __repr__(self):
-        out = out + '\n' + '*****'
         out = '*** CovModel1D object ***'
         out = out + '\n' + "name = '{0.name}'".format(self)
         nelem = len(self.elem)
         out = out + '\n' + 'number of elementary contribution(s): {}'.format(len(self.elem))
         for i, el in enumerate(self.elem):
             out = out + '\n' + 'elementary contribution {}'.format(i)
-            out = out + '\n' + '    type: {}\n'.format(el[0])
+            out = out + '\n' + '    type: {}'.format(el[0])
             out = out + '\n' + '    parameters:'
             nparam = len(el[1])
             for j, (k, val) in enumerate(el[1].items()):
@@ -711,16 +710,15 @@ class CovModel2D (object):
     # def __str__(self):
     #     return self.name
     def __repr__(self):
-        out = out + '\n' + '*****'
         out = '*** CovModel2D object ***'
         out = out + '\n' + "name = '{0.name}'".format(self)
         nelem = len(self.elem)
         out = out + '\n' + 'number of elementary contribution(s): {}'.format(len(self.elem))
         for i, el in enumerate(self.elem):
             out = out + '\n' + 'elementary contribution {}'.format(i)
-            out = out + '\n' + '    type: {}\n'.format(el[0])
+            out = out + '\n' + '    type: {}'.format(el[0])
             out = out + '\n' + '    parameters:'
-            nparam = len(el[1])
+            # nparam = len(el[1])
             for j, (k, val) in enumerate(el[1].items()):
                 out = out + '\n' + '        {} = {}'.format(k, val)
         out = out + '\n' + 'angle: alpha = {0.alpha} deg.'.format(self)
@@ -1367,14 +1365,13 @@ class CovModel3D (object):
     # def __str__(self):
     #     return self.name
     def __repr__(self):
-        out = out + '\n' + '*****'
         out = '*** CovModel3D object ***'
         out = out + '\n' + "name = '{0.name}'".format(self)
         nelem = len(self.elem)
         out = out + '\n' + 'number of elementary contribution(s): {}'.format(len(self.elem))
         for i, el in enumerate(self.elem):
             out = out + '\n' + 'elementary contribution {}'.format(i)
-            out = out + '\n' + '    type: {}\n'.format(el[0])
+            out = out + '\n' + '    type: {}'.format(el[0])
             out = out + '\n' + '    parameters:'
             nparam = len(el[1])
             for j, (k, val) in enumerate(el[1].items()):

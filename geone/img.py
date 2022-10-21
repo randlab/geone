@@ -827,8 +827,8 @@ class PointSet(object):
 
         # Extend val
         self.val = np.concatenate((self.val[0:ii,...],
-                                   valarr.reshape(1, self.npt),
-                                   self.val[ii:,...]),
+                                  valarr.reshape(1, self.npt),
+                                  self.val[ii:,...]),
                                   0)
         # Extend varname list
         if varname is None:
@@ -1614,7 +1614,7 @@ def isImageDimensionEqual (im1, im2):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def gatherImages (imlist, varInd=None, remVarFromInput=False):
+def gatherImages (imlist, varInd=None, keep_varname=False, remVarFromInput=False):
     """
     Gathers images:
 
@@ -1625,6 +1625,9 @@ def gatherImages (imlist, varInd=None, remVarFromInput=False):
                             are put in the output image
                         else: only the variable of index varInd is put in
                             the output image
+    :param keep_varname:
+                    (bool) if True, name of the variables are kept from
+                       the source
     :param remVarFromInput: (bool) if True, gathered variables are removed
                                 from the source (input image)
 
@@ -1654,9 +1657,12 @@ def gatherImages (imlist, varInd=None, remVarFromInput=False):
              ox=imlist[0].ox, oy=imlist[0].oy, oz=imlist[0].oz,
              nv=0, val=0.0)
 
+    varname = None
     if varInd is not None:
         for i in range(len(imlist)):
-            im.append_var(val=imlist[i].val[varInd,...])
+            if keep_varname:
+                varname = imlist[i].varname[varInd]
+            im.append_var(val=imlist[i].val[varInd,...], varname=varname)
 
             if remVarFromInput:
                 imlist[i].remove_var(varInd)
@@ -1664,7 +1670,9 @@ def gatherImages (imlist, varInd=None, remVarFromInput=False):
     else:
         for i in range(len(imlist)):
             for j in range(imlist[i].nv):
-                im.append_var(val=imlist[i].val[j,...])
+                if keep_varname:
+                    varname = imlist[i].varname[j]
+                im.append_var(val=imlist[i].val[j,...], varname=varname)
 
             if remVarFromInput:
                 imlist[i].remove_allvar()

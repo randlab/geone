@@ -84,6 +84,26 @@ class BlockData(object):
             self.activatePropMax = None
         else:
             self.activatePropMax = np.asarray(activatePropMax, dtype=float).reshape(nblock)
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
+    def __repr__(self):
+        out = '*** BlockData object ***'
+        out = out + '\n' + 'blockDataUsage = {0.blockDataUsage}:'.format(self)
+        if self.blockDataUsage == 0:
+            out = out + ' no block data'
+        elif self.probabilityConstraintUsage == 1:
+            out = out + ' block mean value'
+        else:
+            out = out + ' unknown'
+        if self.blockDataUsage == 1:
+            out = out + '\n' + 'nblock = {0.nblock} # number of blocks'.format(self)
+            out = out + '\n' + '    parameters for each block in fields'
+            out = out + '\n' + '    ".nodeIndex", ".value", ".tolerance", ".activatePropMin", ".activatePropMin"'
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
 # ============================================================================
 
 # ----------------------------------------------------------------------------

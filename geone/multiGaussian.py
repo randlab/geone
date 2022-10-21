@@ -27,6 +27,7 @@ def multiGaussianRun(
     output_mode='img',
     retrieve_warnings=False,
     verbose=1,
+    use_multiprocessing=False,
     **kwargs):
     """
     Runs multi-Gaussian simulation or estimation (according to the argument
@@ -88,6 +89,18 @@ def multiGaussianRun(
                             see 'return' below
 
     :param verbose:     (int) verbose mode, integer >=0, higher implies more display
+
+    :param use_multiprocessing:
+                        (bool) indicates if multiprocessing is used:
+                            - multiprocessing can be used only with
+                                 mode = 'simulation' and algo = 'classic'
+                              in any other case use_multiprocessing is ignored
+                            - with mode = 'simulation' and algo = 'classic', if
+                              use_multiprocessing is True, then simulations are
+                              generated through multiple processes, i.e. function
+                                 geone.geoscalassicinterface.simulate<d>D_mp
+                              is used instead of
+                                 geone.geoscalassicinterface.simulate<d>D
 
     :param kwargs:      (dict) keyword arguments (additional parameters) to be passed to
                             the function corresponding to what is specified by the argument 'algo'
@@ -228,12 +241,20 @@ def multiGaussianRun(
             elif d == 3:
                 run_f = gci.estimate3D
         elif mode == 'simulation':
-            if d == 1:
-                run_f = gci.simulate1D
-            elif d == 2:
-                run_f = gci.simulate2D
-            elif d == 3:
-                run_f = gci.simulate3D
+            if use_multiprocessing:
+                if d == 1:
+                    run_f = gci.simulate1D_mp
+                elif d == 2:
+                    run_f = gci.simulate2D_mp
+                elif d == 3:
+                    run_f = gci.simulate3D_mp
+            else:
+                if d == 1:
+                    run_f = gci.simulate1D
+                elif d == 2:
+                    run_f = gci.simulate2D
+                elif d == 3:
+                    run_f = gci.simulate3D
 
         # Filter unused keyword arguments
         run_f_set_of_all_args = set([val.name for val in inspect.signature(run_f).parameters.values()])

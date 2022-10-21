@@ -12,7 +12,7 @@ based on simple and ordinary kriging).
 
 import numpy as np
 import sys, os
-# import multiprocessing
+import multiprocessing
 
 from geone import img
 from geone.geosclassic_core import geosclassic
@@ -1058,7 +1058,8 @@ def simulate1D(
         nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Generates 1D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
@@ -1493,6 +1494,307 @@ def simulate1D(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def simulate1D_mp(
+        cov_model,
+        dimension, spacing=1.0, origin=0.0,
+        method='simple_kriging',
+        nreal=1,
+        mean=None, var=None,
+        x=None, v=None,
+        xIneqMin=None, vIneqMin=None,
+        xIneqMax=None, vIneqMax=None,
+        mask=None,
+        searchRadiusRelative=1.0,
+        nneighborMax=12,
+        searchNeighborhoodSortMode=None,
+        nGibbsSamplerPathMin=50,
+        nGibbsSamplerPathMax=200,
+        seed=None,
+        outputReportFile=None,
+        nproc=None, nthreads_per_proc=None,
+        verbose=2):
+    """
+    Generates 1D simulations (Sequential Gaussian Simulation, SGS) based on
+    simple or ordinary kriging.
+
+    Launches multiple processes (based on multiprocessing package):
+       - nproc parallel processes using each one nthreads_per_proc threads will
+         be launched [parallel calls of the function simulate1D],
+       - the set of realizations (specified by deesse_input.nrealization) is
+         distributed in a balanced way over the processes,
+       - in terms of resources, this implies the use of
+             nproc * nthreads_per_proc cpu(s).
+
+    :param cov_model:   (CovModel1D class) covariance model in 1D, see
+                            definition of the class in module geone.covModel
+
+    :param dimension:   (int) nx, number of cells
+    :param spacing:     (float) sx, spacing between two adjacent cells
+    :param origin:      (float) ox, origin of the 1D simulation
+                            - used for localizing the conditioning points
+    :param method:      (string) indicates the method used:
+                            - 'simple_kriging':
+                                simulation based on simple kriging
+                            - 'ordinary_kriging':
+                                simulation based on ordinary kriging
+    :param nreal:       (int) number of realizations
+
+    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+                            - None   : mean of hard data values (stationary),
+                                       (0 if no hard data)
+                            - callable (function):
+                                       function of one argument (xi) that returns
+                                       the mean at xi (in the grid)
+                            - float  : for stationary mean (set manually)
+                            - ndarray: for non stationary mean, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+                            For ordinary kriging (method='ordinary_kriging'),
+                            it is used for case with no neighbor
+
+    :param var:         (None or callable (function) or float or ndarray) variance  of the simulation
+                            (for simple kriging only):
+                            - None   : variance not modified
+                                       (only covariance model is used)
+                            - callable (function):
+                                       function of one argument (xi) that returns
+                                       the variance at xi (in the grid)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+                            For ordinary kriging (method='ordinary_kriging'),
+                            this parameter must be None (only covariance model
+                            is used)
+
+    :param x:           (1-dimensional array or float or None) coordinate of
+                            conditioning points for hard data
+    :param v:           (1-dimensional array or float or None) value
+                            at conditioning points for hard data
+                            (same type as x)
+
+    :param xIneqMin:    (1-dimensional array or float or None) coordinate of
+                            conditioning points for inequality data minimal bound
+    :param vIneqMin:    (1-dimensional array or float or None) value
+                            at conditioning points for inequality data minimal bound
+                            (same type as xIneqMin)
+
+    :param xIneqMax:    (1-dimensional array or float or None) coordinate of
+                            conditioning points for inequality data maximal bound
+    :param vIneqMax:    (1-dimensional array or float or None) value
+                            at conditioning points for inequality data maximal bound
+                            (same type as xIneqMax)
+
+    :param mask:        (nd-array of ints, or None) if given, mask values
+                            over the SG: 1 for simulated cell / 0 for not simulated
+                            cell (nunber of entries should be equal to the number of
+                            grid cells)
+
+    :param searchRadiusRelative:
+                        (float) indicating how restricting the search ellipsoid (should be positive):
+                            let r_i be the ranges of the covariance model along its main axes,
+                            if x is a node to be simulated, a node y is taken into account iff it is
+                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            Note:
+                                - if a range is a variable parameter, its maximal value over the simulation grid
+                                  is considered
+
+    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
+                            set -1 for unlimited
+
+    :param searchNeighborhoodSortMode:
+                        (int) indicating how to sort the search neighboorhood nodes
+                            (neighbors), they are sorted in increasing order according to:
+                                - searchNeighborhoodSortMode = 0:
+                                  distance in the usual axes system
+                                - searchNeighborhoodSortMode = 1:
+                                  distance in the axes sytem supporting the covariance model
+                                  and accounting for anisotropy given by the ranges
+                                - searchNeighborhoodSortMode = 2:
+                                  minus the evaluation of the covariance model
+                            Note:
+                                - if the covariance model has any variable parameter (non-stationary),
+                                  then searchNeighborhoodSortMode = 2 is not allowed
+                                - if the covariance model has any range or angle set as a variable parameter,
+                                  then searchNeighborhoodSortMode must be set to 0
+                                - greatest possible value as default
+
+    :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
+                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
+                            data; the conditioning locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially; then, these locations
+                            are re-simulated following a new path as many times as needed; the total
+                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
+
+    :param seed:        (int or None) initial seed, if None an initial seed between
+                            1 and 999999 is generated with numpy.random.randint
+
+    :param outputReportFile:
+                    (string or None) name of the report file, if None: no report file
+                        [if given, a suffix ".<process_index>" is added for the
+                        report file of each process]
+
+    :param nproc:
+                (int) number of processes (can be modified in the function)
+                    nproc = None: nproc is set to min(nmax, nreal)
+                        (but at least 1), where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param nthreads_per_proc:
+                (int) number of thread(s) per process (should be > 0 or None):
+                    nthreads_per_proc = None: nthreads_per_proc is automatically
+                    computed as the maximal integer (but at least 1) such that
+                            nproc * nthreads_per_proc <= nmax
+                        where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param verbose:
+                (int) indicates what information is displayed:
+                    - 0: no display
+                    - 1: only errors (and note(s))
+                    - 2: version and warning(s) encountered
+
+    :return geosclassic_output: (dict)
+            {'image':image,
+             'nwarning':nwarning,
+             'warnings':warnings}
+        image:  (Img (class)) output image, with image.nv=nreal variables (each
+                    variable is one realization)
+                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
+    """
+
+    # Set number of processes: nproc
+    if nproc is None:
+        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), nreal), 1)
+        if verbose > 0 and nproc != nproc_tmp:
+            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+
+    # Set number of threads per process: nth
+    if nthreads_per_proc is None:
+        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+    else:
+        nth = max(int(nthreads_per_proc), 1)
+        if verbose > 0 and nth != nthreads_per_proc:
+            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+
+    if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
+        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+
+    # Set the distribution of the realizations over the processes
+    # Condider the Euclidean division of nreal by nproc:
+    #     nreal = q * nproc + r, with 0 <= r < nproc
+    # Then, (q+1) realizations will be done on process 0, 1, ..., r-1, and q realization on process r, ..., nproc-1
+    # Define the list real_index_proc of length (nproc+1) such that
+    #   real_index_proc[i], ..., real_index_proc[i+1] - 1 : are the realization indices run on process i
+    q, r = np.divmod(nreal, nproc)
+    real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose >= 2:
+        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+
+    # mpds_geosClassicInput.seed
+    if seed is None:
+        seed = np.random.randint(1,1000000)
+    seed = int(seed)
+
+    outputReportFile_p = None
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i in range(nproc):
+        # Adapt deesse input for i-th process
+        nreal_p = real_index_proc[i+1] - real_index_proc[i]
+        seed_p = seed + real_index_proc[i]
+        if outputReportFile is not None:
+            outputReportFile_p = outputReportFile + f'.{i}'
+        if i==0:
+            verbose_p = min(verbose, 1) # allow to print error for process i
+        else:
+            verbose_p = 0
+        # Launch deesse (i-th process)
+        out_pool.append(
+            pool.apply_async(simulate1D,
+                args=(cov_model,
+                dimension, spacing, origin,
+                method,
+                nreal_p,                     # nreal (adjusted)
+                mean, var,
+                x, v,
+                xIneqMin, vIneqMin,
+                xIneqMax, vIneqMax,
+                mask,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                nGibbsSamplerPathMin,
+                nGibbsSamplerPathMax,
+                seed_p,                      # seed (adjusted)
+                outputReportFile_p,          # outputReportFile (adjusted)
+                nth,                         # nthreads
+                verbose_p)                   # verbose (adjusted)
+                )
+            )
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    geosclassic_output_proc = [p.get() for p in out_pool]
+
+    if np.any([out is None for out in geosclassic_output_proc]):
+        return None
+
+    image = None
+    nwarning, warnings = None, None
+
+    # Gather results of every process
+    image = np.hstack([out['image'] for out in geosclassic_output_proc])
+
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Remove None entries
+    image = image[[x is not None for x in image]]
+
+    # Set to None if every entry is None
+    if np.all([x is None for x in image]):
+        image = None
+
+    # Gather images and adjust names
+    if image is not None:
+        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+        for j in range(all_image.nv):
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+
+    geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
+
+    if verbose >= 2 and geosclassic_output:
+        print('Geos-Classic run complete (all process(es))')
+
+    # Show (print) encountered warnings
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+        for i, warning_message in enumerate(geosclassic_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
+
+    return geosclassic_output
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def simulate2D(
         cov_model,
         dimension, spacing=(1.0, 1.0), origin=(0.0, 0.0),
@@ -1510,7 +1812,8 @@ def simulate2D(
         nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Generates 2D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
@@ -1963,6 +2266,314 @@ def simulate2D(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def simulate2D_mp(
+        cov_model,
+        dimension, spacing=(1.0, 1.0), origin=(0.0, 0.0),
+        method='simple_kriging',
+        nreal=1,
+        mean=None, var=None,
+        x=None, v=None,
+        xIneqMin=None, vIneqMin=None,
+        xIneqMax=None, vIneqMax=None,
+        mask=None,
+        searchRadiusRelative=1.0,
+        nneighborMax=12,
+        searchNeighborhoodSortMode=None,
+        nGibbsSamplerPathMin=50,
+        nGibbsSamplerPathMax=200,
+        seed=None,
+        outputReportFile=None,
+        nproc=None, nthreads_per_proc=None,
+        verbose=2):
+    """
+    Generates 2D simulations (Sequential Gaussian Simulation, SGS) based on
+    simple or ordinary kriging.
+
+    Launches multiple processes (based on multiprocessing package):
+       - nproc parallel processes using each one nthreads_per_proc threads will
+         be launched [parallel calls of the function simulate2D],
+       - the set of realizations (specified by deesse_input.nrealization) is
+         distributed in a balanced way over the processes,
+       - in terms of resources, this implies the use of
+             nproc * nthreads_per_proc cpu(s).
+
+    :param cov_model:   (CovModel2D class) covariance model in 2D, see
+                            definition of the class in module geone.covModel
+
+    :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
+                            in x-, y-axis direction
+    :param spacing:     (sequence of 2 floats) (sx, sy), spacing between
+                            two adjacent cells in x-, y-axis direction
+    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D simulation
+                            - used for localizing the conditioning points
+    :param method:      (string) indicates the method used:
+                            - 'simple_kriging':
+                                simulation based on simple kriging
+                            - 'ordinary_kriging':
+                                simulation based on ordinary kriging
+    :param nreal:       (int) number of realizations
+
+    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+                            - None   : mean of hard data values (stationary),
+                                       (0 if no hard data)
+                            - callable (function):
+                                       function of two arguments (xi, yi) that returns
+                                       the mean at (xi, yi) (in the grid)
+                            - float  : for stationary mean (set manually)
+                            - ndarray: for non stationary mean, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+                            For ordinary kriging (method='ordinary_kriging'),
+                            it is used for case with no neighbor
+
+    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
+                            (for simple kriging only):
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - callable (function):
+                                       function of two arguments (xi, yi) that returns
+                                       the variance at (xi, yi) (in the grid)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+                            For ordinary kriging (method='ordinary_kriging'),
+                            this parameter must be None (only covariance model
+                            is used)
+
+    :param x:           (2-dimensional array of dim n x 2, or
+                            1-dimensional array of dim 2 or None) coordinate of
+                            conditioning points for hard data
+    :param v:           (1-dimensional array or float or None) value
+                            at conditioning points for hard data
+                            (same type as x)
+
+    :param xIneqMin:    (2-dimensional array of dim n x 2, or
+                            1-dimensional array of dim 2 or None) coordinate of
+                            conditioning points for inequality data minimal bound
+    :param vIneqMin:    (1-dimensional array or float or None) value
+                            at conditioning points for inequality data minimal bound
+                            (same type as xIneqMin)
+
+    :param xIneqMax:    (2-dimensional array of dim n x 2, or
+                            1-dimensional array of dim 2 or None) coordinate of
+                            conditioning points for inequality data maximal bound
+    :param vIneqMax:    (1-dimensional array or float or None) value
+                            at conditioning points for inequality data maximal bound
+                            (same type as xIneqMax)
+
+    :param mask:        (nd-array of ints, or None) if given, mask values
+                            over the SG: 1 for simulated cell / 0 for not simulated
+                            cell (nunber of entries should be equal to the number of
+                            grid cells)
+
+    :param searchRadiusRelative:
+                        (float) indicating how restricting the search ellipsoid (should be positive):
+                            let r_i be the ranges of the covariance model along its main axes,
+                            if x is a node to be simulated, a node y is taken into account iff it is
+                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            Note:
+                                - if a range is a variable parameter, its maximal value over the simulation grid
+                                  is considered
+                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
+                                  is considered with the radius set to the maximum of all ranges
+
+    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
+                            set -1 for unlimited
+
+    :param searchNeighborhoodSortMode:
+                        (int) indicating how to sort the search neighboorhood nodes
+                            (neighbors), they are sorted in increasing order according to:
+                                - searchNeighborhoodSortMode = 0:
+                                  distance in the usual axes system
+                                - searchNeighborhoodSortMode = 1:
+                                  distance in the axes sytem supporting the covariance model
+                                  and accounting for anisotropy given by the ranges
+                                - searchNeighborhoodSortMode = 2:
+                                  minus the evaluation of the covariance model
+                            Note:
+                                - if the covariance model has any variable parameter (non-stationary),
+                                  then searchNeighborhoodSortMode = 2 is not allowed
+                                - if the covariance model has any range or angle set as a variable parameter,
+                                  then searchNeighborhoodSortMode must be set to 0
+                                - greatest possible value as default
+
+    :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
+                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
+                            data; the conditioning locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially; then, these locations
+                            are re-simulated following a new path as many times as needed; the total
+                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
+
+    :param seed:        (int or None) initial seed, if None an initial seed between
+                            1 and 999999 is generated with numpy.random.randint
+
+    :param outputReportFile:
+                    (string or None) name of the report file, if None: no report file
+                        [if given, a suffix ".<process_index>" is added for the
+                        report file of each process]
+
+    :param nproc:
+                (int) number of processes (can be modified in the function)
+                    nproc = None: nproc is set to min(nmax, nreal)
+                        (but at least 1), where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param nthreads_per_proc:
+                (int) number of thread(s) per process (should be > 0 or None):
+                    nthreads_per_proc = None: nthreads_per_proc is automatically
+                    computed as the maximal integer (but at least 1) such that
+                            nproc * nthreads_per_proc <= nmax
+                        where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param verbose:
+                (int) indicates what information is displayed:
+                    - 0: no display
+                    - 1: only errors (and note(s))
+                    - 2: version and warning(s) encountered
+
+    :return geosclassic_output: (dict)
+            {'image':image,
+             'nwarning':nwarning,
+             'warnings':warnings}
+        image:  (Img (class)) output image, with image.nv=nreal variables (each
+                    variable is one realization)
+                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
+    """
+
+    # Set number of processes: nproc
+    if nproc is None:
+        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), nreal), 1)
+        if verbose > 0 and nproc != nproc_tmp:
+            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+
+    # Set number of threads per process: nth
+    if nthreads_per_proc is None:
+        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+    else:
+        nth = max(int(nthreads_per_proc), 1)
+        if verbose > 0 and nth != nthreads_per_proc:
+            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+
+    if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
+        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+
+    # Set the distribution of the realizations over the processes
+    # Condider the Euclidean division of nreal by nproc:
+    #     nreal = q * nproc + r, with 0 <= r < nproc
+    # Then, (q+1) realizations will be done on process 0, 1, ..., r-1, and q realization on process r, ..., nproc-1
+    # Define the list real_index_proc of length (nproc+1) such that
+    #   real_index_proc[i], ..., real_index_proc[i+1] - 1 : are the realization indices run on process i
+    q, r = np.divmod(nreal, nproc)
+    real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose >= 2:
+        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+
+    # mpds_geosClassicInput.seed
+    if seed is None:
+        seed = np.random.randint(1,1000000)
+    seed = int(seed)
+
+    outputReportFile_p = None
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i in range(nproc):
+        # Adapt deesse input for i-th process
+        nreal_p = real_index_proc[i+1] - real_index_proc[i]
+        seed_p = seed + real_index_proc[i]
+        if outputReportFile is not None:
+            outputReportFile_p = outputReportFile + f'.{i}'
+        if i==0:
+            verbose_p = min(verbose, 1) # allow to print error for process i
+        else:
+            verbose_p = 0
+        # Launch deesse (i-th process)
+        out_pool.append(
+            pool.apply_async(simulate2D,
+                args=(cov_model,
+                dimension, spacing, origin,
+                method,
+                nreal_p,                     # nreal (adjusted)
+                mean, var,
+                x, v,
+                xIneqMin, vIneqMin,
+                xIneqMax, vIneqMax,
+                mask,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                nGibbsSamplerPathMin,
+                nGibbsSamplerPathMax,
+                seed_p,                      # seed (adjusted)
+                outputReportFile_p,          # outputReportFile (adjusted)
+                nth,                         # nthreads
+                verbose_p)                   # verbose (adjusted)
+                )
+            )
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    geosclassic_output_proc = [p.get() for p in out_pool]
+
+    if np.any([out is None for out in geosclassic_output_proc]):
+        return None
+
+    image = None
+    nwarning, warnings = None, None
+
+    # Gather results of every process
+    image = np.hstack([out['image'] for out in geosclassic_output_proc])
+
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Remove None entries
+    image = image[[x is not None for x in image]]
+
+    # Set to None if every entry is None
+    if np.all([x is None for x in image]):
+        image = None
+
+    # Gather images and adjust names
+    if image is not None:
+        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+        for j in range(all_image.nv):
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+
+    geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
+
+    if verbose >= 2 and geosclassic_output:
+        print('Geos-Classic run complete (all process(es))')
+
+    # Show (print) encountered warnings
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+        for i, warning_message in enumerate(geosclassic_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
+
+    return geosclassic_output
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def simulate3D(
         cov_model,
         dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
@@ -1980,7 +2591,8 @@ def simulate3D(
         nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Generates 3D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
@@ -2461,7 +3073,8 @@ def estimate1D(
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Computes estimate and standard deviation for 1D grid of simple or ordinary kriging.
 
@@ -2872,7 +3485,8 @@ def estimate2D(
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Computes estimate and standard deviation for 2D grid of simple or ordinary kriging.
 
@@ -3299,7 +3913,8 @@ def estimate3D(
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Computes estimate and standard deviation for 3D grid of simple or ordinary kriging.
 
@@ -3914,6 +4529,314 @@ def fill_mpds_geosClassicIndicatorInput(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def simulate3D_mp(
+        cov_model,
+        dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
+        method='simple_kriging',
+        nreal=1,
+        mean=None, var=None,
+        x=None, v=None,
+        xIneqMin=None, vIneqMin=None,
+        xIneqMax=None, vIneqMax=None,
+        mask=None,
+        searchRadiusRelative=1.0,
+        nneighborMax=12,
+        searchNeighborhoodSortMode=None,
+        nGibbsSamplerPathMin=50,
+        nGibbsSamplerPathMax=200,
+        seed=None,
+        outputReportFile=None,
+        nproc=None, nthreads_per_proc=None,
+        verbose=2):
+    """
+    Generates 3D simulations (Sequential Gaussian Simulation, SGS) based on
+    simple or ordinary kriging.
+
+    Launches multiple processes (based on multiprocessing package):
+       - nproc parallel processes using each one nthreads_per_proc threads will
+         be launched [parallel calls of the function simulate3D],
+       - the set of realizations (specified by deesse_input.nrealization) is
+         distributed in a balanced way over the processes,
+       - in terms of resources, this implies the use of
+             nproc * nthreads_per_proc cpu(s).
+
+    :param cov_model:   (CovModel3D class) covariance model in 3D, see
+                            definition of the class in module geone.covModel
+
+    :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
+                            in x-, y-, z-axis direction
+    :param spacing:     (sequence of 3 floats) (sx, sy, sz), spacing between
+                            two adjacent cells in x-, y-, z-axis direction
+    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D simulation
+                            - used for localizing the conditioning points
+    :param method:      (string) indicates the method used:
+                            - 'simple_kriging':
+                                simulation based on simple kriging
+                            - 'ordinary_kriging':
+                                simulation based on ordinary kriging
+    :param nreal:       (int) number of realizations
+
+    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+                            - None   : mean of hard data values (stationary),
+                                       (0 if no hard data)
+                            - callable (function):
+                                       function of three arguments (xi, yi, zi) that returns
+                                       the mean at (xi, yi, zi) (in the grid)
+                            - float  : for stationary mean (set manually)
+                            - ndarray: for non stationary mean, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+                            For ordinary kriging (method='ordinary_kriging'),
+                            it is used for case with no neighbor
+
+    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
+                            (for simple kriging only):
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - callable (function):
+                                       function of three arguments (xi, yi, zi) that returns
+                                       the variance at (xi, yi, zi) (in the grid)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+                            For ordinary kriging (method='ordinary_kriging'),
+                            this parameter must be None (only covariance model
+                            is used)
+
+    :param x:           (2-dimensional array of dim n x 3, or
+                            1-dimensional array of dim 3 or None) coordinate of
+                            conditioning points for hard data
+    :param v:           (1-dimensional array or float or None) value
+                            at conditioning points for hard data
+                            (same type as x)
+
+    :param xIneqMin:    (2-dimensional array of dim n x 3, or
+                            1-dimensional array of dim 3 or None) coordinate of
+                            conditioning points for inequality data minimal bound
+    :param vIneqMin:    (1-dimensional array or float or None) value
+                            at conditioning points for inequality data minimal bound
+                            (same type as xIneqMin)
+
+    :param xIneqMax:    (2-dimensional array of dim n x 3, or
+                            1-dimensional array of dim 3 or None) coordinate of
+                            conditioning points for inequality data maximal bound
+    :param vIneqMax:    (1-dimensional array or float or None) value
+                            at conditioning points for inequality data maximal bound
+                            (same type as xIneqMax)
+
+    :param mask:        (nd-array of ints, or None) if given, mask values
+                            over the SG: 1 for simulated cell / 0 for not simulated
+                            cell (nunber of entries should be equal to the number of
+                            grid cells)
+
+    :param searchRadiusRelative:
+                        (float) indicating how restricting the search ellipsoid (should be positive):
+                            let r_i be the ranges of the covariance model along its main axes,
+                            if x is a node to be simulated, a node y is taken into account iff it is
+                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            Note:
+                                - if a range is a variable parameter, its maximal value over the simulation grid
+                                  is considered
+                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
+                                  is considered with the radius set to the maximum of all ranges
+
+    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
+                            set -1 for unlimited
+
+    :param searchNeighborhoodSortMode:
+                        (int) indicating how to sort the search neighboorhood nodes
+                            (neighbors), they are sorted in increasing order according to:
+                                - searchNeighborhoodSortMode = 0:
+                                  distance in the usual axes system
+                                - searchNeighborhoodSortMode = 1:
+                                  distance in the axes sytem supporting the covariance model
+                                  and accounting for anisotropy given by the ranges
+                                - searchNeighborhoodSortMode = 2:
+                                  minus the evaluation of the covariance model
+                            Note:
+                                - if the covariance model has any variable parameter (non-stationary),
+                                  then searchNeighborhoodSortMode = 2 is not allowed
+                                - if the covariance model has any range or angle set as a variable parameter,
+                                  then searchNeighborhoodSortMode must be set to 0
+                                - greatest possible value as default
+
+    :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
+                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
+                            data; the conditioning locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially; then, these locations
+                            are re-simulated following a new path as many times as needed; the total
+                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
+
+    :param seed:        (int or None) initial seed, if None an initial seed between
+                            1 and 999999 is generated with numpy.random.randint
+
+    :param outputReportFile:
+                    (string or None) name of the report file, if None: no report file
+                        [if given, a suffix ".<process_index>" is added for the
+                        report file of each process]
+
+    :param nproc:
+                (int) number of processes (can be modified in the function)
+                    nproc = None: nproc is set to min(nmax, nreal)
+                        (but at least 1), where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param nthreads_per_proc:
+                (int) number of thread(s) per process (should be > 0 or None):
+                    nthreads_per_proc = None: nthreads_per_proc is automatically
+                    computed as the maximal integer (but at least 1) such that
+                            nproc * nthreads_per_proc <= nmax
+                        where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param verbose:
+                (int) indicates what information is displayed:
+                    - 0: no display
+                    - 1: only errors (and note(s))
+                    - 2: version and warning(s) encountered
+
+    :return geosclassic_output: (dict)
+            {'image':image,
+             'nwarning':nwarning,
+             'warnings':warnings}
+        image:  (Img (class)) output image, with image.nv=nreal variables (each
+                    variable is one realization)
+                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
+    """
+
+    # Set number of processes: nproc
+    if nproc is None:
+        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), nreal), 1)
+        if verbose > 0 and nproc != nproc_tmp:
+            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+
+    # Set number of threads per process: nth
+    if nthreads_per_proc is None:
+        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+    else:
+        nth = max(int(nthreads_per_proc), 1)
+        if verbose > 0 and nth != nthreads_per_proc:
+            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+
+    if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
+        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+
+    # Set the distribution of the realizations over the processes
+    # Condider the Euclidean division of nreal by nproc:
+    #     nreal = q * nproc + r, with 0 <= r < nproc
+    # Then, (q+1) realizations will be done on process 0, 1, ..., r-1, and q realization on process r, ..., nproc-1
+    # Define the list real_index_proc of length (nproc+1) such that
+    #   real_index_proc[i], ..., real_index_proc[i+1] - 1 : are the realization indices run on process i
+    q, r = np.divmod(nreal, nproc)
+    real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose >= 2:
+        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+
+    # mpds_geosClassicInput.seed
+    if seed is None:
+        seed = np.random.randint(1,1000000)
+    seed = int(seed)
+
+    outputReportFile_p = None
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i in range(nproc):
+        # Adapt deesse input for i-th process
+        nreal_p = real_index_proc[i+1] - real_index_proc[i]
+        seed_p = seed + real_index_proc[i]
+        if outputReportFile is not None:
+            outputReportFile_p = outputReportFile + f'.{i}'
+        if i==0:
+            verbose_p = min(verbose, 1) # allow to print error for process i
+        else:
+            verbose_p = 0
+        # Launch deesse (i-th process)
+        out_pool.append(
+            pool.apply_async(simulate3D,
+                args=(cov_model,
+                dimension, spacing, origin,
+                method,
+                nreal_p,                     # nreal (adjusted)
+                mean, var,
+                x, v,
+                xIneqMin, vIneqMin,
+                xIneqMax, vIneqMax,
+                mask,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                nGibbsSamplerPathMin,
+                nGibbsSamplerPathMax,
+                seed_p,                      # seed (adjusted)
+                outputReportFile_p,          # outputReportFile (adjusted)
+                nth,                         # nthreads
+                verbose_p)                   # verbose (adjusted)
+                )
+            )
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    geosclassic_output_proc = [p.get() for p in out_pool]
+
+    if np.any([out is None for out in geosclassic_output_proc]):
+        return None
+
+    image = None
+    nwarning, warnings = None, None
+
+    # Gather results of every process
+    image = np.hstack([out['image'] for out in geosclassic_output_proc])
+
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Remove None entries
+    image = image[[x is not None for x in image]]
+
+    # Set to None if every entry is None
+    if np.all([x is None for x in image]):
+        image = None
+
+    # Gather images and adjust names
+    if image is not None:
+        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+        for j in range(all_image.nv):
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+
+    geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
+
+    if verbose >= 2 and geosclassic_output:
+        print('Geos-Classic run complete (all process(es))')
+
+    # Show (print) encountered warnings
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+        for i, warning_message in enumerate(geosclassic_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
+
+    return geosclassic_output
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def simulateIndicator1D(
         category_values,
         cov_model_for_category,
@@ -3928,7 +4851,8 @@ def simulateIndicator1D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Generates 1D simulations (Sequential Indicator Simulation, SIS) based on
     simple or ordinary kriging.
@@ -4363,6 +5287,300 @@ def simulateIndicator1D(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def simulateIndicator1D_mp(
+        category_values,
+        cov_model_for_category,
+        dimension, spacing=1.0, origin=0.0,
+        method='simple_kriging',
+        nreal=1,
+        probability=None,
+        x=None, v=None,
+        mask=None,
+        searchRadiusRelative=1.,
+        nneighborMax=12,
+        searchNeighborhoodSortMode=None,
+        seed=None,
+        outputReportFile=None,
+        nproc=None, nthreads_per_proc=None,
+        verbose=2):
+    """
+    Generates 1D simulations (Sequential Indicator Simulation, SIS) based on
+    simple or ordinary kriging.
+
+    Launches multiple processes (based on multiprocessing package):
+       - nproc parallel processes using each one nthreads_per_proc threads will
+         be launched [parallel calls of the function simulateIndicator1D],
+       - the set of realizations (specified by deesse_input.nrealization) is
+         distributed in a balanced way over the processes,
+       - in terms of resources, this implies the use of
+             nproc * nthreads_per_proc cpu(s).
+
+    :param category_values:
+                        (sequence of floats or ints) list of the category values;
+                            let ncategory be the length of the list, then:
+                            - if ncategory == 1:
+                                - the unique category value given must not be
+                                equal to 0
+                                - it is used for a binary case with values
+                                ("unique category value", 0), where 0 indicates
+                                the absence of the considered medium
+                                - conditioning data values should be
+                                "unique category value" or 0
+                            - if ncategory >= 2:
+                                - it is used for a multi-category case with given
+                                values (distinct)
+                                - conditioning data values should be in the list
+                                of given values
+
+    :param cov_model_for_category:
+                        (sequence of CovModel1D class of length ncategory (see
+                            see category_values), or one CovModel1D, recycled)
+                            covariance model in 1D per category, see definition of
+                            the class in module geone.covModel
+
+    :param dimension:   (int) nx, number of cells
+    :param spacing:     (float) sx, spacing between two adjacent cells
+    :param origin:      (float) ox, origin of the 1D simulation
+                            - used for localizing the conditioning points
+    :param method:      (string) indicates the method used:
+                            - 'simple_kriging':
+                                simulation based on simple kriging
+                            - 'ordinary_kriging':
+                                simulation based on ordinary kriging
+    :param nreal:       (int) number of realizations
+
+    :param probability: (None or sequence of floats of length ncategory or
+                            ndarray of floats) probability for each category:
+                                - None :
+                                    proportion of each category in the hard data
+                                    values (stationary), (uniform distribution if
+                                    no hard data)
+                                - sequence of floats of length ncategory:
+                                    for stationary probabilities (set manually),
+                                    if ncategory > 1, the sum of the probabilities
+                                    must be equal to one
+                                - ndarray: for non stationary probabilities,
+                                    must contain ncategory * ngrid_cells entries
+                                    where ngrid_cells is the number of grid cells
+                                    (reshaped if needed); the first ngrid_cells
+                                    entries are the probabities for the first
+                                    category in the simulation grid, the next
+                                    ngrid_cells entries those of the second
+                                    category, and so on
+                            For ordinary kriging (method='ordinary_kriging'),
+                            it is used for case with no neighbor
+
+    :param x:           (1-dimensional array or float or None) coordinate of
+                            conditioning points for hard data
+    :param v:           (1-dimensional array or float or None) value
+                            at conditioning points for hard data
+                            (same type as x)
+
+    :param mask:        (nd-array of ints, or None) if given, mask values
+                            over the SG: 1 for simulated cell / 0 for not simulated
+                            cell (nunber of entries should be equal to the number of
+                            grid cells)
+
+    :param searchRadiusRelative:
+                        (sequence of ncategory floats (or float, recycled))
+                            indicating how restricting the search ellipsoid (should be positive)
+                            for each category:
+                            let r_i be the ranges of the covariance model along its main axes,
+                            if x is a node to be simulated, a node y is taken into account iff it is
+                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            Note:
+                                - if a range is a variable parameter, its maximal value over the simulation grid
+                                  is considered
+
+    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
+                            nodes retrieved from the search ellipsoid, for each category,
+                            set -1 for unlimited
+
+    :param searchNeighborhoodSortMode:
+                        (sequence of ncategory ints (or int, recycled)) indicating
+                            how to sort the search neighboorhood nodes (neighbors)
+                            for each category, they are sorted in increasing order
+                            according to:
+                                - searchNeighborhoodSortMode = 0:
+                                  distance in the usual axes system
+                                - searchNeighborhoodSortMode = 1:
+                                  distance in the axes sytem supporting the covariance model
+                                  and accounting for anisotropy given by the ranges
+                                - searchNeighborhoodSortMode = 2:
+                                  minus the evaluation of the covariance model
+                            Note:
+                                - if the covariance model has any variable parameter (non-stationary),
+                                  then searchNeighborhoodSortMode = 2 is not allowed
+                                - if the covariance model has any range or angle set as a variable parameter,
+                                  then searchNeighborhoodSortMode must be set to 0
+                                - greatest possible value as default
+
+    :param seed:        (int or None) initial seed, if None an initial seed between
+                            1 and 999999 is generated with numpy.random.randint
+
+    :param outputReportFile:
+                    (string or None) name of the report file, if None: no report file
+                        [if given, a suffix ".<process_index>" is added for the
+                        report file of each process]
+
+    :param nproc:
+                (int) number of processes (can be modified in the function)
+                    nproc = None: nproc is set to min(nmax, nreal)
+                        (but at least 1), where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param nthreads_per_proc:
+                (int) number of thread(s) per process (should be > 0 or None):
+                    nthreads_per_proc = None: nthreads_per_proc is automatically
+                    computed as the maximal integer (but at least 1) such that
+                            nproc * nthreads_per_proc <= nmax
+                        where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param verbose:
+                (int) indicates what information is displayed:
+                    - 0: no display
+                    - 1: only errors (and note(s))
+                    - 2: version and warning(s) encountered
+
+    :return geosclassic_output: (dict)
+            {'image':image,
+             'nwarning':nwarning,
+             'warnings':warnings}
+        image:  (Img (class)) output image, with image.nv=nreal variables (each
+                    variable is one realization)
+                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
+    """
+
+    # Set number of processes: nproc
+    if nproc is None:
+        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), nreal), 1)
+        if verbose > 0 and nproc != nproc_tmp:
+            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+
+    # Set number of threads per process: nth
+    if nthreads_per_proc is None:
+        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+    else:
+        nth = max(int(nthreads_per_proc), 1)
+        if verbose > 0 and nth != nthreads_per_proc:
+            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+
+    if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
+        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+
+    # Set the distribution of the realizations over the processes
+    # Condider the Euclidean division of nreal by nproc:
+    #     nreal = q * nproc + r, with 0 <= r < nproc
+    # Then, (q+1) realizations will be done on process 0, 1, ..., r-1, and q realization on process r, ..., nproc-1
+    # Define the list real_index_proc of length (nproc+1) such that
+    #   real_index_proc[i], ..., real_index_proc[i+1] - 1 : are the realization indices run on process i
+    q, r = np.divmod(nreal, nproc)
+    real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose >= 2:
+        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+
+    # mpds_geosClassicInput.seed
+    if seed is None:
+        seed = np.random.randint(1,1000000)
+    seed = int(seed)
+
+    outputReportFile_p = None
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i in range(nproc):
+        # Adapt deesse input for i-th process
+        nreal_p = real_index_proc[i+1] - real_index_proc[i]
+        seed_p = seed + real_index_proc[i]
+        if outputReportFile is not None:
+            outputReportFile_p = outputReportFile + f'.{i}'
+        if i==0:
+            verbose_p = min(verbose, 1) # allow to print error for process i
+        else:
+            verbose_p = 0
+        # Launch deesse (i-th process)
+        out_pool.append(
+            pool.apply_async(simulateIndicator1D,
+                args=(category_values,
+                cov_model_for_category,
+                dimension, spacing, origin,
+                method,
+                nreal_p,                     # nreal (adjusted)
+                probability,
+                x, v,
+                mask,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                seed_p,                      # seed (adjusted)
+                outputReportFile_p,          # outputReportFile (adjusted)
+                nth,                         # nthreads
+                verbose_p)                   # verbose (adjusted)
+                )
+            )
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    geosclassic_output_proc = [p.get() for p in out_pool]
+
+    if np.any([out is None for out in geosclassic_output_proc]):
+        return None
+
+    image = None
+    nwarning, warnings = None, None
+
+    # Gather results of every process
+    image = np.hstack([out['image'] for out in geosclassic_output_proc])
+
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Remove None entries
+    image = image[[x is not None for x in image]]
+
+    # Set to None if every entry is None
+    if np.all([x is None for x in image]):
+        image = None
+
+    # Gather images and adjust names
+    if image is not None:
+        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+        for j in range(all_image.nv):
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+
+    geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
+
+    if verbose >= 2 and geosclassic_output:
+        print('Geos-Classic run complete (all process(es))')
+
+    # Show (print) encountered warnings
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+        for i, warning_message in enumerate(geosclassic_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
+
+    return geosclassic_output
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def simulateIndicator2D(
         category_values,
         cov_model_for_category,
@@ -4377,7 +5595,8 @@ def simulateIndicator2D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Generates 2D simulations (Sequential Indicator Simulation, SIS) based on
     simple or ordinary kriging.
@@ -4823,6 +6042,305 @@ def simulateIndicator2D(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def simulateIndicator2D_mp(
+        category_values,
+        cov_model_for_category,
+        dimension, spacing=(1.0, 1.0), origin=(0.0, 0.0),
+        method='simple_kriging',
+        nreal=1,
+        probability=None,
+        x=None, v=None,
+        mask=None,
+        searchRadiusRelative=1.,
+        nneighborMax=12,
+        searchNeighborhoodSortMode=None,
+        seed=None,
+        outputReportFile=None,
+        nproc=None, nthreads_per_proc=None,
+        verbose=2):
+    """
+    Generates 2D simulations (Sequential Indicator Simulation, SIS) based on
+    simple or ordinary kriging.
+
+    Launches multiple processes (based on multiprocessing package):
+       - nproc parallel processes using each one nthreads_per_proc threads will
+         be launched [parallel calls of the function simulateIndicator2D],
+       - the set of realizations (specified by deesse_input.nrealization) is
+         distributed in a balanced way over the processes,
+       - in terms of resources, this implies the use of
+             nproc * nthreads_per_proc cpu(s).
+
+    :param category_values:
+                        (sequence of floats or ints) list of the category values;
+                            let ncategory be the length of the list, then:
+                            - if ncategory == 1:
+                                - the unique category value given must not be
+                                equal to 0
+                                - it is used for a binary case with values
+                                ("unique category value", 0), where 0 indicates
+                                the absence of the considered medium
+                                - conditioning data values should be
+                                "unique category value" or 0
+                            - if ncategory >= 2:
+                                - it is used for a multi-category case with given
+                                values (distinct)
+                                - conditioning data values should be in the list
+                                of given values
+
+    :param cov_model_for_category:
+                        (sequence of CovModel2D class of length ncategory (see
+                            see category_values), or one CovModel2D, recycled)
+                            covariance model in 2D per category, see definition of
+                            the class in module geone.covModel
+
+    :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
+                            in x-, y-axis direction
+    :param spacing:     (sequence of 2 floats) (sx, sy), spacing between
+                            two adjacent cells in x-, y-axis direction
+    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D simulation
+                            - used for localizing the conditioning points
+    :param method:      (string) indicates the method used:
+                            - 'simple_kriging':
+                                simulation based on simple kriging
+                            - 'ordinary_kriging':
+                                simulation based on ordinary kriging
+    :param nreal:       (int) number of realizations
+
+    :param probability: (None or sequence of floats of length ncategory or
+                            ndarray of floats) probability for each category:
+                                - None :
+                                    proportion of each category in the hard data
+                                    values (stationary), (uniform distribution if
+                                    no hard data)
+                                - sequence of floats of length ncategory:
+                                    for stationary probabilities (set manually),
+                                    if ncategory > 1, the sum of the probabilities
+                                    must be equal to one
+                                - ndarray: for non stationary probabilities,
+                                    must contain ncategory * ngrid_cells entries
+                                    where ngrid_cells is the number of grid cells
+                                    (reshaped if needed); the first ngrid_cells
+                                    entries are the probabities for the first
+                                    category in the simulation grid, the next
+                                    ngrid_cells entries those of the second
+                                    category, and so on
+                            For ordinary kriging (method='ordinary_kriging'),
+                            it is used for case with no neighbor
+
+    :param x:           (2-dimensional array of dim n x 2, or
+                            1-dimensional array of dim 2 or None) coordinate of
+                            conditioning points for hard data
+    :param v:           (1-dimensional array or float or None) value
+                            at conditioning points for hard data
+                            (same type as x)
+
+    :param mask:        (nd-array of ints, or None) if given, mask values
+                            over the SG: 1 for simulated cell / 0 for not simulated
+                            cell (nunber of entries should be equal to the number of
+                            grid cells)
+
+    :param searchRadiusRelative:
+                        (sequence of ncategory floats (or float, recycled))
+                            indicating how restricting the search ellipsoid (should be positive)
+                            for each category:
+                            let r_i be the ranges of the covariance model along its main axes,
+                            if x is a node to be simulated, a node y is taken into account iff it is
+                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            Note:
+                                - if a range is a variable parameter, its maximal value over the simulation grid
+                                  is considered
+                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
+                                  is considered with the radius set to the maximum of all ranges
+
+    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
+                            nodes retrieved from the search ellipsoid, for each category,
+                            set -1 for unlimited
+
+    :param searchNeighborhoodSortMode:
+                        (sequence of ncategory ints (or int, recycled)) indicating
+                            how to sort the search neighboorhood nodes (neighbors)
+                            for each category, they are sorted in increasing order
+                            according to:
+                                - searchNeighborhoodSortMode = 0:
+                                  distance in the usual axes system
+                                - searchNeighborhoodSortMode = 1:
+                                  distance in the axes sytem supporting the covariance model
+                                  and accounting for anisotropy given by the ranges
+                                - searchNeighborhoodSortMode = 2:
+                                  minus the evaluation of the covariance model
+                            Note:
+                                - if the covariance model has any variable parameter (non-stationary),
+                                  then searchNeighborhoodSortMode = 2 is not allowed
+                                - if the covariance model has any range or angle set as a variable parameter,
+                                  then searchNeighborhoodSortMode must be set to 0
+                                - greatest possible value as default
+
+    :param seed:        (int or None) initial seed, if None an initial seed between
+                            1 and 999999 is generated with numpy.random.randint
+
+    :param outputReportFile:
+                    (string or None) name of the report file, if None: no report file
+                        [if given, a suffix ".<process_index>" is added for the
+                        report file of each process]
+
+    :param nproc:
+                (int) number of processes (can be modified in the function)
+                    nproc = None: nproc is set to min(nmax, nreal)
+                        (but at least 1), where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param nthreads_per_proc:
+                (int) number of thread(s) per process (should be > 0 or None):
+                    nthreads_per_proc = None: nthreads_per_proc is automatically
+                    computed as the maximal integer (but at least 1) such that
+                            nproc * nthreads_per_proc <= nmax
+                        where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param verbose:
+                (int) indicates what information is displayed:
+                    - 0: no display
+                    - 1: only errors (and note(s))
+                    - 2: version and warning(s) encountered
+
+    :return geosclassic_output: (dict)
+            {'image':image,
+             'nwarning':nwarning,
+             'warnings':warnings}
+        image:  (Img (class)) output image, with image.nv=nreal variables (each
+                    variable is one realization)
+                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
+    """
+
+    # Set number of processes: nproc
+    if nproc is None:
+        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), nreal), 1)
+        if verbose > 0 and nproc != nproc_tmp:
+            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+
+    # Set number of threads per process: nth
+    if nthreads_per_proc is None:
+        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+    else:
+        nth = max(int(nthreads_per_proc), 1)
+        if verbose > 0 and nth != nthreads_per_proc:
+            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+
+    if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
+        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+
+    # Set the distribution of the realizations over the processes
+    # Condider the Euclidean division of nreal by nproc:
+    #     nreal = q * nproc + r, with 0 <= r < nproc
+    # Then, (q+1) realizations will be done on process 0, 1, ..., r-1, and q realization on process r, ..., nproc-1
+    # Define the list real_index_proc of length (nproc+1) such that
+    #   real_index_proc[i], ..., real_index_proc[i+1] - 1 : are the realization indices run on process i
+    q, r = np.divmod(nreal, nproc)
+    real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose >= 2:
+        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+
+    # mpds_geosClassicInput.seed
+    if seed is None:
+        seed = np.random.randint(1,1000000)
+    seed = int(seed)
+
+    outputReportFile_p = None
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i in range(nproc):
+        # Adapt deesse input for i-th process
+        nreal_p = real_index_proc[i+1] - real_index_proc[i]
+        seed_p = seed + real_index_proc[i]
+        if outputReportFile is not None:
+            outputReportFile_p = outputReportFile + f'.{i}'
+        if i==0:
+            verbose_p = min(verbose, 1) # allow to print error for process i
+        else:
+            verbose_p = 0
+        # Launch deesse (i-th process)
+        out_pool.append(
+            pool.apply_async(simulateIndicator2D,
+                args=(category_values,
+                cov_model_for_category,
+                dimension, spacing, origin,
+                method,
+                nreal_p,                     # nreal (adjusted)
+                probability,
+                x, v,
+                mask,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                seed_p,                      # seed (adjusted)
+                outputReportFile_p,          # outputReportFile (adjusted)
+                nth,                         # nthreads
+                verbose_p)                   # verbose (adjusted)
+                )
+            )
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    geosclassic_output_proc = [p.get() for p in out_pool]
+
+    if np.any([out is None for out in geosclassic_output_proc]):
+        return None
+
+    image = None
+    nwarning, warnings = None, None
+
+    # Gather results of every process
+    image = np.hstack([out['image'] for out in geosclassic_output_proc])
+
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Remove None entries
+    image = image[[x is not None for x in image]]
+
+    # Set to None if every entry is None
+    if np.all([x is None for x in image]):
+        image = None
+
+    # Gather images and adjust names
+    if image is not None:
+        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+        for j in range(all_image.nv):
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+
+    geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
+
+    if verbose >= 2 and geosclassic_output:
+        print('Geos-Classic run complete (all process(es))')
+
+    # Show (print) encountered warnings
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+        for i, warning_message in enumerate(geosclassic_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
+
+    return geosclassic_output
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def simulateIndicator3D(
         category_values,
         cov_model_for_category,
@@ -4837,7 +6355,8 @@ def simulateIndicator3D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Generates 3D simulations (Sequential Indicator Simulation, SIS) based on
     simple or ordinary kriging.
@@ -5297,6 +6816,305 @@ def simulateIndicator3D(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def simulateIndicator3D_mp(
+        category_values,
+        cov_model_for_category,
+        dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
+        method='simple_kriging',
+        nreal=1,
+        probability=None,
+        x=None, v=None,
+        mask=None,
+        searchRadiusRelative=1.,
+        nneighborMax=12,
+        searchNeighborhoodSortMode=None,
+        seed=None,
+        outputReportFile=None,
+        nproc=None, nthreads_per_proc=None,
+        verbose=2):
+    """
+    Generates 3D simulations (Sequential Indicator Simulation, SIS) based on
+    simple or ordinary kriging.
+
+    Launches multiple processes (based on multiprocessing package):
+       - nproc parallel processes using each one nthreads_per_proc threads will
+         be launched [parallel calls of the function simulateIndicator3D],
+       - the set of realizations (specified by deesse_input.nrealization) is
+         distributed in a balanced way over the processes,
+       - in terms of resources, this implies the use of
+             nproc * nthreads_per_proc cpu(s).
+
+    :param category_values:
+                        (sequence of floats or ints) list of the category values;
+                            let ncategory be the length of the list, then:
+                            - if ncategory == 1:
+                                - the unique category value given must not be
+                                equal to 0
+                                - it is used for a binary case with values
+                                ("unique category value", 0), where 0 indicates
+                                the absence of the considered medium
+                                - conditioning data values should be
+                                "unique category value" or 0
+                            - if ncategory >= 2:
+                                - it is used for a multi-category case with given
+                                values (distinct)
+                                - conditioning data values should be in the list
+                                of given values
+
+    :param cov_model_for_category:
+                        (sequence of CovModel3D class of length ncategory (see
+                            see category_values), or one CovModel3D, recycled)
+                            covariance model in 3D per category, see definition of
+                            the class in module geone.covModel
+
+    :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
+                            in x-, y-, z-axis direction
+    :param spacing:     (sequence of 3 floats) (sx, sy, sz), spacing between
+                            two adjacent cells in x-, y-, z-axis direction
+    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D simulation
+                            - used for localizing the conditioning points
+    :param method:      (string) indicates the method used:
+                            - 'simple_kriging':
+                                simulation based on simple kriging
+                            - 'ordinary_kriging':
+                                simulation based on ordinary kriging
+    :param nreal:       (int) number of realizations
+
+    :param probability: (None or sequence of floats of length ncategory or
+                            ndarray of floats) probability for each category:
+                                - None :
+                                    proportion of each category in the hard data
+                                    values (stationary), (uniform distribution if
+                                    no hard data)
+                                - sequence of floats of length ncategory:
+                                    for stationary probabilities (set manually),
+                                    if ncategory > 1, the sum of the probabilities
+                                    must be equal to one
+                                - ndarray: for non stationary probabilities,
+                                    must contain ncategory * ngrid_cells entries
+                                    where ngrid_cells is the number of grid cells
+                                    (reshaped if needed); the first ngrid_cells
+                                    entries are the probabities for the first
+                                    category in the simulation grid, the next
+                                    ngrid_cells entries those of the second
+                                    category, and so on
+                            For ordinary kriging (method='ordinary_kriging'),
+                            it is used for case with no neighbor
+
+    :param x:           (2-dimensional array of dim n x 3, or
+                            1-dimensional array of dim 3 or None) coordinate of
+                            conditioning points for hard data
+    :param v:           (1-dimensional array or float or None) value
+                            at conditioning points for hard data
+                            (same type as x)
+
+    :param mask:        (nd-array of ints, or None) if given, mask values
+                            over the SG: 1 for simulated cell / 0 for not simulated
+                            cell (nunber of entries should be equal to the number of
+                            grid cells)
+
+    :param searchRadiusRelative:
+                        (sequence of ncategory floats (or float, recycled))
+                            indicating how restricting the search ellipsoid (should be positive)
+                            for each category:
+                            let r_i be the ranges of the covariance model along its main axes,
+                            if x is a node to be simulated, a node y is taken into account iff it is
+                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            Note:
+                                - if a range is a variable parameter, its maximal value over the simulation grid
+                                  is considered
+                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
+                                  is considered with the radius set to the maximum of all ranges
+
+    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
+                            nodes retrieved from the search ellipsoid, for each category,
+                            set -1 for unlimited
+
+    :param searchNeighborhoodSortMode:
+                        (sequence of ncategory ints (or int, recycled)) indicating
+                            how to sort the search neighboorhood nodes (neighbors)
+                            for each category, they are sorted in increasing order
+                            according to:
+                                - searchNeighborhoodSortMode = 0:
+                                  distance in the usual axes system
+                                - searchNeighborhoodSortMode = 1:
+                                  distance in the axes sytem supporting the covariance model
+                                  and accounting for anisotropy given by the ranges
+                                - searchNeighborhoodSortMode = 2:
+                                  minus the evaluation of the covariance model
+                            Note:
+                                - if the covariance model has any variable parameter (non-stationary),
+                                  then searchNeighborhoodSortMode = 2 is not allowed
+                                - if the covariance model has any range or angle set as a variable parameter,
+                                  then searchNeighborhoodSortMode must be set to 0
+                                - greatest possible value as default
+
+    :param seed:        (int or None) initial seed, if None an initial seed between
+                            1 and 999999 is generated with numpy.random.randint
+
+    :param outputReportFile:
+                    (string or None) name of the report file, if None: no report file
+                        [if given, a suffix ".<process_index>" is added for the
+                        report file of each process]
+
+    :param nproc:
+                (int) number of processes (can be modified in the function)
+                    nproc = None: nproc is set to min(nmax, nreal)
+                        (but at least 1), where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param nthreads_per_proc:
+                (int) number of thread(s) per process (should be > 0 or None):
+                    nthreads_per_proc = None: nthreads_per_proc is automatically
+                    computed as the maximal integer (but at least 1) such that
+                            nproc * nthreads_per_proc <= nmax
+                        where
+                        nmax is the total number of cpu(s) of the system
+                            (multiprocessing.cpu_count())
+    :param verbose:
+                (int) indicates what information is displayed:
+                    - 0: no display
+                    - 1: only errors (and note(s))
+                    - 2: version and warning(s) encountered
+
+    :return geosclassic_output: (dict)
+            {'image':image,
+             'nwarning':nwarning,
+             'warnings':warnings}
+        image:  (Img (class)) output image, with image.nv=nreal variables (each
+                    variable is one realization)
+                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
+    """
+
+    # Set number of processes: nproc
+    if nproc is None:
+        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), nreal), 1)
+        if verbose > 0 and nproc != nproc_tmp:
+            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+
+    # Set number of threads per process: nth
+    if nthreads_per_proc is None:
+        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+    else:
+        nth = max(int(nthreads_per_proc), 1)
+        if verbose > 0 and nth != nthreads_per_proc:
+            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+
+    if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
+        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+
+    # Set the distribution of the realizations over the processes
+    # Condider the Euclidean division of nreal by nproc:
+    #     nreal = q * nproc + r, with 0 <= r < nproc
+    # Then, (q+1) realizations will be done on process 0, 1, ..., r-1, and q realization on process r, ..., nproc-1
+    # Define the list real_index_proc of length (nproc+1) such that
+    #   real_index_proc[i], ..., real_index_proc[i+1] - 1 : are the realization indices run on process i
+    q, r = np.divmod(nreal, nproc)
+    real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose >= 2:
+        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+
+    # mpds_geosClassicInput.seed
+    if seed is None:
+        seed = np.random.randint(1,1000000)
+    seed = int(seed)
+
+    outputReportFile_p = None
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i in range(nproc):
+        # Adapt deesse input for i-th process
+        nreal_p = real_index_proc[i+1] - real_index_proc[i]
+        seed_p = seed + real_index_proc[i]
+        if outputReportFile is not None:
+            outputReportFile_p = outputReportFile + f'.{i}'
+        if i==0:
+            verbose_p = min(verbose, 1) # allow to print error for process i
+        else:
+            verbose_p = 0
+        # Launch deesse (i-th process)
+        out_pool.append(
+            pool.apply_async(simulateIndicator3D,
+                args=(category_values,
+                cov_model_for_category,
+                dimension, spacing, origin,
+                method,
+                nreal_p,                     # nreal (adjusted)
+                probability,
+                x, v,
+                mask,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                seed_p,                      # seed (adjusted)
+                outputReportFile_p,          # outputReportFile (adjusted)
+                nth,                         # nthreads
+                verbose_p)                   # verbose (adjusted)
+                )
+            )
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    geosclassic_output_proc = [p.get() for p in out_pool]
+
+    if np.any([out is None for out in geosclassic_output_proc]):
+        return None
+
+    image = None
+    nwarning, warnings = None, None
+
+    # Gather results of every process
+    image = np.hstack([out['image'] for out in geosclassic_output_proc])
+
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Remove None entries
+    image = image[[x is not None for x in image]]
+
+    # Set to None if every entry is None
+    if np.all([x is None for x in image]):
+        image = None
+
+    # Gather images and adjust names
+    if image is not None:
+        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+        for j in range(all_image.nv):
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+
+    geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
+
+    if verbose >= 2 and geosclassic_output:
+        print('Geos-Classic run complete (all process(es))')
+
+    # Show (print) encountered warnings
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+        for i, warning_message in enumerate(geosclassic_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
+
+    return geosclassic_output
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def estimateIndicator1D(
         category_values,
         cov_model_for_category,
@@ -5311,7 +7129,8 @@ def estimateIndicator1D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Computes estimate probabilities of categories (indicators) for 1D grid
     based on simple or ordinary kriging.
@@ -5786,7 +7605,8 @@ def estimateIndicator2D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Computes estimate probabilities of categories (indicators) for 2D grid
     based on simple or ordinary kriging.
@@ -6270,7 +8090,8 @@ def estimateIndicator3D(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
-        nthreads=-1, verbose=2):
+        nthreads=-1,
+        verbose=2):
     """
     Computes estimate probabilities of categories (indicators) for 3D grid
     based on simple or ordinary kriging.
