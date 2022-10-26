@@ -1511,6 +1511,7 @@ def simulate1D_mp(
         nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
+        treat_image_one_by_one=False,
         nproc=None, nthreads_per_proc=None,
         verbose=2):
     """
@@ -1518,12 +1519,12 @@ def simulate1D_mp(
     simple or ordinary kriging.
 
     Launches multiple processes (based on multiprocessing package):
-       - nproc parallel processes using each one nthreads_per_proc threads will
-         be launched [parallel calls of the function simulate1D],
-       - the set of realizations (specified by deesse_input.nrealization) is
-         distributed in a balanced way over the processes,
-       - in terms of resources, this implies the use of
-             nproc * nthreads_per_proc cpu(s).
+        - nproc parallel processes using each one nthreads_per_proc threads will
+            be launched [parallel calls of the function simulate1D],
+        - the set of realizations (specified by nreal) is
+            distributed in a balanced way over the processes,
+        - in terms of resources, this implies the use of
+            nproc * nthreads_per_proc cpu(s).
 
     :param cov_model:   (CovModel1D class) covariance model in 1D, see
                             definition of the class in module geone.covModel
@@ -1634,20 +1635,29 @@ def simulate1D_mp(
                         [if given, a suffix ".<process_index>" is added for the
                         report file of each process]
 
+    :param treat_image_one_by_one:
+                    (bool) keyword argument passed to the function geone.img.gatherImages
+                        - if False (default) images (result of each process) are gathered
+                            at once, and then removed (faster)
+                        - if True, images (result of each process) are gathered
+                            one by one, i.e. successively gathered and removed
+                            (slower, may save memory)
+
     :param nproc:
                 (int) number of processes (can be modified in the function)
-                    nproc = None: nproc is set to min(nmax, nreal)
-                        (but at least 1), where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                    nproc = None: nproc is set to
+                        min(nmax-1, nreal) (but at least 1),
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param nthreads_per_proc:
                 (int) number of thread(s) per process (should be > 0 or None):
                     nthreads_per_proc = None: nthreads_per_proc is automatically
                     computed as the maximal integer (but at least 1) such that
-                            nproc * nthreads_per_proc <= nmax
-                        where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                            nproc * nthreads_per_proc <= nmax-1
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param verbose:
                 (int) indicates what information is displayed:
                     - 0: no display
@@ -1671,7 +1681,7 @@ def simulate1D_mp(
 
     # Set number of processes: nproc
     if nproc is None:
-        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+        nproc = max(min(multiprocessing.cpu_count()-1, nreal), 1)
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
@@ -1680,7 +1690,7 @@ def simulate1D_mp(
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
-        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
         if verbose > 0 and nth != nthreads_per_proc:
@@ -1701,7 +1711,7 @@ def simulate1D_mp(
     if verbose >= 2:
         print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
     # mpds_geosClassicInput.seed
     if seed is None:
@@ -1714,7 +1724,7 @@ def simulate1D_mp(
     pool = multiprocessing.Pool(nproc)
     out_pool = []
     for i in range(nproc):
-        # Adapt deesse input for i-th process
+        # Adapt input for i-th process
         nreal_p = real_index_proc[i+1] - real_index_proc[i]
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
@@ -1723,7 +1733,7 @@ def simulate1D_mp(
             verbose_p = min(verbose, 1) # allow to print error for process i
         else:
             verbose_p = 0
-        # Launch deesse (i-th process)
+        # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulate1D,
                 args=(cov_model,
@@ -1775,7 +1785,7 @@ def simulate1D_mp(
 
     # Gather images and adjust names
     if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
             all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
@@ -2283,6 +2293,7 @@ def simulate2D_mp(
         nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
+        treat_image_one_by_one=False,
         nproc=None, nthreads_per_proc=None,
         verbose=2):
     """
@@ -2290,12 +2301,12 @@ def simulate2D_mp(
     simple or ordinary kriging.
 
     Launches multiple processes (based on multiprocessing package):
-       - nproc parallel processes using each one nthreads_per_proc threads will
-         be launched [parallel calls of the function simulate2D],
-       - the set of realizations (specified by deesse_input.nrealization) is
-         distributed in a balanced way over the processes,
-       - in terms of resources, this implies the use of
-             nproc * nthreads_per_proc cpu(s).
+        - nproc parallel processes using each one nthreads_per_proc threads will
+            be launched [parallel calls of the function simulate2D],
+        - the set of realizations (specified by nreal) is
+            distributed in a balanced way over the processes,
+        - in terms of resources, this implies the use of
+            nproc * nthreads_per_proc cpu(s).
 
     :param cov_model:   (CovModel2D class) covariance model in 2D, see
                             definition of the class in module geone.covModel
@@ -2413,20 +2424,29 @@ def simulate2D_mp(
                         [if given, a suffix ".<process_index>" is added for the
                         report file of each process]
 
+    :param treat_image_one_by_one:
+                    (bool) keyword argument passed to the function geone.img.gatherImages
+                        - if False (default) images (result of each process) are gathered
+                            at once, and then removed (faster)
+                        - if True, images (result of each process) are gathered
+                            one by one, i.e. successively gathered and removed
+                            (slower, may save memory)
+
     :param nproc:
                 (int) number of processes (can be modified in the function)
-                    nproc = None: nproc is set to min(nmax, nreal)
-                        (but at least 1), where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                    nproc = None: nproc is set to
+                        min(nmax-1, nreal) (but at least 1),
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param nthreads_per_proc:
                 (int) number of thread(s) per process (should be > 0 or None):
                     nthreads_per_proc = None: nthreads_per_proc is automatically
                     computed as the maximal integer (but at least 1) such that
-                            nproc * nthreads_per_proc <= nmax
-                        where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                            nproc * nthreads_per_proc <= nmax-1
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param verbose:
                 (int) indicates what information is displayed:
                     - 0: no display
@@ -2450,7 +2470,7 @@ def simulate2D_mp(
 
     # Set number of processes: nproc
     if nproc is None:
-        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+        nproc = max(min(multiprocessing.cpu_count()-1, nreal), 1)
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
@@ -2459,7 +2479,7 @@ def simulate2D_mp(
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
-        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
         if verbose > 0 and nth != nthreads_per_proc:
@@ -2480,7 +2500,7 @@ def simulate2D_mp(
     if verbose >= 2:
         print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
     # mpds_geosClassicInput.seed
     if seed is None:
@@ -2493,7 +2513,7 @@ def simulate2D_mp(
     pool = multiprocessing.Pool(nproc)
     out_pool = []
     for i in range(nproc):
-        # Adapt deesse input for i-th process
+        # Adapt input for i-th process
         nreal_p = real_index_proc[i+1] - real_index_proc[i]
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
@@ -2502,7 +2522,7 @@ def simulate2D_mp(
             verbose_p = min(verbose, 1) # allow to print error for process i
         else:
             verbose_p = 0
-        # Launch deesse (i-th process)
+        # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulate2D,
                 args=(cov_model,
@@ -2554,7 +2574,7 @@ def simulate2D_mp(
 
     # Gather images and adjust names
     if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
             all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
@@ -4546,6 +4566,7 @@ def simulate3D_mp(
         nGibbsSamplerPathMax=200,
         seed=None,
         outputReportFile=None,
+        treat_image_one_by_one=False,
         nproc=None, nthreads_per_proc=None,
         verbose=2):
     """
@@ -4553,12 +4574,12 @@ def simulate3D_mp(
     simple or ordinary kriging.
 
     Launches multiple processes (based on multiprocessing package):
-       - nproc parallel processes using each one nthreads_per_proc threads will
-         be launched [parallel calls of the function simulate3D],
-       - the set of realizations (specified by deesse_input.nrealization) is
-         distributed in a balanced way over the processes,
-       - in terms of resources, this implies the use of
-             nproc * nthreads_per_proc cpu(s).
+        - nproc parallel processes using each one nthreads_per_proc threads will
+            be launched [parallel calls of the function simulate3D],
+        - the set of realizations (specified by nreal) is
+            distributed in a balanced way over the processes,
+        - in terms of resources, this implies the use of
+            nproc * nthreads_per_proc cpu(s).
 
     :param cov_model:   (CovModel3D class) covariance model in 3D, see
                             definition of the class in module geone.covModel
@@ -4676,20 +4697,29 @@ def simulate3D_mp(
                         [if given, a suffix ".<process_index>" is added for the
                         report file of each process]
 
+    :param treat_image_one_by_one:
+                    (bool) keyword argument passed to the function geone.img.gatherImages
+                        - if False (default) images (result of each process) are gathered
+                            at once, and then removed (faster)
+                        - if True, images (result of each process) are gathered
+                            one by one, i.e. successively gathered and removed
+                            (slower, may save memory)
+
     :param nproc:
                 (int) number of processes (can be modified in the function)
-                    nproc = None: nproc is set to min(nmax, nreal)
-                        (but at least 1), where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                    nproc = None: nproc is set to
+                        min(nmax-1, nreal) (but at least 1),
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param nthreads_per_proc:
                 (int) number of thread(s) per process (should be > 0 or None):
                     nthreads_per_proc = None: nthreads_per_proc is automatically
                     computed as the maximal integer (but at least 1) such that
-                            nproc * nthreads_per_proc <= nmax
-                        where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                            nproc * nthreads_per_proc <= nmax-1
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param verbose:
                 (int) indicates what information is displayed:
                     - 0: no display
@@ -4713,7 +4743,7 @@ def simulate3D_mp(
 
     # Set number of processes: nproc
     if nproc is None:
-        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+        nproc = max(min(multiprocessing.cpu_count()-1, nreal), 1)
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
@@ -4722,7 +4752,7 @@ def simulate3D_mp(
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
-        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
         if verbose > 0 and nth != nthreads_per_proc:
@@ -4743,7 +4773,7 @@ def simulate3D_mp(
     if verbose >= 2:
         print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
     # mpds_geosClassicInput.seed
     if seed is None:
@@ -4756,7 +4786,7 @@ def simulate3D_mp(
     pool = multiprocessing.Pool(nproc)
     out_pool = []
     for i in range(nproc):
-        # Adapt deesse input for i-th process
+        # Adapt input for i-th process
         nreal_p = real_index_proc[i+1] - real_index_proc[i]
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
@@ -4765,7 +4795,7 @@ def simulate3D_mp(
             verbose_p = min(verbose, 1) # allow to print error for process i
         else:
             verbose_p = 0
-        # Launch deesse (i-th process)
+        # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulate3D,
                 args=(cov_model,
@@ -4817,7 +4847,7 @@ def simulate3D_mp(
 
     # Gather images and adjust names
     if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
             all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
@@ -5301,6 +5331,7 @@ def simulateIndicator1D_mp(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
+        treat_image_one_by_one=False,
         nproc=None, nthreads_per_proc=None,
         verbose=2):
     """
@@ -5308,12 +5339,12 @@ def simulateIndicator1D_mp(
     simple or ordinary kriging.
 
     Launches multiple processes (based on multiprocessing package):
-       - nproc parallel processes using each one nthreads_per_proc threads will
-         be launched [parallel calls of the function simulateIndicator1D],
-       - the set of realizations (specified by deesse_input.nrealization) is
-         distributed in a balanced way over the processes,
-       - in terms of resources, this implies the use of
-             nproc * nthreads_per_proc cpu(s).
+        - nproc parallel processes using each one nthreads_per_proc threads will
+            be launched [parallel calls of the function simulateIndicator1D],
+        - the set of realizations (specified by nreal) is
+            distributed in a balanced way over the processes,
+        - in terms of resources, this implies the use of
+            nproc * nthreads_per_proc cpu(s).
 
     :param category_values:
                         (sequence of floats or ints) list of the category values;
@@ -5423,20 +5454,29 @@ def simulateIndicator1D_mp(
                         [if given, a suffix ".<process_index>" is added for the
                         report file of each process]
 
+    :param treat_image_one_by_one:
+                    (bool) keyword argument passed to the function geone.img.gatherImages
+                        - if False (default) images (result of each process) are gathered
+                            at once, and then removed (faster)
+                        - if True, images (result of each process) are gathered
+                            one by one, i.e. successively gathered and removed
+                            (slower, may save memory)
+
     :param nproc:
                 (int) number of processes (can be modified in the function)
-                    nproc = None: nproc is set to min(nmax, nreal)
-                        (but at least 1), where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                    nproc = None: nproc is set to
+                        min(nmax-1, nreal) (but at least 1),
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param nthreads_per_proc:
                 (int) number of thread(s) per process (should be > 0 or None):
                     nthreads_per_proc = None: nthreads_per_proc is automatically
                     computed as the maximal integer (but at least 1) such that
-                            nproc * nthreads_per_proc <= nmax
-                        where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                            nproc * nthreads_per_proc <= nmax-1
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param verbose:
                 (int) indicates what information is displayed:
                     - 0: no display
@@ -5460,7 +5500,7 @@ def simulateIndicator1D_mp(
 
     # Set number of processes: nproc
     if nproc is None:
-        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+        nproc = max(min(multiprocessing.cpu_count()-1, nreal), 1)
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
@@ -5469,7 +5509,7 @@ def simulateIndicator1D_mp(
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
-        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
         if verbose > 0 and nth != nthreads_per_proc:
@@ -5490,7 +5530,7 @@ def simulateIndicator1D_mp(
     if verbose >= 2:
         print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
     # mpds_geosClassicInput.seed
     if seed is None:
@@ -5503,7 +5543,7 @@ def simulateIndicator1D_mp(
     pool = multiprocessing.Pool(nproc)
     out_pool = []
     for i in range(nproc):
-        # Adapt deesse input for i-th process
+        # Adapt input for i-th process
         nreal_p = real_index_proc[i+1] - real_index_proc[i]
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
@@ -5512,7 +5552,7 @@ def simulateIndicator1D_mp(
             verbose_p = min(verbose, 1) # allow to print error for process i
         else:
             verbose_p = 0
-        # Launch deesse (i-th process)
+        # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulateIndicator1D,
                 args=(category_values,
@@ -5561,7 +5601,7 @@ def simulateIndicator1D_mp(
 
     # Gather images and adjust names
     if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
             all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
@@ -6056,6 +6096,7 @@ def simulateIndicator2D_mp(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
+        treat_image_one_by_one=False,
         nproc=None, nthreads_per_proc=None,
         verbose=2):
     """
@@ -6063,12 +6104,12 @@ def simulateIndicator2D_mp(
     simple or ordinary kriging.
 
     Launches multiple processes (based on multiprocessing package):
-       - nproc parallel processes using each one nthreads_per_proc threads will
-         be launched [parallel calls of the function simulateIndicator2D],
-       - the set of realizations (specified by deesse_input.nrealization) is
-         distributed in a balanced way over the processes,
-       - in terms of resources, this implies the use of
-             nproc * nthreads_per_proc cpu(s).
+        - nproc parallel processes using each one nthreads_per_proc threads will
+            be launched [parallel calls of the function simulateIndicator2D],
+        - the set of realizations (specified by nreal) is
+            distributed in a balanced way over the processes,
+        - in terms of resources, this implies the use of
+            nproc * nthreads_per_proc cpu(s).
 
     :param category_values:
                         (sequence of floats or ints) list of the category values;
@@ -6183,20 +6224,29 @@ def simulateIndicator2D_mp(
                         [if given, a suffix ".<process_index>" is added for the
                         report file of each process]
 
+    :param treat_image_one_by_one:
+                    (bool) keyword argument passed to the function geone.img.gatherImages
+                        - if False (default) images (result of each process) are gathered
+                            at once, and then removed (faster)
+                        - if True, images (result of each process) are gathered
+                            one by one, i.e. successively gathered and removed
+                            (slower, may save memory)
+
     :param nproc:
                 (int) number of processes (can be modified in the function)
-                    nproc = None: nproc is set to min(nmax, nreal)
-                        (but at least 1), where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                    nproc = None: nproc is set to
+                        min(nmax-1, nreal) (but at least 1),
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param nthreads_per_proc:
                 (int) number of thread(s) per process (should be > 0 or None):
                     nthreads_per_proc = None: nthreads_per_proc is automatically
                     computed as the maximal integer (but at least 1) such that
-                            nproc * nthreads_per_proc <= nmax
-                        where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                            nproc * nthreads_per_proc <= nmax-1
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param verbose:
                 (int) indicates what information is displayed:
                     - 0: no display
@@ -6220,7 +6270,7 @@ def simulateIndicator2D_mp(
 
     # Set number of processes: nproc
     if nproc is None:
-        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+        nproc = max(min(multiprocessing.cpu_count()-1, nreal), 1)
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
@@ -6229,7 +6279,7 @@ def simulateIndicator2D_mp(
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
-        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
         if verbose > 0 and nth != nthreads_per_proc:
@@ -6250,7 +6300,7 @@ def simulateIndicator2D_mp(
     if verbose >= 2:
         print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
     # mpds_geosClassicInput.seed
     if seed is None:
@@ -6263,7 +6313,7 @@ def simulateIndicator2D_mp(
     pool = multiprocessing.Pool(nproc)
     out_pool = []
     for i in range(nproc):
-        # Adapt deesse input for i-th process
+        # Adapt input for i-th process
         nreal_p = real_index_proc[i+1] - real_index_proc[i]
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
@@ -6272,7 +6322,7 @@ def simulateIndicator2D_mp(
             verbose_p = min(verbose, 1) # allow to print error for process i
         else:
             verbose_p = 0
-        # Launch deesse (i-th process)
+        # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulateIndicator2D,
                 args=(category_values,
@@ -6321,7 +6371,7 @@ def simulateIndicator2D_mp(
 
     # Gather images and adjust names
     if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
             all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
@@ -6830,6 +6880,7 @@ def simulateIndicator3D_mp(
         searchNeighborhoodSortMode=None,
         seed=None,
         outputReportFile=None,
+        treat_image_one_by_one=False,
         nproc=None, nthreads_per_proc=None,
         verbose=2):
     """
@@ -6837,12 +6888,12 @@ def simulateIndicator3D_mp(
     simple or ordinary kriging.
 
     Launches multiple processes (based on multiprocessing package):
-       - nproc parallel processes using each one nthreads_per_proc threads will
-         be launched [parallel calls of the function simulateIndicator3D],
-       - the set of realizations (specified by deesse_input.nrealization) is
-         distributed in a balanced way over the processes,
-       - in terms of resources, this implies the use of
-             nproc * nthreads_per_proc cpu(s).
+        - nproc parallel processes using each one nthreads_per_proc threads will
+            be launched [parallel calls of the function simulateIndicator3D],
+        - the set of realizations (specified by nreal) is
+            distributed in a balanced way over the processes,
+        - in terms of resources, this implies the use of
+            nproc * nthreads_per_proc cpu(s).
 
     :param category_values:
                         (sequence of floats or ints) list of the category values;
@@ -6957,20 +7008,29 @@ def simulateIndicator3D_mp(
                         [if given, a suffix ".<process_index>" is added for the
                         report file of each process]
 
+    :param treat_image_one_by_one:
+                    (bool) keyword argument passed to the function geone.img.gatherImages
+                        - if False (default) images (result of each process) are gathered
+                            at once, and then removed (faster)
+                        - if True, images (result of each process) are gathered
+                            one by one, i.e. successively gathered and removed
+                            (slower, may save memory)
+
     :param nproc:
                 (int) number of processes (can be modified in the function)
-                    nproc = None: nproc is set to min(nmax, nreal)
-                        (but at least 1), where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                    nproc = None: nproc is set to
+                        min(nmax-1, nreal) (but at least 1),
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param nthreads_per_proc:
                 (int) number of thread(s) per process (should be > 0 or None):
                     nthreads_per_proc = None: nthreads_per_proc is automatically
                     computed as the maximal integer (but at least 1) such that
-                            nproc * nthreads_per_proc <= nmax
-                        where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                            nproc * nthreads_per_proc <= nmax-1
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param verbose:
                 (int) indicates what information is displayed:
                     - 0: no display
@@ -6994,7 +7054,7 @@ def simulateIndicator3D_mp(
 
     # Set number of processes: nproc
     if nproc is None:
-        nproc = max(min(multiprocessing.cpu_count(), nreal), 1)
+        nproc = max(min(multiprocessing.cpu_count()-1, nreal), 1)
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
@@ -7003,7 +7063,7 @@ def simulateIndicator3D_mp(
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
-        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
         if verbose > 0 and nth != nthreads_per_proc:
@@ -7024,7 +7084,7 @@ def simulateIndicator3D_mp(
     if verbose >= 2:
         print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
     # mpds_geosClassicInput.seed
     if seed is None:
@@ -7037,7 +7097,7 @@ def simulateIndicator3D_mp(
     pool = multiprocessing.Pool(nproc)
     out_pool = []
     for i in range(nproc):
-        # Adapt deesse input for i-th process
+        # Adapt input for i-th process
         nreal_p = real_index_proc[i+1] - real_index_proc[i]
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
@@ -7046,7 +7106,7 @@ def simulateIndicator3D_mp(
             verbose_p = min(verbose, 1) # allow to print error for process i
         else:
             verbose_p = 0
-        # Launch deesse (i-th process)
+        # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulateIndicator3D,
                 args=(category_values,
@@ -7095,7 +7155,7 @@ def simulateIndicator3D_mp(
 
     # Gather images and adjust names
     if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, remVarFromInput=True)
+        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
             all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'

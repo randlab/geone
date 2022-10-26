@@ -304,8 +304,8 @@ class Img(object):
 
         # Extend val
         self.val = np.concatenate((self.val[0:ii,...],
-                                   valarr.reshape(1, self.nz, self.ny, self.nx),
-                                   self.val[ii:,...]),
+                                  valarr.reshape(1, self.nz, self.ny, self.nx),
+                                  self.val[ii:,...]),
                                   0)
         # Extend varname list
         if varname is None:
@@ -364,6 +364,7 @@ class Img(object):
         """
 
         # Update val array
+        del (self.val)
         self.val = np.zeros((0, self.nz, self.ny, self.nx))
 
         # Update varname list
@@ -422,7 +423,7 @@ class Img(object):
         indlist = list(np.asarray(indlist).flatten())
         indlist = [self.nv + i if i < 0 else i for i in indlist]
 
-        if sum([i >= self.nv or i < 0 for i in indlist]) > 0:
+        if np.sum([i >= self.nv or i < 0 for i in indlist]) > 0:
             print("Nothing is done! (invalid index list)")
             return None
 
@@ -946,7 +947,7 @@ class PointSet(object):
         indlist = list(np.asarray(indlist).flatten())
         indlist = [self.nv + i if i < 0 else i for i in indlist]
 
-        if sum([i >= self.nv or i < 0 for i in indlist]) > 0:
+        if np.sum([i >= self.nv or i < 0 for i in indlist]) > 0:
             print("Nothing is done! (invalid index list)")
             return None
 
@@ -1055,34 +1056,47 @@ class PointSet(object):
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-def copyImg(im, varIndList=None):
+def copyImg(im, varInd=None, varIndList=None):
     """
     Copies an image (Img class), with all variables or a subset of variables:
 
     :param im:          (Img class) input image
-    :param varIndList:  (sequence of int or None) index-es of the variables
-                            to copy (default None: all variables), note that for
-                            copying one variable, specify "varIndList=(iv,)"
+    :param varInd:      (sequence of ints or int or None) index-es of the variables
+                            to copy (default None: all variables)"
+    :param varIndList:  used for varInd if varInd is not given (None)
+                            (obsolete, kept for compatibility with older versions)
     :return:            (Img class) a copy of the input image
                             (not a reference to)
     """
 
-    if varIndList is not None:
+    if varInd is None:
+        varInd = varIndList
+
+    if varInd is not None:
+        varInd = np.atleast_1d(varInd).reshape(-1)
         # Check if each index is valid
-        if sum([iv in range(im.nv) for iv in varIndList]) != len(varIndList):
+        if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
             print("ERROR: invalid index-es")
             return None
+        imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                    sx=im.sx, sy=im.sy, sz=im.sz,
+                    ox=im.ox, oy=im.oy, oz=im.oz,
+                    nv=len(varInd), val=im.val[varInd], varname=[im.varname[i] for i in varInd],
+                    name=im.name)
+        # imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+        #             sx=im.sx, sy=im.sy, sz=im.sz,
+        #             ox=im.ox, oy=im.oy, oz=im.oz,
+        #             nv=len(varInd),
+        #             name=im.name)
+        # for i, iv in enumerate(varInd):
+        #     imOut.set_var(val=im.val[iv,...], varname=im.varname[iv], ind=i)
     else:
-        varIndList = range(im.nv)
-
-    imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
-                sx=im.sx, sy=im.sy, sz=im.sz,
-                ox=im.ox, oy=im.oy, oz=im.oz,
-                nv=len(varIndList),
-                name=im.name)
-
-    for i, iv in enumerate(varIndList):
-        imOut.set_var(val=im.val[iv,...], varname=im.varname[iv], ind=i)
+        # Copy all variables
+        imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                    sx=im.sx, sy=im.sy, sz=im.sz,
+                    ox=im.ox, oy=im.oy, oz=im.oz,
+                    nv=im.nv, val=np.copy(im.val), varname=list(np.copy(np.asarray(im.varname))),
+                    name=im.name)
 
     return imOut
 # ----------------------------------------------------------------------------
@@ -1345,7 +1359,7 @@ def imCategFromPgm(filename, flip_vertical=True, cmap='binary'):
     """
 
     # Read image
-    im = img.readImagePgm(filename)
+    im = readImagePgm(filename)
 
     if flip_vertical:
         # Flip image vertically
@@ -1384,7 +1398,7 @@ def imCategFromPpm(filename, flip_vertical=True):
     """
 
     # Read image
-    im = img.readImagePpm(filename)
+    im = readImagePpm(filename)
 
     if flip_vertical:
         # Flip image vertically
@@ -1614,24 +1628,42 @@ def isImageDimensionEqual (im1, im2):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def gatherImages (imlist, varInd=None, keep_varname=False, remVarFromInput=False):
+def gatherImages (imlist, varInd=None, keep_varname=False, rem_var_from_source=False, treat_image_one_by_one=False):
     """
     Gathers images:
 
     :param imlist:  (list) images to be gathered, they should have
                         the same grid dimensions
-    :param varInd:  (int or None)
-                        if None: all variables of each image from imlist
-                            are put in the output image
-                        else: only the variable of index varInd is put in
-                            the output image
+    :param varInd:  (sequence of ints or int or None) index-es of the variables
+                        of each image from imlist to be retrieved
+                        - if None (default): all variables of each image from imlist
+                            are stored in the output image
+                        - else: only the variables of index in varInd of each image
+                            from imlist is stored in the output image
     :param keep_varname:
-                    (bool) if True, name of the variables are kept from
-                       the source
-    :param remVarFromInput: (bool) if True, gathered variables are removed
-                                from the source (input image)
+                    (bool) if True, name of the variables are kept from the
+                       source, else (False), default variable names are set
 
-    :return: (Img class) output image containing variables of images of imlist
+    :param rem_var_from_source:
+                    (bool) if True, gathered variables are removed
+                        from the source (list of input images)
+                        (this allows to save memory)
+
+    :param treat_image_one_by_one:
+                    (bool) note: if rem_var_from_source is set to False, then
+                        treat_image_one_by_one is ignored (as it was set to False):
+                        there is no need to deal with images one by one
+                        - treat_image_one_by_one=True: images of the input list
+                            are treated one by one, i.e. the variables to be gathered
+                            of each image are inserted in the output image and
+                            removed from the source
+                            (slower, may save memory)
+                        - treat_image_one_by_one=False: all images of the input list
+                            are treated at once, i.e. variables to be gathered of
+                            all images are inserted in the output image at once
+                            (faster)
+
+    :return: (Img class) output image containing variables to be gathered of images in imlist
     """
 
     if len(imlist) == 0:
@@ -1643,39 +1675,61 @@ def gatherImages (imlist, varInd=None, keep_varname=False, remVarFromInput=False
             return None
 
     if varInd is not None:
-        if varInd < 0:
-            print("ERROR: invalid index (negative), nothing done!")
+        varInd = np.atleast_1d(varInd).reshape(-1)
+        if np.sum([iv in range(im.nv) for im in imlist for iv in varInd]) != len(imlist)*len(varInd):
+            print("ERROR: invalid index-es")
             return None
 
-        for i in range(len(imlist)):
-            if varInd >= imlist[i].nv:
-                print("ERROR: invalid index, nothing done!")
-                return None
+    varname = None # default
+    if keep_varname:
+        if varInd is not None:
+            varname = [im.varname[iv] for im in imlist for iv in varInd]
+        else:
+            varname = [im.varname[iv] for im in imlist for iv in range(im.nv)]
 
-    im = Img(nx=imlist[0].nx, ny=imlist[0].ny, nz=imlist[0].nz,
-             sx=imlist[0].sx, sy=imlist[0].sy, sz=imlist[0].sz,
-             ox=imlist[0].ox, oy=imlist[0].oy, oz=imlist[0].oz,
-             nv=0, val=0.0)
-
-    varname = None
-    if varInd is not None:
-        for i in range(len(imlist)):
-            if keep_varname:
-                varname = imlist[i].varname[varInd]
-            im.append_var(val=imlist[i].val[varInd,...], varname=varname)
-
-            if remVarFromInput:
-                imlist[i].remove_var(varInd)
-
+    if rem_var_from_source:
+        # remove variable from source
+        if treat_image_one_by_one:
+            # treat images one by one
+            val = np.empty(shape=(0, imlist[0].nz, imlist[0].ny, imlist[0].nx))
+            if varInd is not None:
+                ind = np.sort(np.unique(varInd))[::-1] # unique index in decreasing order (for removing variable...)
+                for im in imlist:
+                    val = np.concatenate((val, im.val[varInd]), 0)
+                    for iv in ind:
+                        im.remove_var(iv)
+            else:
+                for im in imlist:
+                    val = np.concatenate((val, im.val), 0)
+                    im.remove_allvar()
+        else:
+            # treat all images at once
+            if varInd is not None:
+                val = np.concatenate([im.val[varInd] for im in imlist], 0)
+                ind = np.sort(np.unique(varInd))[::-1] # unique index in decreasing order (for removing variable...)
+                for im in imlist:
+                    for iv in ind:
+                        im.remove_var(iv)
+            else:
+                val = np.concatenate([im.val for im in imlist], 0)
+                for im in imlist:
+                    im.remove_allvar()
     else:
-        for i in range(len(imlist)):
-            for j in range(imlist[i].nv):
-                if keep_varname:
-                    varname = imlist[i].varname[j]
-                im.append_var(val=imlist[i].val[j,...], varname=varname)
+        # not remove variable from source
+        # ignore treat_image_one_by_one (as it was False)
+        # treat_image_one_by_one = False # changed if needed: no need to treat images one by one...
+        #
+        # treat all images at once
+        if varInd is not None:
+            val = np.concatenate([im.val[varInd] for im in imlist], 0)
+        else:
+            val = np.concatenate([im.val for im in imlist], 0)
 
-            if remVarFromInput:
-                imlist[i].remove_allvar()
+    im = Img(
+            nx=imlist[0].nx, ny=imlist[0].ny, nz=imlist[0].nz,
+            sx=imlist[0].sx, sy=imlist[0].sy, sz=imlist[0].sz,
+            ox=imlist[0].ox, oy=imlist[0].oy, oz=imlist[0].oz,
+            nv=val.shape[0], val=val, varname=varname)
 
     return im
 # ----------------------------------------------------------------------------
@@ -1774,14 +1828,17 @@ def imageCategProp (im, categ):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageEntropy (im, varIndList=None):
+def imageEntropy (im, varInd=None, varIndList=None):
     """
     Computes "pixel-wise" entropy for proprotions given as variables in an
     image:
 
     :param im:          (Img class) input image
-    :param varIndList:  (sequence of int or None) index-es of the variables
-                            to take into account (default None: all variables)
+    :param varInd:      (sequence of ints or None) index-es of the variables
+                            to take into account (default None: all variables),
+                            (length of varInd should be at least 2)
+    :param varIndList:  used for varInd if varInd is not given (None)
+                            (obsolete, kept for compatibility with older versions)
     :return:            (Img class) an image with one variable containing the
                             entropy for the variable given in input, at pixel i,
                             it is defined as:
@@ -1791,15 +1848,19 @@ def imageEntropy (im, varIndList=None):
                             be equal to 1
     """
 
+    if varInd is None:
+        varInd = varIndList
+
     if varIndList is not None:
+        varInd = np.atleast_1d(varInd).reshape(-1)
         # Check if each index is valid
-        if sum([iv in range(im.nv) for iv in varIndList]) != len(varIndList):
+        if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
             print("ERROR: invalid index-es")
             return None
     else:
-        varIndList = range(im.nv)
+        varInd = range(im.nv)
 
-    if len(varIndList) < 2:
+    if len(varInd) < 2:
         print("ERROR: at least 2 indexes should be given")
         return None
 
@@ -1809,7 +1870,7 @@ def imageEntropy (im, varIndList=None):
                 nv=1, val=np.nan,
                 name=im.name)
 
-    t = 1. / np.log(len(varIndList))
+    t = 1. / np.log(len(varInd))
 
     for iz in range(im.nz):
         for iy in range(im.ny):
@@ -1817,7 +1878,7 @@ def imageEntropy (im, varIndList=None):
                 s = 0
                 e = 0
                 ok = True
-                for iv in varIndList:
+                for iv in varInd:
                     p = im.val[iv][iz][iy][ix]
                     if np.isnan(p) or p < 0:
                         ok = False
@@ -1835,30 +1896,36 @@ def imageEntropy (im, varIndList=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def copyPointSet(ps, varIndList=None):
+def copyPointSet(ps, varInd=None, varIndList=None):
     """
     Copies point set, with all variables or a subset of variables:
 
     :param ps:          (PointSet class) input point set
-    :param varIndList:  (sequence of int or None) index-es of the variables
-                            to copy (default None: all variables), note that for
-                            copying one variable, specify "varIndList=(iv,)"
+    :param varInd:      (sequence of ints or int or None) index-es of the variables
+                            to copy (default None: all variables)"
+    :param varIndList:  used for varInd if varInd is not given (None)
+                            (obsolete, kept for compatibility with older versions)
     :return:            (PointSet class) a copy of the input point set
                             (not a reference to)
     """
 
-    if varIndList is not None:
+    if varInd is None:
+        varInd = varIndList
+
+    if varInd is not None:
+        varInd = np.atleast_1d(varInd).reshape(-1)
         # Check if each index is valid
-        if sum([iv in range(ps.nv) for iv in varIndList]) != len(varIndList):
+        if np.sum([iv in range(ps.nv) for iv in varInd]) != len(varInd):
             print("ERROR: invalid index-es")
             return None
+        psOut = PointSet(npt=ps.npt,
+                         nv=len(varInd), val=ps.val[varInd], varname=[ps.varname[i] for i in varInd],
+                         name=ps.name)
     else:
-        varIndList = range(ps.nv)
-
-    psOut = PointSet(npt=ps.npt, nv=len(varIndList), val=0.0, name=ps.name)
-
-    for i, iv in enumerate(varIndList):
-        psOut.set_var(val=ps.val[iv,...], varname=ps.varname[iv], ind=i)
+        # Copy all variables
+        psOut = PointSet(npt=ps.npt,
+                         nv=len(varInd), val=np.copy(ps.val), varname=list(np.copy(np.asarray(ps.varname))),
+                         name=ps.name)
 
     return psOut
 # ----------------------------------------------------------------------------

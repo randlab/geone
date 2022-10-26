@@ -3227,32 +3227,32 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
     Launches deesse through multiple processes.
 
     Launches multiple processes (based on multiprocessing package):
-       - nproc parallel processes using each one nthreads_per_proc threads will
-         be launched [parallel calls of the function deesseRun],
-       - the set of realizations (specified by deesse_input.nrealization) is
-         distributed in a balanced way over the processes,
-       - in terms of resources, this implies the use of
-             nproc * nthreads_per_proc cpu(s).
+        - nproc parallel processes using each one nthreads_per_proc threads will
+            be launched [parallel calls of the function deesseRun],
+        - the set of realizations (specified by deesse_input.nrealization) is
+            distributed in a balanced way over the processes,
+        - in terms of resources, this implies the use of
+            nproc * nthreads_per_proc cpu(s).
 
     :param deesse_input:
                 (DeesseInput (class)): deesse input parameter (python)
 
     :param nproc:
                 (int) number of processes (can be modified in the function)
-                    nproc = None: nproc is set to min(nmax, nreal)
-                        (but at least 1), where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
-                        nreal is the number of realization
-                            (deesse_input.nrealization)
+                    nproc = None: nproc is set to
+                        min(nmax-1, nreal) (but at least 1),
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count()), and
+                    (real is the number of realization (deesse_input.nrealization)
+
     :param nthreads_per_proc:
                 (int) number of thread(s) per process (should be > 0 or None):
                     nthreads_per_proc = None: nthreads_per_proc is automatically
                     computed as the maximal integer (but at least 1) such that
-                            nproc * nthreads_per_proc <= nmax
-                        where
-                        nmax is the total number of cpu(s) of the system
-                            (multiprocessing.cpu_count())
+                            nproc * nthreads_per_proc <= nmax-1
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
     :param verbose:
                 (int) indicates what information is displayed:
                     - 0: mininal display
@@ -3299,9 +3299,18 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
             print('ERROR (deesseRun_mp): check deesse input')
         return
 
+    if deesse_input.nrealization <= 1:
+        if verbose > 0:
+            print('NOTE: number of realization does not exceed 1: launching deesseRun...')
+        nthreads = nthreads_per_proc
+        if nthreads is None:
+            nthreads = -1
+        deesse_output = deesseRun(deesse_input, nthreads=nthreads, verbose=verbose)
+        return deesse_output
+
     # Set number of processes: nproc
     if nproc is None:
-        nproc = max(min(multiprocessing.cpu_count(), deesse_input.nrealization), 1)
+        nproc = max(min(multiprocessing.cpu_count()-1, deesse_input.nrealization), 1)
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), deesse_input.nrealization), 1)
@@ -3310,7 +3319,7 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
-        nth = max(int(np.floor(multiprocessing.cpu_count() / nproc)), 1)
+        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
         if verbose > 0 and nth != nthreads_per_proc:

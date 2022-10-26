@@ -25,7 +25,7 @@ pip install .
 Do not launch python from the directory where the installation has been done (with `pip`), otherwise `import geone` will fail.
 
 ## Requirements
-The following python packages are used by GEONE:
+The following python packages are used by GEONE (tested on python 3.10.6):
    - matplotlib
    - multiprocessing (for parallel processes)
    - numpy (tested with version 1.23.1)
