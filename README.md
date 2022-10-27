@@ -33,8 +33,8 @@ The following python packages are used by GEONE (tested on python 3.10.6):
    - scipy (tested with version 1.9.1)
 
 ## Important notes
-- GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The DEESSE version provided with GEONE is a test version with restricted capabilities. To unlock the full capabilities of DEESSE, the user must obtain a commercial or academic license from the University of Neuchâtel. See LICENSE file for details.
-- DEESSE and some other geostatistical tools provided by GEONE are compiled in C for windows and linux, and for python3.6 to python3.10. **Note that for linux, the provided libraries depend on the library GLIBC 2.35, hence the library GLIBC of your OS have to be compatible with that version to ensure proper operation of GEONE.**
+- GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The DEESSE version provided with GEONE is a test version with restricted capabilities. **To unlock the full capabilities of DEESSE, the user must obtain a commercial or academic license from the University of Neuchâtel. See LICENSE file for details.**
+- DEESSE and some other geostatistical tools provided by GEONE are compiled in C for windows and linux, and for python3.6 to python3.10. **Note that for linux, the provided libraries depend on the library GLIBC 2.35, hence the library GLIBC of your OS has to be compatible with that version to ensure proper operation of GEONE.**
 
 ## Examples
 Some modules in the package GEONE can be run as a script ('\_\_main\_\_' scope) and provide examples by this way.

@@ -231,7 +231,7 @@ def grf1D(cov_model,
     if cov_model.__class__.__name__ == 'function':
         # covariance function is given
         cov_func = cov_model
-        range_known = False
+        cov_range = None # unknown range
     elif isinstance(cov_model, gcm.CovModel1D):
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
@@ -239,7 +239,7 @@ def grf1D(cov_model,
                 print("ERROR (GRF1D): 'cov_model' is not stationary")
             return None
         cov_func = cov_model.func() # covariance function
-        range_known = True
+        cov_range = cov_model.r()
     else:
         if verbose > 0:
             print("ERROR (GRF1D): 'cov_model' (first argument) is not valid")
@@ -328,9 +328,9 @@ def grf1D(cov_model,
 
     if extensionMin is None:
         # default extensionMin
-        if range_known:
+        if cov_range is not None: # known range
             # ... based on range of covariance model
-            extensionMin = extension_min(rangeFactorForExtensionMin*cov_model.r(), nx, s=dx)
+            extensionMin = extension_min(rangeFactorForExtensionMin*cov_range, nx, s=dx)
         else:
             # ... based on dimension
             extensionMin = dimension - 1
@@ -893,7 +893,7 @@ def krige1D(cov_model,
     if cov_model.__class__.__name__ == 'function':
         # covariance function is given
         cov_func = cov_model
-        range_known = False
+        cov_range = None # unknown range
     elif isinstance(cov_model, gcm.CovModel1D):
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
@@ -901,7 +901,7 @@ def krige1D(cov_model,
                 print("ERROR (KRIGE1D): 'cov_model' is not stationary")
             return out
         cov_func = cov_model.func() # covariance function
-        range_known = True
+        cov_range = cov_model.r()
     else:
         if verbose > 0:
             print("ERROR (KRIGE1D): 'cov_model' (third argument) is not valid")
@@ -974,9 +974,9 @@ def krige1D(cov_model,
 
     if extensionMin is None:
         # default extensionMin
-        if range_known:
+        if cov_range is not None: # known range
             # ... based on range of covariance model
-            extensionMin = extension_min(rangeFactorForExtensionMin*cov_model.r(), nx, s=dx)
+            extensionMin = extension_min(rangeFactorForExtensionMin*cov_range, nx, s=dx)
         else:
             # ... based on dimension
             extensionMin = dimension - 1
@@ -1282,6 +1282,10 @@ def grf2D(cov_model,
                                     1-dimensional array of dim 2) are 2D-lag(s)
                             (CovModel2D class) covariance model in 2D, see
                                 definition of the class in module geone.covModel
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel,
+                                it is then transformed to an isotropic (omni-
+                                directional) covariance model in 2D
     :param dimension:   (sequence of 2 ints) [nx, ny], number of cells
                             in x-, y-axis direction
     :param spacing:     (sequence of 2 floats) [dx, dy], spacing between
@@ -1453,7 +1457,7 @@ def grf2D(cov_model,
     if cov_model.__class__.__name__ == 'function':
         # covariance function is given
         cov_func = cov_model
-        range_known = False
+        cov_range = None # unknown range
     elif isinstance(cov_model, gcm.CovModel2D):
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
@@ -1461,7 +1465,16 @@ def grf2D(cov_model,
                 print("ERROR (GRF2D): 'cov_model' is not stationary")
             return None
         cov_func = cov_model.func() # covariance function
-        range_known = True
+        cov_range = cov_model.rxy()
+    elif isinstance(cov_model, gcm.CovModel1D):
+        cov_model_2D = gcm.covModel1D_to_covModel2D(cov_model) # convert model 1D in 2D
+        # Prevent calculation if covariance model is not stationary
+        if not cov_model_2D.is_stationary():
+            if verbose > 0:
+                print("ERROR (GRF2D): 'cov_model' is not stationary")
+            return None
+        cov_func = cov_model_2D.func() # covariance function
+        cov_range = cov_model_2D.rxy()
     else:
         if verbose > 0:
             print("ERROR (GRF2D): 'cov_model' (first argument) is not valid")
@@ -1565,9 +1578,9 @@ def grf2D(cov_model,
 
     if extensionMin is None:
         # default extensionMin
-        if range_known:
+        if cov_range is not None: # known range
             # ... based on range of covariance model
-            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_model.rxy(), dimension, spacing)]
+            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_range, dimension, spacing)]
         else:
             # ... based on dimension
             extensionMin = [nx-1, ny-1]
@@ -1984,6 +1997,10 @@ def krige2D(cov_model,
                                     1-dimensional array of dim 2) are 2D-lag(s)
                             (CovModel2D class) covariance model in 2D, see
                                 definition of the class in module geone.covModel
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel,
+                                it is then transformed to an isotropic (omni-
+                                directional) covariance model in 2D
     :param dimension:   (sequence of 2 ints) [nx, ny], number of cells
                             in x-, y-axis direction
     :param spacing:     (sequence of 2 floats) [dx, dy], spacing between
@@ -2136,7 +2153,7 @@ def krige2D(cov_model,
     if cov_model.__class__.__name__ == 'function':
         # covariance function is given
         cov_func = cov_model
-        range_known = False
+        cov_range = None # unknown range
     elif isinstance(cov_model, gcm.CovModel2D):
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
@@ -2144,7 +2161,16 @@ def krige2D(cov_model,
                 print("ERROR (KRIGE2D): 'cov_model' is not stationary")
             return out
         cov_func = cov_model.func() # covariance function
-        range_known = True
+        cov_range = cov_model.rxy()
+    elif isinstance(cov_model, gcm.CovModel1D):
+        cov_model_2D = gcm.covModel1D_to_covModel2D(cov_model) # convert model 1D in 2D
+        # Prevent calculation if covariance model is not stationary
+        if not cov_model_2D.is_stationary():
+            if verbose > 0:
+                print("ERROR (KRIGE2D): 'cov_model' is not stationary")
+            return None
+        cov_func = cov_model_2D.func() # covariance function
+        cov_range = cov_model_2D.rxy()
     else:
         if verbose > 0:
             print("ERROR (KRIGE2D): 'cov_model' (third argument) is not valid")
@@ -2227,9 +2253,9 @@ def krige2D(cov_model,
 
     if extensionMin is None:
         # default extensionMin
-        if range_known:
+        if cov_range is not None: # known range
             # ... based on range of covariance model
-            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_model.rxy(), dimension, spacing)]
+            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_range, dimension, spacing)]
         else:
             # ... based on dimension
             extensionMin = [nx-1, ny-1]
@@ -2563,6 +2589,10 @@ def grf3D(cov_model,
                                     1-dimensional array of dim 3) are 3D-lag(s)
                             (CovModel3D class) covariance model in 3D, see
                                 definition of the class in module geone.covModel
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel,
+                                it is then transformed to an isotropic (omni-
+                                directional) covariance model in 3D
     :param dimension:   (sequence of 3 ints) [nx, ny, nz], number of cells
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 floats) [dx, dy, dz], spacing between
@@ -2734,7 +2764,7 @@ def grf3D(cov_model,
     if cov_model.__class__.__name__ == 'function':
         # covariance function is given
         cov_func = cov_model
-        range_known = False
+        cov_range = None # unknown range
     elif isinstance(cov_model, gcm.CovModel3D):
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
@@ -2742,7 +2772,16 @@ def grf3D(cov_model,
                 print("ERROR (GRF3D): 'cov_model' is not stationary")
             return None
         cov_func = cov_model.func() # covariance function
-        range_known = True
+        cov_range = cov_model.rxyz()
+    elif isinstance(cov_model, gcm.CovModel1D):
+        cov_model_3D = gcm.covModel1D_to_covModel3D(cov_model) # convert model 1D in 3D
+        # Prevent calculation if covariance model is not stationary
+        if not cov_model_3D.is_stationary():
+            if verbose > 0:
+                print("ERROR (GRF3D): 'cov_model' is not stationary")
+            return None
+        cov_func = cov_model_3D.func() # covariance function
+        cov_range = cov_model_3D.rxyz()
     else:
         if verbose > 0:
             print("ERROR (GRF3D): 'cov_model' (first argument) is not valid")
@@ -2849,9 +2888,9 @@ def grf3D(cov_model,
 
     if extensionMin is None:
         # default extensionMin
-        if range_known:
+        if cov_range is not None: # known range
             # ... based on range of covariance model
-            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_model.rxyz(), dimension, spacing)]
+            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_range, dimension, spacing)]
         else:
             # ... based on dimension
             extensionMin = [nx-1, ny-1, nz-1] # default
@@ -3284,6 +3323,10 @@ def krige3D(cov_model,
                                     1-dimensional array of dim 3) are 3D-lag(s)
                             (CovModel3D class) covariance model in 3D, see
                                 definition of the class in module geone.covModel
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel,
+                                it is then transformed to an isotropic (omni-
+                                directional) covariance model in 3D
     :param dimension:   (sequence of 3 ints) [nx, ny, nz], number of cells
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 floats) [dx, dy, dz], spacing between
@@ -3436,7 +3479,7 @@ def krige3D(cov_model,
     if cov_model.__class__.__name__ == 'function':
         # covariance function is given
         cov_func = cov_model
-        range_known = False
+        cov_range = None # unknown range
     elif isinstance(cov_model, gcm.CovModel3D):
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
@@ -3444,7 +3487,16 @@ def krige3D(cov_model,
                 print("ERROR (KRIGE3D): 'cov_model' is not stationary")
             return out
         cov_func = cov_model.func() # covariance function
-        range_known = True
+        cov_range = cov_model.rxyz()
+    elif isinstance(cov_model, gcm.CovModel1D):
+        cov_model_3D = gcm.covModel1D_to_covModel3D(cov_model) # convert model 1D in 3D
+        # Prevent calculation if covariance model is not stationary
+        if not cov_model_3D.is_stationary():
+            if verbose > 0:
+                print("ERROR (KRIGE3D): 'cov_model' is not stationary")
+            return None
+        cov_func = cov_model_3D.func() # covariance function
+        cov_range = cov_model_3D.rxyz()
     else:
         if verbose > 0:
             print("ERROR (KRIGE3D): 'cov_model' (third argument) is not valid")
@@ -3530,9 +3582,9 @@ def krige3D(cov_model,
 
     if extensionMin is None:
         # default extensionMin
-        if range_known:
+        if cov_range is not None: # known range
             # ... based on range of covariance model
-            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_model.rxyz(), dimension, spacing)]
+            extensionMin = [extension_min(rangeFactorForExtensionMin*r, n, s) for r, n, s in zip(cov_range, dimension, spacing)]
         else:
             # ... based on dimension
             extensionMin = [nx-1, ny-1, nz-1] # default

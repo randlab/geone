@@ -1064,8 +1064,9 @@ def simulate1D(
     Generates 1D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
 
-    :param cov_model:   (CovModel1D class) covariance model in 1D, see
-                            definition of the class in module geone.covModel
+    :param cov_model:   covariance model:
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel
 
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) sx, spacing between two adjacent cells
@@ -1526,8 +1527,9 @@ def simulate1D_mp(
         - in terms of resources, this implies the use of
             nproc * nthreads_per_proc cpu(s).
 
-    :param cov_model:   (CovModel1D class) covariance model in 1D, see
-                            definition of the class in module geone.covModel
+    :param cov_model:   covariance model:
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel
 
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) sx, spacing between two adjacent cells
@@ -1828,8 +1830,14 @@ def simulate2D(
     Generates 2D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
 
-    :param cov_model:   (CovModel2D class) covariance model in 2D, see
-                            definition of the class in module geone.covModel
+    :param cov_model:   covariance model:
+                            (CovModel2D class) covariance model in 2D, see
+                                definition of the class in module geone.covModel
+                        or
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel,
+                                it is then transformed to an isotropic (omni-
+                                directional) covariance model in 2D
 
     :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
                             in x-, y-axis direction
@@ -1985,6 +1993,10 @@ def simulate2D(
 
     # --- Check and prepare parameters
     # cov_model
+    if isinstance(cov_model, gcm.CovModel1D):
+        cov_model = gcm.covModel1D_to_covModel2D(cov_model) # convert model 1D in 2D
+            # -> will not be modified cov_model at exit
+
     if not isinstance(cov_model, gcm.CovModel2D):
         if verbose > 0:
             print("ERROR (SIMULATE2D): 'cov_model' (first argument) is not valid")
@@ -2308,8 +2320,14 @@ def simulate2D_mp(
         - in terms of resources, this implies the use of
             nproc * nthreads_per_proc cpu(s).
 
-    :param cov_model:   (CovModel2D class) covariance model in 2D, see
-                            definition of the class in module geone.covModel
+    :param cov_model:   covariance model:
+                            (CovModel2D class) covariance model in 2D, see
+                                definition of the class in module geone.covModel
+                        or
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel,
+                                it is then transformed to an isotropic (omni-
+                                directional) covariance model in 2D
 
     :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
                             in x-, y-axis direction
@@ -2617,8 +2635,14 @@ def simulate3D(
     Generates 3D simulations (Sequential Gaussian Simulation, SGS) based on
     simple or ordinary kriging.
 
-    :param cov_model:   (CovModel3D class) covariance model in 3D, see
-                            definition of the class in module geone.covModel
+    :param cov_model:   covariance model:
+                            (CovModel3D class) covariance model in 3D, see
+                                definition of the class in module geone.covModel
+                        or
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel,
+                                it is then transformed to an isotropic (omni-
+                                directional) covariance model in 3D
 
     :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
                             in x-, y-, z-axis direction
@@ -2774,6 +2798,10 @@ def simulate3D(
 
     # --- Check and prepare parameters
     # cov_model
+    if isinstance(cov_model, gcm.CovModel1D):
+        cov_model = gcm.covModel1D_to_covModel3D(cov_model) # convert model 1D in 3D
+            # -> will not be modified cov_model at exit
+
     if not isinstance(cov_model, gcm.CovModel3D):
         if verbose > 0:
             print("ERROR (SIMULATE3D): 'cov_model' (first argument) is not valid")
@@ -3081,6 +3109,330 @@ def simulate3D(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def simulate3D_mp(
+        cov_model,
+        dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
+        method='simple_kriging',
+        nreal=1,
+        mean=None, var=None,
+        x=None, v=None,
+        xIneqMin=None, vIneqMin=None,
+        xIneqMax=None, vIneqMax=None,
+        mask=None,
+        searchRadiusRelative=1.0,
+        nneighborMax=12,
+        searchNeighborhoodSortMode=None,
+        nGibbsSamplerPathMin=50,
+        nGibbsSamplerPathMax=200,
+        seed=None,
+        outputReportFile=None,
+        treat_image_one_by_one=False,
+        nproc=None, nthreads_per_proc=None,
+        verbose=2):
+    """
+    Generates 3D simulations (Sequential Gaussian Simulation, SGS) based on
+    simple or ordinary kriging.
+
+    Launches multiple processes (based on multiprocessing package):
+        - nproc parallel processes using each one nthreads_per_proc threads will
+            be launched [parallel calls of the function simulate3D],
+        - the set of realizations (specified by nreal) is
+            distributed in a balanced way over the processes,
+        - in terms of resources, this implies the use of
+            nproc * nthreads_per_proc cpu(s).
+
+    :param cov_model:   covariance model:
+                            (CovModel3D class) covariance model in 3D, see
+                                definition of the class in module geone.covModel
+                        or
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel,
+                                it is then transformed to an isotropic (omni-
+                                directional) covariance model in 3D
+
+    :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
+                            in x-, y-, z-axis direction
+    :param spacing:     (sequence of 3 floats) (sx, sy, sz), spacing between
+                            two adjacent cells in x-, y-, z-axis direction
+    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D simulation
+                            - used for localizing the conditioning points
+    :param method:      (string) indicates the method used:
+                            - 'simple_kriging':
+                                simulation based on simple kriging
+                            - 'ordinary_kriging':
+                                simulation based on ordinary kriging
+    :param nreal:       (int) number of realizations
+
+    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+                            - None   : mean of hard data values (stationary),
+                                       (0 if no hard data)
+                            - callable (function):
+                                       function of three arguments (xi, yi, zi) that returns
+                                       the mean at (xi, yi, zi) (in the grid)
+                            - float  : for stationary mean (set manually)
+                            - ndarray: for non stationary mean, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+                            For ordinary kriging (method='ordinary_kriging'),
+                            it is used for case with no neighbor
+
+    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
+                            (for simple kriging only):
+                            - None   : variance not modified
+                                       (only covariance function/model is used)
+                            - callable (function):
+                                       function of three arguments (xi, yi, zi) that returns
+                                       the variance at (xi, yi, zi) (in the grid)
+                            - float  : for stationary variance (set manually)
+                            - ndarray: for non stationary variance, must contain
+                                       as many entries as number of grid cells
+                                       (reshaped if needed)
+                            For ordinary kriging (method='ordinary_kriging'),
+                            this parameter must be None (only covariance model
+                            is used)
+
+    :param x:           (2-dimensional array of dim n x 3, or
+                            1-dimensional array of dim 3 or None) coordinate of
+                            conditioning points for hard data
+    :param v:           (1-dimensional array or float or None) value
+                            at conditioning points for hard data
+                            (same type as x)
+
+    :param xIneqMin:    (2-dimensional array of dim n x 3, or
+                            1-dimensional array of dim 3 or None) coordinate of
+                            conditioning points for inequality data minimal bound
+    :param vIneqMin:    (1-dimensional array or float or None) value
+                            at conditioning points for inequality data minimal bound
+                            (same type as xIneqMin)
+
+    :param xIneqMax:    (2-dimensional array of dim n x 3, or
+                            1-dimensional array of dim 3 or None) coordinate of
+                            conditioning points for inequality data maximal bound
+    :param vIneqMax:    (1-dimensional array or float or None) value
+                            at conditioning points for inequality data maximal bound
+                            (same type as xIneqMax)
+
+    :param mask:        (nd-array of ints, or None) if given, mask values
+                            over the SG: 1 for simulated cell / 0 for not simulated
+                            cell (nunber of entries should be equal to the number of
+                            grid cells)
+
+    :param searchRadiusRelative:
+                        (float) indicating how restricting the search ellipsoid (should be positive):
+                            let r_i be the ranges of the covariance model along its main axes,
+                            if x is a node to be simulated, a node y is taken into account iff it is
+                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            Note:
+                                - if a range is a variable parameter, its maximal value over the simulation grid
+                                  is considered
+                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
+                                  is considered with the radius set to the maximum of all ranges
+
+    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
+                            set -1 for unlimited
+
+    :param searchNeighborhoodSortMode:
+                        (int) indicating how to sort the search neighboorhood nodes
+                            (neighbors), they are sorted in increasing order according to:
+                                - searchNeighborhoodSortMode = 0:
+                                  distance in the usual axes system
+                                - searchNeighborhoodSortMode = 1:
+                                  distance in the axes sytem supporting the covariance model
+                                  and accounting for anisotropy given by the ranges
+                                - searchNeighborhoodSortMode = 2:
+                                  minus the evaluation of the covariance model
+                            Note:
+                                - if the covariance model has any variable parameter (non-stationary),
+                                  then searchNeighborhoodSortMode = 2 is not allowed
+                                - if the covariance model has any range or angle set as a variable parameter,
+                                  then searchNeighborhoodSortMode must be set to 0
+                                - greatest possible value as default
+
+    :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
+                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
+                            data; the conditioning locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially; then, these locations
+                            are re-simulated following a new path as many times as needed; the total
+                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
+
+    :param seed:        (int or None) initial seed, if None an initial seed between
+                            1 and 999999 is generated with numpy.random.randint
+
+    :param outputReportFile:
+                    (string or None) name of the report file, if None: no report file
+                        [if given, a suffix ".<process_index>" is added for the
+                        report file of each process]
+
+    :param treat_image_one_by_one:
+                    (bool) keyword argument passed to the function geone.img.gatherImages
+                        - if False (default) images (result of each process) are gathered
+                            at once, and then removed (faster)
+                        - if True, images (result of each process) are gathered
+                            one by one, i.e. successively gathered and removed
+                            (slower, may save memory)
+
+    :param nproc:
+                (int) number of processes (can be modified in the function)
+                    nproc = None: nproc is set to
+                        min(nmax-1, nreal) (but at least 1),
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
+    :param nthreads_per_proc:
+                (int) number of thread(s) per process (should be > 0 or None):
+                    nthreads_per_proc = None: nthreads_per_proc is automatically
+                    computed as the maximal integer (but at least 1) such that
+                            nproc * nthreads_per_proc <= nmax-1
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
+    :param verbose:
+                (int) indicates what information is displayed:
+                    - 0: no display
+                    - 1: only errors (and note(s))
+                    - 2: version and warning(s) encountered
+
+    :return geosclassic_output: (dict)
+            {'image':image,
+             'nwarning':nwarning,
+             'warnings':warnings}
+        image:  (Img (class)) output image, with image.nv=nreal variables (each
+                    variable is one realization)
+                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
+    """
+
+    # Set number of processes: nproc
+    if nproc is None:
+        nproc = max(min(multiprocessing.cpu_count()-1, nreal), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), nreal), 1)
+        if verbose > 0 and nproc != nproc_tmp:
+            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+
+    # Set number of threads per process: nth
+    if nthreads_per_proc is None:
+        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
+    else:
+        nth = max(int(nthreads_per_proc), 1)
+        if verbose > 0 and nth != nthreads_per_proc:
+            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+
+    if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
+        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+
+    # Set the distribution of the realizations over the processes
+    # Condider the Euclidean division of nreal by nproc:
+    #     nreal = q * nproc + r, with 0 <= r < nproc
+    # Then, (q+1) realizations will be done on process 0, 1, ..., r-1, and q realization on process r, ..., nproc-1
+    # Define the list real_index_proc of length (nproc+1) such that
+    #   real_index_proc[i], ..., real_index_proc[i+1] - 1 : are the realization indices run on process i
+    q, r = np.divmod(nreal, nproc)
+    real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose >= 2:
+        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
+
+    # mpds_geosClassicInput.seed
+    if seed is None:
+        seed = np.random.randint(1,1000000)
+    seed = int(seed)
+
+    outputReportFile_p = None
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i in range(nproc):
+        # Adapt input for i-th process
+        nreal_p = real_index_proc[i+1] - real_index_proc[i]
+        seed_p = seed + real_index_proc[i]
+        if outputReportFile is not None:
+            outputReportFile_p = outputReportFile + f'.{i}'
+        if i==0:
+            verbose_p = min(verbose, 1) # allow to print error for process i
+        else:
+            verbose_p = 0
+        # Launch geos-classic (i-th process)
+        out_pool.append(
+            pool.apply_async(simulate3D,
+                args=(cov_model,
+                dimension, spacing, origin,
+                method,
+                nreal_p,                     # nreal (adjusted)
+                mean, var,
+                x, v,
+                xIneqMin, vIneqMin,
+                xIneqMax, vIneqMax,
+                mask,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                nGibbsSamplerPathMin,
+                nGibbsSamplerPathMax,
+                seed_p,                      # seed (adjusted)
+                outputReportFile_p,          # outputReportFile (adjusted)
+                nth,                         # nthreads
+                verbose_p)                   # verbose (adjusted)
+                )
+            )
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    geosclassic_output_proc = [p.get() for p in out_pool]
+
+    if np.any([out is None for out in geosclassic_output_proc]):
+        return None
+
+    image = None
+    nwarning, warnings = None, None
+
+    # Gather results of every process
+    image = np.hstack([out['image'] for out in geosclassic_output_proc])
+
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Remove None entries
+    image = image[[x is not None for x in image]]
+
+    # Set to None if every entry is None
+    if np.all([x is None for x in image]):
+        image = None
+
+    # Gather images and adjust names
+    if image is not None:
+        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
+        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+        for j in range(all_image.nv):
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+
+    geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
+
+    if verbose >= 2 and geosclassic_output:
+        print('Geos-Classic run complete (all process(es))')
+
+    # Show (print) encountered warnings
+    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+        for i, warning_message in enumerate(geosclassic_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
+
+    return geosclassic_output
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def estimate1D(
         cov_model,
         dimension, spacing=1.0, origin=0.0,
@@ -3098,8 +3450,9 @@ def estimate1D(
     """
     Computes estimate and standard deviation for 1D grid of simple or ordinary kriging.
 
-    :param cov_model:   (CovModel1D class) covariance model in 1D, see
-                            definition of the class in module geone.covModel
+    :param cov_model:   covariance model:
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel
 
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) sx, spacing between two adjacent cells
@@ -3510,8 +3863,14 @@ def estimate2D(
     """
     Computes estimate and standard deviation for 2D grid of simple or ordinary kriging.
 
-    :param cov_model:   (CovModel2D class) covariance model in 2D, see
-                            definition of the class in module geone.covModel
+    :param cov_model:   covariance model:
+                            (CovModel2D class) covariance model in 2D, see
+                                definition of the class in module geone.covModel
+                        or
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel,
+                                it is then transformed to an isotropic (omni-
+                                directional) covariance model in 2D
 
     :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
                             in x-, y-axis direction
@@ -3660,6 +4019,10 @@ def estimate2D(
 
     # --- Check and prepare parameters
     # cov_model
+    if isinstance(cov_model, gcm.CovModel1D):
+        cov_model = gcm.covModel1D_to_covModel2D(cov_model) # convert model 1D in 2D
+            # -> will not be modified cov_model at exit
+
     if not isinstance(cov_model, gcm.CovModel2D):
         if verbose > 0:
             print("ERROR (ESTIMATE2D): 'cov_model' (first argument) is not valid")
@@ -3938,8 +4301,14 @@ def estimate3D(
     """
     Computes estimate and standard deviation for 3D grid of simple or ordinary kriging.
 
-    :param cov_model:   (CovModel3D class) covariance model in 3D, see
-                            definition of the class in module geone.covModel
+    :param cov_model:   covariance model:
+                            (CovModel3D class) covariance model in 3D, see
+                                definition of the class in module geone.covModel
+                        or
+                            (CovModel1D class) covariance model in 1D, see
+                                definition of the class in module geone.covModel,
+                                it is then transformed to an isotropic (omni-
+                                directional) covariance model in 3D
 
     :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
                             in x-, y-, z-axis direction
@@ -4088,6 +4457,10 @@ def estimate3D(
 
     # --- Check and prepare parameters
     # cov_model
+    if isinstance(cov_model, gcm.CovModel1D):
+        cov_model = gcm.covModel1D_to_covModel3D(cov_model) # convert model 1D in 3D
+            # -> will not be modified cov_model at exit
+
     if not isinstance(cov_model, gcm.CovModel3D):
         if verbose > 0:
             print("ERROR (ESTIMATE3D): 'cov_model' (first argument) is not valid")
@@ -4549,324 +4922,6 @@ def fill_mpds_geosClassicIndicatorInput(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def simulate3D_mp(
-        cov_model,
-        dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
-        method='simple_kriging',
-        nreal=1,
-        mean=None, var=None,
-        x=None, v=None,
-        xIneqMin=None, vIneqMin=None,
-        xIneqMax=None, vIneqMax=None,
-        mask=None,
-        searchRadiusRelative=1.0,
-        nneighborMax=12,
-        searchNeighborhoodSortMode=None,
-        nGibbsSamplerPathMin=50,
-        nGibbsSamplerPathMax=200,
-        seed=None,
-        outputReportFile=None,
-        treat_image_one_by_one=False,
-        nproc=None, nthreads_per_proc=None,
-        verbose=2):
-    """
-    Generates 3D simulations (Sequential Gaussian Simulation, SGS) based on
-    simple or ordinary kriging.
-
-    Launches multiple processes (based on multiprocessing package):
-        - nproc parallel processes using each one nthreads_per_proc threads will
-            be launched [parallel calls of the function simulate3D],
-        - the set of realizations (specified by nreal) is
-            distributed in a balanced way over the processes,
-        - in terms of resources, this implies the use of
-            nproc * nthreads_per_proc cpu(s).
-
-    :param cov_model:   (CovModel3D class) covariance model in 3D, see
-                            definition of the class in module geone.covModel
-
-    :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
-                            in x-, y-, z-axis direction
-    :param spacing:     (sequence of 3 floats) (sx, sy, sz), spacing between
-                            two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D simulation
-                            - used for localizing the conditioning points
-    :param method:      (string) indicates the method used:
-                            - 'simple_kriging':
-                                simulation based on simple kriging
-                            - 'ordinary_kriging':
-                                simulation based on ordinary kriging
-    :param nreal:       (int) number of realizations
-
-    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
-                            - None   : mean of hard data values (stationary),
-                                       (0 if no hard data)
-                            - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the mean at (xi, yi, zi) (in the grid)
-                            - float  : for stationary mean (set manually)
-                            - ndarray: for non stationary mean, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-                            For ordinary kriging (method='ordinary_kriging'),
-                            it is used for case with no neighbor
-
-    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
-                            (for simple kriging only):
-                            - None   : variance not modified
-                                       (only covariance function/model is used)
-                            - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the variance at (xi, yi, zi) (in the grid)
-                            - float  : for stationary variance (set manually)
-                            - ndarray: for non stationary variance, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-                            For ordinary kriging (method='ordinary_kriging'),
-                            this parameter must be None (only covariance model
-                            is used)
-
-    :param x:           (2-dimensional array of dim n x 3, or
-                            1-dimensional array of dim 3 or None) coordinate of
-                            conditioning points for hard data
-    :param v:           (1-dimensional array or float or None) value
-                            at conditioning points for hard data
-                            (same type as x)
-
-    :param xIneqMin:    (2-dimensional array of dim n x 3, or
-                            1-dimensional array of dim 3 or None) coordinate of
-                            conditioning points for inequality data minimal bound
-    :param vIneqMin:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data minimal bound
-                            (same type as xIneqMin)
-
-    :param xIneqMax:    (2-dimensional array of dim n x 3, or
-                            1-dimensional array of dim 3 or None) coordinate of
-                            conditioning points for inequality data maximal bound
-    :param vIneqMax:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data maximal bound
-                            (same type as xIneqMax)
-
-    :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
-
-    :param searchRadiusRelative:
-                        (float) indicating how restricting the search ellipsoid (should be positive):
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
-
-    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
-                            set -1 for unlimited
-
-    :param searchNeighborhoodSortMode:
-                        (int) indicating how to sort the search neighboorhood nodes
-                            (neighbors), they are sorted in increasing order according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
-
-    :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
-                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
-                            data; the conditioning locations with inequality data are first simulated
-                            (with truncated gaussian distribution) sequentially; then, these locations
-                            are re-simulated following a new path as many times as needed; the total
-                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
-
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
-
-    :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
-                        [if given, a suffix ".<process_index>" is added for the
-                        report file of each process]
-
-    :param treat_image_one_by_one:
-                    (bool) keyword argument passed to the function geone.img.gatherImages
-                        - if False (default) images (result of each process) are gathered
-                            at once, and then removed (faster)
-                        - if True, images (result of each process) are gathered
-                            one by one, i.e. successively gathered and removed
-                            (slower, may save memory)
-
-    :param nproc:
-                (int) number of processes (can be modified in the function)
-                    nproc = None: nproc is set to
-                        min(nmax-1, nreal) (but at least 1),
-                    where nmax is the total number of cpu(s) of the system
-                    (retrieved by multiprocessing.cpu_count())
-
-    :param nthreads_per_proc:
-                (int) number of thread(s) per process (should be > 0 or None):
-                    nthreads_per_proc = None: nthreads_per_proc is automatically
-                    computed as the maximal integer (but at least 1) such that
-                            nproc * nthreads_per_proc <= nmax-1
-                    where nmax is the total number of cpu(s) of the system
-                    (retrieved by multiprocessing.cpu_count())
-
-    :param verbose:
-                (int) indicates what information is displayed:
-                    - 0: no display
-                    - 1: only errors (and note(s))
-                    - 2: version and warning(s) encountered
-
-    :return geosclassic_output: (dict)
-            {'image':image,
-             'nwarning':nwarning,
-             'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
-                    variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
-        nwarning:
-                (int) total number of warning(s) encountered
-                    (same warnings can be counted several times)
-        warnings:
-                (list of strings) list of distinct warnings encountered
-                    (can be empty)
-    """
-
-    # Set number of processes: nproc
-    if nproc is None:
-        nproc = max(min(multiprocessing.cpu_count()-1, nreal), 1)
-    else:
-        nproc_tmp = nproc
-        nproc = max(min(int(nproc), nreal), 1)
-        if verbose > 0 and nproc != nproc_tmp:
-            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
-
-    # Set number of threads per process: nth
-    if nthreads_per_proc is None:
-        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
-    else:
-        nth = max(int(nthreads_per_proc), 1)
-        if verbose > 0 and nth != nthreads_per_proc:
-            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
-
-    if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
-
-    # Set the distribution of the realizations over the processes
-    # Condider the Euclidean division of nreal by nproc:
-    #     nreal = q * nproc + r, with 0 <= r < nproc
-    # Then, (q+1) realizations will be done on process 0, 1, ..., r-1, and q realization on process r, ..., nproc-1
-    # Define the list real_index_proc of length (nproc+1) such that
-    #   real_index_proc[i], ..., real_index_proc[i+1] - 1 : are the realization indices run on process i
-    q, r = np.divmod(nreal, nproc)
-    real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
-
-    if verbose >= 2:
-        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
-        sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
-
-    # mpds_geosClassicInput.seed
-    if seed is None:
-        seed = np.random.randint(1,1000000)
-    seed = int(seed)
-
-    outputReportFile_p = None
-
-    # Set pool of nproc workers
-    pool = multiprocessing.Pool(nproc)
-    out_pool = []
-    for i in range(nproc):
-        # Adapt input for i-th process
-        nreal_p = real_index_proc[i+1] - real_index_proc[i]
-        seed_p = seed + real_index_proc[i]
-        if outputReportFile is not None:
-            outputReportFile_p = outputReportFile + f'.{i}'
-        if i==0:
-            verbose_p = min(verbose, 1) # allow to print error for process i
-        else:
-            verbose_p = 0
-        # Launch geos-classic (i-th process)
-        out_pool.append(
-            pool.apply_async(simulate3D,
-                args=(cov_model,
-                dimension, spacing, origin,
-                method,
-                nreal_p,                     # nreal (adjusted)
-                mean, var,
-                x, v,
-                xIneqMin, vIneqMin,
-                xIneqMax, vIneqMax,
-                mask,
-                searchRadiusRelative,
-                nneighborMax,
-                searchNeighborhoodSortMode,
-                nGibbsSamplerPathMin,
-                nGibbsSamplerPathMax,
-                seed_p,                      # seed (adjusted)
-                outputReportFile_p,          # outputReportFile (adjusted)
-                nth,                         # nthreads
-                verbose_p)                   # verbose (adjusted)
-                )
-            )
-
-    # Properly end working process
-    pool.close() # Prevents any more tasks from being submitted to the pool,
-    pool.join()  # then, wait for the worker processes to exit.
-
-    # Get result from each process
-    geosclassic_output_proc = [p.get() for p in out_pool]
-
-    if np.any([out is None for out in geosclassic_output_proc]):
-        return None
-
-    image = None
-    nwarning, warnings = None, None
-
-    # Gather results of every process
-    image = np.hstack([out['image'] for out in geosclassic_output_proc])
-
-    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
-    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Remove None entries
-    image = image[[x is not None for x in image]]
-
-    # Set to None if every entry is None
-    if np.all([x is None for x in image]):
-        image = None
-
-    # Gather images and adjust names
-    if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
-        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
-        for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
-
-    geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
-
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete (all process(es))')
-
-    # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
-        for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
-
-    return geosclassic_output
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
 def simulateIndicator1D(
         category_values,
         cov_model_for_category,
@@ -4905,10 +4960,12 @@ def simulateIndicator1D(
                                 of given values
 
     :param cov_model_for_category:
-                        (sequence of CovModel1D class of length ncategory (see
-                            see category_values), or one CovModel1D, recycled)
-                            covariance model in 1D per category, see definition of
-                            the class in module geone.covModel
+                        (sequence of covariance model of length ncategory (see
+                            category_values), or one covariance model, recycled)
+                            a covariance model per category,
+                            with entry for covariance model:
+                                (CovModel1D class) covariance model in 1D, see
+                                    definition of the class in module geone.covModel
 
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) sx, spacing between two adjacent cells
@@ -5050,19 +5107,21 @@ def simulateIndicator1D(
         return None
 
     # cov_model_for_category
-    cov_model_for_category = np.asarray(cov_model_for_category).reshape(-1)
-    if len(cov_model_for_category) == 1:
-        cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
-    elif len(cov_model_for_category) != ncategory:
+    cm_for_cat = cov_model_for_category # no need to work on a copy in 1D
+
+    cm_for_cat = np.asarray(cm_for_cat).reshape(-1)
+    if len(cm_for_cat) == 1:
+        cm_for_cat = np.repeat(cm_for_cat, ncategory)
+    elif len(cm_for_cat) != ncategory:
         if verbose > 0:
             print("ERROR (SIMULATE_INDICATOR1D): 'cov_model_for_category' of invalid length")
         return None
-    if not np.all([isinstance(c, gcm.CovModel1D) for c in cov_model_for_category]):
+    if not np.all([isinstance(c, gcm.CovModel1D) for c in cm_for_cat]):
         if verbose > 0:
             print("ERROR (SIMULATE_INDICATOR1D): 'cov_model_for_category' should contains CovModel1D objects")
         return None
 
-    for cov_model in cov_model_for_category:
+    for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
@@ -5172,20 +5231,20 @@ def simulateIndicator1D(
     for i in range(ncategory):
         if searchNeighborhoodSortMode[i] is None:
             # set greatest possible value
-            if cov_model_for_category[i].is_stationary():
+            if cm_for_cat[i].is_stationary():
                 searchNeighborhoodSortMode[i] = 2
-            elif cov_model_for_category[i].is_orientation_stationary() and cov_model_for_category[i].is_range_stationary():
+            elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
                 searchNeighborhoodSortMode[i] = 1
             else:
                 searchNeighborhoodSortMode[i] = 0
         else:
             if searchNeighborhoodSortMode[i] == 2:
-                if not cov_model_for_category[i].is_stationary():
+                if not cm_for_cat[i].is_stationary():
                     if verbose > 0:
                         print("ERROR (SIMULATE_INDICATOR1D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                     return None
             elif searchNeighborhoodSortMode[i] == 1:
-                if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
+                if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                     if verbose > 0:
                         print("ERROR (SIMULATE_INDICATOR1D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                     return None
@@ -5224,7 +5283,7 @@ def simulateIndicator1D(
         category_values,
         outputReportFile,
         computationMode,
-        cov_model_for_category,
+        cm_for_cat,
         None,
         dataPointSet,
         mask,
@@ -5364,10 +5423,12 @@ def simulateIndicator1D_mp(
                                 of given values
 
     :param cov_model_for_category:
-                        (sequence of CovModel1D class of length ncategory (see
-                            see category_values), or one CovModel1D, recycled)
-                            covariance model in 1D per category, see definition of
-                            the class in module geone.covModel
+                        (sequence of covariance model of length ncategory (see
+                            category_values), or one covariance model, recycled)
+                            a covariance model per category,
+                            with entry for covariance model:
+                                (CovModel1D class) covariance model in 1D, see
+                                    definition of the class in module geone.covModel
 
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) sx, spacing between two adjacent cells
@@ -5659,10 +5720,17 @@ def simulateIndicator2D(
                                 of given values
 
     :param cov_model_for_category:
-                        (sequence of CovModel2D class of length ncategory (see
-                            see category_values), or one CovModel2D, recycled)
-                            covariance model in 2D per category, see definition of
-                            the class in module geone.covModel
+                        (sequence of covariance model of length ncategory (see
+                            category_values), or one covariance model, recycled)
+                            a covariance model per category,
+                            with entry for covariance model:
+                                (CovModel2D class) covariance model in 2D, see
+                                    definition of the class in module geone.covModel
+                            or
+                                (CovModel1D class) covariance model in 1D, see
+                                    definition of the class in module geone.covModel,
+                                    it is then transformed to an isotropic (omni-
+                                    directional) covariance model in 2D
 
     :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
                             in x-, y-axis direction
@@ -5810,18 +5878,30 @@ def simulateIndicator2D(
 
     # cov_model_for_category
     cov_model_for_category = np.asarray(cov_model_for_category).reshape(-1)
-    if len(cov_model_for_category) == 1:
-        cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
-    elif len(cov_model_for_category) != ncategory:
+    if not np.all([isinstance(c, gcm.CovModel2D) for c in cov_model_for_category]):
+        # cov model will be converted:
+        #    as applying modification in an array is persistent at exit,
+        #    work on a copy to ensure no modification of the initial entry
+        cm_for_cat = np.deepcopy(cov_model_for_category)
+    else:
+        cm_for_cat = cov_model_for_category
+
+    cm_for_cat = np.asarray(cm_for_cat).reshape(-1)
+    for i in range(len(cm_for_cat)):
+        if isinstance(cm_for_cat[i], gcm.CovModel1D):
+            cm_for_cat[i] = gcm.covModel1D_to_covModel2D(cm_for_cat[i]) # convert model 1D in 2D
+    if len(cm_for_cat) == 1:
+        cm_for_cat = np.repeat(cm_for_cat, ncategory)
+    elif len(cm_for_cat) != ncategory:
         if verbose > 0:
             print("ERROR (SIMULATE_INDICATOR2D): 'cov_model_for_category' of invalid length")
         return None
-    if not np.all([isinstance(c, gcm.CovModel2D) for c in cov_model_for_category]):
+    if not np.all([isinstance(c, gcm.CovModel2D) for c in cm_for_cat]):
         if verbose > 0:
             print("ERROR (SIMULATE_INDICATOR2D): 'cov_model_for_category' should contains CovModel2D objects")
         return None
 
-    for cov_model in cov_model_for_category:
+    for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
@@ -5938,20 +6018,20 @@ def simulateIndicator2D(
     for i in range(ncategory):
         if searchNeighborhoodSortMode[i] is None:
             # set greatest possible value
-            if cov_model_for_category[i].is_stationary():
+            if cm_for_cat[i].is_stationary():
                 searchNeighborhoodSortMode[i] = 2
-            elif cov_model_for_category[i].is_orientation_stationary() and cov_model_for_category[i].is_range_stationary():
+            elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
                 searchNeighborhoodSortMode[i] = 1
             else:
                 searchNeighborhoodSortMode[i] = 0
         else:
             if searchNeighborhoodSortMode[i] == 2:
-                if not cov_model_for_category[i].is_stationary():
+                if not cm_for_cat[i].is_stationary():
                     if verbose > 0:
                         print("ERROR (SIMULATE_INDICATOR2D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                     return None
             elif searchNeighborhoodSortMode[i] == 1:
-                if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
+                if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                     if verbose > 0:
                         print("ERROR (SIMULATE_INDICATOR2D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                     return None
@@ -5989,7 +6069,7 @@ def simulateIndicator2D(
         category_values,
         outputReportFile,
         computationMode,
-        cov_model_for_category,
+        cm_for_cat,
         None,
         dataPointSet,
         mask,
@@ -6129,10 +6209,17 @@ def simulateIndicator2D_mp(
                                 of given values
 
     :param cov_model_for_category:
-                        (sequence of CovModel2D class of length ncategory (see
-                            see category_values), or one CovModel2D, recycled)
-                            covariance model in 2D per category, see definition of
-                            the class in module geone.covModel
+                        (sequence of covariance model of length ncategory (see
+                            category_values), or one covariance model, recycled)
+                            a covariance model per category,
+                            with entry for covariance model:
+                                (CovModel2D class) covariance model in 2D, see
+                                    definition of the class in module geone.covModel
+                            or
+                                (CovModel1D class) covariance model in 1D, see
+                                    definition of the class in module geone.covModel,
+                                    it is then transformed to an isotropic (omni-
+                                    directional) covariance model in 2D
 
     :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
                             in x-, y-axis direction
@@ -6429,10 +6516,17 @@ def simulateIndicator3D(
                                 of given values
 
     :param cov_model_for_category:
-                        (sequence of CovModel3D class of length ncategory (see
-                            see category_values), or one CovModel3D, recycled)
-                            covariance model in 3D per category, see definition of
-                            the class in module geone.covModel
+                        (sequence of covariance model of length ncategory (see
+                            category_values), or one covariance model, recycled)
+                            a covariance model per category,
+                            with entry for covariance model:
+                                (CovModel3D class) covariance model in 3D, see
+                                    definition of the class in module geone.covModel
+                            or
+                                (CovModel1D class) covariance model in 1D, see
+                                    definition of the class in module geone.covModel,
+                                    it is then transformed to an isotropic (omni-
+                                    directional) covariance model in 3D
 
     :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
                             in x-, y-, z-axis direction
@@ -6580,18 +6674,30 @@ def simulateIndicator3D(
 
     # cov_model_for_category
     cov_model_for_category = np.asarray(cov_model_for_category).reshape(-1)
-    if len(cov_model_for_category) == 1:
-        cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
-    elif len(cov_model_for_category) != ncategory:
+    if not np.all([isinstance(c, gcm.CovModel3D) for c in cov_model_for_category]):
+        # cov model will be converted:
+        #    as applying modification in an array is persistent at exit,
+        #    work on a copy to ensure no modification of the initial entry
+        cm_for_cat = np.deepcopy(cov_model_for_category)
+    else:
+        cm_for_cat = cov_model_for_category
+
+    cm_for_cat = np.asarray(cm_for_cat).reshape(-1)
+    for i in range(len(cm_for_cat)):
+        if isinstance(cm_for_cat[i], gcm.CovModel1D):
+            cm_for_cat[i] = gcm.covModel1D_to_covModel3D(cm_for_cat[i]) # convert model 1D in 3D
+    if len(cm_for_cat) == 1:
+        cm_for_cat = np.repeat(cm_for_cat, ncategory)
+    elif len(cm_for_cat) != ncategory:
         if verbose > 0:
             print("ERROR (SIMULATE_INDICATOR3D): 'cov_model_for_category' of invalid length")
         return None
-    if not np.all([isinstance(c, gcm.CovModel3D) for c in cov_model_for_category]):
+    if not np.all([isinstance(c, gcm.CovModel3D) for c in cm_for_cat]):
         if verbose > 0:
             print("ERROR (SIMULATE_INDICATOR3D): 'cov_model_for_category' should contains CovModel3D objects")
         return None
 
-    for cov_model in cov_model_for_category:
+    for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
@@ -6722,20 +6828,20 @@ def simulateIndicator3D(
     for i in range(ncategory):
         if searchNeighborhoodSortMode[i] is None:
             # set greatest possible value
-            if cov_model_for_category[i].is_stationary():
+            if cm_for_cat[i].is_stationary():
                 searchNeighborhoodSortMode[i] = 2
-            elif cov_model_for_category[i].is_orientation_stationary() and cov_model_for_category[i].is_range_stationary():
+            elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
                 searchNeighborhoodSortMode[i] = 1
             else:
                 searchNeighborhoodSortMode[i] = 0
         else:
             if searchNeighborhoodSortMode[i] == 2:
-                if not cov_model_for_category[i].is_stationary():
+                if not cm_for_cat[i].is_stationary():
                     if verbose > 0:
                         print("ERROR (SIMULATE_INDICATOR3D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                     return None
             elif searchNeighborhoodSortMode[i] == 1:
-                if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
+                if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                     if verbose > 0:
                         print("ERROR (SIMULATE_INDICATOR3D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                     return None
@@ -6773,7 +6879,7 @@ def simulateIndicator3D(
         category_values,
         outputReportFile,
         computationMode,
-        cov_model_for_category,
+        cm_for_cat,
         None,
         dataPointSet,
         mask,
@@ -6913,10 +7019,17 @@ def simulateIndicator3D_mp(
                                 of given values
 
     :param cov_model_for_category:
-                        (sequence of CovModel3D class of length ncategory (see
-                            see category_values), or one CovModel3D, recycled)
-                            covariance model in 3D per category, see definition of
-                            the class in module geone.covModel
+                        (sequence of covariance model of length ncategory (see
+                            category_values), or one covariance model, recycled)
+                            a covariance model per category,
+                            with entry for covariance model:
+                                (CovModel3D class) covariance model in 3D, see
+                                    definition of the class in module geone.covModel
+                            or
+                                (CovModel1D class) covariance model in 1D, see
+                                    definition of the class in module geone.covModel,
+                                    it is then transformed to an isotropic (omni-
+                                    directional) covariance model in 3D
 
     :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
                             in x-, y-, z-axis direction
@@ -7213,10 +7326,12 @@ def estimateIndicator1D(
                                 of given values
 
     :param cov_model_for_category:
-                        (sequence of CovModel1D class of length ncategory (see
-                            see category_values), or one CovModel1D, recycled)
-                            covariance model in 1D per category, see definition of
-                            the class in module geone.covModel
+                        (sequence of covariance model of length ncategory (see
+                            category_values), or one covariance model, recycled)
+                            a covariance model per category,
+                            with entry for covariance model:
+                                (CovModel1D class) covariance model in 1D, see
+                                    definition of the class in module geone.covModel
 
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) sx, spacing between two adjacent cells
@@ -7377,19 +7492,21 @@ def estimateIndicator1D(
         return None
 
     # cov_model_for_category
-    cov_model_for_category = np.asarray(cov_model_for_category).reshape(-1)
-    if len(cov_model_for_category) == 1:
-        cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
-    elif len(cov_model_for_category) != ncategory:
+    cm_for_cat = cov_model_for_category # no need to work on a copy in 1D
+
+    cm_for_cat = np.asarray(cm_for_cat).reshape(-1)
+    if len(cm_for_cat) == 1:
+        cm_for_cat = np.repeat(cm_for_cat, ncategory)
+    elif len(cm_for_cat) != ncategory:
         if verbose > 0:
             print("ERROR (ESTIMATE_INDICATOR1D): 'cov_model_for_category' of invalid length")
         return None
-    if not np.all([isinstance(c, gcm.CovModel1D) for c in cov_model_for_category]):
+    if not np.all([isinstance(c, gcm.CovModel1D) for c in cm_for_cat]):
         if verbose > 0:
             print("ERROR (ESTIMATE_INDICATOR1D): 'cov_model_for_category' should contains CovModel1D objects")
         return None
 
-    for cov_model in cov_model_for_category:
+    for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
@@ -7515,20 +7632,20 @@ def estimateIndicator1D(
 
             if searchNeighborhoodSortMode[i] is None:
                 # set greatest possible value
-                if cov_model_for_category[i].is_stationary():
+                if cm_for_cat[i].is_stationary():
                     searchNeighborhoodSortMode[i] = 2
-                elif cov_model_for_category[i].is_orientation_stationary() and cov_model_for_category[i].is_range_stationary():
+                elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
                     searchNeighborhoodSortMode[i] = 1
                 else:
                     searchNeighborhoodSortMode[i] = 0
             else:
                 if searchNeighborhoodSortMode[i] == 2:
-                    if not cov_model_for_category[i].is_stationary():
+                    if not cm_for_cat[i].is_stationary():
                         if verbose > 0:
                             print("ERROR (ESTIMATE_INDICATOR1D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                         return None
                 elif searchNeighborhoodSortMode[i] == 1:
-                    if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
+                    if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                         if verbose > 0:
                             print("ERROR (ESTIMATE_INDICATOR1D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                         return None
@@ -7558,7 +7675,7 @@ def estimateIndicator1D(
         category_values,
         outputReportFile,
         computationMode,
-        cov_model_for_category,
+        cm_for_cat,
         None,
         dataPointSet,
         mask,
@@ -7689,10 +7806,17 @@ def estimateIndicator2D(
                                 of given values
 
     :param cov_model_for_category:
-                        (sequence of CovModel2D class of length ncategory (see
-                            see category_values), or one CovModel2D, recycled)
-                            covariance model in 2D per category, see definition of
-                            the class in module geone.covModel
+                        (sequence of covariance model of length ncategory (see
+                            category_values), or one covariance model, recycled)
+                            a covariance model per category,
+                            with entry for covariance model:
+                                (CovModel2D class) covariance model in 2D, see
+                                    definition of the class in module geone.covModel
+                            or
+                                (CovModel1D class) covariance model in 1D, see
+                                    definition of the class in module geone.covModel,
+                                    it is then transformed to an isotropic (omni-
+                                    directional) covariance model in 2D
 
     :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
                             in x-, y-axis direction
@@ -7856,18 +7980,27 @@ def estimateIndicator2D(
 
     # cov_model_for_category
     cov_model_for_category = np.asarray(cov_model_for_category).reshape(-1)
-    if len(cov_model_for_category) == 1:
-        cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
-    elif len(cov_model_for_category) != ncategory:
+    if not np.all([isinstance(c, gcm.CovModel2D) for c in cov_model_for_category]):
+        # cov model will be converted:
+        #    as applying modification in an array is persistent at exit,
+        #    work on a copy to ensure no modification of the initial entry
+        cm_for_cat = np.deepcopy(cov_model_for_category)
+    else:
+        cm_for_cat = cov_model_for_category
+
+    cm_for_cat = np.asarray(cm_for_cat).reshape(-1)
+    if len(cm_for_cat) == 1:
+        cm_for_cat = np.repeat(cm_for_cat, ncategory)
+    elif len(cm_for_cat) != ncategory:
         if verbose > 0:
             print("ERROR (ESTIMATE_INDICATOR2D): 'cov_model_for_category' of invalid length")
         return None
-    if not np.all([isinstance(c, gcm.CovModel2D) for c in cov_model_for_category]):
+    if not np.all([isinstance(c, gcm.CovModel2D) for c in cm_for_cat]):
         if verbose > 0:
             print("ERROR (ESTIMATE_INDICATOR2D): 'cov_model_for_category' should contains CovModel2D objects")
         return None
 
-    for cov_model in cov_model_for_category:
+    for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
@@ -8000,20 +8133,20 @@ def estimateIndicator2D(
 
             if searchNeighborhoodSortMode[i] is None:
                 # set greatest possible value
-                if cov_model_for_category[i].is_stationary():
+                if cm_for_cat[i].is_stationary():
                     searchNeighborhoodSortMode[i] = 2
-                elif cov_model_for_category[i].is_orientation_stationary() and cov_model_for_category[i].is_range_stationary():
+                elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
                     searchNeighborhoodSortMode[i] = 1
                 else:
                     searchNeighborhoodSortMode[i] = 0
             else:
                 if searchNeighborhoodSortMode[i] == 2:
-                    if not cov_model_for_category[i].is_stationary():
+                    if not cm_for_cat[i].is_stationary():
                         if verbose > 0:
                             print("ERROR (ESTIMATE_INDICATOR2D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                         return None
                 elif searchNeighborhoodSortMode[i] == 1:
-                    if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
+                    if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                         if verbose > 0:
                             print("ERROR (ESTIMATE_INDICATOR2D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                         return None
@@ -8043,7 +8176,7 @@ def estimateIndicator2D(
         category_values,
         outputReportFile,
         computationMode,
-        cov_model_for_category,
+        cm_for_cat,
         None,
         dataPointSet,
         mask,
@@ -8174,10 +8307,17 @@ def estimateIndicator3D(
                                 of given values
 
     :param cov_model_for_category:
-                        (sequence of CovModel3D class of length ncategory (see
-                            see category_values), or one CovModel3D, recycled)
-                            covariance model in 3D per category, see definition of
-                            the class in module geone.covModel
+                        (sequence of covariance model of length ncategory (see
+                            category_values), or one covariance model, recycled)
+                            a covariance model per category,
+                            with entry for covariance model:
+                                (CovModel3D class) covariance model in 3D, see
+                                    definition of the class in module geone.covModel
+                            or
+                                (CovModel1D class) covariance model in 1D, see
+                                    definition of the class in module geone.covModel,
+                                    it is then transformed to an isotropic (omni-
+                                    directional) covariance model in 3D
 
     :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
                             in x-, y-, z-axis direction
@@ -8341,18 +8481,27 @@ def estimateIndicator3D(
 
     # cov_model_for_category
     cov_model_for_category = np.asarray(cov_model_for_category).reshape(-1)
-    if len(cov_model_for_category) == 1:
-        cov_model_for_category = np.repeat(cov_model_for_category, ncategory)
-    elif len(cov_model_for_category) != ncategory:
+    if not np.all([isinstance(c, gcm.CovModel3D) for c in cov_model_for_category]):
+        # cov model will be converted:
+        #    as applying modification in an array is persistent at exit,
+        #    work on a copy to ensure no modification of the initial entry
+        cm_for_cat = np.deepcopy(cov_model_for_category)
+    else:
+        cm_for_cat = cov_model_for_category
+
+    cm_for_cat = np.asarray(cm_for_cat).reshape(-1)
+    if len(cm_for_cat) == 1:
+        cm_for_cat = np.repeat(cm_for_cat, ncategory)
+    elif len(cm_for_cat) != ncategory:
         if verbose > 0:
             print("ERROR (ESTIMATE_INDICATOR3D): 'cov_model_for_category' of invalid length")
         return None
-    if not np.all([isinstance(c, gcm.CovModel3D) for c in cov_model_for_category]):
+    if not np.all([isinstance(c, gcm.CovModel3D) for c in cm_for_cat]):
         if verbose > 0:
             print("ERROR (ESTIMATE_INDICATOR3D): 'cov_model_for_category' should contains CovModel3D objects")
         return None
 
-    for cov_model in cov_model_for_category:
+    for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
@@ -8499,20 +8648,20 @@ def estimateIndicator3D(
 
             if searchNeighborhoodSortMode[i] is None:
                 # set greatest possible value
-                if cov_model_for_category[i].is_stationary():
+                if cm_for_cat[i].is_stationary():
                     searchNeighborhoodSortMode[i] = 2
-                elif cov_model_for_category[i].is_orientation_stationary() and cov_model_for_category[i].is_range_stationary():
+                elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
                     searchNeighborhoodSortMode[i] = 1
                 else:
                     searchNeighborhoodSortMode[i] = 0
             else:
                 if searchNeighborhoodSortMode[i] == 2:
-                    if not cov_model_for_category[i].is_stationary():
+                    if not cm_for_cat[i].is_stationary():
                         if verbose > 0:
                             print("ERROR (ESTIMATE_INDICATOR3D): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
                         return None
                 elif searchNeighborhoodSortMode[i] == 1:
-                    if not cov_model_for_category[i].is_orientation_stationary() or not cov_model_for_category[i].is_range_stationary():
+                    if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                         if verbose > 0:
                             print("ERROR (ESTIMATE_INDICATOR3D): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
                         return None
@@ -8542,7 +8691,7 @@ def estimateIndicator3D(
         category_values,
         outputReportFile,
         computationMode,
-        cov_model_for_category,
+        cm_for_cat,
         None,
         dataPointSet,
         mask,

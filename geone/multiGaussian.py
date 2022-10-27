@@ -150,20 +150,28 @@ def multiGaussianRun(
         print("ERROR (MULTIGAUSSIANRUN): 'output_mode' invalid, should be 'array' or 'img' (default)")
         return out
 
-    # Set space dimension (of grid) according to covariance model
-    if isinstance(cov_model, gcm.CovModel1D):
-        d = 1
-    elif isinstance(cov_model, gcm.CovModel2D):
-        d = 2
-    elif isinstance(cov_model, gcm.CovModel3D):
-        d = 3
+    # Set space dimension: d
+    if hasattr(dimension, '__len__'):
+        d = len(dimension)
     else:
-        print("ERROR (MULTIGAUSSIANRUN): 'cov_model' invalid, should be a class: <geone.covModel.CovModel1D>, <geone.covModel.CovModel2D>, or <geone.covModel.CovModel3D>")
-        return out
+        # assume dimension is an int, nx
+        d = 1
 
-    # Check argument 'dimension'
-    if hasattr(dimension, '__len__') and len(dimension) != d:
-        print("ERROR (MULTIGAUSSIANRUN): 'dimension' of incompatible length")
+    # Check space dimension and covariance model
+    if d == 1:
+        if not isinstance(cov_model, gcm.CovModel1D):
+            print("ERROR (MULTIGAUSSIANRUN): 'cov_model' invalid for 1D grid, should be a class: <geone.covModel.CovModel1D> ")
+            return out
+    elif d == 2:
+        if not isinstance(cov_model, gcm.CovModel2D) and not isinstance(cov_model, gcm.CovModel1D):
+            print("ERROR (MULTIGAUSSIANRUN): 'cov_model' invalid for 2D grid, should be a class: <geone.covModel.CovModel2D> or <geone.covModel.CovModel1D>")
+            return out
+    elif d == 3:
+        if not isinstance(cov_model, gcm.CovModel3D) and not isinstance(cov_model, gcm.CovModel1D):
+            print("ERROR (MULTIGAUSSIANRUN): 'cov_model' invalid for 3D grid, should be a class: <geone.covModel.CovModel3D> or <geone.covModel.CovModel1D>")
+            return out
+    else:
+        print("ERROR (MULTIGAUSSIANRUN): unknown space dimension (check 2nd argurment 'dimension')")
         return out
 
     # Check (or set) argument 'spacing'
