@@ -18,19 +18,19 @@ pip install .
 
 `pip uninstall -y geone`
 
-*Note: first remove the directory 'geone.egg-info' from the current directory.*
+*Note: first remove the directory 'geone.egg-info' from the current directory (if present).*
 
 ## Using GEONE
 
 Do not launch python from the directory where the installation has been done (with `pip`), otherwise `import geone` will fail.
 
 ## Requirements
-The following python packages are used by GEONE (tested on python 3.10.6):
-   - matplotlib
+The following python packages are used by GEONE (tested on python 3.10.9):
+   - matplotlib (3.6.2)
    - multiprocessing (for parallel processes)
-   - numpy (tested with version 1.23.1)
-   - pyvista (tested with version 0.36.1)
-   - scipy (tested with version 1.9.1)
+   - numpy (tested with version 1.23.5)
+   - pyvista (tested with version 0.37.0)
+   - scipy (tested with version 1.10.0)
 
 ## Important notes
 - GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The DEESSE version provided with GEONE is a test version with restricted capabilities. **To unlock the full capabilities of DEESSE, the user must obtain a commercial or academic license from the University of Neuchâtel. See LICENSE file for details.**
@@ -55,6 +55,8 @@ Various examples are provided (notebooks in 'examples' directory) to get started
    - `ex_deesse_12_multiple_TIs.ipynb`: simulation using multiple training images
    - `ex_deesse_13_inequality_data.ipynb`: simulations with inequality data
    - `ex_deesse_14_rotation3D.ipynb`: simulations with rotation in 3D
+   - `ex_deesse_15_block_data.ipynb`: simulation with block data, *i.e* target mean values over block of cells
+   - `ex_deesse_16_advanced_use_of_pyramids.ipynb`: simulation using pyramids (retrieving pyramids, conditioning within pyramids)
 - Elementary covariance models:
    - `ex_elementary_cov_model.ipynb`: illustrations of elementary covariance/variogram models (in 1D)
 - Gaussian random fields (GRF):
@@ -82,3 +84,5 @@ Various examples are provided (notebooks in 'examples' directory) to get started
    - `ex_pgs.ipynb`: example of pluri-Gaussian simulations in 1D, 2D and 3D (categorical, conditional or not), based on two latent Gaussian fields
 - Ohter algorithms based on random processes:
    - `ex_randProcess.ipynb`: example of Poisson point process, and Chentsov simulation in 1D, 2D and 3D
+- Miscellaneous:
+   - `ex_rex_image2d_rgb.ipynb`: some functions to read image from 'png' files

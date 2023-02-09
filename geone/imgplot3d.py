@@ -323,7 +323,8 @@ def drawImage3D_surface (
     zmaz = im.oz + iz1 * im.sz
     zdim = iz1 - iz0 + 1
 
-    pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    # pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
 
     pg.cell_data[im.varname[iv]] = zz #.flatten()
 
@@ -720,7 +721,8 @@ def drawImage3D_slice (
     zmaz = im.oz + iz1 * im.sz
     zdim = iz1 - iz0 + 1
 
-    pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    # pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
 
     pg.cell_data[im.varname[iv]] = zz #.flatten()
 
@@ -995,7 +997,8 @@ def drawImage3D_volume (
     zmaz = im.oz + iz1 * im.sz
     zdim = iz1 - iz0 + 1
 
-    pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    # pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
 
     pg.cell_data[im.varname[iv]] = zz #.flatten()
 

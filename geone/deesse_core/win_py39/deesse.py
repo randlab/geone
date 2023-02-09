@@ -166,6 +166,7 @@ MPDS_SUFFIX_FOR_MOVING_BOX_AVERAGE = _deesse.MPDS_SUFFIX_FOR_MOVING_BOX_AVERAGE
 MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_EXP = _deesse.MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_EXP
 MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_LAP = _deesse.MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_LAP
 MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_RED = _deesse.MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_RED
+MPDS_SUFFIX_FOR_PYRAMID_LEVEL = _deesse.MPDS_SUFFIX_FOR_PYRAMID_LEVEL
 MPDS_SUFFIX_FOR_OPENING = _deesse.MPDS_SUFFIX_FOR_OPENING
 MPDS_SUFFIX_FOR_QC_INDICATOR_SCALE = _deesse.MPDS_SUFFIX_FOR_QC_INDICATOR_SCALE
 MPDS_SUFFIX_FOR_QC_INDICATOR_MARK_MEAN_AND_SD_SCALE = _deesse.MPDS_SUFFIX_FOR_QC_INDICATOR_MARK_MEAN_AND_SD_SCALE
@@ -193,6 +194,8 @@ MPDS_NAME_FOR_ERROR_VAR = _deesse.MPDS_NAME_FOR_ERROR_VAR
 MPDS_NAME_FOR_TI_GRID_NODE_INDEX_VAR = _deesse.MPDS_NAME_FOR_TI_GRID_NODE_INDEX_VAR
 MPDS_NAME_FOR_TI_INDEX_VAR = _deesse.MPDS_NAME_FOR_TI_INDEX_VAR
 MPDS_NB_DIGIT_FOR_REALIZATION_NUMBER = _deesse.MPDS_NB_DIGIT_FOR_REALIZATION_NUMBER
+MPDS_NB_DIGIT_FOR_LEVEL_NUMBER = _deesse.MPDS_NB_DIGIT_FOR_LEVEL_NUMBER
+MPDS_NB_DIGIT_FOR_INDEX_NUMBER = _deesse.MPDS_NB_DIGIT_FOR_INDEX_NUMBER
 MPDS_NB_DIGIT_FOR_SCALE_NUMBER = _deesse.MPDS_NB_DIGIT_FOR_SCALE_NUMBER
 MPDS_NB_DIGIT_FOR_ZONE_NUMBER = _deesse.MPDS_NB_DIGIT_FOR_ZONE_NUMBER
 MPDS_NB_DIGIT_FOR_VARIABLE_NUMBER = _deesse.MPDS_NB_DIGIT_FOR_VARIABLE_NUMBER
@@ -709,6 +712,10 @@ def MPDSGetNImageVarValuePdf(arg1, arg2, arg3, arg4, arg5, arg6):
     return _deesse.MPDSGetNImageVarValuePdf(arg1, arg2, arg3, arg4, arg5, arg6)
 MPDSGetNImageVarValuePdf = _deesse.MPDSGetNImageVarValuePdf
 
+def MPDSImageEE(arg1):
+    return _deesse.MPDSImageEE(arg1)
+MPDSImageEE = _deesse.MPDSImageEE
+
 def MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
     return _deesse.MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 MPDSImageToImage = _deesse.MPDSImageToImage
@@ -895,7 +902,12 @@ MPDS_WARNING_MSG_00062 = _deesse.MPDS_WARNING_MSG_00062
 MPDS_WARNING_MSG_00063 = _deesse.MPDS_WARNING_MSG_00063
 MPDS_WARNING_MSG_00070 = _deesse.MPDS_WARNING_MSG_00070
 MPDS_WARNING_MSG_00071 = _deesse.MPDS_WARNING_MSG_00071
+MPDS_WARNING_MSG_00075 = _deesse.MPDS_WARNING_MSG_00075
+MPDS_WARNING_MSG_00076 = _deesse.MPDS_WARNING_MSG_00076
+MPDS_WARNING_MSG_00077 = _deesse.MPDS_WARNING_MSG_00077
+MPDS_WARNING_MSG_00078 = _deesse.MPDS_WARNING_MSG_00078
 MPDS_WARNING_MSG_00080 = _deesse.MPDS_WARNING_MSG_00080
+MPDS_WARNING_MSG_00085 = _deesse.MPDS_WARNING_MSG_00085
 MPDS_WARNING_MSG_00100 = _deesse.MPDS_WARNING_MSG_00100
 MPDS_WARNING_MSG_00111 = _deesse.MPDS_WARNING_MSG_00111
 MPDS_WARNING_MSG_00115 = _deesse.MPDS_WARNING_MSG_00115
@@ -913,6 +925,7 @@ MPDS_WARNING_MSG_02015 = _deesse.MPDS_WARNING_MSG_02015
 MPDS_WARNING_MSG_02016 = _deesse.MPDS_WARNING_MSG_02016
 MPDS_WARNING_MSG_02020 = _deesse.MPDS_WARNING_MSG_02020
 MPDS_WARNING_MSG_05011 = _deesse.MPDS_WARNING_MSG_05011
+MPDS_WARNING_MSG_05030 = _deesse.MPDS_WARNING_MSG_05030
 MPDS_WARNING_MSG_05044 = _deesse.MPDS_WARNING_MSG_05044
 MPDS_WARNING_MSG_05045 = _deesse.MPDS_WARNING_MSG_05045
 MPDS_WARNING_MSG_05125 = _deesse.MPDS_WARNING_MSG_05125
@@ -1011,37 +1024,37 @@ def MPDSUpdateProgressMonitor0(arg1):
     return _deesse.MPDSUpdateProgressMonitor0(arg1)
 MPDSUpdateProgressMonitor0 = _deesse.MPDSUpdateProgressMonitor0
 
-def MPDSUpdateProgressMonitorAllGI(arg1):
-    return _deesse.MPDSUpdateProgressMonitorAllGI(arg1)
-MPDSUpdateProgressMonitorAllGI = _deesse.MPDSUpdateProgressMonitorAllGI
+def MPDSUpdateProgressMonitor1(arg1):
+    return _deesse.MPDSUpdateProgressMonitor1(arg1)
+MPDSUpdateProgressMonitor1 = _deesse.MPDSUpdateProgressMonitor1
 
-def MPDSUpdateProgressMonitorAllOnlyPercentGI(arg1):
-    return _deesse.MPDSUpdateProgressMonitorAllOnlyPercentGI(arg1)
-MPDSUpdateProgressMonitorAllOnlyPercentGI = _deesse.MPDSUpdateProgressMonitorAllOnlyPercentGI
+def MPDSUpdateProgressMonitor1GI(arg1):
+    return _deesse.MPDSUpdateProgressMonitor1GI(arg1)
+MPDSUpdateProgressMonitor1GI = _deesse.MPDSUpdateProgressMonitor1GI
 
-def MPDSUpdateProgressMonitorAllOnlyPercentStdout(arg1):
-    return _deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout(arg1)
-MPDSUpdateProgressMonitorAllOnlyPercentStdout = _deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout
+def MPDSUpdateProgressMonitor2(arg1):
+    return _deesse.MPDSUpdateProgressMonitor2(arg1)
+MPDSUpdateProgressMonitor2 = _deesse.MPDSUpdateProgressMonitor2
 
-def MPDSUpdateProgressMonitorAllStdout(arg1):
-    return _deesse.MPDSUpdateProgressMonitorAllStdout(arg1)
-MPDSUpdateProgressMonitorAllStdout = _deesse.MPDSUpdateProgressMonitorAllStdout
+def MPDSUpdateProgressMonitor2GI(arg1):
+    return _deesse.MPDSUpdateProgressMonitor2GI(arg1)
+MPDSUpdateProgressMonitor2GI = _deesse.MPDSUpdateProgressMonitor2GI
 
-def MPDSUpdateProgressMonitorGI(arg1):
-    return _deesse.MPDSUpdateProgressMonitorGI(arg1)
-MPDSUpdateProgressMonitorGI = _deesse.MPDSUpdateProgressMonitorGI
+def MPDSUpdateProgressMonitor3(arg1):
+    return _deesse.MPDSUpdateProgressMonitor3(arg1)
+MPDSUpdateProgressMonitor3 = _deesse.MPDSUpdateProgressMonitor3
 
-def MPDSUpdateProgressMonitorStdout(arg1):
-    return _deesse.MPDSUpdateProgressMonitorStdout(arg1)
-MPDSUpdateProgressMonitorStdout = _deesse.MPDSUpdateProgressMonitorStdout
+def MPDSUpdateProgressMonitor3GI(arg1):
+    return _deesse.MPDSUpdateProgressMonitor3GI(arg1)
+MPDSUpdateProgressMonitor3GI = _deesse.MPDSUpdateProgressMonitor3GI
 
-def MPDSUpdateProgressMonitorWarningOnlyGI(arg1):
-    return _deesse.MPDSUpdateProgressMonitorWarningOnlyGI(arg1)
-MPDSUpdateProgressMonitorWarningOnlyGI = _deesse.MPDSUpdateProgressMonitorWarningOnlyGI
+def MPDSUpdateProgressMonitor4(arg1):
+    return _deesse.MPDSUpdateProgressMonitor4(arg1)
+MPDSUpdateProgressMonitor4 = _deesse.MPDSUpdateProgressMonitor4
 
-def MPDSUpdateProgressMonitorWarningOnlyStdout(arg1):
-    return _deesse.MPDSUpdateProgressMonitorWarningOnlyStdout(arg1)
-MPDSUpdateProgressMonitorWarningOnlyStdout = _deesse.MPDSUpdateProgressMonitorWarningOnlyStdout
+def MPDSUpdateProgressMonitor4GI(arg1):
+    return _deesse.MPDSUpdateProgressMonitor4GI(arg1)
+MPDSUpdateProgressMonitor4GI = _deesse.MPDSUpdateProgressMonitor4GI
 PYRAMID_SIM_NONE = _deesse.PYRAMID_SIM_NONE
 PYRAMID_SIM_HIERARCHICAL = _deesse.PYRAMID_SIM_HIERARCHICAL
 PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION = _deesse.PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION
@@ -1119,6 +1132,10 @@ class mpds_pyramidParameters(_object):
     __swig_getmethods__["classOfValues"] = _deesse.mpds_pyramidParameters_classOfValues_get
     if _newclass:
         classOfValues = _swig_property(_deesse.mpds_pyramidParameters_classOfValues_get, _deesse.mpds_pyramidParameters_classOfValues_set)
+    __swig_setmethods__["outputLevelFlag"] = _deesse.mpds_pyramidParameters_outputLevelFlag_set
+    __swig_getmethods__["outputLevelFlag"] = _deesse.mpds_pyramidParameters_outputLevelFlag_get
+    if _newclass:
+        outputLevelFlag = _swig_property(_deesse.mpds_pyramidParameters_outputLevelFlag_get, _deesse.mpds_pyramidParameters_outputLevelFlag_set)
 
     def __init__(self):
         this = _deesse.new_mpds_pyramidParameters()
@@ -1378,158 +1395,6 @@ MPDSSearchNeighborhoodApproxBound = _deesse.MPDSSearchNeighborhoodApproxBound
 def MPDSValidateSearchNeighborhoodParameters(arg1, arg2):
     return _deesse.MPDSValidateSearchNeighborhoodParameters(arg1, arg2)
 MPDSValidateSearchNeighborhoodParameters = _deesse.MPDSValidateSearchNeighborhoodParameters
-
-def MPDSSim(arg1, arg2, arg3, arg4):
-    return _deesse.MPDSSim(arg1, arg2, arg3, arg4)
-MPDSSim = _deesse.MPDSSim
-
-def MPDSSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45):
-    return _deesse.MPDSSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45)
-MPDSSimComputePyramid = _deesse.MPDSSimComputePyramid
-
-def MPDSSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20):
-    return _deesse.MPDSSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20)
-MPDSSimComputePyramidInitialSim = _deesse.MPDSSimComputePyramidInitialSim
-
-def MPDSSimComputePyramidNvar(arg1, arg2, arg3, arg4, arg5):
-    return _deesse.MPDSSimComputePyramidNvar(arg1, arg2, arg3, arg4, arg5)
-MPDSSimComputePyramidNvar = _deesse.MPDSSimComputePyramidNvar
-
-def MPDSSimConnectivityAddConditioningData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17):
-    return _deesse.MPDSSimConnectivityAddConditioningData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17)
-MPDSSimConnectivityAddConditioningData = _deesse.MPDSSimConnectivityAddConditioningData
-
-def MPDSSimConnectivitySortGroup(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _deesse.MPDSSimConnectivitySortGroup(arg1, arg2, arg3, arg4, arg5, arg6)
-MPDSSimConnectivitySortGroup = _deesse.MPDSSimConnectivitySortGroup
-
-def MPDSSimGetTIMeasures(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12):
-    return _deesse.MPDSSimGetTIMeasures(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12)
-MPDSSimGetTIMeasures = _deesse.MPDSSimGetTIMeasures
-
-def MPDSSimIntegrateConditioningData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _deesse.MPDSSimIntegrateConditioningData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSSimIntegrateConditioningData = _deesse.MPDSSimIntegrateConditioningData
-
-def MPDSSimIntegrateConditioningDataWithConnectivity(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12):
-    return _deesse.MPDSSimIntegrateConditioningDataWithConnectivity(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12)
-MPDSSimIntegrateConditioningDataWithConnectivity = _deesse.MPDSSimIntegrateConditioningDataWithConnectivity
-
-def MPDSSimOneReal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73):
-    return _deesse.MPDSSimOneReal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73)
-MPDSSimOneReal = _deesse.MPDSSimOneReal
-
-def MPDSSimOneRealWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73):
-    return _deesse.MPDSSimOneRealWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73)
-MPDSSimOneRealWithVariableTransform = _deesse.MPDSSimOneRealWithVariableTransform
-
-def MPDSSimPrepareBlockData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19):
-    return _deesse.MPDSSimPrepareBlockData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19)
-MPDSSimPrepareBlockData = _deesse.MPDSSimPrepareBlockData
-
-def MPDSSimPrepareBlockDataInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
-    return _deesse.MPDSSimPrepareBlockDataInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
-MPDSSimPrepareBlockDataInitialSim = _deesse.MPDSSimPrepareBlockDataInitialSim
-
-def MPDSSimPrepareConnectivityRefImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
-    return _deesse.MPDSSimPrepareConnectivityRefImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
-MPDSSimPrepareConnectivityRefImage = _deesse.MPDSSimPrepareConnectivityRefImage
-
-def MPDSSimPrepareConnectivitySimImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15):
-    return _deesse.MPDSSimPrepareConnectivitySimImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15)
-MPDSSimPrepareConnectivitySimImage = _deesse.MPDSSimPrepareConnectivitySimImage
-
-def MPDSSimPrepareData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16):
-    return _deesse.MPDSSimPrepareData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16)
-MPDSSimPrepareData = _deesse.MPDSSimPrepareData
-
-def MPDSSimPrepareOutput(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12):
-    return _deesse.MPDSSimPrepareOutput(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12)
-MPDSSimPrepareOutput = _deesse.MPDSSimPrepareOutput
-
-def MPDSSimPrepareSearchNeighborhood(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _deesse.MPDSSimPrepareSearchNeighborhood(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
-MPDSSimPrepareSearchNeighborhood = _deesse.MPDSSimPrepareSearchNeighborhood
-
-def MPDSSimPrepareSearchNeighborhoodPyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19):
-    return _deesse.MPDSSimPrepareSearchNeighborhoodPyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19)
-MPDSSimPrepareSearchNeighborhoodPyramid = _deesse.MPDSSimPrepareSearchNeighborhoodPyramid
-
-def MPDSSimPrepareSimulationParametersPyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41):
-    return _deesse.MPDSSimPrepareSimulationParametersPyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41)
-MPDSSimPrepareSimulationParametersPyramid = _deesse.MPDSSimPrepareSimulationParametersPyramid
-
-def MPDSSimPrepareSimulationPath(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12):
-    return _deesse.MPDSSimPrepareSimulationPath(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12)
-MPDSSimPrepareSimulationPath = _deesse.MPDSSimPrepareSimulationPath
-
-def MPDSSimPrepareSimulationPathPyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23):
-    return _deesse.MPDSSimPrepareSimulationPathPyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23)
-MPDSSimPrepareSimulationPathPyramid = _deesse.MPDSSimPrepareSimulationPathPyramid
-
-def MPDSSimPrepareSoftProbability(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
-    return _deesse.MPDSSimPrepareSoftProbability(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
-MPDSSimPrepareSoftProbability = _deesse.MPDSSimPrepareSoftProbability
-
-def MPDSSimPrepareSoftProbabilityInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
-    return _deesse.MPDSSimPrepareSoftProbabilityInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-MPDSSimPrepareSoftProbabilityInitialSim = _deesse.MPDSSimPrepareSoftProbabilityInitialSim
-
-def MPDSSimPyramid(arg1, arg2, arg3, arg4, arg5):
-    return _deesse.MPDSSimPyramid(arg1, arg2, arg3, arg4, arg5)
-MPDSSimPyramid = _deesse.MPDSSimPyramid
-
-def MPDSSimStandard(arg1, arg2, arg3, arg4, arg5):
-    return _deesse.MPDSSimStandard(arg1, arg2, arg3, arg4, arg5)
-MPDSSimStandard = _deesse.MPDSSimStandard
-
-def MPDSSimPyramidAllLevelOneByOne(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77):
-    return _deesse.MPDSSimPyramidAllLevelOneByOne(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77)
-MPDSSimPyramidAllLevelOneByOne = _deesse.MPDSSimPyramidAllLevelOneByOne
-
-def MPDSSimPyramidAllLevelOneByOneWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77):
-    return _deesse.MPDSSimPyramidAllLevelOneByOneWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77)
-MPDSSimPyramidAllLevelOneByOneWithVariableTransform = _deesse.MPDSSimPyramidAllLevelOneByOneWithVariableTransform
-
-def MPDSSimPyramidLevelCondToCoarse(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77, arg78, arg79, arg80, arg81, arg82, arg83, arg84, arg85, arg86, arg87, arg88, arg89, arg90, arg91, arg92, arg93, arg94, arg95, arg96, arg97, arg98, arg99, arg100, arg101):
-    return _deesse.MPDSSimPyramidLevelCondToCoarse(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77, arg78, arg79, arg80, arg81, arg82, arg83, arg84, arg85, arg86, arg87, arg88, arg89, arg90, arg91, arg92, arg93, arg94, arg95, arg96, arg97, arg98, arg99, arg100, arg101)
-MPDSSimPyramidLevelCondToCoarse = _deesse.MPDSSimPyramidLevelCondToCoarse
-
-def MPDSSimPyramidLevelCondToCoarseWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77, arg78, arg79, arg80, arg81, arg82, arg83, arg84, arg85, arg86, arg87, arg88, arg89, arg90, arg91, arg92, arg93, arg94, arg95, arg96, arg97, arg98, arg99, arg100, arg101):
-    return _deesse.MPDSSimPyramidLevelCondToCoarseWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77, arg78, arg79, arg80, arg81, arg82, arg83, arg84, arg85, arg86, arg87, arg88, arg89, arg90, arg91, arg92, arg93, arg94, arg95, arg96, arg97, arg98, arg99, arg100, arg101)
-MPDSSimPyramidLevelCondToCoarseWithVariableTransform = _deesse.MPDSSimPyramidLevelCondToCoarseWithVariableTransform
-
-def MPDSSimPyramidLevelCondToFine(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77, arg78, arg79, arg80, arg81, arg82, arg83, arg84, arg85, arg86, arg87, arg88, arg89, arg90, arg91, arg92, arg93, arg94, arg95, arg96, arg97, arg98):
-    return _deesse.MPDSSimPyramidLevelCondToFine(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77, arg78, arg79, arg80, arg81, arg82, arg83, arg84, arg85, arg86, arg87, arg88, arg89, arg90, arg91, arg92, arg93, arg94, arg95, arg96, arg97, arg98)
-MPDSSimPyramidLevelCondToFine = _deesse.MPDSSimPyramidLevelCondToFine
-
-def MPDSSimPyramidLevelCondToFineWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77, arg78, arg79, arg80, arg81, arg82, arg83, arg84, arg85, arg86, arg87, arg88, arg89, arg90, arg91, arg92, arg93, arg94, arg95, arg96, arg97, arg98):
-    return _deesse.MPDSSimPyramidLevelCondToFineWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77, arg78, arg79, arg80, arg81, arg82, arg83, arg84, arg85, arg86, arg87, arg88, arg89, arg90, arg91, arg92, arg93, arg94, arg95, arg96, arg97, arg98)
-MPDSSimPyramidLevelCondToFineWithVariableTransform = _deesse.MPDSSimPyramidLevelCondToFineWithVariableTransform
-
-def MPDSSimPyramidSingleLevel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67):
-    return _deesse.MPDSSimPyramidSingleLevel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67)
-MPDSSimPyramidSingleLevel = _deesse.MPDSSimPyramidSingleLevel
-
-def MPDSSimPyramidSingleLevelWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67):
-    return _deesse.MPDSSimPyramidSingleLevelWithVariableTransform(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67)
-MPDSSimPyramidSingleLevelWithVariableTransform = _deesse.MPDSSimPyramidSingleLevelWithVariableTransform
-
-def MPDSSimTransformHomothetyImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
-    return _deesse.MPDSSimTransformHomothetyImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-MPDSSimTransformHomothetyImage = _deesse.MPDSSimTransformHomothetyImage
-
-def MPDSSimTransformHomothetyValue(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _deesse.MPDSSimTransformHomothetyValue(arg1, arg2, arg3, arg4, arg5, arg6)
-MPDSSimTransformHomothetyValue = _deesse.MPDSSimTransformHomothetyValue
-
-def MPDSSimTransformRotationImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
-    return _deesse.MPDSSimTransformRotationImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-MPDSSimTransformRotationImage = _deesse.MPDSSimTransformRotationImage
-
-def MPDSSimTransformRotationValue(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _deesse.MPDSSimTransformRotationValue(arg1, arg2, arg3, arg4, arg5, arg6)
-MPDSSimTransformRotationValue = _deesse.MPDSSimTransformRotationValue
 SIM_ONE_BY_ONE = _deesse.SIM_ONE_BY_ONE
 SIM_VARIABLE_VECTOR = _deesse.SIM_VARIABLE_VECTOR
 PATH_RANDOM = _deesse.PATH_RANDOM
@@ -1952,6 +1817,22 @@ class mpds_simInput(_object):
     __swig_getmethods__["pyramidParameters"] = _deesse.mpds_simInput_pyramidParameters_get
     if _newclass:
         pyramidParameters = _swig_property(_deesse.mpds_simInput_pyramidParameters_get, _deesse.mpds_simInput_pyramidParameters_set)
+    __swig_setmethods__["ndataImageInPyramid"] = _deesse.mpds_simInput_ndataImageInPyramid_set
+    __swig_getmethods__["ndataImageInPyramid"] = _deesse.mpds_simInput_ndataImageInPyramid_get
+    if _newclass:
+        ndataImageInPyramid = _swig_property(_deesse.mpds_simInput_ndataImageInPyramid_get, _deesse.mpds_simInput_ndataImageInPyramid_set)
+    __swig_setmethods__["dataImageInPyramid"] = _deesse.mpds_simInput_dataImageInPyramid_set
+    __swig_getmethods__["dataImageInPyramid"] = _deesse.mpds_simInput_dataImageInPyramid_get
+    if _newclass:
+        dataImageInPyramid = _swig_property(_deesse.mpds_simInput_dataImageInPyramid_get, _deesse.mpds_simInput_dataImageInPyramid_set)
+    __swig_setmethods__["ndataPointSetInPyramid"] = _deesse.mpds_simInput_ndataPointSetInPyramid_set
+    __swig_getmethods__["ndataPointSetInPyramid"] = _deesse.mpds_simInput_ndataPointSetInPyramid_get
+    if _newclass:
+        ndataPointSetInPyramid = _swig_property(_deesse.mpds_simInput_ndataPointSetInPyramid_get, _deesse.mpds_simInput_ndataPointSetInPyramid_set)
+    __swig_setmethods__["dataPointSetInPyramid"] = _deesse.mpds_simInput_dataPointSetInPyramid_set
+    __swig_getmethods__["dataPointSetInPyramid"] = _deesse.mpds_simInput_dataPointSetInPyramid_get
+    if _newclass:
+        dataPointSetInPyramid = _swig_property(_deesse.mpds_simInput_dataPointSetInPyramid_get, _deesse.mpds_simInput_dataPointSetInPyramid_set)
     __swig_setmethods__["tolerance"] = _deesse.mpds_simInput_tolerance_set
     __swig_getmethods__["tolerance"] = _deesse.mpds_simInput_tolerance_get
     if _newclass:
@@ -2042,10 +1923,34 @@ class mpds_simOutput(_object):
     __swig_getmethods__["nvarSimPerReal"] = _deesse.mpds_simOutput_nvarSimPerReal_get
     if _newclass:
         nvarSimPerReal = _swig_property(_deesse.mpds_simOutput_nvarSimPerReal_get, _deesse.mpds_simOutput_nvarSimPerReal_set)
+    __swig_setmethods__["originalVarIndex"] = _deesse.mpds_simOutput_originalVarIndex_set
+    __swig_getmethods__["originalVarIndex"] = _deesse.mpds_simOutput_originalVarIndex_get
+    if _newclass:
+        originalVarIndex = _swig_property(_deesse.mpds_simOutput_originalVarIndex_get, _deesse.mpds_simOutput_originalVarIndex_set)
     __swig_setmethods__["outputSimImage"] = _deesse.mpds_simOutput_outputSimImage_set
     __swig_getmethods__["outputSimImage"] = _deesse.mpds_simOutput_outputSimImage_get
     if _newclass:
         outputSimImage = _swig_property(_deesse.mpds_simOutput_outputSimImage_get, _deesse.mpds_simOutput_outputSimImage_set)
+    __swig_setmethods__["npyramidLevel"] = _deesse.mpds_simOutput_npyramidLevel_set
+    __swig_getmethods__["npyramidLevel"] = _deesse.mpds_simOutput_npyramidLevel_get
+    if _newclass:
+        npyramidLevel = _swig_property(_deesse.mpds_simOutput_npyramidLevel_get, _deesse.mpds_simOutput_npyramidLevel_set)
+    __swig_setmethods__["nvarSimPerRealPyramidLevel"] = _deesse.mpds_simOutput_nvarSimPerRealPyramidLevel_set
+    __swig_getmethods__["nvarSimPerRealPyramidLevel"] = _deesse.mpds_simOutput_nvarSimPerRealPyramidLevel_get
+    if _newclass:
+        nvarSimPerRealPyramidLevel = _swig_property(_deesse.mpds_simOutput_nvarSimPerRealPyramidLevel_get, _deesse.mpds_simOutput_nvarSimPerRealPyramidLevel_set)
+    __swig_setmethods__["originalVarIndexPyramidLevel"] = _deesse.mpds_simOutput_originalVarIndexPyramidLevel_set
+    __swig_getmethods__["originalVarIndexPyramidLevel"] = _deesse.mpds_simOutput_originalVarIndexPyramidLevel_get
+    if _newclass:
+        originalVarIndexPyramidLevel = _swig_property(_deesse.mpds_simOutput_originalVarIndexPyramidLevel_get, _deesse.mpds_simOutput_originalVarIndexPyramidLevel_set)
+    __swig_setmethods__["pyramidIndexOfOriginalVarPyramidLevel"] = _deesse.mpds_simOutput_pyramidIndexOfOriginalVarPyramidLevel_set
+    __swig_getmethods__["pyramidIndexOfOriginalVarPyramidLevel"] = _deesse.mpds_simOutput_pyramidIndexOfOriginalVarPyramidLevel_get
+    if _newclass:
+        pyramidIndexOfOriginalVarPyramidLevel = _swig_property(_deesse.mpds_simOutput_pyramidIndexOfOriginalVarPyramidLevel_get, _deesse.mpds_simOutput_pyramidIndexOfOriginalVarPyramidLevel_set)
+    __swig_setmethods__["outputSimImagePyramidLevel"] = _deesse.mpds_simOutput_outputSimImagePyramidLevel_set
+    __swig_getmethods__["outputSimImagePyramidLevel"] = _deesse.mpds_simOutput_outputSimImagePyramidLevel_get
+    if _newclass:
+        outputSimImagePyramidLevel = _swig_property(_deesse.mpds_simOutput_outputSimImagePyramidLevel_get, _deesse.mpds_simOutput_outputSimImagePyramidLevel_set)
     __swig_setmethods__["nvarPathIndexPerReal"] = _deesse.mpds_simOutput_nvarPathIndexPerReal_set
     __swig_getmethods__["nvarPathIndexPerReal"] = _deesse.mpds_simOutput_nvarPathIndexPerReal_get
     if _newclass:
@@ -2098,6 +2003,10 @@ MPDSFreeSimOutput = _deesse.MPDSFreeSimOutput
 def MPDSInitSimOutput(arg1):
     return _deesse.MPDSInitSimOutput(arg1)
 MPDSInitSimOutput = _deesse.MPDSInitSimOutput
+
+def MPDSPrintSimOutput(arg1, arg2, arg3):
+    return _deesse.MPDSPrintSimOutput(arg1, arg2, arg3)
+MPDSPrintSimOutput = _deesse.MPDSPrintSimOutput
 class mpds_softProbability(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_softProbability, name, value)
@@ -2181,6 +2090,186 @@ def MPDSValidateSoftProbability(arg1, arg2, arg3, arg4):
     return _deesse.MPDSValidateSoftProbability(arg1, arg2, arg3, arg4)
 MPDSValidateSoftProbability = _deesse.MPDSValidateSoftProbability
 
+def MPDSOMPComputeVariogramRangeApprox(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _deesse.MPDSOMPComputeVariogramRangeApprox(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPComputeVariogramRangeApprox = _deesse.MPDSOMPComputeVariogramRangeApprox
+
+def MPDSOMPDistanceEuclidean(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _deesse.MPDSOMPDistanceEuclidean(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSOMPDistanceEuclidean = _deesse.MPDSOMPDistanceEuclidean
+
+def MPDSOMPGetImageOneVarNewValueIndexOrder(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _deesse.MPDSOMPGetImageOneVarNewValueIndexOrder(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
+MPDSOMPGetImageOneVarNewValueIndexOrder = _deesse.MPDSOMPGetImageOneVarNewValueIndexOrder
+
+def MPDSOMPGetNImageOneVarNewValueIndexOrder(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12):
+    return _deesse.MPDSOMPGetNImageOneVarNewValueIndexOrder(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12)
+MPDSOMPGetNImageOneVarNewValueIndexOrder = _deesse.MPDSOMPGetNImageOneVarNewValueIndexOrder
+
+def MPDSOMPKMeans(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18):
+    return _deesse.MPDSOMPKMeans(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18)
+MPDSOMPKMeans = _deesse.MPDSOMPKMeans
+
+def MPDSOMPMovingBoxSum(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _deesse.MPDSOMPMovingBoxSum(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPMovingBoxSum = _deesse.MPDSOMPMovingBoxSum
+
+def MPDSOMPPyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17):
+    return _deesse.MPDSOMPPyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17)
+MPDSOMPPyramidExpand = _deesse.MPDSOMPPyramidExpand
+
+def MPDSOMPPyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20):
+    return _deesse.MPDSOMPPyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20)
+MPDSOMPPyramidReduce = _deesse.MPDSOMPPyramidReduce
+
+def MPDSOMPTransformLinearVector(arg1, arg2, arg3, arg4, arg5):
+    return _deesse.MPDSOMPTransformLinearVector(arg1, arg2, arg3, arg4, arg5)
+MPDSOMPTransformLinearVector = _deesse.MPDSOMPTransformLinearVector
+
+def MPDSOMPTransformExplicitVector(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _deesse.MPDSOMPTransformExplicitVector(arg1, arg2, arg3, arg4, arg5, arg6)
+MPDSOMPTransformExplicitVector = _deesse.MPDSOMPTransformExplicitVector
+
+def MPDSOMPUpdateTransitionMatrix(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _deesse.MPDSOMPUpdateTransitionMatrix(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPUpdateTransitionMatrix = _deesse.MPDSOMPUpdateTransitionMatrix
+
+def MPDSOMPImageConnectivityEulerNumber(arg1, arg2, arg3, arg4):
+    return _deesse.MPDSOMPImageConnectivityEulerNumber(arg1, arg2, arg3, arg4)
+MPDSOMPImageConnectivityEulerNumber = _deesse.MPDSOMPImageConnectivityEulerNumber
+
+def MPDSOMPImageConnectivityFunction0(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _deesse.MPDSOMPImageConnectivityFunction0(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageConnectivityFunction0 = _deesse.MPDSOMPImageConnectivityFunction0
+
+def MPDSOMPImageConnectivityFunction1(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _deesse.MPDSOMPImageConnectivityFunction1(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageConnectivityFunction1 = _deesse.MPDSOMPImageConnectivityFunction1
+
+def MPDSOMPImageConnectivityFunction2(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _deesse.MPDSOMPImageConnectivityFunction2(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageConnectivityFunction2 = _deesse.MPDSOMPImageConnectivityFunction2
+
+def MPDSOMPImageConnectivityGlobalIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _deesse.MPDSOMPImageConnectivityGlobalIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+MPDSOMPImageConnectivityGlobalIndicator = _deesse.MPDSOMPImageConnectivityGlobalIndicator
+
+def MPDSOMPImageConnectivity6EulerNumberCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _deesse.MPDSOMPImageConnectivity6EulerNumberCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageConnectivity6EulerNumberCurve = _deesse.MPDSOMPImageConnectivity6EulerNumberCurve
+
+def MPDSOMPImageConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _deesse.MPDSOMPImageConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageConnectivity6GlobalIndicatorCurve = _deesse.MPDSOMPImageConnectivity6GlobalIndicatorCurve
+
+def MPDSOMPImageConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _deesse.MPDSOMPImageConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageConnectivity18GlobalIndicatorCurve = _deesse.MPDSOMPImageConnectivity18GlobalIndicatorCurve
+
+def MPDSOMPImageConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _deesse.MPDSOMPImageConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageConnectivity26GlobalIndicatorCurve = _deesse.MPDSOMPImageConnectivity26GlobalIndicatorCurve
+
+def MPDSOMPImageCorrelogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _deesse.MPDSOMPImageCorrelogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageCorrelogram = _deesse.MPDSOMPImageCorrelogram
+
+def MPDSOMPImageCovariance(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _deesse.MPDSOMPImageCovariance(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageCovariance = _deesse.MPDSOMPImageCovariance
+
+def MPDSOMPImageCovarianceNotCentred(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _deesse.MPDSOMPImageCovarianceNotCentred(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageCovarianceNotCentred = _deesse.MPDSOMPImageCovarianceNotCentred
+
+def MPDSOMPImageDilate(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _deesse.MPDSOMPImageDilate(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageDilate = _deesse.MPDSOMPImageDilate
+
+def MPDSOMPImageDistanceEuclidean(arg1, arg2, arg3):
+    return _deesse.MPDSOMPImageDistanceEuclidean(arg1, arg2, arg3)
+MPDSOMPImageDistanceEuclidean = _deesse.MPDSOMPImageDistanceEuclidean
+
+def MPDSOMPImageDistanceEuclideanConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _deesse.MPDSOMPImageDistanceEuclideanConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceEuclideanConnectivity6GlobalIndicatorCurve = _deesse.MPDSOMPImageDistanceEuclideanConnectivity6GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceEuclideanConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _deesse.MPDSOMPImageDistanceEuclideanConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceEuclideanConnectivity18GlobalIndicatorCurve = _deesse.MPDSOMPImageDistanceEuclideanConnectivity18GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceEuclideanConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _deesse.MPDSOMPImageDistanceEuclideanConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceEuclideanConnectivity26GlobalIndicatorCurve = _deesse.MPDSOMPImageDistanceEuclideanConnectivity26GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceEuclideanSign(arg1, arg2, arg3):
+    return _deesse.MPDSOMPImageDistanceEuclideanSign(arg1, arg2, arg3)
+MPDSOMPImageDistanceEuclideanSign = _deesse.MPDSOMPImageDistanceEuclideanSign
+
+def MPDSOMPImageDistanceL1(arg1, arg2, arg3):
+    return _deesse.MPDSOMPImageDistanceL1(arg1, arg2, arg3)
+MPDSOMPImageDistanceL1 = _deesse.MPDSOMPImageDistanceL1
+
+def MPDSOMPImageDistanceL1Connectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _deesse.MPDSOMPImageDistanceL1Connectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceL1Connectivity6GlobalIndicatorCurve = _deesse.MPDSOMPImageDistanceL1Connectivity6GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceL1Connectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _deesse.MPDSOMPImageDistanceL1Connectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceL1Connectivity18GlobalIndicatorCurve = _deesse.MPDSOMPImageDistanceL1Connectivity18GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceL1Connectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+    return _deesse.MPDSOMPImageDistanceL1Connectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+MPDSOMPImageDistanceL1Connectivity26GlobalIndicatorCurve = _deesse.MPDSOMPImageDistanceL1Connectivity26GlobalIndicatorCurve
+
+def MPDSOMPImageDistanceL1Sign(arg1, arg2, arg3):
+    return _deesse.MPDSOMPImageDistanceL1Sign(arg1, arg2, arg3)
+MPDSOMPImageDistanceL1Sign = _deesse.MPDSOMPImageDistanceL1Sign
+
+def MPDSOMPImageErode(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _deesse.MPDSOMPImageErode(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPImageErode = _deesse.MPDSOMPImageErode
+
+def MPDSOMPImageIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _deesse.MPDSOMPImageIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
+MPDSOMPImageIndicator = _deesse.MPDSOMPImageIndicator
+
+def MPDSOMPImageMaxGeobody6SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _deesse.MPDSOMPImageMaxGeobody6SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
+MPDSOMPImageMaxGeobody6SizeCurve = _deesse.MPDSOMPImageMaxGeobody6SizeCurve
+
+def MPDSOMPImageMaxGeobody18SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _deesse.MPDSOMPImageMaxGeobody18SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
+MPDSOMPImageMaxGeobody18SizeCurve = _deesse.MPDSOMPImageMaxGeobody18SizeCurve
+
+def MPDSOMPImageMaxGeobody26SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _deesse.MPDSOMPImageMaxGeobody26SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
+MPDSOMPImageMaxGeobody26SizeCurve = _deesse.MPDSOMPImageMaxGeobody26SizeCurve
+
+def MPDSOMPImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _deesse.MPDSOMPImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSOMPImagePyramidExpand = _deesse.MPDSOMPImagePyramidExpand
+
+def MPDSOMPImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _deesse.MPDSOMPImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+MPDSOMPImagePyramidReduce = _deesse.MPDSOMPImagePyramidReduce
+
+def MPDSOMPImageTransiogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _deesse.MPDSOMPImageTransiogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageTransiogram = _deesse.MPDSOMPImageTransiogram
+
+def MPDSOMPImageVariogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
+    return _deesse.MPDSOMPImageVariogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+MPDSOMPImageVariogram = _deesse.MPDSOMPImageVariogram
+
+def MPDSOMPMovingBoxAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
+    return _deesse.MPDSOMPMovingBoxAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+MPDSOMPMovingBoxAverageImage = _deesse.MPDSOMPMovingBoxAverageImage
+
+def MPDSOMPMovingSearchNeighborhoodAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
+    return _deesse.MPDSOMPMovingSearchNeighborhoodAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+MPDSOMPMovingSearchNeighborhoodAverageImage = _deesse.MPDSOMPMovingSearchNeighborhoodAverageImage
+
 def MPDSOMPSim(arg1, arg2, arg3, arg4, arg5):
     return _deesse.MPDSOMPSim(arg1, arg2, arg3, arg4, arg5)
 MPDSOMPSim = _deesse.MPDSOMPSim
@@ -2189,8 +2278,8 @@ def MPDSOMPSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg
     return _deesse.MPDSOMPSimComputePyramid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46)
 MPDSOMPSimComputePyramid = _deesse.MPDSOMPSimComputePyramid
 
-def MPDSOMPSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21):
-    return _deesse.MPDSOMPSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21)
+def MPDSOMPSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22):
+    return _deesse.MPDSOMPSimComputePyramidInitialSim(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22)
 MPDSOMPSimComputePyramidInitialSim = _deesse.MPDSOMPSimComputePyramidInitialSim
 
 def MPDSOMPSimOneReal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28, arg29, arg30, arg31, arg32, arg33, arg34, arg35, arg36, arg37, arg38, arg39, arg40, arg41, arg42, arg43, arg44, arg45, arg46, arg47, arg48, arg49, arg50, arg51, arg52, arg53, arg54, arg55, arg56, arg57, arg58, arg59, arg60, arg61, arg62, arg63, arg64, arg65, arg66, arg67, arg68, arg69, arg70, arg71, arg72, arg73, arg74, arg75, arg76, arg77):
@@ -2356,6 +2445,22 @@ MPDS_IMAGE_array_getitem = _deesse.MPDS_IMAGE_array_getitem
 def MPDS_IMAGE_array_setitem(ary, index, value):
     return _deesse.MPDS_IMAGE_array_setitem(ary, index, value)
 MPDS_IMAGE_array_setitem = _deesse.MPDS_IMAGE_array_setitem
+
+def new_MPDS_IMAGEp_array(nelements):
+    return _deesse.new_MPDS_IMAGEp_array(nelements)
+new_MPDS_IMAGEp_array = _deesse.new_MPDS_IMAGEp_array
+
+def delete_MPDS_IMAGEp_array(ary):
+    return _deesse.delete_MPDS_IMAGEp_array(ary)
+delete_MPDS_IMAGEp_array = _deesse.delete_MPDS_IMAGEp_array
+
+def MPDS_IMAGEp_array_getitem(ary, index):
+    return _deesse.MPDS_IMAGEp_array_getitem(ary, index)
+MPDS_IMAGEp_array_getitem = _deesse.MPDS_IMAGEp_array_getitem
+
+def MPDS_IMAGEp_array_setitem(ary, index, value):
+    return _deesse.MPDS_IMAGEp_array_setitem(ary, index, value)
+MPDS_IMAGEp_array_setitem = _deesse.MPDS_IMAGEp_array_setitem
 
 def new_MPDS_POINTSET_array(nelements):
     return _deesse.new_MPDS_POINTSET_array(nelements)
@@ -2707,10 +2812,10 @@ def free_MPDS_PROGRESSMONITOR(ptr):
 free_MPDS_PROGRESSMONITOR = _deesse.free_MPDS_PROGRESSMONITOR
 sizeof_MPDS_PROGRESSMONITOR = _deesse.sizeof_MPDS_PROGRESSMONITOR
 MPDSUpdateProgressMonitor0_ptr = _deesse.MPDSUpdateProgressMonitor0_ptr
-MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr = _deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
-MPDSUpdateProgressMonitorAllStdout_ptr = _deesse.MPDSUpdateProgressMonitorAllStdout_ptr
-MPDSUpdateProgressMonitorStdout_ptr = _deesse.MPDSUpdateProgressMonitorStdout_ptr
-MPDSUpdateProgressMonitorWarningOnlyStdout_ptr = _deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+MPDSUpdateProgressMonitor1_ptr = _deesse.MPDSUpdateProgressMonitor1_ptr
+MPDSUpdateProgressMonitor2_ptr = _deesse.MPDSUpdateProgressMonitor2_ptr
+MPDSUpdateProgressMonitor3_ptr = _deesse.MPDSUpdateProgressMonitor3_ptr
+MPDSUpdateProgressMonitor4_ptr = _deesse.MPDSUpdateProgressMonitor4_ptr
 
 def mpds_get_error_message(ierr):
     return _deesse.mpds_get_error_message(ierr)
@@ -2732,10 +2837,6 @@ def mpds_set_real_vector_from_array(vector, offset, array):
     return _deesse.mpds_set_real_vector_from_array(vector, offset, array)
 mpds_set_real_vector_from_array = _deesse.mpds_set_real_vector_from_array
 
-def mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4):
-    return _deesse.mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4)
-mpds_set_real_vector_to_cst = _deesse.mpds_set_real_vector_to_cst
-
 def mpds_get_array_from_int_vector(vector, offset, array):
     return _deesse.mpds_get_array_from_int_vector(vector, offset, array)
 mpds_get_array_from_int_vector = _deesse.mpds_get_array_from_int_vector
@@ -2748,25 +2849,37 @@ def mpds_get_array_from_real_vector(vector, offset, array):
     return _deesse.mpds_get_array_from_real_vector(vector, offset, array)
 mpds_get_array_from_real_vector = _deesse.mpds_get_array_from_real_vector
 
-def mpds_set_connectivity_varname(connectivity, STRING):
-    return _deesse.mpds_set_connectivity_varname(connectivity, STRING)
-mpds_set_connectivity_varname = _deesse.mpds_set_connectivity_varname
+def mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4):
+    return _deesse.mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4)
+mpds_set_real_vector_to_cst = _deesse.mpds_set_real_vector_to_cst
 
-def mpds_set_outputReportFileName(simInput, STRING):
-    return _deesse.mpds_set_outputReportFileName(simInput, STRING)
-mpds_set_outputReportFileName = _deesse.mpds_set_outputReportFileName
+def mpds_allocate_and_set_outputVarFlag(simInput, flag):
+    return _deesse.mpds_allocate_and_set_outputVarFlag(simInput, flag)
+mpds_allocate_and_set_outputVarFlag = _deesse.mpds_allocate_and_set_outputVarFlag
 
-def mpds_set_outputVarFlag(simInput, flag):
-    return _deesse.mpds_set_outputVarFlag(simInput, flag)
-mpds_set_outputVarFlag = _deesse.mpds_set_outputVarFlag
+def mpds_allocate_and_set_simGridAsTiFlag(simInput, flag):
+    return _deesse.mpds_allocate_and_set_simGridAsTiFlag(simInput, flag)
+mpds_allocate_and_set_simGridAsTiFlag = _deesse.mpds_allocate_and_set_simGridAsTiFlag
 
-def mpds_set_relativeDistanceFlag(simInput, flag):
-    return _deesse.mpds_set_relativeDistanceFlag(simInput, flag)
-mpds_set_relativeDistanceFlag = _deesse.mpds_set_relativeDistanceFlag
+def mpds_allocate_and_set_relativeDistanceFlag(simInput, flag):
+    return _deesse.mpds_allocate_and_set_relativeDistanceFlag(simInput, flag)
+mpds_allocate_and_set_relativeDistanceFlag = _deesse.mpds_allocate_and_set_relativeDistanceFlag
 
-def mpds_set_simGridAsTiFlag(simInput, flag):
-    return _deesse.mpds_set_simGridAsTiFlag(simInput, flag)
-mpds_set_simGridAsTiFlag = _deesse.mpds_set_simGridAsTiFlag
+def mpds_allocate_and_set_pyramid_outputLevelFlag(pyramidParameters, flag):
+    return _deesse.mpds_allocate_and_set_pyramid_outputLevelFlag(pyramidParameters, flag)
+mpds_allocate_and_set_pyramid_outputLevelFlag = _deesse.mpds_allocate_and_set_pyramid_outputLevelFlag
+
+def mpds_allocate_and_set_simname(simInput, STRING):
+    return _deesse.mpds_allocate_and_set_simname(simInput, STRING)
+mpds_allocate_and_set_simname = _deesse.mpds_allocate_and_set_simname
+
+def mpds_allocate_and_set_outputReportFileName(simInput, STRING):
+    return _deesse.mpds_allocate_and_set_outputReportFileName(simInput, STRING)
+mpds_allocate_and_set_outputReportFileName = _deesse.mpds_allocate_and_set_outputReportFileName
+
+def mpds_allocate_and_set_connectivity_varname(connectivity, STRING):
+    return _deesse.mpds_allocate_and_set_connectivity_varname(connectivity, STRING)
+mpds_allocate_and_set_connectivity_varname = _deesse.mpds_allocate_and_set_connectivity_varname
 
 def mpds_set_varname(varname, index, STRING):
     return _deesse.mpds_set_varname(varname, index, STRING)

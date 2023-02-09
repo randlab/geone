@@ -57,9 +57,10 @@ class SearchNeighborhoodParameters(object):
                             ranges, rx = ry = rz
                             (automatically computed)
                         - 'manual':
-                            search radii rx, ry, rz, are explicitly given
+                            search radii rx, ry, rz, in number of cells, are
+                            explicitly given
 
-        rx, ry, rz: (floats) radii in each direction
+        rx, ry, rz: (floats) radii, in number of cells, in each direction
                         (used only if radiusMode is set to 'manual')
 
         anisotropyRatioMode:
@@ -638,7 +639,7 @@ class PyramidGeneralParameters(object):
                 try:
                     self.ky = np.asarray(ky, dtype='int').reshape(npyramidLevel)
                 except:
-                    print('ERROR: (PyramidGeneralParameters) field "kz"...')
+                    print('ERROR: (PyramidGeneralParameters) field "ky"...')
                     return
 
             if kz is None:
@@ -772,13 +773,35 @@ class PyramidParameters(object):
                         i-th class as the union of intervals:
                             [a[0,0],a[0,1][ U ... [a[n_i-1,0],a[n_i-1,1][
                         (used when pyramidType == 'categorical_custom')
+
+        outputLevelFlag:
+                    (1-dimensional array of 'bool', of size nlevel)
+                        flag indicating which level is saved in output:
+                        - outputLevelFlag[j]:
+                            - False: level of index (j+1) will not be saved in output
+                            - True: level of index (j+1) will be saved in output
+                                (only the pyramid for the original variables flagged
+                                for output in the field 'outputVarFlag' of the parent
+                                class 'DeesseInput' will be saved)
+                        - the name of the output variables are set to
+                                <vname>_ind<i>_lev<k>_real<n>
+                            where
+                                - <vname> is the name of the "original" variable,
+                                - <i> is a pyramid index for that variable which starts at 0
+                                    (more than one index can be required if the pyramid type
+                                    is set to 'categorical_auto' or 'categorical_custom'),
+                                - <k> is the level index,
+                                - <n> is the realization index (starting from 0)
+                        - the values of the output variables are the normalized values (as
+                            used during the simulation in every level)
     """
 
     def __init__(self,
                  nlevel=0,
                  pyramidType='none',
                  nclass=0,
-                 classInterval=None):
+                 classInterval=None,
+                 outputLevelFlag=None):
         self.nlevel = nlevel
 
         if pyramidType not in ('none', 'continuous', 'categorical_auto', 'categorical_custom', 'categorical_to_continuous'):
@@ -789,6 +812,15 @@ class PyramidParameters(object):
 
         self.nclass = nclass
         self.classInterval = classInterval
+
+        if outputLevelFlag is None:
+            self.outputLevelFlag = np.array([False for i in range(nlevel)], dtype='bool')
+        else:
+            try:
+                self.outputLevelFlag = np.asarray(outputLevelFlag, dtype='bool').reshape(nlevel)
+            except:
+                print('ERROR: (PyramidParameters) field "outputLevelFlag"...')
+                return
 
     # ------------------------------------------------------------------------
     # def __str__(self):
@@ -806,6 +838,7 @@ class PyramidParameters(object):
                         if k > 0:
                             out = out + ' U '
                         out = out + str(inter)
+            out = out + '\n' + 'outputLevelFlag = {0.outputLevelFlag}'.format(self)
         out = out + '\n' + '*****'
         return out
     # ------------------------------------------------------------------------
@@ -866,10 +899,10 @@ class DeesseInput(object):
 
         dataImage:  (1-dimensional array of Img (class), or None) data images
                         used as conditioning data (if any), each data image
-                        should have the same grid dimensions as thoes of the SG
+                        should have the same grid dimensions as those of the SG
                         and its variable name(s) should be included in 'varname';
                         note that the variable names should be distinct, and each
-                        data image initialize the corresponding variable in the SG
+                        data image initializes the corresponding variable in the SG
         dataPointSet:
                     (1-dimensional array of PointSet (class), or None) point sets
                         defining hard data (if any), each point set should have
@@ -994,20 +1027,20 @@ class DeesseInput(object):
                     'none', 'min_max', 'mean_length'
         rescalingTargetMin:
                 (1-dimensional array of doubles of size nv) target min value,
-                for each variable (used for variable with rescalingMode set to
-                'min_max')
+                    for each variable (used for variable with rescalingMode set to
+                    'min_max')
         rescalingTargetMax:
                 (1-dimensional array of doubles of size nv) target max value,
-                for each variable (used for variable with rescalingMode set to
-                'min_max')
+                    for each variable (used for variable with rescalingMode set to
+                    'min_max')
         rescalingTargetMean:
                 (1-dimensional array of doubles of size nv) target mean value,
-                for each variable (used for variable with rescalingMode set to
-                'mean_length')
+                    for each variable (used for variable with rescalingMode set to
+                    'mean_length')
         rescalingTargetLength:
                 (1-dimensional array of doubles of size nv) target length value,
-                for each variable (used for variable with rescalingMode set to
-                'mean_length')
+                    for each variable (used for variable with rescalingMode set to
+                    'mean_length')
 
         relativeDistanceFlag:
                 (1-dimensional array of 'bool', of size nv)
@@ -1032,7 +1065,7 @@ class DeesseInput(object):
 
         conditioningWeightFactor:
                 (1-dimensional array of floats of size nv) weight factor for
-                conditioning data, for each variable
+                    conditioning data, for each variable
 
         simType:(string) simulation type, possible strings:
                     - 'sim_one_by_one': successive simulation of one variable at
@@ -1060,14 +1093,14 @@ class DeesseInput(object):
                         required field 'simPathUnilateralOrder', see below
         simPathStrength:
                 (double) strength in [0,1] attached to distance if simPathType is
-                'random_hd_distance_pdf' or 'random_hd_distance_sort' or
-                'random_hd_distance_sum_pdf' or 'random_hd_distance_sum_sort'
-                 (unused otherwise)
+                    'random_hd_distance_pdf' or 'random_hd_distance_sort' or
+                    'random_hd_distance_sum_pdf' or 'random_hd_distance_sum_sort'
+                    (unused otherwise)
         simPathPower:
                 (double) power (>0) to which the distance to each conditioning node
-                are elevated, if simPathType is
-                'random_hd_distance_sum_pdf' or 'random_hd_distance_sum_sort'
-                 (unused otherwise)
+                    are elevated, if simPathType is
+                    'random_hd_distance_sum_pdf' or 'random_hd_distance_sum_sort'
+                    (unused otherwise)
         simPathUnilateralOrder:
                 (1-dimesional array of ints), used when simPathType == 'unilateral'
                     - if simType == 'sim_one_by_one': simPathUnilateralOrder is
@@ -1107,6 +1140,43 @@ class DeesseInput(object):
                 (1-dimensional array of PyramidParameters (class) of size nv)
                     pyramid parameters for each variable
 
+        pyramidDataImage:
+                (1-dimensional array of Img (class), or None) data images
+                    used as conditioning data (if any) in pyramid (in additional
+                    levels); for each data image:
+                        - the variables are identified by their name:
+                            the name should be set to <vname>_ind<j>_lev<k>,
+                            where <vname> is the name of the "original"
+                            variable, <j> is the pyramid index for that variable,
+                            and <k> is the level index in {1, ...}
+                            (<j> and <k> are written on 3 digits with leading zeros)
+                        - the conditioning data values are the (already) normalized
+                            values (as used during the simulation in every level)
+                        - the grid dimensions (support) of the level in which the data
+                            are given are used: the image grid must be compatible
+                    Note: conditioning data integrated in pyramid may erased (replaced)
+                        data already set or computed from conditioning data at the level
+                        one rank finer
+
+        pyramidDataPointSet:
+                (1-dimensional array of PointSet (class), or None) point sets
+                    defining hard data (if any) in pyramid (in additional
+                    levels); for each point set:
+                        - the variables are identified by their name:
+                            the name should be set to <vname>_ind<j>_lev<k>,
+                            where <vname> is the name of the "original"
+                            variable, <j> is the pyramid index for that variable,
+                            and <k> is the level index in {1, ...}
+                            (<j> and <k> are written on 3 digits with leading zeros)
+                        - the conditioning data values are the (already) normalized
+                            values (as used during the simulation in every level)
+                        - the grid dimensions (support) of the level in which the data
+                            are given are used: locations (coordinates) of the points
+                            must be given accordingly
+                    Note: conditioning data integrated in pyramid may erased (replaced)
+                        data already set or computed from conditioning data at the level
+                        one rank finer
+
         tolerance:
                 (float) tolerance on the (acceptance) threshold value for flagging
                     nodes (for post-processing)
@@ -1145,6 +1215,12 @@ class DeesseInput(object):
                 (int) number of realization(s)
 
         name:   (string) name of the set of parameters
+
+    Note: in output simulated images (obtained by running DeeSse), the names
+        of the output variables are set to <vname>_real<n>, where
+            - <vname> is the name of the variable,
+            - <n> is the realization index (starting from 0)
+            [<n> is written on 5 digits, with leading zeros]
     """
 
     def __init__(self,
@@ -1152,6 +1228,7 @@ class DeesseInput(object):
                  sx=1.0, sy=1.0, sz=1.0,
                  ox=0.0, oy=0.0, oz=0.0,
                  nv=0, varname=None, outputVarFlag=None,
+                 # simname='',
                  outputPathIndexFlag=False, #outputPathIndexFileName=None,
                  outputErrorFlag=False, #outputErrorFileName=None,
                  outputTiGridNodeIndexFlag=False, #outputTiGridNodeIndexFileName=None,
@@ -1190,6 +1267,9 @@ class DeesseInput(object):
                  connectivity=None,
                  blockData=None,
                  maxScanFraction=None,
+                 pyramidGeneralParameters=None,
+                 pyramidParameters=None,
+                 pyramidDataImage=None, pyramidDataPointSet=None,
                  tolerance=0.0,
                  npostProcessingPathMax=0,
                  postProcessingNneighboringNode=None,
@@ -1197,8 +1277,6 @@ class DeesseInput(object):
                  postProcessingDistanceThreshold=None,
                  postProcessingMaxScanFraction=None,
                  postProcessingTolerance=0.,
-                 pyramidGeneralParameters=None,
-                 pyramidParameters=None,
                  seed=1234,
                  seedIncrement=1,
                  nrealization=1):
@@ -1231,6 +1309,8 @@ class DeesseInput(object):
             except:
                 print('ERROR: (DeesseInput) field "outputVarFlag"...')
                 return
+
+        # self.simname = None # unnecessary!
 
         self.outputPathIndexFlag = outputPathIndexFlag
         # self.outputPathIndexFileName = None # no output file!
@@ -1803,6 +1883,16 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "pyramidParameters"...')
                 return
 
+        if pyramidDataImage is None:
+            self.pyramidDataImage = None
+        else:
+            self.pyramidDataImage = np.asarray(pyramidDataImage).reshape(-1)
+
+        if pyramidDataPointSet is None:
+            self.pyramidDataPointSet = None
+        else:
+            self.pyramidDataPointSet = np.asarray(pyramidDataPointSet).reshape(-1)
+
         self.tolerance = tolerance
         self.npostProcessingPathMax = npostProcessingPathMax
 
@@ -1921,6 +2011,7 @@ def img_py2C(im_py):
 
     for i in range(im_py.nv):
         deesse.mpds_set_varname(im_c.varName, i, im_py.varname[i])
+        # deesse.charp_array_setitem(im_c.varName, i, im_py.varname[i]) # does not work!
 
     v = im_py.val.reshape(-1)
     np.putmask(v, np.isnan(v), deesse.MPDS_MISSING_VALUE)
@@ -1943,6 +2034,7 @@ def img_C2py(im_c):
     nxyzv = nxyz * im_c.nvar
 
     varname = [deesse.mpds_get_varname(im_c.varName, i) for i in range(im_c.nvar)]
+    # varname = [deesse.charp_array_getitem(im_c.varName, i) for i in range(im_c.nvar)] # also works
 
     v = np.zeros(nxyzv)
     deesse.mpds_get_array_from_real_vector(im_c.var, 0, v)
@@ -2008,17 +2100,26 @@ def ps_C2py(ps_c):
     """
 
     varname = ['X', 'Y', 'Z'] + [deesse.mpds_get_varname(ps_c.varName, i) for i in range(ps_c.nvar)]
+    # varname = ['X', 'Y', 'Z'] + [deesse.charp_array_getitem(ps_c.varName, i) for i in range(ps_c.nvar)] # also works
 
     v = np.zeros(ps_c.npoint*ps_c.nvar)
     deesse.mpds_get_array_from_real_vector(ps_c.var, 0, v)
 
-    coord = np.zeros(ps_c.npoint)
-    deesse.mpds_get_array_from_real_vector(ps_c.z, 0, coord)
-    v = np.hstack(coord,v)
-    deesse.mpds_get_array_from_real_vector(ps_c.y, 0, coord)
-    v = np.hstack(coord,v)
-    deesse.mpds_get_array_from_real_vector(ps_c.x, 0, coord)
-    v = np.hstack(coord,v)
+    # coord = np.zeros(ps_c.npoint)
+    # deesse.mpds_get_array_from_real_vector(ps_c.z, 0, coord)
+    # v = np.hstack(coord,v)
+    # deesse.mpds_get_array_from_real_vector(ps_c.y, 0, coord)
+    # v = np.hstack(coord,v)
+    # deesse.mpds_get_array_from_real_vector(ps_c.x, 0, coord)
+    # v = np.hstack(coord,v)
+
+    cx = np.zeros(ps_c.npoint)
+    cy = np.zeros(ps_c.npoint)
+    cz = np.zeros(ps_c.npoint)
+    deesse.mpds_get_array_from_real_vector(ps_c.x, 0, cx)
+    deesse.mpds_get_array_from_real_vector(ps_c.y, 0, cy)
+    deesse.mpds_get_array_from_real_vector(ps_c.z, 0, cz)
+    v = np.hstack((cx, cy, cz, v))
 
     ps_py = PointSet(npt=ps_c.npoint,
                      nv=ps_c.nvar+3, val=v, varname=varname)
@@ -2087,30 +2188,15 @@ def deesse_input_py2C(deesse_input):
     else:
         mpds_siminput.consoleAppFlag = deesse.FALSE
 
-    # mpds_siminput.simImage
+    deesse.mpds_allocate_and_set_simname(mpds_siminput, '') #  mpds_siminput.simName not used, but must be set!
+
+    # mpds_siminput.simImage ...
     # ... set initial image im (for simulation)
     im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
              sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
              ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
              nv=deesse_input.nv, val=deesse.MPDS_MISSING_VALUE,
              varname=deesse_input.varname)
-
-    # # ... integrate data image to im
-    # if deesse_input.dataImage is not None:
-    #     for i, dataIm in enumerate(deesse_input.dataImage):
-    #         if not img.isImageDimensionEqual(im, dataIm):
-    #             print ('ERROR: invalid data image dimension')
-    #             return
-    #
-    #         for j in range(dataIm.nv):
-    #             vname = dataIm.varname[j]
-    #             tmp = [vname == n for n in deesse_input.varname]
-    #             if np.sum(tmp) != 1:
-    #                 print('ERROR: variable name in data image does not match one variable name in SG')
-    #                 return
-    #
-    #             iv = np.where(tmp)[0][0]
-    #             im.set_var(val=dataIm.val[j,...], ind=iv)
 
     # ... convert im from python to C
     mpds_siminput.simImage = img_py2C(im)
@@ -2119,7 +2205,7 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.nvar = int(deesse_input.nv)
 
     # mpds_siminput.outputVarFlag
-    deesse.mpds_set_outputVarFlag(mpds_siminput, np.array([int(i) for i in deesse_input.outputVarFlag], dtype='intc'))
+    deesse.mpds_allocate_and_set_outputVarFlag(mpds_siminput, np.array([int(i) for i in deesse_input.outputVarFlag], dtype='bool'))
 
     # mpds_siminput.formatStringVar: not used
 
@@ -2163,7 +2249,7 @@ def deesse_input_py2C(deesse_input):
     # mpds_siminput.outputReportFlag
     if deesse_input.outputReportFlag:
         mpds_siminput.outputReportFlag = deesse.TRUE
-        deesse.mpds_set_outputReportFileName(mpds_siminput, deesse_input.outputReportFileName)
+        deesse.mpds_allocate_and_set_outputReportFileName(mpds_siminput, deesse_input.outputReportFileName)
     else:
         mpds_siminput.outputReportFlag = deesse.FALSE
 
@@ -2171,13 +2257,17 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.ntrainImage = deesse_input.nTI
 
     # mpds_siminput.simGridAsTiFlag
-    deesse.mpds_set_simGridAsTiFlag(mpds_siminput, np.array([int(i) for i in deesse_input.simGridAsTiFlag], dtype='intc'))
+    deesse.mpds_allocate_and_set_simGridAsTiFlag(mpds_siminput, np.array([int(i) for i in deesse_input.simGridAsTiFlag], dtype='bool')) # dtype='intc'))
 
     # mpds_siminput.trainImage
     mpds_siminput.trainImage = deesse.new_MPDS_IMAGE_array(deesse_input.nTI)
     for i, ti in enumerate(deesse_input.TI):
         if ti is not None:
-            deesse.MPDS_IMAGE_array_setitem(mpds_siminput.trainImage, i, img_py2C(ti))
+            im_c = img_py2C(ti)
+            deesse.MPDS_IMAGE_array_setitem(mpds_siminput.trainImage, i, im_c)
+            # deesse.free_MPDS_IMAGE(im_c)
+            #
+            # deesse.MPDS_IMAGE_array_setitem(mpds_siminput.trainImage, i, img_py2C(ti))
 
     # mpds_siminput.pdfTrainImage
     if deesse_input.nTI > 1:
@@ -2195,7 +2285,11 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.ndataImage = n
         mpds_siminput.dataImage = deesse.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(deesse_input.dataImage):
-            deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImage, i, img_py2C(dataIm))
+            im_c = img_py2C(dataIm)
+            deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImage, i, im_c)
+            # deesse.free_MPDS_IMAGE(im_c)
+            #
+            # deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImage, i, img_py2C(dataIm))
 
     # mpds_siminput.ndataPointSet and mpds_siminput.dataPointSet
     if deesse_input.dataPointSet is None:
@@ -2205,7 +2299,11 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.ndataPointSet = n
         mpds_siminput.dataPointSet = deesse.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(deesse_input.dataPointSet):
-            deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSet, i, ps_py2C(dataPS))
+            ps_c = ps_py2C(dataPS)
+            deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSet, i, ps_c)
+            # deesse.free_MPDS_POINTSET(ps_c)
+            #
+            # deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSet, i, ps_py2C(dataPS))
 
     # mpds_siminput.maskImageFlag and mpds_siminput.maskImage
     if deesse_input.mask is None:
@@ -2467,6 +2565,7 @@ def deesse_input_py2C(deesse_input):
         sn_c.power = sn.power
         deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(
             mpds_siminput.searchNeighborhoodParameters, i, sn_c)
+        # deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(sn_c)
 
     # mpds_siminput.nneighboringNode
     mpds_siminput.nneighboringNode = deesse.new_int_array(int(deesse_input.nv))
@@ -2524,7 +2623,7 @@ def deesse_input_py2C(deesse_input):
         np.asarray(deesse_input.rescalingTargetLength).reshape(int(deesse_input.nv)))
 
     # mpds_siminput.relativeDistanceFlag
-    deesse.mpds_set_relativeDistanceFlag(mpds_siminput, np.array([int(i) for i in deesse_input.relativeDistanceFlag], dtype='intc'))
+    deesse.mpds_allocate_and_set_relativeDistanceFlag(mpds_siminput, np.array([int(i) for i in deesse_input.relativeDistanceFlag], dtype='bool')) # , dtype='intc'))
 
     # mpds_siminput.distanceType
     mpds_siminput.distanceType = deesse.new_int_array(int(deesse_input.nv))
@@ -2550,7 +2649,7 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.conditioningWeightFactor, 0,
         np.asarray(deesse_input.conditioningWeightFactor).reshape(int(deesse_input.nv)))
 
-    # mpds_siminput.simAndPathParameters
+    # mpds_siminput.simAndPathParameters ...
     # ... simType
     mpds_siminput.simAndPathParameters = deesse.malloc_MPDS_SIMANDPATHPARAMETERS()
     deesse.MPDSInitSimAndPathParameters(mpds_siminput.simAndPathParameters)
@@ -2608,6 +2707,7 @@ def deesse_input_py2C(deesse_input):
         sp_c.probabilityConstraintUsage = sp.probabilityConstraintUsage
         if sp.probabilityConstraintUsage == 0:
             deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_siminput.softProbability, i, sp_c)
+            # deesse.free_MPDS_SOFTPROBABILITY(sp_c)
             continue
 
         # ... classOfValues
@@ -2676,6 +2776,7 @@ def deesse_input_py2C(deesse_input):
         sp_c.deactivationDistance = sp.deactivationDistance
 
         deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_siminput.softProbability, i, sp_c)
+        # deesse.free_MPDS_SOFTPROBABILITY(sp_c)
 
     # mpds_siminput.connectivity ...
     mpds_siminput.connectivity = deesse.new_MPDS_CONNECTIVITY_array(int(deesse_input.nv))
@@ -2688,6 +2789,7 @@ def deesse_input_py2C(deesse_input):
         co_c.connectivityConstraintUsage = co.connectivityConstraintUsage
         if co.connectivityConstraintUsage == 0:
             deesse.MPDS_CONNECTIVITY_array_setitem(mpds_siminput.connectivity, i, co_c)
+            # deesse.free_MPDS_CONNECTIVITY(co_c)
             continue
 
         # ... connectivityType
@@ -2702,7 +2804,7 @@ def deesse_input_py2C(deesse_input):
             return
 
         # ... varName
-        deesse.mpds_set_connectivity_varname(co_c, co.varname)
+        deesse.mpds_allocate_and_set_connectivity_varname(co_c, co.varname)
 
         # ... classOfValues
         co_c.classOfValues = classInterval2classOfValues(co.classInterval)
@@ -2726,6 +2828,7 @@ def deesse_input_py2C(deesse_input):
         co_c.threshold = co.threshold
 
         deesse.MPDS_CONNECTIVITY_array_setitem(mpds_siminput.connectivity, i, co_c)
+        # deesse.free_MPDS_CONNECTIVITY(co_c)
 
     # mpds_siminput.blockData ...
     mpds_siminput.blockData = deesse.new_MPDS_BLOCKDATA_array(int(deesse_input.nv))
@@ -2738,6 +2841,7 @@ def deesse_input_py2C(deesse_input):
         bd_c.blockDataUsage = bd.blockDataUsage
         if bd.blockDataUsage == 0:
             deesse.MPDS_BLOCKDATA_array_setitem(mpds_siminput.blockData, i, bd_c)
+            # deesse.free_MPDS_BLOCKDATA(bd_c)
             continue
 
         # ... nblock
@@ -2783,6 +2887,7 @@ def deesse_input_py2C(deesse_input):
             np.asarray(bd.activatePropMax).reshape(bd.nblock))
 
         deesse.MPDS_BLOCKDATA_array_setitem(mpds_siminput.blockData, i, bd_c)
+        # deesse.free_MPDS_BLOCKDATA(bd_c)
 
     # mpds_siminput.maxScanFraction
     mpds_siminput.maxScanFraction = deesse.new_double_array(deesse_input.nTI)
@@ -2880,7 +2985,39 @@ def deesse_input_py2C(deesse_input):
             # ... classOfValues
             pp_c.classOfValues = classInterval2classOfValues(pp.classInterval)
 
+        # ... outputLevelFlag
+        deesse.mpds_allocate_and_set_pyramid_outputLevelFlag(pp_c, np.array([int(i) for i in pp.outputLevelFlag], dtype='intc'))
+
         deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(mpds_siminput.pyramidParameters, i, pp_c)
+        # deesse.free_MPDS_PYRAMIDPARAMETERS(pp_c)
+
+    # mpds_siminput.ndataImageInPyramid and mpds_siminput.dataImageInPyramid
+    if deesse_input.pyramidDataImage is None:
+        mpds_siminput.ndataImageInPyramid = 0
+    else:
+        n = len(deesse_input.pyramidDataImage)
+        mpds_siminput.ndataImageInPyramid = n
+        mpds_siminput.dataImageInPyramid = deesse.new_MPDS_IMAGE_array(n)
+        for i, dataIm in enumerate(deesse_input.pyramidDataImage):
+            im_c = img_py2C(dataIm)
+            deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImageInPyramid, i, im_c)
+            # deesse.free_MPDS_IMAGE(im_c)
+            #
+            # deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImageInPyramid, i, img_py2C(dataIm))
+
+    # mpds_siminput.ndataPointSetInPyramid and mpds_siminput.dataPointSetInPyramid
+    if deesse_input.pyramidDataPointSet is None:
+        mpds_siminput.ndataPointSetInPyramid = 0
+    else:
+        n = len(deesse_input.pyramidDataPointSet)
+        mpds_siminput.ndataPointSetInPyramid = n
+        mpds_siminput.dataPointSetInPyramid = deesse.new_MPDS_POINTSET_array(n)
+        for i, dataPS in enumerate(deesse_input.pyramidDataPointSet):
+            ps_c = ps_py2C(dataPS)
+            deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSetInPyramid, i, ps_c)
+            # deesse.free_MPDSPOINTSET(ps_c)
+            #
+            # deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSetInPyramid, i, ps_py2C(dataPS))
 
     # mpds_siminput.tolerance
     mpds_siminput.tolerance = deesse_input.tolerance
@@ -2933,57 +3070,136 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
     Get deesse output for python from C.
 
     :param mpds_simoutput:  (MPDS_SIMOUTPUT *) simulation output - (C struct)
+                                contains output of deesse simulation
     :param mpds_progressMonitor:
                             (MPDS_PROGRESSMONITOR *) progress monitor - (C struct)
+                                contains output messages (warnings) of deesse simulation
 
-    :return deesse_output:  (dict)
+    :return deesse_output:
+        (dict)
             {'sim':sim,
+             'sim_var_original_index':sim_var_original_index,
+             'sim_pyramid':sim_pyramid,
+             'sim_pyramid_var_original_index':sim_pyramid_var_original_index,
+             'sim_pyramid_var_pyramid_index':sim_pyramid_var_pyramid_index,
              'path':path,
              'error':error,
              'tiGridNode':tiGridNode,
              'tiIndex':tiIndex,
              'nwarning':nwarning,
              'warnings':warnings}
-        With nreal = mpds_simOutput->nreal:
+
+        With nreal = mpds_simOutput->nreal (number of realizations):
+
         sim:    (1-dimensional array of Img (class) of size nreal or None)
-                    sim[i]: i-th realisation
-                            (mpds_simoutput->outputSimImage[i])
+                    sim[i]: i-th realisation,
+                        k-th variable stored refers to
+                            - the original variable sim_var_original_index[k]
+                        (get from mpds_simoutput->outputSimImage[0])
                     (sim is None if mpds_simoutput->outputSimImage is NULL)
+
+        sim_var_original_index:
+                (1-dimensional array of ints or None)
+                    sim_var_original_index[k]: index of the original variable
+                        (given in deesse_input) of the k-th variable stored in
+                        in sim[i] for any i
+                        (array of length array of length sim[*].nv,
+                        get from mpds_simoutput->originalVarIndex)
+                    (sim_var_original_index is None if mpds_simoutput->originalVarIndex is NULL)
+
+        sim_pyramid:
+                (list or None) realizations in pyramid levels
+                    (depends on input parameters given in deesse_input)
+                    if pyramid was used and output in pyramid required:
+                        sim_pyramid[j]:
+                            (1-dimensional array of Img (class) of size nreal or None)
+                                sim_pyramid[j][i]: i-th realisation in pyramid level of index j+1,
+                                    k-th variable stored refers to
+                                        - the original variable sim_pyramid_var_original_index[j][k]
+                                        - and pyramid index sim_pyramid_var_pyramid_index[j][k]
+                                    (get from mpds_simoutput->outputSimImagePyramidLevel[j])
+                                (sim_pyramid[j] is None if mpds_simoutput->outputSimImagePyramidLevel[j] is NULL)
+                        (sim_pyramid is None otherwise)
+
+        sim_pyramid_var_original_index:
+                (list or None) index of original variable for realizations in pyramid levels
+                    (depends on input parameters given in deesse_input)
+                    if pyramid was used and output in pyramid required:
+                        sim_pyramid_var_original_index[j]:
+                            (1-dimensional array of ints or None)
+                                sim_pyramid_var_original_index[j][k]: index of the original variable
+                                    (given in deesse_input) of the k-th variable stored in
+                                    sim_pyramid[j][i], for any i
+                                    (array of length array of length sim_pyramid[j][*].nv,
+                                    get from mpds_simoutput->originalVarIndexPyramidLevel[j])
+                                (sim_pyramid_var_original_index[j] is None if mpds_simoutput->originalVarIndexPyramidLevel[j] is NULL)
+                        (sim_pyramid_var_original_index is None otherwise)
+
+        sim_pyramid_var_pyramid_index:
+                (list or None) pyramid index of original variable for realizations in pyramid levels
+                    (depends on input parameters given in deesse_input)
+                    if pyramid was used and output in pyramid required:
+                        sim_pyramid_var_pyramid_index[j]:
+                            (1-dimensional array of ints or None)
+                                sim_pyramid_var_pyramid_index[j][k]: pyramid index of original variable
+                                    (given in deesse_input) of the k-th variable stored in
+                                    sim_pyramid[j][i], for any i
+                                    (array of length array of length sim_pyramid[j][*].nv,
+                                    get from mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j])
+                                (sim_pyramid_var_pyramid_index[j] is None if mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j] is NULL)
+                        (sim_pyramid_var_pyramid_index is None otherwise)
+
         path:   (1-dimensional array of Img (class) of size nreal or None)
                     path[i]: path index map for the i-th realisation
-                             (mpds_simoutput->outputPathIndexImage[i])
+                        (mpds_simoutput->outputPathIndexImage[0])
                     (path is None if mpds_simoutput->outputPathIndexImage is NULL)
+
         error:   (1-dimensional array of Img (class) of size nreal or None)
                     error[i]: error map for the i-th realisation
-                              (mpds_simoutput->outputErrorImage[i])
+                        (mpds_simoutput->outputErrorImage[0])
                     (error is None if mpds_simoutput->outputErrorImage is NULL)
+
         tiGridNode:
                 (1-dimensional array of Img (class) of size nreal or None)
                     tiGridNode[i]: TI grid node index map for the i-th realisation
-                             (mpds_simoutput->outputTiGridNodeIndexImage[i])
+                        (mpds_simoutput->outputTiGridNodeIndexImage[0])
                     (tiGridNode is None if mpds_simoutput->outputTiGridNodeIndexImage is NULL)
+
         tiIndex:
                 (1-dimensional array of Img (class) of size nreal or None)
                     tiIndex[i]: TI index map for the i-th realisation
-                             (mpds_simoutput->outputTiIndexImage[i])
+                        (mpds_simoutput->outputTiIndexImage[0])
                     (tiIndex is None if mpds_simoutput->outputTiIndexImage is NULL)
+
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
+
         warnings:
                 (list of strings) list of distinct warnings encountered
                     (can be empty)
     """
 
     # Initialization
-    sim, path, error, tiGridNode, tiIndex = None, None, None, None, None
+    sim, sim_var_original_index = None, None
+    sim_pyramid, sim_pyramid_var_original_index, sim_pyramid_var_pyramid_index = None, None, None
+    path, error, tiGridNode, tiIndex = None, None, None, None
     nwarning, warnings = None, None
 
     if mpds_simoutput.nreal:
         nreal = mpds_simoutput.nreal
 
         if mpds_simoutput.nvarSimPerReal:
-            # Retrieve the list of simulated image
+            # --- sim_var_original_index ---
+            sim_var_original_index = np.zeros(mpds_simoutput.nvarSimPerReal, dtype='intc') # 'intc' for C-compatibility
+            deesse.mpds_get_array_from_int_vector(mpds_simoutput.originalVarIndex, 0, sim_var_original_index)
+
+            # ... also works ...
+            # sim_var_original_index = np.asarray([deesse.int_array_getitem(mpds_simoutput.originalVarIndex, i) for i in range(mpds_simoutput.nvarSimPerReal)])
+            # ...
+            # ---
+
+            # --- sim ---
             im = img_C2py(mpds_simoutput.outputSimImage)
 
             nv = mpds_simoutput.nvarSimPerReal
@@ -2997,10 +3213,68 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                varname=im.varname[k:(k+nv)]))
                 k = k + nv
 
+            del(im)
             sim = np.asarray(sim).reshape(nreal)
+            # ---
+
+            if mpds_simoutput.npyramidLevel:
+                npyramidLevel = mpds_simoutput.npyramidLevel
+
+                nvarSimPerRealPyramidLevel = np.zeros(mpds_simoutput.npyramidLevel, dtype='intc') # 'intc' for C-compatibility
+                deesse.mpds_get_array_from_int_vector(mpds_simoutput.nvarSimPerRealPyramidLevel, 0, nvarSimPerRealPyramidLevel)
+
+                if np.sum(nvarSimPerRealPyramidLevel) > 0:
+                    # --- sim_pyramid, sim_pyramid_var_original_index, sim_pyramid_var_pyramid_index ---
+                    sim_pyramid = npyramidLevel*[None]
+                    sim_pyramid_var_original_index = npyramidLevel*[None]
+                    sim_pyramid_var_pyramid_index = npyramidLevel*[None]
+
+                    for j in range(npyramidLevel):
+                        if nvarSimPerRealPyramidLevel[j]:
+                            # +++ sim_pyramid_var_original_index[j] +++
+                            sim_pyramid_var_original_index[j] = np.zeros(nvarSimPerRealPyramidLevel[j], dtype='intc') # 'intc' for C-compatibility
+                            iptr = deesse.intp_array_getitem(mpds_simoutput.originalVarIndexPyramidLevel, j)
+                            deesse.mpds_get_array_from_int_vector(iptr, 0, sim_pyramid_var_original_index[j])
+
+                            # # ... also works ...
+                            # iptr = deesse.intp_array_getitem(mpds_simoutput.originalVarIndexPyramidLevel, j)
+                            # sim_pyramid_var_original_index[j] = np.asarray([deesse.int_array_getitem(iptr, k) for k in range(nvarSimPerRealPyramidLevel[j])])
+                            # # ...
+                            # +++
+
+                            # +++ sim_pyramid_var_pyramid_index[j] +++
+                            sim_pyramid_var_pyramid_index[j] = np.zeros(nvarSimPerRealPyramidLevel[j], dtype='intc') # 'intc' for C-compatibility
+                            iptr = deesse.intp_array_getitem(mpds_simoutput.pyramidIndexOfOriginalVarPyramidLevel, j)
+                            deesse.mpds_get_array_from_int_vector(iptr, 0, sim_pyramid_var_pyramid_index[j])
+
+                            # # ... also works ...
+                            # iptr = deesse.intp_array_getitem(mpds_simoutput.pyramidIndexOfOriginalVarPyramidLevel, j)
+                            # sim_pyramid_var_pyramid_index[j] = np.asarray([deesse.int_array_getitem(iptr, k) for k in range(nvarSimPerRealPyramidLevel[j])])
+                            # # ...
+                            # +++
+
+                            # +++ sim_pyramid[j] +++
+                            im_ptr = deesse.MPDS_IMAGEp_array_getitem(mpds_simoutput.outputSimImagePyramidLevel, j)
+                            im = img_C2py(im_ptr)
+
+                            nv = nvarSimPerRealPyramidLevel[j]
+                            k = 0
+                            sim_pyramid[j] = []
+                            for i in range(nreal):
+                                sim_pyramid[j].append(Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                                               sx=im.sx, sy=im.sy, sz=im.sz,
+                                               ox=im.ox, oy=im.oy, oz=im.oz,
+                                               nv=nv, val=im.val[k:(k+nv),...],
+                                               varname=im.varname[k:(k+nv)]))
+                                k = k + nv
+
+                            del(im)
+                            sim_pyramid[j] = np.asarray(sim_pyramid[j]).reshape(nreal)
+                            # +++
+                    # ---
 
         if mpds_simoutput.nvarPathIndexPerReal:
-            # Retrieve the list of path index image
+            # --- path ---
             im = img_C2py(mpds_simoutput.outputPathIndexImage)
 
             nv = mpds_simoutput.nvarPathIndexPerReal
@@ -3014,10 +3288,12 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                 varname=im.varname[k:(k+nv)]))
                 k = k + nv
 
+            del(im)
             path = np.asarray(path).reshape(nreal)
+            # ---
 
         if mpds_simoutput.nvarErrorPerReal:
-            # Retrieve the list of error image
+            # --- error ---
             im = img_C2py(mpds_simoutput.outputErrorImage)
 
             nv = mpds_simoutput.nvarErrorPerReal
@@ -3031,10 +3307,12 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                  varname=im.varname[k:(k+nv)]))
                 k = k + nv
 
+            del(im)
             error = np.asarray(error).reshape(nreal)
+            # ---
 
         if mpds_simoutput.nvarTiGridNodeIndexPerReal:
-            # Retrieve the list of TI grid node index image
+            # --- tiGridNode ---
             im = img_C2py(mpds_simoutput.outputTiGridNodeIndexImage)
 
             nv = mpds_simoutput.nvarTiGridNodeIndexPerReal
@@ -3048,10 +3326,12 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                 varname=im.varname[k:(k+nv)]))
                 k = k + nv
 
+            del(im)
             tiGridNode = np.asarray(tiGridNode).reshape(nreal)
+            # ---
 
         if mpds_simoutput.nvarTiIndexPerReal:
-            # Retrieve the list of TI index image
+            # --- tiIndex ---
             im = img_C2py(mpds_simoutput.outputTiIndexImage)
 
             nv = mpds_simoutput.nvarTiIndexPerReal
@@ -3065,8 +3345,11 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                 varname=im.varname[k:(k+nv)]))
                 k = k + nv
 
+            del(im)
             tiIndex = np.asarray(tiIndex).reshape(nreal)
+            # ---
 
+    # --- nwarning, warnings ---
     nwarning = mpds_progressMonitor.nwarning
     warnings = []
     if mpds_progressMonitor.nwarningNumber:
@@ -3077,8 +3360,14 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
             warning_message = deesse.mpds_get_warning_message(int(iwarn)) # int() required!
             warning_message = warning_message.replace('\n', '')
             warnings.append(warning_message)
+    # ---
 
-    return {'sim':sim, 'path':path, 'error':error, 'tiGridNode':tiGridNode, 'tiIndex':tiIndex, 'nwarning':nwarning, 'warnings':warnings}
+    return {
+        'sim':sim, 'sim_var_original_index':sim_var_original_index,
+        'sim_pyramid':sim_pyramid, 'sim_pyramid_var_original_index':sim_pyramid_var_original_index, 'sim_pyramid_var_pyramid_index':sim_pyramid_var_pyramid_index,
+        'path':path, 'error':error, 'tiGridNode':tiGridNode, 'tiIndex':tiIndex,
+        'nwarning':nwarning, 'warnings':warnings
+        }
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -3101,37 +3390,99 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 
     :return deesse_output:
         (dict)
-                {'sim':sim,
-                 'path':path,
-                 'error':error,
-                 'tiGridNode':tiGridNode,
-                 'tiIndex':tiIndex,
-                 'nwarning':nwarning,
-                 'warnings':warnings}
-            With nreal = deesse_input.nrealization:
-            sim:    (1-dimensional array of Img (class) of size nreal or None)
-                        sim[i]: i-th realisation
-                        (sim is None if no simulation is retrieved)
-            path:   (1-dimensional array of Img (class) of size nreal or None)
-                        path[i]: path index map for the i-th realisation
-                        (path is None if no path index map is retrieved)
-            error:   (1-dimensional array of Img (class) of size nreal or None)
-                        error[i]: error map for the i-th realisation
-                        (error is None if no error map is retrieved)
-            tiGridNode:
-                    (1-dimensional array of Img (class) of size nreal or None)
-                        tiGridNode[i]: TI grid node index map for the i-th realisation
-                        (tiGridNode is None if no TI grid node index map is retrieved)
-            tiIndex:
-                    (1-dimensional array of Img (class) of size nreal or None)
-                        tiIndex[i]: TI index map for the i-th realisation
-                        (tiIndex is None if no TI index map is retrieved)
-            nwarning:
-                    (int) total number of warning(s) encountered
-                        (same warnings can be counted several times)
-            warnings:
-                    (list of strings) list of distinct warnings encountered
-                        (can be empty)
+            {'sim':sim,
+             'sim_var_original_index':sim_var_original_index,
+             'sim_pyramid':sim_pyramid,
+             'sim_pyramid_var_original_index':sim_pyramid_var_original_index,
+             'sim_pyramid_var_pyramid_index':sim_pyramid_var_pyramid_index,
+             'path':path,
+             'error':error,
+             'tiGridNode':tiGridNode,
+             'tiIndex':tiIndex,
+             'nwarning':nwarning,
+             'warnings':warnings}
+
+        With nreal = deesse_input.nrealization:
+
+        sim:    (1-dimensional array of Img (class) of size nreal or None)
+                    sim[i]: i-th realisation,
+                        k-th variable stored refers to
+                            - the original variable sim_var_original_index[k]
+                    (sim is None if no simulation is retrieved)
+
+        sim_var_original_index:
+                (1-dimensional array of ints or None)
+                    sim_var_original_index[k]: index of the original variable
+                        (given in deesse_input) of the k-th variable stored in
+                        in sim[i] for any i
+                        (array of length array of length sim[*].nv)
+                    (sim_var_original_index is None if no simulation is retrieved)
+
+        sim_pyramid:
+                (list or None) realizations in pyramid levels
+                    (depends on input parameters given in deesse_input)
+                    if pyramid was used and output in pyramid required:
+                        sim_pyramid[j]:
+                            (1-dimensional array of Img (class) of size nreal or None)
+                                sim_pyramid[j][i]: i-th realisation in pyramid level of index j+1,
+                                    k-th variable stored refers to
+                                        - the original variable sim_pyramid_var_original_index[j][k]
+                                        - and pyramid index sim_pyramid_var_pyramid_index[j][k]
+                                (sim_pyramid[j] is None if no output in level j+1)
+                        (sim_pyramid is None if no output for pyramid)
+
+        sim_pyramid_var_original_index:
+                (list or None) index of original variable for realizations in pyramid levels
+                    (depends on input parameters given in deesse_input)
+                    if pyramid was used and output in pyramid required:
+                        sim_pyramid_var_original_index[j]:
+                            (1-dimensional array of ints or None)
+                                sim_pyramid_var_original_index[j][k]: index of the original variable
+                                    (given in deesse_input) of the k-th variable stored in
+                                    sim_pyramid[j][i], for any i
+                                    (array of length array of length sim_pyramid[j][*].nv)
+                                (sim_pyramid_var_original_index[j] is None if no output in level j+1)
+                        (sim_pyramid_var_original_index is None if no output for pyramid)
+
+        sim_pyramid_var_pyramid_index:
+                (list or None) pyramid index of original variable for realizations in pyramid levels
+                    (depends on input parameters given in deesse_input)
+                    if pyramid was used and output in pyramid required:
+                        sim_pyramid_var_pyramid_index[j]:
+                            (1-dimensional array of ints or None)
+                                sim_pyramid_var_pyramid_index[j][k]: pyramid index of original variable
+                                    (given in deesse_input) of the k-th variable stored in
+                                    sim_pyramid[j][i], for any i
+                                    (array of length array of length sim_pyramid[j][*].nv)
+                                (sim_pyramid_var_pyramid_index[j] is None if no output in level j+1)
+                        (sim_pyramid_var_pyramid_index is None if no output for pyramid)
+
+
+        path:   (1-dimensional array of Img (class) of size nreal or None)
+                    path[i]: path index map for the i-th realisation
+                    (path is None if no path index map is retrieved)
+
+        error:   (1-dimensional array of Img (class) of size nreal or None)
+                    error[i]: error map for the i-th realisation
+                    (error is None if no error map is retrieved)
+
+        tiGridNode:
+                (1-dimensional array of Img (class) of size nreal or None)
+                    tiGridNode[i]: TI grid node index map for the i-th realisation
+                    (tiGridNode is None if no TI grid node index map is retrieved)
+
+        tiIndex:
+                (1-dimensional array of Img (class) of size nreal or None)
+                    tiIndex[i]: TI index map for the i-th realisation
+                    (tiIndex is None if no TI index map is retrieved)
+
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
     """
 
     if not deesse_input.ok:
@@ -3174,14 +3525,14 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
     # Set function to update progress monitor:
     # according to deesse.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
+    #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor1_ptr: warning only
     if verbose < 3:
         mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
     else:
-        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor4_ptr
 
     # Launch deesse
     # err = deesse.MPDSSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor )
@@ -3261,37 +3612,99 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
 
     :return deesse_output:
         (dict)
-                {'sim':sim,
-                 'path':path,
-                 'error':error,
-                 'tiGridNode':tiGridNode,
-                 'tiIndex':tiIndex,
-                 'nwarning':nwarning,
-                 'warnings':warnings}
-            With nreal = deesse_input.nrealization:
-            sim:    (1-dimensional array of Img (class) of size nreal or None)
-                        sim[i]: i-th realisation
-                        (sim is None if no simulation is retrieved)
-            path:   (1-dimensional array of Img (class) of size nreal or None)
-                        path[i]: path index map for the i-th realisation
-                        (path is None if no path index map is retrieved)
-            error:   (1-dimensional array of Img (class) of size nreal or None)
-                        error[i]: error map for the i-th realisation
-                        (error is None if no error map is retrieved)
-            tiGridNode:
-                    (1-dimensional array of Img (class) of size nreal or None)
-                        tiGridNode[i]: TI grid node index map for the i-th realisation
-                        (tiGridNode is None if no TI grid node index map is retrieved)
-            tiIndex:
-                    (1-dimensional array of Img (class) of size nreal or None)
-                        tiIndex[i]: TI index map for the i-th realisation
-                        (tiIndex is None if no TI index map is retrieved)
-            nwarning:
-                    (int) total number of warning(s) encountered
-                        (same warnings can be counted several times)
-            warnings:
-                    (list of strings) list of distinct warnings encountered
-                        (can be empty)
+            {'sim':sim,
+             'sim_var_original_index':sim_var_original_index,
+             'sim_pyramid':sim_pyramid,
+             'sim_pyramid_var_original_index':sim_pyramid_var_original_index,
+             'sim_pyramid_var_pyramid_index':sim_pyramid_var_pyramid_index,
+             'path':path,
+             'error':error,
+             'tiGridNode':tiGridNode,
+             'tiIndex':tiIndex,
+             'nwarning':nwarning,
+             'warnings':warnings}
+
+        With nreal = deesse_input.nrealization:
+
+        sim:    (1-dimensional array of Img (class) of size nreal or None)
+                    sim[i]: i-th realisation,
+                        k-th variable stored refers to
+                            - the original variable sim_var_original_index[k]
+                    (sim is None if no simulation is retrieved)
+
+        sim_var_original_index:
+                (1-dimensional array of ints or None)
+                    sim_var_original_index[k]: index of the original variable
+                        (given in deesse_input) of the k-th variable stored in
+                        in sim[i] for any i
+                        (array of length array of length sim[*].nv)
+                    (sim_var_original_index is None if no simulation is retrieved)
+
+        sim_pyramid:
+                (list or None) realizations in pyramid levels
+                    (depends on input parameters given in deesse_input)
+                    if pyramid was used and output in pyramid required:
+                        sim_pyramid[j]:
+                            (1-dimensional array of Img (class) of size nreal or None)
+                                sim_pyramid[j][i]: i-th realisation in pyramid level of index j+1,
+                                    k-th variable stored refers to
+                                        - the original variable sim_pyramid_var_original_index[j][k]
+                                        - and pyramid index sim_pyramid_var_pyramid_index[j][k]
+                                (sim_pyramid[j] is None if no output in level j+1)
+                        (sim_pyramid is None if no output for pyramid)
+
+        sim_pyramid_var_original_index:
+                (list or None) index of original variable for realizations in pyramid levels
+                    (depends on input parameters given in deesse_input)
+                    if pyramid was used and output in pyramid required:
+                        sim_pyramid_var_original_index[j]:
+                            (1-dimensional array of ints or None)
+                                sim_pyramid_var_original_index[j][k]: index of the original variable
+                                    (given in deesse_input) of the k-th variable stored in
+                                    sim_pyramid[j][i], for any i
+                                    (array of length array of length sim_pyramid[j][*].nv)
+                                (sim_pyramid_var_original_index[j] is None if no output in level j+1)
+                        (sim_pyramid_var_original_index is None if no output for pyramid)
+
+        sim_pyramid_var_pyramid_index:
+                (list or None) pyramid index of original variable for realizations in pyramid levels
+                    (depends on input parameters given in deesse_input)
+                    if pyramid was used and output in pyramid required:
+                        sim_pyramid_var_pyramid_index[j]:
+                            (1-dimensional array of ints or None)
+                                sim_pyramid_var_pyramid_index[j][k]: pyramid index of original variable
+                                    (given in deesse_input) of the k-th variable stored in
+                                    sim_pyramid[j][i], for any i
+                                    (array of length array of length sim_pyramid[j][*].nv)
+                                (sim_pyramid_var_pyramid_index[j] is None if no output in level j+1)
+                        (sim_pyramid_var_pyramid_index is None if no output for pyramid)
+
+
+        path:   (1-dimensional array of Img (class) of size nreal or None)
+                    path[i]: path index map for the i-th realisation
+                    (path is None if no path index map is retrieved)
+
+        error:   (1-dimensional array of Img (class) of size nreal or None)
+                    error[i]: error map for the i-th realisation
+                    (error is None if no error map is retrieved)
+
+        tiGridNode:
+                (1-dimensional array of Img (class) of size nreal or None)
+                    tiGridNode[i]: TI grid node index map for the i-th realisation
+                    (tiGridNode is None if no TI grid node index map is retrieved)
+
+        tiIndex:
+                (1-dimensional array of Img (class) of size nreal or None)
+                    tiIndex[i]: TI index map for the i-th realisation
+                    (tiIndex is None if no TI index map is retrieved)
+
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
     """
 
     if not deesse_input.ok:
@@ -3371,62 +3784,121 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
     if np.any([out is None for out in deesse_output_proc]):
         return None
 
-    sim, path, error, tiGridNode, tiIndex = None, None, None, None, None
+    sim, sim_var_original_index = None, None
+    sim_pyramid, sim_pyramid_var_original_index, sim_pyramid_var_pyramid_index = None, None, None
+    path, error, tiGridNode, tiIndex = None, None, None, None
     nwarning, warnings = None, None
 
-    # Gather results of every process
+    # Gather results from every process
+    # sim
     sim = np.hstack([out['sim'] for out in deesse_output_proc])
-    path = np.hstack([out['path'] for out in deesse_output_proc])
-    error = np.hstack([out['error'] for out in deesse_output_proc])
-    tiGridNode = np.hstack([out['tiGridNode'] for out in deesse_output_proc])
-    tiIndex = np.hstack([out['tiIndex'] for out in deesse_output_proc])
-
-    nwarning = np.sum([out['nwarning'] for out in deesse_output_proc])
-    warnings = list(np.unique(np.hstack([out['warnings'] for out in deesse_output_proc])))
-
-    # Remove None entries
+    # ... remove None entries
     sim = sim[[x is not None for x in sim]]
-    path = path[[x is not None for x in path]]
-    error = error[[x is not None for x in error]]
-    tiGridNode = tiGridNode[[x is not None for x in tiGridNode]]
-    tiIndex = tiIndex[[x is not None for x in tiIndex]]
-
-    # Set to None if every entry is None
+    # ... set to None if every entry is None
     if np.all([x is None for x in sim]):
         sim = None
+
+    # sim_var_original_index
+    sim_var_original_index = deesse_output_proc[0]['sim_var_original_index']
+
+    # sim_pyramid
+    nlevel = 0
+    if deesse_output_proc[0]['sim_pyramid'] is not None:
+        nlevel = len(deesse_output_proc[0]['sim_pyramid'])
+        sim_pyramid = []
+        for j in range(nlevel):
+            # set sim_lev (that will be append to sim_pyramid)
+            sim_lev = []
+            for out in deesse_output_proc:
+                if out['sim_pyramid'] is not None:
+                    sim_lev.append(out['sim_pyramid'][j])
+            sim_lev = np.hstack(sim_lev)
+            # ... remove None entries
+            sim_lev = sim_lev[[x is not None for x in sim_lev]]
+            # ... set to None if every entry is None
+            if np.all([x is None for x in sim_lev]):
+                sim_lev = None
+            # ... append to sim_pyramid
+            sim_pyramid.append(sim_lev)
+
+    # sim_pyramid_var_original_index
+    sim_pyramid_var_original_index = deesse_output_proc[0]['sim_pyramid_var_original_index']
+
+    # sim_pyramid_var_pyramid_index
+    sim_pyramid_var_pyramid_index = deesse_output_proc[0]['sim_pyramid_var_pyramid_index']
+
+    # path
+    path = np.hstack([out['path'] for out in deesse_output_proc])
+    # ... remove None entries
+    path = path[[x is not None for x in path]]
+    # ... set to None if every entry is None
     if np.all([x is None for x in path]):
         path = None
+
+    # error
+    error = np.hstack([out['error'] for out in deesse_output_proc])
+    # ... remove None entries
+    error = error[[x is not None for x in error]]
+    # ... set to None if every entry is None
     if np.all([x is None for x in error]):
         error = None
+
+    # tiGridNode
+    tiGridNode = np.hstack([out['tiGridNode'] for out in deesse_output_proc])
+    # ... remove None entries
+    tiGridNode = tiGridNode[[x is not None for x in tiGridNode]]
+    # ... set to None if every entry is None
     if np.all([x is None for x in tiGridNode]):
         tiGridNode = None
+
+    # tiIndex
+    tiIndex = np.hstack([out['tiIndex'] for out in deesse_output_proc])
+    # ... remove None entries
+    tiIndex = tiIndex[[x is not None for x in tiIndex]]
+    # ... set to None if every entry is None
     if np.all([x is None for x in tiIndex]):
         tiIndex = None
 
-    # Adjust names
+    # nwarning
+    nwarning = np.sum([out['nwarning'] for out in deesse_output_proc])
+    # warnings
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in deesse_output_proc])))
+
+    # Adjust variable names
     ndigit = deesse.MPDS_NB_DIGIT_FOR_REALIZATION_NUMBER
     if sim is not None:
         for i in range(deesse_input.nrealization):
-            for j in range(sim[i].nv):
-                sim[i].varname[j] = sim[i].varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            for k in range(sim[i].nv):
+                sim[i].varname[k] = sim[i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
+    if sim_pyramid is not None:
+        for j in range(nlevel):
+            if sim_pyramid[j] is not None:
+                for i in range(deesse_input.nrealization):
+                    for k in range(sim_pyramid[j][i].nv):
+                        sim_pyramid[j][i].varname[k] = sim_pyramid[j][i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
     if path is not None:
         for i in range(deesse_input.nrealization):
-            for j in range(path[i].nv):
-                path[i].varname[j] = path[i].varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            for k in range(path[i].nv):
+                path[i].varname[k] = path[i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
     if error is not None:
         for i in range(deesse_input.nrealization):
-            for j in range(error[i].nv):
-                error[i].varname[j] = error[i].varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            for k in range(error[i].nv):
+                error[i].varname[k] = error[i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
     if tiGridNode is not None:
         for i in range(deesse_input.nrealization):
-            for j in range(tiGridNode[i].nv):
-                tiGridNode[i].varname[j] = tiGridNode[i].varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            for k in range(tiGridNode[i].nv):
+                tiGridNode[i].varname[k] = tiGridNode[i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
     if tiIndex is not None:
         for i in range(deesse_input.nrealization):
-            for j in range(tiIndex[i].nv):
-                tiIndex[i].varname[j] = tiIndex[i].varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            for k in range(tiIndex[i].nv):
+                tiIndex[i].varname[k] = tiIndex[i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
 
-    deesse_output = {'sim':sim, 'path':path, 'error':error, 'tiGridNode':tiGridNode, 'tiIndex':tiIndex, 'nwarning':nwarning, 'warnings':warnings}
+    deesse_output = {
+        'sim':sim, 'sim_var_original_index':sim_var_original_index,
+        'sim_pyramid':sim_pyramid, 'sim_pyramid_var_original_index':sim_pyramid_var_original_index, 'sim_pyramid_var_pyramid_index':sim_pyramid_var_pyramid_index,
+        'path':path, 'error':error, 'tiGridNode':tiGridNode, 'tiIndex':tiIndex,
+        'nwarning':nwarning, 'warnings':warnings
+        }
 
     if verbose >= 2 and deesse_output:
         print('DeeSse run complete (all process(es))')
@@ -3445,6 +3917,7 @@ def exportDeesseInput(deesse_input,
                       dirname='input_ascii',
                       fileprefix='ds',
                       endofline='\n',
+                      simname='sim_ds',
                       suffix_outputSim='',
                       suffix_outputPathIndex='_pathIndex',
                       suffix_outputError='_error',
@@ -3461,6 +3934,8 @@ def exportDeesseInput(deesse_input,
                       suffix_rotationPlunge='_rotationPlunge',
                       suffix_dataImage='_dataImage',
                       suffix_dataPointSet='_dataPointSet',
+                      suffix_pyramidDataImage='_pyramidDataImage',
+                      suffix_pyramidDataPointSet='_pyramidDataPointSet',
                       suffix_localPdf='_localPdf',
                       suffix_refConnectivityImage='_refConnectivityImage',
                       suffix_blockData='_blockData',
@@ -3493,6 +3968,25 @@ def exportDeesseInput(deesse_input,
 
     # open input file
     infid = open(inputfile, "w")
+
+    infid.write('\
+//{0}\
+// DeeSse input file{0}\
+// Version: {1} - {2}{0}\
+//{0}\
+{0}'.format(endofline, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER))
+
+    # Simulation name
+    if verbose > 0:
+        infid.write('\
+/* SIMULATION NAME */{0}'.format(endofline))
+
+    if verbose == 2:
+        infid.write("\
+/* character string simName (characaters '\\', '/' not allowed) */{0}".format(endofline))
+
+    infid.write('{1}{0}'.format(endofline, simname))
+    infid.write('{0}'.format(endofline))
 
     # Simulation grid
     if verbose > 0:
@@ -3558,7 +4052,7 @@ def exportDeesseInput(deesse_input,
 /* Key word and required name(s) or prefix, for output of the realizations:{0}\
       - OUTPUT_SIM_NO_FILE:{0}\
            no file in output{0}\
-      - OUTPUT_SIM_ALL_IN_ONE_FILE{0}\
+      - OUTPUT_SIM_ALL_IN_ONE_FILE:{0}\
            one file in output (every variable in output (flagged as 1 above),{0}\
            for all realizations will be written),{0}\
            - requires one file name{0}\
@@ -3569,6 +4063,10 @@ def exportDeesseInput(deesse_input,
            one file per realization,{0}\
            - requires one prefix (for file name, the string "_real#####.gslib"{0}\
              will be appended where "######" is the realization index){0}\
+   Note: the names of the output variables are set to <vname>_real<n>, where{0}\
+            - <vname> is the name of the variable,{0}\
+            - <n> is the realization index (starting from 0){0}\
+            [<n> is written on 5 digits, with leading zeros]{0}\
 */{0}'.format(endofline))
 
     infid.write('\
@@ -4823,7 +5321,7 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}'.format(endofline))
             else:
                 fname = '{}{}{}.gslib'.format(fileprefix, suffix_refConnectivityImage, i)
                 img.writeImageGslib(co.refConnectivityImage, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
+                                missing_value=deesse.MPDS_MISSING_VALUE, fmt='%.10g')
                 infid.write('{} {}'.format(fname, co.refConnectivityImage.varname[co.refConnectivityVarIndex]))
             if verbose > 0:
                 infid.write(' // reference image (and variable)')
@@ -4990,8 +5488,8 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}'.format(endofline))
                                                         values correspond to the most connected categories),{0}\
                                                         then one pyramid for the transformed variable{0}\
                                                         is used{0}\
-            If pyramidType == PYRAMID_CATEGORICAL_CUSTOM:{0}\
-               II.3.  The classes of values (for which the indicator variables are{0}\
+               If pyramidType == PYRAMID_CATEGORICAL_CUSTOM:{0}\
+                  The classes of values (for which the indicator variables are{0}\
                   considered for pyramids) have to be defined; a class of values is given by a union{0}\
                   of interval(s): [inf_1,sup_1[ U ... U [inf_n,sup_n[.{0}\
                   Here are given:{0}\
@@ -5002,6 +5500,41 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}'.format(endofline))
                                these values should satisfy inf_i < sup_i{0}\
                   Then, for each class, the number of pyramid levels (number of reduction operations) is{0}\
                      - nlevel_i (for i in 1,..., nclass){0}\
+            II.3 output flags (0 / 1), one per pyramid level, from index 1 to index nevel{0}\
+               (if flag is set to 1, the corresponding level and variable will be retrieved in output){0}\
+               Notes:{0}\
+                  - the names of the output variables are set to <vname>_ind<j>_lev<k>_real<n>, where{0}\
+                       - <vname> is the name of the "original" variable,{0}\
+                       - <j> is a pyramid index for that variable which starts at 0 (more than one{0}\
+                            index can be required if the pyramid type is set to{0}\
+                            PYRAMID_CATEGORICAL_AUTO or PYRAMID_CATEGORICAL_CUSTOM),{0}\
+                       - <k> is the level index,{0}\
+                       - <n> is the realization index (starting from 0){0}\
+                       [<j> and <k> are written on 3 digits, <n> on 5 digits, with leading zeros]{0}\
+                  - the values of the output variables are the normalized values (as used during the{0}\
+                       simulation in every level){0}\
+                  - output variables are written in image files if required: one file per level and per{0}\
+                       realization is generated (containing all considered variables for output at that{0}\
+                       level), the file is named "<simName>_pyr_lev###_real#####.gslib" where <simName>{0}\
+                       is the simulation name (see above, beginning of this file), and "###" and "######"{0}\
+                       are respectively the level index and the realization index;{0}\
+                       no file will be written if output settings is set to OUTPUT_SIM_NO_FILE (see above){0}\
+{0}\
+         III. CONDITIONING (HARD) DATA IN PYRAMID:{0}\
+            III.1 number of data image file(s) (n_im >= 0), followed by n_im file(s){0}\
+            III.2 number of data point set file(s) (n_ps >= 0), followed by n_ps file(s){0}\
+            Notes:{0}\
+               - the variables are identified by their name: the name should be set to{0}\
+                    <vname>_ind<j>_lev<k>, where <vname> is the name of the "original" variable, <j> is the{0}\
+                    pyramid index for that variable, and <k> is the level index in {{1, ..., npyramidLevel}}{0}\
+                    (<j> and <k> are written on 3 digits with leading zeros), see II.3 above{0}\
+               - the conditioning data values are the (already) normalized values (as used during the{0}\
+                    simulation in every level), see II.3 above{0}\
+               - the grid dimensions (support) of the level in which the data are given are used: for images{0}\
+                    the grid must be compatible, and for point sets the locations (coordinates) must be{0}\
+                    given accordingly{0}\
+               - conditioning data integrated in pyramid may erased (replaced) data already set or computed{0}\
+                    from conditioning data at the level one rank finer{0}\
 */{0}'.format(endofline))
 
     if verbose > 0:
@@ -5150,6 +5683,51 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}'.format(endofline))
                     infid.write(' // pyramid type')
                 infid.write('{0}'.format(endofline))
 
+            for i, flag in enumerate(pp.outputLevelFlag):
+                if i == 0:
+                    infid.write('{}'.format(flag))
+                else:
+                    infid.write(' {}'.format(flag))
+            if verbose > 0:
+                infid.write(' // output flags, one per level, from index 1 to nlevel')
+            infid.write('{0}'.format(endofline))
+
+        if verbose > 0:
+            infid.write('\
+/* CONDITIONING (HARD) DATA IN PYRAMID */{0}'.format(endofline))
+
+        if deesse_input.pyramidDataImage is not None:
+            infid.write('{}'.format(len(deesse_input.pyramidDataImage)))
+            if verbose > 0:
+                infid.write(' // number of data image(s)')
+            infid.write('{0}'.format(endofline))
+            for i, im in enumerate(deesse_input.pyramidDataImage):
+                fname = '{}{}{}.gslib'.format(fileprefix, suffix_pyramidDataImage, i)
+                img.writeImageGslib(im, dirname + '/' + fname,
+                                    missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
+                infid.write('{1}{0}'.format(endofline, fname))
+        else:
+            infid.write('0')
+            if verbose > 0:
+                infid.write(' // number of data image(s)')
+            infid.write('{0}'.format(endofline))
+
+        if deesse_input.pyramidDataPointSet is not None:
+            infid.write('{}'.format(len(deesse_input.pyramidDataPointSet)))
+            if verbose > 0:
+                infid.write(' // number of data point set(s)')
+            infid.write('{0}'.format(endofline))
+            for i, ps in enumerate(deesse_input.pyramidDataPointSet):
+                fname = '{}{}{}.gslib'.format(fileprefix, suffix_pyramidDataPointSet, i)
+                img.writePointSetGslib(ps, dirname + '/' + fname,
+                                       missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
+                infid.write('{1}{0}'.format(endofline, fname))
+        else:
+            infid.write('0')
+            if verbose > 0:
+                infid.write(' // number of data point set(s)')
+            infid.write('{0}'.format(endofline))
+
     infid.write('{0}'.format(endofline))
 
     # Tolerance
@@ -5265,6 +5843,310 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}'.format(endofline))
 
     # END
     infid.write('END{0}'.format(endofline))
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imgPyramidImage(
+        input_image,
+        operation='reduce',
+        kx=None,
+        ky=None,
+        kz=None,
+        w0x=None,
+        w0y=None,
+        w0z=None,
+        minWeight=None,
+        nthreads=-1):
+    """
+    Computes the Gaussian (pyramid) reduction or expansion of the input image.
+    This function applies the Gaussian pyramid reduction or expansion to all variables
+    (treated as continuous) of the input image, and returns an output image with the
+    same number of variables, whose the names are the same as the variables of the
+    input image, followed by a suffix the suffix "_GPred" (resp. "_GPexp") if reduction
+    (resp. expansion) is applied. The grid (support) of the output image is derived from
+    the Gaussian pyramid operation.
+    The Gaussian operation consists in applying a weighted moving average using a
+    Gaussian-like kernel (or filter) of size (2*kx + 1) x (2*ky + 1) x (2*kz + 1)
+    [see parameters below], while in the output image grid the number of cells along
+    x, y, z-axis will be divided (resp. multiplied) by a factor (of about) kx, ky, kz
+    respectively if reduction (resp. expansion) is applied.
+
+    :param input_image:     (Img class) input image
+    :param operation:       (string) operation to apply, either 'reduce' (default) or 'expand'
+
+    :param kx, ky, kz:      (ints) reduction step along x, y, z-direction:
+                                   k[x|y|z] = 0: nothing is done, same dimension in output
+                                   k[x|y|z] = 1: same dimension in output (with weighted average over 3 nodes)
+                                   k[x|y|z] = 2: classical gaussian pyramid
+                                   k[x|y|z] > 2: generalized gaussian pyramid
+                                By defaut (None), the reduction step will be set to 2 in
+                                directions where the input image grid has more than one cell, and
+                                to 0 in other directions
+
+    :param w0x, w0y, w0z:   (floats) weight for central cell in the kernel (filter) when computing
+                                average during Gaussian pyramid operation in x,y,z-direction;
+                                specifying None (default) or a negative value, the default
+                                weight derived from proportionality with Gaussian weights
+                                (binomial coefficients) will be used; specifying a positive
+                                value or zero implies to explicitly set the weight to that value
+
+   :param minWeight:        (float) minimal weight on informed cells within the filter to
+                                define output value: when applying the moving weighted average,
+                                if the total weight on informed cells within the kernel (filter)
+                                is less than minWeight, undefined value (np.nan) is set as output
+                                value, otherwise the weigted average is set;
+                                specifiying None (default) or a negative value, a default
+                                minimal weight will be used; specifying a positive
+                                value or zero implies to explicitly set the minimal weight to that
+                                value;
+                                Note: the default minimal weight is
+                                geone.deesse_core.deesse.MPDS_GAUSSIAN_PYRAMID_RED_TOTAL_WEIGHT_MIN for reduction,
+                                geone.deesse_core.deesse.MPDS_GAUSSIAN_PYRAMID_EXP_TOTAL_WEIGHT_MIN for expansion
+
+    :param nthreads:        (int) number of thread(s) to use for program (C),
+                                (nthreads = -n <= 0: for maximal number of threads except n,
+                                but at least 1)
+
+    :return output_image:   (Img class) output image
+    """
+
+    # --- Check
+    if operation not in ('reduce', 'expand'):
+        print("ERROR: unknown 'operation'")
+        return None
+
+    # --- Prepare parameters
+    if kx is None:
+        if input_image.nx == 1:
+            kx = 0
+        else:
+            kx = 2
+    else:
+        kx = int(kx) # ensure int type
+
+    if ky is None:
+        if input_image.ny == 1:
+            ky = 0
+        else:
+            ky = 2
+    else:
+        ky = int(ky) # ensure int type
+
+    if kz is None:
+        if input_image.nz == 1:
+            kz = 0
+        else:
+            kz = 2
+    else:
+        kz = int(kz) # ensure int type
+
+    if w0x is None:
+        w0x = -1.0
+    else:
+        w0x = float(w0x) # ensure float type
+
+    if w0y is None:
+        w0y = -1.0
+    else:
+        w0y = float(w0y) # ensure float type
+
+    if w0z is None:
+        w0z = -1.0
+    else:
+        w0z = float(w0z) # ensure float type
+
+    if minWeight is None:
+        if operation == 'reduce':
+            minWeight = deesse.MPDS_GAUSSIAN_PYRAMID_RED_TOTAL_WEIGHT_MIN
+        else: # 'expand'
+            minWeight = deesse.MPDS_GAUSSIAN_PYRAMID_EXP_TOTAL_WEIGHT_MIN
+    else:
+        minWeight = float(minWeight) # ensure float type
+
+    # Set input image "in C"
+    input_image_c = img_py2C(input_image)
+
+    # Allocate output image "in C"
+    output_image_c = deesse.malloc_MPDS_IMAGE()
+    deesse.MPDSInitImage(output_image_c)
+
+    # --- Set number of threads
+    if nthreads <= 0:
+        nth = max(os.cpu_count() + nthreads, 1)
+    else:
+        nth = nthreads
+
+    # --- Compute pyramid (launch C code)
+    if operation == 'reduce':
+        err = deesse.MPDSOMPImagePyramidReduce(input_image_c, output_image_c, kx, ky, kz, w0x, w0y, w0z, minWeight, nth)
+    elif operation == 'expand':
+        err = deesse.MPDSOMPImagePyramidExpand(input_image_c, output_image_c, kx, ky, kz, w0x, w0y, w0z, minWeight, nth)
+    else:
+        print("ERROR: 'operation' not valid")
+        return None
+
+    # --- Retrieve output image "in python"
+    if err:
+        err_message = deesse.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        print(err_message)
+        output_image = None
+    else:
+        output_image = img_C2py(output_image_c)
+
+    # Free memory on C side: input_image_c
+    deesse.MPDSFreeImage(input_image_c)
+    #deesse.MPDSFree (input_image_c)
+    deesse.free_MPDS_IMAGE(input_image_c)
+
+    # Free memory on C side: output_image_c
+    deesse.MPDSFreeImage(output_image_c)
+    #deesse.MPDSFree (output_image_c)
+    deesse.free_MPDS_IMAGE(output_image_c)
+
+    return output_image
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imgCategoricalToContinuous(
+        input_image,
+        varInd=None,
+        xConnectFlag=None,
+        yConnectFlag=None,
+        zConnectFlag=None,
+        nthreads=-1):
+    """
+    Transforms the desired variable(s), considered as categorical, from the input image,
+    into "continuous" variable(s) (with values in [0, 1]), and returns the corresponding
+    output image. The transformation for a variable with n categories is done such that:
+        - each category in input will correspond to a distinct output value
+            in {i/(n-1), i=0, ..., n-1}
+        - the output values are set such that
+            "closer values correspond to better connected (more contact btw.) categories"
+        - this is the transformation done by deesse when pyramid is used with
+          pyramid type ('pyramidType') set to 'categorical_to_continuous'.
+
+    :param input_image:     (Img class) input image
+
+    :param varInd:          (sequence of ints or int or None) index-es of the variables
+                                for which the transformation has to be done
+
+    :param xConnectFlag, yConnectFlag, zConnectFlag:
+                            (bool) flag indicating if the connction (contact btw.) categories
+                                are accounted for in x, y, z-direction (corresponding flag set
+                                to True) or not (corresponding flag set to False);
+                                By default (None), these flag will be set to True, provided
+                                that the number of cells in the corresponding direction is
+                                greater than 1
+
+    :param nthreads:        (int) number of thread(s) to use for program (C),
+                                (nthreads = -n <= 0: for maximal number of threads except n,
+                                but at least 1)
+
+    :return output_image:   (Img class) output image
+    """
+    # --- Check
+    if varInd is not None:
+        varInd = np.atleast_1d(varInd).reshape(-1)
+        if np.sum([iv in range(input_image.nv) for iv in varInd]) != len(varInd):
+            print("ERROR: invalid index-es")
+            return None
+    else:
+        varInd = np.arange(input_image.nv)
+
+    # --- Prepare parameters
+    if xConnectFlag is None:
+        if input_image.nx == 1:
+            xConnectFlag = False
+        else:
+            xConnectFlag = True
+
+    if yConnectFlag is None:
+        if input_image.ny == 1:
+            yConnectFlag = False
+        else:
+            yConnectFlag = True
+
+    if zConnectFlag is None:
+        if input_image.nz == 1:
+            zConnectFlag = False
+        else:
+            zConnectFlag = True
+
+    # Initialize output image
+    output_image = img.copyImg(input_image)
+
+    # Initialize value index
+    val_index = np.zeros(input_image.nxyz(), dtype='intc')
+
+    # --- Initialize vector in C
+    val_index_c = deesse.new_int_array(int(val_index.size))
+
+    # --- Set number of threads
+    if nthreads <= 0:
+        nth = max(os.cpu_count() + nthreads, 1)
+    else:
+        nth = nthreads
+
+    ok = True # to intercept error during for loop...
+    for ind in varInd:
+        # Get vector of values of the variale of index ind from input image
+        vptr = input_image.val[ind].reshape(-1)
+
+        unique_val = input_image.get_unique_one_var(ind)
+        for i, v in enumerate(unique_val):
+            val_index[vptr==v] = i
+
+        # ... set index -1 for nan
+        val_index[np.isnan(vptr)] = -1
+
+        n = len(unique_val)
+
+        # --- Set vectors in C
+        deesse.mpds_set_int_vector_from_array(val_index_c, 0, val_index)
+
+        to_new_index_c = deesse.new_int_array(n)
+        to_initial_index_c = deesse.new_int_array(n)
+
+        # --- Compute index correspondence (launch C code)
+        err = deesse.MPDSOMPGetImageOneVarNewValueIndexOrder(
+            input_image.nx, input_image.ny, input_image.nz,
+            n, val_index_c,
+            to_new_index_c, to_initial_index_c,
+            int(xConnectFlag), int(yConnectFlag), int(zConnectFlag),
+            nth)
+
+        # --- Retrieve vector to_new_index and to_initial_index "in python"
+        if err:
+            err_message = deesse.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            print(err_message)
+            ok = False
+        else:
+            to_new_index = np.zeros(n, dtype='intc') # 'intc' for C-compatibility
+            deesse.mpds_get_array_from_int_vector (to_new_index_c, 0, to_new_index)
+
+            # not used!
+            # to_initial_index = np.zeros(n, dtype='intc') # 'intc' for C-compatibility
+            # deesse.mpds_get_array_from_int_vector (to_initial_index_c, 0, to_initial_index)
+
+            # set new values
+            r = 1./max(n-1, 1)
+            vptr = output_image.val[ind].reshape(-1) # pointer !
+            for i in range(n):
+                vptr[val_index==i] = r * to_new_index[i]
+
+        # Free memory on C side
+        deesse.delete_int_array(to_new_index_c)
+        deesse.delete_int_array(to_initial_index_c)
+
+        if not ok:
+            break
+
+    # Free memory on C side
+    deesse.delete_int_array(val_index_c)
+
+    return output_image
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------

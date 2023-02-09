@@ -13,6 +13,7 @@ functions.
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
 
 # ============================================================================
@@ -1102,6 +1103,58 @@ def copyImg(im, varInd=None, varIndList=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def indicatorImage(im, ind=0, categ=None):
+    """
+    Retrieve the image with the indicator variable of each category in the list
+    of categories 'categ', from the variable of index 'ind' in the input image
+    'im'.
+
+    :param im:          (Img class) input image
+    :param ind:         (int) index of the variable in the input image for which
+                            the indicator variable(s) are computed
+    :param categ:   (sequence of values (floats or int) or float (or int) or None)
+                        list of category value: one indicator variable per value
+                        in that list is computed for the variable of index 'ind'
+                        in the input image; if None (default), categ is set to
+                        the list of all distinct values (in increasing order)
+                        taken by the variable of index 'ind' in the input image
+
+    :return:            (Img class) output image with indicator variable(s) (as
+                            many variable(s) as number of category values given
+                            by 'categ'
+    """
+
+    # Check (set) ind
+    if ind < 0:
+        ind = im.nv + ind
+
+    if ind < 0 or ind >= im.nv:
+        print("ERROR: invalid index")
+        return None
+
+    # Set categ if not given (None)
+    if categ is None:
+        categ = im.get_unique_one_var(ind=ind)
+
+    ncateg = len(categ)
+
+    # Initialize an image with ncateg variables
+    im_out = Img(
+        nx=im.nx, ny=im.ny, nz=im.nz,
+        sx=im.sx, sy=im.sy, sz=im.sz,
+        ox=im.ox, oy=im.oy, oz=im.oz,
+        nv=ncateg, varname=[f'{im.varname[ind]}_ind{i:03d}' for i in range(ncateg)])
+
+    # Compute each indicator variable
+    for i, v in enumerate(categ):
+        val = 1.*(im.val[ind]==v)
+        val[np.where(np.isnan(im.val[ind]))] = np.nan
+        im_out.val[i,...] = val
+
+    return im_out
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def readImageGslib(filename, missing_value=None):
     """
     Reads an image from a file (gslib format):
@@ -1170,6 +1223,44 @@ def readImageGslib(filename, missing_value=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def writeImageGslib(im, filename, missing_value=None, fmt="%.10g"):
+    """
+    Writes an image in a file (gslib format):
+
+    :param im:              (Img class) image to be written
+    :param filename:        (string) name of the file
+    :param missing_value:   (float or None) nan values will be replaced
+                                by missing_value before writing
+    :param fmt:             (string) single format for variable values, of the
+                                form: '%[flag]width[.precision]specifier'
+    """
+
+    # Write 1st line in string shead
+    shead = "{} {} {}   {} {} {}   {} {} {}\n".format(
+            im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz)
+    # Append 2nd line
+    shead = shead + "{}\n".format(im.nv)
+
+    # Append variable name(s) (next line(s))
+    for s in im.varname:
+        shead = shead + "{}\n".format(s)
+
+    # Replace np.nan by missing_value
+    if missing_value is not None:
+        np.putmask(im.val, np.isnan(im.val), missing_value)
+
+    # Open the file in write binary mode
+    with open(filename,'wb') as ff:
+        ff.write(shead.encode())
+        # Write variable values
+        np.savetxt(ff, im.val.reshape(im.nv, -1).T, delimiter=' ', fmt=fmt)
+
+    # Replace missing_value by np.nan (restore)
+    if missing_value is not None:
+        np.putmask(im.val, im.val == missing_value, np.nan)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def readImageVtk(filename, missing_value=None):
     """
     Reads an image from a file (vtk format):
@@ -1214,292 +1305,6 @@ def readImageVtk(filename, missing_value=None):
     im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr.T, varname, filename)
 
     return im
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
-def readImagePgm(filename, missing_value=None, varname=['pgmValue']):
-    """
-    Reads an image from a file (pgm format):
-
-    :param filename:        (string) name of the file
-    :param missing_value:   (float or None) value that will be replaced by nan
-
-    :return:    (Img class) image
-    """
-
-    # Check if the file exists
-    if not os.path.isfile(filename):
-        print("ERROR: invalid filename ({})".format(filename))
-        return None
-
-    # Open the file in read mode
-    with open(filename,'r') as ff:
-        # Read 1st line
-        line = ff.readline()
-        if line[:2] != 'P2':
-            print("ERROR: invalid format (first line)")
-            return None
-
-        # Read 2nd line
-        line = ff.readline()
-        while line[0] == '#':
-            # Read next line
-            line = ff.readline()
-
-        # Set dimension
-        nx, ny = [int(x) for x in line.split()]
-
-        # Read next line
-        line = ff.readline()
-        if line[:3] != '255':
-            print("ERROR: invalid format (number of colors / max val)")
-            return None
-
-        # Read the rest of the file
-        vv = [x.split() for x in ff.readlines()]
-
-    # Set grid
-    nz = 1 # nx, ny already set
-    sx, sy, sz = [1.0, 1.0, 1.0]
-    ox, oy, oz = [0.0, 0.0, 0.0]
-
-    # Set variable
-    nv = 1
-    varname # given in arguments
-
-    # Set variable array
-    valarr = np.array([int(x) for line in vv for x in line], dtype=float).reshape(-1, nv)
-
-    # Replace missing_value by np.nan
-    if missing_value is not None:
-        np.putmask(valarr, valarr == missing_value, np.nan)
-
-    # Set image
-    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr, varname, filename)
-
-    return im
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
-def readImagePpm(filename, missing_value=None, varname=['ppmR', 'ppmG', 'ppmB']):
-    """
-    Reads an image from a file (ppm format):
-
-    :param filename:        (string) name of the file
-    :param missing_value:   (float or None) value that will be replaced by nan
-
-    :return:    (Img class) image
-    """
-
-    # Check if the file exists
-    if not os.path.isfile(filename):
-        print("ERROR: invalid filename ({})".format(filename))
-        return None
-
-    # Open the file in read mode
-    with open(filename,'r') as ff:
-        # Read 1st line
-        line = ff.readline()
-        if line[:2] != 'P3':
-            print("ERROR: invalid format (first line)")
-            return None
-
-        # Read 2nd line
-        line = ff.readline()
-        while line[0] == '#':
-            # Read next line
-            line = ff.readline()
-
-        # Set dimension
-        nx, ny = [int(x) for x in line.split()]
-
-        # Read next line
-        line = ff.readline()
-        if line[:3] != '255':
-            print("ERROR: invalid format (number of colors / max val)")
-            return None
-
-        # Read the rest of the file
-        vv = [x.split() for x in ff.readlines()]
-
-    # Set grid
-    nz = 1 # nx, ny already set
-    sx, sy, sz = [1.0, 1.0, 1.0]
-    ox, oy, oz = [0.0, 0.0, 0.0]
-
-    # Set variable
-    nv = 3
-    varname # given in arguments
-
-    # Set variable array
-    valarr = np.array([int(x) for line in vv for x in line], dtype=float).reshape(-1, nv)
-
-    # Replace missing_value by np.nan
-    if missing_value is not None:
-        np.putmask(valarr, valarr == missing_value, np.nan)
-
-    # Set image
-    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr.T, varname, filename)
-
-    return im
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
-def imCategFromPgm(filename, flip_vertical=True, cmap='binary'):
-    """
-    Reads an image from a file (pgm format (ASCII), e.g. created by Gimp):
-
-    :param filename:        (string) name of the file
-    :param flip_vertical:   (bool) if True: flip the image vertically after reading the image
-
-    :return:    (tuple) (im, code, col)
-                    im: (Img class) image with categories 0, 1, ..., n-1 as values
-                    col  : list of colors (rgba tuple, for each category) (length n)
-                    pgm  : list of initial pgm values (length n)
-    """
-
-    # Read image
-    im = readImagePgm(filename)
-
-    if flip_vertical:
-        # Flip image vertically
-        im.flipy()
-
-    # Set cmap function
-    if isinstance(cmap, str):
-        cmap_func = plt.get_cmap(cmap)
-    else:
-        cmap_func = cmap
-
-    # Get colors and set color codes
-    v = im.val.reshape(-1)
-    pgm, code = np.unique(v, return_inverse=True)
-    col = [cmap_func(c/255.) for c in pgm]
-
-    # Set image
-    im = Img(im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz, nv=1, val=code, varname='code')
-
-    return im, col, pgm
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
-def imCategFromPpm(filename, flip_vertical=True):
-    """
-    Reads an image from a file (ppm format (ASCII), e.g. created by Gimp):
-
-    :param filename:        (string) name of the file
-    :param flip_vertical:   (bool) if True: flip the image vertically after reading the image
-
-    :return:    (tuple) (im, col)
-                    im  : (Img class) image with categories 0, 1, ..., n-1 as values
-                    col : list of colors (rgb[a] tuple (values in [0,1]), for each category) (length n)
-                          Note: considering the image categorical, it can be drawn (plotted) directly
-                            by using: geone.imgplot.drawImage2D(im, categ=True, categCol=col)
-    """
-
-    # Read image
-    im = readImagePpm(filename)
-
-    if flip_vertical:
-        # Flip image vertically
-        im.flipy()
-
-    # Get colors and set color codes
-    vv = im.val.reshape(im.nv, -1).T # array where each line is a color code (rgb[a])
-    col, code = np.unique(vv, axis=0, return_inverse=True)
-    col = list(col/255.)
-
-    # # Get colors and set color codes
-    # v = np.array((1, 256, 256**2)).dot(im.val.reshape(3,-1))
-    # x, code = np.unique(v, return_inverse=True)
-    # x,     ired   = np.divmod(x, 256)
-    # iblue, igreen = np.divmod(x, 256)
-    # rgb = np.array((ired, igreen, iblue)).T
-    # col = [[c/255. for c in irgb] for irgb in rgb]
-
-    # Set image
-    im = Img(im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz, nv=1, val=code, varname='code')
-
-    return im, col
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
-def readImageCateg(filename, flip_vertical=True):
-    """
-    Reads an image from a file (ppm (raw), pgm (raw), png format, e.g. created by Gimp) (using plt.imread):
-
-    :param filename:        (string) name of the file
-    :param flip_vertical:   (bool) if True: flip the image vertically after reading the image
-
-    :return:    (tuple) (im, col)
-                    im  : (Img class) image with categories 0, 1, ..., n-1 as values
-                    col : list of colors (rgb[a] tuple (values in [0,1]), for each category) (length n)
-                          Note: considering the image categorical, it can be drawn (plotted) directly
-                            by using: geone.imgplot.drawImage2D(im, categ=True, categCol=col)
-    """
-
-    # Read image
-    vv = plt.imread(filename)
-    ny, nx = vv.shape[0:2]
-
-    # Get colors and set color codes
-    if len(vv.shape) == 2: # pgm image
-        col, code = np.unique(vv, return_inverse=True)
-        col = [1/255.*np.array([i, i, i]) for i in col] # gray scale
-
-    else: # vv.shape of length 3 (ppm, png image)
-        vv = vv.reshape(-1, vv.shape[-1]) # array where each line is a color code (rgb[a])
-        col, code = np.unique(vv, axis=0, return_inverse=True)
-        if col.dtype == 'uint8':
-            col = col/255.
-        col = list(col)
-
-    if flip_vertical:
-        code = code.reshape(ny, nx)
-        code = code[::-1,:] # vertical flip
-
-    # Set image
-    im = Img(nx, ny, 1, nv=1, val=code, varname='code')
-
-    return im, col
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
-def writeImageGslib(im, filename, missing_value=None, fmt="%.10g"):
-    """
-    Writes an image in a file (gslib format):
-
-    :param im:              (Img class) image to be written
-    :param filename:        (string) name of the file
-    :param missing_value:   (float or None) nan values will be replaced
-                                by missing_value before writing
-    :param fmt:             (string) single format for variable values, of the
-                                form: '%[flag]width[.precision]specifier'
-    """
-
-    # Write 1st line in string shead
-    shead = "{} {} {}   {} {} {}   {} {} {}\n".format(
-            im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz)
-    # Append 2nd line
-    shead = shead + "{}\n".format(im.nv)
-
-    # Append variable name(s) (next line(s))
-    for s in im.varname:
-        shead = shead + "{}\n".format(s)
-
-    # Replace np.nan by missing_value
-    if missing_value is not None:
-        np.putmask(im.val, np.isnan(im.val), missing_value)
-
-    # Open the file in write binary mode
-    with open(filename,'wb') as ff:
-        ff.write(shead.encode())
-        # Write variable values
-        np.savetxt(ff, im.val.reshape(im.nv, -1).T, delimiter=' ', fmt=fmt)
-
-    # Replace missing_value by np.nan (restore)
-    if missing_value is not None:
-        np.putmask(im.val, im.val == missing_value, np.nan)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1555,67 +1360,250 @@ def writeImageVtk(im, filename, missing_value=None, fmt="%.10g",
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def writeImagePgm(im, filename, missing_value=None, fmt="%.10g"):
+def readImage2Drgb(filename, categ=False, nancol=None, keep_channels=True, rgb_weight=(0.299, 0.587, 0.114), flip_vertical=True):
     """
-    Writes an image in a file (pgm format):
+    Reads an image from a file using matplotlib.pyplot.imread, and fill a corresponding Img class instance.
+    The input image must be in 2D, with a RGB or RGBA code for every pixel, the file format can be
+    png, ppm, jpeg, etc. (e.g. created by Gimp).
+    Note that every channel (RGB) is renormalized in [0, 1] by dividing by 255 if needed.
+    Treatement of colors (RGB or RGBA):
+        - nancol is a color (RGB or RGBA) that is considered as "missing value", i.e. nan in the output image
+            (Img class),
+        - keep_channels: if True, every channel is retrieved (3 channels if RGB or 4 channels if RGBA);
+            otherwise (False), the channels RGB (alpha channel, if present, is ignored) are linearly combined
+            using the weights 'rgb_weight', to get color codes defined as one value in [0, 1].
+    Type of image:
+        - continuous (categ=False): the output image (Img class) has one variable if keep_channels is False,
+            and 3 or 4 variables (resp. for colors as RGB or RGBA codes in input image) if keep_channels is True
+        - categorical (categ=True): the list of distinct colors in the input image is retrieved (list col) and
+            indexed (from 0); the output image (Img class) has one variable defined as the index of the color
+            (in the list col); the list col is also retrieved in output (every entry is a unique value
+            (keep_channels=Fase) or a sequence of length 3 or 4 (keep_channels=True); the output image can be
+            drawn (plotted) directly by using:
+                - geone.imgplot.drawImage2D(im, categ=True, categCol=col), if keep_channels is True
+                - geone.imgplot.drawImage2D(im, categ=True, categCol=[cmap(c) for c in col]), where cmap is
+                    a color map function defined on the interval [0, 1], if keep_channels is False
 
-    :param im:              (Img class) image to be written
     :param filename:        (string) name of the file
-    :param missing_value:   (float or None) nan values will be replaced
-                                by missing_value before writing
-    :param fmt:             (string) single format for variable values, of the
-                                form: '%[flag]width[.precision]specifier'
+    :param categ:           (bool) indicating the type of output image:
+                                - if True: "categorical" output image with one variable interpreted as an index
+                                - if False: "continuous" output image
+    :param nancol:          (3-tuple or None): RGB color code (alpha channel, if present, is ignored) (or string),
+                                color interpreted as missing value (nan) in output image
+    :param keep_channels:   (bool) for RGB or RGBA images:
+                                - if True: keep every channel
+                                - if False: first three channels (RGB) are linearly combined using the weight
+                                    'rgb_weight', to define one variable (alpha channel, if present, is ignored)
+    :param rgb_weight:      (3-tuple) weights for R, G, B channels used to combine channels (used if
+                                keep_channels=False); notes:
+                                    - by default: from Pillow image convert mode “L”
+                                    - other weights could be e.g. (0.2125, 0.7154, 0.0721)
+    :param flip_vertical:   (bool) if True, the image is flipped vertically after reading
+                                (this is useful because the "origin" of the input image is considered
+                                at the top left, whereas it is at bottom left in the output image)
+
+    :return:            depends on 'categ':
+                            - if categ is False: return im
+                            - if categ is True: return (im, col)
+                        where:
+                            im :    (Img class) output image (see "Type of image" above)
+                            col:    (sequence) of colors, each component is a unique value (in [0,1])
+                                        or a 3-tuple (RGB code) or a 4-tuple (RGBA code); the output
+                                        image has one variable which is the index of the color
     """
 
-    # Write 1st line in string shead
-    shead = "P2\n# {0} {1} {2}   {3} {4} {5}   {6} {7} {8}\n{0} {1}\n255\n".format(
-            im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz)
+    # Check if the file exists
+    if not os.path.isfile(filename):
+        print("ERROR: invalid filename ({})".format(filename))
+        return None
 
-    # Replace np.nan by missing_value
-    if missing_value is not None:
-        np.putmask(im.val, np.isnan(im.val), missing_value)
+    # Read image
+    vv = plt.imread(filename)
 
-    # Open the file in write binary mode
-    with open(filename,'wb') as ff:
-        ff.write(shead.encode())
-        # Write variable values
-        np.savetxt(ff, im.val.reshape(im.nv, -1).T, delimiter=' ', fmt=fmt)
+    # Reshape image: one pixel per line
+    ny, nx = vv.shape[0:2]
+    vv = vv.reshape(nx*ny, -1)
+    nv = vv.shape[1]
 
-    # Replace missing_value by np.nan (restore)
-    if missing_value is not None:
-        np.putmask(im.val, im.val == missing_value, np.nan)
+    # Check input image
+    if nv != 3 and nv != 4:
+        print("ERROR: the input image must be in RGB or RGBA (3 or 4 channels for each pixel)")
+        return None
+
+    # Normalize channels if needed
+    if vv.dtype == 'uint8':
+        vv = vv/255.
+
+    if nancol is not None:
+        # "format" nancol (ignoring alpha channel)
+        nancolf = mcolors.to_rgb(nancol)
+        ind_missing = np.where([np.all(vvi[:3]==nancolf) for vvi in vv])
+        vv = vv.astype('float') # to ensure ability to set np.nan in vv
+        vv[ind_missing, :] = np.nan
+
+    if categ:
+        ind_isnan = np.any(np.isnan(vv), axis=1)
+        v = np.repeat(np.nan, vv.shape[0])
+        col, v[~ind_isnan] = np.unique(vv[~ind_isnan], axis=0, return_inverse=True)
+        vv = v
+        if keep_channels:
+            col = list(col)
+        else:
+            col = col[:,0:3].dot(rgb_weight)
+        nv = 1
+        varname = 'code'
+
+    else:
+        if keep_channels:
+            if nv == 3:
+                varname = ['red', 'green', 'blue']
+            elif nv == 4:
+                varname = ['red', 'green', 'blue', 'alpha']
+            vv = vv.T
+        else:
+            # Set value for each pixel
+            #ind_isnan = np.any(np.isnan(vv), axis=1)
+            #v = np.repeat(np.nan, vv.shape[0])
+            #v[~ind_isnan] = vv[~ind_isnan,0:3].dot(rgb_weight) # ignore alpha channel if present
+            #vv = v
+            vv = vv[:,0:3].dot(rgb_weight) # ignore alpha channel if present
+            nv = 1
+            varname = 'val'
+
+    if flip_vertical:
+        vv = vv.reshape(nv, ny, nx)
+        vv = vv[:,::-1,:] # vertical flip
+
+    # Set output image
+    #im = Img(nx, ny, 1, nv=nv, val=vv, varname=varname)
+    im = Img(nx, ny, 1, nv=nv, val=vv, varname=varname)
+
+    if categ:
+        out = (im, col)
+    else:
+        out = im
+
+    return out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def writeImagePpm(im, filename, missing_value=None, fmt="%.10g"):
+def writeImage2Drgb(im, filename, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0), flip_vertical=True):
     """
-    Writes an image in a file (ppm format):
+    Writes (saves) an image from an Img class instance in a file (using matplotlib.pyplot.imsave),
+    in format png, ppm, jpeg, etc.
+    The input image (Img class) should be in 2D with one variable, 3 variables (channels RGB) or
+    4 variables (channels RGBA).
+    Treatement of colors (RGB or RGBA):
+        - if the input image (Img class) has one variable, then:
+            - if a list col of RGB (or RGBA) colors is given: the image variable must represent (integer)
+                index in [0, len(col)-1]), then the colors from the list are used for every pixel according to
+                the index (variable value) at each pixel
+            - if col is None (not given), the color are set from the variable by using colormap cmap
+                (defined on [0,1]);
+        - if the input image (Img class) has 3 or 4 variables, then they are considered as
+            RGB or RGBA color codes
+        - nancol is the color (RGB or RGBA) used for missing value in input image (Img class)
 
-    :param im:              (Img class) image to be written
+    :param im:              (Img class) image to be saved in file (input image)
     :param filename:        (string) name of the file
-    :param missing_value:   (float or None) nan values will be replaced
-                                by missing_value before writing
-    :param fmt:             (string) single format for variable values, of the
-                                form: '%[flag]width[.precision]specifier'
+    :param col:             (list or None) list of colors RGB (3-tuple) or RGBA code (4-tuple),
+                                for each category of the image: only for image with one
+                                variable with integer values in [0, len(col)-1]
+    :param cmap:            colormap (can be a string: in this case the color map
+                                matplotlib.pyplot.get_cmap(cmap) is used), only for image with
+                                one variable when col is None
+    :param nancol:          (3-tuple or 4-tuple) RGB or RGBA color code (or string) used for
+                                missing value (nan) in input image
+    :param flip_vertical:   (bool) if True, the image is flipped vertically before writing
+                                (this is useful because the "origin" of the input image is considered
+                                at the bottom left, whereas it is at top left in file png, etc.)
+    :return:    None
     """
 
-    # Write 1st line in string shead
-    shead = "P3\n# {0} {1} {2}   {3} {4} {5}   {6} {7} {8}\n{0} {1}\n255\n".format(
-            im.nx, im.ny, im.nz, im.sx, im.sy, im.sz, im.ox, im.oy, im.oz)
+    # Check image parameters
+    if im.nz != 1:
+        print("ERROR: 'im.nz' must be 1")
+        return None
 
-    # Replace np.nan by missing_value
-    if missing_value is not None:
-        np.putmask(im.val, np.isnan(im.val), missing_value)
+    if im.nv not in [1, 3, 4]:
+        print("ERROR: 'im.nv' must be 1, 3, or 4")
+        return None
 
-    # Open the file in write binary mode
-    with open(filename,'wb') as ff:
-        ff.write(shead.encode())
-        # Write variable values
-        np.savetxt(ff, im.val.reshape(im.nv, -1).T, delimiter=' ', fmt=fmt)
+    # Extract the array of values
+    vv = np.copy(im.val) # copy to not modify original values
 
-    # Replace missing_value by np.nan (restore)
-    if missing_value is not None:
-        np.putmask(im.val, im.val == missing_value, np.nan)
+    if flip_vertical:
+        vv = vv[:,:,::-1,:]
+
+    # Reshape and transpose the array of values
+    vv = vv.reshape(im.nv, -1).T
+
+    if vv.shape[1] == 1: # im.nv == 1
+        if col is not None:
+            try:
+                nchan = len(col[0])
+            except:
+                print("ERROR: col must be a sequence of RGB or RBGA color (each entry is a sequence of length 3 or 4)")
+                return None
+
+            if not np.all(np.array([len(c) for c in col]) == nchan):
+                print("ERROR: same format is required for every color in col")
+                return None
+
+            # "format" nancol
+            if nchan == 3:
+                nancolf = mcolors.to_rgb(nancol)
+            elif nchan == 4:
+                nancolf = mcolors.to_rgba(nancol)
+            else:
+                print("ERROR: invalid format for the colors (RGB or RGBA required)")
+                return None
+
+            # Check value in vv
+            if np.any((vv < 0, vv >= len(col))):
+                print("ERROR: variable value in image cannot be treated as index in col")
+                return None
+
+            # Set ouput colors
+            vv = np.array([col[int(v)] if ~np.isnan(v) else nancolf for v in vv.reshape(-1)])
+
+        else:
+            # "format" nancol
+            nancolf = mcolors.to_rgba(nancol)
+
+            # Set ouput colors (grayscale, coded as rgb)
+            # Get the color map
+            if isinstance(cmap, str):
+                try:
+                    cmap = plt.get_cmap(cmap)
+                except:
+                    print("ERROR: invalid cmap string! (grayscale is used)")
+                    cmap = plt.get_cmap("gray")
+
+            if np.any((vv < 0, vv > 1)):
+                print("WARNING: variable values in image are not in interval [0,1], they are rescaled")
+                ind = np.where(~np.isnan(vv))
+                vmin = np.min(vv[ind])
+                vmax = np.max(vv[ind])
+                vv = (vv - vmin)/(vmax - vmin)
+
+            vv = np.array([cmap(v) if ~np.isnan(v) else nancolf for v in vv.reshape(-1)])
+
+    else: # vv.shape[1] is 3 or 4
+        # "format" nancol
+        if vv.shape[1] == 3:
+            nancolf = mcolors.to_rgb(nancol)
+        else: # vv.shape[1] == 4
+            nancolf = mcolors.to_rgba(nancol)
+
+        ind_isnan = np.any(np.isnan(vv), axis=1)
+        vv[ind_isnan, :] = nancolf
+
+    # Format the array of values
+    vv = np.ascontiguousarray(vv.reshape(im.ny, im.nx, -1))
+
+    # Save the image in file
+    plt.imsave(filename, vv)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1625,6 +1613,25 @@ def isImageDimensionEqual (im1, im2):
     """
 
     return im1.nx == im2.nx and im1.ny == im2.ny and im1.nz == im2.nz
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def isImageEqual (im1, im2):
+    """
+    Checks if two images are equal (dimension, spacing, origin, variables).
+    """
+    b = isImageDimensionEqual(im1, im2)
+    if b:
+        b = im1.sx == im2.sx and im1.sy == im2.sy and im1.sz == im2.sz
+    if b:
+        b = im1.ox == im2.ox and im1.oy == im2.oy and im1.oz == im2.oz
+    if b:
+        ind_isnan1 = np.isnan(im1.val)
+        ind_isnan2 = np.isnan(im2.val)
+        b = np.all(ind_isnan1 == ind_isnan2)
+        if b:
+            b = np.all(im1.val[~ind_isnan1] == im2.val[~ind_isnan2])
+    return b
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------

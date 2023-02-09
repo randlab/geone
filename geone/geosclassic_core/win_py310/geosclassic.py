@@ -166,6 +166,7 @@ MPDS_SUFFIX_FOR_MOVING_BOX_AVERAGE = _geosclassic.MPDS_SUFFIX_FOR_MOVING_BOX_AVE
 MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_EXP = _geosclassic.MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_EXP
 MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_LAP = _geosclassic.MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_LAP
 MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_RED = _geosclassic.MPDS_SUFFIX_FOR_GAUSSIAN_PYRAMID_RED
+MPDS_SUFFIX_FOR_PYRAMID_LEVEL = _geosclassic.MPDS_SUFFIX_FOR_PYRAMID_LEVEL
 MPDS_SUFFIX_FOR_OPENING = _geosclassic.MPDS_SUFFIX_FOR_OPENING
 MPDS_SUFFIX_FOR_QC_INDICATOR_SCALE = _geosclassic.MPDS_SUFFIX_FOR_QC_INDICATOR_SCALE
 MPDS_SUFFIX_FOR_QC_INDICATOR_MARK_MEAN_AND_SD_SCALE = _geosclassic.MPDS_SUFFIX_FOR_QC_INDICATOR_MARK_MEAN_AND_SD_SCALE
@@ -193,6 +194,8 @@ MPDS_NAME_FOR_ERROR_VAR = _geosclassic.MPDS_NAME_FOR_ERROR_VAR
 MPDS_NAME_FOR_TI_GRID_NODE_INDEX_VAR = _geosclassic.MPDS_NAME_FOR_TI_GRID_NODE_INDEX_VAR
 MPDS_NAME_FOR_TI_INDEX_VAR = _geosclassic.MPDS_NAME_FOR_TI_INDEX_VAR
 MPDS_NB_DIGIT_FOR_REALIZATION_NUMBER = _geosclassic.MPDS_NB_DIGIT_FOR_REALIZATION_NUMBER
+MPDS_NB_DIGIT_FOR_LEVEL_NUMBER = _geosclassic.MPDS_NB_DIGIT_FOR_LEVEL_NUMBER
+MPDS_NB_DIGIT_FOR_INDEX_NUMBER = _geosclassic.MPDS_NB_DIGIT_FOR_INDEX_NUMBER
 MPDS_NB_DIGIT_FOR_SCALE_NUMBER = _geosclassic.MPDS_NB_DIGIT_FOR_SCALE_NUMBER
 MPDS_NB_DIGIT_FOR_ZONE_NUMBER = _geosclassic.MPDS_NB_DIGIT_FOR_ZONE_NUMBER
 MPDS_NB_DIGIT_FOR_VARIABLE_NUMBER = _geosclassic.MPDS_NB_DIGIT_FOR_VARIABLE_NUMBER
@@ -855,50 +858,6 @@ MPDSGeosClassicFreeGeosClassicOutput = _geosclassic.MPDSGeosClassicFreeGeosClass
 def MPDSGeosClassicInitGeosClassicOutput(arg1):
     return _geosclassic.MPDSGeosClassicInitGeosClassicOutput(arg1)
 MPDSGeosClassicInitGeosClassicOutput = _geosclassic.MPDSGeosClassicInitGeosClassicOutput
-
-def MPDSGeosClassicBuildSearchNeighborhoodForCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18):
-    return _geosclassic.MPDSGeosClassicBuildSearchNeighborhoodForCovModel(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18)
-MPDSGeosClassicBuildSearchNeighborhoodForCovModel = _geosclassic.MPDSGeosClassicBuildSearchNeighborhoodForCovModel
-
-def MPDSGeosClassicIndicatorIntegrateConditioningData(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _geosclassic.MPDSGeosClassicIndicatorIntegrateConditioningData(arg1, arg2, arg3, arg4, arg5, arg6)
-MPDSGeosClassicIndicatorIntegrateConditioningData = _geosclassic.MPDSGeosClassicIndicatorIntegrateConditioningData
-
-def MPDSGeosClassicIntegrateConditioningData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSGeosClassicIntegrateConditioningData(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSGeosClassicIntegrateConditioningData = _geosclassic.MPDSGeosClassicIntegrateConditioningData
-
-def MPDSSGeosClassicPrepareSimulationPath(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
-    return _geosclassic.MPDSSGeosClassicPrepareSimulationPath(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
-MPDSSGeosClassicPrepareSimulationPath = _geosclassic.MPDSSGeosClassicPrepareSimulationPath
-
-def MPDSGeosClassicSim(arg1, arg2, arg3, arg4):
-    return _geosclassic.MPDSGeosClassicSim(arg1, arg2, arg3, arg4)
-MPDSGeosClassicSim = _geosclassic.MPDSGeosClassicSim
-
-def MPDSGeosClassicIndicatorSim(arg1, arg2, arg3, arg4):
-    return _geosclassic.MPDSGeosClassicIndicatorSim(arg1, arg2, arg3, arg4)
-MPDSGeosClassicIndicatorSim = _geosclassic.MPDSGeosClassicIndicatorSim
-
-def MPDSGeosClassicIndicatorSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21):
-    return _geosclassic.MPDSGeosClassicIndicatorSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21)
-MPDSGeosClassicIndicatorSimEstimation = _geosclassic.MPDSGeosClassicIndicatorSimEstimation
-
-def MPDSGeosClassicIndicatorSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22):
-    return _geosclassic.MPDSGeosClassicIndicatorSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22)
-MPDSGeosClassicIndicatorSimSimulation = _geosclassic.MPDSGeosClassicIndicatorSimSimulation
-
-def MPDSGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21):
-    return _geosclassic.MPDSGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21)
-MPDSGeosClassicSimEstimation = _geosclassic.MPDSGeosClassicSimEstimation
-
-def MPDSGeosClassicSimEstimationUniqueSN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
-    return _geosclassic.MPDSGeosClassicSimEstimationUniqueSN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
-MPDSGeosClassicSimEstimationUniqueSN = _geosclassic.MPDSGeosClassicSimEstimationUniqueSN
-
-def MPDSGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26):
-    return _geosclassic.MPDSGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26)
-MPDSGeosClassicSimSimulation = _geosclassic.MPDSGeosClassicSimSimulation
 class mpds_grid(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_grid, name, value)
@@ -1100,6 +1059,10 @@ def MPDSGetNImageVarValuePdf(arg1, arg2, arg3, arg4, arg5, arg6):
     return _geosclassic.MPDSGetNImageVarValuePdf(arg1, arg2, arg3, arg4, arg5, arg6)
 MPDSGetNImageVarValuePdf = _geosclassic.MPDSGetNImageVarValuePdf
 
+def MPDSImageEE(arg1):
+    return _geosclassic.MPDSImageEE(arg1)
+MPDSImageEE = _geosclassic.MPDSImageEE
+
 def MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
     return _geosclassic.MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 MPDSImageToImage = _geosclassic.MPDSImageToImage
@@ -1147,42 +1110,6 @@ MPDSWriteImage = _geosclassic.MPDSWriteImage
 def MPDSWriteImageGslibBinary(arg1, arg2):
     return _geosclassic.MPDSWriteImageGslibBinary(arg1, arg2)
 MPDSWriteImageGslibBinary = _geosclassic.MPDSWriteImageGslibBinary
-
-def MPDSFree(arg1):
-    return _geosclassic.MPDSFree(arg1)
-MPDSFree = _geosclassic.MPDSFree
-
-def MPDSFreeArray2D(arg1):
-    return _geosclassic.MPDSFreeArray2D(arg1)
-MPDSFreeArray2D = _geosclassic.MPDSFreeArray2D
-
-def MPDSFreeArray3D(arg1):
-    return _geosclassic.MPDSFreeArray3D(arg1)
-MPDSFreeArray3D = _geosclassic.MPDSFreeArray3D
-
-def MPDSFreeArray4D(arg1):
-    return _geosclassic.MPDSFreeArray4D(arg1)
-MPDSFreeArray4D = _geosclassic.MPDSFreeArray4D
-
-def MPDSMalloc(arg1, arg2, arg3):
-    return _geosclassic.MPDSMalloc(arg1, arg2, arg3)
-MPDSMalloc = _geosclassic.MPDSMalloc
-
-def MPDSMallocArray2D(arg1, arg2, arg3, arg4):
-    return _geosclassic.MPDSMallocArray2D(arg1, arg2, arg3, arg4)
-MPDSMallocArray2D = _geosclassic.MPDSMallocArray2D
-
-def MPDSMallocArray3D(arg1, arg2, arg3, arg4, arg5):
-    return _geosclassic.MPDSMallocArray3D(arg1, arg2, arg3, arg4, arg5)
-MPDSMallocArray3D = _geosclassic.MPDSMallocArray3D
-
-def MPDSMallocArray4D(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _geosclassic.MPDSMallocArray4D(arg1, arg2, arg3, arg4, arg5, arg6)
-MPDSMallocArray4D = _geosclassic.MPDSMallocArray4D
-
-def MPDSRealloc(arg1, arg2, arg3, arg4):
-    return _geosclassic.MPDSRealloc(arg1, arg2, arg3, arg4)
-MPDSRealloc = _geosclassic.MPDSRealloc
 class mpds_pointSet(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_pointSet, name, value)
@@ -1322,7 +1249,12 @@ MPDS_WARNING_MSG_00062 = _geosclassic.MPDS_WARNING_MSG_00062
 MPDS_WARNING_MSG_00063 = _geosclassic.MPDS_WARNING_MSG_00063
 MPDS_WARNING_MSG_00070 = _geosclassic.MPDS_WARNING_MSG_00070
 MPDS_WARNING_MSG_00071 = _geosclassic.MPDS_WARNING_MSG_00071
+MPDS_WARNING_MSG_00075 = _geosclassic.MPDS_WARNING_MSG_00075
+MPDS_WARNING_MSG_00076 = _geosclassic.MPDS_WARNING_MSG_00076
+MPDS_WARNING_MSG_00077 = _geosclassic.MPDS_WARNING_MSG_00077
+MPDS_WARNING_MSG_00078 = _geosclassic.MPDS_WARNING_MSG_00078
 MPDS_WARNING_MSG_00080 = _geosclassic.MPDS_WARNING_MSG_00080
+MPDS_WARNING_MSG_00085 = _geosclassic.MPDS_WARNING_MSG_00085
 MPDS_WARNING_MSG_00100 = _geosclassic.MPDS_WARNING_MSG_00100
 MPDS_WARNING_MSG_00111 = _geosclassic.MPDS_WARNING_MSG_00111
 MPDS_WARNING_MSG_00115 = _geosclassic.MPDS_WARNING_MSG_00115
@@ -1340,6 +1272,7 @@ MPDS_WARNING_MSG_02015 = _geosclassic.MPDS_WARNING_MSG_02015
 MPDS_WARNING_MSG_02016 = _geosclassic.MPDS_WARNING_MSG_02016
 MPDS_WARNING_MSG_02020 = _geosclassic.MPDS_WARNING_MSG_02020
 MPDS_WARNING_MSG_05011 = _geosclassic.MPDS_WARNING_MSG_05011
+MPDS_WARNING_MSG_05030 = _geosclassic.MPDS_WARNING_MSG_05030
 MPDS_WARNING_MSG_05044 = _geosclassic.MPDS_WARNING_MSG_05044
 MPDS_WARNING_MSG_05045 = _geosclassic.MPDS_WARNING_MSG_05045
 MPDS_WARNING_MSG_05125 = _geosclassic.MPDS_WARNING_MSG_05125
@@ -1438,237 +1371,37 @@ def MPDSUpdateProgressMonitor0(arg1):
     return _geosclassic.MPDSUpdateProgressMonitor0(arg1)
 MPDSUpdateProgressMonitor0 = _geosclassic.MPDSUpdateProgressMonitor0
 
-def MPDSUpdateProgressMonitorAllGI(arg1):
-    return _geosclassic.MPDSUpdateProgressMonitorAllGI(arg1)
-MPDSUpdateProgressMonitorAllGI = _geosclassic.MPDSUpdateProgressMonitorAllGI
+def MPDSUpdateProgressMonitor1(arg1):
+    return _geosclassic.MPDSUpdateProgressMonitor1(arg1)
+MPDSUpdateProgressMonitor1 = _geosclassic.MPDSUpdateProgressMonitor1
 
-def MPDSUpdateProgressMonitorAllOnlyPercentGI(arg1):
-    return _geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentGI(arg1)
-MPDSUpdateProgressMonitorAllOnlyPercentGI = _geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentGI
+def MPDSUpdateProgressMonitor1GI(arg1):
+    return _geosclassic.MPDSUpdateProgressMonitor1GI(arg1)
+MPDSUpdateProgressMonitor1GI = _geosclassic.MPDSUpdateProgressMonitor1GI
 
-def MPDSUpdateProgressMonitorAllOnlyPercentStdout(arg1):
-    return _geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout(arg1)
-MPDSUpdateProgressMonitorAllOnlyPercentStdout = _geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout
+def MPDSUpdateProgressMonitor2(arg1):
+    return _geosclassic.MPDSUpdateProgressMonitor2(arg1)
+MPDSUpdateProgressMonitor2 = _geosclassic.MPDSUpdateProgressMonitor2
 
-def MPDSUpdateProgressMonitorAllStdout(arg1):
-    return _geosclassic.MPDSUpdateProgressMonitorAllStdout(arg1)
-MPDSUpdateProgressMonitorAllStdout = _geosclassic.MPDSUpdateProgressMonitorAllStdout
+def MPDSUpdateProgressMonitor2GI(arg1):
+    return _geosclassic.MPDSUpdateProgressMonitor2GI(arg1)
+MPDSUpdateProgressMonitor2GI = _geosclassic.MPDSUpdateProgressMonitor2GI
 
-def MPDSUpdateProgressMonitorGI(arg1):
-    return _geosclassic.MPDSUpdateProgressMonitorGI(arg1)
-MPDSUpdateProgressMonitorGI = _geosclassic.MPDSUpdateProgressMonitorGI
+def MPDSUpdateProgressMonitor3(arg1):
+    return _geosclassic.MPDSUpdateProgressMonitor3(arg1)
+MPDSUpdateProgressMonitor3 = _geosclassic.MPDSUpdateProgressMonitor3
 
-def MPDSUpdateProgressMonitorStdout(arg1):
-    return _geosclassic.MPDSUpdateProgressMonitorStdout(arg1)
-MPDSUpdateProgressMonitorStdout = _geosclassic.MPDSUpdateProgressMonitorStdout
+def MPDSUpdateProgressMonitor3GI(arg1):
+    return _geosclassic.MPDSUpdateProgressMonitor3GI(arg1)
+MPDSUpdateProgressMonitor3GI = _geosclassic.MPDSUpdateProgressMonitor3GI
 
-def MPDSUpdateProgressMonitorWarningOnlyGI(arg1):
-    return _geosclassic.MPDSUpdateProgressMonitorWarningOnlyGI(arg1)
-MPDSUpdateProgressMonitorWarningOnlyGI = _geosclassic.MPDSUpdateProgressMonitorWarningOnlyGI
+def MPDSUpdateProgressMonitor4(arg1):
+    return _geosclassic.MPDSUpdateProgressMonitor4(arg1)
+MPDSUpdateProgressMonitor4 = _geosclassic.MPDSUpdateProgressMonitor4
 
-def MPDSUpdateProgressMonitorWarningOnlyStdout(arg1):
-    return _geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout(arg1)
-MPDSUpdateProgressMonitorWarningOnlyStdout = _geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout
-
-def MPDSFindLink(arg1, arg2):
-    return _geosclassic.MPDSFindLink(arg1, arg2)
-MPDSFindLink = _geosclassic.MPDSFindLink
-
-def MPDSImageConnectivityEulerNumber(arg1, arg2, arg3):
-    return _geosclassic.MPDSImageConnectivityEulerNumber(arg1, arg2, arg3)
-MPDSImageConnectivityEulerNumber = _geosclassic.MPDSImageConnectivityEulerNumber
-
-def MPDSImageConnectivityFunction0(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _geosclassic.MPDSImageConnectivityFunction0(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
-MPDSImageConnectivityFunction0 = _geosclassic.MPDSImageConnectivityFunction0
-
-def MPDSImageConnectivityFunction1(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _geosclassic.MPDSImageConnectivityFunction1(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
-MPDSImageConnectivityFunction1 = _geosclassic.MPDSImageConnectivityFunction1
-
-def MPDSImageConnectivityFunction2(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _geosclassic.MPDSImageConnectivityFunction2(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
-MPDSImageConnectivityFunction2 = _geosclassic.MPDSImageConnectivityFunction2
-
-def MPDSImageConnectivityGlobalIndicator(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _geosclassic.MPDSImageConnectivityGlobalIndicator(arg1, arg2, arg3, arg4, arg5, arg6)
-MPDSImageConnectivityGlobalIndicator = _geosclassic.MPDSImageConnectivityGlobalIndicator
-
-def MPDSImageConnectivity6EulerNumberCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSImageConnectivity6EulerNumberCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSImageConnectivity6EulerNumberCurve = _geosclassic.MPDSImageConnectivity6EulerNumberCurve
-
-def MPDSImageConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSImageConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSImageConnectivity6GlobalIndicatorCurve = _geosclassic.MPDSImageConnectivity6GlobalIndicatorCurve
-
-def MPDSImageConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSImageConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSImageConnectivity18GlobalIndicatorCurve = _geosclassic.MPDSImageConnectivity18GlobalIndicatorCurve
-
-def MPDSImageConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSImageConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSImageConnectivity26GlobalIndicatorCurve = _geosclassic.MPDSImageConnectivity26GlobalIndicatorCurve
-
-def MPDSImageCorrelogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _geosclassic.MPDSImageCorrelogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
-MPDSImageCorrelogram = _geosclassic.MPDSImageCorrelogram
-
-def MPDSImageCovariance(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _geosclassic.MPDSImageCovariance(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
-MPDSImageCovariance = _geosclassic.MPDSImageCovariance
-
-def MPDSImageCovarianceNotCentred(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _geosclassic.MPDSImageCovarianceNotCentred(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
-MPDSImageCovarianceNotCentred = _geosclassic.MPDSImageCovarianceNotCentred
-
-def MPDSImageDilate(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSImageDilate(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSImageDilate = _geosclassic.MPDSImageDilate
-
-def MPDSImageDistanceByDilation(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _geosclassic.MPDSImageDistanceByDilation(arg1, arg2, arg3, arg4, arg5, arg6)
-MPDSImageDistanceByDilation = _geosclassic.MPDSImageDistanceByDilation
-
-def MPDSImageDistanceEuclidean(arg1, arg2):
-    return _geosclassic.MPDSImageDistanceEuclidean(arg1, arg2)
-MPDSImageDistanceEuclidean = _geosclassic.MPDSImageDistanceEuclidean
-
-def MPDSImageDistanceEuclideanBruteForce(arg1, arg2, arg3):
-    return _geosclassic.MPDSImageDistanceEuclideanBruteForce(arg1, arg2, arg3)
-MPDSImageDistanceEuclideanBruteForce = _geosclassic.MPDSImageDistanceEuclideanBruteForce
-
-def MPDSImageDistanceEuclideanSign(arg1, arg2):
-    return _geosclassic.MPDSImageDistanceEuclideanSign(arg1, arg2)
-MPDSImageDistanceEuclideanSign = _geosclassic.MPDSImageDistanceEuclideanSign
-
-def MPDSImageDistanceEuclideanConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
-    return _geosclassic.MPDSImageDistanceEuclideanConnectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-MPDSImageDistanceEuclideanConnectivity6GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceEuclideanConnectivity6GlobalIndicatorCurve
-
-def MPDSImageDistanceEuclideanConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
-    return _geosclassic.MPDSImageDistanceEuclideanConnectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-MPDSImageDistanceEuclideanConnectivity18GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceEuclideanConnectivity18GlobalIndicatorCurve
-
-def MPDSImageDistanceEuclideanConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
-    return _geosclassic.MPDSImageDistanceEuclideanConnectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-MPDSImageDistanceEuclideanConnectivity26GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceEuclideanConnectivity26GlobalIndicatorCurve
-
-def MPDSImageDistanceL1(arg1, arg2):
-    return _geosclassic.MPDSImageDistanceL1(arg1, arg2)
-MPDSImageDistanceL1 = _geosclassic.MPDSImageDistanceL1
-
-def MPDSImageDistanceL1BruteForce(arg1, arg2, arg3):
-    return _geosclassic.MPDSImageDistanceL1BruteForce(arg1, arg2, arg3)
-MPDSImageDistanceL1BruteForce = _geosclassic.MPDSImageDistanceL1BruteForce
-
-def MPDSImageDistanceL1Connectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
-    return _geosclassic.MPDSImageDistanceL1Connectivity6GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-MPDSImageDistanceL1Connectivity6GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceL1Connectivity6GlobalIndicatorCurve
-
-def MPDSImageDistanceL1Connectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
-    return _geosclassic.MPDSImageDistanceL1Connectivity18GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-MPDSImageDistanceL1Connectivity18GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceL1Connectivity18GlobalIndicatorCurve
-
-def MPDSImageDistanceL1Connectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7):
-    return _geosclassic.MPDSImageDistanceL1Connectivity26GlobalIndicatorCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-MPDSImageDistanceL1Connectivity26GlobalIndicatorCurve = _geosclassic.MPDSImageDistanceL1Connectivity26GlobalIndicatorCurve
-
-def MPDSImageDistanceL1Sign(arg1, arg2):
-    return _geosclassic.MPDSImageDistanceL1Sign(arg1, arg2)
-MPDSImageDistanceL1Sign = _geosclassic.MPDSImageDistanceL1Sign
-
-def MPDSImageErode(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSImageErode(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSImageErode = _geosclassic.MPDSImageErode
-
-def MPDSImageExtract1D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
-    return _geosclassic.MPDSImageExtract1D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
-MPDSImageExtract1D = _geosclassic.MPDSImageExtract1D
-
-def MPDSImageExtract2D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _geosclassic.MPDSImageExtract2D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
-MPDSImageExtract2D = _geosclassic.MPDSImageExtract2D
-
-def MPDSImageExtract3D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17):
-    return _geosclassic.MPDSImageExtract3D(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17)
-MPDSImageExtract3D = _geosclassic.MPDSImageExtract3D
-
-def MPDSImageGeobody6(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageGeobody6(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageGeobody6 = _geosclassic.MPDSImageGeobody6
-
-def MPDSImageGeobody18(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageGeobody18(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageGeobody18 = _geosclassic.MPDSImageGeobody18
-
-def MPDSImageGeobody26(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageGeobody26(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageGeobody26 = _geosclassic.MPDSImageGeobody26
-
-def MPDSImageGeobodySize(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _geosclassic.MPDSImageGeobodySize(arg1, arg2, arg3, arg4, arg5, arg6)
-MPDSImageGeobodySize = _geosclassic.MPDSImageGeobodySize
-
-def MPDSImageGeobody6Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageGeobody6Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageGeobody6Vector = _geosclassic.MPDSImageGeobody6Vector
-
-def MPDSImageGeobody18Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageGeobody18Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageGeobody18Vector = _geosclassic.MPDSImageGeobody18Vector
-
-def MPDSImageGeobody26Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageGeobody26Vector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageGeobody26Vector = _geosclassic.MPDSImageGeobody26Vector
-
-def MPDSImageIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageIndicator(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageIndicator = _geosclassic.MPDSImageIndicator
-
-def MPDSImageIndicatorVector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageIndicatorVector(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageIndicatorVector = _geosclassic.MPDSImageIndicatorVector
-
-def MPDSImageMaxGeobody6SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageMaxGeobody6SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageMaxGeobody6SizeCurve = _geosclassic.MPDSImageMaxGeobody6SizeCurve
-
-def MPDSImageMaxGeobody18SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageMaxGeobody18SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageMaxGeobody18SizeCurve = _geosclassic.MPDSImageMaxGeobody18SizeCurve
-
-def MPDSImageMaxGeobody26SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSImageMaxGeobody26SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSImageMaxGeobody26SizeCurve = _geosclassic.MPDSImageMaxGeobody26SizeCurve
-
-def MPDSImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSImagePyramidExpand = _geosclassic.MPDSImagePyramidExpand
-
-def MPDSImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSImagePyramidReduce = _geosclassic.MPDSImagePyramidReduce
-
-def MPDSImageTransiogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _geosclassic.MPDSImageTransiogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
-MPDSImageTransiogram = _geosclassic.MPDSImageTransiogram
-
-def MPDSImageVariogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13):
-    return _geosclassic.MPDSImageVariogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
-MPDSImageVariogram = _geosclassic.MPDSImageVariogram
-
-def MPDSMovingBoxAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
-    return _geosclassic.MPDSMovingBoxAverageImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-MPDSMovingBoxAverageImage = _geosclassic.MPDSMovingBoxAverageImage
-
-def MPDSMovingSearchNeighborhoodAverageImage(arg1, arg2, arg3, arg4, arg5, arg6):
-    return _geosclassic.MPDSMovingSearchNeighborhoodAverageImage(arg1, arg2, arg3, arg4, arg5, arg6)
-MPDSMovingSearchNeighborhoodAverageImage = _geosclassic.MPDSMovingSearchNeighborhoodAverageImage
-
-def MPDSResizeImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSResizeImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
-MPDSResizeImage = _geosclassic.MPDSResizeImage
+def MPDSUpdateProgressMonitor4GI(arg1):
+    return _geosclassic.MPDSUpdateProgressMonitor4GI(arg1)
+MPDSUpdateProgressMonitor4GI = _geosclassic.MPDSUpdateProgressMonitor4GI
 
 def MPDSOMPGeosClassicSim(arg1, arg2, arg3, arg4, arg5):
     return _geosclassic.MPDSOMPGeosClassicSim(arg1, arg2, arg3, arg4, arg5)
@@ -1810,12 +1543,12 @@ def MPDSOMPImageMaxGeobody26SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, 
     return _geosclassic.MPDSOMPImageMaxGeobody26SizeCurve(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
 MPDSOMPImageMaxGeobody26SizeCurve = _geosclassic.MPDSOMPImageMaxGeobody26SizeCurve
 
-def MPDSOMPImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
-    return _geosclassic.MPDSOMPImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+def MPDSOMPImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSOMPImagePyramidExpand(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
 MPDSOMPImagePyramidExpand = _geosclassic.MPDSOMPImagePyramidExpand
 
-def MPDSOMPImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
-    return _geosclassic.MPDSOMPImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+def MPDSOMPImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSOMPImagePyramidReduce(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
 MPDSOMPImagePyramidReduce = _geosclassic.MPDSOMPImagePyramidReduce
 
 def MPDSOMPImageTransiogram(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14):
@@ -2131,10 +1864,10 @@ def free_MPDS_PROGRESSMONITOR(ptr):
 free_MPDS_PROGRESSMONITOR = _geosclassic.free_MPDS_PROGRESSMONITOR
 sizeof_MPDS_PROGRESSMONITOR = _geosclassic.sizeof_MPDS_PROGRESSMONITOR
 MPDSUpdateProgressMonitor0_ptr = _geosclassic.MPDSUpdateProgressMonitor0_ptr
-MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr = _geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
-MPDSUpdateProgressMonitorAllStdout_ptr = _geosclassic.MPDSUpdateProgressMonitorAllStdout_ptr
-MPDSUpdateProgressMonitorStdout_ptr = _geosclassic.MPDSUpdateProgressMonitorStdout_ptr
-MPDSUpdateProgressMonitorWarningOnlyStdout_ptr = _geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
+MPDSUpdateProgressMonitor1_ptr = _geosclassic.MPDSUpdateProgressMonitor1_ptr
+MPDSUpdateProgressMonitor2_ptr = _geosclassic.MPDSUpdateProgressMonitor2_ptr
+MPDSUpdateProgressMonitor3_ptr = _geosclassic.MPDSUpdateProgressMonitor3_ptr
+MPDSUpdateProgressMonitor4_ptr = _geosclassic.MPDSUpdateProgressMonitor4_ptr
 
 def mpds_get_error_message(ierr):
     return _geosclassic.mpds_get_error_message(ierr)
@@ -2156,10 +1889,6 @@ def mpds_set_real_vector_from_array(vector, offset, array):
     return _geosclassic.mpds_set_real_vector_from_array(vector, offset, array)
 mpds_set_real_vector_from_array = _geosclassic.mpds_set_real_vector_from_array
 
-def mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4):
-    return _geosclassic.mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4)
-mpds_set_real_vector_to_cst = _geosclassic.mpds_set_real_vector_to_cst
-
 def mpds_get_array_from_int_vector(vector, offset, array):
     return _geosclassic.mpds_get_array_from_int_vector(vector, offset, array)
 mpds_get_array_from_int_vector = _geosclassic.mpds_get_array_from_int_vector
@@ -2172,21 +1901,25 @@ def mpds_get_array_from_real_vector(vector, offset, array):
     return _geosclassic.mpds_get_array_from_real_vector(vector, offset, array)
 mpds_get_array_from_real_vector = _geosclassic.mpds_get_array_from_real_vector
 
-def mpds_set_geosClassicInput_varname(geosClassicInput, STRING):
-    return _geosclassic.mpds_set_geosClassicInput_varname(geosClassicInput, STRING)
-mpds_set_geosClassicInput_varname = _geosclassic.mpds_set_geosClassicInput_varname
+def mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4):
+    return _geosclassic.mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4)
+mpds_set_real_vector_to_cst = _geosclassic.mpds_set_real_vector_to_cst
 
-def mpds_set_geosClassicIndicatorInput_varname(geosClassicIndicatorInput, STRING):
-    return _geosclassic.mpds_set_geosClassicIndicatorInput_varname(geosClassicIndicatorInput, STRING)
-mpds_set_geosClassicIndicatorInput_varname = _geosclassic.mpds_set_geosClassicIndicatorInput_varname
+def mpds_allocate_and_set_geosClassicInput_varname(geosClassicInput, STRING):
+    return _geosclassic.mpds_allocate_and_set_geosClassicInput_varname(geosClassicInput, STRING)
+mpds_allocate_and_set_geosClassicInput_varname = _geosclassic.mpds_allocate_and_set_geosClassicInput_varname
 
-def mpds_set_geosClassicInput_outputReportFileName(geosClassicInput, STRING):
-    return _geosclassic.mpds_set_geosClassicInput_outputReportFileName(geosClassicInput, STRING)
-mpds_set_geosClassicInput_outputReportFileName = _geosclassic.mpds_set_geosClassicInput_outputReportFileName
+def mpds_allocate_and_set_geosClassicIndicatorInput_varname(geosClassicIndicatorInput, STRING):
+    return _geosclassic.mpds_allocate_and_set_geosClassicIndicatorInput_varname(geosClassicIndicatorInput, STRING)
+mpds_allocate_and_set_geosClassicIndicatorInput_varname = _geosclassic.mpds_allocate_and_set_geosClassicIndicatorInput_varname
 
-def mpds_set_geosClassicIndicatorInput_outputReportFileName(geosClassicIndicatorInput, STRING):
-    return _geosclassic.mpds_set_geosClassicIndicatorInput_outputReportFileName(geosClassicIndicatorInput, STRING)
-mpds_set_geosClassicIndicatorInput_outputReportFileName = _geosclassic.mpds_set_geosClassicIndicatorInput_outputReportFileName
+def mpds_allocate_and_set_geosClassicInput_outputReportFileName(geosClassicInput, STRING):
+    return _geosclassic.mpds_allocate_and_set_geosClassicInput_outputReportFileName(geosClassicInput, STRING)
+mpds_allocate_and_set_geosClassicInput_outputReportFileName = _geosclassic.mpds_allocate_and_set_geosClassicInput_outputReportFileName
+
+def mpds_allocate_and_set_geosClassicIndicatorInput_outputReportFileName(geosClassicIndicatorInput, STRING):
+    return _geosclassic.mpds_allocate_and_set_geosClassicIndicatorInput_outputReportFileName(geosClassicIndicatorInput, STRING)
+mpds_allocate_and_set_geosClassicIndicatorInput_outputReportFileName = _geosclassic.mpds_allocate_and_set_geosClassicIndicatorInput_outputReportFileName
 
 def mpds_set_varname(varname, index, STRING):
     return _geosclassic.mpds_set_varname(varname, index, STRING)

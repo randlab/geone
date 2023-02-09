@@ -582,6 +582,26 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def drawImage2Drgb(im):
+    """
+    Draw a 2D image with 3 or 4 variables interpreted as RGB or RGBA code.
+
+    :param im:  (img.Img class) image with 3 or 4 variables
+    """
+
+    # Check image parameters
+    if im.nz != 1:
+        print("ERROR: 'im.nz' must be 1")
+        return None
+
+    if im.nv != 3 and im.nv != 4:
+        print("ERROR: 'im.nv' must be 3 or 4")
+        return None
+
+    plt.imshow(im.val.reshape(im.nv, -1).T.reshape(im.ny, im.nx, -1), origin='lower')
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def drawGeobodyMap2D(im, iv=0):
     """
     Draws a geobody map 2D, with adapted color bar.

@@ -59,6 +59,7 @@ def img_py2C(im_py):
 
     for i in range(im_py.nv):
         geosclassic.mpds_set_varname(im_c.varName, i, im_py.varname[i])
+        # geosclassic.charp_array_setitem(im_c.varName, i, im_py.varname[i]) # does not work!
 
     v = im_py.val.reshape(-1)
     np.putmask(v, np.isnan(v), geosclassic.MPDS_MISSING_VALUE)
@@ -81,6 +82,7 @@ def img_C2py(im_c):
     nxyzv = nxyz * im_c.nvar
 
     varname = [geosclassic.mpds_get_varname(im_c.varName, i) for i in range(im_c.nvar)]
+    # varname = [geosclassic.charp_array_getitem(im_c.varName, i) for i in range(im_c.nvar)] # also works
 
     v = np.zeros(nxyzv)
     geosclassic.mpds_get_array_from_real_vector(im_c.var, 0, v)
@@ -150,13 +152,21 @@ def ps_C2py(ps_c):
     v = np.zeros(ps_c.npoint*ps_c.nvar)
     geosclassic.mpds_get_array_from_real_vector(ps_c.var, 0, v)
 
-    coord = np.zeros(ps_c.npoint)
-    geosclassic.mpds_get_array_from_real_vector(ps_c.z, 0, coord)
-    v = np.hstack(coord,v)
-    geosclassic.mpds_get_array_from_real_vector(ps_c.y, 0, coord)
-    v = np.hstack(coord,v)
-    geosclassic.mpds_get_array_from_real_vector(ps_c.x, 0, coord)
-    v = np.hstack(coord,v)
+    # coord = np.zeros(ps_c.npoint)
+    # geosclassic.mpds_get_array_from_real_vector(ps_c.z, 0, coord)
+    # v = np.hstack(coord,v)
+    # geosclassic.mpds_get_array_from_real_vector(ps_c.y, 0, coord)
+    # v = np.hstack(coord,v)
+    # geosclassic.mpds_get_array_from_real_vector(ps_c.x, 0, coord)
+    # v = np.hstack(coord,v)
+
+    cx = np.zeros(ps_c.npoint)
+    cy = np.zeros(ps_c.npoint)
+    cz = np.zeros(ps_c.npoint)
+    geosclassic.mpds_get_array_from_real_vector(ps_c.x, 0, cx)
+    geosclassic.mpds_get_array_from_real_vector(ps_c.y, 0, cy)
+    geosclassic.mpds_get_array_from_real_vector(ps_c.z, 0, cz)
+    v = np.hstack((cx, cy, cz, v))
 
     ps_py = PointSet(npt=ps_c.npoint,
                      nv=ps_c.nvar+3, val=v, varname=varname)
@@ -662,7 +672,8 @@ def covModel1D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         covModelElem_c, flag = covModel1Delem_py2C(covModelElem, nx, ny, nz, sx, sy, sz, ox, oy, oz)
         if flag:
             geosclassic.MPDS_COVMODELELEM_array_setitem(covModel_c.covModelElem, i, covModelElem_c)
-        else:
+        # geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+        if not flag:
             return covModel_c, False
 
     # covModel_c.angle1, covModel_c.angle2, covModel_c.angle3: keep to 0.0
@@ -698,7 +709,8 @@ def covModel2D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         covModelElem_c, flag = covModel2Delem_py2C(covModelElem, nx, ny, nz, sx, sy, sz, ox, oy, oz)
         if flag:
             geosclassic.MPDS_COVMODELELEM_array_setitem(covModel_c.covModelElem, i, covModelElem_c)
-        else:
+        # geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+        if not flag:
             return covModel_c, False
 
     # covModel_c.angle2, covModel_c.angle3: keep to 0.0
@@ -752,7 +764,8 @@ def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         covModelElem_c, flag = covModel3Delem_py2C(covModelElem, nx, ny, nz, sx, sy, sz, ox, oy, oz)
         if flag:
             geosclassic.MPDS_COVMODELELEM_array_setitem(covModel_c.covModelElem, i, covModelElem_c)
-        else:
+        # geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+        if not flag:
             return covModel_c, False
 
     # angle1
@@ -820,10 +833,12 @@ def geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor):
     :param mpds_progressMonitor:
                             (MPDS_PROGRESSMONITOR *) progress monitor - (C struct)
 
-    :return geosclassic_output: (dict)
+    :return geosclassic_output:
+        (dict)
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
+
         image:  (Img (class)) output image, with image.nv variables (simulation or
                     estimates and standard deviation)
                     (image is None if mpds_geosClassicOutput->outputImage is NULL)
@@ -916,7 +931,7 @@ def fill_mpds_geosClassicInput(
     mpds_geosClassicInput.simGrid.nxyz = nxyz
 
     # mpds_geosClassicInput.varname
-    geosclassic.mpds_set_geosClassicInput_varname(mpds_geosClassicInput, varname)
+    geosclassic.mpds_allocate_and_set_geosClassicInput_varname(mpds_geosClassicInput, varname)
 
     # mpds_geosClassicInput.outputMode
     mpds_geosClassicInput.outputMode = geosclassic.GEOS_CLASSIC_OUTPUT_NO_FILE
@@ -924,7 +939,7 @@ def fill_mpds_geosClassicInput(
     # mpds_geosClassicInput.outputReportFlag and mpds_geosClassicInput.outputReportFileName
     if outputReportFile is not None:
         mpds_geosClassicInput.outputReportFlag = geosclassic.TRUE
-        geosclassic.mpds_set_geosClassicInput_outputReportFileName(mpds_geosClassicInput, outputReportFile)
+        geosclassic.mpds_allocate_and_set_geosClassicInput_outputReportFileName(mpds_geosClassicInput, outputReportFile)
     else:
         mpds_geosClassicInput.outputReportFlag = geosclassic.FALSE
 
@@ -962,7 +977,10 @@ def fill_mpds_geosClassicInput(
         mpds_geosClassicInput.ndataImage = n
         mpds_geosClassicInput.dataImage = geosclassic.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(dataImage):
-            geosclassic.MPDS_IMAGE_array_setitem(mpds_geosClassicInput.dataImage, i, img_py2C(dataIm))
+            im_c = img_py2C(dataIm)
+            geosclassic.MPDS_IMAGE_array_setitem(mpds_geosClassicInput.dataImage, i, im_c)
+            geosclassic.free_MPDS_IMAGE(im_c)
+            # geosclassic.MPDS_IMAGE_array_setitem(mpds_geosClassicInput.dataImage, i, img_py2C(dataIm))
 
     # mpds_geosClassicInput.ndataPointSet and mpds_geosClassicInput.dataPointSet
     if dataPointSet is None:
@@ -973,7 +991,11 @@ def fill_mpds_geosClassicInput(
         mpds_geosClassicInput.ndataPointSet = n
         mpds_geosClassicInput.dataPointSet = geosclassic.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(dataPointSet):
-            geosclassic.MPDS_POINTSET_array_setitem(mpds_geosClassicInput.dataPointSet, i, ps_py2C(dataPS))
+            ps_c = ps_py2C(dataPS)
+            geosclassic.MPDS_POINTSET_array_setitem(mpds_geosClassicInput.dataPointSet, i, ps_c)
+            # geosclassic.free_MPDS_POINTSET(ps_c)
+            #
+            # geosclassic.MPDS_POINTSET_array_setitem(mpds_geosClassicInput.dataPointSet, i, ps_py2C(dataPS))
 
     # mpds_geosClassicInput.maskImageFlag and mpds_geosClassicInput.maskImage
     if mask is None:
@@ -1432,17 +1454,14 @@ def simulate1D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -1475,7 +1494,7 @@ def simulate1D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -1772,20 +1791,21 @@ def simulate1D_mp(
     image = None
     nwarning, warnings = None, None
 
-    # Gather results of every process
+    # Gather results from every process
+    # image
     image = np.hstack([out['image'] for out in geosclassic_output_proc])
-
-    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
-    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Remove None entries
+    # ... remove None entries
     image = image[[x is not None for x in image]]
-
-    # Set to None if every entry is None
+    # .. set to None if every entry is None
     if np.all([x is None for x in image]):
         image = None
 
-    # Gather images and adjust names
+    # nwarning
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    # warnings
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Gather images and adjust variable names
     if image is not None:
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
@@ -2225,17 +2245,14 @@ def simulate2D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -2268,7 +2285,7 @@ def simulate2D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -2577,20 +2594,21 @@ def simulate2D_mp(
     image = None
     nwarning, warnings = None, None
 
-    # Gather results of every process
+    # Gather results from every process
+    # image
     image = np.hstack([out['image'] for out in geosclassic_output_proc])
-
-    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
-    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Remove None entries
+    # ... remove None entries
     image = image[[x is not None for x in image]]
-
-    # Set to None if every entry is None
+    # .. set to None if every entry is None
     if np.all([x is None for x in image]):
         image = None
 
-    # Gather images and adjust names
+    # nwarning
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    # warnings
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Gather images and adjust variable names
     if image is not None:
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
@@ -3046,17 +3064,14 @@ def simulate3D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -3089,7 +3104,7 @@ def simulate3D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -3398,20 +3413,21 @@ def simulate3D_mp(
     image = None
     nwarning, warnings = None, None
 
-    # Gather results of every process
+    # Gather results from every process
+    # image
     image = np.hstack([out['image'] for out in geosclassic_output_proc])
-
-    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
-    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Remove None entries
+    # ... remove None entries
     image = image[[x is not None for x in image]]
-
-    # Set to None if every entry is None
+    # .. set to None if every entry is None
     if np.all([x is None for x in image]):
         image = None
 
-    # Gather images and adjust names
+    # nwarning
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    # warnings
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Gather images and adjust variable names
     if image is not None:
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
@@ -3783,17 +3799,14 @@ def estimate1D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -3826,7 +3839,7 @@ def estimate1D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -4221,17 +4234,14 @@ def estimate2D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -4264,7 +4274,7 @@ def estimate2D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -4675,17 +4685,14 @@ def estimate3D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -4718,7 +4725,7 @@ def estimate3D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -4797,7 +4804,7 @@ def fill_mpds_geosClassicIndicatorInput(
     mpds_geosClassicIndicatorInput.simGrid.nxyz = nxyz
 
     # mpds_geosClassicIndicatorInput.varname
-    geosclassic.mpds_set_geosClassicIndicatorInput_varname(mpds_geosClassicIndicatorInput, varname)
+    geosclassic.mpds_allocate_and_set_geosClassicIndicatorInput_varname(mpds_geosClassicIndicatorInput, varname)
 
     # mpds_geosClassicIndicatorInput.ncategory
     mpds_geosClassicIndicatorInput.ncategory = ncategory
@@ -4812,7 +4819,7 @@ def fill_mpds_geosClassicIndicatorInput(
     # mpds_geosClassicIndicatorInput.outputReportFlag and mpds_geosClassicIndicatorInput.outputReportFileName
     if outputReportFile is not None:
         mpds_geosClassicIndicatorInput.outputReportFlag = geosclassic.TRUE
-        geosclassic.mpds_set_geosClassicIndicatorInput_outputReportFileName(mpds_geosClassicIndicatorInput, outputReportFile)
+        geosclassic.mpds_allocate_and_set_geosClassicIndicatorInput_outputReportFileName(mpds_geosClassicIndicatorInput, outputReportFile)
     else:
         mpds_geosClassicIndicatorInput.outputReportFlag = geosclassic.FALSE
 
@@ -4832,7 +4839,9 @@ def fill_mpds_geosClassicIndicatorInput(
             cov_model_c, flag = covModel3D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
         if flag:
             geosclassic.MPDS_COVMODEL_array_setitem(mpds_geosClassicIndicatorInput.covModel, i, cov_model_c)
+            # geosclassic.free_MPDS_COVMODEL(cov_model_c)
         else:
+            geosclassic.free_MPDS_COVMODEL(cov_model_c)
             return mpds_geosClassicIndicatorInput, False
 
     # mpds_geosClassicIndicatorInput.searchRadiusRelative
@@ -4862,7 +4871,11 @@ def fill_mpds_geosClassicIndicatorInput(
         mpds_geosClassicIndicatorInput.ndataImage = n
         mpds_geosClassicIndicatorInput.dataImage = geosclassic.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(dataImage):
-            geosclassic.MPDS_IMAGE_array_setitem(mpds_geosClassicIndicatorInput.dataImage, i, img_py2C(dataIm))
+            im_c = img_py2C(dataIm)
+            geosclassic.MPDS_IMAGE_array_setitem(mpds_geosClassicIndicatorInput.dataImage, i, im_c)
+            # geosclassic.free_MPDS_IMAGE(im_c)
+            #
+            # geosclassic.MPDS_IMAGE_array_setitem(mpds_geosClassicIndicatorInput.dataImage, i, img_py2C(dataIm))
 
     # mpds_geosClassicIndicatorInput.ndataPointSet and mpds_geosClassicIndicatorInput.dataPointSet
     if dataPointSet is None:
@@ -4873,7 +4886,11 @@ def fill_mpds_geosClassicIndicatorInput(
         mpds_geosClassicIndicatorInput.ndataPointSet = n
         mpds_geosClassicIndicatorInput.dataPointSet = geosclassic.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(dataPointSet):
-            geosclassic.MPDS_POINTSET_array_setitem(mpds_geosClassicIndicatorInput.dataPointSet, i, ps_py2C(dataPS))
+            ps_c = ps_py2C(dataPS)
+            geosclassic.MPDS_POINTSET_array_setitem(mpds_geosClassicIndicatorInput.dataPointSet, i, ps_c)
+            # geosclassic.free_MPDS_POINTSET(ps_c)
+            #
+            # geosclassic.MPDS_POINTSET_array_setitem(mpds_geosClassicIndicatorInput.dataPointSet, i, ps_py2C(dataPS))
 
     # mpds_geosClassicIndicatorInput.maskImageFlag and mpds_geosClassicIndicatorInput.maskImage
     if mask is None:
@@ -5313,17 +5330,14 @@ def simulateIndicator1D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -5356,7 +5370,7 @@ def simulateIndicator1D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -5647,20 +5661,21 @@ def simulateIndicator1D_mp(
     image = None
     nwarning, warnings = None, None
 
-    # Gather results of every process
+    # Gather results from every process
+    # image
     image = np.hstack([out['image'] for out in geosclassic_output_proc])
-
-    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
-    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Remove None entries
+    # ... remove None entries
     image = image[[x is not None for x in image]]
-
-    # Set to None if every entry is None
+    # .. set to None if every entry is None
     if np.all([x is None for x in image]):
         image = None
 
-    # Gather images and adjust names
+    # nwarning
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    # warnings
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Gather images and adjust variable names
     if image is not None:
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
@@ -6099,17 +6114,14 @@ def simulateIndicator2D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -6142,7 +6154,7 @@ def simulateIndicator2D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -6443,20 +6455,21 @@ def simulateIndicator2D_mp(
     image = None
     nwarning, warnings = None, None
 
-    # Gather results of every process
+    # Gather results from every process
+    # image
     image = np.hstack([out['image'] for out in geosclassic_output_proc])
-
-    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
-    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Remove None entries
+    # ... remove None entries
     image = image[[x is not None for x in image]]
-
-    # Set to None if every entry is None
+    # .. set to None if every entry is None
     if np.all([x is None for x in image]):
         image = None
 
-    # Gather images and adjust names
+    # nwarning
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    # warnings
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Gather images and adjust variable names
     if image is not None:
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
@@ -6909,17 +6922,14 @@ def simulateIndicator3D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -6952,7 +6962,7 @@ def simulateIndicator3D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -7253,20 +7263,21 @@ def simulateIndicator3D_mp(
     image = None
     nwarning, warnings = None, None
 
-    # Gather results of every process
+    # Gather results from every process
+    # image
     image = np.hstack([out['image'] for out in geosclassic_output_proc])
-
-    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
-    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Remove None entries
+    # ... remove None entries
     image = image[[x is not None for x in image]]
-
-    # Set to None if every entry is None
+    # .. set to None if every entry is None
     if np.all([x is None for x in image]):
         image = None
 
-    # Gather images and adjust names
+    # nwarning
+    nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
+    # warnings
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
+
+    # Gather images and adjust variable names
     if image is not None:
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
@@ -7705,17 +7716,14 @@ def estimateIndicator1D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -7748,7 +7756,7 @@ def estimateIndicator1D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -8206,17 +8214,14 @@ def estimateIndicator2D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -8249,7 +8254,7 @@ def estimateIndicator2D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -8721,17 +8726,14 @@ def estimateIndicator3D(
     # Set function to update progress monitor:
     # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
     # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr: warning only
-    if verbose < 2:
+    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
         mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    elif verbose == 2:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-        # mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorWarningOnlyStdout_ptr
     else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitorAllOnlyPercentStdout_ptr
+        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -8764,7 +8766,7 @@ def estimateIndicator3D(
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree (mpds_geosClassicOutput)
+    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
@@ -8865,12 +8867,12 @@ def imgDistanceImage(
 
     # Free memory on C side: input_image_c
     geosclassic.MPDSFreeImage(input_image_c)
-    #geosclassic.MPDSFree (input_image_c)
+    #geosclassic.MPDSFree(input_image_c)
     geosclassic.free_MPDS_IMAGE(input_image_c)
 
     # Free memory on C side: output_image_c
     geosclassic.MPDSFreeImage(output_image_c)
-    #geosclassic.MPDSFree (output_image_c)
+    #geosclassic.MPDSFree(output_image_c)
     geosclassic.free_MPDS_IMAGE(output_image_c)
 
     return output_image
@@ -9015,18 +9017,21 @@ def imgGeobodyImage(
 
     # Free memory on C side: input_image_c
     geosclassic.MPDSFreeImage(input_image_c)
-    #geosclassic.MPDSFree (input_image_c)
+    #geosclassic.MPDSFree(input_image_c)
     geosclassic.free_MPDS_IMAGE(input_image_c)
 
     # Free memory on C side: output_image_c
     geosclassic.MPDSFreeImage(output_image_c)
-    #geosclassic.MPDSFree (output_image_c)
+    #geosclassic.MPDSFree(output_image_c)
     geosclassic.free_MPDS_IMAGE(output_image_c)
 
     # Free memory on C side: rangeValueMin_c, rangeValueMax_c, ngeobody_c
-    geosclassic.MPDSFree(rangeValueMin_c)
-    geosclassic.MPDSFree(rangeValueMax_c)
-    geosclassic.MPDSFree(ngeobody_c)
+    geosclassic.delete_real_array(rangeValueMin_c)
+    geosclassic.delete_real_array(rangeValueMax_c)
+    geosclassic.delete_int_array(ngeobody_c)
+    # geosclassic.MPDSFree(rangeValueMin_c)
+    # geosclassic.MPDSFree(rangeValueMax_c)
+    # geosclassic.MPDSFree(ngeobody_c)
 
     return output_image
 # ----------------------------------------------------------------------------
@@ -9251,12 +9256,12 @@ def imgTwoPointStatisticsImage(
 
     # Free memory on C side: input_image_c
     geosclassic.MPDSFreeImage(input_image_c)
-    #geosclassic.MPDSFree (input_image_c)
+    #geosclassic.MPDSFree(input_image_c)
     geosclassic.free_MPDS_IMAGE(input_image_c)
 
     # Free memory on C side: output_image_c
     geosclassic.MPDSFreeImage(output_image_c)
-    #geosclassic.MPDSFree (output_image_c)
+    #geosclassic.MPDSFree(output_image_c)
     geosclassic.free_MPDS_IMAGE(output_image_c)
 
     return output_image
@@ -9514,13 +9519,16 @@ def imgConnectivityGammaCurves(
 
     # Free memory on C side: input_image_c
     geosclassic.MPDSFreeImage(input_image_c)
-    #geosclassic.MPDSFree (input_image_c)
+    #geosclassic.MPDSFree(input_image_c)
     geosclassic.free_MPDS_IMAGE(input_image_c)
 
     # Free memory on C side: threshold_c, gamma_c, gammaC_c
-    geosclassic.MPDSFree(threshold_c)
-    geosclassic.MPDSFree(gamma_c)
-    geosclassic.MPDSFree(gammaC_c)
+    geosclassic.delete_real_array(threshold_c)
+    geosclassic.delete_real_array(gamma_c)
+    geosclassic.delete_real_array(gammaC_c)
+    # geosclassic.MPDSFree(threshold_c)
+    # geosclassic.MPDSFree(gamma_c)
+    # geosclassic.MPDSFree(gammaC_c)
 
     return out_array
 # ----------------------------------------------------------------------------
@@ -9632,11 +9640,12 @@ def imgConnectivityEulerNumber(
 
         # Free memory on C side: im_geobody_c
         geosclassic.MPDSFreeImage(im_geobody_c)
-        #geosclassic.MPDSFree (im_geobody_c)
+        #geosclassic.MPDSFree(im_geobody_c)
         geosclassic.free_MPDS_IMAGE(im_geobody_c)
 
         # Free memory on C side: euler_number_c
-        geosclassic.MPDSFree(euler_number_c)
+        geosclassic.delete_int_array(euler_number_c)
+        # geosclassic.MPDSFree(euler_number_c)
 
     else:
         return None
@@ -9771,13 +9780,16 @@ def imgConnectivityEulerNumberCurves(
 
     # Free memory on C side: input_image_c
     geosclassic.MPDSFreeImage(input_image_c)
-    #geosclassic.MPDSFree (input_image_c)
+    #geosclassic.MPDSFree(input_image_c)
     geosclassic.free_MPDS_IMAGE(input_image_c)
 
     # Free memory on C side: threshold_c, gamma_c, gammaC_c
-    geosclassic.MPDSFree(threshold_c)
-    geosclassic.MPDSFree(euler_number_c)
-    geosclassic.MPDSFree(euler_numberC_c)
+    geosclassic.delete_real_array(threshold_c)
+    geosclassic.delete_int_array(euler_number_c)
+    geosclassic.delete_int_array(euler_numberC_c)
+    # geosclassic.MPDSFree(threshold_c)
+    # geosclassic.MPDSFree(euler_number_c)
+    # geosclassic.MPDSFree(euler_numberC_c)
 
     return out_array
 # ----------------------------------------------------------------------------

@@ -65,6 +65,11 @@ class BlockData(object):
         self.nblock = nblock
         self.nodeIndex = nodeIndex
 
+        if nodeIndex is None:
+            self.nodeIndex = None
+        else:
+            self.nodeIndex = [np.asarray(x) for x in self.nodeIndex]
+
         if value is None:
             self.value = None
         else:
@@ -93,14 +98,14 @@ class BlockData(object):
         out = out + '\n' + 'blockDataUsage = {0.blockDataUsage}:'.format(self)
         if self.blockDataUsage == 0:
             out = out + ' no block data'
-        elif self.probabilityConstraintUsage == 1:
+        elif self.blockDataUsage == 1:
             out = out + ' block mean value'
         else:
             out = out + ' unknown'
         if self.blockDataUsage == 1:
             out = out + '\n' + 'nblock = {0.nblock} # number of blocks'.format(self)
             out = out + '\n' + '    parameters for each block in fields'
-            out = out + '\n' + '    ".nodeIndex", ".value", ".tolerance", ".activatePropMin", ".activatePropMin"'
+            out = out + '\n' + '    ".nodeIndex", ".value", ".tolerance", ".activatePropMin", ".activatePropMax"'
         out = out + '\n' + '*****'
         return out
     # ------------------------------------------------------------------------
