@@ -120,7 +120,7 @@ class SearchNeighborhoodParameters(object):
         out = '*** SearchNeighborhoodParameters object ***'
         out = out + '\n' + 'radiusMode = {0.radiusMode}'.format(self)
         if self.radiusMode == 'manual':
-            out = out + '\n' + '(nx, ny, nz) = ({0.rx}, {0.ry}, {0.rz})'.format(self)
+            out = out + '\n' + '(rx, ry, rz) = ({0.rx}, {0.ry}, {0.rz})'.format(self)
         out = out + '\n' + 'anisotropyRatioMode = {0.anisotropyRatioMode}'.format(self)
         if self.anisotropyRatioMode == 'manual':
             out = out + '\n' + '(ax, ay, az) = ({0.ax}, {0.ay}, {0.az})'.format(self)
@@ -5150,8 +5150,11 @@ OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}'.format(endofline))
             infid.write('{0}'.format(endofline))
 
         if sp.probabilityConstraintUsage == 1:
-            for v in sp.globalPdf:
-                infid.write(' {}'.format(v))
+            for i, v in enumerate(sp.globalPdf):
+                if i == 0:
+                    infid.write('{}'.format(v))
+                else:
+                    infid.write(' {}'.format(v))
             if verbose > 0:
                 infid.write(' // global pdf')
             infid.write('{0}'.format(endofline))
