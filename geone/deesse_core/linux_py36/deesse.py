@@ -157,6 +157,8 @@ MPDS_NAME_FOR_PATH_INDEX_VAR = _deesse.MPDS_NAME_FOR_PATH_INDEX_VAR
 MPDS_NAME_FOR_ERROR_VAR = _deesse.MPDS_NAME_FOR_ERROR_VAR
 MPDS_NAME_FOR_TI_GRID_NODE_INDEX_VAR = _deesse.MPDS_NAME_FOR_TI_GRID_NODE_INDEX_VAR
 MPDS_NAME_FOR_TI_INDEX_VAR = _deesse.MPDS_NAME_FOR_TI_INDEX_VAR
+MPDS_NAME_FOR_SECTION_TYPE = _deesse.MPDS_NAME_FOR_SECTION_TYPE
+MPDS_NAME_FOR_SECTION_STEP = _deesse.MPDS_NAME_FOR_SECTION_STEP
 MPDS_NB_DIGIT_FOR_REALIZATION_NUMBER = _deesse.MPDS_NB_DIGIT_FOR_REALIZATION_NUMBER
 MPDS_NB_DIGIT_FOR_LEVEL_NUMBER = _deesse.MPDS_NB_DIGIT_FOR_LEVEL_NUMBER
 MPDS_NB_DIGIT_FOR_INDEX_NUMBER = _deesse.MPDS_NB_DIGIT_FOR_INDEX_NUMBER
@@ -625,15 +627,26 @@ MPDS_WARNING_MSG_00077 = _deesse.MPDS_WARNING_MSG_00077
 MPDS_WARNING_MSG_00078 = _deesse.MPDS_WARNING_MSG_00078
 MPDS_WARNING_MSG_00080 = _deesse.MPDS_WARNING_MSG_00080
 MPDS_WARNING_MSG_00085 = _deesse.MPDS_WARNING_MSG_00085
+MPDS_WARNING_MSG_00090 = _deesse.MPDS_WARNING_MSG_00090
 MPDS_WARNING_MSG_00100 = _deesse.MPDS_WARNING_MSG_00100
 MPDS_WARNING_MSG_00111 = _deesse.MPDS_WARNING_MSG_00111
 MPDS_WARNING_MSG_00115 = _deesse.MPDS_WARNING_MSG_00115
 MPDS_WARNING_MSG_00120 = _deesse.MPDS_WARNING_MSG_00120
+MPDS_WARNING_MSG_00143 = _deesse.MPDS_WARNING_MSG_00143
+MPDS_WARNING_MSG_00144 = _deesse.MPDS_WARNING_MSG_00144
+MPDS_WARNING_MSG_00145 = _deesse.MPDS_WARNING_MSG_00145
+MPDS_WARNING_MSG_00146 = _deesse.MPDS_WARNING_MSG_00146
 MPDS_WARNING_MSG_00150 = _deesse.MPDS_WARNING_MSG_00150
 MPDS_WARNING_MSG_00160 = _deesse.MPDS_WARNING_MSG_00160
 MPDS_WARNING_MSG_00210 = _deesse.MPDS_WARNING_MSG_00210
 MPDS_WARNING_MSG_00212 = _deesse.MPDS_WARNING_MSG_00212
 MPDS_WARNING_MSG_00214 = _deesse.MPDS_WARNING_MSG_00214
+MPDS_WARNING_MSG_01010 = _deesse.MPDS_WARNING_MSG_01010
+MPDS_WARNING_MSG_01011 = _deesse.MPDS_WARNING_MSG_01011
+MPDS_WARNING_MSG_01012 = _deesse.MPDS_WARNING_MSG_01012
+MPDS_WARNING_MSG_01013 = _deesse.MPDS_WARNING_MSG_01013
+MPDS_WARNING_MSG_01014 = _deesse.MPDS_WARNING_MSG_01014
+MPDS_WARNING_MSG_01015 = _deesse.MPDS_WARNING_MSG_01015
 MPDS_WARNING_MSG_02001 = _deesse.MPDS_WARNING_MSG_02001
 MPDS_WARNING_MSG_02002 = _deesse.MPDS_WARNING_MSG_02002
 MPDS_WARNING_MSG_02005 = _deesse.MPDS_WARNING_MSG_02005
@@ -1094,6 +1107,9 @@ def MPDSFreeSimInput(arg1):
 def MPDSInitSimInput(arg1):
     return _deesse.MPDSInitSimInput(arg1)
 
+def MPDSPrintPreambleDeesse(arg1):
+    return _deesse.MPDSPrintPreambleDeesse(arg1)
+
 def MPDSPrintSimInput(arg1, arg2, arg3):
     return _deesse.MPDSPrintSimInput(arg1, arg2, arg3)
 
@@ -1174,6 +1190,250 @@ def MPDSPrintSoftProbability(arg1, arg2, arg3):
 
 def MPDSValidateSoftProbability(arg1, arg2, arg3, arg4):
     return _deesse.MPDSValidateSoftProbability(arg1, arg2, arg3, arg4)
+class mpds_XSubSimInput(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+    sectionType = property(_deesse.mpds_XSubSimInput_sectionType_get, _deesse.mpds_XSubSimInput_sectionType_set)
+    nvar = property(_deesse.mpds_XSubSimInput_nvar_get, _deesse.mpds_XSubSimInput_nvar_set)
+    ntrainImage = property(_deesse.mpds_XSubSimInput_ntrainImage_get, _deesse.mpds_XSubSimInput_ntrainImage_set)
+    simGridAsTiFlag = property(_deesse.mpds_XSubSimInput_simGridAsTiFlag_get, _deesse.mpds_XSubSimInput_simGridAsTiFlag_set)
+    trainImage = property(_deesse.mpds_XSubSimInput_trainImage_get, _deesse.mpds_XSubSimInput_trainImage_set)
+    pdfTrainImage = property(_deesse.mpds_XSubSimInput_pdfTrainImage_get, _deesse.mpds_XSubSimInput_pdfTrainImage_set)
+    homothetyUsage = property(_deesse.mpds_XSubSimInput_homothetyUsage_get, _deesse.mpds_XSubSimInput_homothetyUsage_set)
+    homothetyXRatioImageFlag = property(_deesse.mpds_XSubSimInput_homothetyXRatioImageFlag_get, _deesse.mpds_XSubSimInput_homothetyXRatioImageFlag_set)
+    homothetyYRatioImageFlag = property(_deesse.mpds_XSubSimInput_homothetyYRatioImageFlag_get, _deesse.mpds_XSubSimInput_homothetyYRatioImageFlag_set)
+    homothetyZRatioImageFlag = property(_deesse.mpds_XSubSimInput_homothetyZRatioImageFlag_get, _deesse.mpds_XSubSimInput_homothetyZRatioImageFlag_set)
+    homothetyXRatioValue = property(_deesse.mpds_XSubSimInput_homothetyXRatioValue_get, _deesse.mpds_XSubSimInput_homothetyXRatioValue_set)
+    homothetyYRatioValue = property(_deesse.mpds_XSubSimInput_homothetyYRatioValue_get, _deesse.mpds_XSubSimInput_homothetyYRatioValue_set)
+    homothetyZRatioValue = property(_deesse.mpds_XSubSimInput_homothetyZRatioValue_get, _deesse.mpds_XSubSimInput_homothetyZRatioValue_set)
+    homothetyXRatioImage = property(_deesse.mpds_XSubSimInput_homothetyXRatioImage_get, _deesse.mpds_XSubSimInput_homothetyXRatioImage_set)
+    homothetyYRatioImage = property(_deesse.mpds_XSubSimInput_homothetyYRatioImage_get, _deesse.mpds_XSubSimInput_homothetyYRatioImage_set)
+    homothetyZRatioImage = property(_deesse.mpds_XSubSimInput_homothetyZRatioImage_get, _deesse.mpds_XSubSimInput_homothetyZRatioImage_set)
+    rotationUsage = property(_deesse.mpds_XSubSimInput_rotationUsage_get, _deesse.mpds_XSubSimInput_rotationUsage_set)
+    rotationAzimuthImageFlag = property(_deesse.mpds_XSubSimInput_rotationAzimuthImageFlag_get, _deesse.mpds_XSubSimInput_rotationAzimuthImageFlag_set)
+    rotationDipImageFlag = property(_deesse.mpds_XSubSimInput_rotationDipImageFlag_get, _deesse.mpds_XSubSimInput_rotationDipImageFlag_set)
+    rotationPlungeImageFlag = property(_deesse.mpds_XSubSimInput_rotationPlungeImageFlag_get, _deesse.mpds_XSubSimInput_rotationPlungeImageFlag_set)
+    rotationAzimuthValue = property(_deesse.mpds_XSubSimInput_rotationAzimuthValue_get, _deesse.mpds_XSubSimInput_rotationAzimuthValue_set)
+    rotationDipValue = property(_deesse.mpds_XSubSimInput_rotationDipValue_get, _deesse.mpds_XSubSimInput_rotationDipValue_set)
+    rotationPlungeValue = property(_deesse.mpds_XSubSimInput_rotationPlungeValue_get, _deesse.mpds_XSubSimInput_rotationPlungeValue_set)
+    rotationAzimuthImage = property(_deesse.mpds_XSubSimInput_rotationAzimuthImage_get, _deesse.mpds_XSubSimInput_rotationAzimuthImage_set)
+    rotationDipImage = property(_deesse.mpds_XSubSimInput_rotationDipImage_get, _deesse.mpds_XSubSimInput_rotationDipImage_set)
+    rotationPlungeImage = property(_deesse.mpds_XSubSimInput_rotationPlungeImage_get, _deesse.mpds_XSubSimInput_rotationPlungeImage_set)
+    searchNeighborhoodParameters = property(_deesse.mpds_XSubSimInput_searchNeighborhoodParameters_get, _deesse.mpds_XSubSimInput_searchNeighborhoodParameters_set)
+    nneighboringNode = property(_deesse.mpds_XSubSimInput_nneighboringNode_get, _deesse.mpds_XSubSimInput_nneighboringNode_set)
+    maxPropInequalityNode = property(_deesse.mpds_XSubSimInput_maxPropInequalityNode_get, _deesse.mpds_XSubSimInput_maxPropInequalityNode_set)
+    neighboringNodeDensity = property(_deesse.mpds_XSubSimInput_neighboringNodeDensity_get, _deesse.mpds_XSubSimInput_neighboringNodeDensity_set)
+    simAndPathParameters = property(_deesse.mpds_XSubSimInput_simAndPathParameters_get, _deesse.mpds_XSubSimInput_simAndPathParameters_set)
+    distanceThreshold = property(_deesse.mpds_XSubSimInput_distanceThreshold_get, _deesse.mpds_XSubSimInput_distanceThreshold_set)
+    softProbability = property(_deesse.mpds_XSubSimInput_softProbability_get, _deesse.mpds_XSubSimInput_softProbability_set)
+    maxScanFraction = property(_deesse.mpds_XSubSimInput_maxScanFraction_get, _deesse.mpds_XSubSimInput_maxScanFraction_set)
+    pyramidGeneralParameters = property(_deesse.mpds_XSubSimInput_pyramidGeneralParameters_get, _deesse.mpds_XSubSimInput_pyramidGeneralParameters_set)
+    pyramidParameters = property(_deesse.mpds_XSubSimInput_pyramidParameters_get, _deesse.mpds_XSubSimInput_pyramidParameters_set)
+    tolerance = property(_deesse.mpds_XSubSimInput_tolerance_get, _deesse.mpds_XSubSimInput_tolerance_set)
+    npostProcessingPathMax = property(_deesse.mpds_XSubSimInput_npostProcessingPathMax_get, _deesse.mpds_XSubSimInput_npostProcessingPathMax_set)
+    postProcessingNneighboringNode = property(_deesse.mpds_XSubSimInput_postProcessingNneighboringNode_get, _deesse.mpds_XSubSimInput_postProcessingNneighboringNode_set)
+    postProcessingNeighboringNodeDensity = property(_deesse.mpds_XSubSimInput_postProcessingNeighboringNodeDensity_get, _deesse.mpds_XSubSimInput_postProcessingNeighboringNodeDensity_set)
+    postProcessingDistanceThreshold = property(_deesse.mpds_XSubSimInput_postProcessingDistanceThreshold_get, _deesse.mpds_XSubSimInput_postProcessingDistanceThreshold_set)
+    postProcessingMaxScanFraction = property(_deesse.mpds_XSubSimInput_postProcessingMaxScanFraction_get, _deesse.mpds_XSubSimInput_postProcessingMaxScanFraction_set)
+    postProcessingTolerance = property(_deesse.mpds_XSubSimInput_postProcessingTolerance_get, _deesse.mpds_XSubSimInput_postProcessingTolerance_set)
+
+    def __init__(self):
+        _deesse.mpds_XSubSimInput_swiginit(self, _deesse.new_mpds_XSubSimInput())
+    __swig_destroy__ = _deesse.delete_mpds_XSubSimInput
+
+# Register mpds_XSubSimInput in _deesse:
+_deesse.mpds_XSubSimInput_swigregister(mpds_XSubSimInput)
+
+class mpds_XSimInput(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+    consoleAppFlag = property(_deesse.mpds_XSimInput_consoleAppFlag_get, _deesse.mpds_XSimInput_consoleAppFlag_set)
+    simName = property(_deesse.mpds_XSimInput_simName_get, _deesse.mpds_XSimInput_simName_set)
+    simImage = property(_deesse.mpds_XSimInput_simImage_get, _deesse.mpds_XSimInput_simImage_set)
+    nvar = property(_deesse.mpds_XSimInput_nvar_get, _deesse.mpds_XSimInput_nvar_set)
+    outputVarFlag = property(_deesse.mpds_XSimInput_outputVarFlag_get, _deesse.mpds_XSimInput_outputVarFlag_set)
+    formatStringVar = property(_deesse.mpds_XSimInput_formatStringVar_get, _deesse.mpds_XSimInput_formatStringVar_set)
+    outputSimJob = property(_deesse.mpds_XSimInput_outputSimJob_get, _deesse.mpds_XSimInput_outputSimJob_set)
+    outputSimImageFileName = property(_deesse.mpds_XSimInput_outputSimImageFileName_get, _deesse.mpds_XSimInput_outputSimImageFileName_set)
+    outputSectionTypeFlag = property(_deesse.mpds_XSimInput_outputSectionTypeFlag_get, _deesse.mpds_XSimInput_outputSectionTypeFlag_set)
+    outputSectionTypeFileName = property(_deesse.mpds_XSimInput_outputSectionTypeFileName_get, _deesse.mpds_XSimInput_outputSectionTypeFileName_set)
+    outputSectionStepFlag = property(_deesse.mpds_XSimInput_outputSectionStepFlag_get, _deesse.mpds_XSimInput_outputSectionStepFlag_set)
+    outputSectionStepFileName = property(_deesse.mpds_XSimInput_outputSectionStepFileName_get, _deesse.mpds_XSimInput_outputSectionStepFileName_set)
+    outputReportFlag = property(_deesse.mpds_XSimInput_outputReportFlag_get, _deesse.mpds_XSimInput_outputReportFlag_set)
+    outputReportFileName = property(_deesse.mpds_XSimInput_outputReportFileName_get, _deesse.mpds_XSimInput_outputReportFileName_set)
+    ndataImage = property(_deesse.mpds_XSimInput_ndataImage_get, _deesse.mpds_XSimInput_ndataImage_set)
+    dataImage = property(_deesse.mpds_XSimInput_dataImage_get, _deesse.mpds_XSimInput_dataImage_set)
+    ndataPointSet = property(_deesse.mpds_XSimInput_ndataPointSet_get, _deesse.mpds_XSimInput_ndataPointSet_set)
+    dataPointSet = property(_deesse.mpds_XSimInput_dataPointSet_get, _deesse.mpds_XSimInput_dataPointSet_set)
+    maskImageFlag = property(_deesse.mpds_XSimInput_maskImageFlag_get, _deesse.mpds_XSimInput_maskImageFlag_set)
+    maskImage = property(_deesse.mpds_XSimInput_maskImage_get, _deesse.mpds_XSimInput_maskImage_set)
+    trainValueRangeExtensionMax = property(_deesse.mpds_XSimInput_trainValueRangeExtensionMax_get, _deesse.mpds_XSimInput_trainValueRangeExtensionMax_set)
+    normalizingType = property(_deesse.mpds_XSimInput_normalizingType_get, _deesse.mpds_XSimInput_normalizingType_set)
+    rescalingMode = property(_deesse.mpds_XSimInput_rescalingMode_get, _deesse.mpds_XSimInput_rescalingMode_set)
+    rescalingTargetMin = property(_deesse.mpds_XSimInput_rescalingTargetMin_get, _deesse.mpds_XSimInput_rescalingTargetMin_set)
+    rescalingTargetMax = property(_deesse.mpds_XSimInput_rescalingTargetMax_get, _deesse.mpds_XSimInput_rescalingTargetMax_set)
+    rescalingTargetMean = property(_deesse.mpds_XSimInput_rescalingTargetMean_get, _deesse.mpds_XSimInput_rescalingTargetMean_set)
+    rescalingTargetLength = property(_deesse.mpds_XSimInput_rescalingTargetLength_get, _deesse.mpds_XSimInput_rescalingTargetLength_set)
+    relativeDistanceFlag = property(_deesse.mpds_XSimInput_relativeDistanceFlag_get, _deesse.mpds_XSimInput_relativeDistanceFlag_set)
+    distanceType = property(_deesse.mpds_XSimInput_distanceType_get, _deesse.mpds_XSimInput_distanceType_set)
+    powerLpDistance = property(_deesse.mpds_XSimInput_powerLpDistance_get, _deesse.mpds_XSimInput_powerLpDistance_set)
+    powerLpDistanceInv = property(_deesse.mpds_XSimInput_powerLpDistanceInv_get, _deesse.mpds_XSimInput_powerLpDistanceInv_set)
+    conditioningWeightFactor = property(_deesse.mpds_XSimInput_conditioningWeightFactor_get, _deesse.mpds_XSimInput_conditioningWeightFactor_set)
+    XSectionParameters = property(_deesse.mpds_XSimInput_XSectionParameters_get, _deesse.mpds_XSimInput_XSectionParameters_set)
+    XSubSimInput_xy = property(_deesse.mpds_XSimInput_XSubSimInput_xy_get, _deesse.mpds_XSimInput_XSubSimInput_xy_set)
+    XSubSimInput_xz = property(_deesse.mpds_XSimInput_XSubSimInput_xz_get, _deesse.mpds_XSimInput_XSubSimInput_xz_set)
+    XSubSimInput_yz = property(_deesse.mpds_XSimInput_XSubSimInput_yz_get, _deesse.mpds_XSimInput_XSubSimInput_yz_set)
+    XSubSimInput_z = property(_deesse.mpds_XSimInput_XSubSimInput_z_get, _deesse.mpds_XSimInput_XSubSimInput_z_set)
+    XSubSimInput_y = property(_deesse.mpds_XSimInput_XSubSimInput_y_get, _deesse.mpds_XSimInput_XSubSimInput_y_set)
+    XSubSimInput_x = property(_deesse.mpds_XSimInput_XSubSimInput_x_get, _deesse.mpds_XSimInput_XSubSimInput_x_set)
+    seed = property(_deesse.mpds_XSimInput_seed_get, _deesse.mpds_XSimInput_seed_set)
+    seedIncrement = property(_deesse.mpds_XSimInput_seedIncrement_get, _deesse.mpds_XSimInput_seedIncrement_set)
+    nrealization = property(_deesse.mpds_XSimInput_nrealization_get, _deesse.mpds_XSimInput_nrealization_set)
+
+    def __init__(self):
+        _deesse.mpds_XSimInput_swiginit(self, _deesse.new_mpds_XSimInput())
+    __swig_destroy__ = _deesse.delete_mpds_XSimInput
+
+# Register mpds_XSimInput in _deesse:
+_deesse.mpds_XSimInput_swigregister(mpds_XSimInput)
+
+
+def MPDSExportXSimInput(arg1, arg2, arg3, arg4, arg5):
+    return _deesse.MPDSExportXSimInput(arg1, arg2, arg3, arg4, arg5)
+
+def MPDSExportXSubSimInput(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _deesse.MPDSExportXSubSimInput(arg1, arg2, arg3, arg4, arg5, arg6)
+
+def MPDSFreeXSimInput(arg1):
+    return _deesse.MPDSFreeXSimInput(arg1)
+
+def MPDSFreeXSubSimInput(arg1):
+    return _deesse.MPDSFreeXSubSimInput(arg1)
+
+def MPDSInitXSimInput(arg1):
+    return _deesse.MPDSInitXSimInput(arg1)
+
+def MPDSInitXSubSimInput(arg1):
+    return _deesse.MPDSInitXSubSimInput(arg1)
+
+def MPDSPrintPreambleDeesseX(arg1):
+    return _deesse.MPDSPrintPreambleDeesseX(arg1)
+
+def MPDSPrintVersionX(arg1, arg2, arg3, arg4, arg5):
+    return _deesse.MPDSPrintVersionX(arg1, arg2, arg3, arg4, arg5)
+
+def MPDSPrintXSimInput(arg1, arg2, arg3):
+    return _deesse.MPDSPrintXSimInput(arg1, arg2, arg3)
+
+def MPDSPrintXSubSimInput(arg1, arg2, arg3):
+    return _deesse.MPDSPrintXSubSimInput(arg1, arg2, arg3)
+
+def MPDSValidateXSimInput(arg1, arg2, arg3, arg4):
+    return _deesse.MPDSValidateXSimInput(arg1, arg2, arg3, arg4)
+
+def MPDSValidateXSubSimInput(arg1, arg2, arg3, arg4, arg5):
+    return _deesse.MPDSValidateXSubSimInput(arg1, arg2, arg3, arg4, arg5)
+SECTION_XY_XZ_YZ = _deesse.SECTION_XY_XZ_YZ
+SECTION_XY_YZ_XZ = _deesse.SECTION_XY_YZ_XZ
+SECTION_XZ_XY_YZ = _deesse.SECTION_XZ_XY_YZ
+SECTION_XZ_YZ_XY = _deesse.SECTION_XZ_YZ_XY
+SECTION_YZ_XY_XZ = _deesse.SECTION_YZ_XY_XZ
+SECTION_YZ_XZ_XY = _deesse.SECTION_YZ_XZ_XY
+SECTION_XY_XZ = _deesse.SECTION_XY_XZ
+SECTION_XZ_XY = _deesse.SECTION_XZ_XY
+SECTION_XY_YZ = _deesse.SECTION_XY_YZ
+SECTION_YZ_XY = _deesse.SECTION_YZ_XY
+SECTION_XZ_YZ = _deesse.SECTION_XZ_YZ
+SECTION_YZ_XZ = _deesse.SECTION_YZ_XZ
+SECTION_XY_Z = _deesse.SECTION_XY_Z
+SECTION_Z_XY = _deesse.SECTION_Z_XY
+SECTION_XZ_Y = _deesse.SECTION_XZ_Y
+SECTION_Y_XZ = _deesse.SECTION_Y_XZ
+SECTION_YZ_X = _deesse.SECTION_YZ_X
+SECTION_X_YZ = _deesse.SECTION_X_YZ
+SECTION_X_Y_Z = _deesse.SECTION_X_Y_Z
+SECTION_X_Z_Y = _deesse.SECTION_X_Z_Y
+SECTION_Y_X_Z = _deesse.SECTION_Y_X_Z
+SECTION_Y_Z_X = _deesse.SECTION_Y_Z_X
+SECTION_Z_X_Y = _deesse.SECTION_Z_X_Y
+SECTION_Z_Y_X = _deesse.SECTION_Z_Y_X
+SECTION_X_Y = _deesse.SECTION_X_Y
+SECTION_Y_X = _deesse.SECTION_Y_X
+SECTION_X_Z = _deesse.SECTION_X_Z
+SECTION_Z_X = _deesse.SECTION_Z_X
+SECTION_Y_Z = _deesse.SECTION_Y_Z
+SECTION_Z_Y = _deesse.SECTION_Z_Y
+SECTION_PATH_RANDOM = _deesse.SECTION_PATH_RANDOM
+SECTION_PATH_POW_2 = _deesse.SECTION_PATH_POW_2
+SECTION_PATH_SUBDIV = _deesse.SECTION_PATH_SUBDIV
+SECTION_PATH_MANUAL = _deesse.SECTION_PATH_MANUAL
+class mpds_XSectionParameters(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+    XSectionMode = property(_deesse.mpds_XSectionParameters_XSectionMode_get, _deesse.mpds_XSectionParameters_XSectionMode_set)
+    XSectionPathMode = property(_deesse.mpds_XSectionParameters_XSectionPathMode_get, _deesse.mpds_XSectionParameters_XSectionPathMode_set)
+    minSpaceX = property(_deesse.mpds_XSectionParameters_minSpaceX_get, _deesse.mpds_XSectionParameters_minSpaceX_set)
+    minSpaceY = property(_deesse.mpds_XSectionParameters_minSpaceY_get, _deesse.mpds_XSectionParameters_minSpaceY_set)
+    minSpaceZ = property(_deesse.mpds_XSectionParameters_minSpaceZ_get, _deesse.mpds_XSectionParameters_minSpaceZ_set)
+    balancedFillingFlag = property(_deesse.mpds_XSectionParameters_balancedFillingFlag_get, _deesse.mpds_XSectionParameters_balancedFillingFlag_set)
+    nsection = property(_deesse.mpds_XSectionParameters_nsection_get, _deesse.mpds_XSectionParameters_nsection_set)
+    sectionType = property(_deesse.mpds_XSectionParameters_sectionType_get, _deesse.mpds_XSectionParameters_sectionType_set)
+    sectionLoc = property(_deesse.mpds_XSectionParameters_sectionLoc_get, _deesse.mpds_XSectionParameters_sectionLoc_set)
+
+    def __init__(self):
+        _deesse.mpds_XSectionParameters_swiginit(self, _deesse.new_mpds_XSectionParameters())
+    __swig_destroy__ = _deesse.delete_mpds_XSectionParameters
+
+# Register mpds_XSectionParameters in _deesse:
+_deesse.mpds_XSectionParameters_swigregister(mpds_XSectionParameters)
+
+
+def MPDSCopyXSectionParameters(arg1, arg2):
+    return _deesse.MPDSCopyXSectionParameters(arg1, arg2)
+
+def MPDSFreeXSectionParameters(arg1):
+    return _deesse.MPDSFreeXSectionParameters(arg1)
+
+def MPDSInitXSectionParameters(arg1):
+    return _deesse.MPDSInitXSectionParameters(arg1)
+
+def MPDSPrintXSectionParameters(arg1, arg2, arg3, arg4, arg5):
+    return _deesse.MPDSPrintXSectionParameters(arg1, arg2, arg3, arg4, arg5)
+
+def MPDSReadXSectionParameters(arg1, arg2):
+    return _deesse.MPDSReadXSectionParameters(arg1, arg2)
+
+def MPDSValidateXSectionParameters(arg1, arg2, arg3, arg4, arg5):
+    return _deesse.MPDSValidateXSectionParameters(arg1, arg2, arg3, arg4, arg5)
+class mpds_XSimOutput(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+    nreal = property(_deesse.mpds_XSimOutput_nreal_get, _deesse.mpds_XSimOutput_nreal_set)
+    nvarSimPerReal = property(_deesse.mpds_XSimOutput_nvarSimPerReal_get, _deesse.mpds_XSimOutput_nvarSimPerReal_set)
+    originalVarIndex = property(_deesse.mpds_XSimOutput_originalVarIndex_get, _deesse.mpds_XSimOutput_originalVarIndex_set)
+    outputSimImage = property(_deesse.mpds_XSimOutput_outputSimImage_get, _deesse.mpds_XSimOutput_outputSimImage_set)
+    nvarSectionType = property(_deesse.mpds_XSimOutput_nvarSectionType_get, _deesse.mpds_XSimOutput_nvarSectionType_set)
+    outputSectionTypeImage = property(_deesse.mpds_XSimOutput_outputSectionTypeImage_get, _deesse.mpds_XSimOutput_outputSectionTypeImage_set)
+    nvarSectionStep = property(_deesse.mpds_XSimOutput_nvarSectionStep_get, _deesse.mpds_XSimOutput_nvarSectionStep_set)
+    outputSectionStepImage = property(_deesse.mpds_XSimOutput_outputSectionStepImage_get, _deesse.mpds_XSimOutput_outputSectionStepImage_set)
+    outputSectionStepFileName = property(_deesse.mpds_XSimOutput_outputSectionStepFileName_get, _deesse.mpds_XSimOutput_outputSectionStepFileName_set)
+
+    def __init__(self):
+        _deesse.mpds_XSimOutput_swiginit(self, _deesse.new_mpds_XSimOutput())
+    __swig_destroy__ = _deesse.delete_mpds_XSimOutput
+
+# Register mpds_XSimOutput in _deesse:
+_deesse.mpds_XSimOutput_swigregister(mpds_XSimOutput)
+
+
+def MPDSFreeXSimOutput(arg1):
+    return _deesse.MPDSFreeXSimOutput(arg1)
+
+def MPDSInitXSimOutput(arg1):
+    return _deesse.MPDSInitXSimOutput(arg1)
+
+def MPDSPrintXSimOutput(arg1, arg2, arg3):
+    return _deesse.MPDSPrintXSimOutput(arg1, arg2, arg3)
 
 def MPDSOMPComputeVariogramRangeApprox(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
     return _deesse.MPDSOMPComputeVariogramRangeApprox(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
@@ -1370,6 +1630,19 @@ def MPDSOMPSimTransformHomothetyImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, 
 def MPDSOMPSimTransformRotationImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
     return _deesse.MPDSOMPSimTransformRotationImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
 
+def MPDSOMPXSim(arg1, arg2, arg3, arg4, arg5):
+    return _deesse.MPDSOMPXSim(arg1, arg2, arg3, arg4, arg5)
+
+def MPDSOMPXSimComputeXSectionPath(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _deesse.MPDSOMPXSimComputeXSectionPath(arg1, arg2, arg3, arg4, arg5, arg6)
+
+def MPDSOMPXSimCore(arg1, arg2, arg3, arg4, arg5, arg6):
+    return _deesse.MPDSOMPXSimCore(arg1, arg2, arg3, arg4, arg5, arg6)
+MPDS_X_VERSION_NUMBER = _deesse.MPDS_X_VERSION_NUMBER
+MPDS_X_BUILD_NUMBER = _deesse.MPDS_X_BUILD_NUMBER
+MPDS_X_SUFFIX_FOR_REALIZATION = _deesse.MPDS_X_SUFFIX_FOR_REALIZATION
+MPDS_X_NB_DIGIT_FOR_REALIZATION_NUMBER = _deesse.MPDS_X_NB_DIGIT_FOR_REALIZATION_NUMBER
+
 def new_int_array(nelements):
     return _deesse.new_int_array(nelements)
 
@@ -1430,6 +1703,30 @@ def realp_array_getitem(ary, index):
 def realp_array_setitem(ary, index, value):
     return _deesse.realp_array_setitem(ary, index, value)
 
+def new_MPDS_BLOCKDATA_array(nelements):
+    return _deesse.new_MPDS_BLOCKDATA_array(nelements)
+
+def delete_MPDS_BLOCKDATA_array(ary):
+    return _deesse.delete_MPDS_BLOCKDATA_array(ary)
+
+def MPDS_BLOCKDATA_array_getitem(ary, index):
+    return _deesse.MPDS_BLOCKDATA_array_getitem(ary, index)
+
+def MPDS_BLOCKDATA_array_setitem(ary, index, value):
+    return _deesse.MPDS_BLOCKDATA_array_setitem(ary, index, value)
+
+def new_MPDS_CONNECTIVITY_array(nelements):
+    return _deesse.new_MPDS_CONNECTIVITY_array(nelements)
+
+def delete_MPDS_CONNECTIVITY_array(ary):
+    return _deesse.delete_MPDS_CONNECTIVITY_array(ary)
+
+def MPDS_CONNECTIVITY_array_getitem(ary, index):
+    return _deesse.MPDS_CONNECTIVITY_array_getitem(ary, index)
+
+def MPDS_CONNECTIVITY_array_setitem(ary, index, value):
+    return _deesse.MPDS_CONNECTIVITY_array_setitem(ary, index, value)
+
 def new_MPDS_IMAGE_array(nelements):
     return _deesse.new_MPDS_IMAGE_array(nelements)
 
@@ -1466,17 +1763,17 @@ def MPDS_POINTSET_array_getitem(ary, index):
 def MPDS_POINTSET_array_setitem(ary, index, value):
     return _deesse.MPDS_POINTSET_array_setitem(ary, index, value)
 
-def new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nelements):
-    return _deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nelements)
+def new_MPDS_PYRAMIDPARAMETERS_array(nelements):
+    return _deesse.new_MPDS_PYRAMIDPARAMETERS_array(nelements)
 
-def delete_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(ary):
-    return _deesse.delete_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(ary)
+def delete_MPDS_PYRAMIDPARAMETERS_array(ary):
+    return _deesse.delete_MPDS_PYRAMIDPARAMETERS_array(ary)
 
-def MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_getitem(ary, index):
-    return _deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_getitem(ary, index)
+def MPDS_PYRAMIDPARAMETERS_array_getitem(ary, index):
+    return _deesse.MPDS_PYRAMIDPARAMETERS_array_getitem(ary, index)
 
-def MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(ary, index, value):
-    return _deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(ary, index, value)
+def MPDS_PYRAMIDPARAMETERS_array_setitem(ary, index, value):
+    return _deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(ary, index, value)
 
 def new_MPDS_RESCALINGMODE_array(nelements):
     return _deesse.new_MPDS_RESCALINGMODE_array(nelements)
@@ -1490,6 +1787,18 @@ def MPDS_RESCALINGMODE_array_getitem(ary, index):
 def MPDS_RESCALINGMODE_array_setitem(ary, index, value):
     return _deesse.MPDS_RESCALINGMODE_array_setitem(ary, index, value)
 
+def new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nelements):
+    return _deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nelements)
+
+def delete_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(ary):
+    return _deesse.delete_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(ary)
+
+def MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_getitem(ary, index):
+    return _deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_getitem(ary, index)
+
+def MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(ary, index, value):
+    return _deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(ary, index, value)
+
 def new_MPDS_SOFTPROBABILITY_array(nelements):
     return _deesse.new_MPDS_SOFTPROBABILITY_array(nelements)
 
@@ -1501,42 +1810,6 @@ def MPDS_SOFTPROBABILITY_array_getitem(ary, index):
 
 def MPDS_SOFTPROBABILITY_array_setitem(ary, index, value):
     return _deesse.MPDS_SOFTPROBABILITY_array_setitem(ary, index, value)
-
-def new_MPDS_CONNECTIVITY_array(nelements):
-    return _deesse.new_MPDS_CONNECTIVITY_array(nelements)
-
-def delete_MPDS_CONNECTIVITY_array(ary):
-    return _deesse.delete_MPDS_CONNECTIVITY_array(ary)
-
-def MPDS_CONNECTIVITY_array_getitem(ary, index):
-    return _deesse.MPDS_CONNECTIVITY_array_getitem(ary, index)
-
-def MPDS_CONNECTIVITY_array_setitem(ary, index, value):
-    return _deesse.MPDS_CONNECTIVITY_array_setitem(ary, index, value)
-
-def new_MPDS_BLOCKDATA_array(nelements):
-    return _deesse.new_MPDS_BLOCKDATA_array(nelements)
-
-def delete_MPDS_BLOCKDATA_array(ary):
-    return _deesse.delete_MPDS_BLOCKDATA_array(ary)
-
-def MPDS_BLOCKDATA_array_getitem(ary, index):
-    return _deesse.MPDS_BLOCKDATA_array_getitem(ary, index)
-
-def MPDS_BLOCKDATA_array_setitem(ary, index, value):
-    return _deesse.MPDS_BLOCKDATA_array_setitem(ary, index, value)
-
-def new_MPDS_PYRAMIDPARAMETERS_array(nelements):
-    return _deesse.new_MPDS_PYRAMIDPARAMETERS_array(nelements)
-
-def delete_MPDS_PYRAMIDPARAMETERS_array(ary):
-    return _deesse.delete_MPDS_PYRAMIDPARAMETERS_array(ary)
-
-def MPDS_PYRAMIDPARAMETERS_array_getitem(ary, index):
-    return _deesse.MPDS_PYRAMIDPARAMETERS_array_getitem(ary, index)
-
-def MPDS_PYRAMIDPARAMETERS_array_setitem(ary, index, value):
-    return _deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(ary, index, value)
 
 def malloc_MPDS_BLOCKDATA(*args):
     return _deesse.malloc_MPDS_BLOCKDATA(*args)
@@ -1603,6 +1876,19 @@ def free_MPDS_POINTSET(ptr):
     return _deesse.free_MPDS_POINTSET(ptr)
 sizeof_MPDS_POINTSET = _deesse.sizeof_MPDS_POINTSET
 
+def malloc_MPDS_PROGRESSMONITOR(*args):
+    return _deesse.malloc_MPDS_PROGRESSMONITOR(*args)
+
+def calloc_MPDS_PROGRESSMONITOR(*args):
+    return _deesse.calloc_MPDS_PROGRESSMONITOR(*args)
+
+def realloc_MPDS_PROGRESSMONITOR(ptr, nitems):
+    return _deesse.realloc_MPDS_PROGRESSMONITOR(ptr, nitems)
+
+def free_MPDS_PROGRESSMONITOR(ptr):
+    return _deesse.free_MPDS_PROGRESSMONITOR(ptr)
+sizeof_MPDS_PROGRESSMONITOR = _deesse.sizeof_MPDS_PROGRESSMONITOR
+
 def malloc_MPDS_PYRAMIDGENERALPARAMETERS(*args):
     return _deesse.malloc_MPDS_PYRAMIDGENERALPARAMETERS(*args)
 
@@ -1668,19 +1954,6 @@ def free_MPDS_SIMANDPATHPARAMETERS(ptr):
     return _deesse.free_MPDS_SIMANDPATHPARAMETERS(ptr)
 sizeof_MPDS_SIMANDPATHPARAMETERS = _deesse.sizeof_MPDS_SIMANDPATHPARAMETERS
 
-def malloc_MPDS_SOFTPROBABILITY(*args):
-    return _deesse.malloc_MPDS_SOFTPROBABILITY(*args)
-
-def calloc_MPDS_SOFTPROBABILITY(*args):
-    return _deesse.calloc_MPDS_SOFTPROBABILITY(*args)
-
-def realloc_MPDS_SOFTPROBABILITY(ptr, nitems):
-    return _deesse.realloc_MPDS_SOFTPROBABILITY(ptr, nitems)
-
-def free_MPDS_SOFTPROBABILITY(ptr):
-    return _deesse.free_MPDS_SOFTPROBABILITY(ptr)
-sizeof_MPDS_SOFTPROBABILITY = _deesse.sizeof_MPDS_SOFTPROBABILITY
-
 def malloc_MPDS_SIMINPUT(*args):
     return _deesse.malloc_MPDS_SIMINPUT(*args)
 
@@ -1707,18 +1980,70 @@ def free_MPDS_SIMOUTPUT(ptr):
     return _deesse.free_MPDS_SIMOUTPUT(ptr)
 sizeof_MPDS_SIMOUTPUT = _deesse.sizeof_MPDS_SIMOUTPUT
 
-def malloc_MPDS_PROGRESSMONITOR(*args):
-    return _deesse.malloc_MPDS_PROGRESSMONITOR(*args)
+def malloc_MPDS_SOFTPROBABILITY(*args):
+    return _deesse.malloc_MPDS_SOFTPROBABILITY(*args)
 
-def calloc_MPDS_PROGRESSMONITOR(*args):
-    return _deesse.calloc_MPDS_PROGRESSMONITOR(*args)
+def calloc_MPDS_SOFTPROBABILITY(*args):
+    return _deesse.calloc_MPDS_SOFTPROBABILITY(*args)
 
-def realloc_MPDS_PROGRESSMONITOR(ptr, nitems):
-    return _deesse.realloc_MPDS_PROGRESSMONITOR(ptr, nitems)
+def realloc_MPDS_SOFTPROBABILITY(ptr, nitems):
+    return _deesse.realloc_MPDS_SOFTPROBABILITY(ptr, nitems)
 
-def free_MPDS_PROGRESSMONITOR(ptr):
-    return _deesse.free_MPDS_PROGRESSMONITOR(ptr)
-sizeof_MPDS_PROGRESSMONITOR = _deesse.sizeof_MPDS_PROGRESSMONITOR
+def free_MPDS_SOFTPROBABILITY(ptr):
+    return _deesse.free_MPDS_SOFTPROBABILITY(ptr)
+sizeof_MPDS_SOFTPROBABILITY = _deesse.sizeof_MPDS_SOFTPROBABILITY
+
+def malloc_MPDS_XSECTIONPARAMETERS(*args):
+    return _deesse.malloc_MPDS_XSECTIONPARAMETERS(*args)
+
+def calloc_MPDS_XSECTIONPARAMETERS(*args):
+    return _deesse.calloc_MPDS_XSECTIONPARAMETERS(*args)
+
+def realloc_MPDS_XSECTIONPARAMETERS(ptr, nitems):
+    return _deesse.realloc_MPDS_XSECTIONPARAMETERS(ptr, nitems)
+
+def free_MPDS_XSECTIONPARAMETERS(ptr):
+    return _deesse.free_MPDS_XSECTIONPARAMETERS(ptr)
+sizeof_MPDS_XSECTIONPARAMETERS = _deesse.sizeof_MPDS_XSECTIONPARAMETERS
+
+def malloc_MPDS_XSIMINPUT(*args):
+    return _deesse.malloc_MPDS_XSIMINPUT(*args)
+
+def calloc_MPDS_XSIMINPUT(*args):
+    return _deesse.calloc_MPDS_XSIMINPUT(*args)
+
+def realloc_MPDS_XSIMINPUT(ptr, nitems):
+    return _deesse.realloc_MPDS_XSIMINPUT(ptr, nitems)
+
+def free_MPDS_XSIMINPUT(ptr):
+    return _deesse.free_MPDS_XSIMINPUT(ptr)
+sizeof_MPDS_XSIMINPUT = _deesse.sizeof_MPDS_XSIMINPUT
+
+def malloc_MPDS_XSIMOUTPUT(*args):
+    return _deesse.malloc_MPDS_XSIMOUTPUT(*args)
+
+def calloc_MPDS_XSIMOUTPUT(*args):
+    return _deesse.calloc_MPDS_XSIMOUTPUT(*args)
+
+def realloc_MPDS_XSIMOUTPUT(ptr, nitems):
+    return _deesse.realloc_MPDS_XSIMOUTPUT(ptr, nitems)
+
+def free_MPDS_XSIMOUTPUT(ptr):
+    return _deesse.free_MPDS_XSIMOUTPUT(ptr)
+sizeof_MPDS_XSIMOUTPUT = _deesse.sizeof_MPDS_XSIMOUTPUT
+
+def malloc_MPDS_XSUBSIMINPUT(*args):
+    return _deesse.malloc_MPDS_XSUBSIMINPUT(*args)
+
+def calloc_MPDS_XSUBSIMINPUT(*args):
+    return _deesse.calloc_MPDS_XSUBSIMINPUT(*args)
+
+def realloc_MPDS_XSUBSIMINPUT(ptr, nitems):
+    return _deesse.realloc_MPDS_XSUBSIMINPUT(ptr, nitems)
+
+def free_MPDS_XSUBSIMINPUT(ptr):
+    return _deesse.free_MPDS_XSUBSIMINPUT(ptr)
+sizeof_MPDS_XSUBSIMINPUT = _deesse.sizeof_MPDS_XSUBSIMINPUT
 MPDSUpdateProgressMonitor0_ptr = _deesse.MPDSUpdateProgressMonitor0_ptr
 MPDSUpdateProgressMonitor1_ptr = _deesse.MPDSUpdateProgressMonitor1_ptr
 MPDSUpdateProgressMonitor2_ptr = _deesse.MPDSUpdateProgressMonitor2_ptr
@@ -1755,11 +2080,20 @@ def mpds_set_real_vector_to_cst(arg1, arg2, arg3, arg4):
 def mpds_allocate_and_set_outputVarFlag(simInput, flag):
     return _deesse.mpds_allocate_and_set_outputVarFlag(simInput, flag)
 
+def mpds_x_allocate_and_set_outputVarFlag(XSimInput, flag):
+    return _deesse.mpds_x_allocate_and_set_outputVarFlag(XSimInput, flag)
+
 def mpds_allocate_and_set_simGridAsTiFlag(simInput, flag):
     return _deesse.mpds_allocate_and_set_simGridAsTiFlag(simInput, flag)
 
+def mpds_xsub_allocate_and_set_simGridAsTiFlag(XSubSimInput, flag):
+    return _deesse.mpds_xsub_allocate_and_set_simGridAsTiFlag(XSubSimInput, flag)
+
 def mpds_allocate_and_set_relativeDistanceFlag(simInput, flag):
     return _deesse.mpds_allocate_and_set_relativeDistanceFlag(simInput, flag)
+
+def mpds_x_allocate_and_set_relativeDistanceFlag(XSimInput, flag):
+    return _deesse.mpds_x_allocate_and_set_relativeDistanceFlag(XSimInput, flag)
 
 def mpds_allocate_and_set_pyramid_outputLevelFlag(pyramidParameters, flag):
     return _deesse.mpds_allocate_and_set_pyramid_outputLevelFlag(pyramidParameters, flag)
@@ -1767,8 +2101,14 @@ def mpds_allocate_and_set_pyramid_outputLevelFlag(pyramidParameters, flag):
 def mpds_allocate_and_set_simname(simInput, STRING):
     return _deesse.mpds_allocate_and_set_simname(simInput, STRING)
 
+def mpds_x_allocate_and_set_simname(XSimInput, STRING):
+    return _deesse.mpds_x_allocate_and_set_simname(XSimInput, STRING)
+
 def mpds_allocate_and_set_outputReportFileName(simInput, STRING):
     return _deesse.mpds_allocate_and_set_outputReportFileName(simInput, STRING)
+
+def mpds_x_allocate_and_set_outputReportFileName(XSimInput, STRING):
+    return _deesse.mpds_x_allocate_and_set_outputReportFileName(XSimInput, STRING)
 
 def mpds_allocate_and_set_connectivity_varname(connectivity, STRING):
     return _deesse.mpds_allocate_and_set_connectivity_varname(connectivity, STRING)

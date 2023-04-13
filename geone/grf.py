@@ -7,7 +7,22 @@ author:         Julien Straubhaar
 date:           jan-2018
 
 Module for gaussian random fields (GRF) simulations in 1D, 2D and 3D,
-based on Fast Fourier Transform (FFT).
+based on (block) circulant embedding of the covariance matrix and
+Fast Fourier Transform (FFT).
+
+References:
+- J. W. Cooley, J. W. Tukey (1965),
+  An algorithm for machine calculation of complex Fourier series.
+  Mathematics of Computatation 19(90):297-301, doi:10.2307/2003354
+
+- C. R. Dietrich, G. N. Newsam (1993),
+  A fast and exact method for multidimensional gaussian stochastic simulations.
+  Water Resources Research 29(8):2861-2869, doi:10.1029/93WR01070
+
+- A. T. A. Wood, G. Chan (1994),
+  Simulation of Stationary Gaussian Processes in [0, 1]^d.
+  Journal of Computational and Graphical Statistics 3(4):409-432,
+  url: http://www.jstor.org/stable/1390903
 """
 
 import numpy as np

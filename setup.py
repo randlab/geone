@@ -23,6 +23,9 @@ if platform_system == 'Windows':
     elif python_version == (3, 10):
         deesse_core_dir = 'geone/deesse_core/win_py310'
         geosclassic_core_dir = 'geone/geosclassic_core/win_py310'
+    elif python_version == (3, 11):
+        deesse_core_dir = 'geone/deesse_core/win_py311'
+        geosclassic_core_dir = 'geone/geosclassic_core/win_py311'
     else:
         #print('pakcage geone not available for this python version ({}.{})'.format(*sys.version_info[0:2]))
         exit()
@@ -42,6 +45,9 @@ elif platform_system == 'Linux':
     elif python_version == (3, 10):
         deesse_core_dir = 'geone/deesse_core/linux_py310'
         geosclassic_core_dir = 'geone/geosclassic_core/linux_py310'
+    elif python_version == (3, 11):
+        deesse_core_dir = 'geone/deesse_core/linux_py311'
+        geosclassic_core_dir = 'geone/geosclassic_core/linux_py311'
     else:
         #print('pakcage geone not available for this python version ({}.{})'.format(*sys.version_info[0:2]))
         exit()

@@ -1810,7 +1810,7 @@ def simulate1D_mp(
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -2613,7 +2613,7 @@ def simulate2D_mp(
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -3432,7 +3432,7 @@ def simulate3D_mp(
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -5680,7 +5680,7 @@ def simulateIndicator1D_mp(
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -6474,7 +6474,7 @@ def simulateIndicator2D_mp(
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -7282,7 +7282,7 @@ def simulateIndicator3D_mp(
         all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
         ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
         for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{i:0{ndigit}d}'
+            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 

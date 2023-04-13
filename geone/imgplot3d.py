@@ -19,6 +19,8 @@ import matplotlib.colors as mcolors
 
 import pyvista as pv
 
+from geone import customcolors as ccol
+
 # ----------------------------------------------------------------------------
 def drawImage3D_surface (
                  im,
@@ -29,22 +31,22 @@ def drawImage3D_surface (
                  iv=0,
                  cmap='viridis',
                  cmin=None, cmax=None,
-                 custom_scalar_bar_for_equidistant_categories=False,
-                 custom_colors=None,
-                 opacity=1.0,
-                 filtering_value=None,
-                 filtering_interval=None,
-                 excluded_value=None,
-                 show_edges=False,
-                 edge_color='black',
-                 edge_line_width=1,
+                 alpha=None,
+                 excludedVal=None,
+                 categ=False,
+                 ncateg_max=30,
+                 categVal=None,
+                 categCol=None,
+                 categColCycle=False,
+                 categActive=None,
+                 use_clip_plane=False,
                  show_scalar_bar=True,
                  show_outline=True,
                  show_bounds=False,
                  show_axes=True,
                  text=None,
                  scalar_bar_annotations=None,
-                 scalar_bar_annotations_max=None,
+                 scalar_bar_annotations_max=30,
                  scalar_bar_kwargs=None,
                  outline_kwargs=None,
                  bounds_kwargs=None,
@@ -52,7 +54,8 @@ def drawImage3D_surface (
                  text_kwargs=None,
                  background_color=None,
                  foreground_color=None,
-                 cpos=None):
+                 cpos=None,
+                 **kwargs):
     """
     Draws a 3D image as surface(s) (using pyvista):
 
@@ -84,41 +87,66 @@ def drawImage3D_surface (
 
     :param cmin, cmax:
                     (float) min and max values for the color bar
+                        -- used only if categ is False --
                         automatically computed if None
 
-    :param custom_scalar_bar_for_equidistant_categories:
-                    (bool) indicates if a custom scalar/color bar is drawn
-                        (should be used only for categorical variable with
-                        equidistant categories)
-                        if True: cmin and cmax are automatically computed
+    :param alpha:   (float or None) values of alpha channel for transparency
+                        (if None, value 1.0 is used (no transparency))
 
-    :param custom_colors:
-                    (list of colors) for each category,
-                        used only if custom_scalar_bar_for_equidistant_categories
-                        is set to True, length must be equal to the total number
-                        of categories
+    :param excludedVal: (int/float or sequence or None) values to be
+                            excluded from the plot.
+                            Note: not used if categ is True and categVal is
+                            not None
 
-    :param opacity: (float) between 0.0 and 1.0, opacity used for the plot
+    :param categ:       (bool) indicates if the variable of the image to plot
+                            has to be treated as categorical (True) or as
+                            continuous (False)
 
-    :param filtering_value:
-                    (int/float or sequence or None) values to be plotted
+    :param ncateg_max:  (int) maximal number of categories
+                            -- used only if categ is True --
+                            if more category values and categVal is None,
+                            nothing is plotted (categ should set to False)
 
-    :param filtering_interval:
-                    (sequence of length 2, or list of sequence of length 2, or None)
-                        interval of values to be plotted
+    :param categVal:    (int/float or sequence or None)
+                            -- used only if categ is True --
+                            explicit list of the category values to be
+                            considered (if None, the list of all unique values
+                            are automatically computed)
 
-    :param excluded_value:
-                    (int/float or sequence or None) values to be
-                        excluded from the plot (set to np.nan)
+    :param categCol:    (sequence or None)
+                            -- used only if categ is True --
+                            colors (given by string or rgb-tuple) used for the
+                            category values that will be displayed:
+                                If categVal is not None: categCol must have
+                                    the same length as categVal,
+                                else: first entries of categCol are used if its
+                                    length is greater or equal to the number
+                                    of displayed category values, otherwise:
+                                    the entries of categCol are used cyclically
+                                    if categColCycle is True and otherwise,
+                                    colors taken from the colormap cmap are used
 
-    :param show_edges:
-                    (bool) indicates if edges of the grid are drawn
+    :param categColCycle:
+                        (bool)
+                            -- used only if categ is True --
+                            indicates if the entries of categCol can be used
+                            cyclically or not (when the number of displayed
+                            category values exceeds the length of categCol)
 
-    :param edge_color:
-                    (string or 3 item list) color for edges (used if show_edges is True)
+    :param categActive: (sequence of bools or None)
+                            -- used only if categ is True --
+                            sequence of same length as categVal:
+                                - categActive[i] is True: categVal[i] is displayed
+                                - categActive[i] is False: categVal[i] is not displayed
+                            if None, all category values (in categVal) is displayed
 
-    :param edge_line_width:
-                    (float) line width for edges (used if show_edges is True)
+    :param use_clip_plane:
+                    (bool) set True to use 'pyvista.add_mesh_clip_plane'
+                        (allowing interactive clipping) instead of
+                        'pyvista.add_mesh' when plotting values of the image;
+                        warning: one clip plane per value (resp. interval)
+                        specified in filtering_value (resp. filtering_intervals)
+                        is generated
 
     :param show_scalar_bar:
                     (bool) indicates if scalar bar (color bar) is drawn
@@ -137,10 +165,10 @@ def drawImage3D_surface (
     :param scalar_bar_annotations:
                     (dict) annotation on the scalar bar (color bar)
                         (used if show_scalar_bar is True)
+
     :param scalar_bar_annotations_max:
-                    (int or None) maximal number of annotations on the scalar bar
-                    when custom_scalar_bar_for_equidistant_categories is True
-                    and scalar_bar_annotations is None
+                    (int) maximal number of annotations on the scalar bar
+                        when categ is True and scalar_bar_annotations is None
 
     :param scalar_bar_kwargs:
                     (dict) kwargs passed to function 'plotter.add_scalar_bar'
@@ -185,6 +213,19 @@ def drawImage3D_surface (
                             in principle: (focus_point - camera_location) is orthogonal
                             to viewup_vector
 
+    :param kwargs:
+        additional keyword arguments passed to plotter.add_mesh[_clip_plane] when
+        plotting the variable, such as
+            - opacity:  (float or string) opacity for colors
+                            default: 'linear', (set 'linear_r' to invert opacity)
+            - show_edges:
+                        (bool) indicates if edges of the grid are drawn
+            - edge_color:
+                        (string or 3 item list) color for edges (used if show_edges is True)
+            - line_width:
+                        (float) line width for edges (used if show_edges is True)
+            - etc.
+
     NOTE: 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
     """
 
@@ -226,7 +267,7 @@ def drawImage3D_surface (
             print("ERROR: invalid cmap string!")
             return
 
-    # Initialization of dictionary (do not used {} as default argument, it is not re-initialized...)
+    # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
         scalar_bar_annotations = {}
 
@@ -249,59 +290,102 @@ def drawImage3D_surface (
     # zz = np.array(im.val[iv][iz0:iz1, iy0:iy1, ix0:ix1]) # np.array() to get a copy
     zz = im.val[iv][iz0:iz1, iy0:iy1, ix0:ix1].flatten() # .flatten() provides a copy
 
-    if custom_scalar_bar_for_equidistant_categories:
-        all_val = np.unique(zz[~np.isnan(zz)])
-        n_all_val = len(all_val)
-        if n_all_val > 1:
-            s = (all_val[-1] - all_val[0]) / (n_all_val - 1)
-        else:
-            s = 1
-        cmin = all_val[0]
-        cmax = all_val[-1] + s
-        if scalar_bar_annotations == {}:
-            if scalar_bar_annotations_max is None:
-                v_annoted = all_val
-            elif scalar_bar_annotations_max==0:
-                v_annoted = []
-            else:
-                v_annoted = all_val[0::np.int(np.ceil(len(all_val)/scalar_bar_annotations_max))]
-            for v in v_annoted:
-                scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
-            # for v in all_val:
-            #     scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
-            scalar_bar_kwargs['n_labels'] = 0
+    if categ:
+        # --- Treat categorical variable ---
+        if categCol is not None\
+                and type(categCol) is not list\
+                and type(categCol) is not tuple:
+            print("ERROR: 'categCol' must be a list or a tuple (if not None)!")
+            return
 
-        scalar_bar_kwargs['n_colors'] = n_all_val
+        # Get array 'dval' of displayed values (at least for color bar)
+        if categVal is not None:
+            dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
-        if custom_colors is not None:
-            if len(custom_colors) != n_all_val:
-                print ('ERROR: custom_colors length is not equal to the total number of categories')
+            if len(np.unique(dval)) != len(dval):
+                print("ERROR: 'categVal' contains duplicated entries!")
                 return
-            # set cmap (as in geone.customcolor.custom_cmap)
-            cols = list(custom_colors) + [custom_colors[-1]] # duplicate last col...
 
-            cseqRGB = []
-            for c in cols:
-                try:
-                    cseqRGB.append(mcolors.ColorConverter().to_rgb(c))
-                except:
-                    cseqRGB.append(c)
+            # Check 'categCol' (if not None)
+            if categCol is not None and len(categCol) != len(dval):
+                print("ERROR: length of 'categVal' and 'categCol' differs!")
+                return
 
-            vseqn = np.linspace(0,1,len(cols))
+        else:
+            # Possibly exclude values from zz
+            if excludedVal is not None:
+                for val in np.array(excludedVal).reshape(-1):
+                    np.putmask(zz, zz == val, np.nan)
 
-            # Set dictionary to define the color map
-            cdict = {
-                'red'  :[(vseqn[i], cseqRGB[i][0], cseqRGB[i][0]) for i in range(len(cols))],
-                'green':[(vseqn[i], cseqRGB[i][1], cseqRGB[i][1]) for i in range(len(cols))],
-                'blue' :[(vseqn[i], cseqRGB[i][2], cseqRGB[i][2]) for i in range(len(cols))],
-                'alpha':[(vseqn[i], 1.0,           1.0)           for i in range(len(cols))]
-                }
+            # Get the unique values in zz
+            dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
+            if len(dval) > ncateg_max:
+                print ("ERROR: too many categories, set categ=False")
+                return
 
-            cmap = mcolors.LinearSegmentedColormap('custom_cmap', cdict, N=256)
+        if not len(dval): # len(dval) == 0
+            print ("ERROR: no value to be drawn!")
+            return
 
-    if excluded_value is not None:
-        for val in np.array(excluded_value).reshape(-1): # force to be an 1d array
-            np.putmask(zz, zz == val, np.nan)
+        if categActive is not None:
+            if len(categActive) != len(dval):
+                print("ERROR: length of 'categActive' not valid (should be the same as length of categVal)")
+                return
+        else:
+            categActive = np.ones(len(dval), dtype='bool')
+
+        # Replace dval[i] by i in zz if categActive[i] is True otherwise by np.nan, and other values by np.nan
+        zz2 = np.array(zz) # copy array
+        zz[...] = np.nan # initialize
+        for i, v in enumerate(dval):
+            if categActive[i]:
+                zz[zz2 == v] = i
+
+        del zz2
+
+        # Set 'colorList': the list of colors to use
+        colorList = None
+        if categCol is not None:
+            if len(categCol) >= len(dval):
+                colorList = [categCol[i] for i in range(len(dval))]
+                # colorList = [mcolors.ColorConverter().to_rgba(categCol[i]) for i in range(len(dval))]
+
+            elif categColCycle:
+                print("Warning: categCol is used cyclically (too few entries)")
+                colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
+
+            else:
+                print("Warning: categCol not used (too few entries)")
+
+        if colorList is None:
+            # Use colors from cmap
+            colorList = [cmap(x) for x in np.arange(len(dval)) * 1.0/(len(dval)-1)]
+
+        # Set the colormap: 'cmap'
+        # - Trick: duplicate last color (even if len(colorList)> 1)!
+        #          otherwise the first color appears twice
+        colorList.append(colorList[-1])
+        cmap = ccol.custom_cmap(colorList, ncol=len(colorList), alpha=alpha)
+
+        # Set the min and max of the colorbar
+        cmin, cmax = 0, len(dval) # works, but scalar bar annotations may be shifted of +0.5, see below
+        # cmin, cmax = -0.5, len(dval) - 0.5 # does not work
+
+        # Set scalar bar annotations if not given
+        if scalar_bar_annotations == {}:
+            if len(dval) <= scalar_bar_annotations_max: # avoid too many annotations (very slow and useless)
+                for i, v in enumerate(dval):
+                    scalar_bar_annotations[i+0.5]='{:.3g}'.format(v)
+
+        scalar_bar_kwargs['n_labels'] = 0
+        scalar_bar_kwargs['n_colors'] = len(dval)
+
+    else: # categ == False
+        # --- Treat continuous variable ---
+        # Possibly exclude values from zz
+        if excludedVal is not None:
+            for val in np.array(excludedVal).reshape(-1): # force to be an 1d array
+                np.putmask(zz, zz == val, np.nan)
 
     # Set cmin and cmax if not specified
     if cmin is None:
@@ -333,16 +417,12 @@ def drawImage3D_surface (
     else:
         pp = pv.Plotter()
 
-    if filtering_interval is not None:
-        for vv in np.reshape(filtering_interval, (-1,2)):
-            pp.add_mesh(pg.threshold(value=vv), cmap=cmap, clim=(cmin, cmax), opacity=opacity, show_scalar_bar=False, show_edges=show_edges, edge_color=edge_color, line_width=edge_line_width)
+    if use_clip_plane:
+        add_mesh_func = pp.add_mesh_clip_plane
+    else:
+        add_mesh_func = pp.add_mesh
 
-    if filtering_value is not None:
-        for v in np.reshape(filtering_value, -1):
-            pp.add_mesh(pg.threshold(value=(v,v)), color=cmap((v-cmin)/(cmax-cmin)), opacity=opacity, show_scalar_bar=False, show_edges=show_edges, edge_color=edge_color, line_width=edge_line_width)
-
-    if filtering_value is None and filtering_interval is None:
-        pp.add_mesh(pg.threshold(value=(cmin, cmax)), cmap=cmap, clim=(cmin, cmax), opacity=opacity, show_scalar_bar=False, show_edges=show_edges, edge_color=edge_color, line_width=edge_line_width)
+    add_mesh_func(pg.threshold(value=(cmin, cmax)), cmap=cmap, clim=(cmin, cmax), annotations=scalar_bar_annotations, show_scalar_bar=False, **kwargs)
 
     if background_color is not None:
         pp.background_color = background_color
@@ -353,13 +433,13 @@ def drawImage3D_surface (
                 d['color'] = foreground_color
 
     if show_scalar_bar:
-        # - old -
-        # pg.cell_arrays[im.varname[iv]][...] = np.nan # trick: set all value to nan and use nan_opacity = 0 for empty plot but 'saving' the scalar bar...
-        # # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=True, scalar_bar_args=scalar_bar_kwargs)
-        # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
-        # - old -
-        # Trick: set opacity=0 and nan_opacity=0 for empty plot but 'saving' the scalar bar...
-        pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), opacity=0., nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
+        # # - old -
+        # # pg.cell_arrays[im.varname[iv]][...] = np.nan # trick: set all value to nan and use nan_opacity = 0 for empty plot but 'saving' the scalar bar...
+        # # # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=True, scalar_bar_args=scalar_bar_kwargs)
+        # # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
+        # # - old -
+        # # Trick: set opacity=0 and nan_opacity=0 for empty plot but 'saving' the scalar bar...
+        # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), opacity=0., nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
         if 'title' not in scalar_bar_kwargs.keys():
             scalar_bar_kwargs['title'] = im.varname[iv]
         pp.add_scalar_bar(**scalar_bar_kwargs)
@@ -395,23 +475,21 @@ def drawImage3D_slice (
                  slice_normal_custom=None,
                  cmap='viridis',
                  cmin=None, cmax=None,
-                 custom_scalar_bar_for_equidistant_categories=False,
-                 custom_colors=None,
-                 opacity=1.0,
-                 nan_color='gray', nan_opacity=1.0,
-                 filtering_value=None,
-                 filtering_interval=None,
-                 excluded_value=None,
-                 show_edges=False,
-                 edge_color='black',
-                 edge_line_width=1,
+                 alpha=None,
+                 excludedVal=None,
+                 categ=False,
+                 ncateg_max=30,
+                 categVal=None,
+                 categCol=None,
+                 categColCycle=False,
+                 categActive=None,
                  show_scalar_bar=True,
                  show_outline=True,
                  show_bounds=False,
                  show_axes=True,
                  text=None,
                  scalar_bar_annotations=None,
-                 scalar_bar_annotations_max=None,
+                 scalar_bar_annotations_max=20,
                  scalar_bar_kwargs=None,
                  outline_kwargs=None,
                  bounds_kwargs=None,
@@ -419,7 +497,8 @@ def drawImage3D_slice (
                  text_kwargs=None,
                  background_color=None,
                  foreground_color=None,
-                 cpos=None):
+                 cpos=None,
+                 **kwargs):
     """
     Draws a 3D image as slice(s) (using pyvista):
 
@@ -468,43 +547,58 @@ def drawImage3D_slice (
 
     :param cmin, cmax:
                     (float) min and max values for the color bar
+                        -- used only if categ is False --
                         automatically computed if None
 
-    :param custom_scalar_bar_for_equidistant_categories:
-                    (bool) indicates if a custom scalar/color bar is drawn
-                        (should be used only for categorical variable with
-                        equidistant categories)
-                        if True: cmin and cmax are automatically computed
+    :param alpha:   (float or None) values of alpha channel for transparency
+                        (if None, value 1.0 is used (no transparency))
 
-    :param custom_colors:
-                    (list of colors) for each category,
-                        used only if custom_scalar_bar_for_equidistant_categories
-                        is set to True, length must be equal to the total number
-                        of categories
+    :param excludedVal: (int/float or sequence or None) values to be
+                            excluded from the plot.
+                            Note: not used if categ is True and categVal is
+                            not None
 
-    :param opacity: (float) between 0.0 and 1.0, opacity used for the plot
-    :param nan_color, nan_opacity:
-                    color and opacity (float) used for np.nan value
+    :param categ:       (bool) indicates if the variable of the image to plot
+                            has to be treated as categorical (True) or as
+                            continuous (False)
 
-    :param filtering_value:
-                    (int/float or sequence or None) values to be plotted
+    :param ncateg_max:  (int) maximal number of categories
+                            -- used only if categ is True --
+                            if more category values and categVal is None,
+                            nothing is plotted (categ should set to False)
 
-    :param filtering_interval:
-                    (sequence of length 2, or list of sequence of length 2, or None)
-                        interval of values to be plotted
+    :param categVal:    (int/float or sequence or None)
+                            -- used only if categ is True --
+                            explicit list of the category values to be
+                            considered (if None, the list of all unique values
+                            are automatically computed)
 
-    :param excluded_value:
-                    (int/float or sequence or None) values to be
-                        excluded from the plot (set to np.nan)
+    :param categCol:    (sequence or None)
+                            -- used only if categ is True --
+                            colors (given by string or rgb-tuple) used for the
+                            category values that will be displayed:
+                                If categVal is not None: categCol must have
+                                    the same length as categVal,
+                                else: first entries of categCol are used if its
+                                    length is greater or equal to the number
+                                    of displayed category values, otherwise:
+                                    the entries of categCol are used cyclically
+                                    if categColCycle is True and otherwise,
+                                    colors taken from the colormap cmap are used
 
-    :param show_edges:
-                    (bool) indicates if edges of the grid are drawn
+    :param categColCycle:
+                        (bool)
+                            -- used only if categ is True --
+                            indicates if the entries of categCol can be used
+                            cyclically or not (when the number of displayed
+                            category values exceeds the length of categCol)
 
-    :param edge_color:
-                    (string or 3 item list) color for edges (used if show_edges is True)
-
-    :param edge_line_width:
-                    (float) line width for edges (used if show_edges is True)
+    :param categActive: (sequence of bools or None)
+                            -- used only if categ is True --
+                            sequence of same length as categVal:
+                                - categActive[i] is True: categVal[i] is displayed
+                                - categActive[i] is False: categVal[i] is not displayed
+                            if None, all category values (in categVal) is displayed
 
     :param show_scalar_bar:
                     (bool) indicates if scalar bar (color bar) is drawn
@@ -523,10 +617,6 @@ def drawImage3D_slice (
     :param scalar_bar_annotations:
                     (dict) annotation on the scalar bar (color bar)
                         (used if show_scalar_bar is True)
-    :param scalar_bar_annotations_max:
-                    (int or None) maximal number of annotations on the scalar bar
-                    when custom_scalar_bar_for_equidistant_categories is True
-                    and scalar_bar_annotations is None
 
     :param scalar_bar_kwargs:
                     (dict) kwargs passed to function 'plotter.add_scalar_bar'
@@ -571,6 +661,23 @@ def drawImage3D_slice (
                             in principle: (focus_point - camera_location) is orthogonal
                             to viewup_vector
 
+    :param kwargs:
+        additional keyword arguments passed to plotter.add_mesh when plotting the variable,
+        such as
+            - opacity:  (float or string) opacity for colors
+                            default: 'linear', (set 'linear_r' to invert opacity)
+            - nan_color:
+                        color for np.nan value
+            - nan_opacity:
+                        (float) opacity used for np.nan value
+            - show_edges:
+                        (bool) indicates if edges of the grid are drawn
+            - edge_color:
+                        (string or 3 item list) color for edges (used if show_edges is True)
+            - line_width:
+                        (float) line width for edges (used if show_edges is True)
+            - etc.
+
     NOTE: 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
     """
 
@@ -612,7 +719,7 @@ def drawImage3D_slice (
             print("ERROR: invalid cmap string!")
             return
 
-    # Initialization of dictionary (do not used {} as default argument, it is not re-initialized...)
+    # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
         scalar_bar_annotations = {}
 
@@ -635,71 +742,102 @@ def drawImage3D_slice (
     # zz = np.array(im.val[iv][iz0:iz1, iy0:iy1, ix0:ix1]) # np.array() to get a copy
     zz = im.val[iv][iz0:iz1, iy0:iy1, ix0:ix1].flatten() # .flatten() provides a copy
 
-    if custom_scalar_bar_for_equidistant_categories:
-        all_val = np.unique(zz[~np.isnan(zz)])
-        n_all_val = len(all_val)
-        if n_all_val > 1:
-            s = (all_val[-1] - all_val[0]) / (n_all_val - 1)
-        else:
-            s = 1
-        cmin = all_val[0]
-        cmax = all_val[-1] + s
-        if scalar_bar_annotations == {}:
-            if scalar_bar_annotations_max is None:
-                v_annoted = all_val
-            elif scalar_bar_annotations_max==0:
-                v_annoted = []
-            else:
-                v_annoted = all_val[0::np.int(np.ceil(len(all_val)/scalar_bar_annotations_max))]
-            for v in v_annoted:
-                scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
-            # for v in all_val:
-            #     scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
-            scalar_bar_kwargs['n_labels'] = 0
+    if categ:
+        # --- Treat categorical variable ---
+        if categCol is not None\
+                and type(categCol) is not list\
+                and type(categCol) is not tuple:
+            print("ERROR: 'categCol' must be a list or a tuple (if not None)!")
+            return
 
-        scalar_bar_kwargs['n_colors'] = n_all_val
+        # Get array 'dval' of displayed values (at least for color bar)
+        if categVal is not None:
+            dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
-        if custom_colors is not None:
-            if len(custom_colors) != n_all_val:
-                print ('ERROR: custom_colors length is not equal to the total number of categories')
+            if len(np.unique(dval)) != len(dval):
+                print("ERROR: 'categVal' contains duplicated entries!")
                 return
-            # set cmap (as in geone.customcolor.custom_cmap)
-            cols = list(custom_colors) + [custom_colors[-1]] # duplicate last col...
 
-            cseqRGB = []
-            for c in cols:
-                try:
-                    cseqRGB.append(mcolors.ColorConverter().to_rgb(c))
-                except:
-                    cseqRGB.append(c)
+            # Check 'categCol' (if not None)
+            if categCol is not None and len(categCol) != len(dval):
+                print("ERROR: length of 'categVal' and 'categCol' differs!")
+                return
 
-            vseqn = np.linspace(0,1,len(cols))
+        else:
+            # Possibly exclude values from zz
+            if excludedVal is not None:
+                for val in np.array(excludedVal).reshape(-1):
+                    np.putmask(zz, zz == val, np.nan)
 
-            # Set dictionary to define the color map
-            cdict = {
-                'red'  :[(vseqn[i], cseqRGB[i][0], cseqRGB[i][0]) for i in range(len(cols))],
-                'green':[(vseqn[i], cseqRGB[i][1], cseqRGB[i][1]) for i in range(len(cols))],
-                'blue' :[(vseqn[i], cseqRGB[i][2], cseqRGB[i][2]) for i in range(len(cols))],
-                'alpha':[(vseqn[i], 1.0,           1.0)           for i in range(len(cols))]
-                }
+            # Get the unique values in zz
+            dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
+            if len(dval) > ncateg_max:
+                print ("ERROR: too many categories, set categ=False")
+                return
 
-            cmap = mcolors.LinearSegmentedColormap('custom_cmap', cdict, N=256)
+        if not len(dval): # len(dval) == 0
+            print ("ERROR: no value to be drawn!")
+            return
 
-    if filtering_interval is not None or filtering_value is not None:
-        bb = np.ones(len(zz)).astype('bool')
-        if filtering_interval is not None:
-            for vv in np.reshape(filtering_interval, (-1,2)):
-                bb = np.all((bb, np.any((np.isnan(zz), zz < vv[0], zz > vv[1]), axis=0)), axis=0)
+        if categActive is not None:
+            if len(categActive) != len(dval):
+                print("ERROR: length of 'categActive' not valid (should be the same as length of categVal)")
+                return
+        else:
+            categActive = np.ones(len(dval), dtype='bool')
 
-        if filtering_value is not None:
-            for v in np.reshape(filtering_value, -1):
-                bb = np.all((bb, zz != v), axis=0)
+        # Replace dval[i] by i in zz if categActive[i] is True otherwise by np.nan, and other values by np.nan
+        zz2 = np.array(zz) # copy array
+        zz[...] = np.nan # initialize
+        for i, v in enumerate(dval):
+            if categActive[i]:
+                zz[zz2 == v] = i
 
-        zz[bb] = np.nan
+        del zz2
 
-    if excluded_value is not None:
-        for val in np.array(excluded_value).reshape(-1): # force to be an 1d array
-            np.putmask(zz, zz == val, np.nan)
+        # Set 'colorList': the list of colors to use
+        colorList = None
+        if categCol is not None:
+            if len(categCol) >= len(dval):
+                colorList = [categCol[i] for i in range(len(dval))]
+                # colorList = [mcolors.ColorConverter().to_rgba(categCol[i]) for i in range(len(dval))]
+
+            elif categColCycle:
+                print("Warning: categCol is used cyclically (too few entries)")
+                colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
+
+            else:
+                print("Warning: categCol not used (too few entries)")
+
+        if colorList is None:
+            # Use colors from cmap
+            colorList = [cmap(x) for x in np.arange(len(dval)) * 1.0/(len(dval)-1)]
+
+        # Set the colormap: 'cmap'
+        # - Trick: duplicate last color (even if len(colorList)> 1)!
+        #          otherwise the first color appears twice
+        colorList.append(colorList[-1])
+        cmap = ccol.custom_cmap(colorList, ncol=len(colorList), alpha=alpha)
+
+        # Set the min and max of the colorbar
+        cmin, cmax = 0, len(dval) # works, but scalar bar annotations may be shifted of +0.5, see below
+        # cmin, cmax = -0.5, len(dval) - 0.5 # does not work
+
+        # Set scalar bar annotations if not given
+        if scalar_bar_annotations == {}:
+            if len(dval) <= scalar_bar_annotations_max: # avoid too many annotations (very slow and useless)
+                for i, v in enumerate(dval):
+                    scalar_bar_annotations[i+0.5]='{:.3g}'.format(v)
+
+        scalar_bar_kwargs['n_labels'] = 0
+        scalar_bar_kwargs['n_colors'] = len(dval)
+
+    else: # categ == False
+        # --- Treat continuous variable ---
+        # Possibly exclude values from zz
+        if excludedVal is not None:
+            for val in np.array(excludedVal).reshape(-1): # force to be an 1d array
+                np.putmask(zz, zz == val, np.nan)
 
     # Set cmin and cmax if not specified
     if cmin is None:
@@ -733,19 +871,19 @@ def drawImage3D_slice (
 
     if slice_normal_x is not None:
         for v in np.array(slice_normal_x).reshape(-1):
-            pp.add_mesh(pg.slice(normal=(1,0,0), origin=(v,0,0)), opacity=opacity, nan_color=nan_color, nan_opacity=nan_opacity, cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, show_edges=show_edges, edge_color=edge_color, line_width=edge_line_width)
+            pp.add_mesh(pg.slice(normal=(1,0,0), origin=(v,0,0)), cmap=cmap, clim=(cmin, cmax), annotations=scalar_bar_annotations, show_scalar_bar=False, **kwargs)
 
     if slice_normal_y is not None:
         for v in np.array(slice_normal_y).reshape(-1):
-            pp.add_mesh(pg.slice(normal=(0,1,0), origin=(0,v,0)), opacity=opacity, nan_color=nan_color, nan_opacity=nan_opacity, cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, show_edges=show_edges, edge_color=edge_color, line_width=edge_line_width)
+            pp.add_mesh(pg.slice(normal=(0,1,0), origin=(0,v,0)), cmap=cmap, clim=(cmin, cmax), annotations=scalar_bar_annotations, show_scalar_bar=False, **kwargs)
 
     if slice_normal_z is not None:
         for v in np.array(slice_normal_z).reshape(-1):
-            pp.add_mesh(pg.slice(normal=(0,0,1), origin=(0,0,v)), opacity=opacity, nan_color=nan_color, nan_opacity=nan_opacity, cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, show_edges=show_edges, edge_color=edge_color, line_width=edge_line_width)
+            pp.add_mesh(pg.slice(normal=(0,0,1), origin=(0,0,v)), cmap=cmap, clim=(cmin, cmax), annotations=scalar_bar_annotations, show_scalar_bar=False, **kwargs)
 
     if slice_normal_custom is not None:
         for nor, ori in np.array(slice_normal_custom).reshape(-1, 2, 3):
-            pp.add_mesh(pg.slice(normal=nor, origin=ori), opacity=opacity, nan_color=nan_color, nan_opacity=nan_opacity, cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, show_edges=show_edges, edge_color=edge_color, line_width=edge_line_width)
+            pp.add_mesh(pg.slice(normal=nor, origin=ori), cmap=cmap, clim=(cmin, cmax), annotations=scalar_bar_annotations, show_scalar_bar=False, **kwargs)
 
     if background_color is not None:
         pp.background_color = background_color
@@ -756,13 +894,13 @@ def drawImage3D_slice (
                 d['color'] = foreground_color
 
     if show_scalar_bar:
-        # - old -
-        # pg.cell_arrays[im.varname[iv]][...] = np.nan # trick: set all value to nan and use nan_opacity = 0 for empty plot but 'saving' the scalar bar...
-        # # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=True, scalar_bar_args=scalar_bar_kwargs)
-        # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
-        # - old -
-        # Trick: set opacity=0 and nan_opacity=0 for empty plot but 'saving' the scalar bar...
-        pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), opacity=0., nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
+        # # - old -
+        # # pg.cell_arrays[im.varname[iv]][...] = np.nan # trick: set all value to nan and use nan_opacity = 0 for empty plot but 'saving' the scalar bar...
+        # # # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=True, scalar_bar_args=scalar_bar_kwargs)
+        # # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
+        # # - old -
+        # # Trick: set opacity=0 and nan_opacity=0 for empty plot but 'saving' the scalar bar...
+        # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), opacity=0., nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
         if 'title' not in scalar_bar_kwargs.keys():
             scalar_bar_kwargs['title'] = im.varname[iv]
         pp.add_scalar_bar(**scalar_bar_kwargs)
@@ -793,7 +931,6 @@ def drawImage3D_volume (
                  iv=0,
                  cmap='viridis',
                  cmin=None, cmax=None,
-                 opacity='linear',
                  set_out_values_to_nan=True,
                  show_scalar_bar=True,
                  show_outline=True,
@@ -808,7 +945,8 @@ def drawImage3D_volume (
                  text_kwargs=None,
                  background_color=None,
                  foreground_color=None,
-                 cpos=None):
+                 cpos=None,
+                 **kwargs):
     """
     Draws a 3D image as volume (using pyvista):
 
@@ -841,9 +979,6 @@ def drawImage3D_volume (
     :param cmin, cmax:
                     (float) min and max values for the color bar
                         automatically computed if None
-
-    :param opacity: (float or string) opacity for colors (see doc of pyvista.add_volume),
-                        default: 'linear', (set 'linear_r' to invert opacity)
 
     :param set_out_values_to_nan:
                     (bool) indicates if values out of the range [cmin, cmax]
@@ -910,6 +1045,13 @@ def drawImage3D_volume (
                             in principle: (focus_point - camera_location) is orthogonal
                             to viewup_vector
 
+    :param kwargs:
+        additional keyword arguments passed to plotter.add_volume
+        such as
+            - opacity: (float or string) opacity for colors (see doc of pyvista.add_volume),
+                        default: 'linear', (set 'linear_r' to invert opacity)
+            - etc.
+
     NOTE: 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
     """
 
@@ -951,7 +1093,7 @@ def drawImage3D_volume (
             print("ERROR: invalid cmap string!")
             return
 
-    # Initialization of dictionary (do not used {} as default argument, it is not re-initialized...)
+    # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
         scalar_bar_annotations = {}
 
@@ -1008,7 +1150,8 @@ def drawImage3D_volume (
         pp = pv.Plotter()
 
     # pp.add_volume(pg.ctp(), cmap=cmap, clim=(cmin, cmax), annotations=scalar_bar_annotations, show_scalar_bar=show_scalar_bar, scalar_bar_args=scalar_bar_kwargs)
-    pp.add_volume(pg.ctp(), cmap=cmap, clim=(cmin, cmax), opacity=opacity, annotations=scalar_bar_annotations, show_scalar_bar=False)
+    # pp.add_volume(pg.ctp(), cmap=cmap, clim=(cmin, cmax), opacity_unit_distance=0.1, opacity=opacity, annotations=scalar_bar_annotations, show_scalar_bar=False)
+    pp.add_volume(pg.ctp(), cmap=cmap, clim=(cmin, cmax), annotations=scalar_bar_annotations, show_scalar_bar=False, **kwargs)
 
     if background_color is not None:
         pp.background_color = background_color
@@ -1039,6 +1182,797 @@ def drawImage3D_volume (
     if plotter is None:
         pp.show(cpos=cpos)
 # ----------------------------------------------------------------------------
+
+# # ----------------------------------------------------------------------------
+# def drawImage3D_surface (
+#                  im,
+#                  plotter=None,
+#                  ix0=0, ix1=None,
+#                  iy0=0, iy1=None,
+#                  iz0=0, iz1=None,
+#                  iv=0,
+#                  cmap='viridis',
+#                  cmin=None, cmax=None,
+#                  custom_scalar_bar_for_equidistant_categories=False,
+#                  custom_colors=None,
+#                  filtering_value=None,
+#                  filtering_interval=None,
+#                  excluded_value=None,
+#                  use_clip_plane=False,
+#                  show_scalar_bar=True,
+#                  show_outline=True,
+#                  show_bounds=False,
+#                  show_axes=True,
+#                  text=None,
+#                  scalar_bar_annotations=None,
+#                  scalar_bar_annotations_max=None,
+#                  scalar_bar_kwargs=None,
+#                  outline_kwargs=None,
+#                  bounds_kwargs=None,
+#                  axes_kwargs=None,
+#                  text_kwargs=None,
+#                  background_color=None,
+#                  foreground_color=None,
+#                  cpos=None,
+#                  **kwargs):
+#     """
+#     Draws a 3D image as surface(s) (using pyvista):
+#
+#     :param im:      (img.Img class) image (3D)
+#
+#     :param plotter: (pyvista plotter)
+#                         if given: add element to the plotter, a further call
+#                             to plotter.show() will be required to show the plot
+#                         if None (default): a plotter is created and the plot
+#                             is shown
+#
+#     :param ix0, ix1:(int or None) indices for x direction ix0 < ix1
+#                         indices ix0:ix1 will be considered for plotting
+#                         if ix1 is None (default): ix1 will be set to im.nx
+#
+#     :param iy0, iy1:(int or None) indices for y direction iy0 < iy1
+#                         indices iy0:iy1 will be considered for plotting
+#                         if iy1 is None (default): iy1 will be set to im.ny
+#
+#     :param iz0, iz1:(int or None) indices for z direction iz0 < iz1
+#                         indices iz0:iz1 will be considered for plotting
+#                         if iz1 is None (default): iz1 will be set to im.nz
+#
+#
+#     :param iv:      (int) index of the variable to be drawn
+#
+#     :param cmap:    colormap (e.g. plt.get_cmap('viridis'), or equivalently,
+#                         just the string 'viridis' (default))
+#
+#     :param cmin, cmax:
+#                     (float) min and max values for the color bar
+#                         automatically computed if None
+#
+#     :param custom_scalar_bar_for_equidistant_categories:
+#                     (bool) indicates if a custom scalar/color bar is drawn
+#                         (should be used only for categorical variable with
+#                         equidistant categories)
+#                         if True: cmin and cmax are automatically computed
+#
+#     :param custom_colors:
+#                     (list of colors) for each category,
+#                         used only if custom_scalar_bar_for_equidistant_categories
+#                         is set to True, length must be equal to the total number
+#                         of categories
+#
+#     :param filtering_value:
+#                     (int/float or sequence or None) values to be plotted
+#
+#     :param filtering_interval:
+#                     (sequence of length 2, or list of sequence of length 2, or None)
+#                         interval of values to be plotted
+#
+#     :param excluded_value:
+#                     (int/float or sequence or None) values to be
+#                         excluded from the plot (set to np.nan)
+#
+#     :param use_clip_plane:
+#                     (bool) set True to use 'pyvista.add_mesh_clip_plane'
+#                         (allowing interactive clipping) instead of
+#                         'pyvista.add_mesh' when plotting values of the image;
+#                         warning: one clip plane per value (resp. interval)
+#                         specified in filtering_value (resp. filtering_intervals)
+#                         is generated
+#
+#     :param show_scalar_bar:
+#                     (bool) indicates if scalar bar (color bar) is drawn
+#
+#     :param show_outline:
+#                     (bool) indicates if outline (around the image) is drawn
+#
+#     :param show_bounds:
+#                     (bool) indicates if bounds are drawn (box with graduation)
+#
+#     :param show_axes:
+#                     (bool) indicates if axes are drawn
+#
+#     :param text:    (string or None) text to be written on the figure (title)
+#
+#     :param scalar_bar_annotations:
+#                     (dict) annotation on the scalar bar (color bar)
+#                         (used if show_scalar_bar is True)
+#     :param scalar_bar_annotations_max:
+#                     (int or None) maximal number of annotations on the scalar bar
+#                     when custom_scalar_bar_for_equidistant_categories is True
+#                     and scalar_bar_annotations is None
+#
+#     :param scalar_bar_kwargs:
+#                     (dict) kwargs passed to function 'plotter.add_scalar_bar'
+#                         (useful for customization,
+#                         used if show_scalar_bar is True)
+#                         Note: in subplots (multi-sub-window), key 'title' should
+#                         be distinct for each subplot
+#
+#     :param outline_kwargs:
+#                     (dict) kwargs passed to function 'plotter.add_mesh'
+#                         (useful for customization,
+#                         used if show_outline is True)
+#
+#     :param bounds_kwargs:
+#                     (dict) kwargs passed to function 'plotter.show_bounds'
+#                         (useful for customization,
+#                         used if show_bounds is True)
+#
+#     :param axes_kwargs:
+#                     (dict) kwargs passed to function 'plotter.add_axes'
+#                         (useful for customization,
+#                         used if show_axes is True)
+#
+#     :param text_kwargs:
+#                     (dict) kwargs passed to function 'plotter.add_text'
+#                         (useful for customization,
+#                         used if text is not None)
+#
+#     :param background_color:
+#                     background color
+#
+#     :param foreground_color:
+#                     foreground color
+#
+#     :param cpos:    (list of three 3-tuples, or None for default) camera position
+#                         (unsused if plotter is None)
+#                         cpos = [camera_location, focus_point, viewup_vector], with
+#                         camera_location: (tuple of length 3) camera location ("eye")
+#                         focus_point    : (tuple of length 3) focus point
+#                         viewup_vector  : (tuple of length 3) viewup vector (vector
+#                             attached to the "head" and pointed to the "sky"),
+#                             in principle: (focus_point - camera_location) is orthogonal
+#                             to viewup_vector
+#
+#     :param kwargs:
+#         additional keyword arguments passed to plotter.add_mesh when plotting the variable,
+#         such as
+#             - opacity:  (float or string) opacity for colors
+#                             default: 'linear', (set 'linear_r' to invert opacity)
+#             - show_edges:
+#                         (bool) indicates if edges of the grid are drawn
+#             - edge_color:
+#                         (string or 3 item list) color for edges (used if show_edges is True)
+#             - line_width:
+#                         (float) line width for edges (used if show_edges is True)
+#             - etc.
+#
+#     NOTE: 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
+#     """
+#
+#     # Check iv
+#     if iv < 0:
+#         iv = im.nv + iv
+#
+#     if iv < 0 or iv >= im.nv:
+#         print("ERROR: invalid iv index!")
+#         return
+#
+#     # Set indices to be plotted
+#     if ix1 is None:
+#         ix1 = im.nx
+#
+#     if iy1 is None:
+#         iy1 = im.ny
+#
+#     if iz1 is None:
+#         iz1 = im.nz
+#
+#     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
+#         print("Invalid indices along x)")
+#         return
+#
+#     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
+#         print("Invalid indices along y)")
+#         return
+#
+#     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
+#         print("Invalid indices along z)")
+#         return
+#
+#     # Get the color map
+#     if isinstance(cmap, str):
+#         try:
+#             cmap = plt.get_cmap(cmap)
+#         except:
+#             print("ERROR: invalid cmap string!")
+#             return
+#
+#     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
+#     if scalar_bar_annotations is None:
+#         scalar_bar_annotations = {}
+#
+#     if scalar_bar_kwargs is None:
+#         scalar_bar_kwargs = {}
+#
+#     if outline_kwargs is None:
+#         outline_kwargs = {}
+#
+#     if bounds_kwargs is None:
+#         bounds_kwargs = {}
+#
+#     if axes_kwargs is None:
+#         axes_kwargs = {}
+#
+#     if text_kwargs is None:
+#         text_kwargs = {}
+#
+#     # Extract what to be plotted
+#     # zz = np.array(im.val[iv][iz0:iz1, iy0:iy1, ix0:ix1]) # np.array() to get a copy
+#     zz = im.val[iv][iz0:iz1, iy0:iy1, ix0:ix1].flatten() # .flatten() provides a copy
+#
+#     if custom_scalar_bar_for_equidistant_categories:
+#         all_val = np.unique(zz[~np.isnan(zz)])
+#         n_all_val = len(all_val)
+#         if n_all_val > 1:
+#             s = (all_val[-1] - all_val[0]) / (n_all_val - 1)
+#         else:
+#             s = 1
+#         cmin = all_val[0]
+#         cmax = all_val[-1] + s
+#         if scalar_bar_annotations == {}:
+#             if scalar_bar_annotations_max is None:
+#                 v_annoted = all_val
+#             elif scalar_bar_annotations_max==0:
+#                 v_annoted = []
+#             else:
+#                 v_annoted = all_val[0::np.int(np.ceil(len(all_val)/scalar_bar_annotations_max))]
+#             for v in v_annoted:
+#                 scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
+#             # for v in all_val:
+#             #     scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
+#             scalar_bar_kwargs['n_labels'] = 0
+#
+#         scalar_bar_kwargs['n_colors'] = n_all_val
+#
+#         if custom_colors is not None:
+#             if len(custom_colors) != n_all_val:
+#                 print ('ERROR: custom_colors length is not equal to the total number of categories')
+#                 return
+#             # set cmap (as in geone.customcolor.custom_cmap)
+#             cols = list(custom_colors) + [custom_colors[-1]] # duplicate last col...
+#
+#             cseqRGB = []
+#             for c in cols:
+#                 try:
+#                     cseqRGB.append(mcolors.ColorConverter().to_rgb(c))
+#                 except:
+#                     cseqRGB.append(c)
+#
+#             vseqn = np.linspace(0,1,len(cols))
+#
+#             # Set dictionary to define the color map
+#             cdict = {
+#                 'red'  :[(vseqn[i], cseqRGB[i][0], cseqRGB[i][0]) for i in range(len(cols))],
+#                 'green':[(vseqn[i], cseqRGB[i][1], cseqRGB[i][1]) for i in range(len(cols))],
+#                 'blue' :[(vseqn[i], cseqRGB[i][2], cseqRGB[i][2]) for i in range(len(cols))],
+#                 'alpha':[(vseqn[i], 1.0,           1.0)           for i in range(len(cols))]
+#                 }
+#
+#             cmap = mcolors.LinearSegmentedColormap('custom_cmap', cdict, N=256)
+#
+#     if excluded_value is not None:
+#         for val in np.array(excluded_value).reshape(-1): # force to be an 1d array
+#             np.putmask(zz, zz == val, np.nan)
+#
+#     # Set cmin and cmax if not specified
+#     if cmin is None:
+#         cmin = np.nanmin(zz)
+#
+#     if cmax is None:
+#         cmax = np.nanmax(zz)
+#
+#     # Set pyvista UniformGrid
+#     xmin = im.ox + ix0 * im.sx
+#     xmax = im.ox + ix1 * im.sx
+#     xdim = ix1 - ix0 + 1
+#
+#     ymin = im.oy + iy0 * im.sy
+#     ymay = im.oy + iy1 * im.sy
+#     ydim = iy1 - iy0 + 1
+#
+#     zmin = im.oz + iz0 * im.sz
+#     zmaz = im.oz + iz1 * im.sz
+#     zdim = iz1 - iz0 + 1
+#
+#     # pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+#     pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+#
+#     pg.cell_data[im.varname[iv]] = zz #.flatten()
+#
+#     if plotter is not None:
+#         pp = plotter
+#     else:
+#         pp = pv.Plotter()
+#
+#     if use_clip_plane:
+#         me = pp.add_mesh_clip_plane
+#     else:
+#         me = pp.add_mesh
+#
+#     if filtering_interval is not None:
+#         for vv in np.reshape(filtering_interval, (-1,2)):
+#             me(pg.threshold(value=vv), cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, **kwargs)
+#
+#     if filtering_value is not None:
+#         for v in np.reshape(filtering_value, -1):
+#             me(pg.threshold(value=(v,v)), color=cmap((v-cmin)/(cmax-cmin)), show_scalar_bar=False, **kwargs)
+#
+#     if filtering_value is None and filtering_interval is None:
+#         me(pg.threshold(value=(cmin, cmax)), cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, **kwargs)
+#
+#     # if filtering_interval is not None:
+#     #     for vv in np.reshape(filtering_interval, (-1,2)):
+#     #         pp.add_mesh(pg.threshold(value=vv), cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, **kwargs)
+#     #
+#     # if filtering_value is not None:
+#     #     for v in np.reshape(filtering_value, -1):
+#     #         pp.add_mesh(pg.threshold(value=(v,v)), color=cmap((v-cmin)/(cmax-cmin)), show_scalar_bar=False, **kwargs)
+#     #
+#     # if filtering_value is None and filtering_interval is None:
+#     #     pp.add_mesh(pg.threshold(value=(cmin, cmax)), cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, **kwargs)
+#
+#
+#     if background_color is not None:
+#         pp.background_color = background_color
+#
+#     if foreground_color is not None:
+#         for d in [scalar_bar_kwargs, outline_kwargs, bounds_kwargs, axes_kwargs, text_kwargs]:
+#             if 'color' not in d.keys():
+#                 d['color'] = foreground_color
+#
+#     if show_scalar_bar:
+#         # - old -
+#         # pg.cell_arrays[im.varname[iv]][...] = np.nan # trick: set all value to nan and use nan_opacity = 0 for empty plot but 'saving' the scalar bar...
+#         # # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=True, scalar_bar_args=scalar_bar_kwargs)
+#         # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
+#         # - old -
+#         # Trick: set opacity=0 and nan_opacity=0 for empty plot but 'saving' the scalar bar...
+#         pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), opacity=0., nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
+#         if 'title' not in scalar_bar_kwargs.keys():
+#             scalar_bar_kwargs['title'] = im.varname[iv]
+#         pp.add_scalar_bar(**scalar_bar_kwargs)
+#
+#     if show_outline:
+#         pp.add_mesh(pg.outline(), **outline_kwargs)
+#
+#     if show_bounds:
+#         pp.show_bounds(**bounds_kwargs)
+#
+#     if show_axes:
+#         pp.add_axes(**axes_kwargs)
+#
+#     if text is not None:
+#         pp.add_text(text, **text_kwargs)
+#
+#     if plotter is None:
+#         pp.show(cpos=cpos)
+# # ----------------------------------------------------------------------------
+#
+# # ----------------------------------------------------------------------------
+# def drawImage3D_slice (
+#                  im,
+#                  plotter=None,
+#                  rendering='volume',
+#                  ix0=0, ix1=None,
+#                  iy0=0, iy1=None,
+#                  iz0=0, iz1=None,
+#                  iv=0,
+#                  slice_normal_x=None,
+#                  slice_normal_y=None,
+#                  slice_normal_z=None,
+#                  slice_normal_custom=None,
+#                  cmap='viridis',
+#                  cmin=None, cmax=None,
+#                  custom_scalar_bar_for_equidistant_categories=False,
+#                  custom_colors=None,
+#                  opacity=1.0,
+#                  nan_color='gray', nan_opacity=1.0,
+#                  filtering_value=None,
+#                  filtering_interval=None,
+#                  excluded_value=None,
+#                  show_scalar_bar=True,
+#                  show_outline=True,
+#                  show_bounds=False,
+#                  show_axes=True,
+#                  text=None,
+#                  scalar_bar_annotations=None,
+#                  scalar_bar_annotations_max=None,
+#                  scalar_bar_kwargs=None,
+#                  outline_kwargs=None,
+#                  bounds_kwargs=None,
+#                  axes_kwargs=None,
+#                  text_kwargs=None,
+#                  background_color=None,
+#                  foreground_color=None,
+#                  cpos=None,
+#                  **kwargs):
+#     """
+#     Draws a 3D image as slice(s) (using pyvista):
+#
+#     :param im:      (img.Img class) image (3D)
+#
+#     :param plotter: (pyvista plotter)
+#                         if given: add element to the plotter, a further call
+#                             to plotter.show() will be required to show the plot
+#                         if None (default): a plotter is created and the plot
+#                             is shown
+#
+#     :param ix0, ix1:(int or None) indices for x direction ix0 < ix1
+#                         indices ix0:ix1 will be considered for plotting
+#                         if ix1 is None (default): ix1 will be set to im.nx
+#
+#     :param iy0, iy1:(int or None) indices for y direction iy0 < iy1
+#                         indices iy0:iy1 will be considered for plotting
+#                         if iy1 is None (default): iy1 will be set to im.ny
+#
+#     :param iz0, iz1:(int or None) indices for z direction iz0 < iz1
+#                         indices iz0:iz1 will be considered for plotting
+#                         if iz1 is None (default): iz1 will be set to im.nz
+#
+#     :param iv:      (int) index of the variable to be drawn
+#
+#     :param slice_normal_x:
+#                     (int/float or sequence or None) values of the (real) x
+#                         coordinate where a slice normal to x-axis is drawn
+#
+#     :param slice_normal_y:
+#                     (int/float or sequence or None) values of the (real) y
+#                         coordinate where a slice normal to y-axis is drawn
+#
+#     :param slice_normal_z:
+#                     (int/float or sequence or None) values of the (real) z
+#                         coordinate where a slice normal to z-axis is drawn
+#
+#     :param slice_normal_custom:
+#                     ((sequence of) sequence containing 2 tuple of length 3 or None)
+#                         slice_normal[i] = ((vx, vy, vz), (px, py, pz))
+#                         means that a slice normal to the vector (vx, vy, vz) and
+#                         going through the point (px, py, pz) is drawn
+#
+#     :param cmap:    colormap (e.g. plt.get_cmap('viridis'), or equivalently,
+#                         just the string 'viridis' (default))
+#
+#     :param cmin, cmax:
+#                     (float) min and max values for the color bar
+#                         automatically computed if None
+#
+#     :param custom_scalar_bar_for_equidistant_categories:
+#                     (bool) indicates if a custom scalar/color bar is drawn
+#                         (should be used only for categorical variable with
+#                         equidistant categories)
+#                         if True: cmin and cmax are automatically computed
+#
+#     :param custom_colors:
+#                     (list of colors) for each category,
+#                         used only if custom_scalar_bar_for_equidistant_categories
+#                         is set to True, length must be equal to the total number
+#                         of categories
+#
+#     :param filtering_value:
+#                     (int/float or sequence or None) values to be plotted
+#
+#     :param filtering_interval:
+#                     (sequence of length 2, or list of sequence of length 2, or None)
+#                         interval of values to be plotted
+#
+#     :param excluded_value:
+#                     (int/float or sequence or None) values to be
+#                         excluded from the plot (set to np.nan)
+#
+#     :param show_scalar_bar:
+#                     (bool) indicates if scalar bar (color bar) is drawn
+#
+#     :param show_outline:
+#                     (bool) indicates if outline (around the image) is drawn
+#
+#     :param show_bounds:
+#                     (bool) indicates if bounds are drawn (box with graduation)
+#
+#     :param show_axes:
+#                     (bool) indicates if axes are drawn
+#
+#     :param text:    (string or None) text to be written on the figure (title)
+#
+#     :param scalar_bar_annotations:
+#                     (dict) annotation on the scalar bar (color bar)
+#                         (used if show_scalar_bar is True)
+#     :param scalar_bar_annotations_max:
+#                     (int or None) maximal number of annotations on the scalar bar
+#                     when custom_scalar_bar_for_equidistant_categories is True
+#                     and scalar_bar_annotations is None
+#
+#     :param scalar_bar_kwargs:
+#                     (dict) kwargs passed to function 'plotter.add_scalar_bar'
+#                         (useful for customization,
+#                         used if show_scalar_bar is True)
+#                         Note: in subplots (multi-sub-window), key 'title' should
+#                         be distinct for each subplot
+#
+#     :param outline_kwargs:
+#                     (dict) kwargs passed to function 'plotter.add_mesh'
+#                         (useful for customization,
+#                         used if show_outline is True)
+#
+#     :param bounds_kwargs:
+#                     (dict) kwargs passed to function 'plotter.show_bounds'
+#                         (useful for customization,
+#                         used if show_bounds is True)
+#
+#     :param axes_kwargs:
+#                     (dict) kwargs passed to function 'plotter.add_axes'
+#                         (useful for customization,
+#                         used if show_axes is True)
+#
+#     :param text_kwargs:
+#                     (dict) kwargs passed to function 'plotter.add_text'
+#                         (useful for customization,
+#                         used if text is not None)
+#
+#     :param background_color:
+#                     background color
+#
+#     :param foreground_color:
+#                     foreground color
+#
+#     :param cpos:    (list of three 3-tuples, or None for default) camera position
+#                         (unsused if plotter is None)
+#                         cpos = [camera_location, focus_point, viewup_vector], with
+#                         camera_location: (tuple of length 3) camera location ("eye")
+#                         focus_point    : (tuple of length 3) focus point
+#                         viewup_vector  : (tuple of length 3) viewup vector (vector
+#                             attached to the "head" and pointed to the "sky"),
+#                             in principle: (focus_point - camera_location) is orthogonal
+#                             to viewup_vector
+#
+#     :param kwargs:
+#         additional keyword arguments passed to plotter.add_mesh when plotting the variable,
+#         such as
+#             - opacity:  (float or string) opacity for colors
+#                             default: 'linear', (set 'linear_r' to invert opacity)
+#             - nan_color:
+#                         color for np.nan value
+#             - nan_opacity:
+#                         (float) opacity used for np.nan value
+#             - show_edges:
+#                         (bool) indicates if edges of the grid are drawn
+#             - edge_color:
+#                         (string or 3 item list) color for edges (used if show_edges is True)
+#             - line_width:
+#                         (float) line width for edges (used if show_edges is True)
+#             - etc.
+#
+#     NOTE: 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
+#     """
+#
+#     # Check iv
+#     if iv < 0:
+#         iv = im.nv + iv
+#
+#     if iv < 0 or iv >= im.nv:
+#         print("ERROR: invalid iv index!")
+#         return
+#
+#     # Set indices to be plotted
+#     if ix1 is None:
+#         ix1 = im.nx
+#
+#     if iy1 is None:
+#         iy1 = im.ny
+#
+#     if iz1 is None:
+#         iz1 = im.nz
+#
+#     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
+#         print("Invalid indices along x)")
+#         return
+#
+#     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
+#         print("Invalid indices along y)")
+#         return
+#
+#     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
+#         print("Invalid indices along z)")
+#         return
+#
+#     # Get the color map
+#     if isinstance(cmap, str):
+#         try:
+#             cmap = plt.get_cmap(cmap)
+#         except:
+#             print("ERROR: invalid cmap string!")
+#             return
+#
+#     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
+#     if scalar_bar_annotations is None:
+#         scalar_bar_annotations = {}
+#
+#     if scalar_bar_kwargs is None:
+#         scalar_bar_kwargs = {}
+#
+#     if outline_kwargs is None:
+#         outline_kwargs = {}
+#
+#     if bounds_kwargs is None:
+#         bounds_kwargs = {}
+#
+#     if axes_kwargs is None:
+#         axes_kwargs = {}
+#
+#     if text_kwargs is None:
+#         text_kwargs = {}
+#
+#     # Extract what to be plotted
+#     # zz = np.array(im.val[iv][iz0:iz1, iy0:iy1, ix0:ix1]) # np.array() to get a copy
+#     zz = im.val[iv][iz0:iz1, iy0:iy1, ix0:ix1].flatten() # .flatten() provides a copy
+#
+#     if custom_scalar_bar_for_equidistant_categories:
+#         all_val = np.unique(zz[~np.isnan(zz)])
+#         n_all_val = len(all_val)
+#         if n_all_val > 1:
+#             s = (all_val[-1] - all_val[0]) / (n_all_val - 1)
+#         else:
+#             s = 1
+#         cmin = all_val[0]
+#         cmax = all_val[-1] + s
+#         if scalar_bar_annotations == {}:
+#             if scalar_bar_annotations_max is None:
+#                 v_annoted = all_val
+#             elif scalar_bar_annotations_max==0:
+#                 v_annoted = []
+#             else:
+#                 v_annoted = all_val[0::np.int(np.ceil(len(all_val)/scalar_bar_annotations_max))]
+#             for v in v_annoted:
+#                 scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
+#             # for v in all_val:
+#             #     scalar_bar_annotations[v+0.5*s]='{:g}'.format(v)
+#             scalar_bar_kwargs['n_labels'] = 0
+#
+#         scalar_bar_kwargs['n_colors'] = n_all_val
+#
+#         if custom_colors is not None:
+#             if len(custom_colors) != n_all_val:
+#                 print ('ERROR: custom_colors length is not equal to the total number of categories')
+#                 return
+#             # set cmap (as in geone.customcolor.custom_cmap)
+#             cols = list(custom_colors) + [custom_colors[-1]] # duplicate last col...
+#
+#             cseqRGB = []
+#             for c in cols:
+#                 try:
+#                     cseqRGB.append(mcolors.ColorConverter().to_rgb(c))
+#                 except:
+#                     cseqRGB.append(c)
+#
+#             vseqn = np.linspace(0,1,len(cols))
+#
+#             # Set dictionary to define the color map
+#             cdict = {
+#                 'red'  :[(vseqn[i], cseqRGB[i][0], cseqRGB[i][0]) for i in range(len(cols))],
+#                 'green':[(vseqn[i], cseqRGB[i][1], cseqRGB[i][1]) for i in range(len(cols))],
+#                 'blue' :[(vseqn[i], cseqRGB[i][2], cseqRGB[i][2]) for i in range(len(cols))],
+#                 'alpha':[(vseqn[i], 1.0,           1.0)           for i in range(len(cols))]
+#                 }
+#
+#             cmap = mcolors.LinearSegmentedColormap('custom_cmap', cdict, N=256)
+#
+#     if filtering_interval is not None or filtering_value is not None:
+#         bb = np.ones(len(zz)).astype('bool')
+#         if filtering_interval is not None:
+#             for vv in np.reshape(filtering_interval, (-1,2)):
+#                 bb = np.all((bb, np.any((np.isnan(zz), zz < vv[0], zz > vv[1]), axis=0)), axis=0)
+#
+#         if filtering_value is not None:
+#             for v in np.reshape(filtering_value, -1):
+#                 bb = np.all((bb, zz != v), axis=0)
+#
+#         zz[bb] = np.nan
+#
+#     if excluded_value is not None:
+#         for val in np.array(excluded_value).reshape(-1): # force to be an 1d array
+#             np.putmask(zz, zz == val, np.nan)
+#
+#     # Set cmin and cmax if not specified
+#     if cmin is None:
+#         cmin = np.nanmin(zz)
+#
+#     if cmax is None:
+#         cmax = np.nanmax(zz)
+#
+#     # Set pyvista UniformGrid
+#     xmin = im.ox + ix0 * im.sx
+#     xmax = im.ox + ix1 * im.sx
+#     xdim = ix1 - ix0 + 1
+#
+#     ymin = im.oy + iy0 * im.sy
+#     ymay = im.oy + iy1 * im.sy
+#     ydim = iy1 - iy0 + 1
+#
+#     zmin = im.oz + iz0 * im.sz
+#     zmaz = im.oz + iz1 * im.sz
+#     zdim = iz1 - iz0 + 1
+#
+#     # pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+#     pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+#
+#     pg.cell_data[im.varname[iv]] = zz #.flatten()
+#
+#     if plotter is not None:
+#         pp = plotter
+#     else:
+#         pp = pv.Plotter()
+#
+#     if slice_normal_x is not None:
+#         for v in np.array(slice_normal_x).reshape(-1):
+#             pp.add_mesh(pg.slice(normal=(1,0,0), origin=(v,0,0)), cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, **kwargs)
+#
+#     if slice_normal_y is not None:
+#         for v in np.array(slice_normal_y).reshape(-1):
+#             pp.add_mesh(pg.slice(normal=(0,1,0), origin=(0,v,0)), cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, **kwargs)
+#
+#     if slice_normal_z is not None:
+#         for v in np.array(slice_normal_z).reshape(-1):
+#             pp.add_mesh(pg.slice(normal=(0,0,1), origin=(0,0,v)), cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, **kwargs)
+#
+#     if slice_normal_custom is not None:
+#         for nor, ori in np.array(slice_normal_custom).reshape(-1, 2, 3):
+#             pp.add_mesh(pg.slice(normal=nor, origin=ori), cmap=cmap, clim=(cmin, cmax), show_scalar_bar=False, **kwargs)
+#
+#     if background_color is not None:
+#         pp.background_color = background_color
+#
+#     if foreground_color is not None:
+#         for d in [scalar_bar_kwargs, outline_kwargs, bounds_kwargs, axes_kwargs, text_kwargs]:
+#             if 'color' not in d.keys():
+#                 d['color'] = foreground_color
+#
+#     if show_scalar_bar:
+#         # - old -
+#         # pg.cell_arrays[im.varname[iv]][...] = np.nan # trick: set all value to nan and use nan_opacity = 0 for empty plot but 'saving' the scalar bar...
+#         # # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=True, scalar_bar_args=scalar_bar_kwargs)
+#         # pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
+#         # - old -
+#         # Trick: set opacity=0 and nan_opacity=0 for empty plot but 'saving' the scalar bar...
+#         pp.add_mesh(pg, cmap=cmap, clim=(cmin, cmax), opacity=0., nan_opacity=0., annotations=scalar_bar_annotations, show_scalar_bar=False)
+#         if 'title' not in scalar_bar_kwargs.keys():
+#             scalar_bar_kwargs['title'] = im.varname[iv]
+#         pp.add_scalar_bar(**scalar_bar_kwargs)
+#
+#     if show_outline:
+#         pp.add_mesh(pg.outline(), **outline_kwargs)
+#
+#     if show_bounds:
+#         pp.show_bounds(**bounds_kwargs)
+#
+#     if show_axes:
+#         pp.add_axes(**axes_kwargs)
+#
+#     if text is not None:
+#         pp.add_text(text, **text_kwargs)
+#
+#     if plotter is None:
+#         pp.show(cpos=cpos)
+# # ----------------------------------------------------------------------------
 
 # From: https://docs.pyvista.org/plotting/plotting.html?highlight=add_mesh#pyvista.BasePlotter.add_mesh
 # add_scalar_bar(title=None, n_labels=5, italic=False, bold=False, title_font_size=None, label_font_size=None, color=None, font_family=None, shadow=False, mapper=None, width=None, height=None, position_x=None, position_y=None, vertical=None, interactive=None, fmt=None, use_opacity=True, outline=False, nan_annotation=False, below_label=None, above_label=None, background_color=None, n_colors=None, fill=False, render=True)
@@ -1134,11 +2068,11 @@ if __name__ == "__main__":
     # ===== Ex1 =====
     # Simple plot
     # ------
-    drawImage3D_volume(im, text='Ex1: volume (continuous var.)')
+    drawImage3D_volume(im, text='Ex1: volume (cont.)')
 
     # # Equivalent:
     # pp = pv.Plotter()
-    # drawImage3D_volume(im, text='Ex1')
+    # drawImage3D_volume(im, text='Ex1: volume (cont.)')
     # pp.show()
 
     # # For saving screenshot (png)
@@ -1150,14 +2084,15 @@ if __name__ == "__main__":
     # ===== Ex2 =====
     # Multiple plot
     # ------
-    # Note: scalar bar and axes may be not displayed in all plots (even if show_... option is set to True)
+    # Note: scalar bar is not displayed in all plots (even if show_scalar_bar is True) when
+    #       same title for scalar bar is used (see Ex4)
     pp = pv.Plotter(shape=(2,2))
 
     pp.subplot(0,0)
-    drawImage3D_surface(im, plotter=pp, text='Ex2: surface (continuous var.)' )
+    drawImage3D_surface(im, plotter=pp, text='Ex2: surface (cont.)' )
 
     pp.subplot(0,1)
-    drawImage3D_volume(im, plotter=pp, text='Ex2: volume (continuous var.)')
+    drawImage3D_volume(im, plotter=pp, text='Ex2: volume (cont.)')
 
     cx, cy, cz = im.ox+0.5*im.nx*im.sx, im.oy+0.5*im.ny*im.sy, im.oz+0.5*im.nz*im.sz # center of image
     pp.subplot(1,0)
@@ -1165,12 +2100,31 @@ if __name__ == "__main__":
         slice_normal_x=cx,
         slice_normal_y=cy,
         slice_normal_z=cz,
-        text='Ex2: slice (continuous var.)')
+        text='Ex2: slice (cont.)')
 
     pp.subplot(1,1)
     drawImage3D_slice(im, plotter=pp,
         slice_normal_custom=[[(1, 1, 0), (cx, cy, cz)], [(1, -1, 0), (cx, cy, cz)]],
-        text='Ex2: slice (continuous var.)')
+        text='Ex2: slice (cont.)')
+
+    pp.link_views()
+    pp.show(cpos=(1,2,.5))
+
+    # ===== Ex3 =====
+    # Multiple plot
+    # ------
+    # Note: scalar bar is not displayed in all plots (even if show_scalar_bar is True) when
+    #       same title for scalar bar is used (see Ex4)
+    pp = pv.Plotter(shape=(1,3))
+
+    pp.subplot(0,0)
+    drawImage3D_volume(im, plotter=pp, cmin=2, cmax=4, text='Ex3: volume - cmin / cmax')
+
+    pp.subplot(0,1)
+    drawImage3D_volume(im, plotter=pp, cmin=2, cmax=4, set_out_values_to_nan=False, text='Ex3: volume - cmin / cmax - set_out_values_to_nan=False')
+
+    pp.subplot(0,2)
+    drawImage3D_surface(im, plotter=pp, cmin=2, cmax=4, text='Ex3: surface - cmin / cmax')
 
     pp.link_views()
     pp.show(cpos=(1,2,.5))
@@ -1181,30 +2135,45 @@ if __name__ == "__main__":
     newv = np.zeros(im.nxyz())
     for t in [1., 2., 3., 4.]:
         np.putmask(newv, np.all((np.abs(v) > t, np.abs(v) <= t+1), axis=0), t)
-    np.putmask(newv, np.abs(v) > 5., 5.)
-    im.set_var(newv, 'categ', 0)
+    np.putmask(newv, np.abs(v) > 5., 10.)
+    # -> newv takes values 0, 1, 3, 4, 10
+    im.set_var(newv, 'categ', 0) # insert variable in image im
 
-    # ===== Ex3 =====
-    pp = pv.Plotter(shape=(2,2))
+    # ===== Ex4 =====
+    pp = pv.Plotter(shape=(2,3))
 
     pp.subplot(0,0)
-    drawImage3D_surface(im, plotter=pp, text='Ex3: surface (categ. var.)')
+    drawImage3D_volume(im, plotter=pp,
+        scalar_bar_kwargs={'title':''}, # distinct title in each subplot for correct display!
+        text='Ex4: volume (categ. var.)')
 
     pp.subplot(0,1)
-    drawImage3D_volume(im, plotter=pp, text='Ex3: volume (categ. var.)')
+    drawImage3D_surface(im, plotter=pp, categ=False,
+        scalar_bar_kwargs={'title':' '}, # distinct title in each subplot for correct display!
+        text='Ex4: surface - categ=False')
 
     cx, cy, cz = im.ox+0.5*im.nx*im.sx, im.oy+0.5*im.ny*im.sy, im.oz+0.5*im.nz*im.sz # center of image
-    pp.subplot(1,0)
-    drawImage3D_slice(im, plotter=pp,
+    pp.subplot(0,2)
+    drawImage3D_slice(im, plotter=pp, categ=False,
         slice_normal_x=cx,
         slice_normal_y=cy,
         slice_normal_z=cz,
-        text='Ex3: slice (categ. var.)')
+        scalar_bar_kwargs={'title':'  '}, # distinct title in each subplot for correct display!
+        text='Ex4: slice - categ=False')
 
     pp.subplot(1,1)
-    drawImage3D_slice(im, plotter=pp,
-        slice_normal_custom=[[(1, 1, 0), (cx, cy, cz)], [(1, -1, 0), (cx, cy, cz)]],
-        text='Ex3: slice (categ. var.)')
+    drawImage3D_surface(im, plotter=pp, categ=True,
+        scalar_bar_kwargs={'title':'   '}, # distinct title in each subplot for correct display!
+        text='Ex4: surface - categ=True')
+
+    cx, cy, cz = im.ox+0.5*im.nx*im.sx, im.oy+0.5*im.ny*im.sy, im.oz+0.5*im.nz*im.sz # center of image
+    pp.subplot(1,2)
+    drawImage3D_slice(im, plotter=pp, categ=True,
+        slice_normal_x=cx,
+        slice_normal_y=cy,
+        slice_normal_z=cz,
+        scalar_bar_kwargs={'title':'    '}, # distinct title in each subplot for correct display!
+        text='Ex4: slice - categ=True')
 
     pp.link_views()
     pp.show(cpos=(1,2,.5))
@@ -1213,63 +2182,99 @@ if __name__ == "__main__":
     # -------------------
     cols=['purple', 'blue', 'cyan', 'yellow', 'red', 'pink']
 
-    # ===== Ex4 =====
-    drawImage3D_surface(im, text='Ex4: surface (categ. var.)')
     # ===== Ex5 =====
-    drawImage3D_surface(im, custom_scalar_bar_for_equidistant_categories=True, text='Ex5: custom scalar bar (categ. var.)')
-    # ===== Ex6 =====
-    drawImage3D_surface(im, custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, text='Ex6: custom scalar bar (2) (categ. var.)')
-    # ===== Ex7 =====
-    drawImage3D_surface(im, filtering_value=[1, 5], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, text='Ex7: filtering value (categ. var.)')
+    # Multiple plot
+    pp = pv.Plotter(shape=(2,3))
 
-    # Filtering does not change cmin, cmax, compare:
+    pp.subplot(0,0)
+    drawImage3D_surface(im, plotter=pp, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols,
+        categActive=[True, False, False, False, False, False],
+        scalar_bar_kwargs={'title':''}, # distinct title in each subplot for correct display!
+        text='Ex5: surface - categ=True\n - active categ "0"')
+
+    pp.subplot(0,1)
+    drawImage3D_surface(im, plotter=pp, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols,
+        categActive=[False, True, False, False, False, False],
+        scalar_bar_kwargs={'title':' '}, # distinct title in each subplot for correct display!
+        text='Ex5: surface - categ=True\n - active categ "1"')
+
+    pp.subplot(0,2)
+    drawImage3D_surface(im, plotter=pp, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols,
+        categActive=[False, False, True, False, False, False],
+        scalar_bar_kwargs={'title':'  '}, # distinct title in each subplot for correct display!
+        text='Ex5: surface - categ=True\n - active categ "2"')
+
+    pp.subplot(1,0)
+    drawImage3D_surface(im, plotter=pp, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols,
+        categActive=[False, False, False, True, False, False],
+        scalar_bar_kwargs={'title':'   '}, # distinct title in each subplot for correct display!
+        text='Ex5: surface - categ=True\n - active categ "3"')
+
+    pp.subplot(1,1)
+    drawImage3D_surface(im, plotter=pp, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols,
+        categActive=[False, False, False, False, True, False],
+        scalar_bar_kwargs={'title':'    '}, # distinct title in each subplot for correct display!
+        text='Ex5: surface - categ=True\n - active categ "4"')
+
+    pp.subplot(1,2)
+    drawImage3D_surface(im, plotter=pp, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols,
+        categActive=[False, False, False, False, False, True],
+        scalar_bar_kwargs={'title':'     '}, # distinct title in each subplot for correct display!
+        text='Ex5: surface - categ=True\n - active categ "10"')
+
+    pp.link_views()
+    pp.show(cpos=(1,2,.5))
+
+    # ===== Ex6 =====
+    # activate only some categories
+    drawImage3D_surface(im, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols, categActive=[True, False, False, True, False, True],
+        text='Ex6: surface - categ=True - active some categ.')
+
+    # ===== Ex7 =====
+    # do not show outline
+    drawImage3D_surface(im, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols, categActive=[True, False, False, True, False, True],
+        show_outline=False, text='Ex7: no outline')
+
     # ===== Ex8 =====
-    drawImage3D_surface(im, cmin=2, cmax=4, text='Ex8: using cmin / cmax')
+    # enlarge outline
+    drawImage3D_surface(im, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols, categActive=[True, False, False, True, False, True],
+        show_outline=True, outline_kwargs={'line_width':5}, text='Ex8: thick outline')
+
     # ===== Ex9 =====
-    drawImage3D_surface(im, filtering_interval=[2, 4], text='Ex9: filtering interval')
+    # show bounds
+    drawImage3D_surface(im, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols, categActive=[True, False, False, True, False, True],
+        show_bounds=True, text='Ex9: show bounds')
 
     # ===== Ex10 =====
-    # do not show outline
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_outline=False, text='Ex10: no outline (categ. var.)')
+    # show bounds with grid
+    drawImage3D_surface(im, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols, categActive=[True, False, False, True, False, True],
+        show_bounds=True, bounds_kwargs={'grid':True}, text='Ex10: bounds and grid')
 
     # ===== Ex11 =====
-    # enlarge outline
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_outline=True, outline_kwargs={'line_width':5}, text='Ex11: thick outline (categ. var.)')
+    # customize scalar bar
+    drawImage3D_surface(im, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols, categActive=[True, False, False, True, False, True],
+        scalar_bar_annotations={0.5:'A', 1.5:'B', 2.5:'C', 3.5:'D', 4.5:'E', 5.5:'high'}, scalar_bar_kwargs={'vertical':True, 'title_font_size':24, 'label_font_size':10},
+        text='Ex11: custom scalar bar')
 
     # ===== Ex12 =====
-    # show bounds
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_bounds=True, text='Ex12: bounds (categ. var.)')
+    # scalar bar: interactive position...
+    drawImage3D_surface(im, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols, categActive=[True, False, False, True, False, True],
+        scalar_bar_kwargs={'interactive':True}, text='Ex12: interactive scalar bar')
 
     # ===== Ex13 =====
-    # show bounds with grid
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, show_bounds=True, bounds_kwargs={'grid':True}, text='Ex13: bounds and grid (categ. var.)')
+    # customize title
+    drawImage3D_surface(im, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols, categActive=[True, False, False, True, False, True],
+        text='Ex13: custom title', text_kwargs={'font_size':12, 'position':'upper_right'})
 
     # ===== Ex14 =====
-    # customize scalar bar
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, scalar_bar_kwargs={'vertical':True, 'title_font_size':24, 'label_font_size':10}, text='Ex14: custom display of scalar bar (categ. var.)')
+    # customize axes
+    drawImage3D_surface(im, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols, categActive=[True, False, False, True, False, True],
+        axes_kwargs={'x_color':'pink', 'zlabel':'depth'}, text='Ex14: custom axes')
 
     # ===== Ex15 =====
-    # scalar bar: interactive position...
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, scalar_bar_kwargs={'interactive':True}, text='Ex15: interactive display of scalar bar (categ. var.)')
+    # changing background / foreground colors
+    drawImage3D_surface(im, categ=True, categVal=[0, 1, 2, 3, 4, 10], categCol=cols, categActive=[True, False, False, True, False, True],
+        background_color=(0.9, 0.9, 0.9), foreground_color='k', text='Ex15: background/foreground colors')
 
     # ===== Ex16 =====
-    # customize title
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, text='Ex16: custom title', text_kwargs={'font_size':12, 'position':'upper_right'})
-
-    # ===== Ex17 =====
-    # customize axes
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, axes_kwargs={'x_color':'pink', 'zlabel':'depth'}, text='Ex17: custom axes (categ. var.)')
-
-    # ===== Ex18 =====
-    # changing background / foreground colors
-    drawImage3D_surface(im, filtering_interval=[2, 4], custom_scalar_bar_for_equidistant_categories=True, custom_colors=cols, background_color=(0.9, 0.9, 0.9), foreground_color='k', text='Ex18: background/foreground colors (categ. var.)')
-
-    # (less options for drawImage3D_volume)
-    # ===== Ex19 =====
-    drawImage3D_volume(im, text='Ex19: volume (categ. var.)')
-
-    # ===== Ex20 =====
-    drawImage3D_volume(im, cmin=2, cmax=4, text='Ex20: volume using cmin / cmax (categ. var.)')
-
-    # ===== Ex21 =====
-    drawImage3D_volume(im, cmin=2, cmax=4, set_out_values_to_nan=False, text='Ex21: volume using cmin / cmax, set_out_values_to_nan=False (categ. var.)')
+    drawImage3D_surface(im, cmin=2, cmax=4, text='Ex16: surface (categ. var) - categ=False - cmin / cmax')

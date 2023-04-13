@@ -364,6 +364,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         if categCol is not None:
             if len(categCol) >= len(dval):
                 colorList = [categCol[i] for i in range(len(dval))]
+                # colorList = [mcolors.ColorConverter().to_rgba(categCol[i]) for i in range(len(dval))]
 
             elif categColCycle:
                 print("Warning: categCol is used cyclically (too few entries)")
@@ -374,11 +375,7 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 
         if colorList is None:
             # Use colors from cmap
-            colorList = [cmap(0)]
-            if len(dval) > 1:
-                t = 1./(len(dval)-1)
-                for i in range(1,len(dval)):
-                    colorList.append(cmap(i*t))
+            colorList = [cmap(x) for x in np.arange(len(dval)) * 1.0/(len(dval)-1)]
 
         # Set the colormap: 'cmap'
         if len(dval) == 1:

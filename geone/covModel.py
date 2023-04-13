@@ -351,6 +351,14 @@ class CovModel1D (object):
         return out
     # ------------------------------------------------------------------------
 
+    # ------------------------------------------------------------------------
+    def __call__(self, h, vario=False):
+        if vario:
+            return self.vario_func()(h)
+        else:
+            return self.func()(h)
+    # ------------------------------------------------------------------------
+
     def is_orientation_stationary(self, recompute=False):
         """Returns a bool (True / False) indicating if the orientation is
         stationary - always True for 1D covariance model.
@@ -726,6 +734,14 @@ class CovModel2D (object):
         out = out + '\n' + '    is obtained from the system Oxy by applying a rotation of angle -alpha.'
         out = out + '\n' + '*****'
         return out
+    # ------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------
+    def __call__(self, h, vario=False):
+        if vario:
+            return self.vario_func()(h)
+        else:
+            return self.func()(h)
     # ------------------------------------------------------------------------
 
     def is_orientation_stationary(self, recompute=False):
@@ -1384,6 +1400,14 @@ class CovModel3D (object):
         out = out + '\n' + "        Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''"
         out = out + '\n' + '*****'
         return out
+    # ------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------
+    def __call__(self, h, vario=False):
+        if vario:
+            return self.vario_func()(h)
+        else:
+            return self.func()(h)
     # ------------------------------------------------------------------------
 
     def is_orientation_stationary(self, recompute=False):
@@ -2555,6 +2579,7 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=10.0, tol_angle=45.0, hmax=(np.na
                     A pair of points (x(i), x(j)) is in the directional variogram cloud along
                     axis x' (resp. y') iff, given the lag vector h = x(i) - x(j),
                         - the distance from the end of vector h issued from origin to that axis
+                            (i.e. the length of the projection of h onto the orthogonal axis)
                             is less than or equal to tol_dist and,
                         - the angle between h and that axis is less than or equal to tol_angle
 
@@ -2718,6 +2743,7 @@ def variogramExp2D(x, v, alpha=0.0, tol_dist=10.0, tol_angle=45.0, hmax=(np.nan,
                     A pair of points (x(i), x(j)) is in the directional variogram cloud along
                     axis x' (resp. y') iff, given the lag vector h = x(i) - x(j),
                         - the distance from the end of vector h issued from origin to that axis
+                            (i.e. the length of the projection of h onto the orthogonal axis)
                             is less than or equal to tol_dist and,
                         - the angle between h and that axis is less than or equal to tol_angle
 
@@ -3179,6 +3205,7 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=10.0, tol_an
                     A pair of points (x(i), x(j)) is in the directional variogram cloud along
                     axis x''' (resp. y''' and z''') iff, given the lag vector h = x(i) - x(j),
                         - the distance from the end of vector h issued from origin to that axis
+                            (i.e. the length of the projection of h onto the orthogonal plane)
                             is less than or equal to tol_dist and,
                         - the angle between h and that axis is less than or equal to tol_angle
 
@@ -3362,6 +3389,7 @@ def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=10.0, tol_angl
                     A pair of points (x(i), x(j)) is in the directional variogram cloud along
                     axis x''' (resp. y''' and z''') iff, given the lag vector h = x(i) - x(j),
                         - the distance from the end of vector h issued from origin to that axis
+                            (i.e. the length of the projection of h onto the orthogonal plane)
                             is less than or equal to tol_dist and,
                         - the angle between h and that axis is less than or equal to tol_angle
 

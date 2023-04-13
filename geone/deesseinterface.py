@@ -114,8 +114,6 @@ class SearchNeighborhoodParameters(object):
         self.power = power
 
     # ------------------------------------------------------------------------
-    # def __str__(self):
-    #     return self.name
     def __repr__(self):
         out = '*** SearchNeighborhoodParameters object ***'
         out = out + '\n' + 'radiusMode = {0.radiusMode}'.format(self)
@@ -273,8 +271,6 @@ class SoftProbability(object):
         self.dynamicThresholdParameters = dynamicThresholdParameters
 
     # ------------------------------------------------------------------------
-    # def __str__(self):
-    #     return self.name
     def __repr__(self):
         out = '*** SoftProbability object ***'
         out = out + '\n' + 'probabilityConstraintUsage = {0.probabilityConstraintUsage}:'.format(self)
@@ -457,8 +453,6 @@ class Connectivity(object):
         self.threshold = threshold
 
     # ------------------------------------------------------------------------
-    # def __str__(self):
-    #     return self.name
     def __repr__(self):
         out = '*** Connectivity object ***'
         out = out + '\n' + 'connectivityConstraintUsage = {0.connectivityConstraintUsage}:'.format(self)
@@ -716,16 +710,23 @@ class PyramidGeneralParameters(object):
                     print('ERROR: (PyramidGeneralParameters) field "factorMaxScanFraction"...')
                     return
 
+        else: # npyramidLevel <= 0
+            self.kx = None
+            self.ky = None
+            self.kz = None
+            self.pyramidSimulationMode = None
+            self.factorNneighboringNode = None
+            self.factorDistanceThreshold = None
+            self.factorMaxScanFraction = None
+
     # ------------------------------------------------------------------------
-    # def __str__(self):
-    #     return self.name
     def __repr__(self):
         out = '*** PyramidGeneralParameters object ***'
         out = out + '\n' + 'npyramidLevel = {0.npyramidLevel} # number of pyramid level(s) (in addition to original simulation grid)'.format(self)
         if self.npyramidLevel > 0:
-            out = out + '\n' + 'kx = ' + str(self.kx) + ' # reduction factor along x-axis for each leve'
-            out = out + '\n' + 'ky = ' + str(self.kx) + ' # reduction factor along y-axis for each leve'
-            out = out + '\n' + 'kz = ' + str(self.kx) + ' # reduction factor along z-axis for each leve'
+            out = out + '\n' + 'kx = ' + str(self.kx) + ' # reduction factor along x-axis for each level'
+            out = out + '\n' + 'ky = ' + str(self.ky) + ' # reduction factor along y-axis for each level'
+            out = out + '\n' + 'kz = ' + str(self.kz) + ' # reduction factor along z-axis for each level'
             out = out + '\n' + 'pyramidSimulationMode = {0.pyramidSimulationMode}'.format(self)
             out = out + '\n' + 'factorNneighboringNode = ' + str(self.factorNneighboringNode)
             out = out + '\n' + 'factorDistanceThreshold = ' + str(self.factorDistanceThreshold)
@@ -823,8 +824,6 @@ class PyramidParameters(object):
                 return
 
     # ------------------------------------------------------------------------
-    # def __str__(self):
-    #     return self.name
     def __repr__(self):
         out = '*** PyramidParameters object ***'
         out = out + '\n' + 'nlevel = {0.nlevel} # number of pyramid level(s) (in addition to original simulation grid)'.format(self)
@@ -884,18 +883,25 @@ class DeesseInput(object):
                     (string) name of the report file (unused if
                         outputReportFlag is False)
 
-        nTI:        (int) number of training image(s) (TI), should be at least 1
-        simGridAsTiFlag:
-                    (1-dimensional array of 'bool', of size nTI)
-                        flag indicating if the simulation grid itself is used
-                        as TI, for each TI
+        nTI:        (int) number of training image(s) (TI)
+                        (obsolete, computed automatically from TI and simGridAsTiFlag,
+                        should be set to None)
 
-        TI:         (1-dimensional array of Img (class), of size nTI) TI(s) used
-                        for the simulation
+        TI:         (1-dimensional array of Img (class)) TI(s) used for the simulation,
+                        may contain None entries;
+                        it must be compatible with simGridAsTiFlag
+
+        simGridAsTiFlag:
+                    (1-dimensional array of 'bool' or None)
+                        flag indicating if the simulation grid itself is used
+                        as TI, for each TI;
+                        if None, an array of False is considered;
+                        must be compatible with simGridAsTiFlag
+
         pdfTI:      ((nTI, nz, ny, nx) array of floats) probability for TI
                         selection, pdf[i] is the "map defined on the SG" of the
-                        probability to select the i-th TI, unused if nTI is less
-                        than or equal to 1
+                        probability to select the i-th TI, unused if only more
+                        than one TI are used (nTI > 1)
 
         dataImage:  (1-dimensional array of Img (class), or None) data images
                         used as conditioning data (if any), each data image
@@ -1214,8 +1220,6 @@ class DeesseInput(object):
         nrealization:
                 (int) number of realization(s)
 
-        name:   (string) name of the set of parameters
-
     Note: in output simulated images (obtained by running DeeSse), the names
         of the output variables are set to <vname>_real<n>, where
             - <vname> is the name of the variable,
@@ -1234,7 +1238,7 @@ class DeesseInput(object):
                  outputTiGridNodeIndexFlag=False, #outputTiGridNodeIndexFileName=None,
                  outputTiIndexFlag=False, #outputTiIndexFileName=None,
                  outputReportFlag=False, outputReportFileName='ds.log',
-                 nTI=0, simGridAsTiFlag=None, TI=None, pdfTI=None,
+                 nTI=None, TI=None, simGridAsTiFlag=None, pdfTI=None,
                  dataImage=None, dataPointSet=None,
                  mask=None,
                  homothetyUsage=0,
@@ -1276,22 +1280,27 @@ class DeesseInput(object):
                  postProcessingNeighboringNodeDensity=None,
                  postProcessingDistanceThreshold=None,
                  postProcessingMaxScanFraction=None,
-                 postProcessingTolerance=0.,
+                 postProcessingTolerance=0.0,
                  seed=1234,
                  seedIncrement=1,
                  nrealization=1):
-        self.ok = False # flag to "validate" the class
+
+        self.ok = False # flag to "validate" the class [temporary to False]
+
+        # consoleAppFlag
         self.consoleAppFlag = False
-        self.nx = nx
-        self.ny = ny
-        self.nz = nz
-        self.sx = sx
-        self.sy = sy
-        self.sz = sz
-        self.ox = ox
-        self.oy = oy
-        self.oz = oz
-        self.nv = nv
+
+        # grid definition and variable(s)
+        self.nx = int(nx)
+        self.ny = int(ny)
+        self.nz = int(nz)
+        self.sx = float(sx)
+        self.sy = float(sy)
+        self.sz = float(sz)
+        self.ox = float(ox)
+        self.oy = float(oy)
+        self.oz = float(oz)
+        self.nv = int(nv)
         if varname is None:
             self.varname = ["V{:d}".format(i) for i in range(nv)]
         else:
@@ -1301,6 +1310,10 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "varname"...')
                 return
 
+        # dimension
+        dim = int(nx>1) + int(ny>1) + int(nz>1)
+
+        # outputVarFlag
         if outputVarFlag is None:
             self.outputVarFlag = np.array([True for i in range(nv)], dtype='bool')
         else:
@@ -1310,8 +1323,10 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "outputVarFlag"...')
                 return
 
+        # # simname
         # self.simname = None # unnecessary!
 
+        # output maps
         self.outputPathIndexFlag = outputPathIndexFlag
         # self.outputPathIndexFileName = None # no output file!
 
@@ -1324,59 +1339,70 @@ class DeesseInput(object):
         self.outputTiIndexFlag = outputTiIndexFlag
         # self.outputTiIndexFileName = None # no output file!
 
+        # report
         self.outputReportFlag = outputReportFlag
         self.outputReportFileName = outputReportFileName
 
-        dim = int(nx>1) + int(ny>1) + int(nz>1)
+        # TI, simGridAsTiFlag, nTI
+        if TI is None and simGridAsTiFlag is None:
+            print('ERROR: (DeesseInput) invalid "TI / simGridAsTiFlag" (both None)...')
+            return
 
-        self.nTI = nTI
+        if TI is not None:
+            self.TI = np.asarray(TI).reshape(-1)
 
-        if simGridAsTiFlag is None:
-            self.simGridAsTiFlag = np.array([False for i in range(nTI)], dtype='bool')
-        else:
-            try:
-                self.simGridAsTiFlag = np.asarray(simGridAsTiFlag, dtype='bool').reshape(nTI)
-            except:
-                print('ERROR: (DeesseInput) field "simGridAsTiFlag"...')
-                return
+        if simGridAsTiFlag is not None:
+            self.simGridAsTiFlag = np.asarray(simGridAsTiFlag, dtype='bool').reshape(-1)
 
         if TI is None:
-            self.TI = np.array([None for i in range(nTI)], dtype=object)
-        else:
-            try:
-                self.TI = np.asarray(TI).reshape(nTI)
-            except:
-                print('ERROR: (DeesseInput) field "TI"...')
-                return
+            self.TI = np.array([None for i in range(len(self.simGridAsTiFlag))], dtype=object)
+
+        if simGridAsTiFlag is None:
+            self.simGridAsTiFlag = np.array([False for i in range(len(self.TI))], dtype='bool')
+
+        if len(self.TI) != len(self.simGridAsTiFlag):
+            print('ERROR: (DeesseInput) invalid "TI / simGridAsTiFlag" (not same length)...')
+            return
 
         for f, t in zip(self.simGridAsTiFlag, self.TI):
-            if not f and t is None:
+            if (not f and t is None) or (f and t is not None):
                 print ('ERROR: (DeesseInput) invalid "TI / simGridAsTiFlag"...')
                 return
 
-        if self.nTI <= 1:
+        if nTI is not None and nTI != len(self.TI):
+            print('ERROR: (DeesseInput) invalid "nTI"...')
+            return
+
+        nTI = len(self.TI)
+        self.nTI = nTI
+
+        # pdfTI
+        if nTI <= 1:
             self.pdfTI = None
         else:
             if pdfTI is None:
-                p = 1./self.nTI
-                self.pdfTI = np.repeat(p, self.nTI*nx*ny*nz).reshape(self.nTI, nz, ny, nx)
+                p = 1./nTI
+                self.pdfTI = np.repeat(p, nTI*nx*ny*nz).reshape(nTI, nz, ny, nx)
             else:
                 try:
-                    self.pdfTI = np.asarray(pdfTI, dtype=float).reshape(self.nTI, nz, ny, nx)
+                    self.pdfTI = np.asarray(pdfTI, dtype=float).reshape(nTI, nz, ny, nx)
                 except:
                     print('ERROR: (DeesseInput) field "pdfTI"...')
                     return
 
+        # conditioning data image
         if dataImage is None:
             self.dataImage = None
         else:
             self.dataImage = np.asarray(dataImage).reshape(-1)
 
+        # conditioning point set
         if dataPointSet is None:
             self.dataPointSet = None
         else:
             self.dataPointSet = np.asarray(dataPointSet).reshape(-1)
 
+        # mask
         if mask is None:
             self.mask = None
         else:
@@ -1386,6 +1412,7 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "mask"...')
                 return
 
+        # homothety
         if homothetyUsage == 1:
             if homothetyXLocal:
                 if homothetyXRatio is None:
@@ -1502,7 +1529,12 @@ class DeesseInput(object):
                         print('ERROR: (DeesseInput) field "homothetyZRatio"...')
                         return
 
-        elif homothetyUsage != 0:
+        elif homothetyUsage == 0:
+            self.homothetyXRatio = None
+            self.homothetyYRatio = None
+            self.homothetyZRatio = None
+
+        else:
             print ('ERROR: (DeesseInput) invalid homothetyUsage')
             return
 
@@ -1511,6 +1543,7 @@ class DeesseInput(object):
         self.homothetyYLocal = homothetyYLocal
         self.homothetyZLocal = homothetyZLocal
 
+        # rotation
         if rotationUsage == 1:
             if rotationAzimuthLocal:
                 if rotationAzimuth is None:
@@ -1627,7 +1660,12 @@ class DeesseInput(object):
                         print('ERROR: (DeesseInput) field "rotationPlunge"...')
                         return
 
-        elif rotationUsage != 0:
+        elif rotationUsage == 0:
+            self.rotationAzimuth = None
+            self.rotationDip = None
+            self.rotationPlunge = None
+
+        else:
             print ('ERROR: (DeesseInput) invalid rotationUsage')
             return
 
@@ -1636,14 +1674,17 @@ class DeesseInput(object):
         self.rotationDipLocal = rotationDipLocal
         self.rotationPlungeLocal = rotationPlungeLocal
 
+        # expMax
         self.expMax = expMax
 
+        # normalizing type
         # if normalizingType not in ('linear', 'uniform', 'normal'):
-        #     print ('ERRROR: unknown normalizingType')
+        #     print ('ERRROR: (DeesseInput) field "normalizingType"')
         #     return
 
         self.normalizingType = normalizingType
 
+        # search neighborhood, number of neighbors, ...
         if searchNeighborhoodParameters is None:
             self.searchNeighborhoodParameters = np.array([SearchNeighborhoodParameters() for i in range(nv)])
         else:
@@ -1688,6 +1729,7 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "neighboringNodeDensity"...')
                 return
 
+        # rescaling
         if rescalingMode is None:
             self.rescalingMode = ['none' for i in range(nv)]
         else:
@@ -1733,6 +1775,7 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "rescalingTargetLength"...')
                 return
 
+        # distance, ...
         if relativeDistanceFlag is None:
             self.relativeDistanceFlag = np.array([False for i in range(nv)])
         else:
@@ -1775,6 +1818,7 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "distanceType"...')
                 return
 
+        # conditioning weight
         if conditioningWeightFactor is None:
             self.conditioningWeightFactor = np.array([1. for i in range(nv)])
         else:
@@ -1784,8 +1828,9 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "conditioningWeightFactor"...')
                 return
 
+        # simulation type and simulation path type
         if simType not in ('sim_one_by_one', 'sim_variable_vector'):
-            print ('ERRROR: unknown simType')
+            print ('ERRROR: (DeesseInput) field "simType"...')
             return
 
         self.simType = simType
@@ -1794,7 +1839,7 @@ class DeesseInput(object):
             'random_hd_distance_pdf', 'random_hd_distance_sort',
             'random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort',
             'unilateral'):
-            print ('ERRROR: unknown simPathType')
+            print ('ERRROR: (DeesseInput) field "simPathType"...')
             return
 
         self.simPathType = simPathType
@@ -1819,6 +1864,7 @@ class DeesseInput(object):
         else:
             self.simPathUnilateralOrder = None
 
+        # distance threshold
         if distanceThreshold is None:
             self.distanceThreshold = np.array([0.05 for i in range(nv)])
         else:
@@ -1828,6 +1874,7 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "distanceThreshold"...')
                 return
 
+        # soft probability
         if softProbability is None:
             self.softProbability = np.array([SoftProbability(probabilityConstraintUsage=0) for i in range(nv)])
         else:
@@ -1837,6 +1884,7 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "softProbability"...')
                 return
 
+        # connectivity
         if connectivity is None:
             self.connectivity = np.array([Connectivity(connectivityConstraintUsage=0) for i in range(nv)])
         else:
@@ -1846,6 +1894,7 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "connectivity"...')
                 return
 
+        # block data
         if blockData is None:
             self.blockData = np.array([BlockData(blockDataUsage=0) for i in range(nv)])
         else:
@@ -1855,20 +1904,22 @@ class DeesseInput(object):
                 print('ERROR: (DeesseInput) field "blockData"...')
                 return
 
+        # maximal scan fraction
         if maxScanFraction is None:
             if dim == 3: # 3D simulation
                 nf = 10000
             else:
                 nf = 5000
 
-            self.maxScanFraction = np.array([min(max(nf/self.TI[i].nxyz(), deesse.MPDS_MIN_MAXSCANFRACTION), deesse.MPDS_MAX_MAXSCANFRACTION) for i in range(self.nTI)])
+            self.maxScanFraction = np.array([min(max(nf/self.TI[i].nxyz(), deesse.MPDS_MIN_MAXSCANFRACTION), deesse.MPDS_MAX_MAXSCANFRACTION) for i in range(nTI)])
         else:
             try:
-                self.maxScanFraction = np.asarray(maxScanFraction).reshape(self.nTI)
+                self.maxScanFraction = np.asarray(maxScanFraction).reshape(nTI)
             except:
                 print('ERROR: (DeesseInput) field "maxScanFraction"...')
                 return
 
+        # pyramids
         if pyramidGeneralParameters is None:
             self.pyramidGeneralParameters = PyramidGeneralParameters(nx=nx, ny=ny, nz=nz)
         else:
@@ -1893,6 +1944,7 @@ class DeesseInput(object):
         else:
             self.pyramidDataPointSet = np.asarray(pyramidDataPointSet).reshape(-1)
 
+        # tolerance and post-processing
         self.tolerance = tolerance
         self.npostProcessingPathMax = npostProcessingPathMax
 
@@ -1956,11 +2008,15 @@ class DeesseInput(object):
 
         self.postProcessingTolerance = postProcessingTolerance
 
+        # seed, ...
         if seed is None:
             seed = np.random.randint(1,1000000)
         self.seed = seed
         self.seedIncrement = seedIncrement
+
+        # number of realization(s)
         self.nrealization = nrealization
+
         self.ok = True # flag to "validate" the class
 
     # ------------------------------------------------------------------------
@@ -2165,16 +2221,461 @@ def classInterval2classOfValues(classInterval):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def search_neighborhood_parameters_py2C(sn_py):
+    """
+    Converts search neighborhood parameters from python to C.
+
+    :param sn_py:   (SearchNeighborhoodParameters class) - python
+    :return sn_c:   (MPDS_SEARCHNEIGHBORHOODPARAMETERS *) - C
+    """
+
+    sn_c = deesse.malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS()
+    deesse.MPDSInitSearchNeighborhoodParameters(sn_c)
+
+    radiusMode_dict = {
+        'large_default'    : deesse.SEARCHNEIGHBORHOOD_RADIUS_LARGE_DEFAULT,
+        'ti_range_default' : deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_DEFAULT,
+        'ti_range'         : deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE,
+        'ti_range_xy'      : deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XY,
+        'ti_range_xz'      : deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XZ,
+        'ti_range_yz'      : deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_YZ,
+        'ti_range_xyz'     : deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XYZ,
+        'manual'           : deesse.SEARCHNEIGHBORHOOD_RADIUS_MANUAL
+    }
+    try:
+        sn_c.radiusMode = radiusMode_dict[sn_py.radiusMode]
+    except:
+        print ('ERROR: radius mode (search neighborhood parameters) unknown')
+        return
+
+    sn_c.rx = sn_py.rx
+    sn_c.ry = sn_py.ry
+    sn_c.rz = sn_py.rz
+
+    anisotropyRatioMode_dict = {
+        'one'        : deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE,
+        'radius'     : deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS,
+        'radius_xy'  : deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XY,
+        'radius_xz'  : deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XZ,
+        'radius_yz'  : deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_YZ,
+        'radius_xyz' : deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XYZ,
+        'manual'     : deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_MANUAL
+    }
+    try:
+        sn_c.anisotropyRatioMode = anisotropyRatioMode_dict[sn_py.anisotropyRatioMode]
+    except:
+        print ('ERROR: anisotropy ratio mode (search neighborhood parameters) unknown')
+        return
+
+    sn_c.ax = sn_py.ax
+    sn_c.ay = sn_py.ay
+    sn_c.az = sn_py.az
+    sn_c.angle1 = sn_py.angle1
+    sn_c.angle2 = sn_py.angle2
+    sn_c.angle3 = sn_py.angle3
+    if sn_c.angle1 != 0 or sn_c.angle2 != 0 or sn_c.angle3 != 0:
+        sn_c.rotationFlag = deesse.TRUE
+    else:
+        sn_c.rotationFlag = deesse.FALSE
+    sn_c.power = sn_py.power
+
+    return sn_c
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def set_simAndPathParameters_C(
+        simType,
+        simPathType,
+        simPathStrength,
+        simPathPower,
+        simPathUnilateralOrder):
+    """
+    Set simAndPathParameters (C struct) from relevant parameters (python).
+
+    :param simType, simPathType, simPathStrength, simPathUnilateralOrder:
+                    relevant parameters - python
+
+    :return sapp_c:   (MPDS_SIMANDPATHPARAMETERS *) - C
+    """
+
+    sapp_c = deesse.malloc_MPDS_SIMANDPATHPARAMETERS()
+    deesse.MPDSInitSimAndPathParameters(sapp_c)
+
+    if simType == 'sim_one_by_one':
+        sapp_c.simType = deesse.SIM_ONE_BY_ONE
+    elif simType == 'sim_variable_vector':
+        sapp_c.simType = deesse.SIM_VARIABLE_VECTOR
+    else:
+        print ('ERROR: simulation type unknown')
+        return
+
+    if simPathType == 'random':
+        sapp_c.pathType = deesse.PATH_RANDOM
+    elif simPathType == 'random_hd_distance_pdf':
+        sapp_c.pathType = deesse.PATH_RANDOM_HD_DISTANCE_PDF
+        sapp_c.strength = simPathStrength
+    elif simPathType == 'random_hd_distance_sort':
+        sapp_c.pathType = deesse.PATH_RANDOM_HD_DISTANCE_SORT
+        sapp_c.strength = simPathStrength
+    elif simPathType == 'random_hd_distance_sum_pdf':
+        sapp_c.pathType = deesse.PATH_RANDOM_HD_DISTANCE_SUM_PDF
+        sapp_c.pow = simPathPower
+        sapp_c.strength = simPathStrength
+    elif simPathType == 'random_hd_distance_sum_sort':
+        sapp_c.pathType = deesse.PATH_RANDOM_HD_DISTANCE_SUM_SORT
+        sapp_c.pow = simPathPower
+        sapp_c.strength = simPathStrength
+    elif simPathType == 'unilateral':
+        sapp_c.pathType = deesse.PATH_UNILATERAL
+        sapp_c.unilateralOrderLength = len(simPathUnilateralOrder)
+        sapp_c.unilateralOrder = deesse.new_int_array(len(simPathUnilateralOrder))
+        deesse.mpds_set_int_vector_from_array(
+            sapp_c.unilateralOrder, 0,
+            np.asarray(simPathUnilateralOrder, dtype='intc').reshape(len(simPathUnilateralOrder)))
+    else:
+        print ('ERROR: simulation path type unknown')
+        return
+
+    return sapp_c
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def softProbability_py2C(
+        sp,
+        nx, ny, nz,
+        sx, sy, sz,
+        ox, oy, oz):
+    """
+    Converts soft probability parameters from python to C.
+
+    :param sp:          (SoftProbability class) soft probability parameters (python)
+    :param nx, ny, nz:  (ints) number of simulation grid (SG) cells in each direction
+    :param sx, sy, sz:  (floats) cell size in each direction
+    :param ox, oy, oz:  (floats) origin of the SG (bottom-lower-left corner)
+    :param nv:          (int) number of variable(s) / attribute(s)
+
+    :return sp_c:       (MPDS_SOFTPROBABILITY *) corresponding parameters (C struct)
+    """
+
+    sp_c = deesse.malloc_MPDS_SOFTPROBABILITY()
+    deesse.MPDSInitSoftProbability(sp_c)
+
+    # ... probabilityConstraintUsage
+    sp_c.probabilityConstraintUsage = sp.probabilityConstraintUsage
+    if sp.probabilityConstraintUsage == 0:
+        return sp_c
+
+    # ... classOfValues
+    sp_c.classOfValues = classInterval2classOfValues(sp.classInterval)
+
+    if sp.probabilityConstraintUsage == 1:
+        # ... globalPdf
+        sp_c.globalPdf = deesse.new_real_array(sp.nclass)
+        deesse.mpds_set_real_vector_from_array(
+            sp_c.globalPdf, 0,
+            np.asarray(sp.globalPdf).reshape(sp.nclass))
+
+    elif sp.probabilityConstraintUsage == 2 or sp.probabilityConstraintUsage == 3:
+        # ... localPdf
+        im = Img(nx=nx, ny=ny, nz=nz,
+                 sx=sx, sy=sy, sz=sz,
+                 ox=ox, oy=oy, oz=oz,
+                 nv=sp.nclass, val=sp.localPdf)
+        sp_c.localPdfImage = img_py2C(im)
+
+    if sp.probabilityConstraintUsage == 2:
+        # ... localPdfSupportRadius
+        sp_c.localPdfSupportRadius = deesse.new_real_array(1)
+        deesse.mpds_set_real_vector_from_array(
+            sp_c.localPdfSupportRadius, 0,
+            np.asarray(sp.localPdfSupportRadius).reshape(1))
+
+        # ... localCurrentPdfComputation
+        sp_c.localCurrentPdfComputation = sp.localCurrentPdfComputation
+
+    if sp.probabilityConstraintUsage == 1 or sp.probabilityConstraintUsage == 2:
+        # ... comparingPdfMethod
+        sp_c.comparingPdfMethod = sp.comparingPdfMethod
+
+        # ... probabilityConstraintThresholdType
+        sp_c.probabilityConstraintThresholdType = sp.probabilityConstraintThresholdType
+
+        # ... constantThreshold
+        sp_c.constantThreshold = sp.constantThreshold
+
+        if sp.probabilityConstraintThresholdType == 1:
+            # ... dynamicThresholdParameters
+            sp_c.dynamicThresholdParameters = deesse.new_real_array(7)
+            deesse.mpds_set_real_vector_from_array(
+                sp_c.dynamicThresholdParameters, 0,
+                np.asarray(sp.dynamicThresholdParameters).reshape(7))
+
+    if sp.probabilityConstraintUsage == 3:
+        # ... rejectionMode
+        sp_c.rejectionMode = sp.rejectionMode
+
+    # ... deactivationDistance
+    sp_c.deactivationDistance = sp.deactivationDistance
+
+    return sp_c
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def connectivity_py2C(co):
+    """
+    Converts connectivity parameters from python to C.
+
+    :param co:          (Connectivity class) connectivity parameters (python)
+    :return co_c:       (MPDS_CONNECTIVITY *) corresponding parameters (C struct)
+    """
+
+    co_c = deesse.malloc_MPDS_CONNECTIVITY()
+    deesse.MPDSInitConnectivity(co_c)
+
+    # ... connectivityConstraintUsage
+    co_c.connectivityConstraintUsage = co.connectivityConstraintUsage
+    if co.connectivityConstraintUsage == 0:
+        return co_c
+
+    # ... connectivityType
+    connectivityType_dict = {
+        'connect_face'             : deesse.CONNECT_FACE,
+        'connect_face_edge'        : deesse.CONNECT_FACE_EDGE,
+        'connect_face_edge_corner' : deesse.CONNECT_FACE_EDGE_CORNER
+    }
+    try:
+        co_c.connectivityType = connectivityType_dict[co.connectivityType]
+    except:
+        print ('ERROR: connectivity type unknown')
+        return
+
+    # ... varName
+    deesse.mpds_allocate_and_set_connectivity_varname(co_c, co.varname)
+
+    # ... classOfValues
+    co_c.classOfValues = classInterval2classOfValues(co.classInterval)
+
+    # ... tiAsRefFlag
+    if co.tiAsRefFlag:
+        co_c.tiAsRefFlag = deesse.TRUE
+    else:
+        co_c.tiAsRefFlag = deesse.FALSE
+
+    if not co.tiAsRefFlag:
+        # ... refConnectivityImage
+        im = img.copyImg(co.refConnectivityImage)
+        im.extract_var([co.refConnectivityVarIndex])
+        co_c.refConnectivityImage = img_py2C(im)
+
+    # ... deactivationDistance
+    co_c.deactivationDistance = co.deactivationDistance
+
+    # ... threshold
+    co_c.threshold = co.threshold
+
+    return co_c
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def blockdata_py2C(bd):
+    """
+    Converts block data parameters from python to C.
+
+    :param bd:          (BlockData class) block data parameters (python)
+    :return bd_c:       (MPDS_BLOCKDATA *) corresponding parameters (C struct)
+    """
+
+    bd_c = deesse.malloc_MPDS_BLOCKDATA()
+    deesse.MPDSInitBlockData(bd_c)
+
+    # ... blockDataUsage
+    bd_c.blockDataUsage = bd.blockDataUsage
+    if bd.blockDataUsage == 0:
+        return bd_c
+
+    # ... nblock
+    bd_c.nblock = bd.nblock
+
+    # ... nnode, ix, iy, iz
+    bd_c.nnode = deesse.new_int_array(bd.nblock)
+    bd_c.ix = deesse.new_intp_array(bd.nblock)
+    bd_c.iy = deesse.new_intp_array(bd.nblock)
+    bd_c.iz = deesse.new_intp_array(bd.nblock)
+
+    for j, ni in enumerate(bd.nodeIndex):
+        nn = len(ni) # = ni.shape[0]
+        deesse.int_array_setitem(bd_c.nnode, j, nn)
+        ix_c = deesse.new_int_array(nn)
+        deesse.mpds_set_int_vector_from_array(ix_c, 0, np.asarray(ni[:,0], dtype='intc'))
+        deesse.intp_array_setitem(bd_c.ix, j, ix_c)
+        iy_c = deesse.new_int_array(nn)
+        deesse.mpds_set_int_vector_from_array(iy_c, 0, np.asarray(ni[:,1], dtype='intc'))
+        deesse.intp_array_setitem(bd_c.iy, j, iy_c)
+        iz_c = deesse.new_int_array(nn)
+        deesse.mpds_set_int_vector_from_array(iz_c, 0, np.asarray(ni[:,2], dtype='intc'))
+        deesse.intp_array_setitem(bd_c.iz, j, iz_c)
+
+    # ... value
+    bd_c.value = deesse.new_real_array(bd.nblock)
+    deesse.mpds_set_real_vector_from_array(bd_c.value, 0,
+        np.asarray(bd.value).reshape(bd.nblock))
+
+    # ... tolerance
+    bd_c.tolerance = deesse.new_real_array(bd.nblock)
+    deesse.mpds_set_real_vector_from_array(bd_c.tolerance, 0,
+        np.asarray(bd.tolerance).reshape(bd.nblock))
+
+    # ... activatePropMin
+    bd_c.activatePropMin = deesse.new_real_array(bd.nblock)
+    deesse.mpds_set_real_vector_from_array(bd_c.activatePropMin, 0,
+        np.asarray(bd.activatePropMin).reshape(bd.nblock))
+
+    # ... activatePropMax
+    bd_c.activatePropMax = deesse.new_real_array(bd.nblock)
+    deesse.mpds_set_real_vector_from_array(bd_c.activatePropMax, 0,
+        np.asarray(bd.activatePropMax).reshape(bd.nblock))
+
+    return bd_c
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def pyramidGeneralParameters_py2C(pgp):
+    """
+    Converts pyramid general parameters from python to C.
+
+    :param pgp:         (PyramidGeneralParameters class) pyramid general parameters (python)
+    :return pgp_c:      (MPDS_PYRAMIDGENERALPARAMETERS *) corresponding parameters (C struct)
+    """
+
+    pgp_c = deesse.malloc_MPDS_PYRAMIDGENERALPARAMETERS()
+    deesse.MPDSInitPyramidGeneralParameters(pgp_c)
+
+    # ... npyramidLevel
+    nl = int(pgp.npyramidLevel)
+    pgp_c.npyramidLevel = nl
+
+    # ... pyramidSimulationMode
+    pyramidSimulationMode_dict = {
+        'hierarchical'                 : deesse.PYRAMID_SIM_HIERARCHICAL,
+        'hierarchical_using_expansion' : deesse.PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION,
+        'all_level_one_by_one'         : deesse.PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE,
+        'pyramid_sim_none'             : deesse.PYRAMID_SIM_NONE
+    }
+    try:
+        pgp_c.pyramidSimulationMode = pyramidSimulationMode_dict[pgp.pyramidSimulationMode]
+    except:
+        pgp_c.pyramidSimulationMode = pyramidSimulationMode_dict['pyramid_sim_none']
+
+    if nl > 0:
+        # ... kx
+        pgp_c.kx = deesse.new_int_array(nl)
+        deesse.mpds_set_int_vector_from_array(
+            pgp_c.kx, 0,
+                np.asarray(pgp.kx, dtype='intc').reshape(nl))
+
+        # ... ky
+        pgp_c.ky = deesse.new_int_array(nl)
+        deesse.mpds_set_int_vector_from_array(
+            pgp_c.ky, 0,
+                np.asarray(pgp.ky, dtype='intc').reshape(nl))
+
+        # ... kz
+        pgp_c.kz = deesse.new_int_array(nl)
+        deesse.mpds_set_int_vector_from_array(
+            pgp_c.kz, 0,
+                np.asarray(pgp.kz, dtype='intc').reshape(nl))
+
+        # ... factorNneighboringNode and factorDistanceThreshold ...
+        if pgp.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
+            nn = 4*nl + 1
+        else: # pyramidSimulationMode == 'all_level_one_by_one'
+            nn = nl + 1
+
+        # ... factorNneighboringNode
+        pgp_c.factorNneighboringNode = deesse.new_double_array(nn)
+        deesse.mpds_set_double_vector_from_array(
+            pgp_c.factorNneighboringNode, 0,
+                np.asarray(pgp.factorNneighboringNode).reshape(nn))
+
+        # ... factorDistanceThreshold
+        pgp_c.factorDistanceThreshold = deesse.new_real_array(nn)
+        deesse.mpds_set_real_vector_from_array(
+            pgp_c.factorDistanceThreshold, 0,
+                np.asarray(pgp.factorDistanceThreshold).reshape(nn))
+
+        # ... factorMaxScanFraction
+        pgp_c.factorMaxScanFraction = deesse.new_double_array(nl+1)
+        deesse.mpds_set_double_vector_from_array(
+            pgp_c.factorMaxScanFraction, 0,
+                np.asarray(pgp.factorMaxScanFraction).reshape(nl+1))
+
+    return pgp_c
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def pyramidParameters_py2C(pp):
+    """
+    Converts pyramid parameters from python to C.
+
+    :param pp:          (PyramidParameters class) pyramid parameters (python)
+    :return pp_c:       (MPDS_PYRAMIDPARAMETERS *) corresponding parameters (C struct)
+    """
+
+    pp_c = deesse.malloc_MPDS_PYRAMIDPARAMETERS()
+    deesse.MPDSInitPyramidParameters(pp_c)
+
+    # ... nlevel
+    pp_c.nlevel = int(pp.nlevel)
+
+    # ... pyramidType
+    # ... pyramidSimulationMode
+    pyramidType_dict = {
+        'none'                      : deesse.PYRAMID_NONE,
+        'continuous'                : deesse.PYRAMID_CONTINUOUS,
+        'categorical_auto'          : deesse.PYRAMID_CATEGORICAL_AUTO,
+        'categorical_custom'        : deesse.PYRAMID_CATEGORICAL_CUSTOM,
+        'categorical_to_continuous' : deesse.PYRAMID_CATEGORICAL_TO_CONTINUOUS
+    }
+    try:
+        pp_c.pyramidType = pyramidType_dict[pp.pyramidType]
+    except:
+        print ('ERROR: pyramid type unknown')
+        return
+
+    if pp.pyramidType == 'categorical_custom':
+        # ... classOfValues
+        pp_c.classOfValues = classInterval2classOfValues(pp.classInterval)
+
+    # ... outputLevelFlag
+    deesse.mpds_allocate_and_set_pyramid_outputLevelFlag(pp_c, np.array([int(i) for i in pp.outputLevelFlag], dtype='intc'))
+
+    return pp_c
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def deesse_input_py2C(deesse_input):
     """
     Converts deesse input from python to C.
 
     :param deesse_input: (DeesseInput class) deesse input - python
-    :return:             (MPDS_SIMINPUT) deesse input - C
+    :return:             (MPDS_SIMINPUT *) deesse input - C
     """
 
-    nxy = deesse_input.nx * deesse_input.ny
-    nxyz = nxy * deesse_input.nz
+    nx = int(deesse_input.nx)
+    ny = int(deesse_input.ny)
+    nz = int(deesse_input.nz)
+    sx = float(deesse_input.sx)
+    sy = float(deesse_input.sy)
+    sz = float(deesse_input.sz)
+    ox = float(deesse_input.ox)
+    oy = float(deesse_input.oy)
+    oz = float(deesse_input.oz)
+    nv = int(deesse_input.nv)
+
+    nTI = int(deesse_input.nTI)
+
+    nxy = nx * ny
+    nxyz = nxy * nz
 
     # Allocate mpds_siminput
     mpds_siminput = deesse.malloc_MPDS_SIMINPUT()
@@ -2189,20 +2690,21 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.consoleAppFlag = deesse.FALSE
 
     deesse.mpds_allocate_and_set_simname(mpds_siminput, '') #  mpds_siminput.simName not used, but must be set!
+    # mpds_siminput.simName = '' #  works too
 
     # mpds_siminput.simImage ...
     # ... set initial image im (for simulation)
-    im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-             sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-             ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-             nv=deesse_input.nv, val=deesse.MPDS_MISSING_VALUE,
+    im = Img(nx=nx, ny=ny, nz=nz,
+             sx=sx, sy=sy, sz=sz,
+             ox=ox, oy=oy, oz=oz,
+             nv=nv, val=deesse.MPDS_MISSING_VALUE,
              varname=deesse_input.varname)
 
     # ... convert im from python to C
     mpds_siminput.simImage = img_py2C(im)
 
     # mpds_siminput.nvar
-    mpds_siminput.nvar = int(deesse_input.nv)
+    mpds_siminput.nvar = nv
 
     # mpds_siminput.outputVarFlag
     deesse.mpds_allocate_and_set_outputVarFlag(mpds_siminput, np.array([int(i) for i in deesse_input.outputVarFlag], dtype='bool'))
@@ -2254,13 +2756,13 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.outputReportFlag = deesse.FALSE
 
     # mpds_siminput.ntrainImage
-    mpds_siminput.ntrainImage = deesse_input.nTI
+    mpds_siminput.ntrainImage = nTI
 
     # mpds_siminput.simGridAsTiFlag
     deesse.mpds_allocate_and_set_simGridAsTiFlag(mpds_siminput, np.array([int(i) for i in deesse_input.simGridAsTiFlag], dtype='bool')) # dtype='intc'))
 
     # mpds_siminput.trainImage
-    mpds_siminput.trainImage = deesse.new_MPDS_IMAGE_array(deesse_input.nTI)
+    mpds_siminput.trainImage = deesse.new_MPDS_IMAGE_array(nTI)
     for i, ti in enumerate(deesse_input.TI):
         if ti is not None:
             im_c = img_py2C(ti)
@@ -2270,11 +2772,11 @@ def deesse_input_py2C(deesse_input):
             # deesse.MPDS_IMAGE_array_setitem(mpds_siminput.trainImage, i, img_py2C(ti))
 
     # mpds_siminput.pdfTrainImage
-    if deesse_input.nTI > 1:
-        im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                 sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                 ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                 nv=deesse_input.nTI, val=deesse_input.pdfTI)
+    if nTI > 1:
+        im = Img(nx=nx, ny=ny, nz=nz,
+                 sx=sx, sy=sy, sz=sz,
+                 ox=ox, oy=oy, oz=oz,
+                 nv=nTI, val=deesse_input.pdfTI)
         mpds_siminput.pdfTrainImage = img_py2C(im)
 
     # mpds_siminput.ndataImage and mpds_siminput.dataImage
@@ -2310,9 +2812,9 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.maskImageFlag = deesse.FALSE
     else:
         mpds_siminput.maskImageFlag = deesse.TRUE
-        im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                 sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                 ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+        im = Img(nx=nx, ny=ny, nz=nz,
+                 sx=sx, sy=sy, sz=sz,
+                 ox=ox, oy=oy, oz=oz,
                  nv=1, val=deesse_input.mask)
         mpds_siminput.maskImage = img_py2C(im)
 
@@ -2325,9 +2827,9 @@ def deesse_input_py2C(deesse_input):
     if deesse_input.homothetyUsage == 1:
         if deesse_input.homothetyXLocal:
             mpds_siminput.homothetyXRatioImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.homothetyXRatio)
             mpds_siminput.homothetyXRatioImage = img_py2C(im)
 
@@ -2339,9 +2841,9 @@ def deesse_input_py2C(deesse_input):
 
         if deesse_input.homothetyYLocal:
             mpds_siminput.homothetyYRatioImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.homothetyYRatio)
             mpds_siminput.homothetyYRatioImage = img_py2C(im)
 
@@ -2353,9 +2855,9 @@ def deesse_input_py2C(deesse_input):
 
         if deesse_input.homothetyZLocal:
             mpds_siminput.homothetyZRatioImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.homothetyZRatio)
             mpds_siminput.homothetyZRatioImage = img_py2C(im)
 
@@ -2368,9 +2870,9 @@ def deesse_input_py2C(deesse_input):
     elif deesse_input.homothetyUsage == 2:
         if deesse_input.homothetyXLocal:
             mpds_siminput.homothetyXRatioImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.homothetyXRatio)
             mpds_siminput.homothetyXRatioImage = img_py2C(im)
 
@@ -2382,9 +2884,9 @@ def deesse_input_py2C(deesse_input):
 
         if deesse_input.homothetyYLocal:
             mpds_siminput.homothetyYRatioImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.homothetyYRatio)
             mpds_siminput.homothetyYRatioImage = img_py2C(im)
 
@@ -2396,9 +2898,9 @@ def deesse_input_py2C(deesse_input):
 
         if deesse_input.homothetyZLocal:
             mpds_siminput.homothetyZRatioImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.homothetyZRatio)
             mpds_siminput.homothetyZRatioImage = img_py2C(im)
 
@@ -2417,9 +2919,9 @@ def deesse_input_py2C(deesse_input):
     if deesse_input.rotationUsage == 1:
         if deesse_input.rotationAzimuthLocal:
             mpds_siminput.rotationAzimuthImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.rotationAzimuth)
             mpds_siminput.rotationAzimuthImage = img_py2C(im)
 
@@ -2431,9 +2933,9 @@ def deesse_input_py2C(deesse_input):
 
         if deesse_input.rotationDipLocal:
             mpds_siminput.rotationDipImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.rotationDip)
             mpds_siminput.rotationDipImage = img_py2C(im)
 
@@ -2445,9 +2947,9 @@ def deesse_input_py2C(deesse_input):
 
         if deesse_input.rotationPlungeLocal:
             mpds_siminput.rotationPlungeImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.rotationPlunge)
             mpds_siminput.rotationPlungeImage = img_py2C(im)
 
@@ -2460,9 +2962,9 @@ def deesse_input_py2C(deesse_input):
     elif deesse_input.rotationUsage == 2:
         if deesse_input.rotationAzimuthLocal:
             mpds_siminput.rotationAzimuthImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.rotationAzimuth)
             mpds_siminput.rotationAzimuthImage = img_py2C(im)
 
@@ -2474,9 +2976,9 @@ def deesse_input_py2C(deesse_input):
 
         if deesse_input.rotationDipLocal:
             mpds_siminput.rotationDipImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.rotationDip)
             mpds_siminput.rotationDipImage = img_py2C(im)
 
@@ -2488,9 +2990,9 @@ def deesse_input_py2C(deesse_input):
 
         if deesse_input.rotationPlungeLocal:
             mpds_siminput.rotationPlungeImageFlag = deesse.TRUE
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.rotationPlunge)
             mpds_siminput.rotationPlungeImage = img_py2C(im)
 
@@ -2504,492 +3006,596 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.trainValueRangeExtensionMax = deesse_input.expMax
 
     # mpds_siminput.normalizingType
-    if deesse_input.normalizingType == 'linear':
-        mpds_siminput.normalizingType = deesse.NORMALIZING_LINEAR
-    elif deesse_input.normalizingType == 'uniform':
-        mpds_siminput.normalizingType = deesse.NORMALIZING_UNIFORM
-    elif deesse_input.normalizingType == 'normal':
-        mpds_siminput.normalizingType = deesse.NORMALIZING_NORMAL
-    else:
+    normalizingType_dict = {
+        'linear'  : deesse.NORMALIZING_LINEAR,
+        'uniform' : deesse.NORMALIZING_UNIFORM,
+        'normal'  : deesse.NORMALIZING_NORMAL
+    }
+    try:
+        mpds_siminput.normalizingType = normalizingType_dict[deesse_input.normalizingType]
+    except:
         print ('ERROR: normalizing type unknown')
         return
 
+    # # mpds_siminput.normalizingType
+    # if deesse_input.normalizingType == 'linear':
+    #     mpds_siminput.normalizingType = deesse.NORMALIZING_LINEAR
+    # elif deesse_input.normalizingType == 'uniform':
+    #     mpds_siminput.normalizingType = deesse.NORMALIZING_UNIFORM
+    # elif deesse_input.normalizingType == 'normal':
+    #     mpds_siminput.normalizingType = deesse.NORMALIZING_NORMAL
+    # else:
+    #     print ('ERROR: normalizing type unknown')
+    #     return
+
     # mpds_siminput.searchNeighborhoodParameters
-    mpds_siminput.searchNeighborhoodParameters = deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(int(deesse_input.nv))
+    mpds_siminput.searchNeighborhoodParameters = deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nv)
     for i, sn in enumerate(deesse_input.searchNeighborhoodParameters):
-        sn_c = deesse.malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS()
-        deesse.MPDSInitSearchNeighborhoodParameters(sn_c)
-        if sn.radiusMode == 'large_default':
-            sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_LARGE_DEFAULT
-        elif sn.radiusMode == 'ti_range_default':
-            sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_DEFAULT
-        elif sn.radiusMode == 'ti_range':
-            sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE
-        elif sn.radiusMode == 'ti_range_xy':
-            sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XY
-        elif sn.radiusMode == 'ti_range_xz':
-            sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XZ
-        elif sn.radiusMode == 'ti_range_yz':
-            sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_YZ
-        elif sn.radiusMode == 'ti_range_xyz':
-            sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XYZ
-        elif sn.radiusMode == 'manual':
-            sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_MANUAL
-        sn_c.rx = sn.rx
-        sn_c.ry = sn.ry
-        sn_c.rz = sn.rz
-        if sn.anisotropyRatioMode == 'one':
-            sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE
-        elif sn.anisotropyRatioMode == 'radius':
-            sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS
-        elif sn.anisotropyRatioMode == 'radius_xy':
-            sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XY
-        elif sn.anisotropyRatioMode == 'radius_xz':
-            sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XZ
-        elif sn.anisotropyRatioMode == 'radius_yz':
-            sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_YZ
-        elif sn.anisotropyRatioMode == 'radius_xyz':
-            sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XYZ
-        elif sn.anisotropyRatioMode == 'manual':
-            sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_MANUAL
-        sn_c.ax = sn.ax
-        sn_c.ay = sn.ay
-        sn_c.az = sn.az
-        sn_c.angle1 = sn.angle1
-        sn_c.angle2 = sn.angle2
-        sn_c.angle3 = sn.angle3
-        if sn_c.angle1 != 0 or sn_c.angle2 != 0 or sn_c.angle3 != 0:
-            sn_c.rotationFlag = deesse.TRUE
-        else:
-            sn_c.rotationFlag = deesse.FALSE
-        sn_c.power = sn.power
+        sn_c = search_neighborhood_parameters_py2C(sn)
+        if sn_c is None:
+            print ('ERROR: can not convert search neighborhood parameters from python to C')
+            return
         deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(
             mpds_siminput.searchNeighborhoodParameters, i, sn_c)
         # deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(sn_c)
 
+    # # mpds_siminput.searchNeighborhoodParameters
+    # mpds_siminput.searchNeighborhoodParameters = deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nv)
+    # for i, sn in enumerate(deesse_input.searchNeighborhoodParameters):
+    #     sn_c = deesse.malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS()
+    #     deesse.MPDSInitSearchNeighborhoodParameters(sn_c)
+    #     if sn.radiusMode == 'large_default':
+    #         sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_LARGE_DEFAULT
+    #     elif sn.radiusMode == 'ti_range_default':
+    #         sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_DEFAULT
+    #     elif sn.radiusMode == 'ti_range':
+    #         sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE
+    #     elif sn.radiusMode == 'ti_range_xy':
+    #         sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XY
+    #     elif sn.radiusMode == 'ti_range_xz':
+    #         sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XZ
+    #     elif sn.radiusMode == 'ti_range_yz':
+    #         sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_YZ
+    #     elif sn.radiusMode == 'ti_range_xyz':
+    #         sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XYZ
+    #     elif sn.radiusMode == 'manual':
+    #         sn_c.radiusMode = deesse.SEARCHNEIGHBORHOOD_RADIUS_MANUAL
+    #     sn_c.rx = sn.rx
+    #     sn_c.ry = sn.ry
+    #     sn_c.rz = sn.rz
+    #     if sn.anisotropyRatioMode == 'one':
+    #         sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE
+    #     elif sn.anisotropyRatioMode == 'radius':
+    #         sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS
+    #     elif sn.anisotropyRatioMode == 'radius_xy':
+    #         sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XY
+    #     elif sn.anisotropyRatioMode == 'radius_xz':
+    #         sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XZ
+    #     elif sn.anisotropyRatioMode == 'radius_yz':
+    #         sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_YZ
+    #     elif sn.anisotropyRatioMode == 'radius_xyz':
+    #         sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XYZ
+    #     elif sn.anisotropyRatioMode == 'manual':
+    #         sn_c.anisotropyRatioMode = deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_MANUAL
+    #     sn_c.ax = sn.ax
+    #     sn_c.ay = sn.ay
+    #     sn_c.az = sn.az
+    #     sn_c.angle1 = sn.angle1
+    #     sn_c.angle2 = sn.angle2
+    #     sn_c.angle3 = sn.angle3
+    #     if sn_c.angle1 != 0 or sn_c.angle2 != 0 or sn_c.angle3 != 0:
+    #         sn_c.rotationFlag = deesse.TRUE
+    #     else:
+    #         sn_c.rotationFlag = deesse.FALSE
+    #     sn_c.power = sn.power
+    #     deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(
+    #         mpds_siminput.searchNeighborhoodParameters, i, sn_c)
+    #     # deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(sn_c)
+
     # mpds_siminput.nneighboringNode
-    mpds_siminput.nneighboringNode = deesse.new_int_array(int(deesse_input.nv))
+    mpds_siminput.nneighboringNode = deesse.new_int_array(nv)
     deesse.mpds_set_int_vector_from_array(
         mpds_siminput.nneighboringNode, 0,
-        np.asarray(deesse_input.nneighboringNode, dtype='intc').reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.nneighboringNode, dtype='intc').reshape(nv))
 
     # mpds_siminput.maxPropInequalityNode
-    mpds_siminput.maxPropInequalityNode = deesse.new_double_array(int(deesse_input.nv))
+    mpds_siminput.maxPropInequalityNode = deesse.new_double_array(nv)
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.maxPropInequalityNode, 0,
-        np.asarray(deesse_input.maxPropInequalityNode).reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.maxPropInequalityNode).reshape(nv))
 
     # mpds_siminput.neighboringNodeDensity
-    mpds_siminput.neighboringNodeDensity = deesse.new_double_array(int(deesse_input.nv))
+    mpds_siminput.neighboringNodeDensity = deesse.new_double_array(nv)
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.neighboringNodeDensity, 0,
-        np.asarray(deesse_input.neighboringNodeDensity).reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.neighboringNodeDensity).reshape(nv))
 
     # mpds_siminput.rescalingMode
-    mpds_siminput.rescalingMode = deesse.new_MPDS_RESCALINGMODE_array(int(deesse_input.nv))
+    rescalingMode_dict = {
+        'none'        : deesse.RESCALING_NONE,
+        'min_max'     : deesse.RESCALING_MIN_MAX,
+        'mean_length' : deesse.RESCALING_MEAN_LENGTH
+    }
+    mpds_siminput.rescalingMode = deesse.new_MPDS_RESCALINGMODE_array(nv)
     for i, m in enumerate(deesse_input.rescalingMode):
-        if m == 'none':
-            deesse.MPDS_RESCALINGMODE_array_setitem(mpds_siminput.rescalingMode, i, deesse.RESCALING_NONE)
-        elif m == 'min_max':
-            deesse.MPDS_RESCALINGMODE_array_setitem(mpds_siminput.rescalingMode, i, deesse.RESCALING_MIN_MAX)
-        elif m == 'mean_length':
-            deesse.MPDS_RESCALINGMODE_array_setitem(mpds_siminput.rescalingMode, i, deesse.RESCALING_MEAN_LENGTH)
+        if m in rescalingMode_dict.keys():
+            deesse.MPDS_RESCALINGMODE_array_setitem(mpds_siminput.rescalingMode, i, rescalingMode_dict[m])
         else:
             print ('ERROR: rescaling mode unknown')
             return
 
+    # # mpds_siminput.rescalingMode
+    # mpds_siminput.rescalingMode = deesse.new_MPDS_RESCALINGMODE_array(nv)
+    # for i, m in enumerate(deesse_input.rescalingMode):
+    #     if m == 'none':
+    #         deesse.MPDS_RESCALINGMODE_array_setitem(mpds_siminput.rescalingMode, i, deesse.RESCALING_NONE)
+    #     elif m == 'min_max':
+    #         deesse.MPDS_RESCALINGMODE_array_setitem(mpds_siminput.rescalingMode, i, deesse.RESCALING_MIN_MAX)
+    #     elif m == 'mean_length':
+    #         deesse.MPDS_RESCALINGMODE_array_setitem(mpds_siminput.rescalingMode, i, deesse.RESCALING_MEAN_LENGTH)
+    #     else:
+    #         print ('ERROR: rescaling mode unknown')
+    #         return
+
     # mpds_simInput.rescalingTargetMin
-    mpds_siminput.rescalingTargetMin = deesse.new_real_array(int(deesse_input.nv))
+    mpds_siminput.rescalingTargetMin = deesse.new_real_array(nv)
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetMin, 0,
-        np.asarray(deesse_input.rescalingTargetMin).reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.rescalingTargetMin).reshape(nv))
 
     # mpds_simInput.rescalingTargetMax
-    mpds_siminput.rescalingTargetMax = deesse.new_real_array(int(deesse_input.nv))
+    mpds_siminput.rescalingTargetMax = deesse.new_real_array(nv)
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetMax, 0,
-        np.asarray(deesse_input.rescalingTargetMax).reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.rescalingTargetMax).reshape(nv))
 
     # mpds_simInput.rescalingTargetMean
-    mpds_siminput.rescalingTargetMean = deesse.new_real_array(int(deesse_input.nv))
+    mpds_siminput.rescalingTargetMean = deesse.new_real_array(nv)
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetMean, 0,
-        np.asarray(deesse_input.rescalingTargetMean).reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.rescalingTargetMean).reshape(nv))
 
     # mpds_simInput.rescalingTargetLength
-    mpds_siminput.rescalingTargetLength = deesse.new_real_array(int(deesse_input.nv))
+    mpds_siminput.rescalingTargetLength = deesse.new_real_array(nv)
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.rescalingTargetLength, 0,
-        np.asarray(deesse_input.rescalingTargetLength).reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.rescalingTargetLength).reshape(nv))
 
     # mpds_siminput.relativeDistanceFlag
     deesse.mpds_allocate_and_set_relativeDistanceFlag(mpds_siminput, np.array([int(i) for i in deesse_input.relativeDistanceFlag], dtype='bool')) # , dtype='intc'))
 
     # mpds_siminput.distanceType
-    mpds_siminput.distanceType = deesse.new_int_array(int(deesse_input.nv))
+    mpds_siminput.distanceType = deesse.new_int_array(nv)
     deesse.mpds_set_int_vector_from_array(
         mpds_siminput.distanceType, 0,
-        np.asarray(deesse_input.distanceType, dtype='intc').reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.distanceType, dtype='intc').reshape(nv))
 
     # mpds_siminput.powerLpDistance
-    mpds_siminput.powerLpDistance = deesse.new_double_array(int(deesse_input.nv))
+    mpds_siminput.powerLpDistance = deesse.new_double_array(nv)
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.powerLpDistance, 0,
-        np.asarray(deesse_input.powerLpDistance).reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.powerLpDistance).reshape(nv))
 
     # mpds_siminput.powerLpDistanceInv
-    mpds_siminput.powerLpDistanceInv = deesse.new_double_array(int(deesse_input.nv))
+    mpds_siminput.powerLpDistanceInv = deesse.new_double_array(nv)
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.powerLpDistanceInv, 0,
-        np.asarray(deesse_input.powerLpDistanceInv).reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.powerLpDistanceInv).reshape(nv))
 
     # mpds_siminput.conditioningWeightFactor
-    mpds_siminput.conditioningWeightFactor = deesse.new_real_array(int(deesse_input.nv))
+    mpds_siminput.conditioningWeightFactor = deesse.new_real_array(nv)
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.conditioningWeightFactor, 0,
-        np.asarray(deesse_input.conditioningWeightFactor).reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.conditioningWeightFactor).reshape(nv))
 
-    # mpds_siminput.simAndPathParameters ...
-    # ... simType
-    mpds_siminput.simAndPathParameters = deesse.malloc_MPDS_SIMANDPATHPARAMETERS()
-    deesse.MPDSInitSimAndPathParameters(mpds_siminput.simAndPathParameters)
-    if deesse_input.simType == 'sim_one_by_one':
-        mpds_siminput.simAndPathParameters.simType = deesse.SIM_ONE_BY_ONE
-    elif deesse_input.simType == 'sim_variable_vector':
-        mpds_siminput.simAndPathParameters.simType = deesse.SIM_VARIABLE_VECTOR
-    else:
-        print ('ERROR: simulation type unknown')
+    # mpds_siminput.simAndPathParameters
+    mpds_siminput.simAndPathParameters = set_simAndPathParameters_C(
+        deesse_input.simType,
+        deesse_input.simPathType,
+        deesse_input.simPathStrength,
+        deesse_input.simPathPower,
+        deesse_input.simPathUnilateralOrder)
+    if mpds_siminput.simAndPathParameters is None:
+        print ('ERROR: can not set "simAndPathParameters" in C')
         return
 
-    # ... simPathType
-    if deesse_input.simPathType == 'random':
-        mpds_siminput.simAndPathParameters.pathType = deesse.PATH_RANDOM
-    elif deesse_input.simPathType == 'random_hd_distance_pdf':
-        mpds_siminput.simAndPathParameters.pathType = deesse.PATH_RANDOM_HD_DISTANCE_PDF
-        mpds_siminput.simAndPathParameters.strength = deesse_input.simPathStrength
-    elif deesse_input.simPathType == 'random_hd_distance_sort':
-        mpds_siminput.simAndPathParameters.pathType = deesse.PATH_RANDOM_HD_DISTANCE_SORT
-        mpds_siminput.simAndPathParameters.strength = deesse_input.simPathStrength
-    elif deesse_input.simPathType == 'random_hd_distance_sum_pdf':
-        mpds_siminput.simAndPathParameters.pathType = deesse.PATH_RANDOM_HD_DISTANCE_SUM_PDF
-        mpds_siminput.simAndPathParameters.pow = deesse_input.simPathPower
-        mpds_siminput.simAndPathParameters.strength = deesse_input.simPathStrength
-    elif deesse_input.simPathType == 'random_hd_distance_sum_sort':
-        mpds_siminput.simAndPathParameters.pathType = deesse.PATH_RANDOM_HD_DISTANCE_SUM_SORT
-        mpds_siminput.simAndPathParameters.pow = deesse_input.simPathPower
-        mpds_siminput.simAndPathParameters.strength = deesse_input.simPathStrength
-    elif deesse_input.simPathType == 'unilateral':
-        mpds_siminput.simAndPathParameters.pathType = deesse.PATH_UNILATERAL
-        mpds_siminput.simAndPathParameters.unilateralOrderLength = len(deesse_input.simPathUnilateralOrder)
-        mpds_siminput.simAndPathParameters.unilateralOrder = deesse.new_int_array(len(deesse_input.simPathUnilateralOrder))
-        deesse.mpds_set_int_vector_from_array(
-            mpds_siminput.simAndPathParameters.unilateralOrder, 0,
-            np.asarray(deesse_input.simPathUnilateralOrder, dtype='intc').reshape(len(deesse_input.simPathUnilateralOrder)))
-    else:
-        print ('ERROR: path type unknown')
-        return
+    # # mpds_siminput.simAndPathParameters ...
+    # # ... simType
+    # mpds_siminput.simAndPathParameters = deesse.malloc_MPDS_SIMANDPATHPARAMETERS()
+    # deesse.MPDSInitSimAndPathParameters(mpds_siminput.simAndPathParameters)
+    # if deesse_input.simType == 'sim_one_by_one':
+    #     mpds_siminput.simAndPathParameters.simType = deesse.SIM_ONE_BY_ONE
+    # elif deesse_input.simType == 'sim_variable_vector':
+    #     mpds_siminput.simAndPathParameters.simType = deesse.SIM_VARIABLE_VECTOR
+    # else:
+    #     print ('ERROR: simulation type unknown')
+    #     return
+    #
+    # # ... simPathType
+    # if deesse_input.simPathType == 'random':
+    #     mpds_siminput.simAndPathParameters.pathType = deesse.PATH_RANDOM
+    # elif deesse_input.simPathType == 'random_hd_distance_pdf':
+    #     mpds_siminput.simAndPathParameters.pathType = deesse.PATH_RANDOM_HD_DISTANCE_PDF
+    #     mpds_siminput.simAndPathParameters.strength = deesse_input.simPathStrength
+    # elif deesse_input.simPathType == 'random_hd_distance_sort':
+    #     mpds_siminput.simAndPathParameters.pathType = deesse.PATH_RANDOM_HD_DISTANCE_SORT
+    #     mpds_siminput.simAndPathParameters.strength = deesse_input.simPathStrength
+    # elif deesse_input.simPathType == 'random_hd_distance_sum_pdf':
+    #     mpds_siminput.simAndPathParameters.pathType = deesse.PATH_RANDOM_HD_DISTANCE_SUM_PDF
+    #     mpds_siminput.simAndPathParameters.pow = deesse_input.simPathPower
+    #     mpds_siminput.simAndPathParameters.strength = deesse_input.simPathStrength
+    # elif deesse_input.simPathType == 'random_hd_distance_sum_sort':
+    #     mpds_siminput.simAndPathParameters.pathType = deesse.PATH_RANDOM_HD_DISTANCE_SUM_SORT
+    #     mpds_siminput.simAndPathParameters.pow = deesse_input.simPathPower
+    #     mpds_siminput.simAndPathParameters.strength = deesse_input.simPathStrength
+    # elif deesse_input.simPathType == 'unilateral':
+    #     mpds_siminput.simAndPathParameters.pathType = deesse.PATH_UNILATERAL
+    #     mpds_siminput.simAndPathParameters.unilateralOrderLength = len(deesse_input.simPathUnilateralOrder)
+    #     mpds_siminput.simAndPathParameters.unilateralOrder = deesse.new_int_array(len(deesse_input.simPathUnilateralOrder))
+    #     deesse.mpds_set_int_vector_from_array(
+    #         mpds_siminput.simAndPathParameters.unilateralOrder, 0,
+    #         np.asarray(deesse_input.simPathUnilateralOrder, dtype='intc').reshape(len(deesse_input.simPathUnilateralOrder)))
+    # else:
+    #     print ('ERROR: path type unknown')
+    #     return
 
     # mpds_siminput.distanceThreshold
-    mpds_siminput.distanceThreshold = deesse.new_real_array(int(deesse_input.nv))
+    mpds_siminput.distanceThreshold = deesse.new_real_array(nv)
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.distanceThreshold, 0,
-        np.asarray(deesse_input.distanceThreshold).reshape(int(deesse_input.nv)))
+        np.asarray(deesse_input.distanceThreshold).reshape(nv))
 
     # mpds_siminput.softProbability ...
-    mpds_siminput.softProbability = deesse.new_MPDS_SOFTPROBABILITY_array(int(deesse_input.nv))
+    mpds_siminput.softProbability = deesse.new_MPDS_SOFTPROBABILITY_array(nv)
 
     # ... for each variable ...
     for i, sp in enumerate(deesse_input.softProbability):
-        sp_c = deesse.malloc_MPDS_SOFTPROBABILITY()
-        deesse.MPDSInitSoftProbability(sp_c)
-
-        # ... probabilityConstraintUsage
-        sp_c.probabilityConstraintUsage = sp.probabilityConstraintUsage
-        if sp.probabilityConstraintUsage == 0:
-            deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_siminput.softProbability, i, sp_c)
-            # deesse.free_MPDS_SOFTPROBABILITY(sp_c)
-            continue
-
-        # ... classOfValues
-        sp_c.classOfValues = classInterval2classOfValues(sp.classInterval)
-        # sp_c.classOfValues = deesse.malloc_MPDS_CLASSOFVALUES()
-        # deesse.MPDSInitClassOfValues(sp_c.classOfValues)
-        # sp_c.classOfValues.nclass = sp.nclass
-        # sp_c.classOfValues.ninterval = deesse.new_int_array(sp.nclass)
-        # sp_c.classOfValues.intervalInf = deesse.new_realp_array(sp.nclass)
-        # sp_c.classOfValues.intervalSup = deesse.new_realp_array(sp.nclass)
-        # for j, ci in enumerate(sp.classInterval):
-        #     nint = len(ci) # = ci.shape[0]
-        #     deesse.int_array_setitem(sp_c.classOfValues.ninterval, j, nint)
-        #     intInf_c = deesse.new_real_array(nint)
-        #     deesse.mpds_set_real_vector_from_array(intInf_c, 0, ci[:,0])
-        #     deesse.realp_array_setitem(sp_c.classOfValues.intervalInf, j, intInf_c)
-        #     intSup_c = deesse.new_real_array(nint)
-        #     deesse.mpds_set_real_vector_from_array(intSup_c, 0, ci[:,1])
-        #     deesse.realp_array_setitem(sp_c.classOfValues.intervalSup, j, intSup_c)
-
-
-        if sp.probabilityConstraintUsage == 1:
-            # ... globalPdf
-            sp_c.globalPdf = deesse.new_real_array(sp.nclass)
-            deesse.mpds_set_real_vector_from_array(sp_c.globalPdf, 0,
-                np.asarray(sp.globalPdf).reshape(sp.nclass))
-
-        elif sp.probabilityConstraintUsage == 2 or sp.probabilityConstraintUsage == 3:
-            # ... localPdf
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=sp.nclass, val=sp.localPdf)
-            sp_c.localPdfImage = img_py2C(im)
-
-        if sp.probabilityConstraintUsage == 2:
-            # ... localPdfSupportRadius
-            sp_c.localPdfSupportRadius = deesse.new_real_array(1)
-            deesse.mpds_set_real_vector_from_array(sp_c.localPdfSupportRadius, 0,
-                np.asarray(sp.localPdfSupportRadius).reshape(1))
-
-            # ... localCurrentPdfComputation
-            sp_c.localCurrentPdfComputation = sp.localCurrentPdfComputation
-
-        if sp.probabilityConstraintUsage == 1 or sp.probabilityConstraintUsage == 2:
-            # ... comparingPdfMethod
-            sp_c.comparingPdfMethod = sp.comparingPdfMethod
-
-            # ... probabilityConstraintThresholdType
-            sp_c.probabilityConstraintThresholdType = sp.probabilityConstraintThresholdType
-
-            # ... constantThreshold
-            sp_c.constantThreshold = sp.constantThreshold
-
-            if sp.probabilityConstraintThresholdType == 1:
-                # ... dynamicThresholdParameters
-                sp_c.dynamicThresholdParameters = deesse.new_real_array(7)
-                deesse.mpds_set_real_vector_from_array(sp_c.dynamicThresholdParameters, 0,
-                    np.asarray(sp.dynamicThresholdParameters).reshape(7))
-
-        if sp.probabilityConstraintUsage == 3:
-            # ... rejectionMode
-            sp_c.rejectionMode = sp.rejectionMode
-
-        # ... deactivationDistance
-        sp_c.deactivationDistance = sp.deactivationDistance
-
+        sp_c = softProbability_py2C(sp,
+                                    nx, ny, nz,
+                                    sx, sy, sz,
+                                    ox, oy, oz)
+        if sp_c is None:
+            print ('ERROR: can not set soft probability parameters in C')
+            return
         deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_siminput.softProbability, i, sp_c)
         # deesse.free_MPDS_SOFTPROBABILITY(sp_c)
 
+    # # mpds_siminput.softProbability ...
+    # mpds_siminput.softProbability = deesse.new_MPDS_SOFTPROBABILITY_array(nv)
+    #
+    # # ... for each variable ...
+    # for i, sp in enumerate(deesse_input.softProbability):
+    #     sp_c = deesse.malloc_MPDS_SOFTPROBABILITY()
+    #     deesse.MPDSInitSoftProbability(sp_c)
+    #
+    #     # ... probabilityConstraintUsage
+    #     sp_c.probabilityConstraintUsage = sp.probabilityConstraintUsage
+    #     if sp.probabilityConstraintUsage == 0:
+    #         deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_siminput.softProbability, i, sp_c)
+    #         # deesse.free_MPDS_SOFTPROBABILITY(sp_c)
+    #         continue
+    #
+    #     # ... classOfValues
+    #     sp_c.classOfValues = classInterval2classOfValues(sp.classInterval)
+    #     # sp_c.classOfValues = deesse.malloc_MPDS_CLASSOFVALUES()
+    #     # deesse.MPDSInitClassOfValues(sp_c.classOfValues)
+    #     # sp_c.classOfValues.nclass = sp.nclass
+    #     # sp_c.classOfValues.ninterval = deesse.new_int_array(sp.nclass)
+    #     # sp_c.classOfValues.intervalInf = deesse.new_realp_array(sp.nclass)
+    #     # sp_c.classOfValues.intervalSup = deesse.new_realp_array(sp.nclass)
+    #     # for j, ci in enumerate(sp.classInterval):
+    #     #     nint = len(ci) # = ci.shape[0]
+    #     #     deesse.int_array_setitem(sp_c.classOfValues.ninterval, j, nint)
+    #     #     intInf_c = deesse.new_real_array(nint)
+    #     #     deesse.mpds_set_real_vector_from_array(intInf_c, 0, ci[:,0])
+    #     #     deesse.realp_array_setitem(sp_c.classOfValues.intervalInf, j, intInf_c)
+    #     #     intSup_c = deesse.new_real_array(nint)
+    #     #     deesse.mpds_set_real_vector_from_array(intSup_c, 0, ci[:,1])
+    #     #     deesse.realp_array_setitem(sp_c.classOfValues.intervalSup, j, intSup_c)
+    #
+    #
+    #     if sp.probabilityConstraintUsage == 1:
+    #         # ... globalPdf
+    #         sp_c.globalPdf = deesse.new_real_array(sp.nclass)
+    #         deesse.mpds_set_real_vector_from_array(sp_c.globalPdf, 0,
+    #             np.asarray(sp.globalPdf).reshape(sp.nclass))
+    #
+    #     elif sp.probabilityConstraintUsage == 2 or sp.probabilityConstraintUsage == 3:
+    #         # ... localPdf
+    #         im = Img(nx=nx, ny=ny, nz=nz,
+    #                  sx=sx, sy=sy, sz=sz,
+    #                  ox=ox, oy=oy, oz=oz,
+    #                  nv=sp.nclass, val=sp.localPdf)
+    #         sp_c.localPdfImage = img_py2C(im)
+    #
+    #     if sp.probabilityConstraintUsage == 2:
+    #         # ... localPdfSupportRadius
+    #         sp_c.localPdfSupportRadius = deesse.new_real_array(1)
+    #         deesse.mpds_set_real_vector_from_array(sp_c.localPdfSupportRadius, 0,
+    #             np.asarray(sp.localPdfSupportRadius).reshape(1))
+    #
+    #         # ... localCurrentPdfComputation
+    #         sp_c.localCurrentPdfComputation = sp.localCurrentPdfComputation
+    #
+    #     if sp.probabilityConstraintUsage == 1 or sp.probabilityConstraintUsage == 2:
+    #         # ... comparingPdfMethod
+    #         sp_c.comparingPdfMethod = sp.comparingPdfMethod
+    #
+    #         # ... probabilityConstraintThresholdType
+    #         sp_c.probabilityConstraintThresholdType = sp.probabilityConstraintThresholdType
+    #
+    #         # ... constantThreshold
+    #         sp_c.constantThreshold = sp.constantThreshold
+    #
+    #         if sp.probabilityConstraintThresholdType == 1:
+    #             # ... dynamicThresholdParameters
+    #             sp_c.dynamicThresholdParameters = deesse.new_real_array(7)
+    #             deesse.mpds_set_real_vector_from_array(sp_c.dynamicThresholdParameters, 0,
+    #                 np.asarray(sp.dynamicThresholdParameters).reshape(7))
+    #
+    #     if sp.probabilityConstraintUsage == 3:
+    #         # ... rejectionMode
+    #         sp_c.rejectionMode = sp.rejectionMode
+    #
+    #     # ... deactivationDistance
+    #     sp_c.deactivationDistance = sp.deactivationDistance
+    #
+    #     deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_siminput.softProbability, i, sp_c)
+    #     # deesse.free_MPDS_SOFTPROBABILITY(sp_c)
+
     # mpds_siminput.connectivity ...
-    mpds_siminput.connectivity = deesse.new_MPDS_CONNECTIVITY_array(int(deesse_input.nv))
+    mpds_siminput.connectivity = deesse.new_MPDS_CONNECTIVITY_array(nv)
 
     for i, co in enumerate(deesse_input.connectivity):
-        co_c = deesse.malloc_MPDS_CONNECTIVITY()
-        deesse.MPDSInitConnectivity(co_c)
-
-        # ... connectivityConstraintUsage
-        co_c.connectivityConstraintUsage = co.connectivityConstraintUsage
-        if co.connectivityConstraintUsage == 0:
-            deesse.MPDS_CONNECTIVITY_array_setitem(mpds_siminput.connectivity, i, co_c)
-            # deesse.free_MPDS_CONNECTIVITY(co_c)
-            continue
-
-        # ... connectivityType
-        if co.connectivityType == 'connect_face':
-            co_c.connectivityType = deesse.CONNECT_FACE
-        elif co.connectivityType == 'connect_face_edge':
-            co_c.connectivityType = deesse.CONNECT_FACE_EDGE
-        elif co.connectivityType == 'connect_face_edge_corner':
-            co_c.connectivityType = deesse.CONNECT_FACE_EDGE_CORNER
-        else:
-            print ('ERROR: connectivity type unknown')
+        co_c = connectivity_py2C(co)
+        if co_c is None:
+            print ('ERROR: can not set connectivity parameters in C')
             return
-
-        # ... varName
-        deesse.mpds_allocate_and_set_connectivity_varname(co_c, co.varname)
-
-        # ... classOfValues
-        co_c.classOfValues = classInterval2classOfValues(co.classInterval)
-
-        # ... tiAsRefFlag
-        if co.tiAsRefFlag:
-            co_c.tiAsRefFlag = deesse.TRUE
-        else:
-            co_c.tiAsRefFlag = deesse.FALSE
-
-        if not co.tiAsRefFlag:
-            # ... refConnectivityImage
-            im = img.copyImg(co.refConnectivityImage)
-            im.extract_var([co.refConnectivityVarIndex])
-            co_c.refConnectivityImage = img_py2C(im)
-
-        # ... deactivationDistance
-        co_c.deactivationDistance = co.deactivationDistance
-
-        # ... threshold
-        co_c.threshold = co.threshold
-
         deesse.MPDS_CONNECTIVITY_array_setitem(mpds_siminput.connectivity, i, co_c)
         # deesse.free_MPDS_CONNECTIVITY(co_c)
 
+    # # mpds_siminput.connectivity ...
+    # mpds_siminput.connectivity = deesse.new_MPDS_CONNECTIVITY_array(nv)
+    #
+    # for i, co in enumerate(deesse_input.connectivity):
+    #     co_c = deesse.malloc_MPDS_CONNECTIVITY()
+    #     deesse.MPDSInitConnectivity(co_c)
+    #
+    #     # ... connectivityConstraintUsage
+    #     co_c.connectivityConstraintUsage = co.connectivityConstraintUsage
+    #     if co.connectivityConstraintUsage == 0:
+    #         deesse.MPDS_CONNECTIVITY_array_setitem(mpds_siminput.connectivity, i, co_c)
+    #         # deesse.free_MPDS_CONNECTIVITY(co_c)
+    #         continue
+    #
+    #     # ... connectivityType
+    #     if co.connectivityType == 'connect_face':
+    #         co_c.connectivityType = deesse.CONNECT_FACE
+    #     elif co.connectivityType == 'connect_face_edge':
+    #         co_c.connectivityType = deesse.CONNECT_FACE_EDGE
+    #     elif co.connectivityType == 'connect_face_edge_corner':
+    #         co_c.connectivityType = deesse.CONNECT_FACE_EDGE_CORNER
+    #     else:
+    #         print ('ERROR: connectivity type unknown')
+    #         return
+    #
+    #     # ... varName
+    #     deesse.mpds_allocate_and_set_connectivity_varname(co_c, co.varname)
+    #
+    #     # ... classOfValues
+    #     co_c.classOfValues = classInterval2classOfValues(co.classInterval)
+    #
+    #     # ... tiAsRefFlag
+    #     if co.tiAsRefFlag:
+    #         co_c.tiAsRefFlag = deesse.TRUE
+    #     else:
+    #         co_c.tiAsRefFlag = deesse.FALSE
+    #
+    #     if not co.tiAsRefFlag:
+    #         # ... refConnectivityImage
+    #         im = img.copyImg(co.refConnectivityImage)
+    #         im.extract_var([co.refConnectivityVarIndex])
+    #         co_c.refConnectivityImage = img_py2C(im)
+    #
+    #     # ... deactivationDistance
+    #     co_c.deactivationDistance = co.deactivationDistance
+    #
+    #     # ... threshold
+    #     co_c.threshold = co.threshold
+    #
+    #     deesse.MPDS_CONNECTIVITY_array_setitem(mpds_siminput.connectivity, i, co_c)
+    #     # deesse.free_MPDS_CONNECTIVITY(co_c)
+
     # mpds_siminput.blockData ...
-    mpds_siminput.blockData = deesse.new_MPDS_BLOCKDATA_array(int(deesse_input.nv))
+    mpds_siminput.blockData = deesse.new_MPDS_BLOCKDATA_array(nv)
     # ... for each variable ...
     for i, bd in enumerate(deesse_input.blockData):
-        bd_c = deesse.malloc_MPDS_BLOCKDATA()
-        deesse.MPDSInitBlockData(bd_c)
-
-        # ... blockDataUsage
-        bd_c.blockDataUsage = bd.blockDataUsage
-        if bd.blockDataUsage == 0:
-            deesse.MPDS_BLOCKDATA_array_setitem(mpds_siminput.blockData, i, bd_c)
-            # deesse.free_MPDS_BLOCKDATA(bd_c)
-            continue
-
-        # ... nblock
-        bd_c.nblock = bd.nblock
-
-        # ... nnode, ix, iy, iz
-        bd_c.nnode = deesse.new_int_array(bd.nblock)
-        bd_c.ix = deesse.new_intp_array(bd.nblock)
-        bd_c.iy = deesse.new_intp_array(bd.nblock)
-        bd_c.iz = deesse.new_intp_array(bd.nblock)
-
-        for j, ni in enumerate(bd.nodeIndex):
-            nn = len(ni) # = ni.shape[0]
-            deesse.int_array_setitem(bd_c.nnode, j, nn)
-            ix_c = deesse.new_int_array(nn)
-            deesse.mpds_set_int_vector_from_array(ix_c, 0, np.asarray(ni[:,0], dtype='intc'))
-            deesse.intp_array_setitem(bd_c.ix, j, ix_c)
-            iy_c = deesse.new_int_array(nn)
-            deesse.mpds_set_int_vector_from_array(iy_c, 0, np.asarray(ni[:,1], dtype='intc'))
-            deesse.intp_array_setitem(bd_c.iy, j, iy_c)
-            iz_c = deesse.new_int_array(nn)
-            deesse.mpds_set_int_vector_from_array(iz_c, 0, np.asarray(ni[:,2], dtype='intc'))
-            deesse.intp_array_setitem(bd_c.iz, j, iz_c)
-
-        # ... value
-        bd_c.value = deesse.new_real_array(bd.nblock)
-        deesse.mpds_set_real_vector_from_array(bd_c.value, 0,
-            np.asarray(bd.value).reshape(bd.nblock))
-
-        # ... tolerance
-        bd_c.tolerance = deesse.new_real_array(bd.nblock)
-        deesse.mpds_set_real_vector_from_array(bd_c.tolerance, 0,
-            np.asarray(bd.tolerance).reshape(bd.nblock))
-
-        # ... activatePropMin
-        bd_c.activatePropMin = deesse.new_real_array(bd.nblock)
-        deesse.mpds_set_real_vector_from_array(bd_c.activatePropMin, 0,
-            np.asarray(bd.activatePropMin).reshape(bd.nblock))
-
-        # ... activatePropMax
-        bd_c.activatePropMax = deesse.new_real_array(bd.nblock)
-        deesse.mpds_set_real_vector_from_array(bd_c.activatePropMax, 0,
-            np.asarray(bd.activatePropMax).reshape(bd.nblock))
-
+        bd_c = blockdata_py2C(bd)
+        if bd_c is None:
+            print ('ERROR: can not set block data parameters in C')
+            return
         deesse.MPDS_BLOCKDATA_array_setitem(mpds_siminput.blockData, i, bd_c)
         # deesse.free_MPDS_BLOCKDATA(bd_c)
 
+    # # mpds_siminput.blockData ...
+    # mpds_siminput.blockData = deesse.new_MPDS_BLOCKDATA_array(nv)
+    # # ... for each variable ...
+    # for i, bd in enumerate(deesse_input.blockData):
+    #     bd_c = deesse.malloc_MPDS_BLOCKDATA()
+    #     deesse.MPDSInitBlockData(bd_c)
+    #
+    #     # ... blockDataUsage
+    #     bd_c.blockDataUsage = bd.blockDataUsage
+    #     if bd.blockDataUsage == 0:
+    #         deesse.MPDS_BLOCKDATA_array_setitem(mpds_siminput.blockData, i, bd_c)
+    #         # deesse.free_MPDS_BLOCKDATA(bd_c)
+    #         continue
+    #
+    #     # ... nblock
+    #     bd_c.nblock = bd.nblock
+    #
+    #     # ... nnode, ix, iy, iz
+    #     bd_c.nnode = deesse.new_int_array(bd.nblock)
+    #     bd_c.ix = deesse.new_intp_array(bd.nblock)
+    #     bd_c.iy = deesse.new_intp_array(bd.nblock)
+    #     bd_c.iz = deesse.new_intp_array(bd.nblock)
+    #
+    #     for j, ni in enumerate(bd.nodeIndex):
+    #         nn = len(ni) # = ni.shape[0]
+    #         deesse.int_array_setitem(bd_c.nnode, j, nn)
+    #         ix_c = deesse.new_int_array(nn)
+    #         deesse.mpds_set_int_vector_from_array(ix_c, 0, np.asarray(ni[:,0], dtype='intc'))
+    #         deesse.intp_array_setitem(bd_c.ix, j, ix_c)
+    #         iy_c = deesse.new_int_array(nn)
+    #         deesse.mpds_set_int_vector_from_array(iy_c, 0, np.asarray(ni[:,1], dtype='intc'))
+    #         deesse.intp_array_setitem(bd_c.iy, j, iy_c)
+    #         iz_c = deesse.new_int_array(nn)
+    #         deesse.mpds_set_int_vector_from_array(iz_c, 0, np.asarray(ni[:,2], dtype='intc'))
+    #         deesse.intp_array_setitem(bd_c.iz, j, iz_c)
+    #
+    #     # ... value
+    #     bd_c.value = deesse.new_real_array(bd.nblock)
+    #     deesse.mpds_set_real_vector_from_array(bd_c.value, 0,
+    #         np.asarray(bd.value).reshape(bd.nblock))
+    #
+    #     # ... tolerance
+    #     bd_c.tolerance = deesse.new_real_array(bd.nblock)
+    #     deesse.mpds_set_real_vector_from_array(bd_c.tolerance, 0,
+    #         np.asarray(bd.tolerance).reshape(bd.nblock))
+    #
+    #     # ... activatePropMin
+    #     bd_c.activatePropMin = deesse.new_real_array(bd.nblock)
+    #     deesse.mpds_set_real_vector_from_array(bd_c.activatePropMin, 0,
+    #         np.asarray(bd.activatePropMin).reshape(bd.nblock))
+    #
+    #     # ... activatePropMax
+    #     bd_c.activatePropMax = deesse.new_real_array(bd.nblock)
+    #     deesse.mpds_set_real_vector_from_array(bd_c.activatePropMax, 0,
+    #         np.asarray(bd.activatePropMax).reshape(bd.nblock))
+    #
+    #     deesse.MPDS_BLOCKDATA_array_setitem(mpds_siminput.blockData, i, bd_c)
+    #     # deesse.free_MPDS_BLOCKDATA(bd_c)
+
     # mpds_siminput.maxScanFraction
-    mpds_siminput.maxScanFraction = deesse.new_double_array(deesse_input.nTI)
+    mpds_siminput.maxScanFraction = deesse.new_double_array(nTI)
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.maxScanFraction, 0,
-            np.asarray(deesse_input.maxScanFraction).reshape(deesse_input.nTI))
+            np.asarray(deesse_input.maxScanFraction).reshape(nTI))
 
     # mpds_siminput.pyramidGeneralParameters ...
-    mpds_siminput.pyramidGeneralParameters = deesse.malloc_MPDS_PYRAMIDGENERALPARAMETERS()
-    deesse.MPDSInitPyramidGeneralParameters(mpds_siminput.pyramidGeneralParameters)
+    mpds_siminput.pyramidGeneralParameters = pyramidGeneralParameters_py2C(deesse_input.pyramidGeneralParameters)
+    if mpds_siminput.pyramidGeneralParameters is None:
+        print ('ERROR: can not set pyramid general parameters in C')
+        return
 
-    # ... npyramidLevel
-    nl = int(deesse_input.pyramidGeneralParameters.npyramidLevel)
-    mpds_siminput.pyramidGeneralParameters.npyramidLevel = nl
-
-    # ... pyramidSimulationMode
-    if deesse_input.pyramidGeneralParameters.pyramidSimulationMode == 'hierarchical':
-        mpds_siminput.pyramidGeneralParameters.pyramidSimulationMode = deesse.PYRAMID_SIM_HIERARCHICAL
-    elif deesse_input.pyramidGeneralParameters.pyramidSimulationMode == 'hierarchical_using_expansion':
-        mpds_siminput.pyramidGeneralParameters.pyramidSimulationMode = deesse.PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION
-    elif deesse_input.pyramidGeneralParameters.pyramidSimulationMode == 'all_level_one_by_one':
-        mpds_siminput.pyramidGeneralParameters.pyramidSimulationMode = deesse.PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE
-    else:
-        mpds_siminput.pyramidGeneralParameters.pyramidSimulationMode = deesse.PYRAMID_SIM_NONE
-
-    if nl > 0:
-        # ... kx
-        mpds_siminput.pyramidGeneralParameters.kx = deesse.new_int_array(nl)
-        deesse.mpds_set_int_vector_from_array(
-            mpds_siminput.pyramidGeneralParameters.kx, 0,
-                np.asarray(deesse_input.pyramidGeneralParameters.kx, dtype='intc').reshape(nl))
-
-        # ... ky
-        mpds_siminput.pyramidGeneralParameters.ky = deesse.new_int_array(nl)
-        deesse.mpds_set_int_vector_from_array(
-            mpds_siminput.pyramidGeneralParameters.ky, 0,
-                np.asarray(deesse_input.pyramidGeneralParameters.ky, dtype='intc').reshape(nl))
-
-        # ... kz
-        mpds_siminput.pyramidGeneralParameters.kz = deesse.new_int_array(nl)
-        deesse.mpds_set_int_vector_from_array(
-            mpds_siminput.pyramidGeneralParameters.kz, 0,
-                np.asarray(deesse_input.pyramidGeneralParameters.kz, dtype='intc').reshape(nl))
-
-        # ... factorNneighboringNode and factorDistanceThreshold ...
-        if deesse_input.pyramidGeneralParameters.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
-            nn = 4*nl + 1
-        else: # pyramidSimulationMode == 'all_level_one_by_one'
-            nn = nl + 1
-
-        # ... factorNneighboringNode
-        mpds_siminput.pyramidGeneralParameters.factorNneighboringNode = deesse.new_double_array(nn)
-        deesse.mpds_set_double_vector_from_array(
-            mpds_siminput.pyramidGeneralParameters.factorNneighboringNode, 0,
-                np.asarray(deesse_input.pyramidGeneralParameters.factorNneighboringNode).reshape(nn))
-
-        # ... factorDistanceThreshold
-        mpds_siminput.pyramidGeneralParameters.factorDistanceThreshold = deesse.new_real_array(nn)
-        deesse.mpds_set_real_vector_from_array(
-            mpds_siminput.pyramidGeneralParameters.factorDistanceThreshold, 0,
-                np.asarray(deesse_input.pyramidGeneralParameters.factorDistanceThreshold).reshape(nn))
-
-        # ... factorMaxScanFraction
-        mpds_siminput.pyramidGeneralParameters.factorMaxScanFraction = deesse.new_double_array(nl+1)
-        deesse.mpds_set_double_vector_from_array(
-            mpds_siminput.pyramidGeneralParameters.factorMaxScanFraction, 0,
-                np.asarray(deesse_input.pyramidGeneralParameters.factorMaxScanFraction).reshape(nl+1))
+    # # mpds_siminput.pyramidGeneralParameters ...
+    # mpds_siminput.pyramidGeneralParameters = deesse.malloc_MPDS_PYRAMIDGENERALPARAMETERS()
+    # deesse.MPDSInitPyramidGeneralParameters(mpds_siminput.pyramidGeneralParameters)
+    #
+    # # ... npyramidLevel
+    # nl = int(deesse_input.pyramidGeneralParameters.npyramidLevel)
+    # mpds_siminput.pyramidGeneralParameters.npyramidLevel = nl
+    #
+    # # ... pyramidSimulationMode
+    # if deesse_input.pyramidGeneralParameters.pyramidSimulationMode == 'hierarchical':
+    #     mpds_siminput.pyramidGeneralParameters.pyramidSimulationMode = deesse.PYRAMID_SIM_HIERARCHICAL
+    # elif deesse_input.pyramidGeneralParameters.pyramidSimulationMode == 'hierarchical_using_expansion':
+    #     mpds_siminput.pyramidGeneralParameters.pyramidSimulationMode = deesse.PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION
+    # elif deesse_input.pyramidGeneralParameters.pyramidSimulationMode == 'all_level_one_by_one':
+    #     mpds_siminput.pyramidGeneralParameters.pyramidSimulationMode = deesse.PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE
+    # else:
+    #     mpds_siminput.pyramidGeneralParameters.pyramidSimulationMode = deesse.PYRAMID_SIM_NONE
+    #
+    # if nl > 0:
+    #     # ... kx
+    #     mpds_siminput.pyramidGeneralParameters.kx = deesse.new_int_array(nl)
+    #     deesse.mpds_set_int_vector_from_array(
+    #         mpds_siminput.pyramidGeneralParameters.kx, 0,
+    #             np.asarray(deesse_input.pyramidGeneralParameters.kx, dtype='intc').reshape(nl))
+    #
+    #     # ... ky
+    #     mpds_siminput.pyramidGeneralParameters.ky = deesse.new_int_array(nl)
+    #     deesse.mpds_set_int_vector_from_array(
+    #         mpds_siminput.pyramidGeneralParameters.ky, 0,
+    #             np.asarray(deesse_input.pyramidGeneralParameters.ky, dtype='intc').reshape(nl))
+    #
+    #     # ... kz
+    #     mpds_siminput.pyramidGeneralParameters.kz = deesse.new_int_array(nl)
+    #     deesse.mpds_set_int_vector_from_array(
+    #         mpds_siminput.pyramidGeneralParameters.kz, 0,
+    #             np.asarray(deesse_input.pyramidGeneralParameters.kz, dtype='intc').reshape(nl))
+    #
+    #     # ... factorNneighboringNode and factorDistanceThreshold ...
+    #     if deesse_input.pyramidGeneralParameters.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
+    #         nn = 4*nl + 1
+    #     else: # pyramidSimulationMode == 'all_level_one_by_one'
+    #         nn = nl + 1
+    #
+    #     # ... factorNneighboringNode
+    #     mpds_siminput.pyramidGeneralParameters.factorNneighboringNode = deesse.new_double_array(nn)
+    #     deesse.mpds_set_double_vector_from_array(
+    #         mpds_siminput.pyramidGeneralParameters.factorNneighboringNode, 0,
+    #             np.asarray(deesse_input.pyramidGeneralParameters.factorNneighboringNode).reshape(nn))
+    #
+    #     # ... factorDistanceThreshold
+    #     mpds_siminput.pyramidGeneralParameters.factorDistanceThreshold = deesse.new_real_array(nn)
+    #     deesse.mpds_set_real_vector_from_array(
+    #         mpds_siminput.pyramidGeneralParameters.factorDistanceThreshold, 0,
+    #             np.asarray(deesse_input.pyramidGeneralParameters.factorDistanceThreshold).reshape(nn))
+    #
+    #     # ... factorMaxScanFraction
+    #     mpds_siminput.pyramidGeneralParameters.factorMaxScanFraction = deesse.new_double_array(nl+1)
+    #     deesse.mpds_set_double_vector_from_array(
+    #         mpds_siminput.pyramidGeneralParameters.factorMaxScanFraction, 0,
+    #             np.asarray(deesse_input.pyramidGeneralParameters.factorMaxScanFraction).reshape(nl+1))
 
     # mpds_siminput.pyramidParameters ...
-    mpds_siminput.pyramidParameters = deesse.new_MPDS_PYRAMIDPARAMETERS_array(int(deesse_input.nv))
+    mpds_siminput.pyramidParameters = deesse.new_MPDS_PYRAMIDPARAMETERS_array(nv)
 
     # ... for each variable ...
     for i, pp in enumerate(deesse_input.pyramidParameters):
-        pp_c = deesse.malloc_MPDS_PYRAMIDPARAMETERS()
-        deesse.MPDSInitPyramidParameters(pp_c)
-
-        # ... nlevel
-        pp_c.nlevel = int(pp.nlevel)
-
-        # ... pyramidType
-        if pp.pyramidType == 'none':
-            pp_c.pyramidType = deesse.PYRAMID_NONE
-        elif pp.pyramidType == 'continuous':
-            pp_c.pyramidType = deesse.PYRAMID_CONTINUOUS
-        elif pp.pyramidType == 'categorical_auto':
-            pp_c.pyramidType = deesse.PYRAMID_CATEGORICAL_AUTO
-        elif pp.pyramidType == 'categorical_custom':
-            pp_c.pyramidType = deesse.PYRAMID_CATEGORICAL_CUSTOM
-        elif pp.pyramidType == 'categorical_to_continuous':
-            pp_c.pyramidType = deesse.PYRAMID_CATEGORICAL_TO_CONTINUOUS
-        else:
-            pp_c.pyramidType = deesse.PYRAMID_NONE
-
-        if pp.pyramidType == 'categorical_custom':
-            # ... classOfValues
-            pp_c.classOfValues = classInterval2classOfValues(pp.classInterval)
-
-        # ... outputLevelFlag
-        deesse.mpds_allocate_and_set_pyramid_outputLevelFlag(pp_c, np.array([int(i) for i in pp.outputLevelFlag], dtype='intc'))
+        pp_c = pyramidParameters_py2C(pp)
+        if pp_c is None:
+            print ('ERROR: can not set pyramid parameters in C')
+            return
 
         deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(mpds_siminput.pyramidParameters, i, pp_c)
         # deesse.free_MPDS_PYRAMIDPARAMETERS(pp_c)
+
+    # # mpds_siminput.pyramidParameters ...
+    # mpds_siminput.pyramidParameters = deesse.new_MPDS_PYRAMIDPARAMETERS_array(nv)
+    #
+    # # ... for each variable ...
+    # for i, pp in enumerate(deesse_input.pyramidParameters):
+    #     pp_c = deesse.malloc_MPDS_PYRAMIDPARAMETERS()
+    #     deesse.MPDSInitPyramidParameters(pp_c)
+    #
+    #     # ... nlevel
+    #     pp_c.nlevel = int(pp.nlevel)
+    #
+    #     # ... pyramidType
+    #     if pp.pyramidType == 'none':
+    #         pp_c.pyramidType = deesse.PYRAMID_NONE
+    #     elif pp.pyramidType == 'continuous':
+    #         pp_c.pyramidType = deesse.PYRAMID_CONTINUOUS
+    #     elif pp.pyramidType == 'categorical_auto':
+    #         pp_c.pyramidType = deesse.PYRAMID_CATEGORICAL_AUTO
+    #     elif pp.pyramidType == 'categorical_custom':
+    #         pp_c.pyramidType = deesse.PYRAMID_CATEGORICAL_CUSTOM
+    #     elif pp.pyramidType == 'categorical_to_continuous':
+    #         pp_c.pyramidType = deesse.PYRAMID_CATEGORICAL_TO_CONTINUOUS
+    #     else:
+    #         pp_c.pyramidType = deesse.PYRAMID_NONE
+    #
+    #     if pp.pyramidType == 'categorical_custom':
+    #         # ... classOfValues
+    #         pp_c.classOfValues = classInterval2classOfValues(pp.classInterval)
+    #
+    #     # ... outputLevelFlag
+    #     deesse.mpds_allocate_and_set_pyramid_outputLevelFlag(pp_c, np.array([int(i) for i in pp.outputLevelFlag], dtype='intc'))
+    #
+    #     deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(mpds_siminput.pyramidParameters, i, pp_c)
+    #     # deesse.free_MPDS_PYRAMIDPARAMETERS(pp_c)
 
     # mpds_siminput.ndataImageInPyramid and mpds_siminput.dataImageInPyramid
     if deesse_input.pyramidDataImage is None:
@@ -3026,28 +3632,28 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.npostProcessingPathMax = deesse_input.npostProcessingPathMax
 
     # mpds_siminput.postProcessingNneighboringNode
-    mpds_siminput.postProcessingNneighboringNode = deesse.new_int_array(int(deesse_input.nv))
+    mpds_siminput.postProcessingNneighboringNode = deesse.new_int_array(nv)
     deesse.mpds_set_int_vector_from_array(
         mpds_siminput.postProcessingNneighboringNode, 0,
-            np.asarray(deesse_input.postProcessingNneighboringNode, dtype='intc').reshape(int(deesse_input.nv)))
+            np.asarray(deesse_input.postProcessingNneighboringNode, dtype='intc').reshape(nv))
 
     # mpds_siminput.postProcessingNeighboringNodeDensity
-    mpds_siminput.postProcessingNeighboringNodeDensity = deesse.new_double_array(int(deesse_input.nv))
+    mpds_siminput.postProcessingNeighboringNodeDensity = deesse.new_double_array(nv)
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.postProcessingNeighboringNodeDensity, 0,
-            np.asarray(deesse_input.postProcessingNeighboringNodeDensity).reshape(int(deesse_input.nv)))
+            np.asarray(deesse_input.postProcessingNeighboringNodeDensity).reshape(nv))
 
     # mpds_siminput.postProcessingDistanceThreshold
-    mpds_siminput.postProcessingDistanceThreshold = deesse.new_real_array(int(deesse_input.nv))
+    mpds_siminput.postProcessingDistanceThreshold = deesse.new_real_array(nv)
     deesse.mpds_set_real_vector_from_array(
         mpds_siminput.postProcessingDistanceThreshold, 0,
-            np.asarray(deesse_input.postProcessingDistanceThreshold).reshape(int(deesse_input.nv)))
+            np.asarray(deesse_input.postProcessingDistanceThreshold).reshape(nv))
 
     # mpds_siminput.postProcessingMaxScanFraction
-    mpds_siminput.postProcessingMaxScanFraction = deesse.new_double_array(deesse_input.nTI)
+    mpds_siminput.postProcessingMaxScanFraction = deesse.new_double_array(nTI)
     deesse.mpds_set_double_vector_from_array(
         mpds_siminput.postProcessingMaxScanFraction, 0,
-            np.asarray(deesse_input.postProcessingMaxScanFraction).reshape(deesse_input.nTI))
+            np.asarray(deesse_input.postProcessingMaxScanFraction).reshape(nTI))
 
     # mpds_siminput.postProcessingTolerance
     mpds_siminput.postProcessingTolerance = deesse_input.postProcessingTolerance
@@ -3089,7 +3695,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
              'nwarning':nwarning,
              'warnings':warnings}
 
-        With nreal = mpds_simOutput->nreal (number of realizations):
+        With nreal = mpds_simoutput->nreal (number of realizations):
 
         sim:    (1-dimensional array of Img (class) of size nreal or None)
                     sim[i]: i-th realisation,
@@ -3457,7 +4063,6 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
                                 (sim_pyramid_var_pyramid_index[j] is None if no output in level j+1)
                         (sim_pyramid_var_pyramid_index is None if no output for pyramid)
 
-
         path:   (1-dimensional array of Img (class) of size nreal or None)
                     path[i]: path index map for the i-th realisation
                     (path is None if no path index map is retrieved)
@@ -3678,7 +4283,6 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
                                     (array of length array of length sim_pyramid[j][*].nv)
                                 (sim_pyramid_var_pyramid_index[j] is None if no output in level j+1)
                         (sim_pyramid_var_pyramid_index is None if no output for pyramid)
-
 
         path:   (1-dimensional array of Img (class) of size nreal or None)
                     path[i]: path index map for the i-th realisation
@@ -3917,28 +4521,6 @@ def exportDeesseInput(deesse_input,
                       dirname='input_ascii',
                       fileprefix='ds',
                       endofline='\n',
-                      simname='sim_ds',
-                      suffix_outputSim='',
-                      suffix_outputPathIndex='_pathIndex',
-                      suffix_outputError='_error',
-                      suffix_outputTiGridNodeIndex='_tiGridNodeIndex',
-                      suffix_outputTiIndex='_tiIndex',
-                      suffix_TI='_ti',
-                      suffix_pdfTI='_pdfti',
-                      suffix_mask='_mask',
-                      suffix_homothetyXRatio='_homothetyXRatio',
-                      suffix_homothetyYRatio='_homothetyYRatio',
-                      suffix_homothetyZRatio='_homothetyZRatio',
-                      suffix_rotationAzimuth='_rotationAzimuth',
-                      suffix_rotationDip='_rotationDip',
-                      suffix_rotationPlunge='_rotationPlunge',
-                      suffix_dataImage='_dataImage',
-                      suffix_dataPointSet='_dataPointSet',
-                      suffix_pyramidDataImage='_pyramidDataImage',
-                      suffix_pyramidDataPointSet='_pyramidDataPointSet',
-                      suffix_localPdf='_localPdf',
-                      suffix_refConnectivityImage='_refConnectivityImage',
-                      suffix_blockData='_blockData',
                       verbose=2):
     """
     Exports input for deesse as ASCII files (in the directory named <dirname>).
@@ -3954,1898 +4536,44 @@ def exportDeesseInput(deesse_input,
                                 file will be <dirname>/<fileprefix>.in
     :param endofline:       (string) end of line string to be used for the deesse
                                 input file
-    :param suffix_*:        (string) used to name generated files
     :param verbose:         (int) indicates which degree of detail is used when
                                 writing comments in the deesse input file
                                 - 0: no comment
                                 - 1: basic comments
                                 - 2: detailed comments
     """
+
+    if not deesse_input.ok:
+        if verbose > 0:
+            print('ERROR (exportDeesseInput): check deesse input')
+        return
+
+    # Create ouptut directory if needed
     if not os.path.isdir(dirname):
         os.mkdir(dirname)
 
-    inputfile = '{}/{}.in'.format(dirname, fileprefix)
-
-    # open input file
-    infid = open(inputfile, "w")
-
-    infid.write('\
-//{0}\
-// DeeSse input file{0}\
-// Version: {1} - {2}{0}\
-//{0}\
-{0}'.format(endofline, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER))
-
-    # Simulation name
-    if verbose > 0:
-        infid.write('\
-/* SIMULATION NAME */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write("\
-/* character string simName (characaters '\\', '/' not allowed) */{0}".format(endofline))
-
-    infid.write('{1}{0}'.format(endofline, simname))
-    infid.write('{0}'.format(endofline))
-
-    # Simulation grid
-    if verbose > 0:
-        infid.write('\
-/* SIMULATION GRID (SG) */{0}'.format(endofline))
-
-    infid.write('{} {} {}'.format(deesse_input.nx, deesse_input.ny, deesse_input.nz))
-    if verbose > 0:
-        infid.write(' // dimension')
-    infid.write('{0}'.format(endofline))
-
-    infid.write('{} {} {}'.format(deesse_input.sx, deesse_input.sy, deesse_input.sz))
-    if verbose > 0:
-        infid.write(' // cell size')
-    infid.write('{0}'.format(endofline))
-
-    infid.write('{} {} {}'.format(deesse_input.ox, deesse_input.oy, deesse_input.oz))
-    if verbose > 0:
-        infid.write(' // origin')
-    infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Simulation variables
-    if verbose > 0:
-        infid.write('\
-/* SIMULATION VARIABLES */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Number of simulation variable(s), and for each variable:{0}\
-      variable name, output flag (0 / 1), and if output flag is 1: format string (as passed to fprintf).{0}\
-   Write DEFAULT_FORMAT for format string to use default format.{0}\
-   Example (with 3 variables):{0}\
-      3{0}\
-      varName1  1  %10.5E{0}\
-      varName2  0{0}\
-      varName3  1  DEFAULT_FORMAT{0}\
-*/{0}'.format(endofline))
-
-    infid.write('{0}'.format(deesse_input.nv))
-    if verbose > 0:
-        infid.write(' // number of variable(s)')
-    infid.write('{0}'.format(endofline))
-
-    for vname, vflag in zip(deesse_input.varname, deesse_input.outputVarFlag):
-        infid.write('{} {}'.format(vname, int(vflag)))
-        if vflag:
-            infid.write(' DEFAULT_FORMAT')
-        if verbose > 0:
-            infid.write(' // variable name / in output ? [/ format string]')
-        infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Output settings for simulation
-    if verbose > 0:
-        infid.write('\
-/* OUTPUT SETTINGS FOR SIMULATION */{0}'.format(endofline))
-
-    if verbose == 2:
-            infid.write('\
-/* Key word and required name(s) or prefix, for output of the realizations:{0}\
-      - OUTPUT_SIM_NO_FILE:{0}\
-           no file in output{0}\
-      - OUTPUT_SIM_ALL_IN_ONE_FILE:{0}\
-           one file in output (every variable in output (flagged as 1 above),{0}\
-           for all realizations will be written),{0}\
-           - requires one file name{0}\
-      - OUTPUT_SIM_ONE_FILE_PER_VARIABLE:{0}\
-            one file per variable in output (flagged as 1 above),{0}\
-            - requires as many file name(s) as variable(s) flagged as 1 above{0}\
-      - OUTPUT_SIM_ONE_FILE_PER_REALIZATION:{0}\
-           one file per realization,{0}\
-           - requires one prefix (for file name, the string "_real#####.gslib"{0}\
-             will be appended where "######" is the realization index){0}\
-   Note: the names of the output variables are set to <vname>_real<n>, where{0}\
-            - <vname> is the name of the variable,{0}\
-            - <n> is the realization index (starting from 0){0}\
-            [<n> is written on 5 digits, with leading zeros]{0}\
-*/{0}'.format(endofline))
-
-    infid.write('\
-OUTPUT_SIM_ONE_FILE_PER_REALIZATION{0}'.format(endofline))
-    infid.write('{}{}'.format(fileprefix, suffix_outputSim))
-    if verbose > 0:
-        infid.write(' // prefix for file name')
-    infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Output: additional maps
-    if verbose > 0:
-        infid.write('\
-/* OUTPUT: ADDITIONAL MAPS */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Additional maps (images) can be retrieved in output.{0}\
-   An output map is defined on the simulation grid and contains information{0}\
-   on the simulation but excluding possible post-processing path(s).{0}\
-   The following output maps are proposed:{0}\
-      - path index map         : index in the simulation path{0}\
-      - error map              : error e (see TOLERANCE below){0}\
-      - TI grid node index map : index of the grid node of the retained{0}\
-                                 candidate in the TI{0}\
-      - TI index map           : index of the TI used (makes sense if number of{0}\
-                                 TIs (nTI) is greater than 1){0}\
-   For each of these 4 cases (in the order exposed above), specify:{0}\
-      - flag (0 / 1) indicating if the output is desired{0}\
-      - and if the flag is set to 1, a prefix for the name of the output files{0}\
-   Note: for any output map, one file per realization is generated, the string{0}\
-         "_real#####.gslib" will be appended to the given prefix, where "######"{0}\
-         is the realization index.{0}\
-*/{0}'.format(endofline))
-
-    infid.write('{}'.format(int(deesse_input.outputPathIndexFlag)))
-    if deesse_input.outputPathIndexFlag:
-        infid.write(' {}{}'.format(fileprefix, suffix_outputPathIndex))
-    if verbose > 0:
-        infid.write(' // path index map')
-    infid.write('{0}'.format(endofline))
-
-    infid.write('{}'.format(int(deesse_input.outputErrorFlag)))
-    if deesse_input.outputErrorFlag:
-        infid.write(' {}{}'.format(fileprefix, suffix_outputError))
-    if verbose > 0:
-        infid.write(' // error map')
-    infid.write('{0}'.format(endofline))
-
-    infid.write('{}'.format(int(deesse_input.outputTiGridNodeIndexFlag)))
-    if deesse_input.outputTiGridNodeIndexFlag:
-        infid.write(' {}{}'.format(fileprefix, suffix_outputTiGridNodeIndex))
-    if verbose > 0:
-        infid.write(' // TI grid node index map')
-    infid.write('{0}'.format(endofline))
-
-    infid.write('{}'.format(int(deesse_input.outputTiIndexFlag)))
-    if deesse_input.outputTiIndexFlag:
-        infid.write(' {}{}'.format(fileprefix, suffix_outputTiIndex))
-    if verbose > 0:
-        infid.write(' // TI index map')
-    infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Output report
-    if verbose > 0:
-        infid.write('\
-/* OUTPUT REPORT */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Flag (0 / 1), and if 1, output report file. */{0}'.format(endofline))
-
-    infid.write('{}'.format(int(deesse_input.outputReportFlag)))
-    if deesse_input.outputReportFlag:
-        infid.write(' {}'.format(deesse_input.outputReportFileName))
-    infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Training image
-    if verbose > 0:
-        infid.write('\
-/* TRAINING IMAGE */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Number of training image(s) (nTI >= 1), followed by nTI file(s){0}\
-   (a file can be replaced by the string "_DATA_" which means that the{0}\
-   simulation grid itself is taken as training image), and{0}\
-   if nTI > 1, one pdf image file (for training images, nTI variables). */{0}'.format(endofline))
-
-    infid.write('{}'.format(deesse_input.nTI))
-    if verbose > 0:
-        infid.write(' // number of TI(s)')
-    infid.write('{0}'.format(endofline))
-
-    for i, (f, im) in enumerate(zip(deesse_input.simGridAsTiFlag, deesse_input.TI)):
-        if f:
-            infid.write('{1}{0}'.format(endofline, deesse.MPDS_SIMULATION_GRID_AS_TRAINING_IMAGE))
-        else:
-            fname = '{}{}{}.gslib'.format(fileprefix, suffix_TI, i)
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('{1}{0}'.format(endofline, fname))
-
-    if deesse_input.nTI > 1:
-        # write "pdfTI"...
-        im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                 sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                 ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                 nv=deesse_input.nTI, val=deesse_input.pdfTI,
-                 varname=['pdfTI{}'.format(i) for i in range(deesse_input.nTI)])
-        fname = '{}{}.{}'.format(fileprefix, suffix_pdfTI, 'gslib')
-        img.writeImageGslib(im, dirname + '/' + fname,
-                            missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-        infid.write('{}'.format(fname))
-        if verbose > 0:
-            infid.write(' // pdf for TI selection')
-        infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Conditioning data files (data image file / data point set file)
-    if verbose == 1:
-        infid.write('\
-/* CONDITIONING DATA FILES (IMAGE FILE OR POINT SET FILE) (below) */{0}{0}'.format(endofline))
-    elif verbose == 2:
-        infid.write('\
-/* CONDITIONING DATA FILES (IMAGE FILE OR POINT SET FILE) (below){0}\
-   In such files, the name of a variable should correspond to a variable name{0}\
-   specified above to give usual conditioning (hard) data for that variable.{0}\
-   Moreover, inequality conditioning data can be given for a variable by{0}\
-   appending the suffix "_min" (resp. "_max") to the variable name: the given{0}\
-   values are then minimal (resp. maximal) bounds, i.e. indicating that the{0}\
-   simulated values should be greater than or equal to (resp. less than or equal{0}\
-   to) the given values. */{0}{0}'.format(endofline))
-
-    # Data image
-    if verbose > 0:
-        infid.write('\
-/* DATA IMAGE FILE FOR SG */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Number of image file(s) (n >= 0), followed by n file(s){0}\
-   (such image(s) must be defined on the simulation grid (same support)). */{0}'.format(endofline))
-
-    if deesse_input.dataImage is not None:
-        infid.write('{}'.format(len(deesse_input.dataImage)))
-        if verbose > 0:
-            infid.write(' // number of data image(s)')
-        infid.write('{0}'.format(endofline))
-        for i, im in enumerate(deesse_input.dataImage):
-            fname = '{}{}{}.gslib'.format(fileprefix, suffix_dataImage, i)
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('{1}{0}'.format(endofline, fname))
-    else:
-        infid.write('0')
-        if verbose > 0:
-            infid.write(' // number of data image(s)')
-        infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Data point set
-    if verbose > 0:
-        infid.write('\
-/* DATA POINT SET FILE FOR SG */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Number of point set file(s) (n >= 0), followed by n file(s). */{0}'.format(endofline))
-
-    if deesse_input.dataPointSet is not None:
-        infid.write('{}'.format(len(deesse_input.dataPointSet)))
-        if verbose > 0:
-            infid.write(' // number of data point set(s)')
-        infid.write('{0}'.format(endofline))
-        for i, ps in enumerate(deesse_input.dataPointSet):
-            fname = '{}{}{}.gslib'.format(fileprefix, suffix_dataPointSet, i)
-            img.writePointSetGslib(ps, dirname + '/' + fname,
-                                   missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('{1}{0}'.format(endofline, fname))
-    else:
-        infid.write('0')
-        if verbose > 0:
-            infid.write(' // number of data point set(s)')
-        infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Mask
-    if verbose > 0:
-        infid.write('\
-/* MASK IMAGE */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Flag (0: mask not used / 1: mask used) and if 1, mask image file{0}\
-   (this image contains one variable on the simulation grid: flag (0 / 1){0}\
-   for each node of the simulation grid that indicates if the variable(s){0}\
-   will be simulated at the corresponding node (flag 1) or not (flag 0). */{0}'.format(endofline))
-
-    if deesse_input.mask is not None:
-        im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                 sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                 ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                 nv=1, val=deesse_input.mask,
-                 varname='mask')
-        fname = '{}{}.{}'.format(fileprefix, suffix_mask, 'gslib')
-        img.writeImageGslib(im, dirname + '/' + fname,
-                            missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-        infid.write('1 {1}{0}'.format(endofline, fname))
-    else:
-        infid.write('0{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Homothety
-    if verbose > 0:
-        infid.write('\
-/* HOMOTHETY */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* 1. Homothety usage, integer (homothetyUsage):{0}\
-        - 0: no homothety{0}\
-        - 1: homothety without tolerance{0}\
-        - 2: homothety with tolerance{0}\
-   2a. If homothetyUsage == 1,{0}\
-          then for homothety ratio in each direction,{0}\
-          first for x, then for y, and then for z-axis direction:{0}\
-             - Flag (0 / 1) indicating if given in an image file,{0}\
-               followed by{0}\
-                  - one value (real) if flag is 0{0}\
-                  - name of the image file (one variable) if flag is 1{0}\
-   2b. If homothetyUsage == 2,{0}\
-          then for homothety ratio in each direction,{0}\
-          first for x, then for y, and then for z-axis direction:{0}\
-             - Flag (0 / 1) indicating if given in an image file,{0}\
-               followed by{0}\
-                  - two values (lower and upper bounds) (real) if flag is 0{0}\
-                  - name of the image file (two variables) if flag is 1{0}\
-*/{0}'.format(endofline))
-
-    infid.write('{1}{0}'.format(endofline, deesse_input.homothetyUsage))
-
-    if deesse_input.homothetyUsage == 1:
-        if deesse_input.homothetyXLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, val=deesse_input.homothetyXRatio,
-                     varname='ratio')
-            fname = '{}{}.{}'.format(fileprefix, suffix_homothetyXRatio, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {}'.format(deesse_input.homothetyXRatio[0]))
-        if verbose > 0:
-            infid.write(' // along x-axis')
-        infid.write('{0}'.format(endofline))
-
-        if deesse_input.homothetyYLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, val=deesse_input.homothetyYRatio,
-                     varname='ratio')
-            fname = '{}{}.{}'.format(fileprefix, suffix_homothetyYRatio, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {}'.format(deesse_input.homothetyYRatio[0]))
-        if verbose > 0:
-            infid.write(' // along y-axis')
-        infid.write('{0}'.format(endofline))
-
-        if deesse_input.homothetyZLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, val=deesse_input.homothetyZRatio,
-                     varname='ratio')
-            fname = '{}{}.{}'.format(fileprefix, suffix_homothetyZRatio, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {}'.format(deesse_input.homothetyZRatio[0]))
-        if verbose > 0:
-            infid.write(' // along z-axis')
-        infid.write('{0}'.format(endofline))
-
-    elif deesse_input.homothetyUsage == 2:
-        if deesse_input.homothetyXLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, val=deesse_input.homothetyXRatio,
-                     varname=['ratioMin', 'ratioMax'])
-            fname = '{}{}.{}'.format(fileprefix, suffix_homothetyXRatio, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {} {}'.format(deesse_input.homothetyXRatio[0], deesse_input.homothetyXRatio[1]))
-        if verbose > 0:
-            infid.write(' // along x-axis')
-        infid.write('{0}'.format(endofline))
-
-        if deesse_input.homothetyYLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, val=deesse_input.homothetyYRatio,
-                     varname=['ratioMin', 'ratioMax'])
-            fname = '{}{}.{}'.format(fileprefix, suffix_homothetyYRatio, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {} {}'.format(deesse_input.homothetyYRatio[0], deesse_input.homothetyYRatio[1]))
-        if verbose > 0:
-            infid.write(' // along y-axis')
-        infid.write('{0}'.format(endofline))
-
-        if deesse_input.homothetyZLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, val=deesse_input.homothetyZRatio,
-                     varname=['ratioMin', 'ratioMax'])
-            fname = '{}{}.{}'.format(fileprefix, suffix_homothetyZRatio, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {} {}'.format(deesse_input.homothetyZRatio[0], deesse_input.homothetyZRatio[1]))
-        if verbose > 0:
-            infid.write(' // along z-axis')
-        infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Rotation
-    if verbose > 0:
-        infid.write('\
-/* ROTATION */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* 1. Rotation usage, integer (rotationUsage):{0}\
-        - 0: no rotation{0}\
-        - 1: rotation without tolerance{0}\
-        - 2: rotation with tolerance{0}\
-   2a. If rotationUsage == 1,{0}\
-          then for each angle,{0}\
-          first for azimuth, then for dip, and then for plunge:{0}\
-             - Flag (0 / 1) indicating if given in an image file,{0}\
-               followed by{0}\
-                  - one value (real) if flag is 0{0}\
-                  - name of the image file (one variable) if flag is 1{0}\
-   2b. If rotationUsage == 2,{0}\
-          then for each angle,{0}\
-          first for azimuth, then for dip, and then for plunge:{0}\
-             - Flag (0 / 1) indicating if given in an image file,{0}\
-               followed by{0}\
-                  - two values (lower and upper bounds) (real) if flag is 0{0}\
-                  - name of the image file (two variables) if flag is 1{0}\
-*/{0}'.format(endofline))
-
-    infid.write('{1}{0}'.format(endofline, deesse_input.rotationUsage))
-
-    if deesse_input.rotationUsage == 1:
-        if deesse_input.rotationAzimuthLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, val=deesse_input.rotationAzimuth,
-                     varname='angle')
-            fname = '{}{}.{}'.format(fileprefix, suffix_rotationAzimuth, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {}'.format(deesse_input.rotationAzimuth[0]))
-        if verbose > 0:
-            infid.write(' // azimuth angle')
-        infid.write('{0}'.format(endofline))
-
-        if deesse_input.rotationDipLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, val=deesse_input.rotationDip,
-                     varname='angle')
-            fname = '{}{}.{}'.format(fileprefix, suffix_rotationDip, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {}'.format(deesse_input.rotationDip[0]))
-        if verbose > 0:
-            infid.write(' // dip angle')
-        infid.write('{0}'.format(endofline))
-
-        if deesse_input.rotationPlungeLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=1, val=deesse_input.rotationPlunge,
-                     varname='angle')
-            fname = '{}{}.{}'.format(fileprefix, suffix_rotationPlunge, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {}'.format(deesse_input.rotationPlunge[0]))
-        if verbose > 0:
-            infid.write(' // plunge angle')
-        infid.write('{0}'.format(endofline))
-
-    elif deesse_input.rotationUsage == 2:
-        if deesse_input.rotationAzimuthLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, val=deesse_input.rotationAzimuth,
-                     varname=['angleMin', 'angleMax'])
-            fname = '{}{}.{}'.format(fileprefix, suffix_rotationAzimuth, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {} {}'.format(deesse_input.rotationAzimuth[0], deesse_input.rotationAzimuth[1]))
-        if verbose > 0:
-            infid.write(' // azimuth angle')
-        infid.write('{0}'.format(endofline))
-
-        if deesse_input.rotationDipLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, val=deesse_input.rotationDip,
-                     varname=['angleMin', 'angleMax'])
-            fname = '{}{}.{}'.format(fileprefix, suffix_rotationDip, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {} {}'.format(deesse_input.rotationDip[0], deesse_input.rotationDip[1]))
-        if verbose > 0:
-            infid.write(' // dip angle')
-        infid.write('{0}'.format(endofline))
-
-        if deesse_input.rotationPlungeLocal:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=2, val=deesse_input.rotationPlunge,
-                     varname=['angleMin', 'angleMax'])
-            fname = '{}{}.{}'.format(fileprefix, suffix_rotationPlunge, 'gslib')
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('1 {}'.format(fname))
-        else:
-            infid.write('0 {} {}'.format(deesse_input.rotationPlunge[0], deesse_input.rotationPlunge[1]))
-        if verbose > 0:
-            infid.write(' // plunge angle')
-        infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Consistency of conditioning data
-    if verbose > 0:
-        infid.write('\
-/* CONSISTENCY OF CONDITIONING DATA (TOLERANCE RELATIVELY TO THE RANGE OF TRAINING VALUES) */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Maximal expansion (expMax): real number (negative to not check consistency).{0}\
-   The following is applied for each variable separetely:{0}\
-      - For variable with distance type set to 0 (see below):{0}\
-           * expMax >= 0:{0}\
-                if a conditioning data value is not in the set of training image values,{0}\
-                an error occurs{0}\
-           * expMax < 0:{0}\
-                if a conditioning data value is not in the set of training image values,{0}\
-                a warning is displayed (no error occurs){0}\
-      - For variable with distance type not set to 0 (see below): if relative distance{0}\
-        flag is set to 1 (see below), nothing is done, else:{0}\
-           * expMax >= 0: maximal accepted expansion of the range of the training image values{0}\
-                for covering the conditioning data values:{0}\
-                - if conditioning data values are within the range of the training image values:{0}\
-                     nothing is done{0}\
-                - if a conditioning data value is out of the range of the training image values:{0}\
-                     let{0}\
-                        new_min_ti = min ( min_cd, min_ti ){0}\
-                        new_max_ti = max ( max_cd, max_ti ){0}\
-                     with{0}\
-                        min_cd, max_cd, the min and max of the conditioning values,{0}\
-                        min_ti, max_ti, the min and max of the training imges values.{0}\
-                     If new_max_ti - new_min_ti <= (1 + expMax) * (ti_max - ti_min), then{0}\
-                     the training image values are linearly rescaled from [ti_min, ti_max] to{0}\
-                     [new_ti_min, new_ti_max], and a warning is displayed (no error occurs).{0}\
-                     Otherwise, an error occurs.{0}\
-           * expMax < 0: if a conditioning data value is out of the range of the training image{0}\
-                values, a warning is displayed (no error occurs), the training image values are{0}\
-                not modified.{0}\
-*/{0}'.format(endofline))
-
-    infid.write('{1}{0}{0}'.format(endofline, deesse_input.expMax))
-
-    # Normalization
-    if verbose > 0:
-        infid.write('\
-/* NORMALIZATION TYPE (FOR VARIABLES FOR WHICH DISTANCE TYPE IS NOT 0 AND DISTANCE IS ABSOLUTE) */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Available types:{0}\
-      - NORMALIZING_LINEAR{0}\
-      - NORMALIZING_UNIFORM{0}\
-      - NORMALIZING_NORMAL */{0}'.format(endofline))
-
-    if deesse_input.normalizingType == 'linear':
-        infid.write('NORMALIZING_LINEAR{0}'.format(endofline))
-    elif deesse_input.normalizingType == 'uniform':
-        infid.write('NORMALIZING_UNIFORM{0}'.format(endofline))
-    elif deesse_input.normalizingType == 'normal':
-        infid.write('NORMALIZING_NORMAL{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Search neighborhood parameters
-    if verbose > 0:
-        infid.write('\
-/* SEARCH NEIGHBORHOOD PARAMETERS */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write("\
-/* A search neighborhood is a 3D ellipsoid, defined by:{0}\
-      - (rx, ry, rz): search radius (in number of nodes) for each direction{0}\
-      - (ax, ay, az): anisotropy ratio or inverse distance unit for each direction;{0}\
-        the distance to the central node is computed as the Euclidean distance by{0}\
-        considering the nodes with the unit 1/ax x 1/ay x 1/az;{0}\
-      - (angle1, angle2, angle3): angles (azimuth, dip and plunge) defining the{0}\
-        rotation that sends the coordinates system xyz onto the coordinates{0}\
-        system x'y'z' in which the search radii and the anisotropy ratios are given.{0}\
-      - power: at which the distance is elevated for computing the weight of each{0}\
-        node in the search neighborhood.{0}\
-   Note that{0}\
-     - the search neighborhood is delimited by the search radii and the angles{0}\
-     - the anisotropy ratios are used only for computing the distance to the central{0}\
-       node, from each node in the search neighborhood{0}\
-     - the nodes inside the search neighborhood are sorted according to their{0}\
-       distance to the central node, from the closest one to the furthest one{0}\
-{0}\
-   FOR EACH VARIABLE:{0}\
-      1. search radii, available specifications (format: key word [parameters]):{0}\
-            SEARCHNEIGHBORHOOD_RADIUS_LARGE_DEFAULT{0}\
-            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_DEFAULT{0}\
-            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE{0}\
-            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XY{0}\
-            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XZ{0}\
-            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_YZ{0}\
-            SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XYZ{0}\
-            SEARCHNEIGHBORHOOD_RADIUS_MANUAL rx ry rz{0}\
-         with the following meaning, where tx, ty, tz denote the ranges of the{0}\
-         variogram of the TI(s) in x-, y-, z-directions:{0}\
-            - SEARCHNEIGHBORHOOD_RADIUS_LARGE_DEFAULT:{0}\
-                 large radii set according to the size of the SG and the TI(s),{0}\
-                 and the use of homothethy and/or rotation for the simulation{0}\
-                 (automatically computed){0}\
-            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_DEFAULT:{0}\
-                 search radii set according to the TI(s) variogram ranges,{0}\
-                 one of the 5 next modes SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE* will be{0}\
-                 used according to the use of homothethy and/or rotation for the{0}\
-                 simulation{0}\
-                 (automatically computed){0}\
-            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE:{0}\
-                 rx prop. to tx, ry prop. to ty, rz prop. to tz,{0}\
-                 independently in each direction{0}\
-                 (automatically computed){0}\
-            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XY:{0}\
-                 rx = ry  prop. to max(tx, ty), independently from rz prop. to tz{0}\
-                 (automatically computed){0}\
-            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XZ:{0}\
-                 rx = rz  prop. to max(tx, tz), independently from ry prop. to ty{0}\
-                 (automatically computed){0}\
-            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_YZ:{0}\
-                 ry = rz  prop. to max(ty, tz), independently from rx prop. to tx{0}\
-                 (automatically computed){0}\
-            - SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XYZ:{0}\
-                 rx = ry = rz prop. to max(tx, ty, tz){0}\
-                 (automatically computed){0}\
-            - SEARCHNEIGHBORHOOD_RADIUS_MANUAL:{0}\
-                 search radii are explicitly given{0}\
-{0}\
-      2. anisotropy ratios, available specifications (format: key word [parameters]):{0}\
-            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE{0}\
-            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS{0}\
-            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XY{0}\
-            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XZ{0}\
-            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_YZ{0}\
-            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XYZ{0}\
-            SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_MANUAL ax ay az{0}\
-         with the following meaning:{0}\
-            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE:{0}\
-                 ax = ay = az = 1{0}\
-                 (isotropic distance:{0}\
-                 maximal distance for search neighborhood nodes will be equal to the{0}\
-                 maximum of the search radii){0}\
-            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS:{0}\
-                 ax = rx, ay = ry, az = rz{0}\
-                 (anisotropic distance:{0}\
-                 nodes at distance one on the border of the search neighborhood,{0}\
-                 maximal distance for search neighborhood nodes will be 1){0}\
-            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XY:{0}\
-                 ax = ay = max(rx, ry), az = rz{0}\
-                 (anisotropic distance:{0}\
-                 maximal distance for search neighborhood nodes will be 1){0}\
-            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XZ:{0}\
-                 ax = az = max(rx, rz), ay = ry{0}\
-                 (anisotropic distance:{0}\
-                 maximal distance for search neighborhood nodes will be 1){0}\
-            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_YZ:{0}\
-                 ay = az = max(ry, rz), ax = rx{0}\
-                 (anisotropic distance:{0}\
-                 maximal distance for search neighborhood nodes will be 1){0}\
-            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XYZ:{0}\
-                 ax = ay = az = max(rx, ry, rz){0}\
-                 (isotropic distance:{0}\
-                 maximal distance for search neighborhood nodes will be 1){0}\
-            - SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_MANUAL:{0}\
-                 anisotropy ratios are explicitly given{0}\
-{0}\
-      3. rotation, available specifications (format: key word [parameters]):{0}\
-            SEARCHNEIGHBORHOOD_ROTATION_OFF{0}\
-            SEARCHNEIGHBORHOOD_ROTATION_ON angle1 angle2 angle3{0}\
-         with the following meaning:{0}\
-            - SEARCHNEIGHBORHOOD_ROTATION_OFF:{0}\
-                 search neighborhood is not rotated{0}\
-            - SEARCHNEIGHBORHOOD_ROTATION_ON:{0}\
-                 search neighborhood is rotated, the rotation is described by{0}\
-                 angle1 (azimuth), angle2 (dip) and angle3 (plunge){0}\
-{0}\
-      4. power (real number){0}\
-*/{0}".format(endofline))
-
-    for i, sn in enumerate(deesse_input.searchNeighborhoodParameters):
-        if verbose > 0:
-            infid.write('\
-/* SEARCH NEIGHBORHOOD PARAMETERS FOR VARIABLE #{1} */{0}'.format(endofline, i))
-
-        if sn.radiusMode == 'large_default':
-            infid.write('SEARCHNEIGHBORHOOD_RADIUS_LARGE_DEFAULT')
-        elif sn.radiusMode == 'ti_range_default':
-            infid.write('SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_DEFAULT')
-        elif sn.radiusMode == 'ti_range':
-            infid.write('SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE')
-        elif sn.radiusMode == 'ti_range_xy':
-            infid.write('SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XY')
-        elif sn.radiusMode == 'ti_range_xz':
-            infid.write('SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XZ')
-        elif sn.radiusMode == 'ti_range_yz':
-            infid.write('SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_YZ')
-        elif sn.radiusMode == 'ti_range_xyz':
-            infid.write('SEARCHNEIGHBORHOOD_RADIUS_TI_RANGE_XYZ')
-        elif sn.radiusMode == 'manual':
-            infid.write('SEARCHNEIGHBORHOOD_RADIUS_MANUAL {} {} {}'.format(sn.rx, sn.ry, sn.rz))
-        if verbose > 0:
-            infid.write(' // search radii')
-        infid.write('{0}'.format(endofline))
-
-        if sn.anisotropyRatioMode == 'one':
-            infid.write('SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE')
-        elif sn.anisotropyRatioMode == 'radius':
-            infid.write('SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS')
-        elif sn.anisotropyRatioMode == 'radius_xy':
-            infid.write('SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XY')
-        elif sn.anisotropyRatioMode == 'radius_xz':
-            infid.write('SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XZ')
-        elif sn.anisotropyRatioMode == 'radius_yz':
-            infid.write('SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_YZ')
-        elif sn.anisotropyRatioMode == 'radius_xyz':
-            infid.write('SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_RADIUS_XYZ')
-        elif sn.anisotropyRatioMode == 'manual':
-            infid.write('SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_MANUAL {} {} {}'.format(sn.ax, sn.ay, sn.az))
-        if verbose > 0:
-            infid.write(' // anisotropy ratios')
-        infid.write('{0}'.format(endofline))
-
-        if sn.angle1 == 0 and sn.angle2 == 0 and sn.angle3 == 0:
-            infid.write('SEARCHNEIGHBORHOOD_ROTATION_OFF')
-        else:
-            infid.write('SEARCHNEIGHBORHOOD_ROTATION_ON {} {} {}'.format(sn.angle1, sn.angle2, sn.angle3))
-        if verbose > 0:
-            infid.write(' // rotation')
-        infid.write('{0}'.format(endofline))
-
-        infid.write('{}'.format(sn.power))
-        if verbose > 0:
-            infid.write(' // power for computing weight according to distance')
-        infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Maximal number of neighbors
-    if verbose > 0:
-        infid.write('\
-/* MAXIMAL NUMBER OF NEIGHBORING NODES FOR EACH VARIABLE (as many number(s) as number of variable(s)) */{0}'.format(endofline))
-
-    for v in deesse_input.nneighboringNode:
-        infid.write('{1}{0}'.format(endofline, v))
-    infid.write('{0}'.format(endofline))
-
-    # Maximal proportion of nodes with inequality data in pattern if the maximal number of nodes is reached
-    if verbose > 0:
-        infid.write('\
-/* MAXIMAL PROPORTION OF NEIGHBORING NODES WITH INEQUALITY DATA (WHEN THE MAXIMAL NUMBER OF NEIGHBORING{0}\
-   NODES IS REACHED) FOR EACH VARIABLE (as many number(s) as number of variable(s)) */{0}'.format(endofline))
-
-    for v in deesse_input.maxPropInequalityNode:
-        infid.write('{1}{0}'.format(endofline, v))
-    infid.write('{0}'.format(endofline))
-
-    # Maximal density of neighbors
-    if verbose > 0:
-        infid.write('\
-/* MAXIMAL DENSITY OF NEIGHBORING NODES IN SEARCH NEIGHBORHOOD FOR EACH VARIABLE (as many number(s){0}\
-   as number of variable(s)) */{0}'.format(endofline))
-
-    for v in deesse_input.neighboringNodeDensity:
-        infid.write('{1}{0}'.format(endofline, v))
-    infid.write('{0}'.format(endofline))
-
-    # Rescaling mode
-    if verbose > 0:
-        infid.write('\
-/* RESCALING MODE FOR EACH VARIABLE (as many specification as number of variable(s)) */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Available specifications (format: key word [parameters]):{0}\
-      RESCALING_NONE{0}\
-      RESCALING_MIN_MAX min_value max_value{0}\
-      RESCALING_MEAN_LENGTH mean_value length_value{0}\
-   with the following meaning:{0}\
-      - RESCALING_NONE:{0}\
-           target interval for simulated values = interval of training image(s) value(s){0}\
-           (standard mode){0}\
-      - RESCALING_MIN_MAX:{0}\
-           target interval for simulated values given by min_value and max_value{0}\
-      - RESCALING_MEAN_LENGTH:{0}\
-           target interval for simulated values given by mean_value and length_value{0}\
-   For the two last modes, a linear correspondence is set between the target interval{0}\
-   for simulated values and the interval of the training image(s):{0}\
-      - for mode RESCALING_MIN_MAX, min_value and max_value are set in correspondence{0}\
-        with the min and max training image(s) values respectively{0}\
-      - for mode RESCALING_MEAN_LENGTH, mean_value is set in correspondence{0}\
-        with the mean training image(s) value, and length_value is the length{0}\
-        of the target interval.{0}\
-   Note that:{0}\
-      - conditioning data values (if any) must be in the target interval.{0}\
-      - the two last modes are not compatible with distance type 0{0}\
-        (non-matching nodes), or with relative distance mode (see below){0}\
-      - class of values (for other options such probability constraints or{0}\
-        connectivity constraints) are given according to the target interval.{0}\
-*/{0}'.format(endofline))
-
-    for i, m in enumerate(deesse_input.rescalingMode):
-        if m == 'none':
-            infid.write('RESCALING_NONE{0}'.format(endofline))
-        elif m == 'min_max':
-            infid.write('RESCALING_MIN_MAX {1} {2} {0}'.format(endofline, deesse_input.rescalingTargetMin[i], deesse_input.rescalingTargetMax[i]))
-        elif m == 'mean_length':
-            infid.write('RESCALING_MEAN_LENGTH {1} {2} {0}'.format(endofline, deesse_input.rescalingTargetMean[i], deesse_input.rescalingTargetLength[i]))
-
-    infid.write('{0}'.format(endofline))
-
-    # Relative distance flag
-    if verbose > 0:
-        infid.write('\
-/* RELATIVE DISTANCE FLAG FOR EACH VARIABLE (as many flag(s) (0 / 1) as number of variable(s)) */{0}'.format(endofline))
-
-    for flag in deesse_input.relativeDistanceFlag:
-        infid.write('{1}{0}'.format(endofline, int(flag)))
-    infid.write('{0}'.format(endofline))
-
-    # Distance type
-    if verbose > 0:
-        infid.write('\
-/* DISTANCE TYPE FOR EACH VARIABLE (as many number(s) as number of variable(s)) */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Available distance (between data events):{0}\
-      - 0: non-matching nodes (typically for categorical variable){0}\
-      - 1: L-1 distance{0}\
-      - 2: L-2 distance{0}\
-      - 3: L-p distance, requires the real positive parameter p{0}\
-      - 4: L-infinity distance */{0}'.format(endofline))
-
-    for i, v in enumerate(deesse_input.distanceType):
-        if v == 3:
-            infid.write('{1} {2}{0}'.format(endofline, v, deesse_input.powerLpDistance[i]))
-        else:
-            infid.write('{1}{0}'.format(endofline, v))
-
-    infid.write('{0}'.format(endofline))
-
-    # Weight factor for conditioning data
-    if verbose > 0:
-        infid.write('\
-/* WEIGHT FACTOR FOR CONDITIONING DATA, FOR EACH VARIABLE (as many number(s) as number of variable(s)) */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* For the computation of distance between data events, if a value is a conditioning{0}\
-   data, its corresponding contribution is multiplied by the factor given here. */{0}'.format(endofline))
-
-    for v in deesse_input.conditioningWeightFactor:
-        infid.write('{1}{0}'.format(endofline, v))
-    infid.write('{0}'.format(endofline))
-
-    # Simulation type
-    if verbose > 0:
-        infid.write('\
-/* SIMULATION TYPE */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* Key word:{0}\
-      - SIM_ONE_BY_ONE:{0}\
-           successive simulation of one variable at one node in the simulation grid (4D path){0}\
-      - SIM_VARIABLE_VECTOR:{0}\
-           successive simulation of all variable(s) at one node in the simulation grid (3D path) */{0}'.format(endofline))
-
-    if deesse_input.simType == 'sim_one_by_one':
-        infid.write('SIM_ONE_BY_ONE{0}'.format(endofline))
-    elif deesse_input.simType == 'sim_variable_vector':
-        infid.write('SIM_VARIABLE_VECTOR{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Simulation path
-    if verbose > 0:
-        infid.write('\
-/* SIMULATION PATH */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write("\
-/* Available paths (format: key word [parameters]):{0}\
-      - PATH_RANDOM{0}\
-      - PATH_RANDOM_HD_DISTANCE_PDF s{0}\
-      - PATH_RANDOM_HD_DISTANCE_SORT s{0}\
-      - PATH_RANDOM_HD_DISTANCE_SUM_PDF p s{0}\
-      - PATH_RANDOM_HD_DISTANCE_SUM_SORT p s{0}\
-      - PATH_UNILATERAL u (vector){0}\
-   with the following meaning:{0}\
-      - PATH_RANDOM:{0}\
-           Random path, for simulation type:{0}\
-              - SIM_ONE_BY_ONE     : path visiting all nodes and variables in a random order{0}\
-              - SIM_VARIABLE_VECTOR: path visiting all nodes in a random order{0}\
-      - PATH_RANDOM_HD_DISTANCE_PDF:{0}\
-           This path preferentially visits first the SG nodes close to the conditioning nodes.{0}\
-           For any uninformed node, the distance d to the set of conditioning nodes is computed,{0}\
-           and a weight proportional to a^d is attached, with 0 < a = 1 + s*(a0-1) <= 1, a0{0}\
-           being the minimal value for a.{0}\
-           The path is then built by successively drawing nodes according to their weight.{0}\
-           The required parameter s in [0,1] controls the strength of the distance{0}\
-           (s = 0: random, s = 1: most guided by the distance).{0}\
-           Notes: 1) in absence of conditioning node, one random node in the path is considered{0}\
-           to compute the distances, 2) if simulation type is SIM_VARIABLE_VECTOR, variables{0}\
-           exhaustively informed are not considered as conditioning data for computing distance.{0}\
-     - PATH_RANDOM_HD_DISTANCE_SORT:{0}\
-           This path preferentially visits first the SG nodes close to the conditioning nodes.{0}\
-           For any uninformed node, the distance d to the set of conditioning nodes is computed,{0}\
-           and the normalized distance d' in [0,1] is combined with a random number r in [0,1]{0}\
-           to define a weight w = s*d' + (1-s)*r.{0}\
-           The path is then built by sorting the nodes such that the weight are in increasing order.{0}\
-           The required parameter s in [0,1] controls the strength of the distance{0}\
-           (s = 0: random, s = 1: most guided by the distance - quasi deterministic).{0}\
-           Notes: 1) in absence of conditioning node, one random node in the path is considered{0}\
-           to compute the distances, 2) if simulation type is SIM_VARIABLE_VECTOR, variables{0}\
-           exhaustively informed are not considered as conditioning data for computing distance.{0}\
-      - PATH_RANDOM_HD_DISTANCE_SUM_PDF:{0}\
-           The path is built as for PATH_RANDOM_HD_DISTANCE_PDF, but the distance to the set of{0}\
-           conditioning nodes is replaced by the sum of the distances to every conditioning node,{0}\
-           each distance being raised to a power p.{0}\
-           Two parameters are required: p > 0 controls the computation of the distances,{0}\
-           and s in [0,1] controls the strength of the distance{0}\
-           (s = 0: random, s = 1: most guided by the distance).{0}\
-           Note: 1) in absence of conditioning node, random path is considered.{0}\
-      - PATH_RANDOM_HD_DISTANCE_SUM_SORT:{0}\
-           The path is built as for PATH_RANDOM_HD_DISTANCE_SORT, but the distance to the set of{0}\
-           conditioning nodes is replaced by the sum of the distances to every conditioning node,{0}\
-           each distance being raised to a power p.{0}\
-           Two parameters are required: p > 0 controls the computation of the distances,{0}\
-           and s in [0,1] controls the strength of the distance{0}\
-           (s = 0: random, s = 1: most guided by the distance - quasi deterministic).{0}\
-           Note: 1) in absence of conditioning node, random path is considered.{0}\
-      - PATH_UNILATERAL:{0}\
-           It requires a vector u of parameters of size n=4 (resp. n=3) for simulation type set to{0}\
-           SIM_ONE_BY_ONE (resp. SIM_VARIABLE_VECTOR), given as ux uy uz uv (resp. ux uy uz).{0}\
-           Some components of u can be equal to 0, and the other ones must be the integer 1,...,m,{0}\
-           with sign +/-. For{0}\
-               u[j(1)] = ... = u[j(n-m)] = 0 and (u[i(1)], ..., u[i(m)]) = (+/-1,...,+/-m),{0}\
-           the path visits all nodes in sections of coordinates j(1),...,j(n-m) randomly,{0}\
-           and makes varying the i(1)-th coordinate first (most rapidly), ..., the i(m)-th coordinate{0}\
-           last, each one in increasing or decreasing order according to the sign (+ or - resp.).{0}\
-           Examples:{0}\
-             - for simulation type SIM_ONE_BY_ONE, and u = (0, -2, 1, 0), then the path will visit{0}\
-               all nodes: randomly in xv-sections, with increasing z-coordinate first (most rapidly),{0}\
-               and decreasing y-coordinate.{0}\
-             - for simulation type SIM_VARIABLE_VECTOR, and u = (0, 2, 1), then the path will visit{0}\
-               all nodes: randomly in x-direction, with increasing z-coordinate first (most rapidly),{0}\
-               and increasing y-coordinate.{0}\
-*/{0}".format(endofline))
-
-    if deesse_input.simPathType == 'random':
-        infid.write('PATH_RANDOM{0}'.format(endofline))
-    elif deesse_input.simPathType == 'random_hd_distance_pdf':
-        infid.write('PATH_RANDOM_HD_DISTANCE_PDF {1}{0}'.format(endofline, deesse_input.simPathStrength))
-    elif deesse_input.simPathType == 'random_hd_distance_sort':
-        infid.write('PATH_RANDOM_HD_DISTANCE_SORT {1}{0}'.format(endofline, deesse_input.simPathStrength))
-    elif deesse_input.simPathType == 'random_hd_distance_sum_pdf':
-        infid.write('PATH_RANDOM_HD_DISTANCE_SUM_PDF {1} {2}{0}'.format(endofline, deesse_input.simPathPower, deesse_input.simPathStrength))
-    elif deesse_input.simPathType == 'random_hd_distance_sum_sort':
-        infid.write('PATH_RANDOM_HD_DISTANCE_SUM_SORT {1} {2}{0}'.format(endofline, deesse_input.simPathPower, deesse_input.simPathStrength))
-    elif deesse_input.simPathType == 'unilateral':
-        infid.write('PATH_UNILATERAL')
-        for n in deesse_input.simPathUnilateralOrder:
-            infid.write(' {}'.format(n))
-        infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Distance threshold
-    if verbose > 0:
-        infid.write('\
-/* DISTANCE THRESHOLD FOR EACH VARIABLE (as many number(s) as number of variable(s)) */{0}'.format(endofline))
-
-    for v in deesse_input.distanceThreshold:
-        infid.write('{1}{0}'.format(endofline, v))
-    infid.write('{0}'.format(endofline))
-
-    # Probability constraints
-    if verbose > 0:
-        infid.write('\
-/* PROBABILITY CONSTRAINTS */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write("\
-/* FOR EACH VARIABLE:{0}\
-   1. Probability constraint usage, integer (probabilityConstraintUsage):{0}\
-        - 0: no probability constraint{0}\
-        - 1: global probability constraint{0}\
-        - 2: local probability constraint using support{0}\
-        - 3: local probability constraint based on rejection{0}\
-{0}\
-   2. If probabilityConstraintUsage > 0, then the classes of values (for which the{0}\
-         probability constraints will be given) have to be defined; a class of values{0}\
-         is given by a union of interval(s): [inf_1,sup_1[ U ... U [inf_n,sup_n[;{0}\
-         Here are given:{0}\
-            - nclass: number of classes of values{0}\
-            - for i in 1,..., nclass: definition of the i-th class of values:{0}\
-                 - ninterval: number of interval(s){0}\
-                 - inf_1 sup_1 ... inf_ninterval sup_ninterval: inf and sup for each interval{0}\
-                      these values should satisfy inf_i < sup_i{0}\
-{0}\
-   3a. If probabilityConstraintUsage == 1, then{0}\
-          - global probability for each class (defined in 2. above), i.e.{0}\
-            nclass numbers in [0,1] of sum 1{0}\
-   3b. If probabilityConstraintUsage == 2 or 3, then{0}\
-          - one pdf image file (for every class, nclass variables){0}\
-            (image of same dimensions as the simulation grid){0}\
-{0}\
-   4. If probabilityConstraintUsage == 2, then{0}\
-          - support radius for probability maps (i.e. distance according to{0}\
-            the unit defined in the search neighborhood parameters for the{0}\
-            considered variable){0}\
-          - method for computing the current pdf (in the simulation grid),{0}\
-            integer (localCurrentPdfComputation):{0}\
-               - 0: \"COMPLETE\" mode: all the informed node in the search neighborhood{0}\
-                    for the considered variable, and within the support are taken into account{0}\
-               - 1: \"APPROXIMATE\" mode: only the neighboring nodes (used for the{0}\
-                    search in the TI) within the support are taken into account{0}\
-{0}\
-   5. If probabilityConstraintUsage == 1 or 2, then{0}\
-         method for comparing pdf's, integer (comparingPdfMethod):{0}\
-            - 0: MAE (Mean Absolute Error){0}\
-            - 1: RMSE (Root Mean Squared Error){0}\
-            - 2: KLD (Kullback Leibler Divergence){0}\
-            - 3: JSD (JSD (Jensen-Shannon Divergence){0}\
-            - 4: MLikRsym (Mean Likelihood Ratio (over each class indicator, symmetric target interval)){0}\
-            - 5: MLikRopt (Mean Likelihood Ratio (over each class indicator, optimal target interval)){0}\
-{0}\
-   6. If probabilityConstraintUsage == 3, then{0}\
-         method for indicating the mode of rejection (during the scan of the training image):{0}\
-            - 0: rejection is done first (before checking pattern (and other constraint)) according{0}\
-                 to acceptation probabilities proportional to p[i]/q[i] (for class i),{0}\
-                 where{0}\
-                    q is the marginal pdf of the scanned training image{0}\
-                    p is the given local pdf at the simulated node{0}\
-            - 1: rejection is done last (after checking pattern (and other constraint)) according{0}\
-                 to acceptation probabilities proportional to p[i] (for class i),{0}\
-                 where{0}\
-                    p is the given local pdf at the simulated node{0}\
-{0}\
-   7. If probabilityConstraintUsage > 0, then{0}\
-         - deactivation distance, i.e. one positive number{0}\
-           (the probability constraint is deactivated if the distance between{0}\
-           the current simulated node and the last node in its neighbors (used{0}\
-           for the search in the TI) (distance computed according to the corresponding{0}\
-           search neighborhood parameters) is below the given deactivation distance){0}\
-{0}\
-   8. If probabilityConstraintUsage == 1 or 2, then{0}\
-         - threshold type for pdf's comparison, integer (probabilityConstraintThresholdType){0}\
-              - 0: constant threshold{0}\
-              - 1: dynamic threshold{0}\
-           note: if comparingPdfMethod is set to 4 or 5, probabilityConstraintThresholdType must be set to 0{0}\
-         8.1a If probabilityConstraintThresholdType == 0, then{0}\
-                 - threshold value [can be set to 0 if comparingPdfMethod is set to 4 or 5]{0}\
-         8.1b If probabilityConstraintThresholdType == 1, then the 7 parameters:{0}\
-                 - M1 M2 M3{0}\
-                 - T1 T2 T3{0}\
-                 - W{0}\
-              These parameters should satisfy:{0}\
-                 0 <= M1 <= M2 < M3,{0}\
-                 T1 >= T2 >= T3,{0}\
-                 w != 0.{0}\
-              The threshold value t is defined as a function of the number M{0}\
-              of nodes used for computing the current pdf (in the simulation grid){0}\
-              including the candidate (i.e. current simulated) node by:{0}\
-                 t(M) = T1, if M < M1{0}\
-                 t(M) = T2, if M1 <= M < M2{0}\
-                 t(M) = (T3 - T2) / (M3^W - M2^W) * (M^W - M2^W) + T2, if M2 <= M < M3{0}\
-                 t(M) = T3, if M3 <= M{0}\
-*/{0}".format(endofline))
-
-    for i, sp in enumerate(deesse_input.softProbability):
-        if verbose > 0:
-            infid.write('\
-/* PROBABILITY CONSTRAINTS FOR VARIABLE #{1} */{0}'.format(endofline, i))
-
-        infid.write('{}'.format(sp.probabilityConstraintUsage))
-        if verbose > 0:
-            if sp.probabilityConstraintUsage == 0:
-                infid.write(' // no probability constraint')
-            elif sp.probabilityConstraintUsage == 1:
-                infid.write(' // global probability constraint')
-            elif sp.probabilityConstraintUsage == 2:
-                infid.write(' // local probability constraint using support')
-            elif sp.probabilityConstraintUsage == 3:
-                infid.write(' // local probability constraint based on rejection')
-        infid.write('{0}'.format(endofline))
-
-        if sp.probabilityConstraintUsage == 0:
-            continue
-
-        infid.write('{}'.format(sp.nclass))
-        if verbose > 0:
-            infid.write(' // nclass')
-        infid.write('{0}'.format(endofline))
-
-        for j, ci in enumerate(sp.classInterval):
-            infid.write('{}  '.format(len(ci)))
-            for inter in ci:
-                infid.write(' {} {}'.format(inter[0], inter[1]))
-            if verbose > 0:
-                infid.write(' // class #{} (ninterval, and interval(s))'.format(j))
-            infid.write('{0}'.format(endofline))
-
-        if sp.probabilityConstraintUsage == 1:
-            for i, v in enumerate(sp.globalPdf):
-                if i == 0:
-                    infid.write('{}'.format(v))
-                else:
-                    infid.write(' {}'.format(v))
-            if verbose > 0:
-                infid.write(' // global pdf')
-            infid.write('{0}'.format(endofline))
-
-        elif sp.probabilityConstraintUsage == 2 or sp.probabilityConstraintUsage == 3:
-            im = Img(nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
-                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
-                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                     nv=sp.nclass, val=sp.localPdf,
-                     varname=['pdfClass{}'.format(j) for j in range(sp.nclass)])
-            fname = '{}{}{}.gslib'.format(fileprefix, suffix_localPdf, i)
-            img.writeImageGslib(im, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-            infid.write('{}'.format(fname))
-            if verbose > 0:
-                infid.write(' // local pdf file')
-            infid.write('{0}'.format(endofline))
-
-        if sp.probabilityConstraintUsage == 2:
-            infid.write('{}'.format(sp.localPdfSupportRadius))
-            if verbose > 0:
-                infid.write(' // support radius')
-            infid.write('{0}'.format(endofline))
-
-            infid.write('{}'.format(sp.localCurrentPdfComputation))
-            if verbose > 0:
-                infid.write(' // computing local current pdf mode')
-            infid.write('{0}'.format(endofline))
-
-        if sp.probabilityConstraintUsage == 1 or sp.probabilityConstraintUsage == 2:
-            infid.write('{}'.format(sp.comparingPdfMethod))
-            if verbose > 0:
-                infid.write(' // comparing pdf method')
-            infid.write('{0}'.format(endofline))
-
-        if sp.probabilityConstraintUsage == 3:
-            infid.write('{}'.format(sp.rejectionMode))
-            if verbose > 0:
-                infid.write(' // rejection mode (0: first, 1: last)')
-            infid.write('{0}'.format(endofline))
-
-        infid.write('{}'.format(sp.deactivationDistance))
-        if verbose > 0:
-            infid.write(' // deactivation distance')
-        infid.write('{0}'.format(endofline))
-
-        if sp.probabilityConstraintUsage == 1 or sp.probabilityConstraintUsage == 2:
-            infid.write('{}'.format(sp.probabilityConstraintThresholdType))
-            if verbose > 0:
-                infid.write(' // threshold type')
-            infid.write('{0}'.format(endofline))
-
-            if sp.probabilityConstraintThresholdType == 0:
-                infid.write('{}'.format(sp.constantThreshold))
-                if verbose > 0:
-                    infid.write(' // threshold value (constant)')
-                infid.write('{0}'.format(endofline))
-            elif sp.probabilityConstraintThresholdType == 1:
-                for v in sp.dynamicThresholdParameters:
-                    infid.write(' {}'.format(v))
-                if verbose > 0:
-                    infid.write(' // dynamic threshold parameters')
-                infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Connectivity constraints
-    if verbose > 0:
-        infid.write('\
-/* CONNECTIVITY CONSTRAINTS */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* FOR EACH VARIABLE:{0}\
-   1. Connectivity constraint usage, integer (connectivityConstraintUsage):{0}\
-         - 0: no connectivity constraint{0}\
-         - 1: set connecting paths before simulation by successively{0}\
-              binding the nodes to be connected in a random order{0}\
-         - 2: set connecting paths before simulation by successively{0}\
-              binding the nodes to be connected beginning with{0}\
-              the pair of nodes with the smallest distance and then{0}\
-              the remaining nodes in increasing order according to{0}\
-              their distance to the set of nodes already connected.{0}\
-         - 3: check connectivity pattern during simulation{0}\
-   2. If connectivityConstraintUsage > 0, then key word for type of connectivity:{0}\
-         - CONNECT_FACE             : 6-neighbors connected (by face){0}\
-         - CONNECT_FACE_EDGE        : 18-neighbors connected (by face or edge){0}\
-         - CONNECT_FACE_EDGE_CORNER : 26-neighbors connected (by face, edge or corner){0}\
-   3. If connectivityConstraintUsage > 0, then the classes of values (that can{0}\
-         be considered in the same connected components) have to be defined; a{0}\
-         class of values is given by a union of interval(s):{0}\
-            [inf_1,sup_1[ U ... U [inf_n,sup_n[;{0}\
-         Here are given:{0}\
-            - nclass: number of classes of values{0}\
-            - for i in 1,..., nclass: definition of the i-th class of values:{0}\
-                 - ninterval: number of interval(s){0}\
-                 - inf_1 sup_1 ... inf_ninterval sup_ninterval: inf and sup for each interval{0}\
-                      these values should satisfy inf_i < sup_i{0}\
-   4. If connectivityConstraintUsage > 0, then:{0}\
-         - variable name for connected component label{0}\
-           (included in data image / data point set above){0}\
-           (Note: label negative or zero means no connectivity constraint){0}\
-   5a. If connectivityConstraintUsage == 1 or connectivityConstraintUsage == 2, then:{0}\
-         - name of the image file and name of the variable for the search of{0}\
-           connected paths (set string "_TI_" instead for searching in the (first){0}\
-           training image and the corresponding variable index){0}\
-   5b. If connectivityConstraintUsage == 3, then:{0}\
-         - deactivation distance, i.e. one positive number{0}\
-           (the connectivity constraint is deactivated if the distance between{0}\
-           the current simulated node and the last node in its neighbors (used{0}\
-           for the search in the TI) (distance computed according to the corresponding{0}\
-           search neighborhood parameters) is below the given deactivation distance){0}\
-         - threshold: threshold value for acceptation of connectivity pattern{0}\
-*/{0}'.format(endofline))
-
-    for i, co in enumerate(deesse_input.connectivity):
-        if verbose > 0:
-            infid.write('\
-/* CONNECTIVITY CONSTRAINTS FOR VARIABLE #{1} */{0}'.format(endofline, i))
-
-        infid.write('{}'.format(co.connectivityConstraintUsage))
-        if verbose > 0:
-            if co.connectivityConstraintUsage == 0:
-                infid.write(' // no connectivity constraint')
-            elif co.connectivityConstraintUsage == 1:
-                infid.write(' // pasting connecting paths (before simulation) (random order)')
-            elif co.connectivityConstraintUsage == 2:
-                infid.write(' // pasting connecting paths (before simulation) (order according to distance)')
-            elif co.connectivityConstraintUsage == 3:
-                infid.write(' // connectivity set during simulation (patterns of labels)')
-        infid.write('{0}'.format(endofline))
-
-        if co.connectivityConstraintUsage == 0:
-            continue
-
-        if co.connectivityType == 'connect_face':
-            infid.write('CONNECT_FACE')
-        elif co.connectivityType == 'connect_face_edge':
-            infid.write('CONNECT_FACE_EDGE')
-        elif co.connectivityType == 'connect_face_edge_corner':
-            infid.write('CONNECT_FACE_EDGE_CORNER')
-        if verbose > 0:
-            infid.write(' // connectivity type')
-        infid.write('{0}'.format(endofline))
-
-        infid.write('{}'.format(co.nclass))
-        if verbose > 0:
-            infid.write(' // nclass')
-        infid.write('{0}'.format(endofline))
-
-        for j, ci in enumerate(co.classInterval):
-            infid.write('{}  '.format(len(ci)))
-            for inter in ci:
-                infid.write(' {} {}'.format(inter[0], inter[1]))
-            if verbose > 0:
-                infid.write(' // class #{} (ninterval, and interval(s))'.format(j))
-            infid.write('{0}'.format(endofline))
-
-        infid.write('{}'.format(co.varname))
-        if verbose > 0:
-            infid.write(' // name for connected component label')
-        infid.write('{0}'.format(endofline))
-
-        if co.connectivityConstraintUsage == 1 or co.connectivityConstraintUsage == 2:
-            if co.tiAsRefFlag:
-                infid.write('{}'.format(deesse.MPDS_USE_TRAINING_IMAGE_FOR_CONNECTIVITY))
-            else:
-                fname = '{}{}{}.gslib'.format(fileprefix, suffix_refConnectivityImage, i)
-                img.writeImageGslib(co.refConnectivityImage, dirname + '/' + fname,
-                                missing_value=deesse.MPDS_MISSING_VALUE, fmt='%.10g')
-                infid.write('{} {}'.format(fname, co.refConnectivityImage.varname[co.refConnectivityVarIndex]))
-            if verbose > 0:
-                infid.write(' // reference image (and variable)')
-            infid.write('{0}'.format(endofline))
-
-        elif co.connectivityConstraintUsage == 3:
-            infid.write('{}'.format(co.deactivationDistance))
-            if verbose > 0:
-                infid.write(' // deactivation distance')
-            infid.write('{0}'.format(endofline))
-
-            infid.write('{}'.format(co.threshold))
-            if verbose > 0:
-                infid.write(' // threshold value')
-            infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Block data
-    if verbose > 0:
-        infid.write('\
-/* BLOCK DATA */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* FOR EACH VARIABLE:{0}\
-   1. Block data usage, integer (blockDataUsage):{0}\
-         - 0: no block data{0}\
-         - 1: use of block data (mean value){0}\
-{0}\
-   2. If blockDataUsage == 1, then{0}\
-         - block data file name{0}\
-*/{0}'.format(endofline))
-
-    for i, bd in enumerate(deesse_input.blockData):
-        if verbose > 0:
-            infid.write('\
-/* BLOCK DATA FOR VARIABLE #{1} */{0}'.format(endofline, i))
-
-        infid.write('{}'.format(bd.blockDataUsage))
-        if bd.blockDataUsage == 0:
-            infid.write('{0}'.format(endofline))
-            continue
-
-        elif bd.blockDataUsage == 1:
-            fname = '{}{}{}.dat'.format(fileprefix, suffix_blockData, i)
-            blockdata.writeBlockData(bd, dirname + '/' + fname)
-            infid.write(' {}'.format(fname))
-            if verbose > 0:
-                infid.write(' // block data file')
-            infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Maximal scan fraction
-    if verbose > 0:
-        infid.write('\
-/* MAXIMAL SCAN FRACTION FOR EACH TI (as many number(s) as number of training image(s)) */{0}'.format(endofline))
-
-    for v in deesse_input.maxScanFraction:
-        infid.write('{1}{0}'.format(endofline, v))
-
-    infid.write('{0}'.format(endofline))
-
-    # Pyramids
-    if verbose > 0:
-        infid.write('\
-/* PYRAMIDS */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* I. PYRAMID GENERAL PARAMETERS:{0}\
-      I.1. Number of pyramid level(s) (in addition to original simulation grid, i.e. number of{0}\
-           reduction operations), integer (npyramidLevel):{0}\
-              - = 0: no use of pyramids{0}\
-              - > 0: use pyramids, npyramidLevel should be equal to the max of "nlevel" entries{0}\
-                     in pyramid parameters for every variable (point II.1 below);{0}\
-                     pyramid levels are indexed from fine to coarse:{0}\
-                        * index 0            : original simulation grid{0}\
-                        * index npyramidLevel: coarsest level{0}\
-      If npyramidLevel > 0:{0}\
-         I.2. for each level, i.e. for i = 1,..., npyramidLevel:{0}\
-                 - kx, ky, kz (3 integer): reduction step along x,y,z-direction for the i-th reduction:{0}\
-                      k[x|y|z] = 0: nothing is done, same dimension in output{0}\
-                      k[x|y|z] = 1: same dimension in output (with weighted average over 3 nodes){0}\
-                      k[x|y|z] = 2: classical gaussian pyramid{0}\
-                      k[x|y|z] > 2: generalized gaussian pyramid{0}\
-         I.3. pyramid simulation mode, key work (pyramidSimulationMode):{0}\
-                 - PYRAMID_SIM_HIERARCHICAL:{0}\
-                      (a) spreading conditioning data through the pyramid by simulation at each{0}\
-                          level, from fine to coarse, conditioned to the level one rank finer{0}\
-                      (b) simulation at the coarsest level, then simulation of each level, from coarse{0}\
-                          to fine, conditioned to the level one rank coarser{0}\
-                 - PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION:{0}\
-                      (a) spreading conditioning data through the pyramid by simulation at each{0}\
-                          level, from fine to coarse, conditioned to the level one rank finer{0}\
-                      (b) simulation at the coarsest level, then simulation of each level, from coarse{0}\
-                          to fine, conditioned to the gaussian expansion of the level one rank coarser{0}\
-                 - PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE:{0}\
-                      co-simulation of all levels, simulation done at one level at a time{0}\
-         I.4. Factors to adapt the maximal number of neighboring nodes:{0}\
-              I.4.1. Setting mode, key word (factorNneighboringNodeSettingMode):{0}\
-                        - PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_DEFAULT: set by default{0}\
-                        - PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL : read in input{0}\
-              If factorNneighboringNodeSettingMode == PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL:{0}\
-                 I.4.2. The factors, depending on pyramid simulation mode:{0}\
-                    - if pyramidSimulationMode == PYRAMID_SIM_HIERARCHICAL{0}\
-                      or PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION:{0}\
-                         - faCond[0], faSim[0], fbCond[0], fbSim[0],{0}\
-                           ...,{0}\
-                           faCond[n-1], faSim[n-1], fbCond[n-1], fbSim[n-1],{0}\
-                           fbSim[n]:{0}\
-                              I.e. (4*n+1) positive numbers where n = npyramidLevel, with the following{0}\
-                              meaning. The maximal number of neighboring nodes (according to each variable){0}\
-                              is multiplied by{0}\
-                                (a) faCond[j] and faSim[j] for the conditioning level (level j){0}\
-                                    and the simulated level (level j+1) resp. during step (a) above{0}\
-                                (b) fbCond[j] and fbSim[j] for the conditioning level (level j+1) (expanded{0}\
-                                    if pyramidSimulationMode == PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION){0}\
-                                    and the simulated level (level j) resp. during step (b) above{0}\
-                    - if pyramidSimulationMode == PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE:{0}\
-                         - f[0],..., f[npyramidLevel-1], f[npyramidLevel]:{0}\
-                              I.e. (npyramidLevel + 1) positive numbers, with the following meaning. The{0}\
-                              maximal number of neighboring nodes (according to each variable) is{0}\
-                              multiplied by f[j] for the j-th pyramid level.{0}\
-         I.5. Factors to adapt the distance threshold (similar to I.4):{0}\
-              I.5.1. Setting mode, key word (factorDistanceThresholdSettingMode):{0}\
-                        - PYRAMID_THRESHOLD_ADAPTING_FACTOR_DEFAULT: set by default{0}\
-                        - PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL : read in input{0}\
-              If factorDistanceThresholdSettingMode == PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL:{0}\
-                 I.5.2. The factors, depending on pyramid simulation mode (similar to I.4.2).{0}\
-         I.6. Factors to adapt the maximal scan fraction:{0}\
-              I.6.1. Setting mode, key word (factorMaxScanFractionSettingMode):{0}\
-                        - PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_DEFAULT: set by default{0}\
-                        - PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL : read in input{0}\
-              If factorMaxScanFractionSettingMode == PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL:{0}\
-                 I.6.2. The factors:{0}\
-                    - f[0],..., f[npyramidLevel-1], f[npyramidLevel]:{0}\
-                         I.e. (npyramidLevel + 1) positive numbers, with the following meaning. The{0}\
-                      maximal scan fraction (according to each training image) is{0}\
-                      multiplied by f[j] for the j-th pyramid level.{0}\
-{0}\
-         II. PYRAMID PARAMETERS FOR EACH VARIABLE:{0}\
-{0}\
-         II.1. nlevel: number of pyramid level(s) (number of reduction operations){0}\
-                          - = 0: no use of pyramid for the considered variable{0}\
-                          - > 0: use pyramids for the considered variable, with nlevel level{0}\
-{0}\
-         If nlevel > 0:{0}\
-            II.2. Pyramid type, key word (pyramidType):{0}\
-                     - PYRAMID_CONTINUOUS        : pyramid applied to continuous variable (direct){0}\
-                     - PYRAMID_CATEGORICAL_AUTO  : pyramid for categorical variable{0}\
-                                                      - pyramid for indicator variable of each category{0}\
-                                                        except one (one pyramid per indicator variable){0}\
-                     - PYRAMID_CATEGORICAL_CUSTOM: pyramid for categorical variable{0}\
-                                                      - pyramid for indicator variable of each class{0}\
-                                                        of values given explicitly (one pyramid per{0}\
-                                                        indicator variable){0}\
-                     - PYRAMID_CATEGORICAL_TO_CONTINUOUS:{0}\
-                                                   pyramid for categorical variable{0}\
-                                                      - the variable is transformed to a continuous{0}\
-                                                        variable (according to connection between adjacent{0}\
-                                                        nodes, the new values are ordered such that close{0}\
-                                                        values correspond to the most connected categories),{0}\
-                                                        then one pyramid for the transformed variable{0}\
-                                                        is used{0}\
-               If pyramidType == PYRAMID_CATEGORICAL_CUSTOM:{0}\
-                  The classes of values (for which the indicator variables are{0}\
-                  considered for pyramids) have to be defined; a class of values is given by a union{0}\
-                  of interval(s): [inf_1,sup_1[ U ... U [inf_n,sup_n[.{0}\
-                  Here are given:{0}\
-                     - nclass: number of classes of values{0}\
-                     - for i in 1,..., nclass: definition of the i-th class of values:{0}\
-                          - ninterval: number of interval(s){0}\
-                          - inf_1 sup_1 ... inf_ninterval sup_ninterval: inf and sup for each interval{0}\
-                               these values should satisfy inf_i < sup_i{0}\
-                  Then, for each class, the number of pyramid levels (number of reduction operations) is{0}\
-                     - nlevel_i (for i in 1,..., nclass){0}\
-            II.3 output flags (0 / 1), one per pyramid level, from index 1 to index nevel{0}\
-               (if flag is set to 1, the corresponding level and variable will be retrieved in output){0}\
-               Notes:{0}\
-                  - the names of the output variables are set to <vname>_ind<j>_lev<k>_real<n>, where{0}\
-                       - <vname> is the name of the "original" variable,{0}\
-                       - <j> is a pyramid index for that variable which starts at 0 (more than one{0}\
-                            index can be required if the pyramid type is set to{0}\
-                            PYRAMID_CATEGORICAL_AUTO or PYRAMID_CATEGORICAL_CUSTOM),{0}\
-                       - <k> is the level index,{0}\
-                       - <n> is the realization index (starting from 0){0}\
-                       [<j> and <k> are written on 3 digits, <n> on 5 digits, with leading zeros]{0}\
-                  - the values of the output variables are the normalized values (as used during the{0}\
-                       simulation in every level){0}\
-                  - output variables are written in image files if required: one file per level and per{0}\
-                       realization is generated (containing all considered variables for output at that{0}\
-                       level), the file is named "<simName>_pyr_lev###_real#####.gslib" where <simName>{0}\
-                       is the simulation name (see above, beginning of this file), and "###" and "######"{0}\
-                       are respectively the level index and the realization index;{0}\
-                       no file will be written if output settings is set to OUTPUT_SIM_NO_FILE (see above){0}\
-{0}\
-         III. CONDITIONING (HARD) DATA IN PYRAMID:{0}\
-            III.1 number of data image file(s) (n_im >= 0), followed by n_im file(s){0}\
-            III.2 number of data point set file(s) (n_ps >= 0), followed by n_ps file(s){0}\
-            Notes:{0}\
-               - the variables are identified by their name: the name should be set to{0}\
-                    <vname>_ind<j>_lev<k>, where <vname> is the name of the "original" variable, <j> is the{0}\
-                    pyramid index for that variable, and <k> is the level index in {{1, ..., npyramidLevel}}{0}\
-                    (<j> and <k> are written on 3 digits with leading zeros), see II.3 above{0}\
-               - the conditioning data values are the (already) normalized values (as used during the{0}\
-                    simulation in every level), see II.3 above{0}\
-               - the grid dimensions (support) of the level in which the data are given are used: for images{0}\
-                    the grid must be compatible, and for point sets the locations (coordinates) must be{0}\
-                    given accordingly{0}\
-               - conditioning data integrated in pyramid may erased (replaced) data already set or computed{0}\
-                    from conditioning data at the level one rank finer{0}\
-*/{0}'.format(endofline))
-
-    if verbose > 0:
-        infid.write('\
-/* PYRAMID GENERAL PARAMETERS */{0}'.format(endofline))
-
-    gp = deesse_input.pyramidGeneralParameters
-
-    infid.write('{}'.format(gp.npyramidLevel))
-    if verbose > 0:
-        infid.write(' // number of level(s) additional to initial SG')
-    infid.write('{0}'.format(endofline))
-
-    if gp.npyramidLevel:
-        for j, (jx, jy, jz) in enumerate(zip(gp.kx, gp.ky, gp.kz)):
-            infid.write('{} {} {}'.format(jx, jy, jz))
-            if verbose > 0:
-                infid.write(' // reduction step along x, y, z for level {}'.format(j))
-            infid.write('{0}'.format(endofline))
-
-        if gp.pyramidSimulationMode == 'hierarchical':
-            infid.write('PYRAMID_SIM_HIERARCHICAL')
-        elif gp.pyramidSimulationMode == 'hierarchical_using_expansion':
-            infid.write('PYRAMID_SIM_HIERARCHICAL_USING_EXPANSION')
-        elif gp.pyramidSimulationMode == 'all_level_one_by_one':
-            infid.write('PYRAMID_SIM_ALL_LEVEL_ONE_BY_ONE')
-        else:
-            infid.write('PYRAMID_SIM_NONE')
-        if verbose > 0:
-            infid.write(' // pyramid simulation mode')
-        infid.write('{0}'.format(endofline))
-
-        infid.write('PYRAMID_NNEIGHBOR_ADAPTING_FACTOR_MANUAL')
-        if verbose > 0:
-            infid.write(' // mode for adapting factors (max number of neighbors)')
-        infid.write('{0}'.format(endofline))
-
-        if gp.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
-            for i in range(gp.npyramidLevel):
-                infid.write('{} {} {} {}'.format(
-                    gp.factorNneighboringNode[4*i], gp.factorNneighboringNode[4*i+1],
-                    gp.factorNneighboringNode[4*i+2], gp.factorNneighboringNode[4*i+3]))
-                if verbose > 0:
-                    infid.write(' // faCond[{0}], faSim[{0}], fbCond[{0}], fbSim[{0}]'.format(i))
-                infid.write('{0}'.format(endofline))
-
-            infid.write('{}'.format(gp.factorNneighboringNode[4*gp.npyramidLevel]))
-            if verbose > 0:
-                infid.write(' // fbSim[{}]'.format(gp.npyramidLevel))
-            infid.write('{0}'.format(endofline))
-
-        elif gp.pyramidSimulationMode == 'all_level_one_by_one':
-            for i, f in enumerate(gp.factorNneighboringNode):
-                infid.write('{}'.format(f))
-                if verbose > 0:
-                    infid.write(' // f[{}]'.format(i))
-                infid.write('{0}'.format(endofline))
-
-        infid.write('PYRAMID_THRESHOLD_ADAPTING_FACTOR_MANUAL')
-        if verbose > 0:
-            infid.write(' // mode for adapting factors (distance threshold)')
-        infid.write('{0}'.format(endofline))
-
-        if gp.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
-            for i in range(gp.npyramidLevel):
-                infid.write('{} {} {} {}'.format(
-                    gp.factorDistanceThreshold[4*i], gp.factorDistanceThreshold[4*i+1],
-                    gp.factorDistanceThreshold[4*i+2], gp.factorDistanceThreshold[4*i+3]))
-                if verbose > 0:
-                    infid.write(' // faCond[{0}], faSim[{0}], fbCond[{0}], fbSim[{0}]'.format(i))
-                infid.write('{0}'.format(endofline))
-
-            infid.write('{}'.format(gp.factorDistanceThreshold[4*gp.npyramidLevel]))
-            if verbose > 0:
-                infid.write(' // fbSim[{}]'.format(gp.npyramidLevel))
-            infid.write('{0}'.format(endofline))
-
-        elif gp.pyramidSimulationMode == 'all_level_one_by_one':
-            for i, f in enumerate(gp.factorDistanceThreshold):
-                infid.write('{}'.format(f))
-                if verbose > 0:
-                    infid.write(' // f[{}]'.format(i))
-                infid.write('{0}'.format(endofline))
-
-        infid.write('PYRAMID_MAX_SCAN_FRACTION_ADAPTING_FACTOR_MANUAL')
-        if verbose > 0:
-            infid.write(' // mode for adapting factors (maximal scan fraction)')
-        infid.write('{0}'.format(endofline))
-
-        for i, f in enumerate(gp.factorMaxScanFraction):
-            infid.write('{}'.format(f))
-            if verbose > 0:
-                infid.write(' // f[{}]'.format(i))
-            infid.write('{0}'.format(endofline))
-
-        for i, pp in enumerate(deesse_input.pyramidParameters):
-            if verbose > 0:
-                infid.write('\
-/* PYRAMID PARAMETERS FOR VARIABLE #{1} */{0}'.format(endofline, i))
-
-            infid.write('{}'.format(pp.nlevel))
-            if verbose > 0:
-                infid.write(' // nlevel')
-            infid.write('{0}'.format(endofline))
-
-            if pp.pyramidType == 'continuous':
-                infid.write('PYRAMID_CONTINUOUS')
-                if verbose > 0:
-                    infid.write(' // pyramid type')
-                infid.write('{0}'.format(endofline))
-
-            elif pp.pyramidType == 'categorical_auto':
-                infid.write('PYRAMID_CATEGORICAL_AUTO')
-                if verbose > 0:
-                    infid.write(' // pyramid type')
-                infid.write('{0}'.format(endofline))
-
-            elif pp.pyramidType == 'categorical_custom':
-                infid.write('PYRAMID_CATEGORICAL_CUSTOM')
-                if verbose > 0:
-                    infid.write(' // pyramid type')
-                infid.write('{0}'.format(endofline))
-
-                infid.write('{}'.format(pp.nclass))
-                if verbose > 0:
-                    infid.write(' // nclass')
-                infid.write('{0}'.format(endofline))
-
-                for j, ci in enumerate(pp.classInterval):
-                    infid.write('{}  '.format(len(ci)))
-                    for inter in ci:
-                        infid.write(' {} {}'.format(inter[0], inter[1]))
-                    if verbose > 0:
-                        infid.write(' // class #{} (ninterval, and interval(s))'.format(j))
-                    infid.write('{0}'.format(endofline))
-
-            elif pp.pyramidType == 'categorical_to_continuous':
-                infid.write('PYRAMID_CATEGORICAL_TO_CONTINUOUS')
-                if verbose > 0:
-                    infid.write(' // pyramid type')
-                infid.write('{0}'.format(endofline))
-
-            else:
-                infid.write('PYRAMID_NONE')
-                if verbose > 0:
-                    infid.write(' // pyramid type')
-                infid.write('{0}'.format(endofline))
-
-            for i, flag in enumerate(pp.outputLevelFlag):
-                if i == 0:
-                    infid.write('{}'.format(flag))
-                else:
-                    infid.write(' {}'.format(flag))
-            if verbose > 0:
-                infid.write(' // output flags, one per level, from index 1 to nlevel')
-            infid.write('{0}'.format(endofline))
-
-        if verbose > 0:
-            infid.write('\
-/* CONDITIONING (HARD) DATA IN PYRAMID */{0}'.format(endofline))
-
-        if deesse_input.pyramidDataImage is not None:
-            infid.write('{}'.format(len(deesse_input.pyramidDataImage)))
-            if verbose > 0:
-                infid.write(' // number of data image(s)')
-            infid.write('{0}'.format(endofline))
-            for i, im in enumerate(deesse_input.pyramidDataImage):
-                fname = '{}{}{}.gslib'.format(fileprefix, suffix_pyramidDataImage, i)
-                img.writeImageGslib(im, dirname + '/' + fname,
-                                    missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-                infid.write('{1}{0}'.format(endofline, fname))
-        else:
-            infid.write('0')
-            if verbose > 0:
-                infid.write(' // number of data image(s)')
-            infid.write('{0}'.format(endofline))
-
-        if deesse_input.pyramidDataPointSet is not None:
-            infid.write('{}'.format(len(deesse_input.pyramidDataPointSet)))
-            if verbose > 0:
-                infid.write(' // number of data point set(s)')
-            infid.write('{0}'.format(endofline))
-            for i, ps in enumerate(deesse_input.pyramidDataPointSet):
-                fname = '{}{}{}.gslib'.format(fileprefix, suffix_pyramidDataPointSet, i)
-                img.writePointSetGslib(ps, dirname + '/' + fname,
-                                       missing_value=deesse.MPDS_MISSING_VALUE, fmt="%.10g")
-                infid.write('{1}{0}'.format(endofline, fname))
-        else:
-            infid.write('0')
-            if verbose > 0:
-                infid.write(' // number of data point set(s)')
-            infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Tolerance
-    if verbose > 0:
-        infid.write('\
-/* TOLERANCE */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write("\
-/* Tolerance t on the threshold value for flagging nodes (for post-processing):{0}\
-   let d(i) be the distance between the data event in the simulation grid and in the training{0}\
-   image for the i-th variable and s(i) be the distance threshold for the i-th variable, and let{0}\
-   e(i) = max(0, (d(i)-s(i))/s(i)) be the relative error for the i-th variable, i.e. the relative{0}\
-   part of the distance d(i) beyond the threshold s(i); during the scan of the training image, a node{0}\
-   that minimizes e = sum (e(i)) is retained (the scan is stopped if e = 0); if e is greater than the{0}\
-   tolerance t (given here), then the current simulated node and all non-conditioning nodes of the{0}\
-   data events (one per variable) in the simulation grid are flagged for resimulation (post-processing).{0}\
-   Note that if probability / connectivity / block data constraints used a similar error as e(i) that{0}\
-   contributes in the sum defining the error e.{0}\
-*/{0}".format(endofline))
-
-    infid.write('{1}{0}'.format(endofline, deesse_input.tolerance))
-    infid.write('{0}'.format(endofline))
-
-    # Post-processing
-    if verbose > 0:
-        infid.write('\
-/* POST-PROCESSING */{0}'.format(endofline))
-
-    if verbose == 2:
-        infid.write('\
-/* 1. Maximal number of path(s) (npostProcessingPathMax){0}\
-   2. If npostProcessingPathMax > 0:{0}\
-      key word for post-processing parameters (i. e. number of neighboring nodes, distance threshold,{0}\
-      maximal scan fraction, and tolerance):{0}\
-         - POST_PROCESSING_PARAMETERS_DEFAULT: for default parameters{0}\
-         - POST_PROCESSING_PARAMETERS_SAME   : for same parameters as given above{0}\
-         - POST_PROCESSING_PARAMETERS_MANUAL : for manual settings{0}\
-   3. If npostProcessingPathMax > 0 and POST_PROCESSING_PARAMETERS_MANUAL:{0}\
-         MAXIMAL NUMBER OF NEIGHBORING NODES FOR EACH VARIABLE (as many number(s) as number of variable(s)){0}\
-         MAXIMAL DENSITY OF NEIGHBORING NODES IN SEARCH NEIGHBORHOOD FOR EACH VARIABLE (as many number(s){0}\
-            as number of variable(s)){0}\
-         DISTANCE THRESHOLD FOR EACH VARIABLE (as many number(s) as number of variable(s)){0}\
-         MAXIMAL SCAN FRACTION FOR EACH TI (as many number(s) as number of training image(s)){0}\
-         TOLERANCE{0}\
-*/{0}'.format(endofline))
-
-    infid.write('{}'.format(deesse_input.npostProcessingPathMax))
-    if verbose > 0:
-        infid.write(' // number of post-processing path(s)')
-    infid.write('{0}'.format(endofline))
-
-    if deesse_input.npostProcessingPathMax:
-        infid.write('{1}{0}'.format(endofline, 'POST_PROCESSING_PARAMETERS_MANUAL'))
-
-        if verbose > 0:
-            infid.write('\
-/* POST-PROCESSING: MAXIMAL NUMBER OF NEIGHBORING NODES FOR EACH VARIABLE */{0}'.format(endofline))
-
-        for v in deesse_input.postProcessingNneighboringNode:
-            infid.write('{1}{0}'.format(endofline, v))
-        infid.write('{0}'.format(endofline))
-
-        if verbose > 0:
-            infid.write('\
-/* POST-PROCESSING: MAXIMAL DENSITY OF NEIGHBORING NODES IN SEARCH NEIGHBORHOOD FOR EACH VARIABLE */{0}'.format(endofline))
-
-        for v in deesse_input.postProcessingNeighboringNodeDensity:
-            infid.write('{1}{0}'.format(endofline, v))
-        infid.write('{0}'.format(endofline))
-
-        if verbose > 0:
-            infid.write('\
-/* POST-PROCESSING: DISTANCE THRESHOLD FOR EACH VARIABLE */{0}'.format(endofline))
-
-        for v in deesse_input.postProcessingDistanceThreshold:
-            infid.write('{1}{0}'.format(endofline, v))
-        infid.write('{0}'.format(endofline))
-
-        if verbose > 0:
-            infid.write('\
-/* POST-PROCESSING: MAXIMAL SCAN FRACTION FOR EACH TI */{0}'.format(endofline))
-
-        for v in deesse_input.postProcessingMaxScanFraction:
-            infid.write('{1}{0}'.format(endofline, v))
-        infid.write('{0}'.format(endofline))
-
-        if verbose > 0:
-            infid.write('\
-/* POST-PROCESSING: TOLERANCE */{0}'.format(endofline))
-
-        infid.write('{1}{0}'.format(endofline, deesse_input.postProcessingTolerance))
-        infid.write('{0}'.format(endofline))
-
-    infid.write('{0}'.format(endofline))
-
-    # Seed number and seed increment
-    if verbose > 0:
-        infid.write('\
-/* SEED NUMBER AND SEED INCREMENT */{0}'.format(endofline))
-
-    infid.write('{1}{0}'.format(endofline, deesse_input.seed))
-    infid.write('{1}{0}'.format(endofline, deesse_input.seedIncrement))
-    infid.write('{0}'.format(endofline))
-
-    # Number of realization(s)
-    if verbose > 0:
-        infid.write('\
-/* NUMBER OF REALIZATION(S) */{0}'.format(endofline))
-
-    infid.write('{1}{0}'.format(endofline, deesse_input.nrealization))
-    infid.write('{0}'.format(endofline))
-
-    # END
-    infid.write('END{0}'.format(endofline))
+    # Convert deesse input from python to C
+    try:
+        mpds_siminput = deesse_input_py2C(deesse_input)
+    except:
+        print('ERROR: unable to convert deesse input from python to C...')
+        return
+
+    if mpds_siminput is None:
+        print('ERROR: unable to convert deesse input from python to C...')
+        return
+
+    err = deesse.MPDSExportSimInput( mpds_siminput, dirname, fileprefix, endofline, verbose)
+
+    if err:
+        err_message = deesse.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        print(err_message)
+
+    # Free memory on C side: deesse input
+    deesse.MPDSFreeSimInput(mpds_siminput)
+    #deesse.MPDSFree(mpds_siminput)
+    deesse.free_MPDS_SIMINPUT(mpds_siminput)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -6151,6 +4879,2757 @@ def imgCategoricalToContinuous(
 
     return output_image
 # ----------------------------------------------------------------------------
+
+##### Additional stuff for deesseX #####
+
+# ============================================================================
+class DeesseXInputSectionPath(object):
+    """
+    Defines section mode and path for cross-simulation (deesseX):
+        sectionMode:
+            (string) section mode, defining which type of section will be
+                simulated alternately, possible values:
+                    'section_xy_xz_yz',
+                    'section_xy_yz_xz',
+                    'section_xz_xy_yz',
+                    'section_xz_yz_xy',
+                    'section_yz_xy_xz',
+                    'section_yz_xz_xy',
+                    'section_xy_xz',
+                    'section_xz_xy',
+                    'section_xy_yz',
+                    'section_yz_xy',
+                    'section_xz_yz',
+                    'section_yz_xz',
+                    'section_xy_z',
+                    'section_z_xy',
+                    'section_xz_y',
+                    'section_y_xz',
+                    'section_yz_x',
+                    'section_x_yz',
+                    'section_x_y_z',
+                    'section_x_z_y',
+                    'section_y_x_z',
+                    'section_y_z_x',
+                    'section_z_x_y',
+                    'section_z_y_x',
+                    'section_x_y',
+                    'section_y_x',
+                    'section_x_z',
+                    'section_z_x',
+                    'section_y_z',
+                    'section_z_y'
+                'section_<t_1>_<t_2>[_<t_3>]': means that simulation in 2D
+                    (resp. 1D) will be done alternately in sections parallel to
+                    the plane (resp. axis) given in the string '<t_i>';
+                notes:
+                    - the order can matter (depending on sectionPathMode)
+                    - the mode involving only two 1D axis as section (i.e.
+                        'section_x_y' to 'section_z_y') can be used for a
+                        two-dimensional simulation grid
+
+        sectionPathMode:
+            (string) section path mode, defining the section path, i.e. the
+                succession of simulated section, possible values:
+                    - 'section_path_random': random section path
+
+                    - 'section_path_pow_2': indexes (of cells locating the section)
+                        in the orthogonal direction of the sections, are chosen as
+                        decreasing power of 2 (dealing alternately with each section
+                        orientation in the order given by sectionMode)
+
+                    - 'section_path_subdiv': succession of sections is defined as:
+                        (a) for each section orientation (in the order given by sectionMode),
+                            the section corresponding to the most left border (containing the
+                            origin) of the simulation grid is selected
+                        (b) let minspaceX, minspaceY, minspaceZ (see parameters below), the
+                            minimal space (or step) in number of cells along x, y, z axis resp.
+                            between two successive sections of the same type and orthogonal to
+                            x, y, z axis resp.:
+                            (i) for each section orientation (in the order given by sectionMode):
+                                the section(s) corresponding to the most right border (face or edge
+                                located at one largest index in the corresponding direction) of the
+                                simulation grid is selected, provided that the space (step) with
+                                the previous section (selected in (a)) satisfies the minimal space
+                                in the relevant direction
+                            (ii) for each section orientation (in the order given by sectionMode):
+                                the sections between the borders are selected, such that they are
+                                regularly spaced along any direction (with a difference of at most
+                                one cell) and such that the minimal space is satisfied (i.e. the
+                                number of cell from one section to the next one is at least equal
+                                to corresponding parameter minspaceX, minspaceY or minspaceZ)
+                            (iii) for each section orientation (in the order given by sectionMode):
+                                if in step (i) the right border was not selected (due to a space
+                                less than the minimal space paremeter(s)), then it is selected here
+                            note that at the end of step (b), there are at least two section of
+                            same type along any axis direction (having more than one cell in the
+                            entire simulation grid)
+                        (c) next, the middle sections (along each direction) between each pair
+                            of consecutive sections already selected are selected, until the
+                            entire simulation grid is filled, following one of the two methods
+                            (see parameter balancedFillingFlag below):
+                            - if balancedFillingFlag is False:
+                                considering alternately each section orientation, in the order
+                                given by sectionMode,
+                            - if balancedFillingFlag is True:
+                                choosing the axis direction (x, y, or z) for which the space (in
+                                number of cells) between two consecutive sections already
+                                selected is the largest, then selecting the section orientation(s)
+                                (among those given by sectionMode) orthogonal to that direction,
+                                and considering the middle sections with respect to that direction
+
+                    - 'section_path_manual':  succession of sections explicitly given
+                        (see nsection, sectionType and sectionLoc below)
+
+        minSpaceX: used iff sectionPathMode is set to 'section_path_subdiv',
+            (float) minimal space in number of cells along x direction, in step (b) above;
+                note:
+                    - if minSpaceX > 0: use as it in step (b)
+                    - if minSpaceX = 0: ignore (skip) step (b,ii) for x direction
+                    - if minSpaceX < 0: this parameter is automatically computed, and
+                        defined as the "range" in the x direction computed from the
+                        training image(s) used in section(s) including the x direction
+
+        minSpaceY:
+            (float) same as minSpaceX, but in y direction
+
+        minSpaceZ:
+            (float) same as minSpaceZ, but in z direction
+
+        balancedFillingFlag: used iff sectionPathMode is set to 'section_path_subdiv',
+            (bool) boolean flag defining the method used in step (c) above
+
+        nsection: used iff sectionPathMode is set to 'section_path_manual',
+            (int) number of section(s) to be simulated at toatl [sections (2D and/or 1D)]
+                note: a partial filling of the simulation grid can be considered
+
+        sectionType: used iff sectionPathMode is set to 'section_path_manual',
+            (sequence of ints of length nsection) indexes identifying the type of sections:
+                - sectionType[i]: type id of the i-th simulated section, 0 <= i < nsection
+                    with:
+                        id = 0: xy section (2D)
+                        id = 1: xz section (2D)
+                        id = 2: yz section (2D)
+                        id = 3: z section (1D)
+                        id = 4: y section (1D)
+                        id = 5: x section (1D)
+
+        sectionLoc: used iff sectionPathMode is set to 'section_path_manual',
+            (sequence of ints of length nsection) indexes location of sections:
+                - sectionLoc[i]: location of the i-th simulated section, 0 <= i < nsection
+                    with:
+                        - if sectionType[i] = 0 (xy), then sectionLoc[i]=k in {0, ..., nz-1}, k is the index location along x axis
+                        - if sectionType[i] = 1 (xz), then sectionLoc[i]=k in {0, ..., ny-1}, k is the index location along y axis
+                        - if sectionType[i] = 2 (yz), then sectionLoc[i]=k in {0, ..., nx-1}, k is the index location along z axis
+                        - if sectionType[i] = 3 (z), then sectionLoc[i]=k in {0, ..., nx*ny-1}, (k%nx, k//nx) is the two index locations in xy section
+                        - if sectionType[i] = 4 (y), then sectionLoc[i]=k in {0, ..., nx*nz-1}, (k%nx, k//nx) is the two index locations in xz section
+                        - if sectionType[i] = 5 (x), then sectionLoc[i]=k in {0, ..., ny*nz-1}, (k%ny, k//ny) is the two index locations in yz section
+                    and with nx, ny, nz the number of nodes in the entire simulation grid along x, y, z axis respectively
+    """
+
+    def __init__(self,
+                 sectionMode='section_xz_yz',
+                 sectionPathMode='section_path_subdiv',
+                 minSpaceX=None,
+                 minSpaceY=None,
+                 minSpaceZ=None,
+                 balancedFillingFlag=True,
+                 nsection=0,
+                 sectionType=None,
+                 sectionLoc=None):
+        # sectionMode
+        sectionMode_avail = (
+            'section_xy_xz_yz',
+            'section_xy_yz_xz',
+            'section_xz_xy_yz',
+            'section_xz_yz_xy',
+            'section_yz_xy_xz',
+            'section_yz_xz_xy',
+            'section_xy_xz',
+            'section_xz_xy',
+            'section_xy_yz',
+            'section_yz_xy',
+            'section_xz_yz',
+            'section_yz_xz',
+            'section_xy_z',
+            'section_z_xy',
+            'section_xz_y',
+            'section_y_xz',
+            'section_yz_x',
+            'section_x_yz',
+            'section_x_y_z',
+            'section_x_z_y',
+            'section_y_x_z',
+            'section_y_z_x',
+            'section_z_x_y',
+            'section_z_y_x',
+            'section_x_y',
+            'section_y_x',
+            'section_x_z',
+            'section_z_x',
+            'section_y_z',
+            'section_z_y'
+        )
+        if sectionMode not in sectionMode_avail:
+            print('ERROR: (DeesseXInputSectionPath) unknown sectionMode')
+            return
+
+        self.sectionMode = sectionMode
+
+        # sectionPathMode
+        sectionPathMode_avail = (
+            'section_path_random',
+            'section_path_pow_2',
+            'section_path_subdiv',
+            'section_path_manual'
+        )
+        if sectionPathMode not in sectionPathMode_avail:
+            print('ERROR: (DeesseXInputSectionPath) unknown sectionPathMode')
+            return
+
+        self.sectionPathMode = sectionPathMode
+
+        if self.sectionPathMode == 'section_path_subdiv':
+            # minSpaceX, minSpaceY, minSpaceZ
+            if minSpaceX is None:
+                self.minSpaceX = -1
+            else:
+                self.minSpaceX = minSpaceX
+
+            if minSpaceY is None:
+                self.minSpaceY = -1
+            else:
+                self.minSpaceY = minSpaceY
+
+            if minSpaceZ is None:
+                self.minSpaceZ = -1
+            else:
+                self.minSpaceZ = minSpaceZ
+
+            # balancedFillingFlag
+            self.balancedFillingFlag = balancedFillingFlag
+
+        else:
+            self.minSpaceX = 0.0 # unused
+            self.minSpaceY = 0.0 # unused
+            self.minSpaceZ = 0.0 # unused
+            self.balancedFillingFlag = False # unused
+
+        if self.sectionPathMode == 'section_path_manual':
+            self.nsection = nsection
+            if nsection > 0:
+                try:
+                    self.sectionType = np.asarray(sectionType, dtype='int').reshape(nsection)
+                except:
+                    print('ERROR: (DeesseXInputSectionPath) field "sectionType"...')
+                    return
+                try:
+                    self.sectionLoc = np.asarray(sectionLoc, dtype='int').reshape(nsection)
+                except:
+                    print('ERROR: (DeesseXInputSectionPath) field "sectionLoc"...')
+                    return
+            else:
+                self.sectionType = None
+                self.sectionLoc = None
+
+        else:
+            self.nsection = 0       # unused
+            self.sectionType = None # unused
+            self.sectionLoc = None  # unused
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    #     return self.name
+    def __repr__(self):
+        out = '*** DeesseXInputSectionPath object ***'
+        out = out + '\n' + 'sectionMode = {0.sectionMode}'.format(self)
+        out = out + '\n' + 'sectionPathMode = {0.sectionPathMode}'.format(self)
+        if self.sectionPathMode == 'section_path_subdiv':
+            out = out + '\n' + 'minSpaceX = ' + str(self.minSpaceX) + ' # (-1 for automatical computation)'
+            out = out + '\n' + 'minSpaceY = ' + str(self.minSpaceY) + ' # (-1 for automatical computation)'
+            out = out + '\n' + 'minSpaceZ = ' + str(self.minSpaceZ) + ' # (-1 for automatical computation)'
+            out = out + '\n' + 'balancedFillingFlag = {0.balancedFillingFlag}'.format(self)
+        elif self.sectionPathMode == 'section_path_manual':
+            out = out + '\n' + 'nsection = ' + str(self.nsection)
+            out = out + '\n' + 'sectionType = ' + str(self.sectionType)
+            out = out + '\n' + 'sectionLoc = ' + str(self.sectionLoc)
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
+# ============================================================================
+
+# ============================================================================
+class DeesseXInputSection(object):
+    """
+    Defines input parameters for one section type (deesseX):
+        nx, ny, nz: (ints) number of cells in each direction in the entire
+                        simulation grid (SG);
+                        should be consistent with the "parent" DeesseXInput class
+                        (as defined in the "parent" DeesseXInput class)
+
+        nv:         (int) number of variable(s) / attribute(s);
+                        should be consistent with the "parent" DeesseXInput class
+                        (as defined in the "parent" DeesseXInput class)
+
+        distanceType:
+                    (List (or 1-dimensional array) of ints or strings of size nv)
+                        distance type (between pattern) for each variable
+                        (as defined in the "parent" DeesseXInput class)
+
+        sectionType:
+                    (string or int) type of section, possible values:
+                        - 'xy' or 'XY' or 0: 2D section parallel to the plane xy
+                        - 'xz' or 'XZ' or 1: 2D section parallel to the plane xz
+                        - 'yz' or 'YZ' or 2: 2D section parallel to the plane yz
+                        - 'z' or 'Z' or 3:   1D section parallel to the axis z
+                        - 'y' or 'Y' or 4:   1D section parallel to the axis y
+                        - 'x' or 'X' or 5:   1D section parallel to the axis x
+
+        nTI:        (int)
+                        as in DeesseInput class (see this class)
+
+        TI:         (1-dimensional array of Img (class))
+                        as in DeesseInput class (see this class)
+
+        simGridAsTiFlag:
+                    (1-dimensional array of 'bool')
+                        as in DeesseInput class (see this class)
+
+        pdfTI:      ((nTI, nz, ny, nx) array of floats)
+                        as in DeesseInput class (see this class);
+
+        homothetyUsage:
+                    (int)
+                        as in DeesseInput class (see this class)
+
+        homothetyXLocal, homothetyYLocal, homothetyZLocal:
+                    (bool)
+                        as in DeesseInput class (see this class)
+
+        homothetyXRatio, homothetyYRatio, homothetyZRatio:
+                    (nd array or None)
+                        as in DeesseInput class (see this class)
+                        note: if given "locally", the dimension of the
+                        entire simulation grid is considered
+
+        rotationUsage:
+                    (int)
+                        as in DeesseInput class (see this class)
+
+        rotationAzimuthLocal, rotationDipLocal, rotationPlungeLocal:
+                    (bool)
+                        as in DeesseInput class (see this class)
+
+        rotationAzimuth, rotationDip, rotationPlunge:
+                    (nd array or None)
+                        as in DeesseInput class (see this class)
+                        note: if given "locally", the dimension of the
+                        entire simulation grid is considered
+
+        searchNeighborhoodParameters:
+                    (1-dimensional array of SearchNeighborhoodParameters (class) of size nv)
+                        as in DeesseInput class (see this class);
+
+        nneighboringNode:
+                    (1-dimensional array of ints of size nv)
+                        as in DeesseInput class (see this class);
+
+        maxPropInequalityNode:
+                    (1-dimensional array of doubles of size nv)
+                        as in DeesseInput class (see this class);
+
+        neighboringNodeDensity:
+                    (1-dimensional array of doubles of size nv)
+                        as in DeesseInput class (see this class);
+
+        simType:    (string)
+                        as in DeesseInput class (see this class);
+                        note: defining the type of simulation within the section
+
+        simPathType:
+                    (string)
+                        as in DeesseInput class (see this class);
+                        note: defining the type of path within the section
+
+        simPathStrength:
+                    (double)
+                        as in DeesseInput class (see this class);
+                        note: defining the type of path within the section
+
+        simPathPower:
+                    (double)
+                        as in DeesseInput class (see this class);
+                        note: defining the type of path within the section
+
+        simPathUnilateralOrder:
+                    (1-dimesional array of ints)
+                        as in DeesseInput class (see this class);
+                        note: defining the type of path within the section
+
+        distanceThreshold:
+                    (1-dimensional array of floats of size nv)
+                        as in DeesseInput class (see this class);
+
+        softProbability:
+                    (1-dimensional array of SoftProbability (class) of size nv)
+                        as in DeesseInput class (see this class);
+
+        maxScanFraction:
+                    (1-dimensional array of doubles of size nTI)
+                        as in DeesseInput class (see this class);
+
+        pyramidGeneralParameters:
+                    (PyramidGeneralParameters (class))
+                        as in DeesseInput class (see this class);
+                        note: defining the general pyramid parameters
+                        for the simulation within the section
+
+        pyramidParameters:
+                    (1-dimensional array of PyramidParameters (class) of size nv)
+                        as in DeesseInput class (see this class);
+                        note: defining the pyramid parameters
+                        for the simulation within the section
+
+        tolerance:  (float)
+                        as in DeesseInput class (see this class);
+
+        npostProcessingPathMax:
+                    (int)
+                        as in DeesseInput class (see this class);
+
+        postProcessingNneighboringNode:
+                    (1-dimensional array of ints of size nv)
+                        as in DeesseInput class (see this class);
+
+        postProcessingNeighboringNodeDensity:
+                    (1-dimensional array of doubles of size nv)
+                        as in DeesseInput class (see this class);
+
+        postProcessingDistanceThreshold:
+                    (1-dimensional array of floats of size nv)
+                        as in DeesseInput class (see this class);
+
+        postProcessingMaxScanFraction:
+                    (1-dimensional array of doubles of size nTI)
+                        as in DeesseInput class (see this class);
+
+        postProcessingTolerance:
+                    (float)
+                        as in DeesseInput class (see this class);
+    """
+
+    def __init__(self,
+                 nx=0, ny=0, nz=0,
+                 nv=0, distanceType=None,
+                 sectionType=None,
+                 nTI=None, TI=None, simGridAsTiFlag=None, pdfTI=None,
+                 homothetyUsage=0,
+                 homothetyXLocal=False, homothetyXRatio=None,
+                 homothetyYLocal=False, homothetyYRatio=None,
+                 homothetyZLocal=False, homothetyZRatio=None,
+                 rotationUsage=0,
+                 rotationAzimuthLocal=False, rotationAzimuth=None,
+                 rotationDipLocal=False,     rotationDip=None,
+                 rotationPlungeLocal=False,  rotationPlunge=None,
+                 searchNeighborhoodParameters=None,
+                 nneighboringNode=None,
+                 maxPropInequalityNode=None, neighboringNodeDensity=None,
+                 simType='sim_one_by_one',
+                 simPathType='random',
+                 simPathStrength=0.5,
+                 simPathPower=2.0,
+                 simPathUnilateralOrder=None,
+                 distanceThreshold=None,
+                 softProbability=None,
+                 maxScanFraction=None,
+                 pyramidGeneralParameters=None,
+                 pyramidParameters=None,
+                 tolerance=0.0,
+                 npostProcessingPathMax=0,
+                 postProcessingNneighboringNode=None,
+                 postProcessingNeighboringNodeDensity=None,
+                 postProcessingDistanceThreshold=None,
+                 postProcessingMaxScanFraction=None,
+                 postProcessingTolerance=0.0):
+
+        self.ok = False # flag to "validate" the class [temporary to False]
+
+        # grid dimension and number of variable(s)
+        self.nx = int(nx)
+        self.ny = int(ny)
+        self.nz = int(nz)
+        self.nv = int(nv)
+
+        # distance type
+        if distanceType is None:
+            self.distanceType = np.array([0 for i in range(nv)])
+        else:
+            try:
+                if isinstance(distanceType, str) or isinstance(distanceType, int):
+                    self.distanceType = [distanceType]
+                else:
+                    self.distanceType = list(distanceType)
+                for i in range(len(self.distanceType)):
+                    if isinstance(self.distanceType[i], str):
+                        if self.distanceType[i] == 'categorical':
+                            self.distanceType[i] = 0
+                        elif self.distanceType[i] == 'continuous':
+                            self.distanceType[i] = 1
+                        else:
+                            print('ERROR: (DeesseXInputSection) field "distanceType"...')
+                            return
+                self.distanceType = np.asarray(self.distanceType).reshape(nv)
+            except:
+                print('ERROR: (DeesseInput) field "distanceType"...')
+                return
+
+        # dimension
+        dim = int(nx>1) + int(ny>1) + int(nz>1)
+
+        # section type
+        if sectionType is None:
+            print('ERROR: (DeesseXInputSection) field "sectionType"...')
+            return
+
+        if isinstance(sectionType, str):
+            if sectionType == 'xy' or sectionType == 'XY':
+                self.sectionType = 0
+            elif sectionType == 'xz' or sectionType == 'XZ':
+                self.sectionType = 1
+            elif sectionType == 'yz' or sectionType == 'YZ':
+                self.sectionType = 2
+            elif sectionType == 'z' or sectionType == 'Z':
+                self.sectionType = 3
+            elif sectionType == 'y' or sectionType == 'Y':
+                self.sectionType = 4
+            elif sectionType == 'x' or sectionType == 'X':
+                self.sectionType = 5
+            else:
+                print('ERROR: (DeesseXInputSection) field "sectionType"...')
+                return
+
+        elif isinstance(sectionType, int):
+            self.sectionType = sectionType
+
+        else:
+            print('ERROR: (DeesseXInputSection) field "sectionType"...')
+            return
+
+        # TI, simGridAsTiFlag, nTI
+        if TI is None and simGridAsTiFlag is None:
+            print('ERROR: (DeesseXInputSection) invalid "TI / simGridAsTiFlag" (both None)...')
+            return
+
+        if TI is not None:
+            self.TI = np.asarray(TI).reshape(-1)
+
+        if simGridAsTiFlag is not None:
+            self.simGridAsTiFlag = np.asarray(simGridAsTiFlag, dtype='bool').reshape(-1)
+
+        if TI is None:
+            self.TI = np.array([None for i in range(len(self.simGridAsTiFlag))], dtype=object)
+
+        if simGridAsTiFlag is None:
+            self.simGridAsTiFlag = np.array([False for i in range(len(self.TI))], dtype='bool')
+
+        if len(self.TI) != len(self.simGridAsTiFlag):
+            print('ERROR: (DeesseXInputSection) invalid "TI / simGridAsTiFlag" (not same length)...')
+            return
+
+        for f, t in zip(self.simGridAsTiFlag, self.TI):
+            if (not f and t is None) or (f and t is not None):
+                print ('ERROR: (DeesseXInputSection) invalid "TI / simGridAsTiFlag"...')
+                return
+
+        if nTI is not None and nTI != len(self.TI):
+            print('ERROR: (DeesseXInputSection) invalid "nTI"...')
+            return
+
+        nTI = len(self.TI)
+        self.nTI = nTI
+
+        # pdfTI
+        if nTI <= 1:
+            self.pdfTI = None
+        else:
+            if pdfTI is None:
+                p = 1./nTI
+                self.pdfTI = np.repeat(p, nTI*nx*ny*nz).reshape(nTI, nz, ny, nx)
+            else:
+                try:
+                    self.pdfTI = np.asarray(pdfTI, dtype=float).reshape(nTI, nz, ny, nx)
+                except:
+                    print('ERROR: (DeesseXInputSection) field "pdfTI"...')
+                    return
+
+        # homothety
+        if homothetyUsage == 1:
+            if homothetyXLocal:
+                if homothetyXRatio is None:
+                    self.homothetyXRatio = np.repeat(1., nx*ny*nz).reshape(nz, ny, nx)
+                else:
+                    try:
+                        self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyXRatio"...')
+                        return
+            else:
+                if homothetyXRatio is None:
+                    self.homothetyXRatio = np.array([1.])
+                else:
+                    try:
+                        self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(1)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyXRatio"...')
+                        return
+
+            if homothetyYLocal:
+                if homothetyYRatio is None:
+                    self.homothetyYRatio = np.repeat(1., nx*ny*nz).reshape(nz, ny, nx)
+                else:
+                    try:
+                        self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyYRatio"...')
+                        return
+            else:
+                if homothetyYRatio is None:
+                    self.homothetyYRatio = np.array([1.])
+                else:
+                    try:
+                        self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(1)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyYRatio"...')
+                        return
+
+            if homothetyZLocal:
+                if homothetyZRatio is None:
+                    self.homothetyZRatio = np.repeat(1., nx*ny*nz).reshape(nz, ny, nx)
+                else:
+                    try:
+                        self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyZRatio"...')
+                        return
+            else:
+                if homothetyZRatio is None:
+                    self.homothetyZRatio = np.array([1.])
+                else:
+                    try:
+                        self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(1)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyZRatio"...')
+                        return
+
+        elif homothetyUsage == 2:
+            if homothetyXLocal:
+                if homothetyXRatio is None:
+                    self.homothetyXRatio = np.repeat(1., 2*nx*ny*nz).reshape(2, nz, ny, nx)
+                else:
+                    try:
+                        self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2, nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyXRatio"...')
+                        return
+            else:
+                if homothetyXRatio is None:
+                    self.homothetyXRatio = np.array([1., 1.])
+                else:
+                    try:
+                        self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyXRatio"...')
+                        return
+
+            if homothetyYLocal:
+                if homothetyYRatio is None:
+                    self.homothetyYRatio = np.repeat(1., 2*nx*ny*nz).reshape(2, nz, ny, nx)
+                else:
+                    try:
+                        self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2, nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyYRatio"...')
+                        return
+            else:
+                if homothetyYRatio is None:
+                    self.homothetyYRatio = np.array([1., 1.])
+                else:
+                    try:
+                        self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyYRatio"...')
+                        return
+
+            if homothetyZLocal:
+                if homothetyZRatio is None:
+                    self.homothetyZRatio = np.repeat(1., 2*nx*ny*nz).reshape(2, nz, ny, nx)
+                else:
+                    try:
+                        self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2, nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyZRatio"...')
+                        return
+            else:
+                if homothetyZRatio is None:
+                    self.homothetyZRatio = np.array([1., 1.])
+                else:
+                    try:
+                        self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "homothetyZRatio"...')
+                        return
+
+        elif homothetyUsage == 0:
+            self.homothetyXRatio = None
+            self.homothetyYRatio = None
+            self.homothetyZRatio = None
+
+        else:
+            print ('ERROR: (DeesseXInputSection) invalid homothetyUsage')
+            return
+
+        self.homothetyUsage = homothetyUsage
+        self.homothetyXLocal = homothetyXLocal
+        self.homothetyYLocal = homothetyYLocal
+        self.homothetyZLocal = homothetyZLocal
+
+        # rotation
+        if rotationUsage == 1:
+            if rotationAzimuthLocal:
+                if rotationAzimuth is None:
+                    self.rotationAzimuth = np.repeat(0., nx*ny*nz).reshape(nz, ny, nx)
+                else:
+                    try:
+                        self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationAzimuth"...')
+                        return
+            else:
+                if rotationAzimuth is None:
+                    self.rotationAzimuth = np.array([0.])
+                else:
+                    try:
+                        self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(1)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationAzimuth"...')
+                        return
+
+            if rotationDipLocal:
+                if rotationDip is None:
+                    self.rotationDip = np.repeat(0., nx*ny*nz).reshape(nz, ny, nx)
+                else:
+                    try:
+                        self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationDip"...')
+                        return
+            else:
+                if rotationDip is None:
+                    self.rotationDip = np.array([0.])
+                else:
+                    try:
+                        self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(1)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationDip"...')
+                        return
+
+            if rotationPlungeLocal:
+                if rotationPlunge is None:
+                    self.rotationPlunge = np.repeat(0., nx*ny*nz).reshape(nz, ny, nx)
+                else:
+                    try:
+                        self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationPlunge"...')
+                        return
+            else:
+                if rotationPlunge is None:
+                    self.rotationPlunge = np.array([0.])
+                else:
+                    try:
+                        self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(1)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationPlunge"...')
+                        return
+
+        elif rotationUsage == 2:
+            if rotationAzimuthLocal:
+                if rotationAzimuth is None:
+                    self.rotationAzimuth = np.repeat(0., 2*nx*ny*nz).reshape(2, nz, ny, nx)
+                else:
+                    try:
+                        self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2, nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationAzimuth"...')
+                        return
+            else:
+                if rotationAzimuth is None:
+                    self.rotationAzimuth = np.array([0., 0.])
+                else:
+                    try:
+                        self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationAzimuth"...')
+                        return
+
+            if rotationDipLocal:
+                if rotationDip is None:
+                    self.rotationDip = np.repeat(0., 2*nx*ny*nz).reshape(2, nz, ny, nx)
+                else:
+                    try:
+                        self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2, nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationDip"...')
+                        return
+            else:
+                if rotationDip is None:
+                    self.rotationDip = np.array([0., 0.])
+                else:
+                    try:
+                        self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationDip"...')
+                        return
+
+            if rotationPlungeLocal:
+                if rotationPlunge is None:
+                    self.rotationPlunge = np.repeat(0., 2*nx*ny*nz).reshape(2, nz, ny, nx)
+                else:
+                    try:
+                        self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2, nz, ny, nx)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationPlunge"...')
+                        return
+            else:
+                if rotationPlunge is None:
+                    self.rotationPlunge = np.array([0., 0.])
+                else:
+                    try:
+                        self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2)
+                    except:
+                        print('ERROR: (DeesseXInputSection) field "rotationPlunge"...')
+                        return
+
+        elif rotationUsage == 0:
+            self.rotationAzimuth = None
+            self.rotationDip = None
+            self.rotationPlunge = None
+
+        else:
+            print ('ERROR: (DeesseXInputSection) invalid rotationUsage')
+            return
+
+        self.rotationUsage = rotationUsage
+        self.rotationAzimuthLocal = rotationAzimuthLocal
+        self.rotationDipLocal = rotationDipLocal
+        self.rotationPlungeLocal = rotationPlungeLocal
+
+        # search neighborhood, number of neighbors, ...
+        if searchNeighborhoodParameters is None:
+            self.searchNeighborhoodParameters = np.array([SearchNeighborhoodParameters() for i in range(nv)])
+        else:
+            try:
+                self.searchNeighborhoodParameters = np.asarray(searchNeighborhoodParameters).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInputSection) field "searchNeighborhoodParameters"...')
+                return
+
+        if nneighboringNode is None:
+            if dim == 3: # 3D simulation
+                n = 36
+            else:
+                n = 24
+
+            if nv > 1:
+                n = int(np.ceil(n/nv))
+
+            self.nneighboringNode = np.array([n for i in range(nv)])
+        else:
+            try:
+                self.nneighboringNode = np.asarray(nneighboringNode).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInputSection) field "nneighboringNode"...')
+                return
+
+        if maxPropInequalityNode is None:
+            self.maxPropInequalityNode = np.array([0.25 for i in range(nv)])
+        else:
+            try:
+                self.maxPropInequalityNode = np.asarray(maxPropInequalityNode).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInputSection) field "maxPropInequalityNode"...')
+                return
+
+        if neighboringNodeDensity is None:
+            self.neighboringNodeDensity = np.array([1. for i in range(nv)])
+        else:
+            try:
+                self.neighboringNodeDensity = np.asarray(neighboringNodeDensity, dtype=float).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInputSection) field "neighboringNodeDensity"...')
+                return
+
+        # simulation type and simulation path type
+        if simType not in ('sim_one_by_one', 'sim_variable_vector'):
+            print ('ERRROR: (DeesseXInputSection) field "simType"...')
+            return
+
+        self.simType = simType
+
+        if simPathType not in ('random',
+            'random_hd_distance_pdf', 'random_hd_distance_sort',
+            'random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort',
+            'unilateral'):
+            print ('ERRROR: (DeesseXInputSection) field "simPathType"...')
+            return
+
+        self.simPathType = simPathType
+
+        self.simPathPower = simPathPower
+        self.simPathStrength = simPathStrength
+
+        if simPathType == 'unilateral':
+            if simType == 'sim_one_by_one':
+                length = 4
+            else: # simType == 'sim_variable_vector':
+                length = 3
+
+            if simPathUnilateralOrder is None:
+                self.simPathUnilateralOrder = np.array([i+1 for i in range(length)])
+            else:
+                try:
+                    self.simPathUnilateralOrder = np.asarray(simPathUnilateralOrder).reshape(length)
+                except:
+                    print('ERROR: (DeesseXInputSection) field "simPathUnilateralOrder"...')
+                    return
+        else:
+            self.simPathUnilateralOrder = None
+
+        # distance threshold
+        if distanceThreshold is None:
+            self.distanceThreshold = np.array([0.05 for i in range(nv)])
+        else:
+            try:
+                self.distanceThreshold = np.asarray(distanceThreshold, dtype=float).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInputSection) field "distanceThreshold"...')
+                return
+
+        # soft probability
+        if softProbability is None:
+            self.softProbability = np.array([SoftProbability(probabilityConstraintUsage=0) for i in range(nv)])
+        else:
+            try:
+                self.softProbability = np.asarray(softProbability).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInputSection) field "softProbability"...')
+                return
+
+        # maximal scan fraction
+        if maxScanFraction is None:
+            if dim == 3: # 3D simulation
+                nf = 10000
+            else:
+                nf = 5000
+
+            self.maxScanFraction = np.array([min(max(nf/self.TI[i].nxyz(), deesse.MPDS_MIN_MAXSCANFRACTION), deesse.MPDS_MAX_MAXSCANFRACTION) for i in range(nTI)])
+        else:
+            try:
+                self.maxScanFraction = np.asarray(maxScanFraction).reshape(nTI)
+            except:
+                print('ERROR: (DeesseXInputSection) field "maxScanFraction"...')
+                return
+
+        # pyramids
+        if pyramidGeneralParameters is None:
+            self.pyramidGeneralParameters = PyramidGeneralParameters(nx=nx, ny=ny, nz=nz)
+        else:
+            self.pyramidGeneralParameters = pyramidGeneralParameters
+
+        if pyramidParameters is None:
+            self.pyramidParameters = np.array([PyramidParameters() for i in range(nv)])
+        else:
+            try:
+                self.pyramidParameters = np.asarray(pyramidParameters).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInputSection) field "pyramidParameters"...')
+                return
+
+        # tolerance and post-processing
+        self.tolerance = tolerance
+        self.npostProcessingPathMax = npostProcessingPathMax
+
+        if postProcessingNneighboringNode is None:
+            if dim <= 1:
+                self.postProcessingNneighboringNode = np.array([deesse.MPDS_POST_PROCESSING_NNEIGHBORINGNODE_DEFAULT_1D for i in range(nv)])
+            elif dim == 2:
+                self.postProcessingNneighboringNode = np.array([deesse.MPDS_POST_PROCESSING_NNEIGHBORINGNODE_DEFAULT_2D for i in range(nv)])
+            else:
+                self.postProcessingNneighboringNode = np.array([deesse.MPDS_POST_PROCESSING_NNEIGHBORINGNODE_DEFAULT_3D for i in range(nv)])
+        else:
+            try:
+                self.postProcessingNneighboringNode = np.asarray(postProcessingNneighboringNode).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInputSection) field "postProcessingNneighboringNode"...')
+                return
+
+        if postProcessingNeighboringNodeDensity is None:
+            if dim <= 1:
+                self.postProcessingNeighboringNodeDensity = np.array([deesse.MPDS_POST_PROCESSING_NEIGHBORINGNODE_DENSITY_DEFAULT_1D for i in range(nv)], dtype=float)
+            elif dim == 2:
+                self.postProcessingNeighboringNodeDensity = np.array([deesse.MPDS_POST_PROCESSING_NEIGHBORINGNODE_DENSITY_DEFAULT_2D for i in range(nv)], dtype=float)
+            else:
+                self.postProcessingNeighboringNodeDensity = np.array([deesse.MPDS_POST_PROCESSING_NEIGHBORINGNODE_DENSITY_DEFAULT_3D for i in range(nv)], dtype=float)
+        else:
+            try:
+                self.postProcessingNeighboringNodeDensity = np.asarray(postProcessingNeighboringNodeDensity, dtype=float).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInputSection) field "postProcessingNeighboringNodeDensity"...')
+                return
+
+        if postProcessingDistanceThreshold is None:
+            self.postProcessingDistanceThreshold = np.zeros(nv)
+            for i in range(nv):
+                if self.distanceType[i] == 0:
+                    self.postProcessingDistanceThreshold[i] = deesse.MPDS_POST_PROCESSING_DISTANCE_THRESHOLD_DEFAULT_DISTANCETYPE_0
+                elif self.distanceType[i] == 1:
+                    self.postProcessingDistanceThreshold[i] = deesse.MPDS_POST_PROCESSING_DISTANCE_THRESHOLD_DEFAULT_DISTANCETYPE_1
+                elif self.distanceType[i] == 2:
+                    self.postProcessingDistanceThreshold[i] = deesse.MPDS_POST_PROCESSING_DISTANCE_THRESHOLD_DEFAULT_DISTANCETYPE_2
+                elif self.distanceType[i] == 3:
+                    self.postProcessingDistanceThreshold[i] = deesse.MPDS_POST_PROCESSING_DISTANCE_THRESHOLD_DEFAULT_DISTANCETYPE_3
+                elif self.distanceType[i] == 4:
+                    self.postProcessingDistanceThreshold[i] = deesse.MPDS_POST_PROCESSING_DISTANCE_THRESHOLD_DEFAULT_DISTANCETYPE_4
+        else:
+            try:
+                self.postProcessingDistanceThreshold = np.asarray(postProcessingDistanceThreshold, dtype=float).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInputSection) field "postProcessingDistanceThreshold"...')
+                return
+
+        if postProcessingMaxScanFraction is None:
+            self.postProcessingMaxScanFraction = np.array([min(deesse.MPDS_POST_PROCESSING_MAX_SCAN_FRACTION_DEFAULT, self.maxScanFraction[i]) for i in range(nTI)], dtype=float)
+
+        else:
+            try:
+                self.postProcessingMaxScanFraction = np.asarray(postProcessingMaxScanFraction, dtype=float).reshape(nTI)
+            except:
+                print('ERROR: (DeesseXInputSection) field "postProcessingMaxScanFraction"...')
+                return
+
+        self.postProcessingTolerance = postProcessingTolerance
+
+        self.ok = True # flag to "validate" the class
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    def __repr__(self):
+        out = '*** DeesseXInputSection object ***'
+        out = out + '\n' + "use '.__dict__' to print details"
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
+# ============================================================================
+
+# ============================================================================
+class DeesseXInput(object):
+    """
+    Defines general input parameters for deesseX (cross-simulation / X-simulation):
+        nx, ny, nz: (ints) number of simulation grid (SG) cells in each direction
+                        as in DeesseInput class (see this class)
+        sx, sy, sz: (floats) cell size in each direction
+                        as in DeesseInput class (see this class)
+        ox, oy, oz: (floats) origin of the SG (bottom-lower-left corner)
+                        as in DeesseInput class (see this class)
+        nv:         (int) number of variable(s) / attribute(s), should be
+                        at least 1
+                        as in DeesseInput class (see this class)
+
+        varname:    (list of strings of length nv) variable names
+                        as in DeesseInput class (see this class)
+
+        outputVarFlag:
+                    (1-dimensional array of 'bool', of size nv)
+                        as in DeesseInput class (see this class)
+
+        outputSectionTypeFlag:
+                    (bool) indicates if "section type" map(s) is (are) retrieved in output;
+                        one file per realization if section path mode is set to 'section_path_random',
+                        and one file in all otherwise (same for each realization),
+                        (see sectionPathMode in DeesseXInputSectionPath class);
+                        "section type" is an index identifiying the type of section
+                        (see sectionType in DeesseXInputSectionPath class)
+
+        outputSectionStepFlag:
+                    (bool) indicates if "section step" map(s) is (are) retrieved in output;
+                        one file per realization if section path mode is set to 'section_path_random',
+                        and one file in all otherwise (same for each realization
+                        (see sectionPathMode in DeesseXInputSectionPath class);
+                        "section step" is the step index of simulation by deesse
+                        of (a bunch of) sections of same type
+
+
+        outputReportFlag:
+                    (bool)
+                        as in DeesseInput class (see this class)
+
+        outputReportFileName:
+                    (string)
+                        as in DeesseInput class (see this class)
+
+        dataImage:  (1-dimensional array of Img (class), or None)
+                        as in DeesseInput class (see this class)
+        dataPointSet:
+                    (1-dimensional array of PointSet (class), or None)
+                        as in DeesseInput class (see this class)
+
+        mask:       ((nz, ny, nx) array of ints, or None)
+                        as in DeesseInput class (see this class)
+
+        expMax:     (float)
+                        as in DeesseInput class (see this class)
+
+        normalizingType:
+                    (string)
+                        as in DeesseInput class (see this class)
+
+        rescalingMode:
+                (list of strings of length nv)
+                        as in DeesseInput class (see this class)
+
+        rescalingTargetMin:
+                    (1-dimensional array of doubles of size nv)
+                        as in DeesseInput class (see this class)
+
+        rescalingTargetMax:
+                    (1-dimensional array of doubles of size nv)
+                        as in DeesseInput class (see this class)
+
+        rescalingTargetMean:
+                    (1-dimensional array of doubles of size nv)
+                        as in DeesseInput class (see this class)
+
+        rescalingTargetLength:
+                    (1-dimensional array of doubles of size nv)
+                        as in DeesseInput class (see this class)
+
+        relativeDistanceFlag:
+                    (1-dimensional array of 'bool', of size nv)
+                        as in DeesseInput class (see this class)
+        distanceType:
+                    (List (or 1-dimensional array) of ints or strings of size nv)
+                        as in DeesseInput class (see this class)
+
+        powerLpDistance
+                    (1-dimensional array of doubles of size nv)
+                        as in DeesseInput class (see this class)
+
+        powerLpDistanceInv
+                    (1-dimensional array of doubles of size nv)
+                        as in DeesseInput class (see this class)
+
+        conditioningWeightFactor:
+                    (1-dimensional array of floats of size nv)
+                        as in DeesseInput class (see this class)
+
+        sectionPath_parameters:
+                    (DeesseXInputSectionPath (class))
+                       defines the overall strategy of simulation
+                       as a succession of section (see this class)
+
+        section_parameters:
+                    (1-dimensional array of DeesseXInputSection (class))
+                        each component defines the parameter for
+                        one section type (see this class);
+
+        seed:       (int) initial seed
+                        as in DeesseInput class (see this class)
+
+        seedIncrement:
+                    (int) increment seed
+                        as in DeesseInput class (see this class)
+
+        nrealization:
+                    (int) number of realization(s)
+                        as in DeesseInput class (see this class)
+
+    Note: in output simulated images (obtained by running deesseX), the names
+        of the output variables are set to <vname>_real<n>, where
+            - <vname> is the name of the variable,
+            - <n> is the realization index (starting from 0)
+            [<n> is written on 5 digits, with leading zeros]
+    """
+
+    def __init__(self,
+                 nx=0,   ny=0,   nz=0,
+                 sx=1.0, sy=1.0, sz=1.0,
+                 ox=0.0, oy=0.0, oz=0.0,
+                 nv=0, varname=None, outputVarFlag=None,
+                 # simname='',
+                 outputSectionTypeFlag=False, #outputSectionTypeFileName=None,
+                 outputSectionStepFlag=False, #outputSectionStepFileName=None,
+                 outputReportFlag=False, outputReportFileName='dsX.log',
+                 dataImage=None, dataPointSet=None,
+                 mask=None,
+                 expMax=0.05,
+                 normalizingType='linear',
+                 rescalingMode=None,
+                 rescalingTargetMin=None, rescalingTargetMax=None,
+                 rescalingTargetMean=None, rescalingTargetLength=None,
+                 relativeDistanceFlag=None,
+                 distanceType=None,
+                 powerLpDistance=None,
+                 conditioningWeightFactor=None,
+                 sectionPath_parameters=None,
+                 section_parameters=None,
+                 seed=1234,
+                 seedIncrement=1,
+                 nrealization=1):
+
+        self.ok = False # flag to "validate" the class [temporary to False]
+
+        # consoleAppFlag
+        self.consoleAppFlag = False
+
+        # grid definition and variable(s)
+        self.nx = int(nx)
+        self.ny = int(ny)
+        self.nz = int(nz)
+        self.sx = float(sx)
+        self.sy = float(sy)
+        self.sz = float(sz)
+        self.ox = float(ox)
+        self.oy = float(oy)
+        self.oz = float(oz)
+        self.nv = int(nv)
+        if varname is None:
+            self.varname = ["V{:d}".format(i) for i in range(nv)]
+        else:
+            try:
+                self.varname = list(np.asarray(varname).reshape(nv))
+            except:
+                print('ERROR: (DeesseXInput) field "varname"...')
+                return
+
+        # outputVarFlag
+        if outputVarFlag is None:
+            self.outputVarFlag = np.array([True for i in range(nv)], dtype='bool')
+        else:
+            try:
+                self.outputVarFlag = np.asarray(outputVarFlag, dtype='bool').reshape(nv)
+            except:
+                print('ERROR: (DeesseXInput) field "outputVarFlag"...')
+                return
+
+        # # simname
+        # self.simname = None # unnecessary!
+
+        # output maps
+        self.outputSectionTypeFlag = outputSectionTypeFlag
+        # self.outputSectionTypeFileName = None # no output file!
+
+        self.outputSectionStepFlag = outputSectionStepFlag
+        # self.outputSectionStepFileName = None # no output file!
+
+        # report
+        self.outputReportFlag = outputReportFlag
+        self.outputReportFileName = outputReportFileName
+
+        # conditioning data image
+        if dataImage is None:
+            self.dataImage = None
+        else:
+            self.dataImage = np.asarray(dataImage).reshape(-1)
+
+        # conditioning point set
+        if dataPointSet is None:
+            self.dataPointSet = None
+        else:
+            self.dataPointSet = np.asarray(dataPointSet).reshape(-1)
+
+        # mask
+        if mask is None:
+            self.mask = None
+        else:
+            try:
+                self.mask = np.asarray(mask).reshape(nz, ny, nx)
+            except:
+                print('ERROR: (DeesseXInput) field "mask"...')
+                return
+
+        # expMax
+        self.expMax = expMax
+
+        # normalizing type
+        # if normalizingType not in ('linear', 'uniform', 'normal'):
+        #     print ('ERRROR: (DeesseXInput) field "normalizingType"')
+        #     return
+
+        self.normalizingType = normalizingType
+
+        # rescaling
+        if rescalingMode is None:
+            self.rescalingMode = ['none' for i in range(nv)]
+        else:
+            try:
+                self.rescalingMode = list(np.asarray(rescalingMode).reshape(nv))
+            except:
+                print('ERROR: (DeesseXInput) field "rescalingMode"...')
+                return
+
+        if rescalingTargetMin is None:
+            self.rescalingTargetMin = np.array([0.0 for i in range(nv)], dtype=float)
+        else:
+            try:
+                self.rescalingTargetMin = np.asarray(rescalingTargetMin, dtype=float).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInput) field "rescalingTargetMin"...')
+                return
+
+        if rescalingTargetMax is None:
+            self.rescalingTargetMax = np.array([0.0 for i in range(nv)], dtype=float)
+        else:
+            try:
+                self.rescalingTargetMax = np.asarray(rescalingTargetMax, dtype=float).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInput) field "rescalingTargetMax"...')
+                return
+
+        if rescalingTargetMean is None:
+            self.rescalingTargetMean = np.array([0.0 for i in range(nv)], dtype=float)
+        else:
+            try:
+                self.rescalingTargetMean = np.asarray(rescalingTargetMean, dtype=float).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInput) field "rescalingTargetMean"...')
+                return
+
+        if rescalingTargetLength is None:
+            self.rescalingTargetLength = np.array([0.0 for i in range(nv)], dtype=float)
+        else:
+            try:
+                self.rescalingTargetLength = np.asarray(rescalingTargetLength, dtype=float).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInput) field "rescalingTargetLength"...')
+                return
+
+        # distance, ...
+        if relativeDistanceFlag is None:
+            self.relativeDistanceFlag = np.array([False for i in range(nv)])
+        else:
+            try:
+                self.relativeDistanceFlag = np.asarray(relativeDistanceFlag, dtype='bool').reshape(nv)
+            except:
+                print('ERROR: (DeesseXInput) field "relativeDistanceFlag"...')
+                return
+
+        if powerLpDistance is None:
+            self.powerLpDistance = np.array([1. for i in range(nv)])
+        else:
+            try:
+                self.powerLpDistance = np.asarray(powerLpDistance, dtype=float).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInput) field "powerLpDistance"...')
+                return
+
+        self.powerLpDistanceInv = 1./self.powerLpDistance
+
+        if distanceType is None:
+            self.distanceType = np.array([0 for i in range(nv)])
+        else:
+            try:
+                if isinstance(distanceType, str) or isinstance(distanceType, int):
+                    self.distanceType = [distanceType]
+                else:
+                    self.distanceType = list(distanceType)
+                for i in range(len(self.distanceType)):
+                    if isinstance(self.distanceType[i], str):
+                        if self.distanceType[i] == 'categorical':
+                            self.distanceType[i] = 0
+                        elif self.distanceType[i] == 'continuous':
+                            self.distanceType[i] = 1
+                        else:
+                            print('ERROR: (DeesseXInput) field "distanceType"...')
+                            return
+                self.distanceType = np.asarray(self.distanceType).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInput) field "distanceType"...')
+                return
+
+        # conditioning weight
+        if conditioningWeightFactor is None:
+            self.conditioningWeightFactor = np.array([1. for i in range(nv)])
+        else:
+            try:
+                self.conditioningWeightFactor = np.asarray(conditioningWeightFactor, dtype=float).reshape(nv)
+            except:
+                print('ERROR: (DeesseXInput) field "conditioningWeightFactor"...')
+                return
+
+        # sectionPath_parameters
+        if sectionPath_parameters is None:
+            print('ERROR: (DeesseXInput) field "sectionPath_parameters" (must be specified)...')
+            return
+
+        self.sectionPath_parameters = sectionPath_parameters
+
+        # section_parameters
+        if section_parameters is None:
+            print('ERROR: (DeesseXInput) field "section_parameters" (must be specified)...')
+            return
+
+        self.section_parameters = np.asarray(section_parameters).reshape(-1)
+
+        # seed, ...
+        if seed is None:
+            seed = np.random.randint(1,1000000)
+        self.seed = seed
+        self.seedIncrement = seedIncrement
+
+        # number of realization(s)
+        self.nrealization = nrealization
+
+        self.ok = True # flag to "validate" the class
+
+    # ------------------------------------------------------------------------
+    # def __str__(self):
+    def __repr__(self):
+        out = '*** DeesseInput object ***'
+        out = out + '\n' + "use '.__dict__' to print details"
+        out = out + '\n' + '*****'
+        return out
+    # ------------------------------------------------------------------------
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+def deesseX_input_section_py2C(
+        section_parameters,
+        sectionType,
+        nx, ny, nz,
+        sx, sy, sz,
+        ox, oy, oz,
+        nv):
+    """
+    Converts section parameters (deesseX) from python to C (MPDS_SUBSIMINPUT).
+
+    :param section_parameters:  (DeesseXInputSection class) parameters for one section (python)
+    :param sectionType:         (int) id of the section type
+    :param nx, ny, nz:          (ints) number of simulation grid (SG) cells in each direction
+    :param sx, sy, sz:          (floats) cell size in each direction
+    :param ox, oy, oz:          (floats) origin of the SG (bottom-lower-left corner)
+    :param nv:                  (int) number of variable(s) / attribute(s)
+
+    :return mpds_xsubsiminput:  (MPDS_XSUBSIMINPUT *) corresponding parameters (C struct)
+    """
+
+    nx = int(nx)
+    ny = int(ny)
+    nz = int(nz)
+    nv = int(nv)
+
+    nTI = int(section_parameters.nTI)
+
+    # Allocate mpds_xsubsiminput
+    mpds_xsubsiminput = deesse.malloc_MPDS_XSUBSIMINPUT()
+
+    # Init mpds_xsubsiminput
+    deesse.MPDSInitXSubSimInput(mpds_xsubsiminput)
+
+    # mpds_xsubsiminput.sectionType
+    mpds_xsubsiminput.sectionType = sectionType
+
+    # mpds_xsubsiminput.nvar
+    mpds_xsubsiminput.nvar = nv
+
+    # mpds_xsubsiminput.ntrainImage
+    mpds_xsubsiminput.ntrainImage = nTI
+
+    # mpds_xsubsiminput.simGridAsTiFlag
+    deesse.mpds_xsub_allocate_and_set_simGridAsTiFlag(mpds_xsubsiminput, np.array([int(i) for i in section_parameters.simGridAsTiFlag], dtype='bool')) # dtype='intc'))
+
+    # mpds_xsubsiminput.trainImage
+    mpds_xsubsiminput.trainImage = deesse.new_MPDS_IMAGE_array(nTI)
+    for i, ti in enumerate(section_parameters.TI):
+        if ti is not None:
+            im_c = img_py2C(ti)
+            deesse.MPDS_IMAGE_array_setitem(mpds_xsubsiminput.trainImage, i, im_c)
+            # deesse.free_MPDS_IMAGE(im_c)
+            #
+            # deesse.MPDS_IMAGE_array_setitem(mpds_xsubsiminput.trainImage, i, img_py2C(ti))
+
+    # mpds_xsubsiminput.pdfTrainImage
+    if nTI > 1:
+        im = Img(nx=nx, ny=ny, nz=nz,
+                 sx=sx, sy=sy, sz=sz,
+                 ox=ox, oy=oy, oz=oz,
+                 nv=nTI, val=section_parameters.pdfTI)
+        mpds_xsubsiminput.pdfTrainImage = img_py2C(im)
+
+    # Homothety:
+    #   mpds_xsubsiminput.homothetyUsage
+    #   mpds_xsubsiminput.homothety[XYZ]RatioImageFlag
+    #   mpds_xsubsiminput.homothety[XYZ]RatioImage
+    #   mpds_xsubsiminput.homothety[XYZ]RatioValue
+    mpds_xsubsiminput.homothetyUsage = section_parameters.homothetyUsage
+    if section_parameters.homothetyUsage == 1:
+        if section_parameters.homothetyXLocal:
+            mpds_xsubsiminput.homothetyXRatioImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=1, val=section_parameters.homothetyXRatio)
+            mpds_xsubsiminput.homothetyXRatioImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.homothetyXRatioImageFlag = deesse.FALSE
+            mpds_xsubsiminput.homothetyXRatioValue = deesse.new_real_array(1)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.homothetyXRatioValue, 0,
+                np.asarray(section_parameters.homothetyXRatio).reshape(1))
+
+        if section_parameters.homothetyYLocal:
+            mpds_xsubsiminput.homothetyYRatioImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=1, val=section_parameters.homothetyYRatio)
+            mpds_xsubsiminput.homothetyYRatioImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.homothetyYRatioImageFlag = deesse.FALSE
+            mpds_xsubsiminput.homothetyYRatioValue = deesse.new_real_array(1)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.homothetyYRatioValue, 0,
+                np.asarray(section_parameters.homothetyYRatio).reshape(1))
+
+        if section_parameters.homothetyZLocal:
+            mpds_xsubsiminput.homothetyZRatioImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=1, val=section_parameters.homothetyZRatio)
+            mpds_xsubsiminput.homothetyZRatioImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.homothetyZRatioImageFlag = deesse.FALSE
+            mpds_xsubsiminput.homothetyZRatioValue = deesse.new_real_array(1)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.homothetyZRatioValue, 0,
+                np.asarray(section_parameters.homothetyZRatio).reshape(1))
+
+    elif section_parameters.homothetyUsage == 2:
+        if section_parameters.homothetyXLocal:
+            mpds_xsubsiminput.homothetyXRatioImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=2, val=section_parameters.homothetyXRatio)
+            mpds_xsubsiminput.homothetyXRatioImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.homothetyXRatioImageFlag = deesse.FALSE
+            mpds_xsubsiminput.homothetyXRatioValue = deesse.new_real_array(2)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.homothetyXRatioValue, 0,
+                np.asarray(section_parameters.homothetyXRatio).reshape(2))
+
+        if section_parameters.homothetyYLocal:
+            mpds_xsubsiminput.homothetyYRatioImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=2, val=section_parameters.homothetyYRatio)
+            mpds_xsubsiminput.homothetyYRatioImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.homothetyYRatioImageFlag = deesse.FALSE
+            mpds_xsubsiminput.homothetyYRatioValue = deesse.new_real_array(2)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.homothetyYRatioValue, 0,
+                np.asarray(section_parameters.homothetyYRatio).reshape(2))
+
+        if section_parameters.homothetyZLocal:
+            mpds_xsubsiminput.homothetyZRatioImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=2, val=section_parameters.homothetyZRatio)
+            mpds_xsubsiminput.homothetyZRatioImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.homothetyZRatioImageFlag = deesse.FALSE
+            mpds_xsubsiminput.homothetyZRatioValue = deesse.new_real_array(2)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.homothetyZRatioValue, 0,
+                np.asarray(section_parameters.homothetyZRatio).reshape(2))
+
+    # Rotation:
+    #   mpds_xsubsiminput.rotationUsage
+    #   mpds_xsubsiminput.rotation[Azimuth|Dip|Plunge]ImageFlag
+    #   mpds_xsubsiminput.rotation[Azimuth|Dip|Plunge]Image
+    #   mpds_xsubsiminput.rotation[Azimuth|Dip|Plunge]Value
+    mpds_xsubsiminput.rotationUsage = section_parameters.rotationUsage
+    if section_parameters.rotationUsage == 1:
+        if section_parameters.rotationAzimuthLocal:
+            mpds_xsubsiminput.rotationAzimuthImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=1, val=section_parameters.rotationAzimuth)
+            mpds_xsubsiminput.rotationAzimuthImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.rotationAzimuthImageFlag = deesse.FALSE
+            mpds_xsubsiminput.rotationAzimuthValue = deesse.new_real_array(1)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.rotationAzimuthValue, 0,
+                np.asarray(section_parameters.rotationAzimuth).reshape(1))
+
+        if section_parameters.rotationDipLocal:
+            mpds_xsubsiminput.rotationDipImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=1, val=section_parameters.rotationDip)
+            mpds_xsubsiminput.rotationDipImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.rotationDipImageFlag = deesse.FALSE
+            mpds_xsubsiminput.rotationDipValue = deesse.new_real_array(1)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.rotationDipValue, 0,
+                np.asarray(section_parameters.rotationDip).reshape(1))
+
+        if section_parameters.rotationPlungeLocal:
+            mpds_xsubsiminput.rotationPlungeImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=1, val=section_parameters.rotationPlunge)
+            mpds_xsubsiminput.rotationPlungeImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.rotationPlungeImageFlag = deesse.FALSE
+            mpds_xsubsiminput.rotationPlungeValue = deesse.new_real_array(1)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.rotationPlungeValue, 0,
+                np.asarray(section_parameters.rotationPlunge).reshape(1))
+
+    elif section_parameters.rotationUsage == 2:
+        if section_parameters.rotationAzimuthLocal:
+            mpds_xsubsiminput.rotationAzimuthImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=2, val=section_parameters.rotationAzimuth)
+            mpds_xsubsiminput.rotationAzimuthImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.rotationAzimuthImageFlag = deesse.FALSE
+            mpds_xsubsiminput.rotationAzimuthValue = deesse.new_real_array(2)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.rotationAzimuthValue, 0,
+                np.asarray(section_parameters.rotationAzimuth).reshape(2))
+
+        if section_parameters.rotationDipLocal:
+            mpds_xsubsiminput.rotationDipImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=2, val=section_parameters.rotationDip)
+            mpds_xsubsiminput.rotationDipImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.rotationDipImageFlag = deesse.FALSE
+            mpds_xsubsiminput.rotationDipValue = deesse.new_real_array(2)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.rotationDipValue, 0,
+                np.asarray(section_parameters.rotationDip).reshape(2))
+
+        if section_parameters.rotationPlungeLocal:
+            mpds_xsubsiminput.rotationPlungeImageFlag = deesse.TRUE
+            im = Img(nx=nx, ny=ny, nz=nz,
+                     sx=sx, sy=sy, sz=sz,
+                     ox=ox, oy=oy, oz=oz,
+                     nv=2, val=section_parameters.rotationPlunge)
+            mpds_xsubsiminput.rotationPlungeImage = img_py2C(im)
+
+        else:
+            mpds_xsubsiminput.rotationPlungeImageFlag = deesse.FALSE
+            mpds_xsubsiminput.rotationPlungeValue = deesse.new_real_array(2)
+            deesse.mpds_set_real_vector_from_array(mpds_xsubsiminput.rotationPlungeValue, 0,
+                np.asarray(section_parameters.rotationPlunge).reshape(2))
+
+    # mpds_xsubsiminput.searchNeighborhoodParameters
+    mpds_xsubsiminput.searchNeighborhoodParameters = deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nv)
+    for i, sn in enumerate(section_parameters.searchNeighborhoodParameters):
+        sn_c = search_neighborhood_parameters_py2C(sn)
+        if sn_c is None:
+            print ('ERROR: can not convert search neighborhood parameters from python to C')
+            return
+        deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(
+            mpds_xsubsiminput.searchNeighborhoodParameters, i, sn_c)
+        # deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(sn_c)
+
+    # mpds_xsubsiminput.nneighboringNode
+    mpds_xsubsiminput.nneighboringNode = deesse.new_int_array(nv)
+    deesse.mpds_set_int_vector_from_array(
+        mpds_xsubsiminput.nneighboringNode, 0,
+        np.asarray(section_parameters.nneighboringNode, dtype='intc').reshape(nv))
+
+    # mpds_xsubsiminput.maxPropInequalityNode
+    mpds_xsubsiminput.maxPropInequalityNode = deesse.new_double_array(nv)
+    deesse.mpds_set_double_vector_from_array(
+        mpds_xsubsiminput.maxPropInequalityNode, 0,
+        np.asarray(section_parameters.maxPropInequalityNode).reshape(nv))
+
+    # mpds_xsubsiminput.neighboringNodeDensity
+    mpds_xsubsiminput.neighboringNodeDensity = deesse.new_double_array(nv)
+    deesse.mpds_set_double_vector_from_array(
+        mpds_xsubsiminput.neighboringNodeDensity, 0,
+        np.asarray(section_parameters.neighboringNodeDensity).reshape(nv))
+
+    # mpds_xsubsiminput.simAndPathParameters
+    mpds_xsubsiminput.simAndPathParameters = set_simAndPathParameters_C(
+        section_parameters.simType,
+        section_parameters.simPathType,
+        section_parameters.simPathStrength,
+        section_parameters.simPathPower,
+        section_parameters.simPathUnilateralOrder)
+    if mpds_xsubsiminput.simAndPathParameters is None:
+        print ('ERROR: can not set "simAndPathParameters" in C')
+        return
+
+    # mpds_xsubsiminput.distanceThreshold
+    mpds_xsubsiminput.distanceThreshold = deesse.new_real_array(nv)
+    deesse.mpds_set_real_vector_from_array(
+        mpds_xsubsiminput.distanceThreshold, 0,
+        np.asarray(section_parameters.distanceThreshold).reshape(nv))
+
+    # mpds_xsubsiminput.softProbability ...
+    mpds_xsubsiminput.softProbability = deesse.new_MPDS_SOFTPROBABILITY_array(nv)
+
+    # ... for each variable ...
+    for i, sp in enumerate(section_parameters.softProbability):
+        sp_c = softProbability_py2C(sp,
+                                    nx, ny, nz,
+                                    sx, sy, sz,
+                                    ox, oy, oz)
+        if sp_c is None:
+            print ('ERROR: can not set soft probability parameters in C')
+            return
+        deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_xsubsiminput.softProbability, i, sp_c)
+        # deesse.free_MPDS_SOFTPROBABILITY(sp_c)
+
+    # mpds_xsubsiminput.maxScanFraction
+    mpds_xsubsiminput.maxScanFraction = deesse.new_double_array(nTI)
+    deesse.mpds_set_double_vector_from_array(
+        mpds_xsubsiminput.maxScanFraction, 0,
+            np.asarray(section_parameters.maxScanFraction).reshape(nTI))
+
+    # mpds_xsubsiminput.pyramidGeneralParameters ...
+    mpds_xsubsiminput.pyramidGeneralParameters = pyramidGeneralParameters_py2C(section_parameters.pyramidGeneralParameters)
+    if mpds_xsubsiminput.pyramidGeneralParameters is None:
+        print ('ERROR: can not set pyramid general parameters in C')
+        return
+
+    # mpds_xsubsiminput.pyramidParameters ...
+    mpds_xsubsiminput.pyramidParameters = deesse.new_MPDS_PYRAMIDPARAMETERS_array(nv)
+
+    # ... for each variable ...
+    for i, pp in enumerate(section_parameters.pyramidParameters):
+        pp_c = pyramidParameters_py2C(pp)
+        if pp_c is None:
+            print ('ERROR: can not set pyramid parameters in C')
+            return
+
+        deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(mpds_xsubsiminput.pyramidParameters, i, pp_c)
+        # deesse.free_MPDS_PYRAMIDPARAMETERS(pp_c)
+
+    # mpds_xsubsiminput.tolerance
+    mpds_xsubsiminput.tolerance = section_parameters.tolerance
+
+    # mpds_xsubsiminput.npostProcessingPathMax
+    mpds_xsubsiminput.npostProcessingPathMax = section_parameters.npostProcessingPathMax
+
+    # mpds_xsubsiminput.postProcessingNneighboringNode
+    mpds_xsubsiminput.postProcessingNneighboringNode = deesse.new_int_array(nv)
+    deesse.mpds_set_int_vector_from_array(
+        mpds_xsubsiminput.postProcessingNneighboringNode, 0,
+            np.asarray(section_parameters.postProcessingNneighboringNode, dtype='intc').reshape(nv))
+
+    # mpds_xsubsiminput.postProcessingNeighboringNodeDensity
+    mpds_xsubsiminput.postProcessingNeighboringNodeDensity = deesse.new_double_array(nv)
+    deesse.mpds_set_double_vector_from_array(
+        mpds_xsubsiminput.postProcessingNeighboringNodeDensity, 0,
+            np.asarray(section_parameters.postProcessingNeighboringNodeDensity).reshape(nv))
+
+    # mpds_xsubsiminput.postProcessingDistanceThreshold
+    mpds_xsubsiminput.postProcessingDistanceThreshold = deesse.new_real_array(nv)
+    deesse.mpds_set_real_vector_from_array(
+        mpds_xsubsiminput.postProcessingDistanceThreshold, 0,
+            np.asarray(section_parameters.postProcessingDistanceThreshold).reshape(nv))
+
+    # mpds_xsubsiminput.postProcessingMaxScanFraction
+    mpds_xsubsiminput.postProcessingMaxScanFraction = deesse.new_double_array(nTI)
+    deesse.mpds_set_double_vector_from_array(
+        mpds_xsubsiminput.postProcessingMaxScanFraction, 0,
+            np.asarray(section_parameters.postProcessingMaxScanFraction).reshape(nTI))
+
+    # mpds_xsubsiminput.postProcessingTolerance
+    mpds_xsubsiminput.postProcessingTolerance = section_parameters.postProcessingTolerance
+
+    return mpds_xsubsiminput
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def deesseX_input_py2C(deesseX_input):
+    """
+    Converts deesseX input from python to C.
+
+    :param deesseX_input: (DeesseXInput class) deesseX input - python
+    :return:              (MPDS_XSIMINPUT *) deesseX input - C
+    """
+
+    nx = int(deesseX_input.nx)
+    ny = int(deesseX_input.ny)
+    nz = int(deesseX_input.nz)
+    sx = float(deesseX_input.sx)
+    sy = float(deesseX_input.sy)
+    sz = float(deesseX_input.sz)
+    ox = float(deesseX_input.ox)
+    oy = float(deesseX_input.oy)
+    oz = float(deesseX_input.oz)
+    nv = int(deesseX_input.nv)
+
+    # Allocate mpds_xsiminput
+    mpds_xsiminput = deesse.malloc_MPDS_XSIMINPUT()
+
+    # Init mpds_xsiminput
+    deesse.MPDSInitXSimInput(mpds_xsiminput)
+
+    # mpds_xsiminput.consoleAppFlag
+    if deesseX_input.consoleAppFlag:
+        mpds_xsiminput.consoleAppFlag = deesse.TRUE
+    else:
+        mpds_xsiminput.consoleAppFlag = deesse.FALSE
+
+    deesse.mpds_x_allocate_and_set_simname(mpds_xsiminput, '') #  mpds_xsiminput.simName not used, but must be set!
+    # mpds_xsiminput.simName = '' #  works too
+
+    # mpds_xsiminput.simImage ...
+    # ... set initial image im (for simulation)
+    im = Img(nx=nx, ny=ny, nz=nz,
+             sx=sx, sy=sy, sz=sz,
+             ox=ox, oy=oy, oz=oz,
+             nv=nv, val=deesse.MPDS_MISSING_VALUE,
+             varname=deesseX_input.varname)
+
+    # ... convert im from python to C
+    mpds_xsiminput.simImage = img_py2C(im)
+
+    # mpds_xsiminput.nvar
+    mpds_xsiminput.nvar = nv
+
+    # mpds_xsiminput.outputVarFlag
+    deesse.mpds_x_allocate_and_set_outputVarFlag(mpds_xsiminput, np.array([int(i) for i in deesseX_input.outputVarFlag], dtype='bool'))
+
+    # mpds_xsiminput.formatStringVar: not used
+
+    # mpds_xsiminput.outputSimJob
+    mpds_xsiminput.outputSimJob = deesse.OUTPUT_SIM_NO_FILE
+
+    # mpds_xsiminput.outputSimImageFileName: not used (NULL: no output file!)
+
+    # mpds_xsiminput.outputSectionTypeFlag
+    if deesseX_input.outputSectionTypeFlag:
+        mpds_xsiminput.outputSectionTypeFlag = deesse.TRUE
+    else:
+        mpds_xsiminput.outputSectionTypeFlag = deesse.FALSE
+
+    # mpds_xsiminput.outputSectionTypeFileName: not used (NULL: no output file!)
+
+    # mpds_xsiminput.outputSectionStepFlag
+    if deesseX_input.outputSectionStepFlag:
+        mpds_xsiminput.outputSectionStepFlag = deesse.TRUE
+    else:
+        mpds_xsiminput.outputSectionStepFlag = deesse.FALSE
+
+    # mpds_xsiminput.outputSectionStepFileName: not used (NULL: no output file!)
+
+    # mpds_xsiminput.outputReportFlag
+    if deesseX_input.outputReportFlag:
+        mpds_xsiminput.outputReportFlag = deesse.TRUE
+        deesse.mpds_x_allocate_and_set_outputReportFileName(mpds_xsiminput, deesse_input.outputReportFileName)
+    else:
+        mpds_xsiminput.outputReportFlag = deesse.FALSE
+
+    # mpds_xsiminput.ndataImage and mpds_xsiminput.dataImage
+    if deesseX_input.dataImage is None:
+        mpds_xsiminput.ndataImage = 0
+    else:
+        n = len(deesseX_input.dataImage)
+        mpds_xsiminput.ndataImage = n
+        mpds_xsiminput.dataImage = deesse.new_MPDS_IMAGE_array(n)
+        for i, dataIm in enumerate(deesseX_input.dataImage):
+            im_c = img_py2C(dataIm)
+            deesse.MPDS_IMAGE_array_setitem(mpds_xsiminput.dataImage, i, im_c)
+            # deesse.free_MPDS_IMAGE(im_c)
+            #
+            # deesse.MPDS_IMAGE_array_setitem(mpds_xsiminput.dataImage, i, img_py2C(dataIm))
+
+    # mpds_xsiminput.ndataPointSet and mpds_xsiminput.dataPointSet
+    if deesseX_input.dataPointSet is None:
+        mpds_xsiminput.ndataPointSet = 0
+    else:
+        n = len(deesseX_input.dataPointSet)
+        mpds_xsiminput.ndataPointSet = n
+        mpds_xsiminput.dataPointSet = deesse.new_MPDS_POINTSET_array(n)
+        for i, dataPS in enumerate(deesseX_input.dataPointSet):
+            ps_c = ps_py2C(dataPS)
+            deesse.MPDS_POINTSET_array_setitem(mpds_xsiminput.dataPointSet, i, ps_c)
+            # deesse.free_MPDS_POINTSET(ps_c)
+            #
+            # deesse.MPDS_POINTSET_array_setitem(mpds_xsiminput.dataPointSet, i, ps_py2C(dataPS))
+
+    # mpds_xsiminput.maskImageFlag and mpds_xsiminput.maskImage
+    if deesseX_input.mask is None:
+        mpds_xsiminput.maskImageFlag = deesse.FALSE
+    else:
+        mpds_xsiminput.maskImageFlag = deesse.TRUE
+        im = Img(nx=nx, ny=ny, nz=nz,
+                 sx=sx, sy=sy, sz=sz,
+                 ox=ox, oy=oy, oz=oz,
+                 nv=1, val=deesseX_input.mask)
+        mpds_xsiminput.maskImage = img_py2C(im)
+
+    # mpds_xsiminput.trainValueRangeExtensionMax
+    mpds_xsiminput.trainValueRangeExtensionMax = deesseX_input.expMax
+
+    # mpds_xsiminput.normalizingType
+    normalizingType_dict = {
+        'linear'  : deesse.NORMALIZING_LINEAR,
+        'uniform' : deesse.NORMALIZING_UNIFORM,
+        'normal'  : deesse.NORMALIZING_NORMAL
+    }
+    try:
+        mpds_xsiminput.normalizingType = normalizingType_dict[deesseX_input.normalizingType]
+    except:
+        print ('ERROR: normalizing type unknown')
+        return
+
+    # mpds_xsimInput.rescalingMode
+    rescalingMode_dict = {
+        'none'        : deesse.RESCALING_NONE,
+        'min_max'     : deesse.RESCALING_MIN_MAX,
+        'mean_length' : deesse.RESCALING_MEAN_LENGTH
+    }
+    mpds_xsiminput.rescalingMode = deesse.new_MPDS_RESCALINGMODE_array(nv)
+    for i, m in enumerate(deesseX_input.rescalingMode):
+        if m in rescalingMode_dict.keys():
+            deesse.MPDS_RESCALINGMODE_array_setitem(mpds_xsiminput.rescalingMode, i, rescalingMode_dict[m])
+        else:
+            print ('ERROR: rescaling mode unknown')
+            return
+
+    # mpds_xsimInput.rescalingTargetMin
+    mpds_xsiminput.rescalingTargetMin = deesse.new_real_array(nv)
+    deesse.mpds_set_real_vector_from_array(
+        mpds_xsiminput.rescalingTargetMin, 0,
+        np.asarray(deesseX_input.rescalingTargetMin).reshape(nv))
+
+    # mpds_xsimInput.rescalingTargetMax
+    mpds_xsiminput.rescalingTargetMax = deesse.new_real_array(nv)
+    deesse.mpds_set_real_vector_from_array(
+        mpds_xsiminput.rescalingTargetMax, 0,
+        np.asarray(deesseX_input.rescalingTargetMax).reshape(nv))
+
+    # mpds_xsimInput.rescalingTargetMean
+    mpds_xsiminput.rescalingTargetMean = deesse.new_real_array(nv)
+    deesse.mpds_set_real_vector_from_array(
+        mpds_xsiminput.rescalingTargetMean, 0,
+        np.asarray(deesseX_input.rescalingTargetMean).reshape(nv))
+
+    # mpds_xsiminput.rescalingTargetLength
+    mpds_xsiminput.rescalingTargetLength = deesse.new_real_array(nv)
+    deesse.mpds_set_real_vector_from_array(
+        mpds_xsiminput.rescalingTargetLength, 0,
+        np.asarray(deesseX_input.rescalingTargetLength).reshape(nv))
+
+    # mpds_xsiminput.relativeDistanceFlag
+    deesse.mpds_x_allocate_and_set_relativeDistanceFlag(mpds_xsiminput, np.array([int(i) for i in deesseX_input.relativeDistanceFlag], dtype='bool')) # , dtype='intc'))
+
+    # mpds_xsiminput.distanceType
+    mpds_xsiminput.distanceType = deesse.new_int_array(nv)
+    deesse.mpds_set_int_vector_from_array(
+        mpds_xsiminput.distanceType, 0,
+        np.asarray(deesseX_input.distanceType, dtype='intc').reshape(nv))
+
+    # mpds_xsiminput.powerLpDistance
+    mpds_xsiminput.powerLpDistance = deesse.new_double_array(nv)
+    deesse.mpds_set_double_vector_from_array(
+        mpds_xsiminput.powerLpDistance, 0,
+        np.asarray(deesseX_input.powerLpDistance).reshape(nv))
+
+    # mpds_xsiminput.powerLpDistanceInv
+    mpds_xsiminput.powerLpDistanceInv = deesse.new_double_array(nv)
+    deesse.mpds_set_double_vector_from_array(
+        mpds_xsiminput.powerLpDistanceInv, 0,
+        np.asarray(deesseX_input.powerLpDistanceInv).reshape(nv))
+
+    # mpds_xsiminput.conditioningWeightFactor
+    mpds_xsiminput.conditioningWeightFactor = deesse.new_real_array(nv)
+    deesse.mpds_set_real_vector_from_array(
+        mpds_xsiminput.conditioningWeightFactor, 0,
+        np.asarray(deesseX_input.conditioningWeightFactor).reshape(nv))
+
+
+    # mpds_xsiminput.XSectionParameters ...
+    mpds_xsiminput.XSectionParameters = deesse.malloc_MPDS_XSECTIONPARAMETERS()
+    deesse.MPDSInitXSectionParameters(mpds_xsiminput.XSectionParameters)
+
+    # ... XSectionMode
+    sectionMode_dict = {
+        'section_xy_xz_yz' : deesse.SECTION_XY_XZ_YZ,
+        'section_xy_yz_xz' : deesse.SECTION_XY_YZ_XZ,
+        'section_xz_xy_yz' : deesse.SECTION_XZ_XY_YZ,
+        'section_xz_yz_xy' : deesse.SECTION_XZ_YZ_XY,
+        'section_yz_xy_xz' : deesse.SECTION_YZ_XY_XZ,
+        'section_yz_xz_xy' : deesse.SECTION_YZ_XZ_XY,
+        'section_xy_xz'    : deesse.SECTION_XY_XZ,
+        'section_xz_xy'    : deesse.SECTION_XZ_XY,
+        'section_xy_yz'    : deesse.SECTION_XY_YZ,
+        'section_yz_xy'    : deesse.SECTION_YZ_XY,
+        'section_xz_yz'    : deesse.SECTION_XZ_YZ,
+        'section_yz_xz'    : deesse.SECTION_YZ_XZ,
+        'section_xy_z'     : deesse.SECTION_XY_Z,
+        'section_z_xy'     : deesse.SECTION_Z_XY,
+        'section_xz_y'     : deesse.SECTION_XZ_Y,
+        'section_y_xz'     : deesse.SECTION_Y_XZ,
+        'section_yz_x'     : deesse.SECTION_YZ_X,
+        'section_x_yz'     : deesse.SECTION_X_YZ,
+        'section_x_y_z'    : deesse.SECTION_X_Y_Z,
+        'section_x_z_y'    : deesse.SECTION_X_Z_Y,
+        'section_y_x_z'    : deesse.SECTION_Y_X_Z,
+        'section_y_z_x'    : deesse.SECTION_Y_Z_X,
+        'section_z_x_y'    : deesse.SECTION_Z_X_Y,
+        'section_z_y_x'    : deesse.SECTION_Z_Y_X,
+        'section_x_y'      : deesse.SECTION_X_Y,
+        'section_y_x'      : deesse.SECTION_Y_X,
+        'section_x_z'      : deesse.SECTION_X_Z,
+        'section_z_x'      : deesse.SECTION_Z_X,
+        'section_y_z'      : deesse.SECTION_Y_Z,
+        'section_z_y'      : deesse.SECTION_Z_Y
+    }
+    try:
+        mpds_xsiminput.XSectionParameters.XSectionMode = sectionMode_dict[deesseX_input.sectionPath_parameters.sectionMode]
+    except:
+        print ('ERROR: section mode unknown')
+        return
+
+    # ... XSectionPathMode and other relevant fields
+    if deesseX_input.sectionPath_parameters.sectionPathMode == 'section_path_random':
+        mpds_xsiminput.XSectionParameters.XSectionPathMode = deesse.SECTION_PATH_RANDOM
+
+    elif deesseX_input.sectionPath_parameters.sectionPathMode == 'section_path_pow_2':
+        mpds_xsiminput.XSectionParameters.XSectionPathMode = deesse.SECTION_PATH_POW_2
+
+    elif deesseX_input.sectionPath_parameters.sectionPathMode == 'section_path_subdiv':
+        mpds_xsiminput.XSectionParameters.XSectionPathMode = deesse.SECTION_PATH_SUBDIV
+        mpds_xsiminput.XSectionParameters.minSpaceX = deesseX_input.sectionPath_parameters.minSpaceX
+        mpds_xsiminput.XSectionParameters.minSpaceY = deesseX_input.sectionPath_parameters.minSpaceY
+        mpds_xsiminput.XSectionParameters.minSpaceZ = deesseX_input.sectionPath_parameters.minSpaceZ
+        if deesseX_input.sectionPath_parameters.balancedFillingFlag:
+            mpds_xsiminput.XSectionParameters.balancedFillingFlag = deesse.TRUE
+        else:
+            mpds_xsiminput.XSectionParameters.balancedFillingFlag = deesse.FALSE
+
+    elif deesseX_input.sectionPath_parameters.sectionPathMode == 'section_path_manual':
+        mpds_xsiminput.XSectionParameters.XSectionPathMode = deesse.SECTION_PATH_MANUAL
+        ns = int(deesseX_input.sectionPath_parameters.nsection)
+        mpds_xsiminput.XSectionParameters.nsection = ns
+        if ns > 0:
+            mpds_xsiminput.XSectionParameters.sectionType = deesse.new_int_array(ns)
+            deesse.mpds_set_int_vector_from_array(
+                mpds_siminput.XSectionParameters.sectionType, 0,
+                np.asarray(deesseX_input.sectionPath_parameters.sectionType, dtype='intc').reshape(ns))
+            mpds_xsiminput.XSectionParameters.sectionLoc = deesse.new_int_array(ns)
+            deesse.mpds_set_int_vector_from_array(
+                mpds_siminput.XSectionParameters.sectionLoc, 0,
+                np.asarray(deesseX_input.sectionPath_parameters.sectionLoc, dtype='intc').reshape(ns))
+    else:
+        print ('ERROR: section path type unknown')
+        return
+
+    # mpds_xsiminput.XSubSimInput_<*> ...
+    for sect_param in deesseX_input.section_parameters:
+        if sect_param.nx != nx:
+            print ('ERROR: nx in (one) section parameters invalid')
+            return
+        if sect_param.ny != ny:
+            print ('ERROR: ny in (one) section parameters invalid')
+            return
+        if sect_param.nz != nz:
+            print ('ERROR: nz in (one) section parameters invalid')
+            return
+        if sect_param.nv != nv:
+            print ('ERROR: nv in (one) section parameters invalid')
+            return
+        if not np.all(deesseX_input.distanceType == sect_param.distanceType):
+            print ("ERROR: 'distanceType' (one) section parameters invalid")
+            return
+        # for d1, d2 in zip(deesseX_input.distanceType, sect_param.distanceType):
+        #     if d1 != d2:
+        #         print ("ERROR: 'distanceType' (one) section parameters invalid")
+        #         return
+        if sect_param.sectionType == 0:
+            mpds_xsiminput.XSubSimInput_xy = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                        nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+        elif sect_param.sectionType == 1:
+            mpds_xsiminput.XSubSimInput_xz = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                        nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+        elif sect_param.sectionType == 2:
+            mpds_xsiminput.XSubSimInput_yz = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                        nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+        elif sect_param.sectionType == 3:
+            mpds_xsiminput.XSubSimInput_z = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                        nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+        elif sect_param.sectionType == 4:
+            mpds_xsiminput.XSubSimInput_y = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                        nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+        elif sect_param.sectionType == 5:
+            mpds_xsiminput.XSubSimInput_x = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                        nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+        else:
+            print ('ERROR: section type in section parameters unknown')
+            return
+
+    # mpds_xsiminput.seed
+    mpds_xsiminput.seed = int(deesseX_input.seed)
+
+    # mpds_xsiminput.seedIncrement
+    mpds_xsiminput.seedIncrement = int(deesseX_input.seedIncrement)
+
+    # mpds_xsiminput.nrealization
+    mpds_xsiminput.nrealization = int(deesseX_input.nrealization)
+
+    return mpds_xsiminput
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
+    """
+    Get deesseX output for python from C.
+
+    :param mpds_xsimoutput: (MPDS_XSIMOUTPUT *) simulation output - (C struct)
+                                contains output of deesseX simulation
+    :param mpds_progressMonitor:
+                            (MPDS_PROGRESSMONITOR *) progress monitor - (C struct)
+                                contains output messages (warnings) of deesseX simulation
+
+    :return deesseX_output:
+        (dict)
+            {'sim':sim,
+             'sim_var_original_index':sim_var_original_index,
+             'simSectionType':simSectionType,
+             'simSectionStep':simSectionStep,
+             'nwarning':nwarning,
+             'warnings':warnings}
+
+        With nreal = mpds_xsimoutput->nreal (number of realizations):
+
+        sim:    (1-dimensional array of Img (class) of size nreal or None)
+                    sim[i]: i-th realisation,
+                        k-th variable stored refers to
+                            - the original variable sim_var_original_index[k]
+                        (get from mpds_xsimoutput->outputSimImage[0])
+                    (sim is None if mpds_xsimoutput->outputSimImage is NULL)
+
+        sim_var_original_index:
+                (1-dimensional array of ints or None)
+                    sim_var_original_index[k]: index of the original variable
+                        (given in deesse_input) of the k-th variable stored in
+                        in sim[i] for any i
+                        (array of length array of length sim[*].nv,
+                        get from mpds_xsimoutput->originalVarIndex)
+                    (sim_var_original_index is None if mpds_xsimoutput->originalVarIndex is NULL)
+
+        simSectionType:
+                (1-dimensional array of Img (class) of size nreal, or 1 or None)
+                    simSectionType[i]: section type (id identifying which type of
+                        section is used) map for the i-th realisation
+                        (mpds_xsimoutput->outputSectionTypeImage[0]);
+                        note: depending on section path mode (see class DeesseXInput:
+                        deesseX_input.sectionPath_parameters.sectionPathMode) that was used,
+                        simSectionType may be of size 1 even if nreal is greater than 1,
+                        in such a case the same map is valid for all realisations
+                    (simSectionType is None if mpds_xsimoutput->outputSectionTypeImage is NULL)
+
+        simSectionStep:
+                (1-dimensional array of Img (class) of size nreal, or 1 or None)
+                    simSectionStep[i]: section step (index of simulation by direct sampling
+                        of (a bunch of) sections of same type) map for the i-th realisation,
+                        (mpds_xsimoutput->outputSectionStepImage[0]);
+                        note: depending on section path mode (see class DeesseXInput:
+                        deesseX_input.sectionPath_parameters.sectionPathMode) that was used,
+                        simSectionStep may be of size 1 even if nreal is greater than 1,
+                        in such a case the same map is valid for all realisations
+                    (simSectionStep is None if mpds_xsimoutput->outputSectionStepImage is NULL)
+
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
+    """
+
+    # Initialization
+    sim, sim_var_original_index = None, None
+    simSectionType, simSectionStep = None, None
+    nwarning, warnings = None, None
+
+    if mpds_xsimoutput.nreal:
+        nreal = mpds_xsimoutput.nreal
+
+        if mpds_xsimoutput.nvarSimPerReal:
+            # --- sim_var_original_index ---
+            sim_var_original_index = np.zeros(mpds_xsimoutput.nvarSimPerReal, dtype='intc') # 'intc' for C-compatibility
+            deesse.mpds_get_array_from_int_vector(mpds_xsimoutput.originalVarIndex, 0, sim_var_original_index)
+
+            # ... also works ...
+            # sim_var_original_index = np.asarray([deesse.int_array_getitem(mpds_xsimoutput.originalVarIndex, i) for i in range(mpds_xsimoutput.nvarSimPerReal)])
+            # ...
+            # ---
+
+            # --- sim ---
+            im = img_C2py(mpds_xsimoutput.outputSimImage)
+
+            nv = mpds_xsimoutput.nvarSimPerReal
+            k = 0
+            sim = []
+            for i in range(nreal):
+                sim.append(Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                               sx=im.sx, sy=im.sy, sz=im.sz,
+                               ox=im.ox, oy=im.oy, oz=im.oz,
+                               nv=nv, val=im.val[k:(k+nv),...],
+                               varname=im.varname[k:(k+nv)]))
+                k = k + nv
+
+            del(im)
+            sim = np.asarray(sim).reshape(nreal)
+            # ---
+
+        if mpds_xsimoutput.nvarSectionType:
+            # --- simSectionType ---
+            im = img_C2py(mpds_xsimoutput.outputSectionTypeImage)
+
+            nv = mpds_xsimoutput.nvarSectionType
+            simSectionType = []
+            for i in range(nv):
+                simSectionType.append(Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                                          sx=im.sx, sy=im.sy, sz=im.sz,
+                                          ox=im.ox, oy=im.oy, oz=im.oz,
+                                          nv=1, val=im.val[i,...],
+                                          varname=im.varname[i]))
+
+            del(im)
+            simSectionType = np.asarray(simSectionType).reshape(nv)
+            # ---
+
+        if mpds_xsimoutput.nvarSectionStep:
+            # --- simSectionStep ---
+            im = img_C2py(mpds_xsimoutput.outputSectionStepImage)
+
+            nv = mpds_xsimoutput.nvarSectionStep
+            simSectionStep = []
+            for i in range(nv):
+                simSectionStep.append(Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                                          sx=im.sx, sy=im.sy, sz=im.sz,
+                                          ox=im.ox, oy=im.oy, oz=im.oz,
+                                          nv=1, val=im.val[i,...],
+                                          varname=im.varname[i]))
+
+            del(im)
+            simSectionStep = np.asarray(simSectionStep).reshape(nv)
+            # ---
+
+    # --- nwarning, warnings ---
+    nwarning = mpds_progressMonitor.nwarning
+    warnings = []
+    if mpds_progressMonitor.nwarningNumber:
+        tmp = np.zeros(mpds_progressMonitor.nwarningNumber, dtype='intc') # 'intc' for C-compatibility
+        deesse.mpds_get_array_from_int_vector(mpds_progressMonitor.warningNumberList, 0, tmp)
+        warningNumberList = np.asarray(tmp, dtype='int') # 'int' or equivalently 'int64'
+        for iwarn in warningNumberList:
+            warning_message = deesse.mpds_get_warning_message(int(iwarn)) # int() required!
+            warning_message = warning_message.replace('\n', '')
+            warnings.append(warning_message)
+    # ---
+
+    return {
+        'sim':sim, 'sim_var_original_index':sim_var_original_index,
+        'simSectionType':simSectionType, 'simSectionStep':simSectionStep,
+        'nwarning':nwarning, 'warnings':warnings
+        }
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def deesseXRun(deesseX_input, nthreads=-1, verbose=2):
+    """
+    Launches deesseX.
+
+    :param deesseX_input:
+                (DeesseXInput (class)): deesseX input parameter (python)
+    :param nthreads:
+                (int) number of thread(s) to use for deesseX (C),
+                    (nthreads = -n <= 0: for maximal number of threads except n,
+                    but at least 1)
+    :param verbose:
+                (int) indicates what is displayed during the deesseX run:
+                    - 0: mininal display
+                    - 1: only errors
+                    - 2: version and warning(s) encountered
+                    - 3 (or >2): version, progress, and warning(s) encountered
+
+    :return deesseX_output:
+        (dict)
+            {'sim':sim,
+             'sim_var_original_index':sim_var_original_index,
+             'simSectionType':simSectionType,
+             'simSectionStep':simSectionStep,
+             'nwarning':nwarning,
+             'warnings':warnings}
+
+        With nreal = deesseX_input.nrealization:
+
+        sim:    (1-dimensional array of Img (class) of size nreal or None)
+                    sim[i]: i-th realisation,
+                        k-th variable stored refers to
+                            - the original variable sim_var_original_index[k]
+                    (sim is None if no simulation is retrieved)
+
+        sim_var_original_index:
+                (1-dimensional array of ints or None)
+                    sim_var_original_index[k]: index of the original variable
+                        (given in deesseX_input) of the k-th variable stored in
+                        in sim[i] for any i
+                        (array of length array of length sim[*].nv)
+                    (sim_var_original_index is None if no simulation is retrieved)
+
+        simSectionType:
+                (1-dimensional array of Img (class) of size nreal, or 1 or None)
+                    simSectionType[i]: section type (id identifying which type of
+                        section is used) map for the i-th realisation;
+                        note: depending on section path mode
+                        (deesseX_input.sectionPath_parameters.sectionPathMode) that was used,
+                        simSectionType may be of size 1 even if nreal is greater than 1,
+                        in such a case the same map is valid for all realisations
+                    (simSectionType is None if no section type map is retrieved)
+
+        simSectionStep:
+                (1-dimensional array of Img (class) of size nreal, or 1 or None)
+                    simSectionStep[i]: section step (index of simulation by direct sampling
+                        of (a bunch of) sections of same type) map for the i-th realisation;
+                        note: depending on section path mode
+                        (deesseX_input.sectionPath_parameters.sectionPathMode) that was used,
+                        simSectionStep may be of size 1 even if nreal is greater than 1,
+                        in such a case the same map is valid for all realisations
+                    (simSectionStep is None if no section step map is retrieved)
+
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
+    """
+
+    if not deesseX_input.ok:
+        if verbose > 0:
+            print('ERROR (deesseXRun): check deesseX input')
+        return
+
+    # Set number of threads
+    if nthreads <= 0:
+        nth = max(os.cpu_count() + nthreads, 1)
+    else:
+        nth = nthreads
+
+    if verbose >= 2:
+        print('DeeSseX running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_X_VERSION_NUMBER, deesse.MPDS_X_BUILD_NUMBER, nth))
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesseX...
+
+    # Convert deesseX input from python to C
+    try:
+        mpds_xsiminput = deesseX_input_py2C(deesseX_input)
+    except:
+        print('ERROR: unable to convert deesseX input from python to C...')
+        return
+
+    if mpds_xsiminput is None:
+        print('ERROR: unable to convert deesseX input from python to C...')
+        return
+
+    # Allocate mpds_xsimoutput
+    mpds_xsimoutput = deesse.malloc_MPDS_XSIMOUTPUT()
+
+    # Init mpds_simoutput
+    deesse.MPDSInitXSimOutput(mpds_xsimoutput)
+
+    # Set progress monitor
+    mpds_progressMonitor = deesse.malloc_MPDS_PROGRESSMONITOR()
+    deesse.MPDSInitProgressMonitor(mpds_progressMonitor)
+
+    # Set function to update progress monitor:
+    # according to deesse.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
+    # the function
+    #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor4_ptr
+    # should be used, but the following function can also be used:
+    #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr: no output
+    #    mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor1_ptr: warning only
+    if verbose < 3:
+        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor0_ptr
+    else:
+        mpds_updateProgressMonitor = deesse.MPDSUpdateProgressMonitor4_ptr
+
+    # Launch deesseX
+    # err = deesse.MPDSXSim(mpds_xsiminput, mpds_xsimoutput, mpds_progressMonitor, mpds_updateProgressMonitor )
+    err = deesse.MPDSOMPXSim(mpds_xsiminput, mpds_xsimoutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+
+    # Free memory on C side: deesseX input
+    deesse.MPDSFreeXSimInput(mpds_xsiminput)
+    #deesse.MPDSFree(mpds_xsiminput)
+    deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
+
+    if err:
+        err_message = deesse.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        print(err_message)
+        deesseX_output = None
+    else:
+        deesseX_output = deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor)
+
+    # Free memory on C side: simulation output
+    deesse.MPDSFreeXSimOutput(mpds_xsimoutput)
+    #deesse.MPDSFree (mpds_xsimoutput)
+    deesse.free_MPDS_XSIMOUTPUT(mpds_xsimoutput)
+
+    # Free memory on C side: progress monitor
+    #deesse.MPDSFree(mpds_progressMonitor)
+    deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
+    if verbose >= 2 and deesseX_output:
+        print('DeeSseX run complete')
+
+    # Show (print) encountered warnings
+    if verbose >= 2 and deesseX_output and deesseX_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(deesseX_output['nwarning']))
+        for i, warning_message in enumerate(deesseX_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
+
+    return deesseX_output
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def deesseXRun_mp(deesseX_input, nproc=None, nthreads_per_proc=None, verbose=2):
+    """
+    Launches deesseX through multiple processes.
+
+    Launches multiple processes (based on multiprocessing package):
+        - nproc parallel processes using each one nthreads_per_proc threads will
+            be launched [parallel calls of the function deesseXRun],
+        - the set of realizations (specified by deesseX_input.nrealization) is
+            distributed in a balanced way over the processes,
+        - in terms of resources, this implies the use of
+            nproc * nthreads_per_proc cpu(s).
+
+    :param deesseX_input:
+                (DeesseXInput (class)): deesseX input parameter (python)
+
+    :param nproc:
+                (int) number of processes (can be modified in the function)
+                    nproc = None: nproc is set to
+                        min(nmax-1, nreal) (but at least 1),
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count()), and
+                    (real is the number of realization (deesseX_input.nrealization)
+
+    :param nthreads_per_proc:
+                (int) number of thread(s) per process (should be > 0 or None):
+                    nthreads_per_proc = None: nthreads_per_proc is automatically
+                    computed as the maximal integer (but at least 1) such that
+                            nproc * nthreads_per_proc <= nmax-1
+                    where nmax is the total number of cpu(s) of the system
+                    (retrieved by multiprocessing.cpu_count())
+
+    :param verbose:
+                (int) indicates what information is displayed:
+                    - 0: mininal display
+                    - 1: only errors (and note(s))
+                    - 2: version and warning(s) encountered
+
+    :return deesseX_output:
+        (dict)
+            {'sim':sim,
+             'sim_var_original_index':sim_var_original_index,
+             'simSectionType':simSectionType,
+             'simSectionStep':simSectionStep,
+             'nwarning':nwarning,
+             'warnings':warnings}
+
+        With nreal = deesseX_input.nrealization:
+
+        sim:    (1-dimensional array of Img (class) of size nreal or None)
+                    sim[i]: i-th realisation,
+                        k-th variable stored refers to
+                            - the original variable sim_var_original_index[k]
+                    (sim is None if no simulation is retrieved)
+
+        sim_var_original_index:
+                (1-dimensional array of ints or None)
+                    sim_var_original_index[k]: index of the original variable
+                        (given in deesseX_input) of the k-th variable stored in
+                        in sim[i] for any i
+                        (array of length array of length sim[*].nv)
+                    (sim_var_original_index is None if no simulation is retrieved)
+
+        simSectionType:
+                (1-dimensional array of Img (class) of size nreal, or 1 or None)
+                    simSectionType[i]: section type (id identifying which type of
+                        section is used) map for the i-th realisation;
+                        note: depending on section path mode
+                        (deesseX_input.sectionPath_parameters.sectionPathMode) that was used,
+                        simSectionType may be of size 1 even if nreal is greater than 1,
+                        in such a case the same map is valid for all realisations
+                    (simSectionType is None if no section type map is retrieved)
+
+        simSectionStep:
+                (1-dimensional array of Img (class) of size nreal, or 1 or None)
+                    simSectionStep[i]: section step (index of simulation by direct sampling
+                        of (a bunch of) sections of same type) map for the i-th realisation;
+                        note: depending on section path mode
+                        (deesseX_input.sectionPath_parameters.sectionPathMode) that was used,
+                        simSectionStep may be of size 1 even if nreal is greater than 1,
+                        in such a case the same map is valid for all realisations
+                    (simSectionStep is None if no section step map is retrieved)
+
+        nwarning:
+                (int) total number of warning(s) encountered
+                    (same warnings can be counted several times)
+
+        warnings:
+                (list of strings) list of distinct warnings encountered
+                    (can be empty)
+    """
+
+    if not deesseX_input.ok:
+        if verbose > 0:
+            print('ERROR (deesseXRun): check deesseX input')
+        return
+
+    if deesseX_input.nrealization <= 1:
+        if verbose > 0:
+            print('NOTE: number of realization does not exceed 1: launching deesseXRun...')
+        nthreads = nthreads_per_proc
+        if nthreads is None:
+            nthreads = -1
+        deesseX_output = deesseXRun(deesseX_input, nthreads=nthreads, verbose=verbose)
+        return deesseX_output
+
+    # Set number of processes: nproc
+    if nproc is None:
+        nproc = max(min(multiprocessing.cpu_count()-1, deesseX_input.nrealization), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), deesseX_input.nrealization), 1)
+        if verbose > 0 and nproc != nproc_tmp:
+            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+
+    # Set number of threads per process: nth
+    if nthreads_per_proc is None:
+        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
+    else:
+        nth = max(int(nthreads_per_proc), 1)
+        if verbose > 0 and nth != nthreads_per_proc:
+            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+
+    if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
+        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+
+    # Set the distribution of the realizations over the processes
+    # Condider the Euclidean division of nreal by nproc:
+    #     nreal = q * nproc + r, with 0 <= r < nproc
+    # Then, (q+1) realizations will be done on process 0, 1, ..., r-1, and q realization on process r, ..., nproc-1
+    # Define the list real_index_proc of length (nproc+1) such that
+    #   real_index_proc[i], ..., real_index_proc[i+1] - 1 : are the realization indices run on process i
+    q, r = np.divmod(deesseX_input.nrealization, nproc)
+    real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose >= 2:
+        print('X-DeeSse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_X_VERSION_NUMBER, deesse.MPDS_X_BUILD_NUMBER, nth))
+        print('DeeSseX running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, deesse.MPDS_X_VERSION_NUMBER, deesse.MPDS_X_BUILD_NUMBER, nth))
+        sys.stdout.flush()
+        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesseX...
+
+    # Initialize deesseX input for each process
+    deesseX_input_proc = [copy.copy(deesseX_input) for i in range(nproc)]
+    init_seed = deesseX_input.seed
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i, input in enumerate(deesseX_input_proc):
+        # Adapt deesseX input for i-th process
+        input.nrealization = real_index_proc[i+1] - real_index_proc[i]
+        input.seed = init_seed + int(real_index_proc[i]) * input.seedIncrement
+        input.outputReportFileName = input.outputReportFileName + f'.{i}'
+        if i==0:
+            verb = min(verbose, 1) # allow to print error for process i
+        else:
+            verb = 0
+        # Launch deesseX (i-th process)
+        out_pool.append(pool.apply_async(deesseXRun, args=(input, nth, verb)))
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    deesseX_output_proc = [p.get() for p in out_pool]
+
+    if np.any([out is None for out in deesseX_output_proc]):
+        return None
+
+    sim, sim_var_original_index = None, None
+    simSectionType, simSectionStep = None, None
+    nwarning, warnings = None, None
+
+    # Gather results from every process
+    # sim
+    sim = np.hstack([out['sim'] for out in deesseX_output_proc])
+    # ... remove None entries
+    sim = sim[[x is not None for x in sim]]
+    # ... set to None if every entry is None
+    if np.all([x is None for x in sim]):
+        sim = None
+
+    # sim_var_original_index
+    sim_var_original_index = deesseX_output_proc[0]['sim_var_original_index']
+
+    # simSectionType
+    simSectionType = np.hstack([out['simSectionType'] for out in deesseX_output_proc])
+    # ... remove None entries
+    simSectionType = simSectionType[[x is not None for x in simSectionType]]
+    # ... set to None if every entry is None
+    if np.all([x is None for x in simSectionType]):
+        simSectionType = None
+
+    # simSectionStep
+    simSectionStep = np.hstack([out['simSectionStep'] for out in deesseX_output_proc])
+    # ... remove None entries
+    simSectionStep = simSectionStep[[x is not None for x in simSectionStep]]
+    # ... set to None if every entry is None
+    if np.all([x is None for x in simSectionStep]):
+        simSectionStep = None
+
+    # nwarning
+    nwarning = np.sum([out['nwarning'] for out in deesseX_output_proc])
+    # warnings
+    warnings = list(np.unique(np.hstack([out['warnings'] for out in deesseX_output_proc])))
+
+    # Adjust variable names
+    ndigit = deesse.MPDS_X_NB_DIGIT_FOR_REALIZATION_NUMBER
+    if sim is not None:
+        for i in range(deesseX_input.nrealization):
+            for k in range(sim[i].nv):
+                sim[i].varname[k] = sim[i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
+    if simSectionType is not None:
+        if deesseX_input.sectionPath_parameters.sectionPathMode == 'section_path_random':
+            for i in range(deesse_input.nrealization):
+                for k in range(simSectionType[i].nv):
+                    simSectionType[i].varname[k] = simSectionType[i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
+        else: # keep only first map (all are the same)
+            simSectionType = np.array([simSectionType[0]])
+    if simSectionStep is not None:
+        if deesseX_input.sectionPath_parameters.sectionPathMode == 'section_path_random':
+            for i in range(deesse_input.nrealization):
+                for k in range(simSectionStep[i].nv):
+                    simSectionStep[i].varname[k] = simSectionStep[i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
+        else: # keep only first map (all are the same)
+            simSectionStep = np.array([simSectionStep[0]])
+
+    deesseX_output = {
+        'sim':sim, 'sim_var_original_index':sim_var_original_index,
+        'simSectionType':simSectionType, 'simSectionStep':simSectionStep,
+        'nwarning':nwarning, 'warnings':warnings
+        }
+
+    if verbose >= 2 and deesseX_output:
+        print('DeeSseX run complete (all process(es))')
+
+    # Show (print) encountered warnings
+    if verbose >= 2 and deesseX_output and deesseX_output['nwarning']:
+        print('\nWarnings encountered ({} times in all):'.format(deesseX_output['nwarning']))
+        for i, warning_message in enumerate(deesseX_output['warnings']):
+            print('#{:3d}: {}'.format(i+1, warning_message))
+
+    return deesseX_output
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def exportDeesseXInput(deesseX_input,
+                       dirname='input_ascii',
+                       fileprefix='dsX',
+                       endofline='\n',
+                       verbose=2):
+    """
+    Exports input for deesseX as ASCII files (in the directory named <dirname>).
+    The command line version of deesseX can then be launched from the directory
+    <dirname> by using the generated ASCII files.
+
+    :param deesseX_input:   (DeesseXInput class) deesseX input - python
+    :param dirname:         (string) name of the directory in which the files will
+                                be written; if not existing, it will be created;
+                                WARNING: the generated files might erase already
+                                existing ones!
+    :param fileprefix:      (string) prefix for generated files, the main input
+                                file will be <dirname>/<fileprefix>.in
+    :param endofline:       (string) end of line string to be used for the deesseX
+                                input file
+    :param verbose:         (int) indicates which degree of detail is used when
+                                writing comments in the deesseX input file
+                                - 0: no comment
+                                - 1: basic comments
+                                - 2: detailed comments
+    """
+
+    if not deesseX_input.ok:
+        if verbose > 0:
+            print('ERROR (exportDeesseXInput): check deesseX input')
+        return
+
+    # Create ouptut directory if needed
+    if not os.path.isdir(dirname):
+        os.mkdir(dirname)
+
+    # Convert deesseX input from python to C
+    try:
+        mpds_xsiminput = deesseX_input_py2C(deesseX_input)
+    except:
+        print('ERROR: unable to convert deesseX input from python to C...')
+        return
+
+    if mpds_xsiminput is None:
+        print('ERROR: unable to convert deesseX input from python to C...')
+        return
+
+    err = deesse.MPDSExportXSimInput( mpds_xsiminput, dirname, fileprefix, endofline, verbose)
+
+    if err:
+        err_message = deesse.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        print(err_message)
+
+    # Free memory on C side: deesseX input
+    deesse.MPDSFreeXSimInput(mpds_xsiminput)
+    #deesse.MPDSFree(mpds_siminput)
+    deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
+# ----------------------------------------------------------------------------
+
+##### Other classes "using deesse" #####
 
 # ----------------------------------------------------------------------------
 class DeesseEstimator():
