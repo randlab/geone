@@ -61,8 +61,10 @@ def grf1D(cov_model,
 
     The GRFs:
         - are generated using the given covariance model / function,
-        - have specified mean (mean) and variance (var), which can be non stationary
+        - have specified mean (mean) and variance (var), which can be non
+          stationary
         - are conditioned to location x with value v
+
     Notes:
     1) For reproducing covariance model, the dimension of GRF should be large
        enough; let K an integer such that K*spacing is greater or equal to the
@@ -70,17 +72,20 @@ def grf1D(cov_model,
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both distances
-          between them (with respect to the periodic grid), i.e. one should have
+        - two nodes could not be correlated simultaneously regarding both
+          distances between them (with respect to the periodic grid), i.e. one
+          should have
               dimension+extensionMin >= 2*K - 1,
           To sum up, extensionMin should be chosen such that
               dimension+extensionMin >= max(dimension, K) + K - 1
           i.e.
-              extensionMin >= max(K-1,2*K-dimension-1)
+              extensionMin >= max(K-1, 2*K-dimension-1)
     2) For large conditional simulations with large data set:
-        - conditioningMethod should be set to 2 for using FFT in conditioning step
+        - conditioningMethod should be set to 2 for using FFT in conditioning
+          step
         - measureErrVar could be set to a small positive value to stabilize
-          the covariance matrix for conditioning locations (solving linear system)
+          the covariance matrix for conditioning locations (solving linear
+          system)
 
     :param cov_model:   covariance model, it can be:
                             (function) covariance function f(h), where
@@ -95,7 +100,8 @@ def grf1D(cov_model,
                             data points (None for unconditional GRF)
     :param v:           (1-dimensional array or float or None) value at
                             data points (same type as x)
-    :param mean:        (None or callable (function) or float or ndarray) mean of the GRF:
+    :param mean:        (None or callable (function) or float or ndarray) mean of
+                            the GRF:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
@@ -105,7 +111,8 @@ def grf1D(cov_model,
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray) variance of the GRF:
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the GRF:
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
@@ -116,26 +123,29 @@ def grf1D(cov_model,
                                        as many entries as number of grid cells
                                        (reshaped if needed)
     :param nreal:       (int) number of realizations
-    :param extensionMin:(int) minimal extension in nodes for embedding (see above)
-                            None for default, automatically computed:
-                                - based on the range of covariance model,
-                                    if covariance model class is given as first argument,
-                                - set to nx-1 (dimension-1),
-                                    if covariance function is given as first argument
+    :param extensionMin:
+                        (int) minimal extension in nodes for embedding (see
+                            above); None for default, automatically computed:
+                            - based on the range of covariance model,
+                                if covariance model class is given as first
+                                argument,
+                            - set to nx-1 (dimension-1),
+                                if covariance function is given as first
+                                argument
     :param rangeFactorForExtensionMin:
                         (float) factor by which the range is multiplied before
                             computing the default minimal extension, when
-                            covariance model class is given as first argument and
-                            extensionMin is None (not used otherwise)
+                            covariance model class is given as first argument
+                            and extensionMin is None (not used otherwise)
     :param crop:        (bool) indicates if the extended generated field will
-                            be cropped to original dimension; note that no cropping
-                            is not valid with conditioning or non stationary mean
-                            or variance
+                            be cropped to original dimension; note that no
+                            cropping is not valid with conditioning or non
+                            stationary mean or variance
     :param method:      (int) indicates which method is used to generate
-                            unconditional simulations; for each method the DFT "lam"
-                            of the circulant embedding of the covariance matrix is
-                            used, and periodic and stationary GRFs are generated;
-                            possible values:
+                            unconditional simulations; for each method the DFT
+                            "lam" of the circulant embedding of the covariance
+                            matrix is used, and periodic and stationary GRFs are
+                            generated; possible values:
                                 1: method A:
                                    generate one GRF Z as follows:
                                    - generate one real gaussian white noise W
@@ -148,7 +158,8 @@ def grf1D(cov_model,
                                    - multiply X by lam (term by term)
                                    - apply fft inverse (or fft) to get Z
                                 3: method C:
-                                   generate two independent GRFs Z1, Z2 as follows:
+                                   generate two independent GRFs Z1, Z2 as
+                                   follows:
                                    - generate two independant real gaussian white
                                      noises W1, W2 and set W = W1 + i * W2
                                    - apply fft (or fft inverse) on W to get X
@@ -184,8 +195,9 @@ def grf1D(cov_model,
                                 1: method CondtioningA:
                                    the matrix M = rBA * rAA^(-1) is explicitly
                                    computed (warning: could require large amount
-                                   of memory), then all the simulations are updated
-                                   by a sum and a multiplication by the matrix M
+                                   of memory), then all the simulations are
+                                   updated by a sum and a multiplication by the
+                                   matrix M
                                 2: method ConditioningB:
                                    for each simulation: the linear system
                                         rAA * x = Zobs - Z[A]
@@ -193,10 +205,10 @@ def grf1D(cov_model,
                                    is done via fft
     :param measureErrVar:
                         (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the distrubution
-                            N(0,measureErrVar*I); i.e. rAA + measureErrVar*I is
-                            considered instead of rAA for stabilizing the linear
-                            system for this matrix.
+                            the error on conditioining data follows the
+                            distrubution N(0,measureErrVar*I); i.e.
+                            rAA + measureErrVar*I is considered instead of rAA
+                            for stabilizing the linear system for this matrix.
                             (Ignored if x is None, i.e. unconditional simulations)
     :param tolInvKappa: (float >0) used only for conditioning, the simulation is
                             stopped if the inverse of the condition number of rAA
@@ -206,8 +218,8 @@ def grf1D(cov_model,
                             - 1: only errors
                             - 2: errors and warnings
                             - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout (obsolete,
-                            kept for compatibility with older versions)
+    :param printInfo:   (bool) indicates if some info is printed in stdout
+                            (obsolete, kept for compatibility with older versions)
                             - None (default): not used
                             - False: verbose = 2 (overwritten)
                             - True: verbose = 3 (overwritten)
@@ -741,22 +753,24 @@ def krige1D(cov_model,
     It is a simple kriging
         - of value v at location x,
         - based on the covariance model / function,
-        - with a specified mean (mean) and variance (var), which can be non stationary
+        - with a specified mean (mean) and variance (var), which can be non
+          stationary
 
     Notes:
-    1) For reproducing covariance model, the dimension of the field/domain should be large
+    1) For reproducing covariance model, the dimension of GRF should be large
        enough; let K an integer such that K*spacing is greater or equal to the
        correlation range, then
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both distances
-          between them (with respect to the periodic grid), i.e. one should have
+        - two nodes could not be correlated simultaneously regarding both
+          distances between them (with respect to the periodic grid), i.e. one
+          should have
               dimension+extensionMin >= 2*K - 1,
           To sum up, extensionMin should be chosen such that
               dimension+extensionMin >= max(dimension, K) + K - 1
           i.e.
-              extensionMin >= max(K-1,2*K-dimension-1)
+              extensionMin >= max(K-1, 2*K-dimension-1)
     2) For large data set:
         - conditioningMethod should be set to 2 for using FFT
         - measureErrVar could be set to a small positive value to stabilize
@@ -775,7 +789,8 @@ def krige1D(cov_model,
                             data points (None if no data)
     :param v:           (1-dimensional array or float or None) value at
                             data points (same type as x)
-    :param mean:        (None or callable (function) or float or ndarray) mean of the GRF:
+    :param mean:        (None or callable (function) or float or ndarray) mean of
+                            the GRF:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
@@ -785,7 +800,8 @@ def krige1D(cov_model,
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray) variance of the GRF:
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the GRF:
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
@@ -795,17 +811,20 @@ def krige1D(cov_model,
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
-    :param extensionMin:(int) minimal extension in nodes for embedding (see above)
-                            None for default, automatically computed:
-                                - based on the range of covariance model,
-                                    if covariance model class is given as third argument,
-                                - set to nx-1 (dimension-1),
-                                    if covariance function is given as third argument
+    :param extensionMin:
+                        (int) minimal extension in nodes for embedding (see
+                            above); None for default, automatically computed:
+                            - based on the range of covariance model,
+                                if covariance model class is given as first
+                                argument,
+                            - set to nx-1 (dimension-1),
+                                if covariance function is given as first
+                                argument
     :param rangeFactorForExtensionMin:
                         (float) factor by which the range is multiplied before
                             computing the default minimal extension, when
-                            covariance model class is given as third argument and
-                            extensionMin is None (not used otherwise)
+                            covariance model class is given as first argument
+                            and extensionMin is None (not used otherwise)
     :param conditioningMethod:
                         (int) indicates which method is used to perform kriging.
                             Let
@@ -827,8 +846,9 @@ def krige1D(cov_model,
                                 1: method CondtioningA:
                                    the matrices rBA, RAA^(-1) are explicitly
                                    computed (warning: could require large amount
-                                   of memory), then all the simulations are updated
-                                   by a sum and a multiplication by the matrix M
+                                   of memory), then all the simulations are
+                                   updated by a sum and a multiplication by the
+                                   matrix M
                                 2: method ConditioningB:
                                    for kriging estimates:
                                        the linear system
@@ -845,33 +865,34 @@ def krige1D(cov_model,
                                        is computed
     :param measureErrVar:
                         (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the distrubution
-                            N(0,measureErrVar*I); i.e. rAA + measureErrVar*I is
-                            considered instead of rAA for stabilizing the linear
-                            system for this matrix.
+                            the error on conditioining data follows the
+                            distrubution N(0,measureErrVar*I); i.e.
+                            rAA + measureErrVar*I is considered instead of rAA
+                            for stabilizing the linear system for this matrix.
     :param tolInvKappa: (float >0) the function is stopped if the inverse of
                             the condition number of rAA is above tolInvKappa
     :param computeKrigSD:
-                        (bool) indicates if the standard deviation of kriging is computed
+                        (bool) indicates if the standard deviation of kriging is
+                            computed
     :param verbose:     (int) indicates what is displayed during the run:
                             - 0: no display
                             - 1: only errors
                             - 2: errors and warnings
                             - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout (obsolete,
-                            kept for compatibility with older versions)
+    :param printInfo:   (bool) indicates if some info is printed in stdout
+                            (obsolete, kept for compatibility with older versions)
                             - None (default): not used
                             - False: verbose = 2 (overwritten)
                             - True: verbose = 3 (overwritten)
 
-    :return ret:        two possible cases:
-                            ret = (krig, krigSD) if computeKrigSD is equal to True
-                            ret = krig           if computeKrigSD is equal to False
-                        where
-                            krig:   (1-dimensional array of dim nx)
-                                        kriging estimates
-                            krigSD: (1-dimensional array of dim nx)
-                                        kriging standard deviation
+    :return ret:    two possible cases:
+                        ret = (krig, krigSD) if computeKrigSD is equal to True
+                        ret = krig           if computeKrigSD is equal to False
+                    where
+                        krig:   (1-dimensional array of dim nx)
+                                    kriging estimates
+                        krigSD: (1-dimensional array of dim nx)
+                                    kriging standard deviation
 
     NOTES:
         Discrete Fourier Transform (DFT) of a vector x of length N is given by
@@ -1269,8 +1290,10 @@ def grf2D(cov_model,
 
     The GRFs:
         - are generated using the given covariance model / function,
-        - have specified mean (mean) and variance (var), which can be non stationary
+        - have specified mean (mean) and variance (var), which can be non
+          stationary
         - are conditioned to location x with value v
+
     Notes:
     1) For reproducing covariance model, the dimension of GRF should be large
        enough; let K an integer such that K*spacing is greater or equal to the
@@ -1278,18 +1301,20 @@ def grf2D(cov_model,
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both distances
-          between them (with respect to the periodic grid), i.e. one should have
-          i.e. one should have
+        - two nodes could not be correlated simultaneously regarding both
+          distances between them (with respect to the periodic grid), i.e. one
+          should have
               dimension+extensionMin >= 2*K - 1,
           To sum up, extensionMin should be chosen such that
               dimension+extensionMin >= max(dimension, K) + K - 1
           i.e.
-              extensionMin >= max(K-1,2*K-dimension-1)
+              extensionMin >= max(K-1, 2*K-dimension-1)
     2) For large conditional simulations with large data set:
-        - conditioningMethod should be set to 2 for using FFT in conditioning step
+        - conditioningMethod should be set to 2 for using FFT in conditioning
+          step
         - measureErrVar could be set to a small positive value to stabilize
-          the covariance matrix for conditioning locations (solving linear system)
+          the covariance matrix for conditioning locations (solving linear
+          system)
 
     :param cov_model:   covariance model, it can be:
                             (function) covariance function f(h), where
@@ -1312,48 +1337,54 @@ def grf2D(cov_model,
                             data points (None for unconditional GRF)
     :param v:           (1-dimensional array or float or None) value at
                             data points (length n) (None for unconditional GRF)
-    :param mean:        (None or callable (function) or float or ndarray) mean of the GRF:
+    :param mean:        (None or callable (function) or float or ndarray) mean of
+                            the GRF:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
-                                       function of two arguments (xi, yi) that returns
-                                       the mean at (xi, yi) (in the grid)
+                                       function of two arguments (xi, yi) that
+                                       returns the mean at (xi, yi) (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray) variance of the GRF:
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the GRF:
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
-                                       function of two arguments (xi, yi) that returns
-                                       the variance at (xi, yi) (in the grid)
+                                       function of two arguments (xi, yi) that
+                                       returns the variance at (xi, yi) (in the
+                                       grid)
                             - float  : for stationary variance (set manually)
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
     :param nreal:       (int) number of realizations
-    :param extensionMin:(sequence of 2 ints) minimal extension in nodes in
-                            in x-, y-axis direction for embedding (see above)
+    :param extensionMin:
+                        (sequence of 2 ints) minimal extension in nodes in
+                            x-, y-axis direction for embedding (see above);
                             None for default, automatically computed:
-                                - based on the ranges of covariance model,
-                                    if covariance model class is given as first argument,
-                                - set to [nx-1, ny-1] (where dimension=[nx, ny]),
-                                    if covariance function is given as first argument
+                            - based on the ranges of covariance model,
+                                if covariance model class is given as first
+                                argument,
+                            - set to [nx-1, ny-1] (where dimension=[nx, ny]),
+                                if covariance function is given as first
+                                argument
     :param rangeFactorForExtensionMin:
                         (float) factor by which the range is multiplied before
                             computing the default minimal extension, when
-                            covariance model class is given as first argument and
-                            extensionMin is None (not used otherwise)
+                            covariance model class is given as first argument
+                            and extensionMin is None (not used otherwise)
     :param crop:        (bool) indicates if the extended generated field will
-                            be cropped to original dimension; note that no cropping
-                            is not valid with conditioning or non stationary mean
-                            or variance
+                            be cropped to original dimension; note that no
+                            cropping is not valid with conditioning or non
+                            stationary mean or variance
     :param method:      (int) indicates which method is used to generate
-                            unconditional simulations; for each method the DFT "lam"
-                            of the circulant embedding of the covariance matrix is
-                            used, and periodic and stationary GRFs are generated;
-                            possible values:
+                            unconditional simulations; for each method the DFT
+                            "lam" of the circulant embedding of the covariance
+                            matrix is used, and periodic and stationary GRFs are
+                            generated; possible values:
                                 1: method A:
                                    generate one GRF Z as follows:
                                    - generate one real gaussian white noise W
@@ -1366,7 +1397,8 @@ def grf2D(cov_model,
                                    - multiply X by lam (term by term)
                                    - apply fft inverse (or fft) to get Z
                                 3: method C:
-                                   generate two independent GRFs Z1, Z2 as follows:
+                                   generate two independent GRFs Z1, Z2 as
+                                   follows:
                                    - generate two independant real gaussian white
                                      noises W1, W2 and set W = W1 + i * W2
                                    - apply fft (or fft inverse) on W to get X
@@ -1402,8 +1434,9 @@ def grf2D(cov_model,
                                 1: method CondtioningA:
                                    the matrix M = rBA * rAA^(-1) is explicitly
                                    computed (warning: could require large amount
-                                   of memory), then all the simulations are updated
-                                   by a sum and a multiplication by the matrix M
+                                   of memory), then all the simulations are
+                                   updated by a sum and a multiplication by the
+                                   matrix M
                                 2: method ConditioningB:
                                    for each simulation: the linear system
                                         rAA * x = Zobs - Z[A]
@@ -1411,10 +1444,10 @@ def grf2D(cov_model,
                                    is done via fft
     :param measureErrVar:
                         (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the distrubution
-                            N(0,measureErrVar*I); i.e. rAA + measureErrVar*I is
-                            considered instead of rAA for stabilizing the linear
-                            system for this matrix.
+                            the error on conditioining data follows the
+                            distrubution N(0,measureErrVar*I); i.e.
+                            rAA + measureErrVar*I is considered instead of rAA
+                            for stabilizing the linear system for this matrix.
                             (Ignored if x is None, i.e. unconditional simulations)
     :param tolInvKappa: (float >0) used only for conditioning, the simulation is
                             stopped if the inverse of the condition number of rAA
@@ -1424,8 +1457,8 @@ def grf2D(cov_model,
                             - 1: only errors
                             - 2: errors and warnings
                             - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout (obsolete,
-                            kept for compatibility with older versions)
+    :param printInfo:   (bool) indicates if some info is printed in stdout
+                            (obsolete, kept for compatibility with older versions)
                             - None (default): not used
                             - False: verbose = 2 (overwritten)
                             - True: verbose = 3 (overwritten)
@@ -1985,22 +2018,24 @@ def krige2D(cov_model,
     It is a simple kriging
         - of value v at location x,
         - based on the covariance model / function,
-        - with a specified mean (mean) and variance (var), which can be non stationary
+        - with a specified mean (mean) and variance (var), which can be non
+          stationary
+
     Notes:
-    1) For reproducing covariance model, the dimension of field/domain should be large
+    1) For reproducing covariance model, the dimension of GRF should be large
        enough; let K an integer such that K*spacing is greater or equal to the
        correlation range, then
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both distances
-          between them (with respect to the periodic grid), i.e. one should have
-          i.e. one should have
+        - two nodes could not be correlated simultaneously regarding both
+          distances between them (with respect to the periodic grid), i.e. one
+          should have
               dimension+extensionMin >= 2*K - 1,
           To sum up, extensionMin should be chosen such that
               dimension+extensionMin >= max(dimension, K) + K - 1
           i.e.
-              extensionMin >= max(K-1,2*K-dimension-1)
+              extensionMin >= max(K-1, 2*K-dimension-1)
     2) For large data set:
         - conditioningMethod should be set to 2 for using FFT
         - measureErrVar could be set to a small positive value to stabilize
@@ -2027,38 +2062,44 @@ def krige2D(cov_model,
                             data points (None if no data)
     :param v:           (1-dimensional array or float or None) value at
                             data points (length n) (None if no data)
-    :param mean:        (None or callable (function) or float or ndarray) mean of the GRF:
+    :param mean:        (None or callable (function) or float or ndarray) mean of
+                            the GRF:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
-                                       function of two arguments (xi, yi) that returns
-                                       the mean at (xi, yi) (in the grid)
+                                       function of two arguments (xi, yi) that
+                                       returns the mean at (xi, yi) (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray) variance of the GRF:
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the GRF:
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
-                                       function of two arguments (xi, yi) that returns
-                                       the variance at (xi, yi) (in the grid)
+                                       function of two arguments (xi, yi) that
+                                       returns the variance at (xi, yi) (in the
+                                       grid)
                             - float  : for stationary variance (set manually)
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
-    :param extensionMin:(sequence of 2 ints) minimal extension in nodes in
-                            in x-, y-axis direction for embedding (see above)
+    :param extensionMin:
+                        (sequence of 2 ints) minimal extension in nodes in
+                            x-, y-axis direction for embedding (see above);
                             None for default, automatically computed:
-                                - based on the ranges of covariance model,
-                                    if covariance model class is given as third argument,
-                                - set to [nx-1, ny-1] (where dimension=[nx, ny]),
-                                    if covariance function is given as third argument
+                            - based on the ranges of covariance model,
+                                if covariance model class is given as first
+                                argument,
+                            - set to [nx-1, ny-1] (where dimension=[nx, ny]),
+                                if covariance function is given as first
+                                argument
     :param rangeFactorForExtensionMin:
                         (float) factor by which the range is multiplied before
                             computing the default minimal extension, when
-                            covariance model class is given as third argument and
-                            extensionMin is None (not used otherwise)
+                            covariance model class is given as first argument
+                            and extensionMin is None (not used otherwise)
     :param conditioningMethod:
                         (int) indicates which method is used to perform kriging.
                             Let
@@ -2080,8 +2121,9 @@ def krige2D(cov_model,
                                 1: method CondtioningA:
                                    the matrices rBA, RAA^(-1) are explicitly
                                    computed (warning: could require large amount
-                                   of memory), then all the simulations are updated
-                                   by a sum and a multiplication by the matrix M
+                                   of memory), then all the simulations are
+                                   updated by a sum and a multiplication by the
+                                   matrix M
                                 2: method ConditioningB:
                                    for kriging estimates:
                                        the linear system
@@ -2098,33 +2140,34 @@ def krige2D(cov_model,
                                        is computed
     :param measureErrVar:
                         (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the distrubution
-                            N(0,measureErrVar*I); i.e. rAA + measureErrVar*I is
-                            considered instead of rAA for stabilizing the linear
-                            system for this matrix.
+                            the error on conditioining data follows the
+                            distrubution N(0,measureErrVar*I); i.e.
+                            rAA + measureErrVar*I is considered instead of rAA
+                            for stabilizing the linear system for this matrix.
     :param tolInvKappa: (float >0) the function is stopped if the inverse of
                             the condition number of rAA is above tolInvKappa
     :param computeKrigSD:
-                        (bool) indicates if the standard deviation of kriging is computed
+                        (bool) indicates if the standard deviation of kriging is
+                            computed
     :param verbose:     (int) indicates what is displayed during the run:
                             - 0: no display
                             - 1: only errors
                             - 2: errors and warnings
                             - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout (obsolete,
-                            kept for compatibility with older versions)
+    :param printInfo:   (bool) indicates if some info is printed in stdout
+                            (obsolete, kept for compatibility with older versions)
                             - None (default): not used
                             - False: verbose = 2 (overwritten)
                             - True: verbose = 3 (overwritten)
 
-    :return ret:        two possible cases:
-                            ret = (krig, krigSD) if computeKrigSD is equal to True
-                            ret = krig           if computeKrigSD is equal to False
-                        where
-                            krig:   (2-dimensional array of dim ny x nx)
-                                        kriging estimates
-                            krigSD: (2-dimensional array of dim ny x nx)
-                                        kriging standard deviation
+    :return ret:    two possible cases:
+                        ret = (krig, krigSD) if computeKrigSD is equal to True
+                        ret = krig           if computeKrigSD is equal to False
+                    where
+                        krig:   (2-dimensional array of dim ny x nx)
+                                    kriging estimates
+                        krigSD: (2-dimensional array of dim ny x nx)
+                                    kriging standard deviation
 
     NOTES:
         Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 is given by
@@ -2576,8 +2619,10 @@ def grf3D(cov_model,
 
     The GRFs:
         - are generated using the given covariance model / function,
-        - have specified mean (mean) and variance (var), which can be non stationary
+        - have specified mean (mean) and variance (var), which can be non
+          stationary
         - are conditioned to location x with value v
+
     Notes:
     1) For reproducing covariance model, the dimension of GRF should be large
        enough; let K an integer such that K*spacing is greater or equal to the
@@ -2585,18 +2630,20 @@ def grf3D(cov_model,
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both distances
-          between them (with respect to the periodic grid), i.e. one should have
-          i.e. one should have
+        - two nodes could not be correlated simultaneously regarding both
+          distances between them (with respect to the periodic grid), i.e. one
+          should have
               dimension+extensionMin >= 2*K - 1,
           To sum up, extensionMin should be chosen such that
               dimension+extensionMin >= max(dimension, K) + K - 1
           i.e.
-              extensionMin >= max(K-1,2*K-dimension-1)
+              extensionMin >= max(K-1, 2*K-dimension-1)
     2) For large conditional simulations with large data set:
-        - conditioningMethod should be set to 2 for using FFT in conditioning step
+        - conditioningMethod should be set to 2 for using FFT in conditioning
+          step
         - measureErrVar could be set to a small positive value to stabilize
-          the covariance matrix for conditioning locations (solving linear system)
+          the covariance matrix for conditioning locations (solving linear
+          system)
 
     :param cov_model:   covariance model, it can be:
                             (function) covariance function f(h), where
@@ -2612,55 +2659,61 @@ def grf3D(cov_model,
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 floats) [dx, dy, dz], spacing between
                             two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) [ox, oy, oz], origin of the 2D field
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 3 floats) [ox, oy, oz], origin of the 2D
+                            field - used for localizing the conditioning points
     :param x:           (2-dimensional array of dim n x 3, or
                             1-dimensional array of dim 3 or None) coordinate of
                             data points (None for unconditional GRF)
     :param v:           (1-dimensional array or float or None) value at
                             data points (length n) (None for unconditional GRF)
-    :param mean:        (None or callable (function) or float or ndarray) mean of the GRF:
+    :param mean:        (None or callable (function) or float or ndarray) mean of
+                            the GRF:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the mean at (xi, yi, zi) (in the grid)
+                                       function of three arguments (xi, yi, zi)
+                                       that returns the mean at (xi, yi, zi) (in
+                                       the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray) variance of the GRF:
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the GRF:
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the variance at (xi, yi, zi) (in the grid)
+                                       function of three arguments (xi, yi, zi)
+                                       that returns the variance at (xi, yi, zi)
+                                       (in the grid)
                             - float  : for stationary variance (set manually)
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
     :param nreal:       (int) number of realizations
     :param extensionMin:(sequence of 3 ints) minimal extension in nodes in
-                            in x-, y-, z-axis direction for embedding (see above)
+                            in x-, y-, z-axis direction for embedding (see above);
                             None for default, automatically computed:
-                                - based on the ranges of covariance model,
-                                    if covariance model class is given as first argument,
-                                - set to [nx-1, ny-1, nz-1] (where dimension=[nx, ny, nz]),
-                                    if covariance function is given as first argument
+                            - based on the ranges of covariance model,
+                                if covariance model class is given as first
+                                argument,
+                            - set to [nx-1, ny-1, nz-1] (where
+                                dimension=[nx, ny, nz]), if covariance function
+                                is given as first argument
     :param rangeFactorForExtensionMin:
                         (float) factor by which the range is multiplied before
                             computing the default minimal extension, when
-                            covariance model class is given as first argument and
-                            extensionMin is None (not used otherwise)
+                            covariance model class is given as first argument
+                            and extensionMin is None (not used otherwise)
     :param crop:        (bool) indicates if the extended generated field will
-                            be cropped to original dimension; note that no cropping
-                            is not valid with conditioning or non stationary mean
-                            or variance
+                            be cropped to original dimension; note that no
+                            cropping is not valid with conditioning or non
+                            stationary mean or variance
     :param method:      (int) indicates which method is used to generate
-                            unconditional simulations; for each method the DFT "lam"
-                            of the circulant embedding of the covariance matrix is
-                            used, and periodic and stationary GRFs are generated;
-                            possible values:
+                            unconditional simulations; for each method the DFT
+                            "lam" of the circulant embedding of the covariance
+                            matrix is used, and periodic and stationary GRFs are
+                            generated; possible values:
                                 1: method A:
                                    generate one GRF Z as follows:
                                    - generate one real gaussian white noise W
@@ -2673,7 +2726,8 @@ def grf3D(cov_model,
                                    - multiply X by lam (term by term)
                                    - apply fft inverse (or fft) to get Z
                                 3: method C:
-                                   generate two independent GRFs Z1, Z2 as follows:
+                                   generate two independent GRFs Z1, Z2 as
+                                   follows:
                                    - generate two independant real gaussian white
                                      noises W1, W2 and set W = W1 + i * W2
                                    - apply fft (or fft inverse) on W to get X
@@ -2709,8 +2763,9 @@ def grf3D(cov_model,
                                 1: method CondtioningA:
                                    the matrix M = rBA * rAA^(-1) is explicitly
                                    computed (warning: could require large amount
-                                   of memory), then all the simulations are updated
-                                   by a sum and a multiplication by the matrix M
+                                   of memory), then all the simulations are
+                                   updated by a sum and a multiplication by the
+                                   matrix M
                                 2: method ConditioningB:
                                    for each simulation: the linear system
                                         rAA * x = Zobs - Z[A]
@@ -2718,10 +2773,10 @@ def grf3D(cov_model,
                                    is done via fft
     :param measureErrVar:
                         (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the distrubution
-                            N(0,measureErrVar*I); i.e. rAA + measureErrVar*I is
-                            considered instead of rAA for stabilizing the linear
-                            system for this matrix.
+                            the error on conditioining data follows the
+                            distrubution N(0,measureErrVar*I); i.e.
+                            rAA + measureErrVar*I is considered instead of rAA
+                            for stabilizing the linear system for this matrix.
                             (Ignored if x is None, i.e. unconditional simulations)
     :param tolInvKappa: (float >0) used only for conditioning, the simulation is
                             stopped if the inverse of the condition number of rAA
@@ -2731,8 +2786,8 @@ def grf3D(cov_model,
                             - 1: only errors
                             - 2: errors and warnings
                             - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout (obsolete,
-                            kept for compatibility with older versions)
+    :param printInfo:   (bool) indicates if some info is printed in stdout
+                            (obsolete, kept for compatibility with older versions)
                             - None (default): not used
                             - False: verbose = 2 (overwritten)
                             - True: verbose = 3 (overwritten)
@@ -2743,10 +2798,12 @@ def grf3D(cov_model,
                         grf[i] is the i-th realization
 
     NOTES:
-        Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 x N3 is given by
+        Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 x N3 is
+        given by
             c = DFT(x) = F * x
         where F is the the (N1*N2*N3) x (N1*N2*N3) matrix with coefficients
-            F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2*N3) )], j=(j1,j2,j3), k=(k1,k2,k3) in G,
+            F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2*N3) )],
+                j=(j1,j2,j3), k=(k1,k2,k3) in G,
         and
             G = {n=(n1,n2,n3), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1, 0 <= n3 <= N3-1}
         denotes the indices grid
@@ -3311,22 +3368,24 @@ def krige3D(cov_model,
     It is a simple kriging
         - of value v at location x,
         - based on the covariance model / function,
-        - with a specified mean (mean) and variance (var), which can be non stationary
+        - with a specified mean (mean) and variance (var), which can be non
+          stationary
+
     Notes:
-    1) For reproducing covariance model, the dimension of field/domain should be large
+    1) For reproducing covariance model, the dimension of GRF should be large
        enough; let K an integer such that K*spacing is greater or equal to the
        correlation range, then
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both distances
-          between them (with respect to the periodic grid), i.e. one should have
-          i.e. one should have
+        - two nodes could not be correlated simultaneously regarding both
+          distances between them (with respect to the periodic grid), i.e. one
+          should have
               dimension+extensionMin >= 2*K - 1,
           To sum up, extensionMin should be chosen such that
               dimension+extensionMin >= max(dimension, K) + K - 1
           i.e.
-              extensionMin >= max(K-1,2*K-dimension-1)
+              extensionMin >= max(K-1, 2*K-dimension-1)
     2) For large data set:
         - conditioningMethod should be set to 2 for using FFT
         - measureErrVar could be set to a small positive value to stabilize
@@ -3346,45 +3405,51 @@ def krige3D(cov_model,
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 floats) [dx, dy, dz], spacing between
                             two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) [ox, oy, oz], origin of the 2D field
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 3 floats) [ox, oy, oz], origin of the 2D
+                            field - used for localizing the conditioning points
     :param x:           (2-dimensional array of dim n x 3, or
                             1-dimensional array of dim 3 or None) coordinate of
-                            data points (None if no data)
+                            data points (None for unconditional GRF)
     :param v:           (1-dimensional array or float or None) value at
-                            data points (length n) (None if no data)
-    :param mean:        (None or callable (function) or float or ndarray) mean of the GRF:
+                            data points (length n) (None for unconditional GRF)
+    :param mean:        (None or callable (function) or float or ndarray) mean of
+                            the GRF:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the mean at (xi, yi, zi) (in the grid)
+                                       function of three arguments (xi, yi, zi)
+                                       that returns the mean at (xi, yi, zi) (in
+                                       the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray) variance of the GRF:
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the GRF:
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the variance at (xi, yi, zi) (in the grid)
+                                       function of three arguments (xi, yi, zi)
+                                       that returns the variance at (xi, yi, zi)
+                                       (in the grid)
                             - float  : for stationary variance (set manually)
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
                                        (reshaped if needed)
     :param extensionMin:(sequence of 3 ints) minimal extension in nodes in
-                            in x-, y-, z-axis direction for embedding (see above)
+                            in x-, y-, z-axis direction for embedding (see above);
                             None for default, automatically computed:
-                                - based on the ranges of covariance model,
-                                    if covariance model class is given as third argument,
-                                - set to [nx-1, ny-1, nz-1] (where dimension=[nx, ny, nz]),
-                                    if covariance function is given as third argument
+                            - based on the ranges of covariance model,
+                                if covariance model class is given as first
+                                argument,
+                            - set to [nx-1, ny-1, nz-1] (where
+                                dimension=[nx, ny, nz]), if covariance function
+                                is given as first argument
     :param rangeFactorForExtensionMin:
                         (float) factor by which the range is multiplied before
                             computing the default minimal extension, when
-                            covariance model class is given as third argument and
-                            extensionMin is None (not used otherwise)
+                            covariance model class is given as first argument
+                            and extensionMin is None (not used otherwise)
     :param conditioningMethod:
                         (int) indicates which method is used to perform kriging.
                             Let
@@ -3406,8 +3471,9 @@ def krige3D(cov_model,
                                 1: method CondtioningA:
                                    the matrices rBA, RAA^(-1) are explicitly
                                    computed (warning: could require large amount
-                                   of memory), then all the simulations are updated
-                                   by a sum and a multiplication by the matrix M
+                                   of memory), then all the simulations are
+                                   updated by a sum and a multiplication by the
+                                   matrix M
                                 2: method ConditioningB:
                                    for kriging estimates:
                                        the linear system
@@ -3424,39 +3490,42 @@ def krige3D(cov_model,
                                        is computed
     :param measureErrVar:
                         (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the distrubution
-                            N(0,measureErrVar*I); i.e. rAA + measureErrVar*I is
-                            considered instead of rAA for stabilizing the linear
-                            system for this matrix.
+                            the error on conditioining data follows the
+                            distrubution N(0,measureErrVar*I); i.e.
+                            rAA + measureErrVar*I is considered instead of rAA
+                            for stabilizing the linear system for this matrix.
     :param tolInvKappa: (float >0) the function is stopped if the inverse of
                             the condition number of rAA is above tolInvKappa
     :param computeKrigSD:
-                        (bool) indicates if the standard deviation of kriging is computed
+                        (bool) indicates if the standard deviation of kriging is
+                            computed
     :param verbose:     (int) indicates what is displayed during the run:
                             - 0: no display
                             - 1: only errors
                             - 2: errors and warnings
                             - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout (obsolete,
-                            kept for compatibility with older versions)
+    :param printInfo:   (bool) indicates if some info is printed in stdout
+                            (obsolete, kept for compatibility with older versions)
                             - None (default): not used
                             - False: verbose = 2 (overwritten)
                             - True: verbose = 3 (overwritten)
 
-    :return ret:        two possible cases:
-                            ret = (krig, krigSD) if computeKrigSD is equal to True
-                            ret = krig           if computeKrigSD is equal to False
-                        where
-                            krig:   (3-dimensional array of dim nz x ny x nx)
-                                        kriging estimates
-                            krigSD: (3-dimensional array of dim nz x ny x nx)
-                                        kriging standard deviation
+    :return ret:    two possible cases:
+                        ret = (krig, krigSD) if computeKrigSD is equal to True
+                        ret = krig           if computeKrigSD is equal to False
+                    where
+                        krig:   (3-dimensional array of dim nz x ny x nx)
+                                    kriging estimates
+                        krigSD: (3-dimensional array of dim nz x ny x nx)
+                                    kriging standard deviation
 
     NOTES:
-        Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 x N3 is given by
+        Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 x N3 is
+        given by
             c = DFT(x) = F * x
         where F is the the (N1*N2*N3) x (N1*N2*N3) matrix with coefficients
-            F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2*N3) )], j=(j1,j2,j3), k=(k1,k2,k3) in G,
+            F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2*N3) )],
+                j=(j1,j2,j3), k=(k1,k2,k3) in G,
         and
             G = {n=(n1,n2,n3), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1, 0 <= n3 <= N3-1}
         denotes the indices grid

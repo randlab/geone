@@ -116,8 +116,9 @@ def cov_cub(h, w=1.0, r=1.0):
     :param r:   (float >0): range
     :return:    (1-dimensional array or float) evaluation of the model at h:
                     w * f(|h|/r), where
-                    f(t) = 1 - 7 * t**2 + 35/4 * t**3 - 7/2 * t**5 + 3/4 * t**7, if 0 <= t < 1
-                    f(t) = 0,                                                     if t >= 1
+                    f(t) = 1 - 7 * t**2 + 35/4 * t**3 - 7/2 * t**5 + 3/4 * t**7,
+                        if 0 <= t < 1
+                    f(t) = 0, if t >= 1
     """
     t = np.minimum(np.abs(h)/r, 1.) # "parallel or element-wise minimum"
     t2 = t**2
@@ -196,11 +197,12 @@ def cov_matern(h, w=1.0, r=1.0, nu=0.5):
                     w * 1.0/(2.0**(nu-1.0)*Gamma(nu)) * u**nu * K_{nu}(u), where
                     u = np.sqrt(2.0*nu)/r * |h|
                     Gamma is the function gamma
-                    K_{nu} is the modified Bessel function of the second kind of parameter nu
+                    K_{nu} is the modified Bessel function of the second kind of
+                    parameter nu
                 Note that
                     1) cov_matern(h, w, r, nu=0.5) = cov_exp(h, w, 3*r)
-                    2) cov_matern(h, w, r, nu) tends to cov_gau(h, w, np.sqrt(6)*r)
-                    when nu tends to infinity
+                    2) cov_matern(h, w, r, nu) tends to
+                    cov_gau(h, w, np.sqrt(6)*r) when nu tends to infinity
     """
     v = np.zeros_like(h).astype(float) # be sure that the type is float to avoid truncation
     u = np.sqrt(2.0*nu)/r * np.abs(h)
@@ -248,7 +250,8 @@ def cov_matern_get_r_param(nu, r_eff):
 
     :param nu:      (float >0): parameter for Matern covariance
     :param r_eff:   (float >0): effective range
-    :return r:      (float): parameter r (scale) of the corresponding Matern covariance
+    :return r:      (float): parameter r (scale) of the corresponding Matern
+                        covariance
     """
     res = scipy.optimize.minimize_scalar(lambda r: (cov_matern_get_effective_range(nu, r) - r_eff)**2, bracket=[1.e-10*r_eff, 4*r_eff])
     return res.x
@@ -360,7 +363,8 @@ class CovModel1D (object):
     # ------------------------------------------------------------------------
 
     def is_orientation_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if the orientation is
+        """
+        Returns a bool (True / False) indicating if the orientation is
         stationary - always True for 1D covariance model.
 
         :param recompute:   (bool) True to force (re-)computing
@@ -370,7 +374,8 @@ class CovModel1D (object):
         return self._is_orientation_stationary
 
     def is_weight_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if the weight is stationary
+        """
+        Returns a bool (True / False) indicating if the weight is stationary
         - i.e. the weight (sill) of any elementary contribution is defined as a
         unique value - (True), or not (False).
 
@@ -382,9 +387,10 @@ class CovModel1D (object):
         return self._is_weight_stationary
 
     def is_range_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if the range in every direction
-        is stationary - i.e. the range in of any elementary contribution is defined
-        as a unique value - (True), or not (False).
+        """
+        Returns a bool (True / False) indicating if the range in every direction
+        is stationary - i.e. the range in of any elementary contribution is
+        defined as a unique value - (True), or not (False).
 
         :param recompute:   (bool) True to force (re-)computing
         :return:            (bool) self._is_range_stationary
@@ -398,7 +404,8 @@ class CovModel1D (object):
         return self._is_range_stationary
 
     def is_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if all the parameters are
+        """
+        Returns a bool (True / False) indicating if all the parameters are
         stationary - i.e. defined as a unique value - (True), or not (False).
 
         :param recompute:   (bool) True to force (re-)computing
@@ -421,7 +428,8 @@ class CovModel1D (object):
         return self._is_stationary
 
     def sill(self, recompute=False):
-        """Returns the sill (sum of weight of each elementary contribution).
+        """
+        Returns the sill (sum of weight of each elementary contribution).
 
         :param recompute:   (bool) True to force (re-)computing
         :return:            (float) self._sill
@@ -436,7 +444,8 @@ class CovModel1D (object):
         return self._sill
 
     def r(self, recompute=False):
-        """Returns the range (max over elementary contributions).
+        """
+        Returns the range (max over elementary contributions).
         For each elementary contribution the "effective" range is retrieved,
         i.e. the distance beyond which the covariance is zero or below 5% of
         the weight (this corresponds to the parameter r for most of covariance
@@ -580,13 +589,14 @@ class CovModel1D (object):
         :param vario:   (bool)
                             - if False: plot covariance function
                             - if True:  plot variogram function
-        :param hmin, hmax:  (float) function is plotted for h in interval [hmin, hmax]
+        :param hmin, hmax:  (float) function is plotted for h in interval
+                                [hmin, hmax];
                                 hmax=None for default: 1.2 * range max
         :param npts:    (int) number of points used in interval [hmin, hmax]
         :param grid:    (bool) indicates if a grid is plotted (True by default)
         :param show_xlabel, show_ylabel:
-                        (bool) indicates if (default) label for x axis (resp. y axis)
-                            is displayed
+                        (bool) indicates if (default) label for x axis
+                            (resp. y axis) is displayed
         :kwargs:        keyword arguments passed to the funtion plt.plot
         """
         # Prevent calculation if covariance model is not stationary
@@ -745,7 +755,8 @@ class CovModel2D (object):
     # ------------------------------------------------------------------------
 
     def is_orientation_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if the orientation is
+        """
+        Returns a bool (True / False) indicating if the orientation is
         stationary - i.e. the angle alpha is defined as a unique value - (True),
         or not (False).
 
@@ -757,7 +768,8 @@ class CovModel2D (object):
         return self._is_orientation_stationary
 
     def is_weight_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if the weight is stationary
+        """
+        Returns a bool (True / False) indicating if the weight is stationary
         - i.e. the weight (sill) of any elementary contribution is defined as a
         unique value - (True), or not (False).
 
@@ -769,7 +781,8 @@ class CovModel2D (object):
         return self._is_weight_stationary
 
     def is_range_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if the range in every direction
+        """
+        Returns a bool (True / False) indicating if the range in every direction
         is stationary - i.e. the range in any direction and of any elementary
         contribution is defined as a unique value - (True), or not (False).
 
@@ -785,7 +798,8 @@ class CovModel2D (object):
         return self._is_range_stationary
 
     def is_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if all the parameters are
+        """
+        Returns a bool (True / False) indicating if all the parameters are
         stationary - i.e. defined as a unique value - (True), or not (False).
 
         :param recompute:   (bool) True to force (re-)computing
@@ -808,7 +822,8 @@ class CovModel2D (object):
         return self._is_stationary
 
     def sill(self, recompute=False):
-        """Returns the sill (sum of weight of each elementary contribution).
+        """
+        Returns the sill (sum of weight of each elementary contribution).
 
         :param recompute:   (bool) True to force (re-)computing
         :return:            (float) self._sill
@@ -823,8 +838,10 @@ class CovModel2D (object):
         return self._sill
 
     def mrot(self, recompute=False):
-        """Returns the 2x2 matrix m for changing the coordinate system from Ox'y'
-        to Oxy, where Ox' and Oy' are the axes supporting the ranges of the model.
+        """
+        Returns the 2x2 matrix m for changing the coordinate system from Ox'y'
+        to Oxy, where Ox' and Oy' are the axes supporting the ranges of the
+        model.
 
         :param recompute:   (bool) True to force (re-)computing
         :return:            (2d ndarray of shape (2,2)) self._mrot
@@ -841,7 +858,8 @@ class CovModel2D (object):
         return self._mrot
 
     def r12(self, recompute=False):
-        """Returns the range (max over elementary contributions) along each axis
+        """
+        Returns the range (max over elementary contributions) along each axis
         in the new coordinate system (corresponding to the axes of the ellipse
         supporting the covariance model).
         For each elementary contribution the "effective" range is retrieved,
@@ -879,7 +897,8 @@ class CovModel2D (object):
         return self._r
 
     def rxy(self, recompute=False):
-        """Returns the range (max over elementary contributions) along each axis
+        """
+        Returns the range (max over elementary contributions) along each axis
         in the original coordinate system.
         For each elementary contribution the "effective" range is retrieved,
         i.e. the distance beyond which the covariance is zero or below 5% of
@@ -1064,7 +1083,8 @@ class CovModel2D (object):
         """
         Plot covariance or variogram function
             - map of the function, and / or
-            - curves along axis x' and axis y' (where Ox' and Oy' are the axes supporting the ranges of the model)
+            - curves along axis x' and axis y' (where Ox' and Oy' are the axes
+                supporting the ranges of the model)
 
         :param vario:   (bool)
                             - if False: plot covariance function
@@ -1073,34 +1093,44 @@ class CovModel2D (object):
         :param plot_map, plot_curves:
                         (bool) indicates what is plotted:
                             - plot_map is True  and plot_curves is True :
-                                plot map and curves along axis x' and axis y' in a new 1x2 figure
+                                plot map and curves along axis x' and axis y'
+                                in a new 1x2 figure
                             - plot_map is True and plot_curves is False:
                                 plot map in current figure axis
                             - plot_map is False and plot_curves is True :
-                                plot curves along axis x' and axis y' in current figure axis
+                                plot curves along axis x' and axis y' in current
+                                figure axis
                             - plot_map is False and plot_curves is False:
                                 nothing is done
 
         :param cmap:            color map
-        :param color0, color1:  colors for curves along axis x' and along axis y' resp.
+        :param color0, color1:  colors for curves along axis x' and along axis y'
+                                    resp.
 
-        :param extent:  (hxmin, hxmax, hymin, hymax): 4 floats defining the domain of the map.
-                            None for default
+        :param extent:  (hxmin, hxmax, hymin, hymax) 4 floats defining the
+                            domain of the map; None for default
 
-        :param ncell:   (nx, ny): 2 ints defining the number of the cells in the map (nx x ny)
+        :param ncell:   (nx, ny) 2 ints defining the number of the cells in the
+                            map (nx x ny)
 
-        :param h1min, h1max:    function is plotted along x' for h in interval [h1min, h1max] (default h1max if None)
-        :param h2min, h2max:    function is plotted along y' for h in interval [h2min, h2max] (default h2max if None)
-        :param n1, n2:          number of points in interval [h1min, h1max] and [h2min, h2max] resp.
+        :param h1min, h1max:    function is plotted along x' for h in interval
+                                    [h1min, h1max] (default h1max if None)
+        :param h2min, h2max:    function is plotted along y' for h in interval
+                                    [h2min, h2max] (default h2max if None)
+        :param n1, n2:          number of points in interval [h1min, h1max] and
+                                    [h2min, h2max] resp.
         :param show_xlabel, show_ylabel:
                         (bool) indicates if label for x axis (resp. y axis)
                             is displayed (True by default), for curves plot
         :param show_suptitle:
-                        (bool) indicates if suptitle is displayed (True by default),
-                            in case of map and curves are plotted (1x2 figure)
-        :param grid:    (bool) indicates if a grid is plotted (True by default) for curves plot
-        :param figsize: (tuple of 2 ints) size of the figure, used if a new 1x2 figure is created
-                            (i.e. if plot_map and plot_curves are set to True)
+                        (bool) indicates if suptitle is displayed (True by
+                            default), in case of map and curves are plotted
+                            (1x2 figure)
+        :param grid:    (bool) indicates if a grid is plotted (True by default)
+                            for curves plot
+        :param figsize: (tuple of 2 ints) size of the figure, used if a new 1x2
+                            figure is created (i.e. if plot_map and plot_curves
+                            are set to True)
         """
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
@@ -1214,7 +1244,8 @@ class CovModel2D (object):
     def plot_model_one_curve(self, main_axis=1, vario=False, hmin=0, hmax=None, npts=500,
         grid=True, show_xlabel=True, show_ylabel=True, **kwargs):
         """
-        Plot covariance or variogram curve along one main axis (in current figure axis).
+        Plot covariance or variogram curve along one main axis (in current
+        figure axis).
 
         :param main_axis:   (int) 1 or 2:
                                 1: plot curve along x',
@@ -1222,7 +1253,8 @@ class CovModel2D (object):
         :param vario:   (bool)
                             - if False: plot covariance function
                             - if True:  plot variogram function
-        :param hmin, hmax:  (float) function is plotted for h in interval [hmin, hmax]
+        :param hmin, hmax:  (float) function is plotted for h in interval
+                                [hmin, hmax];
                                 hmax=None for default: 1.2 * range max
         :param npts:    (int) number of points used in interval [hmin, hmax]
         :param grid:    (bool) indicates if a grid is plotted (True by default)
@@ -1302,35 +1334,36 @@ class CovModel3D (object):
                             the parameter 'r' which must be given here
                             as a sequence (array) of ranges along each axis
                     e.g.
-                       (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5, 3.0]})
-                       (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5, 3.0], 's':1.7})
-                       (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5, 3.0], 'nu':1.5})
+                    (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5, 3.0]})
+                    (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5, 3.0], 's':1.7})
+                    (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5, 3.0], 'nu':1.5})
                     the final model is the sum of the elementary models
         alpha, beta, gamma:
-                (floats) azimuth, dip and plunge angles in degrees:
-                the system Ox'''y''''z''', supporting the axes of the model
-                (ranges), is obtained from the system Oxyz as follows:
-                Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'
-                Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''
-                Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''
-                The 3x3 matrix m for changing the coordinate system from
-                Ox'''y'''z''' to Oxy is:
-                    +                                                             +
-                    |  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc|
-                m = |- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc|
-                    |                 cb * sc,     - sb,                   cb * cc|
-                    +                                                             +
-                where
-                    ca = cos(alpha), cb = cos(beta), cc = cos(gamma),
-                    sa = sin(alpha), sb = sin(beta), sc = sin(gamma)
+            (floats) azimuth, dip and plunge angles in degrees:
+            the system Ox'''y''''z''', supporting the axes of the model
+            (ranges), is obtained from the system Oxyz as follows:
+            Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'
+            Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''
+            Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''
+            The 3x3 matrix m for changing the coordinate system from
+            Ox'''y'''z''' to Oxy is:
+                +                                                             +
+                |  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc|
+            m = |- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc|
+                |                 cb * sc,     - sb,                   cb * cc|
+                +                                                             +
+            where
+                ca = cos(alpha), cb = cos(beta), cc = cos(gamma),
+                sa = sin(alpha), sb = sin(beta), sc = sin(gamma)
+
         name:   (string) name of the model
 
     Example: to define a covariance model (3D) that is a combination of
         2 elementary structures:
-            - gaussian with a contributtion of 10. and ranges of 40., 20. and 10.,
-                along axis x'' and axis y'', axis z'' resp. defined by the angles
-                alpha=-30., beta=-40., and gamma=20. (see above)
-            - nugget of (contribution) 0.5
+        - gaussian with a contributtion of 10. and ranges of 40., 20. and 10.,
+            along axis x'' and axis y'', axis z'' resp. defined by the angles
+            alpha=-30., beta=-40., and gamma=20. (see above)
+        - nugget of (contribution) 0.5
     >>> cov_model = CovModel3D(elem=[
             ('gaussian', {'w':8.5, 'r':[40, 20, 10]}), # elementary contribution
             ('nugget', {'w':0.5})                      # elementary contribution
@@ -1411,7 +1444,8 @@ class CovModel3D (object):
     # ------------------------------------------------------------------------
 
     def is_orientation_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if the orientation is
+        """
+        Returns a bool (True / False) indicating if the orientation is
         stationary - i.e. the angles alpha, beta and gamma are defined as a
         unique value - (True), or not (False).
 
@@ -1423,7 +1457,8 @@ class CovModel3D (object):
         return self._is_orientation_stationary
 
     def is_weight_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if the weight is stationary
+        """
+        Returns a bool (True / False) indicating if the weight is stationary
         - i.e. the weight (sill) of any elementary contribution is defined as a
         unique value - (True), or not (False).
 
@@ -1435,7 +1470,8 @@ class CovModel3D (object):
         return self._is_weight_stationary
 
     def is_range_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if the range in every direction
+        """
+        Returns a bool (True / False) indicating if the range in every direction
         is stationary - i.e. the range in any direction and of any elementary
         contribution is defined as a unique value - (True), or not (False).
 
@@ -1451,7 +1487,8 @@ class CovModel3D (object):
         return self._is_range_stationary
 
     def is_stationary(self, recompute=False):
-        """Returns a bool (True / False) indicating if all the parameters are
+        """
+        Returns a bool (True / False) indicating if all the parameters are
         stationary - i.e. defined as a unique value - (True), or not (False).
 
         :param recompute:   (bool) True to force (re-)computing
@@ -1474,7 +1511,8 @@ class CovModel3D (object):
         return self._is_stationary
 
     def sill(self, recompute=False):
-        """Returns the sill (sum of weight of each elementary contribution).
+        """
+        Returns the sill (sum of weight of each elementary contribution).
 
         :param recompute:   (bool) True to force (re-)computing
         :return:            (float) self._sill
@@ -1489,7 +1527,8 @@ class CovModel3D (object):
         return self._sill
 
     def mrot(self, recompute=False):
-        """Returns the 3x3 matrix m for changing the coordinate system from
+        """
+        Returns the 3x3 matrix m for changing the coordinate system from
         Ox'''y'''z''' to Oxyz, where Ox''', Oy''', Oz''' are the axes supporting
         the ranges of the model.
 
@@ -1515,7 +1554,8 @@ class CovModel3D (object):
         return self._mrot
 
     def r123(self, recompute=False):
-        """Returns the range (max over elementary contributions) along each axis
+        """
+        Returns the range (max over elementary contributions) along each axis
         in the new coordinate system (corresponding to the axes of the ellipse
         supporting the covariance model).
         For each elementary contribution the "effective" range is retrieved,
@@ -1553,7 +1593,8 @@ class CovModel3D (object):
         return self._r
 
     def rxyz(self, recompute=False):
-        """Returns the range (max over elementary contributions) along each axis
+        """
+        Returns the range (max over elementary contributions) along each axis
         in the original coordinate system.
         For each elementary contribution the "effective" range is retrieved,
         i.e. the distance beyond which the covariance is zero or below 5% of
@@ -1696,13 +1737,16 @@ class CovModel3D (object):
         :param color0, color1, color2:  colors for main axes x''', y''', z'''
 
         :param set_3d_subplot:
-                        (bool)
-                            - True: a new figure is created with one axis "projection='3d'"
-                            - False: the plot is done in the current figure axis assumed to be set
-                                as "projection='3d'"
-                                (this allows to plot in a figure with multiple axes)
+                (bool)
+                    - True: a new figure is created with one axis
+                        "projection='3d'"
+                    - False: the plot is done in the current figure axis assumed
+                        to be set as "projection='3d'"
+                        (this allows to plot in a figure with multiple axes)
 
-        :param figsize: (tuple of 2 ints) size of the figure, not used if set_polar_subplot is False
+        :param figsize:
+                (tuple of 2 ints) size of the figure, not used if
+                    set_polar_subplot is False
         """
         # Prevent calculation if orientation is not stationary
         if not self.is_orientation_stationary():
@@ -1738,12 +1782,13 @@ class CovModel3D (object):
         color0='red', color1='green', color2='blue',
         extent=None, ncell=(101, 101, 101), **kwargs):
         """
-        Plot covariance or variogram function in 3D (using the function drawImage3D_volume
-        from geone.imgplot3d (based on pyvista)).
+        Plot covariance or variogram function in 3D (using the function
+        drawImage3D_volume from geone.imgplot3d (based on pyvista)).
 
         :param plotter: (pyvista plotter)
                             if given: add element to the plotter, a further call
-                                to plotter.show() will be required to show the plot
+                                to plotter.show() will be required to show the
+                                plot
                             if None (default): a plotter is created and the plot
                                 is shown
 
@@ -1753,13 +1798,15 @@ class CovModel3D (object):
 
         :param color0, color1, color2:  colors for main axes x''', y''', z'''
 
-        :param extent:  (hxmin, hxmax, hymin, hymax, hzmin, hzmax): 4 floats defining the domain of the plot.
+        :param extent:  (hxmin, hxmax, hymin, hymax, hzmin, hzmax) 4 floats
+                            defining the domain of the plot.
                             None for default
 
-        :param ncell:   (nx, ny, nz): 3 ints defining the number of the cells in the plot (nx x ny x nz)
+        :param ncell:   (nx, ny, nz) 3 ints defining the number of the cells in
+                            the plot (nx x ny x nz)
 
-        :param kwargs:  keyword arguments passed to the funtion drawImage3D_volume from geone.imgplot3d
-                            (cmap, ...)
+        :param kwargs:  keyword arguments passed to the funtion
+                            drawImage3D_volume from geone.imgplot3d (cmap, ...)
         """
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
@@ -1832,12 +1879,13 @@ class CovModel3D (object):
         color0='red', color1='green', color2='blue',
         extent=None, ncell=(101, 101, 101), **kwargs):
         """
-        Plot covariance or variogram function in 3D (sclices in 3D volume, using the function
-        drawImage3D_slice from geone.imgplot3d (based on pyvista)).
+        Plot covariance or variogram function in 3D (sclices in 3D volume, using
+        the function drawImage3D_slice from geone.imgplot3d (based on pyvista)).
 
         :param plotter: (pyvista plotter)
                             if given: add element to the plotter, a further call
-                                to plotter.show() will be required to show the plot
+                                to plotter.show() will be required to show the
+                                plot
                             if None (default): a plotter is created and the plot
                                 is shown
 
@@ -1847,13 +1895,15 @@ class CovModel3D (object):
 
         :param color0, color1, color2:  colors for main axes x''', y''', z'''
 
-        :param extent:  (hxmin, hxmax, hymin, hymax, hzmin, hzmax): 4 floats defining the domain of the plot.
+        :param extent:  (hxmin, hxmax, hymin, hymax, hzmin, hzmax) 4 floats
+                            defining the domain of the plot.
                             None for default
 
-        :param ncell:   (nx, ny, nz): 3 ints defining the number of the cells in the plot (nx x ny x nz)
+        :param ncell:   (nx, ny, nz) 3 ints defining the number of the cells in
+                            the plot (nx x ny x nz)
 
-        :param kwargs:  keyword arguments passed to the funtion drawImage3D_slice from geone.imgplot3d
-                            (cmap, ...)
+        :param kwargs:  keyword arguments passed to the funtion drawImage3D_slice
+                            from geone.imgplot3d (cmap, ...)
         """
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
@@ -1930,20 +1980,27 @@ class CovModel3D (object):
         h1min=0, h1max=None, h2min=0, h2max=None, h3min=0, h3max=None,
         n1=500, n2=500, n3=500, grid=True, show_xlabel=True, show_ylabel=True):
         """
-        Plot covariance or variogram function along the main axes x''', y''', z''' (in current figure axis).
+        Plot covariance or variogram function along the main axes
+        x''', y''', z''' (in current figure axis).
 
         :param vario:   (bool)
                             - if False: plot covariance function
                             - if True:  plot variogram function
 
-        :param color0, color1, color2:  colors for curves along main axes x''', y''', z'''
+        :param color0, color1, color2:
+                        colors for curves along main axes x''', y''', z'''
 
-        :param h1min, h1max:    function is plotted along x''' for h in interval [h1min, h1max] (default h1max if None)
-        :param h2min, h2max:    function is plotted along y''' for h in interval [h2min, h2max] (default h2max if None)
-        :param h3min, h3max:    function is plotted along z''' for h in interval [h3min, h3max] (default h1max if None)
-        :param n1, n2, n3:      number of points in interval [h1min, h1max], [h2min, h2max] and [h3min, h3max] resp.
+        :param h1min, h1max:    function is plotted along x''' for h in interval
+                                    [h1min, h1max] (default h1max if None)
+        :param h2min, h2max:    function is plotted along y''' for h in interval
+                                    [h2min, h2max] (default h2max if None)
+        :param h3min, h3max:    function is plotted along z''' for h in interval
+                                    [h3min, h3max] (default h1max if None)
+        :param n1, n2, n3:      number of points in interval [h1min, h1max],
+                                    [h2min, h2max] and [h3min, h3max] resp.
         :param show_xlabel, show_ylabel:
-                        (bool) indicates if label for x axis (resp. y axis) is displayed (True by default)
+                        (bool) indicates if label for x axis (resp. y axis) is
+                            displayed (True by default)
         :param grid:    (bool) indicates if a grid is plotted (True by default)
         """
         # Prevent calculation if covariance model is not stationary
@@ -2010,7 +2067,8 @@ class CovModel3D (object):
     def plot_model_one_curve(self, main_axis=1, vario=False, hmin=0, hmax=None, npts=500,
         grid=True, show_xlabel=True, show_ylabel=True, **kwargs):
         """
-        Plot covariance or variogram curve along one main axis (in current figure axis).
+        Plot covariance or variogram curve along one main axis (in current
+        figure axis).
 
         :param main_axis:   (int) 1, 2 or 3:
                                 1: plot curve along x''',
@@ -2019,7 +2077,8 @@ class CovModel3D (object):
         :param vario:   (bool)
                             - if False: plot covariance function
                             - if True:  plot variogram function
-        :param hmin, hmax:  (float) function is plotted for h in interval [hmin, hmax]
+        :param hmin, hmax:  (float) function is plotted for h in interval
+                                [hmin, hmax];
                                 hmax=None for default: 1.2 * range max
         :param npts:    (int) number of points used in interval [hmin, hmax]
         :param grid:    (bool) indicates if a grid is plotted (True by default)
@@ -2083,12 +2142,13 @@ class CovModel3D (object):
 # ----------------------------------------------------------------------------
 def covModel1D_to_covModel2D(cov_model_1d):
     """
-    Converts a covariance model in 1D to a omni-directional covariance model in 2D.
+    Converts a covariance model in 1D to a omni-directional covariance model
+    in 2D.
 
     :param cov_model_1d:    (CovModel1D class) covariance model in 1D
 
-    :return cov_model_2d:   (CovModel2D class) covariance model in 2D (omni-directional,
-                                defined from cov_model_1d)
+    :return cov_model_2d:   (CovModel2D class) covariance model in 2D
+                                (omni-directional, defined from cov_model_1d)
     """
     cov_model_2d = CovModel2D()
     cov_model_2d.elem = copy.deepcopy(cov_model_1d.elem)
@@ -2102,12 +2162,13 @@ def covModel1D_to_covModel2D(cov_model_1d):
 # ----------------------------------------------------------------------------
 def covModel1D_to_covModel3D(cov_model_1d):
     """
-    Converts a covariance model in 1D to a omni-directional covariance model in 3D.
+    Converts a covariance model in 1D to a omni-directional covariance model
+    in 3D.
 
     :param cov_model_1d:    (CovModel1D class) covariance model in 1D
 
-    :return cov_model_3d:   (CovModel2D class) covariance model in 3D (omni-directional,
-                                defined from cov_model_1d)
+    :return cov_model_3d:   (CovModel2D class) covariance model in 3D
+                                (omni-directional, defined from cov_model_1d)
     """
     cov_model_3d = CovModel3D()
     cov_model_3d.elem = copy.deepcopy(cov_model_1d.elem)
@@ -2159,9 +2220,10 @@ def plot_variogramCloud1D(h, g, npair, grid=True, **kwargs):
     """
     Plot a variogram cloud (1D) (in current figure axis).
 
-    :param h, g:    (1-dimensional array of shape (npair,)) coordinates of the points
-                        of the variogram cloud.
-    :param npair:   (int) number of points (pairs of data points considered) in the variogram cloud.
+    :param h, g:    (1-dimensional array of shape (npair,)) coordinates of the
+                        points of the variogram cloud
+    :param npair:   (int) number of points (pairs of data points considered) in
+                        the variogram cloud
     :param grid:    (bool) indicates if a grid is plotted (True by default)
     :kwargs:        keyword arguments passed to the funtion plt.plot
     """
@@ -2188,10 +2250,12 @@ def plot_variogramExp1D(hexp, gexp, cexp, show_count=True, grid=True, **kwargs):
     """
     Plot an experimental variogram (1D) (in current figure axis).
 
-    :param hexp, gexp:  (1-dimensional array of floats of same length) coordinates of
-                            the points of the experimental variogram
-    :param cexp:        (1-dimensional array of ints of same length as hexp, gexp)
-                            numbers of points from the variogram cloud in each class
+    :param hexp, gexp:  (1-dimensional array of floats of same length)
+                            coordinates of the points of the experimental
+                            variogram
+    :param cexp:        (1-dimensional array of ints of same length as
+                            hexp, gexp) numbers of points from the variogram
+                            cloud in each class
     :param show_count:  (bool) indicates if counters (cexp) are shown on plot
     :param grid:        (bool) indicates if a grid is plotted (True by default)
     :kwargs:            keyword arguments passed to the funtion plt.plot
@@ -2229,29 +2293,34 @@ def variogramCloud1D(x, v, hmax=np.nan, make_plot=True, grid=True, **kwargs):
         - the pair of the i-th and j-th data points gives the following
             point in the variogram cloud:
                 (h(i,j), g(i,j)) = (||x(i)-x(j)||, 0.5 * (v(i)-v(j))^2)
-            where x(i) and x(j) are the coordinates of the i-th and j-th data points
-            and v(i) and v(j) the values at these points
+            where x(i) and x(j) are the coordinates of the i-th and j-th data
+            points and v(i) and v(j) the values at these points
             (v(i)=Z(x(i)), where Z is the considered variable).
 
     :param x:       (2-dimensional array of shape (n, d)) coordinates
                         of the data points (n: number of points, d: dimension)
-                        Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
+                        Note: for data in 1D, it can be a 1-dimensional array of
+                        shape (n,)
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
-    :param hmax:    (float or nan) maximal distance between a pair of data points for
-                        being integrated in the variogram cloud.
+    :param hmax:    (float or nan) maximal distance between a pair of data
+                        points for being integrated in the variogram cloud.
 
     :param make_plot:
-                    (bool) if True: the plot of the variogram cloud is done (in current figure axis)
+                    (bool) if True: the plot of the variogram cloud is done (in
+                        current figure axis)
 
-    :param grid:    (bool) indicates if a grid is plotted (used if make_plot is True)
-    :kwargs:        keyword arguments passed to the function plot_variogramCloud1D (used if make_plot is True)
+    :param grid:    (bool) indicates if a grid is plotted (used if make_plot is
+                        True)
+    :kwargs:        keyword arguments passed to the function
+                        plot_variogramCloud1D (used if make_plot is True)
 
     :return:    (h, g, npair), where
-                    h, g are two 1-dimensional arrays of floats of same length containing
-                        the coordinates of the points in the variogram cloud
-                    npair is an int, the number of points (pairs of data points considered)
-                        in the variogram cloud
+                    h, g are two 1-dimensional arrays of floats of same length
+                        containing the coordinates of the points in the
+                        variogram cloud
+                    npair is an int, the number of points (pairs of data points
+                        considered) in the variogram cloud
     """
     # Get dimension (d) from x
     if np.asarray(x).ndim == 1:
@@ -2309,56 +2378,73 @@ def variogramCloud1D(x, v, hmax=np.nan, make_plot=True, grid=True, **kwargs):
 # ----------------------------------------------------------------------------
 def variogramExp1D(x, v, hmax=np.nan, ncla=10, cla_center=None, cla_length=None, variogramCloud=None, make_plot=True, show_count=True, grid=True, **kwargs):
     """
-    Computes the exprimental omni-directional variogram for data set in 1D, 2D or 3D.
-    The mean point in each class is retrieved from the variogram cloud (returned by
-    the function variogramCloud1D).
+    Computes the exprimental omni-directional variogram for data set in 1D, 2D
+    or 3D. The mean point in each class is retrieved from the variogram cloud
+    (returned by the function variogramCloud1D).
 
     :param x:       (2-dimensional array of shape (n, d)) coordinates
                         of the data points (n: number of points, d: dimension)
-                        Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
+                        Note: for data in 1D, it can be a 1-dimensional array of
+                        shape (n,)
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
-    :param hmax:    (float or nan) maximal distance between a pair of data points for
-                        being integrated in the variogram cloud.
+    :param hmax:    (float or nan) maximal distance between a pair of data
+                        points for being integrated in the variogram cloud
 
     :param ncla:    (int) number of classes:
-                        the parameter is used if cla_center is not specified (None),
-                        in that situation ncla classes is considered and the class centers are set to
+                        the parameter is used if cla_center is not specified
+                        (None), in that situation ncla classes is considered and
+                        the class centers are set to
                             cla_center[i] = (i+0.5)*l, i=0,...,ncla-1
-                        with l = H / ncla, H being the max of the distance between the two points of
-                        the considered pairs (in the variogram cloud).
+                        with l = H / ncla, H being the max of the distance
+                        between the two points of the considered pairs (in the
+                        variogram cloud)
 
-    :param cla_center:  (sequence of floats) center each class, if specified (not None),
-                            then the parameter ncla is not used.
+    :param cla_center:
+                    (sequence of floats) center each class, if specified (not
+                        None), then the parameter ncla is not used
 
-    :param cla_length:  (None, or float or sequence of floats) length of each class
-                            - if not specified (None): the length of every class is set to the
-                                minimum of difference between two sucessive class centers (np.inf if one class)
-                            - if float: the length of every class is set to the specified number
-                            - if a sequence, its length should be equal to the number of classes (length of
-                                cla_center (or ncla))
-                            Finally, the i-th class is determined by its center cla_center[i] and its
-                            length cla_length[i], and corresponds to the interval
-                                ]cla_center[i]-cla_length[i]/2, cla_center[i]+cla_length[i]/2]
-                            along h (lag) axis
+    :param cla_length:
+                    (None, or float or sequence of floats) length of each class
+                        - if not specified (None): the length of every class is
+                            set to the minimum of difference between two
+                            sucessive class centers (np.inf if one class)
+                        - if float: the length of every class is set to the
+                            specified number
+                        - if a sequence, its length should be equal to the
+                            number of classes (length of cla_center (or ncla))
+                        Finally, the i-th class is determined by its center
+                        cla_center[i] and its length cla_length[i], and
+                        corresponds to the interval
+                            ]cla_center[i]-cla_length[i]/2,
+                            cla_center[i]+cla_length[i]/2]
+                        along h (lag) axis
 
     :param variogramCloud:
-                    (tuple of length 3) (h, g, npair): variogram cloud (returned by the function variogramCloud1D
-                        (npair is not used))
-                        If given (not None): this variogram cloud is used (not computed, then x, v, hmax are not used)
+                    (tuple of length 3) (h, g, npair) variogram cloud (returned
+                        by the function variogramCloud1D (npair is not used))
+                        If given (not None): this variogram cloud is used (not
+                        computed, then x, v, hmax are not used)
 
     :param make_plot:
-                    (bool) if True: the plot of the experimental variogram is done (in current figure axis)
+                    (bool) if True: the plot of the experimental variogram is
+                        done (in current figure axis)
 
-    :param show_count:  (bool) indicates if counters (cexp) are shown on plot (used if make_plot is True)
-    :param grid:        (bool) indicates if a grid is plotted (used if make_plot is True)
-    :kwargs:            keyword arguments passed to the function plot_variogramExp1D (used if make_plot is True)
+    :param show_count:
+                    (bool) indicates if counters (cexp) are shown on plot (used
+                        if make_plot is True)
+    :param grid:    (bool) indicates if a grid is plotted (used if make_plot is
+                        True)
+    :kwargs:        keyword arguments passed to the function plot_variogramExp1D
+                        (used if make_plot is True)
 
     :return:    (hexp, gexp, cexp), where
-                    - hexp, gexp are two 1-dimensional arrays of floats of same length containing
-                        the coordinates of the points of the experimental variogram, and
-                    - cexp is a 1-dimensional array of ints of same length as hexp and gexp, containing
-                        the number of points from the variogram cloud in each class
+                    - hexp, gexp are two 1-dimensional arrays of floats of same
+                        length containing the coordinates of the points of the
+                        experimental variogram, and
+                    - cexp is a 1-dimensional array of ints of same length as
+                        hexp and gexp, containing the number of points from the
+                        variogram cloud in each class
     """
     # Compute variogram cloud if needed (npair won't be used)
     if variogramCloud is None:
@@ -2413,11 +2499,11 @@ def variogramExp1D(x, v, hmax=np.nan, ncla=10, cla_center=None, cla_length=None,
 # ----------------------------------------------------------------------------
 def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=True, **kwargs):
     """
-    Fits a covariance model in 1D, used for data in 1D or as omni-directional model
-    for data in 2D or 3D.
+    Fits a covariance model in 1D, used for data in 1D or as omni-directional
+    model for data in 2D or 3D.
 
-    The parameter 'cov_model' is a covariance model in 1D (CovModel1D class) with
-    the parameters to fit set to nan. For example, with
+    The parameter 'cov_model' is a covariance model in 1D (CovModel1D class)
+    with the parameters to fit set to nan. For example, with
         cov_model = CovModel1D(elem=[
             ('gaussian', {'w':np.nan, 'r':np.nan}), # elementary contribution
             ('nugget', {'w':np.nan})                # elementary contribution
@@ -2427,33 +2513,41 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
 
     :param x:       (2-dimensional array of shape (n, d)) coordinates
                         of the data points (n: number of points, d: dimension)
-                        Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
+                        Note: for data in 1D, it can be a 1-dimensional array of
+                        shape (n,)
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
-    :param cov_model:   (CovModel1D class) covariance model in 1D with parameters to fit set to nan
-                            (see above)
+    :param cov_model:
+                    (CovModel1D class) covariance model in 1D with parameters to
+                        fit set to nan (see above)
 
-    :param hmax:    (float or nan) maximal distance between a pair of data points for
-                        being integrated in the variogram cloud.
+    :param hmax:    (float or nan) maximal distance between a pair of data
+                        points for being integrated in the variogram cloud.
 
     :param variogramCloud:
-                    (tuple of length 3) (h, g, npair): variogram cloud (returned by the function variogramCloud1D
-                        (npair is not used)).
-                        If given (not None): this variogram cloud is used (not computed, then x, v, hmax are not used)
+                    (tuple of length 3) (h, g, npair) variogram cloud (returned
+                        by the function variogramCloud1D (npair is not used)).
+                        If given (not None): this variogram cloud is used (not
+                        computed, then x, v, hmax are not used)
 
     :param make_plot:
-                    (bool) if True: the plot of the optimized variogram is done (in current figure axis)
+                    (bool) if True: the plot of the optimized variogram is done
+                        (in current figure axis)
 
-    :kwargs:        keyword arguments passed to the funtion curve_fit() from scipy.optimize
-                        e.g.: p0=<array of initial parameters> (see doc of curve_fit), with
-                            an array of floats of length equal to the number of paramters to fit,
-                            considered in the order of appearance in the definition of cov_model;
-                            bounds=(<array of lower bounds>, <array of upper bounds>)
+    :kwargs:        keyword arguments passed to the funtion curve_fit() from
+                        scipy.optimize, e.g.:
+                        p0=<array of initial parameters> (see doc of curve_fit),
+                            with an array of floats of length equal to the number
+                            of paramters to fit, considered in the order of
+                            appearance in the definition of cov_model;
+                        bounds=(<array of lower bounds>, <array of upper bounds>)
 
     :return:        (cov_model_opt, popt) with:
-                        - cov_model_opt:    (covModel1D class) optimized covariance model
-                        - popt:             (sequence of floats) vector of optimized parameters
-                                                returned by curve_fit
+                        - cov_model_opt:
+                            (covModel1D class) optimized covariance model
+                        - popt:
+                            (sequence of floats) vector of optimized parameters
+                                returned by curve_fit
     """
     # Check cov_model
     if not isinstance(cov_model, CovModel1D):
@@ -2499,10 +2593,11 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
         """
         Function whose p is the vector of parameters to optimize.
         :param d:   (array) data: x, coordinates of the data points (see above)
-        :param p:   vector of parameters (floats) to optimize for the covariance model,
-                        variables to fit identified with ielem_to_fit, key_to_fit, computed
-                        above
-        :return: variogram function of the corresponding covariance model evaluated at data d
+        :param p:   vector of parameters (floats) to optimize for the covariance
+                        model, variables to fit identified with ielem_to_fit,
+                        key_to_fit, computed above
+        :return: variogram function of the corresponding covariance model
+                    evaluated at data d
         """
         for i, (iel, k) in enumerate(zip(ielem_to_fit, key_to_fit)):
             cov_model_opt.elem[iel][1][k] = p[i]
@@ -2558,49 +2653,62 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=10.0, tol_angle=45.0, hmax=(np.na
     Computes two directional variogram clouds for a data set in 2D:
         - one along axis x',
         - one along axis y',
-    where the system Ox'y' is obtained from the (usual) system Oxy by applying a rotation of
-    angle -alpha (see parameter alpha below).
+    where the system Ox'y' is obtained from the (usual) system Oxy by applying a
+    rotation of angle -alpha (see parameter alpha below).
 
-    :param x:       (2-dimensional array of shape (n, 2)) 2D-coordinates in system Oxy of data points
+    :param x:       (2-dimensional array of shape (n, 2)) 2D-coordinates in
+                        system Oxy of data points
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
     :param alpha:   (float) angle in degrees:
-                        the system Ox'y', supporting the principal axes along which the variograms
-                        are computedof, is obtained from the system Oxy by applying a rotation of
-                        angle -alpha.
+                        the system Ox'y', supporting the principal axes along
+                        which the variograms are computed, is obtained from the
+                        system Oxy by applying a rotation of angle -alpha.
                         The 2x2 matrix m for changing the coordinate system from
                         Ox'y' to Oxy is:
                                 +                         +
                                 |  cos(alpha)   sin(alpha)|
                             m = | -sin(alpha)   cos(alpha)|
                                 +                         +
-    :param tol_dist, tol_angle: (float) tolerances (tol_dist: distance, tol_angle: angle in degrees)
-                    used to determines which pair of points are integrated in the variogram clouds.
-                    A pair of points (x(i), x(j)) is in the directional variogram cloud along
-                    axis x' (resp. y') iff, given the lag vector h = x(i) - x(j),
-                        - the distance from the end of vector h issued from origin to that axis
-                            (i.e. the length of the projection of h onto the orthogonal axis)
-                            is less than or equal to tol_dist and,
-                        - the angle between h and that axis is less than or equal to tol_angle
+    :param tol_dist, tol_angle:
+                    (floats) tolerances (tol_dist: distance, tol_angle: angle in
+                        degrees) used to determines which pair of points are
+                        integrated in the variogram clouds.
+                        A pair of points (x(i), x(j)) is in the directional
+                        variogram cloud along axis x' (resp. y') iff, given the
+                        lag vector h = x(i) - x(j),
+                        - the distance from the end of vector h issued from
+                            origin to that axis (i.e. the length of the
+                            projection of h onto the orthogonal axis) is less
+                            than or equal to tol_dist and,
+                        - the angle between h and that axis is less than or equal
+                            to tol_angle
 
-    :param hmax:    (sequence of 2 floats (or nan)): maximal distance between a pair of data points for
-                        being integrated in the directional variogram cloud along axis x' and axis y' resp.
+    :param hmax:    (sequence of 2 floats (or nan)): maximal distance between a
+                        pair of data points for being integrated in the
+                        directional variogram cloud along axis x' and axis y'
+                        resp.
 
     :param make_plot:
-                    (bool) if True: the plot of the variogram clouds is done (in a new 2x2 figure)
+                    (bool) if True: the plot of the variogram clouds is done
+                        (in a new 2x2 figure)
 
-    :param color0, color1:  colors for variogram cloud along axis x' and along axis y' resp. (used if make_plot is True)
+    :param color0, color1:
+                    colors for variogram cloud along axis x' and along axis y'
+                        resp. (used if make_plot is True)
 
-    :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is True)
+    :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is
+                        True)
 
     :return:    ((h0, g0, npair0), (h1, g1, npair1)), where
-                    - (h0, g0, npair0) is the directional variogram cloud along the axis x'
-                        (h0, g0 are two 1-dimensional arrays of same length containing
-                        the coordinates of the points in the variagram cloud, and
-                        npair is an int, the number of points (pairs of data points considered)
-                        in the variogram cloud)
-                    - (h1, g1, npair1) is the directional variogram cloud along the axis y'
-                        (same type of object as for axis x')
+                    - (h0, g0, npair0) is the directional variogram cloud along
+                        the axis x' (h0, g0 are two 1-dimensional arrays of same
+                        length containing the coordinates of the points in the
+                        variagram cloud, and npair is an int, the number of
+                        points (pairs of data points considered) in the
+                        variogram cloud)
+                    - (h1, g1, npair1) is the directional variogram cloud along
+                        the axis y' (same type of object as for axis x')
     """
     # Number of data points
     n = x.shape[0]
@@ -2718,87 +2826,120 @@ def variogramExp2D(x, v, alpha=0.0, tol_dist=10.0, tol_angle=45.0, hmax=(np.nan,
     Computes two directional exprimental variograms for a data set in 2D:
         - one along axis x',
         - one along axis y',
-    where the system Ox'y' is obtained from the (usual) system Oxy by applying a rotation of
-    angle -alpha (see parameter alpha below).
+    where the system Ox'y' is obtained from the (usual) system Oxy by applying a
+    rotation of angle -alpha (see parameter alpha below).
 
-    The mean point in each class is retrieved from the two directional variogram clouds
-    (returned by the function variogramCloud2D).
+    The mean point in each class is retrieved from the two directional variogram
+    clouds (returned by the function variogramCloud2D).
 
-    :param x:       (2-dimensional array of shape (n, 2)) 2D-coordinates in system Oxy of data points
+    :param x:       (2-dimensional array of shape (n, 2)) 2D-coordinates in
+                        system Oxy of data points
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
     :param alpha:   (float) angle in degrees:
-                        the system Ox'y', supporting the principal axes along which the variograms
-                        are computedof, is obtained from the system Oxy by applying a rotation of
-                        angle -alpha.
+                        the system Ox'y', supporting the principal axes along
+                        which the variograms are computed, is obtained from the
+                        system Oxy by applying a rotation of angle -alpha.
                         The 2x2 matrix m for changing the coordinate system from
                         Ox'y' to Oxy is:
                                 +                         +
                                 |  cos(alpha)   sin(alpha)|
                             m = | -sin(alpha)   cos(alpha)|
                                 +                         +
+    :param tol_dist, tol_angle:
+                    (floats) tolerances (tol_dist: distance, tol_angle: angle in
+                        degrees) used to determines which pair of points are
+                        integrated in the variogram clouds.
+                        A pair of points (x(i), x(j)) is in the directional
+                        variogram cloud along axis x' (resp. y') iff, given the
+                        lag vector h = x(i) - x(j),
+                        - the distance from the end of vector h issued from
+                            origin to that axis (i.e. the length of the
+                            projection of h onto the orthogonal axis) is less
+                            than or equal to tol_dist and,
+                        - the angle between h and that axis is less than or equal
+                            to tol_angle
 
-    :param tol_dist, tol_angle: (float) tolerances (tol_dist: distance, tol_angle: angle in degrees)
-                    used to determines which pair of points are integrated in the variogram clouds.
-                    A pair of points (x(i), x(j)) is in the directional variogram cloud along
-                    axis x' (resp. y') iff, given the lag vector h = x(i) - x(j),
-                        - the distance from the end of vector h issued from origin to that axis
-                            (i.e. the length of the projection of h onto the orthogonal axis)
-                            is less than or equal to tol_dist and,
-                        - the angle between h and that axis is less than or equal to tol_angle
-
-    :param hmax:    (sequence of 2 floats (or nan)): maximal distance between a pair of data points for
-                        being integrated in the directional variogram cloud along axis x' and axis y' resp.
+    :param hmax:    (sequence of 2 floats (or nan)): maximal distance between a
+                        pair of data points for being integrated in the
+                        directional variogram cloud along axis x' and axis y'
+                        resp.
 
     :param ncla:    (sequence of 2 ints) ncla[0], ncla[1]: number of classes
-                        for experimental variogram along axis x' (direction 0) and axis y' (direction 1) resp.
-                        For direction j:
-                        the parameter ncla[j] is used if cla_center[j] is not specified (None),
-                        in that situation ncla[j] classes are considered and the class centers are set to
+                        for experimental variogram along axis x' (direction 0)
+                        and axis y' (direction 1) resp.
+                        For direction j: the parameter ncla[j] is used if
+                        cla_center[j] is not specified (None), in that situation
+                        ncla[j] classes are considered and the class centers are
+                        set to
                             cla_center[j][i] = (i+0.5)*l, i=0,...,ncla[j]-1
-                        with l = H / ncla[j], H being the max of the distance between the two points of
-                        the considered pairs (in the variogram cloud of direction j).
+                        with l = H / ncla[j], H being the max of the distance
+                        between the two points of the considered pairs (in the
+                        variogram cloud of direction j).
 
-    :param cla_center:  (sequence of 2 sequences of floats) cla_center[0], clac_center[1]: center of each class
-                            for experimental variogram along axis x' (direction 0) and axis y' (direction 1) resp.
-                            For direction j:
-                            if cla_center[j] is specified (not None), then the parameter ncla[j] is not used.
+    :param cla_center:
+                    (sequence of 2 sequences of floats)
+                        cla_center[0], clac_center[1]: center of each class for
+                        experimental variogram along axis x' (direction 0) and
+                        axis y' (direction 1) resp.
+                        For direction j: if cla_center[j] is specified (not
+                        None), then the parameter ncla[j] is not used.
 
-    :param cla_length:  (sequence of length 2 of: None, or float or sequence of floats) cla_length[0], clac_length[1]:
-                            length of each class
-                            for experimental variogram along axis x' (direction 0) and axis y' (direction 1) resp.
-                            For direction j:
-                                - if cla_length[j] not specified (None): the length of every class is set to the
-                                    minimum of difference between two sucessive class centers (np.inf if one class)
-                                - if float: the length of every class is set to the specified number
-                                - if a sequence, its length should be equal to the number of classes (length of
-                                    cla_center[j] (or ncla[j]))
-                                Finally, the i-th class is determined by its center cla_center[j][i] and its
-                                length cla_length[j][i], and corresponds to the interval
-                                    ]cla_center[j][i]-cla_length[j][i]/2, cla_center[j][i]+cla_length[j][i]/2]
-                                along h (lag) axis
+    :param cla_length:
+                    (sequence of length 2 of: None, or float or sequence of
+                        floats) cla_length[0], clac_length[1]: length of each
+                        class for experimental variogram along axis x'
+                        (direction 0) and axis y' (direction 1) resp.
+                        For direction j:
+                        For direction j:
+                        - if cla_length[j] not specified (None): the length of
+                            every class is set to the minimum of difference
+                            between two sucessive class centers (np.inf if one
+                            class)
+                        - if float: the length of every class is set to the
+                            specified number
+                        - if a sequence, its length should be equal to the
+                            number of classes (length of cla_center[j]
+                            (or ncla[j]))
+                        Finally, the i-th class is determined by its center
+                        cla_center[j][i] and its length cla_length[j][i], and
+                        corresponds to the interval
+                            ]cla_center[j][i]-cla_length[j][i]/2,
+                            cla_center[j][i]+cla_length[j][i]/2]
+                        along h (lag) axis
 
     :param variogramCloud:
-                    (sequence of 2 tuples of length 3, or None) If given: ((h0, g0, npair0), (h1, g1, npair1)):
-                        variogram clouds (returned by the function variogramCloud2D (npair0, npair1 are not used))
-                        along axis x' (direction 0) and axis y' (direction 1) resp., then
+                    (sequence of 2 tuples of length 3, or None) If given:
+                        ((h0, g0, npair0), (h1, g1, npair1)): variogram clouds
+                        (returned by the function variogramCloud2D
+                        (npair0, npair1 are not used)) along axis x'
+                        (direction 0) and axis y' (direction 1) resp., then
                         x, v, alpha, tol_dist, tol_angle, hmax are not used
-                        (but alpha, tol_dist, tol_angle are used in plot if make_plot is True)
+                        (but alpha, tol_dist, tol_angle are used in plot if
+                        make_plot is True)
 
     :param make_plot:
-                    (bool) if True: the plot of the experimental variograms is done (in a new 2x2 figure)
+                    (bool) if True: the plot of the experimental variograms is
+                        done (in a new 2x2 figure)
 
-    :param color0, color1:  colors for experimental variogram along axis x' and along axis y' resp. (used if make_plot is True)
+    :param color0, color1:
+                    colors for experimental variogram along axis x' and along
+                        axis y' resp. (used if make_plot is True)
 
-    :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is True)
+    :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is
+                        True)
 
     :return:    ((hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1)), where
-                    - (hexp0, gexp0, cexp0) is the output for the experimental variogram along axis x':
-                        - hexp0, gexp0: are two 1-dimensional arrays of floats of same length containing
-                        the coordinates of the points of the experimental variogram along axis x', and
-                        - cexp0 is a 1-dimensional array of ints of same length as hexp0 and gexp0, containing
-                        the number of points from the variogram cloud in each class
-                    - (hexp1, gexp1, cexp1) is the output for the experimental variogram along axis y'
+                    - (hexp0, gexp0, cexp0) is the output for the experimental
+                        variogram along axis x':
+                        - hexp0, gexp0: are two 1-dimensional arrays of floats of
+                        same length containing the coordinates of the points of
+                        the experimental variogram along axis x', and
+                        - cexp0 is a 1-dimensional array of ints of same length
+                        as hexp0 and gexp0, containing the number of points from
+                        the variogram cloud in each class
+                    - (hexp1, gexp1, cexp1) is the output for the experimental
+                        variogram along axis y'
     """
     # Compute variogram clouds if needed
     if variogramCloud is None:
@@ -2880,32 +3021,37 @@ def variogramExp2D_rose(x, v, r_max=np.nan, r_ncla=10, phi_ncla=12, set_polar_su
     """
     Shows shows an experimental variogram for a data set in 2D in the form of a
     rose plot, i.e. the lags vectors between the pairs of data points are divided
-    in classes according to length (radius) and angle from the x-axis counter-clockwise
-    (warning: opposite sense to the sense given by angle in definition of a covariance model
-    in 2D).
+    in classes according to length (radius) and angle from the x-axis
+    counter-clockwise (warning: opposite sense to the sense given by angle in
+    definition of a covariance model in 2D).
 
-    :param x:       (2-dimensional array of shape (n, 2)) 2D-coordinates in system Oxy of data points
+    :param x:       (2-dimensional array of shape (n, 2)) 2D-coordinates in
+                        system Oxy of data points
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
-    :param r_max:    (float or nan) maximal radius, i.e. maximal length of 2D-lag vector between a pair
-                        of data points for being integrated in the variogram rose plot.
+    :param r_max:   (float or nan) maximal radius, i.e. maximal length of 2D-lag
+                        vector between a pair of data points for being integrated
+                        in the variogram rose plot
 
-    :param r_ncla:      (int) number of classes for radius
+    :param r_ncla:  (int) number of classes for radius
 
-    :param phi_ncla:    (int) number of classes for angle for half of the whole disk:
-                            on the whole disk, there will be 2*phi_ncla classes
+    :param phi_ncla:
+                    (int) number of classes for angle for half of the whole disk:
+                        on the whole disk, there will be 2*phi_ncla classes
 
     :param set_polar_subplot:
-                        (bool)
-                            - True: a new figure is created with one axis "projection='polar'"
-                            - False: the plot is done in the current figure axis assumed to be set
-                                as "projection='polar'"
-                                (this allows to plot in a figure with multiple axes)
+                    (bool)
+                        - True: a new figure is created with one axis
+                            "projection='polar'"
+                        - False: the plot is done in the current figure axis
+                            assumed to be set as "projection='polar'"
+                            (this allows to plot in a figure with multiple axes)
 
-    :param figsize: (tuple of 2 ints) size of the figure, not used if set_polar_subplot is False
+    :param figsize: (tuple of 2 ints) size of the figure, not used if
+                        set_polar_subplot is False
 
-    :kwargs:            keyword arguments passed to the funtion plt.pcolormesh
-                            (cmap, ...)
+    :kwargs:        keyword arguments passed to the funtion plt.pcolormesh
+                        (cmap, ...)
     """
     # Number of data points
     n = x.shape[0]
@@ -2994,8 +3140,8 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
     The parameter 'cov_model' is a covariance model in 2D (CovModel2D class) with
     the parameters to fit set to nan (a nan replace a float). For example, with
         cov_model = CovModel2D(elem=[
-            ('gaussian', {'w':np.nan, 'r':[np.nan, np.nan]}), # elementary contribution
-            ('nugget', {'w':np.nan})                          # elementary contribution
+            ('gaussian', {'w':np.nan, 'r':[np.nan, np.nan]}), # elem. contrib.
+            ('nugget', {'w':np.nan})                          # elem. contrib.
             ], alpha=np.nan, name='')
     it will fit the weight and ranges of the gaussian elementary contribution,
     the nugget (weigth of the nugget contribution), and the angle alpha.
@@ -3004,27 +3150,34 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
                         of the data points (n: number of points)
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
-    :param cov_model:   (CovModel2D class) covariance model in 2D with parameters to fit set to nan
-                            (see above)
+    :param cov_model:
+                    (CovModel2D class) covariance model in 2D with parameters to
+                        fit set to nan (see above)
 
-    :param hmax:    (float or nan) maximal distance between a pair of data points for
-                        being integrated in the variogram cloud.
+    :param hmax:    (float or nan) maximal distance between a pair of data points
+                        for being integrated in the variogram cloud.
 
     :param make_plot:
-                    (bool) if True: the plot of the optimized variogram is done (in a new 1x2 figure)
+                    (bool) if True: the plot of the optimized variogram is done
+                        (in a new 1x2 figure)
 
-    :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is True)
+    :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is
+                        True)
 
-    :kwargs:        keyword arguments passed to the funtion curve_fit() from scipy.optimize
-                        e.g.: p0=<array of initial parameters> (see doc of curve_fit), with
-                            an array of floats of length equal to the number of paramters to fit,
-                            considered in the order of appearance in the definition of cov_model;
-                            bounds=(<array of lower bounds>, <array of upper bounds>)
+    :kwargs:        keyword arguments passed to the funtion curve_fit() from
+                        scipy.optimize, e.g.:
+                        p0=<array of initial parameters> (see doc of curve_fit),
+                            with an array of floats of length equal to the number
+                            of paramters to fit, considered in the order of
+                            appearance in the definition of cov_model;
+                        bounds=(<array of lower bounds>, <array of upper bounds>)
 
     :return:        (cov_model_opt, popt) with:
-                        - cov_model_opt:    (covModel2D class) optimized covariance model
-                        - popt:             (sequence of floats) vector of optimized parameters
-                                                returned by curve_fit
+                        - cov_model_opt:
+                            (covModel2D class) optimized covariance model
+                        - popt:
+                            (sequence of floats) vector of optimized parameters
+                                returned by curve_fit
     """
     # Check cov_model
     if not isinstance(cov_model, CovModel2D):
@@ -3106,11 +3259,14 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
     def func(d, *p):
         """
         Function whose p is the vector of parameters to optimize.
-        :param d:   (array) data: h, lag vector for pair of data points (see above)
-        :param p:   vector of parameters (floats) to optimize for the covariance model,
-                        variables to fit identified with ielem_to_fit, key_to_fit, ir_to_fit
-                        and alpha_to_fitm, computed above
-        :return: variogram function of the corresponding covariance model evaluated at data d
+        :param d:   (array) data: h, lag vector for pair of data points
+                        (see above)
+        :param p:   vector of parameters (floats) to optimize for the covariance
+                        model, variables to fit identified with
+                        ielem_to_fit, key_to_fit, ir_to_fit and alpha_to_fitm,
+                        computed above
+        :return: variogram function of the corresponding covariance model
+                    evaluated at data d
         """
         for i, (iel, k, j) in enumerate(zip(ielem_to_fit, key_to_fit, ir_to_fit)):
             if k == 'r':
@@ -3174,64 +3330,76 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=10.0, tol_an
         - one along axis x''',
         - one along axis y''',
         - one along axis z''',
-    where the system Ox'''y'''z''' is obtained from the (usual) system Oxyz as follows:
+    where the system Ox'''y'''z''' is obtained from the (usual) system Oxyz as
+    follows:
         Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'
         Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''
         Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''
 
-    :param x:       (2-dimensional array of shape (n, 3)) 3D-coordinates in system Oxyz of data points
-    :param v:       (1-dimensional array of shape (n,)) values at data points
+    :param x:   (2-dimensional array of shape (n, 3)) 3D-coordinates in system
+                    Oxyz of data points
+    :param v:   (1-dimensional array of shape (n,)) values at data points
 
     :param alpha, beta, gamma:
-                    (floats) angle in degrees:
-                        the system Ox'''y''''z''', supporting the axis of each variogram cloud,
-                        is obtained from the system Oxyz as follows:
-                        Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'
-                        Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''
-                        Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''
-                        The 3x3 matrix m for changing the coordinate system from
-                        Ox'''y'''z''' to Oxy is:
-                            +                                                             +
-                            |  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc|
-                        m = |- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc|
-                            |                 cb * sc,     - sb,                   cb * cc|
-                            +                                                             +
-                        where
-                            ca = cos(alpha), cb = cos(beta), cc = cos(gamma),
-                            sa = sin(alpha), sb = sin(beta), sc = sin(gamma)
+        (floats) angle in degrees:
+            the system Ox'''y''''z''', supporting the axis of each
+            variogram cloud, is obtained from the system Oxyz as follows:
+            Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'
+            Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''
+            Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''
+            The 3x3 matrix m for changing the coordinate system from
+            Ox'''y'''z''' to Oxy is:
+                +                                                             +
+                |  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc|
+            m = |- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc|
+                |                 cb * sc,     - sb,                   cb * cc|
+                +                                                             +
+            where
+                ca = cos(alpha), cb = cos(beta), cc = cos(gamma),
+                sa = sin(alpha), sb = sin(beta), sc = sin(gamma)
 
-    :param tol_dist, tol_angle: (float) tolerances (tol_dist: distance, tol_angle: angle in degrees)
-                    used to determines which pair of points are integrated in the variogram clouds.
-                    A pair of points (x(i), x(j)) is in the directional variogram cloud along
-                    axis x''' (resp. y''' and z''') iff, given the lag vector h = x(i) - x(j),
-                        - the distance from the end of vector h issued from origin to that axis
-                            (i.e. the length of the projection of h onto the orthogonal plane)
-                            is less than or equal to tol_dist and,
-                        - the angle between h and that axis is less than or equal to tol_angle
+    :param tol_dist, tol_angle:
+                (floats) tolerances (tol_dist: distance, tol_angle: angle in
+                    degrees) used to determines which pair of points are
+                    integrated in the variogram clouds. A pair of points
+                    (x(i), x(j)) is in the directional variogram cloud along
+                    axis x''' (resp. y''' and z''') iff, given the lag vector
+                    h = x(i) - x(j),
+                    - the distance from the end of vector h issued from origin
+                        to that axis (i.e. the length of the projection of h
+                        onto the orthogonal plane) is less than or equal to
+                        tol_dist and,
+                    - the angle between h and that axis is less than or equal
+                        to tol_angle
 
-    :param hmax:    (sequence of 3 floats (or nan)): maximal distance between a pair of data points for
-                        being integrated in the directional variogram cloud along axis x''', axis y'''
-                        and axis z''' resp.
+    :param hmax:
+                (sequence of 3 floats (or nan)): maximal distance between a pair
+                    of data points for being integrated in the directional
+                    variogram cloud along axis x''', axis y''' and axis z'''
+                    resp.
 
     :param make_plot:
-                    (bool) if True: the plot of the variogram clouds is done (in a new 2x2 figure)
+                (bool) if True: the plot of the variogram clouds is done
+                    (in a new 2x2 figure)
 
     :param color0, color1, color2:
-                    colors for variogram cloud along axis x''', along axis y''', and along axis z''' resp.
-                        (used if make_plot is True)
+                colors for variogram cloud along axis x''', along axis y''', and
+                    along axis z''' resp. (used if make_plot is True)
 
-    :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is True)
+    :param figsize:
+                (tuple of 2 ints) size of the figure (used if make_plot is True)
 
     :return:    ((h0, g0, npair0), (h1, g1, npair1), (h2, g2, npair2)), where
-                    - (h0, g0, npair0) is the directional variogram cloud along the axis x'''
-                        (h0, g0 are two 1-dimensional arrays of same length containing
-                        the coordinates of the points in the variagram cloud, and
-                        npair is an int, the number of points (pairs of data points considered)
-                        in the variogram cloud)
-                    - (h1, g1, npair1) is the directional variogram cloud along the axis y'''
-                        (same type of object as for axis x''')
-                    - (h2, g2, npair2) is the directional variogram cloud along the axis z'''
-                        (same type of object as for axis x''')
+                    - (h0, g0, npair0) is the directional variogram cloud along
+                        the axis x''' (h0, g0 are two 1-dimensional arrays of
+                        same length containing the coordinates of the points in
+                        the variagram cloud, and npair is an int, the number of
+                        points (pairs of data points considered) in the variogram
+                        cloud)
+                    - (h1, g1, npair1) is the directional variogram cloud along
+                        the axis y''' (same type of object as for axis x''')
+                    - (h2, g2, npair2) is the directional variogram cloud along
+                        the axis z''' (same type of object as for axis x''')
     """
     # Number of data points
     n = x.shape[0]
@@ -3355,103 +3523,136 @@ def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=10.0, tol_angl
         - one along axis x''',
         - one along axis y''',
         - one along axis z''',
-    where the system Ox'''y'''z''' is obtained from the (usual) system Oxyz as follows:
+    where the system Ox'''y'''z''' is obtained from the (usual) system Oxyz as
+    follows:
         Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'
         Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''
         Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''
 
-    The mean point in each class is retrieved from the three directional variogram clouds
-    (returned by the function variogramCloud3D).
+    The mean point in each class is retrieved from the three directional
+    variogram clouds (returned by the function variogramCloud3D).
 
-    :param x:       (2-dimensional array of shape (n, 3)) 3D-coordinates in system Oxyz of data points
-    :param v:       (1-dimensional array of shape (n,)) values at data points
+    :param x:   (2-dimensional array of shape (n, 3)) 3D-coordinates in system
+                    Oxyz of data points
+    :param v:   (1-dimensional array of shape (n,)) values at data points
 
     :param alpha, beta, gamma:
-                    (floats) angle in degrees:
-                        the system Ox'''y''''z''', supporting the axis of each variogram cloud,
-                        is obtained from the system Oxyz as follows:
-                        Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'
-                        Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''
-                        Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''
-                        The 3x3 matrix m for changing the coordinate system from
-                        Ox'''y'''z''' to Oxy is:
-                            +                                                             +
-                            |  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc|
-                        m = |- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc|
-                            |                 cb * sc,     - sb,                   cb * cc|
-                            +                                                             +
-                        where
-                            ca = cos(alpha), cb = cos(beta), cc = cos(gamma),
-                            sa = sin(alpha), sb = sin(beta), sc = sin(gamma)
+        (floats) angle in degrees:
+            the system Ox'''y''''z''', supporting the axis of each
+            variogram cloud, is obtained from the system Oxyz as follows:
+            Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'
+            Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''
+            Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''
+            The 3x3 matrix m for changing the coordinate system from
+            Ox'''y'''z''' to Oxy is:
+                +                                                             +
+                |  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc|
+            m = |- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc|
+                |                 cb * sc,     - sb,                   cb * cc|
+                +                                                             +
+            where
+                ca = cos(alpha), cb = cos(beta), cc = cos(gamma),
+                sa = sin(alpha), sb = sin(beta), sc = sin(gamma)
 
-    :param tol_dist, tol_angle: (float) tolerances (tol_dist: distance, tol_angle: angle in degrees)
-                    used to determines which pair of points are integrated in the variogram clouds.
-                    A pair of points (x(i), x(j)) is in the directional variogram cloud along
-                    axis x''' (resp. y''' and z''') iff, given the lag vector h = x(i) - x(j),
-                        - the distance from the end of vector h issued from origin to that axis
-                            (i.e. the length of the projection of h onto the orthogonal plane)
-                            is less than or equal to tol_dist and,
-                        - the angle between h and that axis is less than or equal to tol_angle
+    :param tol_dist, tol_angle:
+                (floats) tolerances (tol_dist: distance, tol_angle: angle in
+                    degrees) used to determines which pair of points are
+                    integrated in the variogram clouds. A pair of points
+                    (x(i), x(j)) is in the directional variogram cloud along
+                    axis x''' (resp. y''' and z''') iff, given the lag vector
+                    h = x(i) - x(j),
+                    - the distance from the end of vector h issued from origin
+                        to that axis (i.e. the length of the projection of h
+                        onto the orthogonal plane) is less than or equal to
+                        tol_dist and,
+                    - the angle between h and that axis is less than or equal
+                        to tol_angle
 
-    :param hmax:    (sequence of 3 floats (or nan)): maximal distance between a pair of data points for
-                        being integrated in the directional variogram cloud along axis x''', axis y'''
-                        and axis z''' resp.
+    :param hmax:
+                (sequence of 3 floats (or nan)): maximal distance between a pair
+                    of data points for being integrated in the directional
+                    variogram cloud along axis x''', axis y''' and axis z'''
+                    resp.
 
-    :param ncla:    (sequence of 3 ints) ncla[0], ncla[1], ncla[1]: number of classes
-                        for experimental variogram along axis x''' (direction 0), axis y''' (direction 1)
-                        and axis z''' (direction 2) resp.
-                        For direction j:
-                        the parameter ncla[j] is used if cla_center[j] is not specified (None),
-                        in that situation ncla[j] classes are considered and the class centers are set to
-                            cla_center[j][i] = (i+0.5)*l, i=0,...,ncla[j]-1
-                        with l = H / ncla[j], H being the max of the distance between the two points of
-                        the considered pairs (in the variogram cloud of direction j).
+    :param ncla:
+                (sequence of 3 ints) ncla[0], ncla[1], ncla[1]: number of classes
+                    for experimental variogram along axis x''' (direction 0),
+                    axis y''' (direction 1) and axis z''' (direction 2) resp.
+                    For direction j: the parameter ncla[j] is used if
+                    cla_center[j] is not specified (None), in that situation
+                    ncla[j] classes are considered and the class centers are set
+                    to
+                        cla_center[j][i] = (i+0.5)*l, i=0,...,ncla[j]-1
+                    with l = H / ncla[j], H being the max of the distance between
+                    the two points of the considered pairs (in the variogram
+                    cloud of direction j).
 
-    :param cla_center:  (sequence of 3 sequences of floats) cla_center[0], clac_center[1], clac_center[2]: center
-                            of each class for experimental variogram along axis x''' (direction 0), axis y''' (direction 1)
-                            and axis z''' (direction 2) resp.
-                            For direction j:
-                            if cla_center[j] is specified (not None), then the parameter ncla[j] is not used.
+    :param cla_center:
+                (sequence of 3 sequences of floats) cla_center[0], clac_center[1],
+                    clac_center[2]: center of each class for experimental
+                    variogram along axis x''' (direction 0),
+                    axis y''' (direction  1) and axis z''' (direction 2) resp.
+                    For direction j: if cla_center[j] is specified (not None),
+                    then the parameter ncla[j] is not used.
 
-    :param cla_length:  (sequence of length 2 of: None, or float or sequence of floats) cla_length[0], clac_length[1]:
-                            length of each class
-                            for experimental variogram along axis x''' (direction 0), axis y''' (direction 1)
-                            and axis z''' (direction 2) resp.
-                            For direction j:
-                                - if cla_length[j] not specified (None): the length of every class is set to the
-                                    minimum of difference between two sucessive class centers (np.inf if one class)
-                                - if float: the length of every class is set to the specified number
-                                - if a sequence, its length should be equal to the number of classes (length of
-                                    cla_center[j] (or ncla[j]))
-                                Finally, the i-th class is determined by its center cla_center[j][i] and its
-                                length cla_length[j][i], and corresponds to the interval
-                                    ]cla_center[j][i]-cla_length[j][i]/2, cla_center[j][i]+cla_length[j][i]/2]
-                                along h (lag) axis
+    :param cla_length:
+                (sequence of length 2 of: None, or float or sequence of floats)
+                    cla_length[0], clac_length[1]: length of each class for
+                    experimental variogram along axis x''' (direction 0),
+                    axis y''' (direction 1) and axis z''' (direction 2) resp.
+                    For direction j:
+                    - if cla_length[j] not specified (None): the length of every
+                        class is set to the minimum of difference between two
+                        sucessive class centers (np.inf if one class)
+                    - if float: the length of every class is set to the
+                        specified number
+                    - if a sequence, its length should be equal to the number of
+                        classes (length of cla_center[j] (or ncla[j]))
+                    Finally, the i-th class is determined by its center
+                    cla_center[j][i] and its length cla_length[j][i], and
+                    corresponds to the interval
+                            ]cla_center[j][i]-cla_length[j][i]/2,
+                            cla_center[j][i]+cla_length[j][i]/2]
+                    along h (lag) axis
 
     :param variogramCloud:
-                    (sequence of 3 tuples of length 3, or None) If given: ((h0, g0, npair0), (h1, g1, npair1), (h2, g2, npair2)):
-                        variogram clouds (returned by the function variogramCloud3D (npair0, npair1, npair2 are not used))
-                        along axis axis x''' (direction 0), axis y''' (direction 1) and axis z''' (direction 2) resp., then
-                        x, v, alpha, beta, gamma, tol_dist, tol_angle, hmax are not used
-                        (but alpha, beta, gamma, tol_dist, tol_angle are used in plot if make_plot is True)
+                (sequence of 3 tuples of length 3, or None) If given:
+                    ((h0, g0, npair0), (h1, g1, npair1), (h2, g2, npair2)):
+                    variogram clouds (returned by the function variogramCloud3D
+                    (npair0, npair1, npair2 are not used)) along
+                    axis x''' (direction 0), axis y''' (direction 1) and
+                    axis z''' (direction 2) resp., then
+                    x, v, alpha, beta, gamma, tol_dist, tol_angle, hmax are not
+                    used (but alpha, beta, gamma, tol_dist, tol_angle are used
+                    in plot if make_plot is True)
 
     :param make_plot:
-                    (bool) if True: the plot of the experimental variograms is done (in a new 2x3 figure)
+                (bool) if True: the plot of the experimental variograms is done
+                    (in a new 2x3 figure)
 
     :param color0, color1, color2:
-                    colors for experimental variogram along axis x''', along axis y''', and along axis z''' resp.
-                        (used if make_plot is True)
+                colors for experimental variogram along axis x''',
+                    along axis y''', and along axis z''' resp. (used if make_plot
+                    is True)
 
-    :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is True)
+    :param figsize:
+                (tuple of 2 ints) size of the figure (used if make_plot is True)
 
-    :return:    ((hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1), (hexp2, gexp2, cexp2)), where
-                    - (hexp0, gexp0, cexp0) is the output for the experimental variogram along axis x''':
-                        - hexp0, gexp0: are two 1-dimensional arrays of floats of same length containing
-                        the coordinates of the points of the experimental variogram along axis x''', and
-                        - cexp0 is a 1-dimensional array of ints of same length as hexp0 and gexp0, containing
-                        the number of points from the variogram cloud in each class
-                    - (hexp1, gexp1, cexp1) is the output for the experimental variogram along axis y'''
-                    - (hexp2, gexp2, cexp2) is the output for the experimental variogram along axis z'''
+    :return:
+        ((hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1), (hexp2, gexp2, cexp2)),
+        where
+            - (hexp0, gexp0, cexp0) is the output for the experimental variogram
+                along axis x''':
+                - hexp0, gexp0: are two 1-dimensional arrays of floats of same
+                length containing the coordinates of the points of the
+                experimental variogram along axis x''', and
+                - cexp0 is a 1-dimensional array of ints of same length as hexp0
+                and gexp0, containing the number of points from the variogram
+                cloud in each class
+            - (hexp1, gexp1, cexp1) is the output for the experimental variogram
+                along axis y'''
+            - (hexp2, gexp2, cexp2) is the output for the experimental variogram
+                along axis z'''
     """
     # Compute variogram clouds if needed
     if variogramCloud is None:
@@ -3542,8 +3743,8 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
     The parameter 'cov_model' is a covariance model in 3D (CovModel3D class) with
     the parameters to fit set to nan (a nan replace a float). For example, with
         cov_model = CovModel3D(elem=[
-            ('gaussian', {'w':np.nan, 'r':[np.nan, np.nan, np.nan]}), # elementary contribution
-            ('nugget', {'w':np.nan})                                  # elementary contribution
+            ('gaussian', {'w':np.nan, 'r':[np.nan, np.nan, np.nan]}), # el. cont.
+            ('nugget', {'w':np.nan})                                  # el. cont.
             ], alpha=np.nan, beta=np.nan, gamma=np.nan, name='')
     it will fit the weight and ranges of the gaussian elementary contribution,
     the nugget (weigth of the nugget contribution), and the angles alpha, beta, gamma.
@@ -3552,25 +3753,31 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
                         of the data points (n: number of points)
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
-    :param cov_model:   (CovModel3D class) covariance model in 3D with parameters to fit set to nan
-                            (see above)
+    :param cov_model:
+                    (CovModel3D class) covariance model in 3D with parameters to
+                        fit set to nan (see above)
 
-    :param hmax:    (float or nan) maximal distance between a pair of data points for
-                        being integrated in the variogram cloud.
+    :param hmax:    (float or nan) maximal distance between a pair of data points
+                        for being integrated in the variogram cloud.
 
     :param make_plot:
-                    (bool) if True: the plot of the optimized variogram is done (in a new 1x2 figure)
+                    (bool) if True: the plot of the optimized variogram is done
+                        (in a new 1x2 figure)
 
-    :kwargs:        keyword arguments passed to the funtion curve_fit() from scipy.optimize
-                        e.g.: p0=<array of initial parameters> (see doc of curve_fit), with
-                            an array of floats of length equal to the number of paramters to fit,
-                            considered in the order of appearance in the definition of cov_model;
-                            bounds=(<array of lower bounds>, <array of upper bounds>)
+    :kwargs:        keyword arguments passed to the funtion curve_fit() from
+                        scipy.optimize, e.g.:
+                        p0=<array of initial parameters> (see doc of curve_fit),
+                            with an array of floats of length equal to the number
+                            of paramters to fit, considered in the order of
+                            appearance in the definition of cov_model;
+                        bounds=(<array of lower bounds>, <array of upper bounds>)
 
     :return:        (cov_model_opt, popt) with:
-                        - cov_model_opt:    (covModel3D class) optimized covariance model
-                        - popt:             (sequence of floats) vector of optimized parameters
-                                                returned by curve_fit
+                        - cov_model_opt:
+                            (covModel3D class) optimized covariance model
+                        - popt:
+                            (sequence of floats) vector of optimized parameters
+                                returned by curve_fit
     """
     # Check cov_model
     if not isinstance(cov_model, CovModel3D):
@@ -3719,7 +3926,8 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
 # ----------------------------------------------------------------------------
 def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
     """
-    Performs kriging - interpolates at locations xu the values v measured at locations x.
+    Performs kriging - interpolates at locations xu the values v measured at
+    locations x.
     Covariance model given should be:
         - in same dimension as dimension of locations x, xu
         - in 1D, it is then used as an omni-directional covariance model
@@ -3727,14 +3935,16 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
 
     :param x:       (2-dimensional array of shape (n, d)) coordinates
                         of the data points (n: number of points, d: dimension)
-                        Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
+                        Note: for data in 1D, it can be a 1-dimensional array of
+                        shape (n,)
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
     :param xu:      (2-dimensional array of shape (nu, d)) coordinates
                         of the points where the interpolation has to be done
                         (nu: number of points, d: dimension same as for x),
                         called unknown points
-                        Note: for data in 1D, it can be a 1-dimensional array of shape (nu,)
+                        Note: for data in 1D, it can be a 1-dimensional array of
+                        shape (nu,)
 
     :param cov_model:
                     covariance model:
@@ -3754,14 +3964,16 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
                             - None   : mean of hard data values (stationary),
                                        i.e. mean of v
                             - float  : for stationary mean (set manually)
-                            - ndarray: of of shape (n + nu,) for non stationary mean,
+                            - ndarray: of shape (n + nu,) for non stationary mean,
                                 mean at point x and xu
                         For ordinary kriging (method='ordinary_kriging'),
                         this parameter must be set to None
 
     :return:        (vu, vu_std) with:
-                        vu:     (1-dimensional array of shape (nu,)) kriged values (estimates) at points xu
-                        vu_std: (1-dimensional array of shape (nu,)) kriged standard deviation at points xu
+                        vu:     (1-dimensional array of shape (nu,))
+                                    kriged values (estimates) at points xu
+                        vu_std: (1-dimensional array of shape (nu,))
+                                    kriged standard deviation at points xu
     """
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
@@ -3896,7 +4108,8 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
 # ----------------------------------------------------------------------------
 def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interpolator_kwargs={}, make_plot=True, figsize=None):
     """
-    Cross-validation of covariance model by leave-one-out error based on given interpolator.
+    Cross-validation of covariance model by leave-one-out error based on given
+    interpolator.
 
     Covariance model given should be:
         - in same dimension as dimension of locations x
@@ -3917,39 +4130,47 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
 
     :param x:       (2-dimensional array of shape (n, d)) coordinates
                         of the data points (n: number of points, d: dimension)
-                        Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
+                        Note: for data in 1D, it can be a 1-dimensional array of
+                        shape (n,)
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
-    :param cov_model:   covariance model:
-                            - in same dimension as dimension of points (d), i.e.:
-                                - CovModel1D class if data in 1D (d=1)
-                                - CovModel2D class if data in 2D (d=2)
-                                - CovModel3D class if data in 3D (d=3)
-                            - or CovModel1D whatever dimension of points (d):
-                                - used as an omni-directional covariance model
+    :param cov_model:
+                    covariance model:
+                        - in same dimension as dimension of points (d), i.e.:
+                            - CovModel1D class if data in 1D (d=1)
+                            - CovModel2D class if data in 2D (d=2)
+                            - CovModel3D class if data in 3D (d=3)
+                        - or CovModel1D whatever dimension of points (d):
+                            - used as an omni-directional covariance model
 
-    :param confidence:  (float) in [0,1] for setting limit in the two statistic tests
-                            (see above)
+    :param confidence:
+                    (float) in [0,1] for setting limit in the two statistic
+                        tests (see above)
 
     :param interpolator:
                     (function) function used for interpolation, (default: krige)
 
     :interpolator_kwargs:
-                    (dict) keyword argument passed to interpolator; e.g. with the function
-                    krige as interpolator:
-                        interpolator_kwargs={'method':'ordinary_kriging'},
-                        interpolator_kwargs={'method':'simple_kriging', 'mean':<value>}
+        (dict) keyword argument passed to interpolator; e.g. with
+            the function krige as interpolator:
+                interpolator_kwargs={'method':'ordinary_kriging'},
+                interpolator_kwargs={'method':'simple_kriging', 'mean':<value>}
 
     :param make_plot:
                     (bool) if True: a plot is done (in a new 1x2 figure)
 
-    :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is True)
+    :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is
+                        True)
 
     :return:    (v_est, v_std, test_normal, test_chi2), tuple of length 4:
-                    v_est: (1-dimensional array of shape (n,)) estimated values at data points
-                    v_std: (1-dimensional array of shape (n,)) standard deviation values at data points
-                    test_normal:    (bool) result of test (1) (normal law), True if success, False otherwise
-                    test_chi2:      (bool) result of test (1) (chi2), True if success, False otherwise
+                    v_est: (1-dimensional array of shape (n,)) estimated values
+                        at data points
+                    v_std: (1-dimensional array of shape (n,)) standard deviation
+                        values at data points
+                    test_normal:    (bool) result of test (1) (normal law), True
+                                        if success, False otherwise
+                    test_chi2:      (bool) result of test (1) (chi2), True
+                                        if success, False otherwise
     """
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
@@ -4056,14 +4277,16 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
 
     :param x:       (2-dimensional array of shape (n, d)) coordinates
                         of the data points (n: number of points, d: dimension)
-                        Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
+                        Note: for data in 1D, it can be a 1-dimensional array of
+                        shape (n,)
     :param v:       (1-dimensional array of shape (n,)) values at data points
 
     :param xu:      (2-dimensional array of shape (nu, d)) coordinates
                         of the points where the interpolation has to be done
                         (nu: number of points, d: dimension same as for x),
                         called unknown points
-                        Note: for data in 1D, it can be a 1-dimensional array of shape (nu,)
+                        Note: for data in 1D, it can be a 1-dimensional array of
+                        shape (nu,)
 
     :param cov_model:
                     covariance model:
@@ -4083,13 +4306,14 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
                             - None   : mean of hard data values (stationary),
                                        i.e. mean of v
                             - float  : for stationary mean (set manually)
-                            - ndarray: of of shape (n + nu,) for non stationary mean,
+                            - ndarray: of shape (n + nu,) for non stationary mean,
                                 mean at point x and xu
                         For ordinary kriging (method='ordinary_kriging'),
                         this parameter must be set to None
 
     :return:        vu: (2-dimensional array of shape (nreal, nu)):
-                        vu[i] are the simulated values at points xu for the i-th realization
+                        vu[i] are the simulated values at points xu for the i-th
+                        realization
     """
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():

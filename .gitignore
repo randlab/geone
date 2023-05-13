@@ -3,7 +3,7 @@
 build/
 geone.egg-info/
 
-examples/output_im/
+examples/out/
 
 # Note: if not installed "locally", the following directories should not be present
 geone/deesse_core/__pycache__/

@@ -29,6 +29,7 @@ The following python packages are used by GEONE (tested on python 3.10.9):
    - matplotlib (3.6.2)
    - multiprocessing (for parallel processes)
    - numpy (tested with version 1.23.5)
+     pandas (tested with version 1.5.2)
    - pyvista (tested with version 0.38.5)
    - scipy (tested with version 1.10.0)
 
@@ -46,7 +47,11 @@ Some modules in the package GEONE can be run as a script ('\_\_main\_\_' scope) 
 
 Various examples are provided (notebooks in 'examples' directory) to get started with GEONE, as described below.
 
-### DEESSE Examples
+#### Images and point sets in geone
+- `ex_a_01_image_and_pointset.ipynb`: classes for images and point sets, reading from files, writing to files, plotting
+- `ex_a_02_image2d_rgb.ipynb`: reading / writing RGB 2D images, files in png format
+
+#### DEESSE Examples
 Multiple-point statistics - simulation using the DEESSE wrapper:
 - `ex_deesse_01_basics.ipynb`: basic DEESSE (categorical) simulations
 - `ex_deesse_02_additional_outputs_and_simulation_paths.ipynb`: retrieving additional output maps and setting the simulation path
@@ -65,29 +70,22 @@ Multiple-point statistics - simulation using the DEESSE wrapper:
 - `ex_deesse_15_block_data.ipynb`: simulation with block data, *i.e* target mean values over block of cells
 - `ex_deesse_16_advanced_use_of_pyramids.ipynb`: simulation using pyramids (retrieving pyramids, conditioning within pyramids)
 
-### DEESSEX Examples
+#### DEESSEX Examples
 Multiple-point statistics - X-simulation using the DEESSEX wrapper:
 - `ex_deesseX_01_getting_started.ipynb`: getting starting with deesseX, simulation based on XZ and YZ sections
 - `ex_deesseX_02.ipynb`: simulation based on XY, XZ and YZ sections
 - `ex_deesseX_03.ipynb`: simulation based on XY, XZ and YZ sections and simulation based on XY 2D-section and Z 1D-section
 - `ex_deesseX_04.ipynb`: simulation based on XZ and YZ sections, and accounting for non-stationarity (vertical trend)
 
-### Examples - Elementary covariance models
-- `ex_elementary_cov_model.ipynb`: illustrations of elementary covariance/variogram models (in 1D)
+#### General use for multiGaussian estimation and simulation in a grid
+- `ex_general_multiGaussian.ipynb`: functions for multiGaussian estimation and simulation in a grid, and elementary covariance/variogram models (in 1D)
 
-### Examples - Gaussian random fields (GRF)
+#### Examples - Gaussian random fields in a grid (GRF)
 - `ex_grf_1d.ipynb`: example for the generation of 1D fields
 - `ex_grf_2d.ipynb`: example for the generation of 2D fields
 - `ex_grf_3d.ipynb`: example for the generation of 3D fields
 
-### Examples - Variogram analysis tools and kriging:
-- `ex_vario_analysis_data1D.ipynb`: example for variogram analysis and ordinary kriging for data in 1D
-- `ex_vario_analysis_data2D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 2D (omni-directional)
-- `ex_vario_analysis_data2D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 2D (general)
-- `ex_vario_analysis_data3D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (omni-directional)
-- `ex_vario_analysis_data3D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (general)
-
-### Examples - Simulation and estimation with kriging (GeosClassic wrapper)
+#### Examples - Simulation and estimation with kriging in a grid (GeosClassic wrapper)
 - `ex_geosclassic_1d.ipynb`:example in 1D for two-point statistics simulation and estimation
 - `ex_geosclassic_1d_non_stat_cov.ipynb`:example in 1D with non-stationary covariance model
 - `ex_geosclassic_2d.ipynb`:example in 2D for two-point statistics simulation and estimation
@@ -99,14 +97,18 @@ Multiple-point statistics - X-simulation using the DEESSEX wrapper:
 - `ex_geosclassic_indicator_3d.ipynb`:example in 3D for two-point statistics simulation and estimation of indicator variables
 - `ex_geosclassic_image_analysis.ipynb`:example for two-point statistics analysis (covariance, variogram, connectivity, ...) of images (maps)
 
-### Examples - Pluri-Gaussian simulation
+#### Examples - Variogram analysis tools and kriging:
+- `ex_vario_analysis_data1D.ipynb`: example for variogram analysis and ordinary kriging for data in 1D
+- `ex_vario_analysis_data2D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 2D (omni-directional)
+- `ex_vario_analysis_data2D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 2D (general)
+- `ex_vario_analysis_data3D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (omni-directional)
+- `ex_vario_analysis_data3D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (general)
+
+#### Examples - Pluri-Gaussian simulation
 - `ex_pgs.ipynb`: example of pluri-Gaussian simulations in 1D, 2D and 3D (categorical, conditional or not), based on two latent Gaussian fields
 
-### Examples - Ohter algorithms based on random processes
+#### Examples - Ohter algorithms based on random processes
 - `ex_randProcess.ipynb`: example of Poisson point process, and Chentsov simulation in 1D, 2D and 3D
-
-### Examples - Miscellaneous
-- `ex_rex_image2d_rgb.ipynb`: some functions to read image from 'png' files
 
 ## Some references about DEESSE
 - J. Straubhaar, P. Renard (2021) Conditioning Multiple-Point Statistics Simulation to Inequality Data. Earth and Space Science, [doi:10.1029/2020EA001515](https://dx.doi.org/10.1029/2020EA001515)

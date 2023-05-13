@@ -18,11 +18,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from matplotlib import rcParams as mpl_rcParams
-#import matplotlib.colors as mcolors
+import matplotlib.colors as mcolors
 
 # ----------------------------------------------------------------------------
-def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
-                 cmap=ccol.cmap1,
+def drawImage2D (im, ix=None, iy=None, iz=None, iv=None,
+                 plot_empty_grid=False,
+                 cmap='viridis', #ccol.cmap1,
                  alpha=None,
                  excludedVal=None,
                  categ=False, categVal=None,
@@ -58,7 +59,16 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
     :param iz:  (int or None) index along z-axis of the xy-slice to be drawn
                     only one of the parameters ix, iy, iz should be specified,
                     or none of them (in this case, iz is set to 0)
-    :param iv:  (int) index of the variable to be drawn
+    :param iv:  (int or None) index of the variable to be drawn,
+                    if None (default):
+                         - if im.nv > 0: iv is set to 0, i.e. variable of index
+                            0 will be plotted
+                         - otherwise (im.nv=0): an "empty grid is plotted, i.e.
+                            a fake variable with nan over the entire grid is
+                            considered
+    :param plot_empty_grid:
+                (bool) if True, an "empty grid is plotted, i.e. a fake variable
+                    with nan over the entire grid is considered ('iv' is ignored)
 
     :param cmap:    colormap (can be a string: in this case the color map
                         matplotlib.pyplot.get_cmap(cmap) is used)
@@ -110,10 +120,10 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
     :param contour_clabel:  (bool) indicates if labels are added to contour
                                 (ignored if 'contour' is False)
     :param levels:          (int or array-like or None) keyword argument 'levels'
-                                passed to plt.contourf (used if 'contourf' is True)
-                                and/or plt.contour (used if 'contour' is True),
-                                can be: None (default), number of levels, or
-                                sequence of level values
+                                passed to plt.contourf (used if 'contourf' is
+                                True) and/or plt.contour (used if 'contour' is
+                                True), can be: None (default), number of levels,
+                                or sequence of level values
     :param contourf_kwargs: (dict) keyword arguments passed to plt.contourf
                                 (the argument 'levels' (see above) is used as
                                 keyword argument for plt.contourf, i.e. it
@@ -125,8 +135,8 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
                                 prevails over the key 'levels' in
                                 'contourf_kwargs' (if given))
     :param contour_clabel_kwargs:
-                            (dict) keyword arguments passed to plt.clabel relying
-                                on the contour plot
+                            (dict) keyword arguments passed to plt.clabel
+                                relying on the contour plot
     :param interpolation:   (string) 'interpolation' parameters to be passed
                                 to plt.imshow()
     :param aspect:          (string or scalar) 'aspect' parameters to be passed
@@ -219,14 +229,21 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
     imout = []
     #ax, cbar = None, None
 
-    # Check iv
-    if iv < 0:
-        iv = im.nv + iv
+    if plot_empty_grid:
+        iv = None
+    else:
+        # Check / set iv
+        if iv is None:
+            if im.nv > 0:
+                iv = 0
+        else:
+            if iv < 0:
+                iv = im.nv + iv
 
-    if iv < 0 or iv >= im.nv:
-        print("ERROR: invalid iv index!")
-        return imout
-        #return (ax, cbar)
+            if iv < 0 or iv >= im.nv:
+                print("ERROR: invalid iv index!")
+                return imout
+                #return (ax, cbar)
 
     # Check slice direction and indices
     n = int(ix is not None) + int(iy is not None) + int(iz is not None)
@@ -283,8 +300,11 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         dim1 = im.nz
         min1 = im.oz
         max1 = im.zmax()
-        zz = np.array(im.val[iv, :, :, ix].reshape(dim1, dim0)) # np.array() to get a copy
-            # reshape to force 2-dimensional array
+        if iv is None: # empty image
+            zz = np.nan * np.ones((im.nz, im.ny))
+        else:
+            zz = np.array(im.val[iv, :, :, ix].reshape(dim1, dim0)) # np.array() to get a copy
+                # reshape to force 2-dimensional array
 
     elif sliceDir == 'y':
         dim0 = im.nx
@@ -294,7 +314,10 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         dim1 = im.nz
         min1 = im.oz
         max1 = im.zmax()
-        zz = np.array(im.val[iv, :, iy, :].reshape(dim1, dim0)) # np.array() to get a copy
+        if iv is None: # empty image
+            zz = np.nan * np.ones((im.nz, im.nx))
+        else:
+            zz = np.array(im.val[iv, :, iy, :].reshape(dim1, dim0)) # np.array() to get a copy
 
     else: # sliceDir == 'z'
         dim0 = im.nx
@@ -304,7 +327,10 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
         dim1 = im.ny
         min1 = im.oy
         max1 = im.ymax()
-        zz = np.array(im.val[iv, iz, :, :].reshape(dim1, dim0)) # np.array() to get a copy
+        if iv is None: # empty image
+            zz = np.nan * np.ones((im.ny, im.nx))
+        else:
+            zz = np.array(im.val[iv, iz, :, :].reshape(dim1, dim0)) # np.array() to get a copy
 
     # Get the color map
     if isinstance(cmap, str):
@@ -579,11 +605,165 @@ def drawImage2D (im, ix=None, iy=None, iz=None, iv=0,
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def drawImage2Drgb(im):
+def get_colors_from_values(val,
+                           cmap=ccol.cmap1,
+                           alpha=None,
+                           excludedVal=None,
+                           categ=False, categVal=None,
+                           categCol=None, categColCycle=False, categColbad=ccol.cbad_def,
+                           vmin=None, vmax=None,
+                           cmin=None, cmax=None):
+    """
+    Get the colors for given values, according to color settings (as in function
+    drawImage2D).
+
+    :param val:     (float or array of floats) values
+    :param cmap, alpha, excludedVal, categ, categVal, categCol, categColCycle,
+        categColbad, vmin, vmax:
+                    settings as in function drawIamge2D.
+    :param cmin, cmax: alternative keyword for vmin, vmax (for compatibility with
+                    color settings in the functions of the module imgplot3d)
+
+    :return col:    (array) color for each values in val according to given
+                        settings
+    """
+
+    # Check vmin, cmin and vmax, cmax
+    if vmin is not None and cmin is not None:
+        print("ERROR: use vmin or cmin (not both)")
+        return None
+
+    if vmax is not None and cmax is not None:
+        print("ERROR: use vmax or cmax (not both)")
+        return None
+
+    if vmin is None:
+        vmin = cmin
+
+    if vmax is None:
+        vmax = cmax
+
+    # Copy val in a 1d array
+    zz = np.copy(np.atleast_1d(val)).reshape(-1)
+
+    # --- Code adapted from function drawImage2D - start ----
+    # Get the color map
+    if isinstance(cmap, str):
+        try:
+            cmap = plt.get_cmap(cmap)
+        except:
+            print("ERROR: invalid cmap string!")
+            return None
+            # return imout
+            # #return (ax, cbar)
+
+    if categ:
+        # --- Treat categorical variable ---
+        if categCol is not None\
+                and type(categCol) is not list\
+                and type(categCol) is not tuple:
+            print("ERROR: 'categCol' must be a list or a tuple (if not None)!")
+            return None
+            # return imout
+            # #return (ax, cbar)
+
+        # Get array 'dval' of displayed values
+        if categVal is not None:
+            dval = np.array(categVal).reshape(-1) # force to be an 1d array
+
+            if len(np.unique(dval)) != len(dval):
+                print("ERROR: 'categVal' contains duplicated entries!")
+                return None
+                # return imout
+                # #return (ax, cbar)
+
+            # Check 'categCol' (if not None)
+            if categCol is not None and len(categCol) != len(dval):
+                print("ERROR: length of 'categVal' and 'categCol' differs!")
+                return None
+                # return imout
+                # #return (ax, cbar)
+
+        else:
+            # Possibly exclude values from zz
+            if excludedVal is not None:
+                for val in np.array(excludedVal).reshape(-1):
+                    np.putmask(zz, zz == val, np.nan)
+
+            # Get the unique value in zz
+            dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
+
+        if not len(dval): # len(dval) == 0
+            print ("Warning: no value to be drawn!")
+
+        # Replace dval[i] by i in zz and other values by np.nan
+        zz2 = np.array(zz) # copy array
+        zz[...] = np.nan # initialize
+        for i, v in enumerate(dval):
+            zz[zz2 == v] = i
+
+        del zz2
+
+        # Set 'colorList': the list of colors to use
+        colorList = None
+        if categCol is not None:
+            if len(categCol) >= len(dval):
+                colorList = [categCol[i] for i in range(len(dval))]
+                # colorList = [mcolors.ColorConverter().to_rgba(categCol[i]) for i in range(len(dval))]
+
+            elif categColCycle:
+                print("Warning: categCol is used cyclically (too few entries)")
+                colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
+
+            else:
+                print("Warning: categCol not used (too few entries)")
+
+        if colorList is None:
+            # Use colors from cmap
+            colorList = [cmap(x) for x in np.arange(len(dval)) * 1.0/(len(dval)-1)]
+
+        # Set the colormap: 'cmap'
+        if len(dval) == 1:
+            cmap = ccol.custom_cmap([colorList[0], colorList[0]], ncol=2,
+                                    cbad=categColbad, alpha=alpha)
+
+        else: # len(dval) == len(colorList) > 1
+            # cmap = mcolors.ListedColormap(colorList)
+            cmap = ccol.custom_cmap(colorList, ncol=len(colorList),
+                                    cbad=categColbad, alpha=alpha)
+
+        # Set the min and max of the colorbar
+        vmin, vmax = -0.5, len(dval) - 0.5
+
+    else: # categ == False
+        # --- Treat continuous variable ---
+        # Possibly exclude values from zz
+        if excludedVal is not None:
+            for v in np.array(excludedVal).reshape(-1): # force to be an 1d array
+                np.putmask(zz, zz == v, np.nan)
+
+        if np.all(np.isnan(zz)):
+            vmin, vmax= 0.0, 1.0 # any values
+        else:
+            if vmin is None:
+                vmin = np.nanmin(zz)
+
+            if vmax is None:
+                vmax = np.nanmax(zz)
+
+    col = cmap((zz-vmin)/(vmax-vmin))
+
+    return col
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def drawImage2Drgb(im, nancol=(1.0, 0.0, 0.0)):
     """
     Draw a 2D image with 3 or 4 variables interpreted as RGB or RGBA code.
 
-    :param im:  (img.Img class) image with 3 or 4 variables
+    :param im:      (img.Img class) image with 3 or 4 variables
+    :param nancol:  (3-tuple or 4-tuple) RGB or RGBA color code (or string)
+                        used for missing value (nan) in input image
     """
 
     # Check image parameters
@@ -595,7 +775,17 @@ def drawImage2Drgb(im):
         print("ERROR: 'im.nv' must be 3 or 4")
         return None
 
-    plt.imshow(im.val.reshape(im.nv, -1).T.reshape(im.ny, im.nx, -1), origin='lower')
+    vv = im.val.reshape(im.nv, -1).T
+
+    if vv.shape[1] == 3:
+        nancolf = mcolors.to_rgb(nancol)
+    else: # vv.shape[1] == 4
+        nancolf = mcolors.to_rgba(nancol)
+
+    ind_isnan = np.any(np.isnan(vv), axis=1)
+    vv[ind_isnan, :] = nancolf
+
+    plt.imshow(vv.reshape(im.ny, im.nx, -1), origin='lower')
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------

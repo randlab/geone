@@ -163,7 +163,8 @@ def writeBlockData(bd, filename, fmt='.5g'):
     Writes block data in a file (ASCII):
 
     :param filename:    (string) name of the file
-    :param fmt:         (string) format for value, toleance and activate proportions
+    :param fmt:         (string) format for value, toleance and activate
+                            proportions
     """
 
     if bd.blockDataUsage == 0:

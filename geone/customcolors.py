@@ -55,7 +55,8 @@ def custom_cmap(cseq,
                         transparency, for each color in cseq (if a single float
                         is given, the same value is used for each color, if None
                         the single value 1.0 is used (no transparency))
-    :param cmap_name: (string) colormap name
+    :param cmap_name:
+                    (string) colormap name
 
     :return: (LinearSegmentedColormap) colormap
     """

@@ -133,12 +133,13 @@ def drawImage3D_surface (
                             cyclically or not (when the number of displayed
                             category values exceeds the length of categCol)
 
-    :param categActive: (sequence of bools or None)
-                            -- used only if categ is True --
-                            sequence of same length as categVal:
-                                - categActive[i] is True: categVal[i] is displayed
-                                - categActive[i] is False: categVal[i] is not displayed
-                            if None, all category values (in categVal) is displayed
+    :param categActive:
+                    (sequence of bools or None)
+                        -- used only if categ is True --
+                        sequence of same length as categVal:
+                        - categActive[i] is True: categVal[i] is displayed
+                        - categActive[i] is False: categVal[i] is not displayed
+                        if None, all category values (in categVal) is displayed
 
     :param use_clip_plane:
                     (bool) set True to use 'pyvista.add_mesh_clip_plane'
@@ -203,15 +204,16 @@ def drawImage3D_surface (
     :param foreground_color:
                     foreground color
 
-    :param cpos:    (list of three 3-tuples, or None for default) camera position
-                        (unsused if plotter is None)
-                        cpos = [camera_location, focus_point, viewup_vector], with
-                        camera_location: (tuple of length 3) camera location ("eye")
-                        focus_point    : (tuple of length 3) focus point
-                        viewup_vector  : (tuple of length 3) viewup vector (vector
-                            attached to the "head" and pointed to the "sky"),
-                            in principle: (focus_point - camera_location) is orthogonal
-                            to viewup_vector
+    :param cpos:
+            (list of three 3-tuples, or None for default) camera position
+                (unsused if plotter is None)
+                cpos = [camera_location, focus_point, viewup_vector], with
+                camera_location: (tuple of length 3) camera location ("eye")
+                focus_point    : (tuple of length 3) focus point
+                viewup_vector  : (tuple of length 3) viewup vector (vector
+                    attached to the "head" and pointed to the "sky"),
+                    in principle: (focus_point - camera_location) is orthogonal
+                    to viewup_vector
 
     :param kwargs:
         additional keyword arguments passed to plotter.add_mesh[_clip_plane] when
@@ -221,7 +223,8 @@ def drawImage3D_surface (
             - show_edges:
                         (bool) indicates if edges of the grid are drawn
             - edge_color:
-                        (string or 3 item list) color for edges (used if show_edges is True)
+                        (string or 3 item list) color for edges (used if
+                            show_edges is True)
             - line_width:
                         (float) line width for edges (used if show_edges is True)
             - etc.
@@ -537,8 +540,8 @@ def drawImage3D_slice (
                         coordinate where a slice normal to z-axis is drawn
 
     :param slice_normal_custom:
-                    ((sequence of) sequence containing 2 tuple of length 3 or None)
-                        slice_normal[i] = ((vx, vy, vz), (px, py, pz))
+                    ((sequence of) sequence containing 2 tuple of length 3 or
+                        None) slice_normal[i] = ((vx, vy, vz), (px, py, pz))
                         means that a slice normal to the vector (vx, vy, vz) and
                         going through the point (px, py, pz) is drawn
 
@@ -593,12 +596,13 @@ def drawImage3D_slice (
                             cyclically or not (when the number of displayed
                             category values exceeds the length of categCol)
 
-    :param categActive: (sequence of bools or None)
-                            -- used only if categ is True --
-                            sequence of same length as categVal:
-                                - categActive[i] is True: categVal[i] is displayed
-                                - categActive[i] is False: categVal[i] is not displayed
-                            if None, all category values (in categVal) is displayed
+    :param categActive:
+                    (sequence of bools or None)
+                        -- used only if categ is True --
+                        sequence of same length as categVal:
+                        - categActive[i] is True: categVal[i] is displayed
+                        - categActive[i] is False: categVal[i] is not displayed
+                        if None, all category values (in categVal) is displayed
 
     :param show_scalar_bar:
                     (bool) indicates if scalar bar (color bar) is drawn
@@ -651,19 +655,20 @@ def drawImage3D_slice (
     :param foreground_color:
                     foreground color
 
-    :param cpos:    (list of three 3-tuples, or None for default) camera position
-                        (unsused if plotter is None)
-                        cpos = [camera_location, focus_point, viewup_vector], with
-                        camera_location: (tuple of length 3) camera location ("eye")
-                        focus_point    : (tuple of length 3) focus point
-                        viewup_vector  : (tuple of length 3) viewup vector (vector
-                            attached to the "head" and pointed to the "sky"),
-                            in principle: (focus_point - camera_location) is orthogonal
-                            to viewup_vector
+    :param cpos:
+            (list of three 3-tuples, or None for default) camera position
+                (unsused if plotter is None)
+                cpos = [camera_location, focus_point, viewup_vector], with
+                camera_location: (tuple of length 3) camera location ("eye")
+                focus_point    : (tuple of length 3) focus point
+                viewup_vector  : (tuple of length 3) viewup vector (vector
+                    attached to the "head" and pointed to the "sky"),
+                    in principle: (focus_point - camera_location) is orthogonal
+                    to viewup_vector
 
     :param kwargs:
-        additional keyword arguments passed to plotter.add_mesh when plotting the variable,
-        such as
+        additional keyword arguments passed to plotter.add_mesh when
+        plotting the variable, such as
             - opacity:  (float or string) opacity for colors
                             default: 'linear', (set 'linear_r' to invert opacity)
             - nan_color:
@@ -673,7 +678,8 @@ def drawImage3D_slice (
             - show_edges:
                         (bool) indicates if edges of the grid are drawn
             - edge_color:
-                        (string or 3 item list) color for edges (used if show_edges is True)
+                        (string or 3 item list) color for edges (used if
+                            show_edges is True)
             - line_width:
                         (float) line width for edges (used if show_edges is True)
             - etc.
@@ -922,6 +928,261 @@ def drawImage3D_slice (
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def drawImage3D_empty_grid (
+                 im,
+                 plotter=None,
+                 rendering='volume',
+                 ix0=0, ix1=None,
+                 iy0=0, iy1=None,
+                 iz0=0, iz1=None,
+                 # iv=0,
+                 # slice_normal_x=None,
+                 # slice_normal_y=None,
+                 # slice_normal_z=None,
+                 # slice_normal_custom=None,
+                 cmap='viridis',
+                 cmin=None, cmax=None,
+                 alpha=None,
+                 excludedVal=None,
+                 categ=False,
+                 ncateg_max=30,
+                 categVal=None,
+                 categCol=None,
+                 categColCycle=False,
+                 categActive=None,
+                 show_scalar_bar=True,
+                 show_outline=True,
+                 show_bounds=False,
+                 show_axes=True,
+                 text=None,
+                 scalar_bar_annotations=None,
+                 scalar_bar_annotations_max=20,
+                 scalar_bar_kwargs=None,
+                 outline_kwargs=None,
+                 bounds_kwargs=None,
+                 axes_kwargs=None,
+                 text_kwargs=None,
+                 background_color=None,
+                 foreground_color=None,
+                 cpos=None,
+                 **kwargs):
+    """
+    Draws an empty grid from a 3D image, see parameters in function
+    drawImage3D_slice. Tricks are done below.
+    """
+
+    # Set indices to be plotted
+    if ix1 is None:
+        ix1 = im.nx
+
+    if iy1 is None:
+        iy1 = im.ny
+
+    if iz1 is None:
+        iz1 = im.nz
+
+    if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
+        print("Invalid indices along x)")
+        return
+
+    if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
+        print("Invalid indices along y)")
+        return
+
+    if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
+        print("Invalid indices along z)")
+        return
+
+    # Get the color map
+    if isinstance(cmap, str):
+        try:
+            cmap = plt.get_cmap(cmap)
+        except:
+            print("ERROR: invalid cmap string!")
+            return
+
+    # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
+    if scalar_bar_annotations is None:
+        scalar_bar_annotations = {}
+
+    if scalar_bar_kwargs is None:
+        scalar_bar_kwargs = {}
+
+    if outline_kwargs is None:
+        outline_kwargs = {}
+
+    if bounds_kwargs is None:
+        bounds_kwargs = {}
+
+    if axes_kwargs is None:
+        axes_kwargs = {}
+
+    if text_kwargs is None:
+        text_kwargs = {}
+
+    # Extract what to be plotted
+    vname = 'tmp'
+    zz = np.nan * np.ones((iz1-iz0, iy1-iy0, ix1-ix0)).flatten()
+
+    if categ:
+        # --- Treat categorical variable ---
+        if categCol is not None\
+                and type(categCol) is not list\
+                and type(categCol) is not tuple:
+            print("ERROR: 'categCol' must be a list or a tuple (if not None)!")
+            return
+
+        # Get array 'dval' of displayed values (at least for color bar)
+        if categVal is not None:
+            dval = np.array(categVal).reshape(-1) # force to be an 1d array
+
+            if len(np.unique(dval)) != len(dval):
+                print("ERROR: 'categVal' contains duplicated entries!")
+                return
+
+            # Check 'categCol' (if not None)
+            if categCol is not None and len(categCol) != len(dval):
+                print("ERROR: length of 'categVal' and 'categCol' differs!")
+                return
+
+        else:
+            # Possibly exclude values from zz
+            if excludedVal is not None:
+                for val in np.array(excludedVal).reshape(-1):
+                    np.putmask(zz, zz == val, np.nan)
+
+            # Get the unique values in zz
+            dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
+            if len(dval) > ncateg_max:
+                print ("ERROR: too many categories, set categ=False")
+                return
+
+        if not len(dval): # len(dval) == 0
+            print ("ERROR: no value to be drawn!")
+            return
+
+        if categActive is not None:
+            if len(categActive) != len(dval):
+                print("ERROR: length of 'categActive' not valid (should be the same as length of categVal)")
+                return
+        else:
+            categActive = np.ones(len(dval), dtype='bool')
+
+        # Replace dval[i] by i in zz if categActive[i] is True otherwise by np.nan, and other values by np.nan
+        zz2 = np.array(zz) # copy array
+        zz[...] = np.nan # initialize
+        for i, v in enumerate(dval):
+            if categActive[i]:
+                zz[zz2 == v] = i
+
+        del zz2
+
+        # Set 'colorList': the list of colors to use
+        colorList = None
+        if categCol is not None:
+            if len(categCol) >= len(dval):
+                colorList = [categCol[i] for i in range(len(dval))]
+                # colorList = [mcolors.ColorConverter().to_rgba(categCol[i]) for i in range(len(dval))]
+
+            elif categColCycle:
+                print("Warning: categCol is used cyclically (too few entries)")
+                colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
+
+            else:
+                print("Warning: categCol not used (too few entries)")
+
+        if colorList is None:
+            # Use colors from cmap
+            colorList = [cmap(x) for x in np.arange(len(dval)) * 1.0/(len(dval)-1)]
+
+        # Set the colormap: 'cmap'
+        # - Trick: duplicate last color (even if len(colorList)> 1)!
+        #          otherwise the first color appears twice
+        colorList.append(colorList[-1])
+        cmap = ccol.custom_cmap(colorList, ncol=len(colorList), alpha=alpha)
+
+        # Set the min and max of the colorbar
+        cmin, cmax = 0, len(dval) # works, but scalar bar annotations may be shifted of +0.5, see below
+        # cmin, cmax = -0.5, len(dval) - 0.5 # does not work
+
+        # Set scalar bar annotations if not given
+        if scalar_bar_annotations == {}:
+            if len(dval) <= scalar_bar_annotations_max: # avoid too many annotations (very slow and useless)
+                for i, v in enumerate(dval):
+                    scalar_bar_annotations[i+0.5]='{:.3g}'.format(v)
+
+        scalar_bar_kwargs['n_labels'] = 0
+        scalar_bar_kwargs['n_colors'] = len(dval)
+
+    else: # categ == False
+        # --- Treat continuous variable ---
+        # Possibly exclude values from zz
+        if excludedVal is not None:
+            for val in np.array(excludedVal).reshape(-1): # force to be an 1d array
+                np.putmask(zz, zz == val, np.nan)
+
+    # Set cmin and cmax if not specified
+    if cmin is None:
+        cmin = np.nanmin(zz)
+
+    if cmax is None:
+        cmax = np.nanmax(zz)
+
+    # Set pyvista UniformGrid
+    xmin = im.ox + ix0 * im.sx
+    xmax = im.ox + ix1 * im.sx
+    xdim = ix1 - ix0 + 1
+
+    ymin = im.oy + iy0 * im.sy
+    ymay = im.oy + iy1 * im.sy
+    ydim = iy1 - iy0 + 1
+
+    zmin = im.oz + iz0 * im.sz
+    zmaz = im.oz + iz1 * im.sz
+    zdim = iz1 - iz0 + 1
+
+    # pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+
+    pg.cell_data[vname] = zz #.flatten()
+
+    if plotter is not None:
+        pp = plotter
+    else:
+        pp = pv.Plotter()
+
+    # Here is the trick!
+    kwargs['opacity']=0.0
+    pp.add_mesh(pg.slice(normal=(1,0,0), origin=(im.ox + (ix0+0.5)*im.sx,0,0)), cmap=cmap, clim=(cmin, cmax), annotations=scalar_bar_annotations, show_scalar_bar=False, **kwargs)
+
+    if background_color is not None:
+        pp.background_color = background_color
+
+    if foreground_color is not None:
+        for d in [scalar_bar_kwargs, outline_kwargs, bounds_kwargs, axes_kwargs, text_kwargs]:
+            if 'color' not in d.keys():
+                d['color'] = foreground_color
+
+    if show_scalar_bar:
+        pp.add_scalar_bar(**scalar_bar_kwargs)
+
+    if show_outline:
+        pp.add_mesh(pg.outline(), **outline_kwargs)
+
+    if show_bounds:
+        pp.show_bounds(**bounds_kwargs)
+
+    if show_axes:
+        pp.add_axes(**axes_kwargs)
+
+    if text is not None:
+        pp.add_text(text, **text_kwargs)
+
+    if plotter is None:
+        pp.show(cpos=cpos)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def drawImage3D_volume (
                  im,
                  plotter=None,
@@ -1035,21 +1296,23 @@ def drawImage3D_volume (
     :param foreground_color:
                     foreground color
 
-    :param cpos:    (list of three 3-tuples, or None for default) camera position
-                        (unsused if plotter is None)
-                        cpos = [camera_location, focus_point, viewup_vector], with
-                        camera_location: (tuple of length 3) camera location ("eye")
-                        focus_point    : (tuple of length 3) focus point
-                        viewup_vector  : (tuple of length 3) viewup vector (vector
-                            attached to the "head" and pointed to the "sky"),
-                            in principle: (focus_point - camera_location) is orthogonal
-                            to viewup_vector
+    :param cpos:
+            (list of three 3-tuples, or None for default) camera position
+                (unsused if plotter is None)
+                cpos = [camera_location, focus_point, viewup_vector], with
+                camera_location: (tuple of length 3) camera location ("eye")
+                focus_point    : (tuple of length 3) focus point
+                viewup_vector  : (tuple of length 3) viewup vector (vector
+                    attached to the "head" and pointed to the "sky"),
+                    in principle: (focus_point - camera_location) is orthogonal
+                    to viewup_vector
 
     :param kwargs:
         additional keyword arguments passed to plotter.add_volume
         such as
-            - opacity: (float or string) opacity for colors (see doc of pyvista.add_volume),
-                        default: 'linear', (set 'linear_r' to invert opacity)
+            - opacity: (float or string) opacity for colors (see doc of
+                            pyvista.add_volume), default: 'linear',
+                            (set 'linear_r' to invert opacity)
             - etc.
 
     NOTE: 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?

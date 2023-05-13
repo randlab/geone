@@ -180,36 +180,39 @@ def ps_C2py(ps_c):
 def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     """
     Converts an elementary covariance model 1D from python to C.
-    Simulation grid geometry is specified in case of non-stationary covariance model.
+    Simulation grid geometry is specified in case of non-stationary covariance
+    model.
 
-    :param covModelElem_py: (2-tuple) elementary covariance model 1D in python:
-                                (t, d) corresponds to an elementary model with:
-                                    t: (string) the type, can be
-                                        'nugget'         (see func geone.covModel.cov_nug)
-                                        'spherical'      (see func geone.covModel.cov_sph)
-                                        'exponential'    (see func geone.covModel.cov_exp)
-                                        'gaussian'       (see func geone.covModel.cov_gau)
-                                        'linear'         (see func geone.covModel.cov_lin)
-                                        'cubic'          (see func geone.covModel.cov_cub)
-                                        'sinus_cardinal' (see func geone.covModel.cov_sinc)
-                                        'gamma'          (see func geone.covModel.cov_gamma)
-                                        'power'          (see func geone.covModel.cov_pow)
-                                        'exponential_generalized'
-                                                         (see func geone.covModel.cov_exp_gen)
-                                    d: (dict) dictionary of required parameters
-                                        to be passed to the elementary model
-                                        (value can be a "singe value" or an
-                                        array that matches the dimension of the
-                                        simulation grid (for non-stationary
-                                        covariance model)
-                                e.g.
-                                    (t, d) = ('power', {w:2.0, r:1.5, s:1.7})
-    :param nx, ny, nz    :  (ints) number of simulation grid (SG) cells in each direction
-    :param sx, sy, sz    :  (floats) cell size in each direction
-    :param ox, oy, oz    :  (floats) origin of the SG (bottom-lower-left corner)
+    :param covModelElem_py:
+        (2-tuple) elementary covariance model 1D in python:
+            (t, d) corresponds to an elementary model with:
+                t: (string) the type, can be
+                    'nugget'         (see func geone.covModel.cov_nug)
+                    'spherical'      (see func geone.covModel.cov_sph)
+                    'exponential'    (see func geone.covModel.cov_exp)
+                    'gaussian'       (see func geone.covModel.cov_gau)
+                    'linear'         (see func geone.covModel.cov_lin)
+                    'cubic'          (see func geone.covModel.cov_cub)
+                    'sinus_cardinal' (see func geone.covModel.cov_sinc)
+                    'gamma'          (see func geone.covModel.cov_gamma)
+                    'power'          (see func geone.covModel.cov_pow)
+                    'exponential_generalized'
+                                     (see func geone.covModel.cov_exp_gen)
+                d: (dict) dictionary of required parameters to be passed to the
+                    elementary model (value can be a "single value" or an array
+                    that matches the dimension of the simulation grid (for
+                    non-stationary covariance model)
+            e.g.
+                (t, d) = ('power', {w:2.0, r:1.5, s:1.7})
+    :param nx, ny, nz:  (ints) number of simulation grid (SG) cells in each
+                            direction
+    :param sx, sy, sz:  (floats) cell size in each direction
+    :param ox, oy, oz:  (floats) origin of the SG (bottom-lower-left corner)
     :return (covModelElem_c, flag):
-                            covModelElem_c: (MPDS_COVMODELELEM *) covariance model elem. converted (C struct)
-                            flag: (bool) indicating if the conversion has been done correctly (True) or not (False)
+        covModelElem_c: (MPDS_COVMODELELEM *) covariance model elem. converted
+            (C struct)
+        flag: (bool) indicating if the conversion has been done correctly (True)
+            or not (False)
     """
 
     covModelElem_c = geosclassic.malloc_MPDS_COVMODELELEM()
@@ -323,36 +326,39 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     """
     Converts an elementary covariance model 2D from python to C.
-    Simulation grid geometry is specified in case of non-stationary covariance model.
+    Simulation grid geometry is specified in case of non-stationary covariance
+    model.
 
-    :param covModelElem_py: (2-tuple) elementary covariance model 2D in python:
-                                (t, d) corresponds to an elementary model with:
-                                    t: (string) the type, can be
-                                        'nugget'         (see func geone.covModel.cov_nug)
-                                        'spherical'      (see func geone.covModel.cov_sph)
-                                        'exponential'    (see func geone.covModel.cov_exp)
-                                        'gaussian'       (see func geone.covModel.cov_gau)
-                                        'linear'         (see func geone.covModel.cov_lin)
-                                        'cubic'          (see func geone.covModel.cov_cub)
-                                        'sinus_cardinal' (see func geone.covModel.cov_sinc)
-                                        'gamma'          (see func geone.covModel.cov_gamma)
-                                        'power'          (see func geone.covModel.cov_pow)
-                                        'exponential_generalized'
-                                                         (see func geone.covModel.cov_exp_gen)
-                                    d: (dict) dictionary of required parameters
-                                        to be passed to the elementary model
-                                        (value can be a "singe value" or an
-                                        array that matches the dimension of the
-                                        simulation grid (for non-stationary
-                                        covariance model)
-                                e.g.
-                                    (t, d) = ('gaussian', {'w':10., 'r':[150, 50]})
-    :param nx, ny, nz    :  (ints) number of simulation grid (SG) cells in each direction
-    :param sx, sy, sz    :  (floats) cell size in each direction
-    :param ox, oy, oz    :  (floats) origin of the SG (bottom-lower-left corner)
+    :param covModelElem_py:
+        (2-tuple) elementary covariance model 2D in python:
+            (t, d) corresponds to an elementary model with:
+                t: (string) the type, can be
+                    'nugget'         (see func geone.covModel.cov_nug)
+                    'spherical'      (see func geone.covModel.cov_sph)
+                    'exponential'    (see func geone.covModel.cov_exp)
+                    'gaussian'       (see func geone.covModel.cov_gau)
+                    'linear'         (see func geone.covModel.cov_lin)
+                    'cubic'          (see func geone.covModel.cov_cub)
+                    'sinus_cardinal' (see func geone.covModel.cov_sinc)
+                    'gamma'          (see func geone.covModel.cov_gamma)
+                    'power'          (see func geone.covModel.cov_pow)
+                    'exponential_generalized'
+                                     (see func geone.covModel.cov_exp_gen)
+                d: (dict) dictionary of required parameters to be passed to the
+                    elementary model (value can be a "single value" or an array
+                    that matches the dimension of the simulation grid (for
+                    non-stationary covariance model)
+            e.g.
+                (t, d) = ('gaussian', {'w':10., 'r':[150, 50]})
+    :param nx, ny, nz:  (ints) number of simulation grid (SG) cells in each
+                            direction
+    :param sx, sy, sz:  (floats) cell size in each direction
+    :param ox, oy, oz:  (floats) origin of the SG (bottom-lower-left corner)
     :return (covModelElem_c, flag):
-                            covModelElem_c: (MPDS_COVMODELELEM *) covariance model elem. converted (C struct)
-                            flag: (bool) indicating if the conversion has been done correctly (True) or not (False)
+        covModelElem_c: (MPDS_COVMODELELEM *) covariance model elem. converted
+            (C struct)
+        flag: (bool) indicating if the conversion has been done correctly (True)
+            or not (False)
     """
 
     covModelElem_c = geosclassic.malloc_MPDS_COVMODELELEM()
@@ -482,34 +488,36 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     Converts an elementary covariance model 3D from python to C.
     Simulation grid geometry is specified in case of non-stationary covariance model.
 
-    :param covModelElem_py: (2-tuple) elementary covariance model 3D in python:
-                                (t, d) corresponds to an elementary model with:
-                                    t: (string) the type, can be
-                                        'nugget'         (see func geone.covModel.cov_nug)
-                                        'spherical'      (see func geone.covModel.cov_sph)
-                                        'exponential'    (see func geone.covModel.cov_exp)
-                                        'gaussian'       (see func geone.covModel.cov_gau)
-                                        'linear'         (see func geone.covModel.cov_lin)
-                                        'cubic'          (see func geone.covModel.cov_cub)
-                                        'sinus_cardinal' (see func geone.covModel.cov_sinc)
-                                        'gamma'          (see func geone.covModel.cov_gamma)
-                                        'power'          (see func geone.covModel.cov_pow)
-                                        'exponential_generalized'
-                                                         (see func geone.covModel.cov_exp_gen)
-                                    d: (dict) dictionary of required parameters
-                                        to be passed to the elementary model
-                                        (value can be a "singe value" or an
-                                        array that matches the dimension of the
-                                        simulation grid (for non-stationary
-                                        covariance model)
-                                e.g.
-                                    (t, d) = ('power', {w:2.0, r:[1.5, 2.5, 3.0], s:1.7})
-    :param nx, ny, nz    :  (ints) number of simulation grid (SG) cells in each direction
-    :param sx, sy, sz    :  (floats) cell size in each direction
-    :param ox, oy, oz    :  (floats) origin of the SG (bottom-lower-left corner)
+    :param covModelElem_py:
+        (2-tuple) elementary covariance model 3D in python:
+            (t, d) corresponds to an elementary model with:
+                t: (string) the type, can be
+                    'nugget'         (see func geone.covModel.cov_nug)
+                    'spherical'      (see func geone.covModel.cov_sph)
+                    'exponential'    (see func geone.covModel.cov_exp)
+                    'gaussian'       (see func geone.covModel.cov_gau)
+                    'linear'         (see func geone.covModel.cov_lin)
+                    'cubic'          (see func geone.covModel.cov_cub)
+                    'sinus_cardinal' (see func geone.covModel.cov_sinc)
+                    'gamma'          (see func geone.covModel.cov_gamma)
+                    'power'          (see func geone.covModel.cov_pow)
+                    'exponential_generalized'
+                                     (see func geone.covModel.cov_exp_gen)
+                d: (dict) dictionary of required parameters to be passed to the
+                    elementary model (value can be a "single value" or an array
+                    that matches the dimension of the simulation grid (for
+                    non-stationary covariance model)
+            e.g.
+                (t, d) = ('power', {w:2.0, r:[1.5, 2.5, 3.0], s:1.7})
+    :param nx, ny, nz:  (ints) number of simulation grid (SG) cells in each
+                            direction
+    :param sx, sy, sz:  (floats) cell size in each direction
+    :param ox, oy, oz:  (floats) origin of the SG (bottom-lower-left corner)
     :return (covModelElem_c, flag):
-                            covModelElem_c: (MPDS_COVMODELELEM *) covariance model elem. converted (C struct)
-                            flag: (bool) indicating if the conversion has been done correctly (True) or not (False)
+        covModelElem_c: (MPDS_COVMODELELEM *) covariance model elem. converted
+            (C struct)
+        flag: (bool) indicating if the conversion has been done correctly (True)
+            or not (False)
     """
 
     covModelElem_c = geosclassic.malloc_MPDS_COVMODELELEM()
@@ -651,15 +659,18 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 def covModel1D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     """
     Converts a covariance model 1D from python to C.
-    Simulation grid geometry is specified in case of non-stationary covariance model.
+    Simulation grid geometry is specified in case of non-stationary covariance
+    model.
 
     :param covModel_py: (CovModel1D class) covariance model 1D (python class)
-    :param nx, ny, nz : (ints) number of simulation grid (SG) cells in each direction
+    :param nx, ny, nz : (ints) number of simulation grid (SG) cells in each
+                            direction
     :param sx, sy, sz : (floats) cell size in each direction
     :param ox, oy, oz : (floats) origin of the SG (bottom-lower-left corner)
     :return (covModel_c, flag):
-                            covModel_c: (MPDS_COVMODEL *) covariance model converted (C struct)
-                            flag: (bool) indicating if the conversion has been done correctly (True) or not (False)
+        covModel_c: (MPDS_COVMODEL *) covariance model converted (C struct)
+        flag: (bool) indicating if the conversion has been done correctly (True)
+            or not (False)
     """
 
     covModel_c = geosclassic.malloc_MPDS_COVMODEL()
@@ -688,15 +699,18 @@ def covModel1D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 def covModel2D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     """
     Converts a covariance model 2D from python to C.
-    Simulation grid geometry is specified in case of non-stationary covariance model.
+    Simulation grid geometry is specified in case of non-stationary covariance
+    model.
 
     :param covModel_py: (CovModel2D class) covariance model 2D (python class)
-    :param nx, ny, nz : (ints) number of simulation grid (SG) cells in each direction
+    :param nx, ny, nz : (ints) number of simulation grid (SG) cells in each
+                            direction
     :param sx, sy, sz : (floats) cell size in each direction
     :param ox, oy, oz : (floats) origin of the SG (bottom-lower-left corner)
     :return (covModel_c, flag):
-                            covModel_c: (MPDS_COVMODEL *) covariance model converted (C struct)
-                            flag: (bool) indicating if the conversion has been done correctly (True) or not (False)
+        covModel_c: (MPDS_COVMODEL *) covariance model converted (C struct)
+        flag: (bool) indicating if the conversion has been done correctly (True)
+            or not (False)
     """
 
     covModel_c = geosclassic.malloc_MPDS_COVMODEL()
@@ -743,15 +757,18 @@ def covModel2D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     """
     Converts a covariance model 3D from python to C.
-    Simulation grid geometry is specified in case of non-stationary covariance model.
+    Simulation grid geometry is specified in case of non-stationary covariance
+    model.
 
     :param covModel_py: (CovModel3D class) covariance model 3D (python class)
-    :param nx, ny, nz : (ints) number of simulation grid (SG) cells in each direction
+    :param nx, ny, nz : (ints) number of simulation grid (SG) cells in each
+                            direction
     :param sx, sy, sz : (floats) cell size in each direction
     :param ox, oy, oz : (floats) origin of the SG (bottom-lower-left corner)
     :return (covModel_c, flag):
-                            covModel_c: (MPDS_COVMODEL *) covariance model converted (C struct)
-                            flag: (bool) indicating if the conversion has been done correctly (True) or not (False)
+        covModel_c: (MPDS_COVMODEL *) covariance model converted (C struct)
+        flag: (bool) indicating if the conversion has been done correctly (True)
+            or not (False)
     """
 
     covModel_c = geosclassic.malloc_MPDS_COVMODEL()
@@ -839,9 +856,10 @@ def geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor):
              'nwarning':nwarning,
              'warnings':warnings}
 
-        image:  (Img (class)) output image, with image.nv variables (simulation or
-                    estimates and standard deviation)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+        image:  (Img class) output image, with image.nv variables (simulation
+                    or estimates and standard deviation)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -896,8 +914,9 @@ def fill_mpds_geosClassicInput(
     Fills a mpds_geosClassicInput C structure from given parameters.
 
     :return (mpds_geosClassicInput, flag):
-                    mpds_geosClassicInput: C structure for "GeosClassicSim" program (C)
-                    flag: (bool) indicating if the filling has been done correctly (True) or not (False)
+        mpds_geosClassicInput: C structure for "GeosClassicSim" program (C)
+        flag: (bool) indicating if the filling has been done correctly (True)
+            or not (False)
     """
 
     nxy = nx * ny
@@ -1101,7 +1120,8 @@ def simulate1D(
                                 simulation based on ordinary kriging
     :param nreal:       (int) number of realizations
 
-    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean of
+                            the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
@@ -1114,8 +1134,8 @@ def simulate1D(
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or callable (function) or float or ndarray) variance  of the simulation
-                            (for simple kriging only):
+    :param var:         (None or callable (function) or float or ndarray) variance
+                            of the simulation (for simple kriging only):
                             - None   : variance not modified
                                        (only covariance model is used)
                             - callable (function):
@@ -1138,66 +1158,78 @@ def simulate1D(
     :param xIneqMin:    (1-dimensional array or float or None) coordinate of
                             conditioning points for inequality data minimal bound
     :param vIneqMin:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data minimal bound
-                            (same type as xIneqMin)
+                            at conditioning points for inequality data minimal
+                            bound (same type as xIneqMin)
 
     :param xIneqMax:    (1-dimensional array or float or None) coordinate of
                             conditioning points for inequality data maximal bound
     :param vIneqMax:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data maximal bound
-                            (same type as xIneqMax)
+                            at conditioning points for inequality data maximal
+                            bound (same type as xIneqMax)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
-                        (float) indicating how restricting the search ellipsoid (should be positive):
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                        (float) indicating how restricting the search ellipsoid
+                            (should be positive): let r_i be the ranges of the
+                            covariance model along its main axes, if x is a node
+                            to be simulated, a node y is taken into account iff
+                            it is within the ellipsoid centered at x of half-axes
+                            searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
 
-    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (int) maximum number of nodes retrieved from the search
+                            ellipsoid, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (int) indicating how to sort the search neighboorhood nodes
-                            (neighbors), they are sorted in increasing order according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (int) indicating how to sort the search neighboorhood
+                            nodes (neighbors), they are sorted in increasing
+                            order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
-                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
-                            data; the conditioning locations with inequality data are first simulated
-                            (with truncated gaussian distribution) sequentially; then, these locations
-                            are re-simulated following a new path as many times as needed; the total
-                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
+                        (int) minimal and maximal number of Gibbs sampler paths
+                            to deal with inequality data; the conditioning
+                            locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially;
+                            then, these locations are re-simulated following a
+                            new path as many times as needed; the total number
+                            of paths will be between nGibbsSamplerPathMin and
+                            nGibbsSamplerPathMax
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -1209,9 +1241,10 @@ def simulate1D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -1561,7 +1594,8 @@ def simulate1D_mp(
                                 simulation based on ordinary kriging
     :param nreal:       (int) number of realizations
 
-    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean of
+                            the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
@@ -1574,8 +1608,8 @@ def simulate1D_mp(
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or callable (function) or float or ndarray) variance  of the simulation
-                            (for simple kriging only):
+    :param var:         (None or callable (function) or float or ndarray) variance
+                            of the simulation (for simple kriging only):
                             - None   : variance not modified
                                        (only covariance model is used)
                             - callable (function):
@@ -1598,71 +1632,84 @@ def simulate1D_mp(
     :param xIneqMin:    (1-dimensional array or float or None) coordinate of
                             conditioning points for inequality data minimal bound
     :param vIneqMin:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data minimal bound
-                            (same type as xIneqMin)
+                            at conditioning points for inequality data minimal
+                            bound (same type as xIneqMin)
 
     :param xIneqMax:    (1-dimensional array or float or None) coordinate of
                             conditioning points for inequality data maximal bound
     :param vIneqMax:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data maximal bound
-                            (same type as xIneqMax)
+                            at conditioning points for inequality data maximal
+                            bound (same type as xIneqMax)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
-                        (float) indicating how restricting the search ellipsoid (should be positive):
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                        (float) indicating how restricting the search ellipsoid
+                            (should be positive): let r_i be the ranges of the
+                            covariance model along its main axes, if x is a node
+                            to be simulated, a node y is taken into account iff
+                            it is within the ellipsoid centered at x of half-axes
+                            searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
 
-    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (int) maximum number of nodes retrieved from the search
+                            ellipsoid, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (int) indicating how to sort the search neighboorhood nodes
-                            (neighbors), they are sorted in increasing order according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (int) indicating how to sort the search neighboorhood
+                            nodes (neighbors), they are sorted in increasing
+                            order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
-                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
-                            data; the conditioning locations with inequality data are first simulated
-                            (with truncated gaussian distribution) sequentially; then, these locations
-                            are re-simulated following a new path as many times as needed; the total
-                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
+                        (int) minimal and maximal number of Gibbs sampler paths
+                            to deal with inequality data; the conditioning
+                            locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially;
+                            then, these locations are re-simulated following a
+                            new path as many times as needed; the total number
+                            of paths will be between nGibbsSamplerPathMin and
+                            nGibbsSamplerPathMax
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
-                        [if given, a suffix ".<process_index>" is added for the
-                        report file of each process]
+                        (string or None) name of the report file,
+                            if None: no report file [if given, a suffix
+                            ".<process_index>" is added for the report file of
+                            each process]
 
     :param treat_image_one_by_one:
-                    (bool) keyword argument passed to the function geone.img.gatherImages
-                        - if False (default) images (result of each process) are gathered
-                            at once, and then removed (faster)
-                        - if True, images (result of each process) are gathered
-                            one by one, i.e. successively gathered and removed
-                            (slower, may save memory)
+                        (bool) keyword argument passed to the function
+                            geone.img.gatherImages
+                            - if False (default) images (result of each process)
+                            are gathered at once, and then removed (faster)
+                            - if True, images (result of each process) are
+                            gathered one by one, i.e. successively gathered and
+                            removed (slower, may save memory)
 
     :param nproc:
                 (int) number of processes (can be modified in the function)
@@ -1689,9 +1736,10 @@ def simulate1D_mp(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -1863,8 +1911,9 @@ def simulate2D(
                             in x-, y-axis direction
     :param spacing:     (sequence of 2 floats) (sx, sy), spacing between
                             two adjacent cells in x-, y-axis direction
-    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
@@ -1872,12 +1921,13 @@ def simulate2D(
                                 simulation based on ordinary kriging
     :param nreal:       (int) number of realizations
 
-    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean
+                            of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
-                                       function of two arguments (xi, yi) that returns
-                                       the mean at (xi, yi) (in the grid)
+                                       function of two arguments (xi, yi) that
+                                       returns the mean at (xi, yi) (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
@@ -1885,13 +1935,14 @@ def simulate2D(
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
-                            (for simple kriging only):
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the simulation (for simple kriging only):
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
-                                       function of two arguments (xi, yi) that returns
-                                       the variance at (xi, yi) (in the grid)
+                                       function of two arguments (xi, yi) that
+                                       returns the variance at (xi, yi) (in the
+                                       grid)
                             - float  : for stationary variance (set manually)
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
@@ -1911,69 +1962,83 @@ def simulate2D(
                             1-dimensional array of dim 2 or None) coordinate of
                             conditioning points for inequality data minimal bound
     :param vIneqMin:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data minimal bound
-                            (same type as xIneqMin)
+                            at conditioning points for inequality data minimal
+                            bound (same type as xIneqMin)
 
     :param xIneqMax:    (2-dimensional array of dim n x 2, or
                             1-dimensional array of dim 2 or None) coordinate of
                             conditioning points for inequality data maximal bound
     :param vIneqMax:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data maximal bound
-                            (same type as xIneqMax)
+                            at conditioning points for inequality data maximal
+                            bound (same type as xIneqMax)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
-                        (float) indicating how restricting the search ellipsoid (should be positive):
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                        (float) indicating how restricting the search ellipsoid
+                            (should be positive): let r_i be the ranges of the
+                            covariance model along its main axes, if x is a node
+                            to be simulated, a node y is taken into account iff
+                            it is within the ellipsoid centered at x of half-axes
+                            searchRadiusRelative * r_i
+                            Notes:
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (int) maximum number of nodes retrieved from the search
+                            ellipsoid, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (int) indicating how to sort the search neighboorhood nodes
-                            (neighbors), they are sorted in increasing order according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (int) indicating how to sort the search neighboorhood
+                            nodes (neighbors), they are sorted in increasing
+                            order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
-                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
-                            data; the conditioning locations with inequality data are first simulated
-                            (with truncated gaussian distribution) sequentially; then, these locations
-                            are re-simulated following a new path as many times as needed; the total
-                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
+                        (int) minimal and maximal number of Gibbs sampler paths
+                            to deal with inequality data; the conditioning
+                            locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially;
+                            then, these locations are re-simulated following a
+                            new path as many times as needed; the total number
+                            of paths will be between nGibbsSamplerPathMin and
+                            nGibbsSamplerPathMax
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -1985,9 +2050,10 @@ def simulate2D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -2350,8 +2416,9 @@ def simulate2D_mp(
                             in x-, y-axis direction
     :param spacing:     (sequence of 2 floats) (sx, sy), spacing between
                             two adjacent cells in x-, y-axis direction
-    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
@@ -2359,12 +2426,13 @@ def simulate2D_mp(
                                 simulation based on ordinary kriging
     :param nreal:       (int) number of realizations
 
-    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean
+                            of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
-                                       function of two arguments (xi, yi) that returns
-                                       the mean at (xi, yi) (in the grid)
+                                       function of two arguments (xi, yi) that
+                                       returns the mean at (xi, yi) (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
@@ -2372,13 +2440,14 @@ def simulate2D_mp(
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
-                            (for simple kriging only):
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the simulation (for simple kriging only):
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
-                                       function of two arguments (xi, yi) that returns
-                                       the variance at (xi, yi) (in the grid)
+                                       function of two arguments (xi, yi) that
+                                       returns the variance at (xi, yi) (in the
+                                       grid)
                             - float  : for stationary variance (set manually)
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
@@ -2398,74 +2467,89 @@ def simulate2D_mp(
                             1-dimensional array of dim 2 or None) coordinate of
                             conditioning points for inequality data minimal bound
     :param vIneqMin:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data minimal bound
-                            (same type as xIneqMin)
+                            at conditioning points for inequality data minimal
+                            bound (same type as xIneqMin)
 
     :param xIneqMax:    (2-dimensional array of dim n x 2, or
                             1-dimensional array of dim 2 or None) coordinate of
                             conditioning points for inequality data maximal bound
     :param vIneqMax:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data maximal bound
-                            (same type as xIneqMax)
+                            at conditioning points for inequality data maximal
+                            bound (same type as xIneqMax)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
-                        (float) indicating how restricting the search ellipsoid (should be positive):
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                        (float) indicating how restricting the search ellipsoid
+                            (should be positive): let r_i be the ranges of the
+                            covariance model along its main axes, if x is a node
+                            to be simulated, a node y is taken into account iff
+                            it is within the ellipsoid centered at x of half-axes
+                            searchRadiusRelative * r_i
+                            Notes:
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (int) maximum number of nodes retrieved from the search
+                            ellipsoid, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (int) indicating how to sort the search neighboorhood nodes
-                            (neighbors), they are sorted in increasing order according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (int) indicating how to sort the search neighboorhood
+                            nodes (neighbors), they are sorted in increasing
+                            order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
-                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
-                            data; the conditioning locations with inequality data are first simulated
-                            (with truncated gaussian distribution) sequentially; then, these locations
-                            are re-simulated following a new path as many times as needed; the total
-                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
+                        (int) minimal and maximal number of Gibbs sampler paths
+                            to deal with inequality data; the conditioning
+                            locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially;
+                            then, these locations are re-simulated following a
+                            new path as many times as needed; the total number
+                            of paths will be between nGibbsSamplerPathMin and
+                            nGibbsSamplerPathMax
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
-                        [if given, a suffix ".<process_index>" is added for the
-                        report file of each process]
+                        (string or None) name of the report file,
+                            if None: no report file [if given, a suffix
+                            ".<process_index>" is added for the report file of
+                            each process]
 
     :param treat_image_one_by_one:
-                    (bool) keyword argument passed to the function geone.img.gatherImages
-                        - if False (default) images (result of each process) are gathered
-                            at once, and then removed (faster)
-                        - if True, images (result of each process) are gathered
-                            one by one, i.e. successively gathered and removed
-                            (slower, may save memory)
+                        (bool) keyword argument passed to the function
+                            geone.img.gatherImages
+                            - if False (default) images (result of each process)
+                            are gathered at once, and then removed (faster)
+                            - if True, images (result of each process) are
+                            gathered one by one, i.e. successively gathered and
+                            removed (slower, may save memory)
 
     :param nproc:
                 (int) number of processes (can be modified in the function)
@@ -2492,9 +2576,10 @@ def simulate2D_mp(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -2666,8 +2751,9 @@ def simulate3D(
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 floats) (sx, sy, sz), spacing between
                             two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
@@ -2675,12 +2761,14 @@ def simulate3D(
                                 simulation based on ordinary kriging
     :param nreal:       (int) number of realizations
 
-    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean
+                            of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the mean at (xi, yi, zi) (in the grid)
+                                       function of three arguments (xi, yi, zi)
+                                       that returns the mean at (xi, yi, zi) (in
+                                       the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
@@ -2688,13 +2776,14 @@ def simulate3D(
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
-                            (for simple kriging only):
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the simulation (for simple kriging only):
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the variance at (xi, yi, zi) (in the grid)
+                                       function of three arguments (xi, yi, zi)
+                                       that returns the variance at (xi, yi, zi)
+                                       (in the grid)
                             - float  : for stationary variance (set manually)
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
@@ -2714,69 +2803,83 @@ def simulate3D(
                             1-dimensional array of dim 3 or None) coordinate of
                             conditioning points for inequality data minimal bound
     :param vIneqMin:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data minimal bound
-                            (same type as xIneqMin)
+                            at conditioning points for inequality data minimal
+                            bound (same type as xIneqMin)
 
     :param xIneqMax:    (2-dimensional array of dim n x 3, or
                             1-dimensional array of dim 3 or None) coordinate of
                             conditioning points for inequality data maximal bound
     :param vIneqMax:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data maximal bound
-                            (same type as xIneqMax)
+                            at conditioning points for inequality data maximal
+                            bound (same type as xIneqMax)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
-                        (float) indicating how restricting the search ellipsoid (should be positive):
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                        (float) indicating how restricting the search ellipsoid
+                            (should be positive): let r_i be the ranges of the
+                            covariance model along its main axes, if x is a node
+                            to be simulated, a node y is taken into account iff
+                            it is within the ellipsoid centered at x of half-axes
+                            searchRadiusRelative * r_i
+                            Notes:
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (int) maximum number of nodes retrieved from the search
+                            ellipsoid, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (int) indicating how to sort the search neighboorhood nodes
-                            (neighbors), they are sorted in increasing order according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (int) indicating how to sort the search neighboorhood
+                            nodes (neighbors), they are sorted in increasing
+                            order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
-                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
-                            data; the conditioning locations with inequality data are first simulated
-                            (with truncated gaussian distribution) sequentially; then, these locations
-                            are re-simulated following a new path as many times as needed; the total
-                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
+                        (int) minimal and maximal number of Gibbs sampler paths
+                            to deal with inequality data; the conditioning
+                            locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially;
+                            then, these locations are re-simulated following a
+                            new path as many times as needed; the total number
+                            of paths will be between nGibbsSamplerPathMin and
+                            nGibbsSamplerPathMax
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -2788,9 +2891,10 @@ def simulate3D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -3169,8 +3273,9 @@ def simulate3D_mp(
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 floats) (sx, sy, sz), spacing between
                             two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
@@ -3178,12 +3283,14 @@ def simulate3D_mp(
                                 simulation based on ordinary kriging
     :param nreal:       (int) number of realizations
 
-    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean
+                            of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the mean at (xi, yi, zi) (in the grid)
+                                       function of three arguments (xi, yi, zi)
+                                       that returns the mean at (xi, yi, zi) (in
+                                       the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
@@ -3191,13 +3298,14 @@ def simulate3D_mp(
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
-                            (for simple kriging only):
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the simulation (for simple kriging only):
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the variance at (xi, yi, zi) (in the grid)
+                                       function of three arguments (xi, yi, zi)
+                                       that returns the variance at (xi, yi, zi)
+                                       (in the grid)
                             - float  : for stationary variance (set manually)
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
@@ -3217,74 +3325,89 @@ def simulate3D_mp(
                             1-dimensional array of dim 3 or None) coordinate of
                             conditioning points for inequality data minimal bound
     :param vIneqMin:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data minimal bound
-                            (same type as xIneqMin)
+                            at conditioning points for inequality data minimal
+                            bound (same type as xIneqMin)
 
     :param xIneqMax:    (2-dimensional array of dim n x 3, or
                             1-dimensional array of dim 3 or None) coordinate of
                             conditioning points for inequality data maximal bound
     :param vIneqMax:    (1-dimensional array or float or None) value
-                            at conditioning points for inequality data maximal bound
-                            (same type as xIneqMax)
+                            at conditioning points for inequality data maximal
+                            bound (same type as xIneqMax)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
-                        (float) indicating how restricting the search ellipsoid (should be positive):
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                        (float) indicating how restricting the search ellipsoid
+                            (should be positive): let r_i be the ranges of the
+                            covariance model along its main axes, if x is a node
+                            to be simulated, a node y is taken into account iff
+                            it is within the ellipsoid centered at x of half-axes
+                            searchRadiusRelative * r_i
+                            Notes:
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (int) maximum number of nodes retrieved from the search
+                            ellipsoid, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (int) indicating how to sort the search neighboorhood nodes
-                            (neighbors), they are sorted in increasing order according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (int) indicating how to sort the search neighboorhood
+                            nodes (neighbors), they are sorted in increasing
+                            order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param nGibbsSamplerPathMin, nGibbsSamplerPathMax:
-                        (int) minimal and maximal number of Gibbs sampler paths to deal with inequality
-                            data; the conditioning locations with inequality data are first simulated
-                            (with truncated gaussian distribution) sequentially; then, these locations
-                            are re-simulated following a new path as many times as needed; the total
-                            number of paths will be between nGibbsSamplerPathMin and nGibbsSamplerPathMax
+                        (int) minimal and maximal number of Gibbs sampler paths
+                            to deal with inequality data; the conditioning
+                            locations with inequality data are first simulated
+                            (with truncated gaussian distribution) sequentially;
+                            then, these locations are re-simulated following a
+                            new path as many times as needed; the total number
+                            of paths will be between nGibbsSamplerPathMin and
+                            nGibbsSamplerPathMax
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
-                        [if given, a suffix ".<process_index>" is added for the
-                        report file of each process]
+                        (string or None) name of the report file,
+                            if None: no report file [if given, a suffix
+                            ".<process_index>" is added for the report file of
+                            each process]
 
     :param treat_image_one_by_one:
-                    (bool) keyword argument passed to the function geone.img.gatherImages
-                        - if False (default) images (result of each process) are gathered
-                            at once, and then removed (faster)
-                        - if True, images (result of each process) are gathered
-                            one by one, i.e. successively gathered and removed
-                            (slower, may save memory)
+                        (bool) keyword argument passed to the function
+                            geone.img.gatherImages
+                            - if False (default) images (result of each process)
+                            are gathered at once, and then removed (faster)
+                            - if True, images (result of each process) are
+                            gathered one by one, i.e. successively gathered and
+                            removed (slower, may save memory)
 
     :param nproc:
                 (int) number of processes (can be modified in the function)
@@ -3311,9 +3434,10 @@ def simulate3D_mp(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -3464,7 +3588,8 @@ def estimate1D(
         nthreads=-1,
         verbose=2):
     """
-    Computes estimate and standard deviation for 1D grid of simple or ordinary kriging.
+    Computes estimate and standard deviation for 1D grid of simple or ordinary
+    kriging.
 
     :param cov_model:   covariance model:
                             (CovModel1D class) covariance model in 1D, see
@@ -3480,7 +3605,8 @@ def estimate1D(
                             - 'ordinary_kriging':
                                 simulation based on ordinary kriging
 
-    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean of
+                            the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
@@ -3493,8 +3619,8 @@ def estimate1D(
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or callable (function) or float or ndarray) variance  of the simulation
-                            (for simple kriging only):
+    :param var:         (None or callable (function) or float or ndarray) variance
+                            of the simulation (for simple kriging only):
                             - None   : variance not modified
                                        (only covariance model is used)
                             - callable (function):
@@ -3515,9 +3641,9 @@ def estimate1D(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param use_unique_neighborhood:
                         (bool) indicating if a unique neighborhood is used
@@ -3535,44 +3661,49 @@ def estimate1D(
                                 searchNeighborhoodSortMode)
 
     :param searchRadiusRelative:
-                        (float) indicating how restricting the search ellipsoid (should be positive):
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            (unused if use_unique_neighborhood is True)
+                        (float) indicating how restricting the search ellipsoid
+                            (should be positive): let r_i be the ranges of the
+                            covariance model along its main axes, if x is a node
+                            to be simulated, a node y is taken into account iff
+                            it is within the ellipsoid centered at x of half-axes
+                            searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
 
-    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
-                            set -1 for unlimited
-                            (unused if use_unique_neighborhood is True)
+    :param nneighborMax:
+                        (int) maximum number of nodes retrieved from the search
+                            ellipsoid, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (int) indicating how to sort the search neighboorhood nodes
-                            (neighbors), they are sorted in increasing order according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            (unused if use_unique_neighborhood is True)
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (int) indicating how to sort the search neighboorhood
+                            nodes (neighbors), they are sorted in increasing
+                            order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -3584,9 +3715,10 @@ def estimate1D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=2 variables (estimate and
+        image:  (Img class) output image, with image.nv=2 variables (estimate and
                     standard deviation)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -3874,7 +4006,8 @@ def estimate2D(
         nthreads=-1,
         verbose=2):
     """
-    Computes estimate and standard deviation for 2D grid of simple or ordinary kriging.
+    Computes estimate and standard deviation for 2D grid of simple or ordinary
+    kriging.
 
     :param cov_model:   covariance model:
                             (CovModel2D class) covariance model in 2D, see
@@ -3889,20 +4022,22 @@ def estimate2D(
                             in x-, y-axis direction
     :param spacing:     (sequence of 2 floats) (sx, sy), spacing between
                             two adjacent cells in x-, y-axis direction
-    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
                             - 'ordinary_kriging':
                                 simulation based on ordinary kriging
 
-    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean
+                            of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
-                                       function of two arguments (xi, yi) that returns
-                                       the mean at (xi, yi) (in the grid)
+                                       function of two arguments (xi, yi) that
+                                       returns the mean at (xi, yi) (in the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
@@ -3910,13 +4045,14 @@ def estimate2D(
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
-                            (for simple kriging only):
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the simulation (for simple kriging only):
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
-                                       function of two arguments (xi, yi) that returns
-                                       the variance at (xi, yi) (in the grid)
+                                       function of two arguments (xi, yi) that
+                                       returns the variance at (xi, yi) (in the
+                                       grid)
                             - float  : for stationary variance (set manually)
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
@@ -3933,9 +4069,9 @@ def estimate2D(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param use_unique_neighborhood:
                         (bool) indicating if a unique neighborhood is used
@@ -3953,46 +4089,53 @@ def estimate2D(
                                 searchNeighborhoodSortMode)
 
     :param searchRadiusRelative:
-                        (float) indicating how restricting the search ellipsoid (should be positive):
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            (unused if use_unique_neighborhood is True)
-                            Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                        (float) indicating how restricting the search ellipsoid
+                            (should be positive): let r_i be the ranges of the
+                            covariance model along its main axes, if x is a node
+                            to be simulated, a node y is taken into account iff
+                            it is within the ellipsoid centered at x of half-axes
+                            searchRadiusRelative * r_i
+                            Notes:
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
-                            set -1 for unlimited
-                            (unused if use_unique_neighborhood is True)
+    :param nneighborMax:
+                        (int) maximum number of nodes retrieved from the search
+                            ellipsoid, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (int) indicating how to sort the search neighboorhood nodes
-                            (neighbors), they are sorted in increasing order according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            (unused if use_unique_neighborhood is True)
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (int) indicating how to sort the search neighboorhood
+                            nodes (neighbors), they are sorted in increasing
+                            order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -4004,9 +4147,10 @@ def estimate2D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=2 variables (estimate and
+        image:  (Img class) output image, with image.nv=2 variables (estimate and
                     standard deviation)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -4309,7 +4453,8 @@ def estimate3D(
         nthreads=-1,
         verbose=2):
     """
-    Computes estimate and standard deviation for 3D grid of simple or ordinary kriging.
+    Computes estimate and standard deviation for 3D grid of simple or ordinary
+    kriging.
 
     :param cov_model:   covariance model:
                             (CovModel3D class) covariance model in 3D, see
@@ -4324,20 +4469,23 @@ def estimate3D(
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 floats) (sx, sy, sz), spacing between
                             two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
                             - 'ordinary_kriging':
                                 simulation based on ordinary kriging
 
-    :param mean:        (None or callable (function) or float or ndarray) mean of the simulation:
+    :param mean:        (None or callable (function) or float or ndarray) mean
+                            of the simulation:
                             - None   : mean of hard data values (stationary),
                                        (0 if no hard data)
                             - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the mean at (xi, yi, zi) (in the grid)
+                                       function of three arguments (xi, yi, zi)
+                                       that returns the mean at (xi, yi, zi) (in
+                                       the grid)
                             - float  : for stationary mean (set manually)
                             - ndarray: for non stationary mean, must contain
                                        as many entries as number of grid cells
@@ -4345,13 +4493,14 @@ def estimate3D(
                             For ordinary kriging (method='ordinary_kriging'),
                             it is used for case with no neighbor
 
-    :param var:         (None or callable (function) or float or ndarray) variance of the simulation
-                            (for simple kriging only):
+    :param var:         (None or callable (function) or float or ndarray)
+                            variance of the simulation (for simple kriging only):
                             - None   : variance not modified
                                        (only covariance function/model is used)
                             - callable (function):
-                                       function of three arguments (xi, yi, zi) that returns
-                                       the variance at (xi, yi, zi) (in the grid)
+                                       function of three arguments (xi, yi, zi)
+                                       that returns the variance at (xi, yi, zi)
+                                       (in the grid)
                             - float  : for stationary variance (set manually)
                             - ndarray: for non stationary variance, must contain
                                        as many entries as number of grid cells
@@ -4368,9 +4517,9 @@ def estimate3D(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param use_unique_neighborhood:
                         (bool) indicating if a unique neighborhood is used
@@ -4388,46 +4537,53 @@ def estimate3D(
                                 searchNeighborhoodSortMode)
 
     :param searchRadiusRelative:
-                        (float) indicating how restricting the search ellipsoid (should be positive):
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            (unused if use_unique_neighborhood is True)
-                            Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                        (float) indicating how restricting the search ellipsoid
+                            (should be positive): let r_i be the ranges of the
+                            covariance model along its main axes, if x is a node
+                            to be simulated, a node y is taken into account iff
+                            it is within the ellipsoid centered at x of half-axes
+                            searchRadiusRelative * r_i
+                            Notes:
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(int) maximum number of nodes retrieved from the search ellipsoid,
-                            set -1 for unlimited
-                            (unused if use_unique_neighborhood is True)
+    :param nneighborMax:
+                        (int) maximum number of nodes retrieved from the search
+                            ellipsoid, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (int) indicating how to sort the search neighboorhood nodes
-                            (neighbors), they are sorted in increasing order according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            (unused if use_unique_neighborhood is True)
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (int) indicating how to sort the search neighboorhood
+                            nodes (neighbors), they are sorted in increasing
+                            order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -4439,9 +4595,10 @@ def estimate3D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=2 variables (estimate and
+        image:  (Img class) output image, with image.nv=2 variables (estimate and
                     standard deviation)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -4769,8 +4926,10 @@ def fill_mpds_geosClassicIndicatorInput(
     Fills a mpds_geosClassicIndicatorInput C structure from given parameters.
 
     :return (mpds_geosClassicIndicatorInput, flag):
-                    mpds_geosClassicIndicatorInput: C structure for "GeosClassicIndicatorSim" program (C)
-                    flag: (bool) indicating if the filling has been done correctly (True) or not (False)
+        mpds_geosClassicIndicatorInput: C structure for "GeosClassicIndicatorSim"
+            program (C)
+        flag: (bool) indicating if the filling has been done correctly (True)
+            or not (False)
     """
 
     nxy = nx * ny
@@ -4982,7 +5141,8 @@ def simulateIndicator1D(
                             a covariance model per category,
                             with entry for covariance model:
                                 (CovModel1D class) covariance model in 1D, see
-                                    definition of the class in module geone.covModel
+                                    definition of the class in
+                                    module geone.covModel
 
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) sx, spacing between two adjacent cells
@@ -5023,54 +5183,61 @@ def simulateIndicator1D(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
-                            indicating how restricting the search ellipsoid (should be positive)
-                            for each category:
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            indicating how restricting the search ellipsoid
+                            (should be positive) for each category: let r_i be
+                            the ranges of the covariance model along its main
+                            axes, if x is a node to be simulated, a node y is
+                            taken into account iff it is within the ellipsoid
+                            centered at x of half-axes searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
 
-    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
-                            nodes retrieved from the search ellipsoid, for each category,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (sequence of ncategory ints (or int, recycled)) maximum
+                            number of nodes retrieved from the search ellipsoid,
+                            for each category, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (sequence of ncategory ints (or int, recycled)) indicating
-                            how to sort the search neighboorhood nodes (neighbors)
-                            for each category, they are sorted in increasing order
-                            according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (sequence of ncategory ints (or int, recycled))
+                            indicating how to sort the search neighboorhood nodes
+                            (neighbors) for each category, they are sorted in
+                            increasing order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -5082,9 +5249,10 @@ def simulateIndicator1D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -5442,7 +5610,8 @@ def simulateIndicator1D_mp(
                             a covariance model per category,
                             with entry for covariance model:
                                 (CovModel1D class) covariance model in 1D, see
-                                    definition of the class in module geone.covModel
+                                    definition of the class in
+                                    module geone.covModel
 
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) sx, spacing between two adjacent cells
@@ -5483,59 +5652,67 @@ def simulateIndicator1D_mp(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
-                            indicating how restricting the search ellipsoid (should be positive)
-                            for each category:
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            indicating how restricting the search ellipsoid
+                            (should be positive) for each category: let r_i be
+                            the ranges of the covariance model along its main
+                            axes, if x is a node to be simulated, a node y is
+                            taken into account iff it is within the ellipsoid
+                            centered at x of half-axes searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
 
-    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
-                            nodes retrieved from the search ellipsoid, for each category,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (sequence of ncategory ints (or int, recycled)) maximum
+                            number of nodes retrieved from the search ellipsoid,
+                            for each category, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (sequence of ncategory ints (or int, recycled)) indicating
-                            how to sort the search neighboorhood nodes (neighbors)
-                            for each category, they are sorted in increasing order
-                            according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (sequence of ncategory ints (or int, recycled))
+                            indicating how to sort the search neighboorhood nodes
+                            (neighbors) for each category, they are sorted in
+                            increasing order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
-                        [if given, a suffix ".<process_index>" is added for the
-                        report file of each process]
+                        (string or None) name of the report file,
+                            if None: no report file [if given, a suffix
+                            ".<process_index>" is added for the report file of
+                            each process]
 
     :param treat_image_one_by_one:
-                    (bool) keyword argument passed to the function geone.img.gatherImages
-                        - if False (default) images (result of each process) are gathered
-                            at once, and then removed (faster)
-                        - if True, images (result of each process) are gathered
-                            one by one, i.e. successively gathered and removed
-                            (slower, may save memory)
+                        (bool) keyword argument passed to the function
+                            geone.img.gatherImages
+                            - if False (default) images (result of each process)
+                            are gathered at once, and then removed (faster)
+                            - if True, images (result of each process) are
+                            gathered one by one, i.e. successively gathered and
+                            removed (slower, may save memory)
 
     :param nproc:
                 (int) number of processes (can be modified in the function)
@@ -5562,9 +5739,10 @@ def simulateIndicator1D_mp(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -5740,19 +5918,22 @@ def simulateIndicator2D(
                             a covariance model per category,
                             with entry for covariance model:
                                 (CovModel2D class) covariance model in 2D, see
-                                    definition of the class in module geone.covModel
+                                    definition of the class in module
+                                    geone.covModel
                             or
                                 (CovModel1D class) covariance model in 1D, see
-                                    definition of the class in module geone.covModel,
-                                    it is then transformed to an isotropic (omni-
-                                    directional) covariance model in 2D
+                                    definition of the class in module
+                                    geone.covModel, it is then transformed to an
+                                    isotropic (omni-directional) covariance model
+                                    in 2D
 
     :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
                             in x-, y-axis direction
     :param spacing:     (sequence of 2 floats) (sx, sy), spacing between
                             two adjacent cells in x-, y-axis direction
-    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
@@ -5789,56 +5970,65 @@ def simulateIndicator2D(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
-                            indicating how restricting the search ellipsoid (should be positive)
-                            for each category:
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            indicating how restricting the search ellipsoid
+                            (should be positive) for each category: let r_i be
+                            the ranges of the covariance model along its main
+                            axes, if x is a node to be simulated, a node y is
+                            taken into account iff it is within the ellipsoid
+                            centered at x of half-axes searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
-                            nodes retrieved from the search ellipsoid, for each category,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (sequence of ncategory ints (or int, recycled)) maximum
+                            number of nodes retrieved from the search ellipsoid,
+                            for each category, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (sequence of ncategory ints (or int, recycled)) indicating
-                            how to sort the search neighboorhood nodes (neighbors)
-                            for each category, they are sorted in increasing order
-                            according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (sequence of ncategory ints (or int, recycled))
+                            indicating how to sort the search neighboorhood nodes
+                            (neighbors) for each category, they are sorted in
+                            increasing order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -5850,9 +6040,10 @@ def simulateIndicator2D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -6226,19 +6417,22 @@ def simulateIndicator2D_mp(
                             a covariance model per category,
                             with entry for covariance model:
                                 (CovModel2D class) covariance model in 2D, see
-                                    definition of the class in module geone.covModel
+                                    definition of the class in module
+                                    geone.covModel
                             or
                                 (CovModel1D class) covariance model in 1D, see
-                                    definition of the class in module geone.covModel,
-                                    it is then transformed to an isotropic (omni-
-                                    directional) covariance model in 2D
+                                    definition of the class in module
+                                    geone.covModel, it is then transformed to an
+                                    isotropic (omni-directional) covariance model
+                                    in 2D
 
     :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
                             in x-, y-axis direction
     :param spacing:     (sequence of 2 floats) (sx, sy), spacing between
                             two adjacent cells in x-, y-axis direction
-    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
@@ -6275,61 +6469,71 @@ def simulateIndicator2D_mp(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
-                            indicating how restricting the search ellipsoid (should be positive)
-                            for each category:
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            indicating how restricting the search ellipsoid
+                            (should be positive) for each category: let r_i be
+                            the ranges of the covariance model along its main
+                            axes, if x is a node to be simulated, a node y is
+                            taken into account iff it is within the ellipsoid
+                            centered at x of half-axes searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
-                            nodes retrieved from the search ellipsoid, for each category,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (sequence of ncategory ints (or int, recycled)) maximum
+                            number of nodes retrieved from the search ellipsoid,
+                            for each category, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (sequence of ncategory ints (or int, recycled)) indicating
-                            how to sort the search neighboorhood nodes (neighbors)
-                            for each category, they are sorted in increasing order
-                            according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (sequence of ncategory ints (or int, recycled))
+                            indicating how to sort the search neighboorhood nodes
+                            (neighbors) for each category, they are sorted in
+                            increasing order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
-                        [if given, a suffix ".<process_index>" is added for the
-                        report file of each process]
+                        (string or None) name of the report file,
+                            if None: no report file [if given, a suffix
+                            ".<process_index>" is added for the report file of
+                            each process]
 
     :param treat_image_one_by_one:
-                    (bool) keyword argument passed to the function geone.img.gatherImages
-                        - if False (default) images (result of each process) are gathered
-                            at once, and then removed (faster)
-                        - if True, images (result of each process) are gathered
-                            one by one, i.e. successively gathered and removed
-                            (slower, may save memory)
+                        (bool) keyword argument passed to the function
+                            geone.img.gatherImages
+                            - if False (default) images (result of each process)
+                            are gathered at once, and then removed (faster)
+                            - if True, images (result of each process) are
+                            gathered one by one, i.e. successively gathered and
+                            removed (slower, may save memory)
 
     :param nproc:
                 (int) number of processes (can be modified in the function)
@@ -6356,9 +6560,10 @@ def simulateIndicator2D_mp(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -6534,19 +6739,22 @@ def simulateIndicator3D(
                             a covariance model per category,
                             with entry for covariance model:
                                 (CovModel3D class) covariance model in 3D, see
-                                    definition of the class in module geone.covModel
+                                    definition of the class in module
+                                    geone.covModel
                             or
                                 (CovModel1D class) covariance model in 1D, see
-                                    definition of the class in module geone.covModel,
-                                    it is then transformed to an isotropic (omni-
-                                    directional) covariance model in 3D
+                                    definition of the class in module
+                                    geone.covModel, it is then transformed to an
+                                    isotropic (omni-directional) covariance model
+                                    in 3D
 
     :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 floats) (sx, sy, sz), spacing between
                             two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
@@ -6583,56 +6791,65 @@ def simulateIndicator3D(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
-                            indicating how restricting the search ellipsoid (should be positive)
-                            for each category:
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            indicating how restricting the search ellipsoid
+                            (should be positive) for each category: let r_i be
+                            the ranges of the covariance model along its main
+                            axes, if x is a node to be simulated, a node y is
+                            taken into account iff it is within the ellipsoid
+                            centered at x of half-axes searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
-                            nodes retrieved from the search ellipsoid, for each category,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (sequence of ncategory ints (or int, recycled)) maximum
+                            number of nodes retrieved from the search ellipsoid,
+                            for each category, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (sequence of ncategory ints (or int, recycled)) indicating
-                            how to sort the search neighboorhood nodes (neighbors)
-                            for each category, they are sorted in increasing order
-                            according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (sequence of ncategory ints (or int, recycled))
+                            indicating how to sort the search neighboorhood nodes
+                            (neighbors) for each category, they are sorted in
+                            increasing order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -6644,9 +6861,10 @@ def simulateIndicator3D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -7034,19 +7252,22 @@ def simulateIndicator3D_mp(
                             a covariance model per category,
                             with entry for covariance model:
                                 (CovModel3D class) covariance model in 3D, see
-                                    definition of the class in module geone.covModel
+                                    definition of the class in module
+                                    geone.covModel
                             or
                                 (CovModel1D class) covariance model in 1D, see
-                                    definition of the class in module geone.covModel,
-                                    it is then transformed to an isotropic (omni-
-                                    directional) covariance model in 3D
+                                    definition of the class in module
+                                    geone.covModel, it is then transformed to an
+                                    isotropic (omni-directional) covariance model
+                                    in 3D
 
     :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 floats) (sx, sy, sz), spacing between
                             two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
@@ -7083,61 +7304,71 @@ def simulateIndicator3D_mp(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
-                            indicating how restricting the search ellipsoid (should be positive)
-                            for each category:
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
+                            indicating how restricting the search ellipsoid
+                            (should be positive) for each category: let r_i be
+                            the ranges of the covariance model along its main
+                            axes, if x is a node to be simulated, a node y is
+                            taken into account iff it is within the ellipsoid
+                            centered at x of half-axes searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
-                            nodes retrieved from the search ellipsoid, for each category,
-                            set -1 for unlimited
+    :param nneighborMax:
+                        (sequence of ncategory ints (or int, recycled)) maximum
+                            number of nodes retrieved from the search ellipsoid,
+                            for each category, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (sequence of ncategory ints (or int, recycled)) indicating
-                            how to sort the search neighboorhood nodes (neighbors)
-                            for each category, they are sorted in increasing order
-                            according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (sequence of ncategory ints (or int, recycled))
+                            indicating how to sort the search neighboorhood nodes
+                            (neighbors) for each category, they are sorted in
+                            increasing order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
-    :param seed:        (int or None) initial seed, if None an initial seed between
-                            1 and 999999 is generated with numpy.random.randint
+    :param seed:        (int or None) initial seed, if None an initial seed
+                            between 1 and 999999 is generated with
+                            numpy.random.randint
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
-                        [if given, a suffix ".<process_index>" is added for the
-                        report file of each process]
+                        (string or None) name of the report file,
+                            if None: no report file [if given, a suffix
+                            ".<process_index>" is added for the report file of
+                            each process]
 
     :param treat_image_one_by_one:
-                    (bool) keyword argument passed to the function geone.img.gatherImages
-                        - if False (default) images (result of each process) are gathered
-                            at once, and then removed (faster)
-                        - if True, images (result of each process) are gathered
-                            one by one, i.e. successively gathered and removed
-                            (slower, may save memory)
+                        (bool) keyword argument passed to the function
+                            geone.img.gatherImages
+                            - if False (default) images (result of each process)
+                            are gathered at once, and then removed (faster)
+                            - if True, images (result of each process) are
+                            gathered one by one, i.e. successively gathered and
+                            removed (slower, may save memory)
 
     :param nproc:
                 (int) number of processes (can be modified in the function)
@@ -7164,9 +7395,10 @@ def simulateIndicator3D_mp(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
+        image:  (Img class) output image, with image.nv=nreal variables (each
                     variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -7342,7 +7574,8 @@ def estimateIndicator1D(
                             a covariance model per category,
                             with entry for covariance model:
                                 (CovModel1D class) covariance model in 1D, see
-                                    definition of the class in module geone.covModel
+                                    definition of the class in
+                                    module geone.covModel
 
     :param dimension:   (int) nx, number of cells
     :param spacing:     (float) sx, spacing between two adjacent cells
@@ -7382,9 +7615,9 @@ def estimateIndicator1D(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param use_unique_neighborhood:
                         (sequence of ncategory bools (or bool, recycled))
@@ -7405,48 +7638,51 @@ def estimateIndicator1D(
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
-                            indicating how restricting the search ellipsoid (should be positive)
-                            for each category:
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            (unused if use_unique_neighborhood is True)
+                            indicating how restricting the search ellipsoid
+                            (should be positive) for each category: let r_i be
+                            the ranges of the covariance model along its main
+                            axes, if x is a node to be simulated, a node y is
+                            taken into account iff it is within the ellipsoid
+                            centered at x of half-axes searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
 
-    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
-                            nodes retrieved from the search ellipsoid, for each category,
-                            set -1 for unlimited
-                            (unused if use_unique_neighborhood is True)
+    :param nneighborMax:
+                        (sequence of ncategory ints (or int, recycled)) maximum
+                            number of nodes retrieved from the search ellipsoid,
+                            for each category, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (sequence of ncategory ints (or int, recycled)) indicating
-                            how to sort the search neighboorhood nodes (neighbors)
-                            for each category, they are sorted in increasing order
-                            according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            (unused if use_unique_neighborhood is True)
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (sequence of ncategory ints (or int, recycled))
+                            indicating how to sort the search neighboorhood nodes
+                            (neighbors) for each category, they are sorted in
+                            increasing order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -7458,12 +7694,10 @@ def estimateIndicator1D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=ncategory variables
+        image:  (Img class) output image, with image.nv=ncategory variables
                     (estimate probabilities (for each category))
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
-        image:  (Img (class)) output image, with image.nv=nreal variables (each
-                    variable is one realization)
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -7819,19 +8053,22 @@ def estimateIndicator2D(
                             a covariance model per category,
                             with entry for covariance model:
                                 (CovModel2D class) covariance model in 2D, see
-                                    definition of the class in module geone.covModel
+                                    definition of the class in module
+                                    geone.covModel
                             or
                                 (CovModel1D class) covariance model in 1D, see
-                                    definition of the class in module geone.covModel,
-                                    it is then transformed to an isotropic (omni-
-                                    directional) covariance model in 2D
+                                    definition of the class in module
+                                    geone.covModel, it is then transformed to an
+                                    isotropic (omni-directional) covariance model
+                                    in 2D
 
     :param dimension:   (sequence of 2 ints) (nx, ny), number of cells
                             in x-, y-axis direction
     :param spacing:     (sequence of 2 floats) (sx, sy), spacing between
                             two adjacent cells in x-, y-axis direction
-    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 2 floats) (ox, oy), origin of the 2D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
@@ -7867,9 +8104,9 @@ def estimateIndicator2D(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param use_unique_neighborhood:
                         (sequence of ncategory bools (or bool, recycled))
@@ -7890,50 +8127,55 @@ def estimateIndicator2D(
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
-                            indicating how restricting the search ellipsoid (should be positive)
-                            for each category:
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            (unused if use_unique_neighborhood is True)
+                            indicating how restricting the search ellipsoid
+                            (should be positive) for each category: let r_i be
+                            the ranges of the covariance model along its main
+                            axes, if x is a node to be simulated, a node y is
+                            taken into account iff it is within the ellipsoid
+                            centered at x of half-axes searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
-                            nodes retrieved from the search ellipsoid, for each category,
-                            set -1 for unlimited
-                            (unused if use_unique_neighborhood is True)
+    :param nneighborMax:
+                        (sequence of ncategory ints (or int, recycled)) maximum
+                            number of nodes retrieved from the search ellipsoid,
+                            for each category, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (sequence of ncategory ints (or int, recycled)) indicating
-                            how to sort the search neighboorhood nodes (neighbors)
-                            for each category, they are sorted in increasing order
-                            according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            (unused if use_unique_neighborhood is True)
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (sequence of ncategory ints (or int, recycled))
+                            indicating how to sort the search neighboorhood nodes
+                            (neighbors) for each category, they are sorted in
+                            increasing order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -7945,9 +8187,10 @@ def estimateIndicator2D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=ncategory variables
+        image:  (Img class) output image, with image.nv=ncategory variables
                     (estimate probabilities (for each category))
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -8317,19 +8560,22 @@ def estimateIndicator3D(
                             a covariance model per category,
                             with entry for covariance model:
                                 (CovModel3D class) covariance model in 3D, see
-                                    definition of the class in module geone.covModel
+                                    definition of the class in module
+                                    geone.covModel
                             or
                                 (CovModel1D class) covariance model in 1D, see
-                                    definition of the class in module geone.covModel,
-                                    it is then transformed to an isotropic (omni-
-                                    directional) covariance model in 3D
+                                    definition of the class in module
+                                    geone.covModel, it is then transformed to an
+                                    isotropic (omni-directional) covariance model
+                                    in 3D
 
     :param dimension:   (sequence of 3 ints) (nx, ny, nz), number of cells
                             in x-, y-, z-axis direction
     :param spacing:     (sequence of 3 floats) (sx, sy, sz), spacing between
                             two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D simulation
-                            - used for localizing the conditioning points
+    :param origin:      (sequence of 3 floats) (ox, oy, oy), origin of the 3D
+                            simulation - used for localizing the conditioning
+                            points
     :param method:      (string) indicates the method used:
                             - 'simple_kriging':
                                 simulation based on simple kriging
@@ -8365,9 +8611,9 @@ def estimateIndicator3D(
                             (same type as x)
 
     :param mask:        (nd-array of ints, or None) if given, mask values
-                            over the SG: 1 for simulated cell / 0 for not simulated
-                            cell (nunber of entries should be equal to the number of
-                            grid cells)
+                            over the SG: 1 for simulated cell / 0 for not
+                            simulated cell (nunber of entries should be equal to
+                            the number of grid cells)
 
     :param use_unique_neighborhood:
                         (sequence of ncategory bools (or bool, recycled))
@@ -8388,50 +8634,55 @@ def estimateIndicator3D(
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
-                            indicating how restricting the search ellipsoid (should be positive)
-                            for each category:
-                            let r_i be the ranges of the covariance model along its main axes,
-                            if x is a node to be simulated, a node y is taken into account iff it is
-                            within the ellipsoid centered at x of half-axes searchRadiusRelative * r_i
-                            (unused if use_unique_neighborhood is True)
+                            indicating how restricting the search ellipsoid
+                            (should be positive) for each category: let r_i be
+                            the ranges of the covariance model along its main
+                            axes, if x is a node to be simulated, a node y is
+                            taken into account iff it is within the ellipsoid
+                            centered at x of half-axes searchRadiusRelative * r_i
                             Note:
-                                - if a range is a variable parameter, its maximal value over the simulation grid
-                                  is considered
-                                - if orientation of the covariance model is non-stationary, a "circular search neighborhood"
-                                  is considered with the radius set to the maximum of all ranges
+                                - if a range is a variable parameter, its maximal
+                                value over the simulation grid is considered
+                                - if orientation of the covariance model is
+                                non-stationary, a "circular search neighborhood"
+                                is considered with the radius set to the maximum
+                                of all ranges
 
-    :param nneighborMax:(sequence of ncategory ints (or int, recycled)) maximum number of
-                            nodes retrieved from the search ellipsoid, for each category,
-                            set -1 for unlimited
-                            (unused if use_unique_neighborhood is True)
+    :param nneighborMax:
+                        (sequence of ncategory ints (or int, recycled)) maximum
+                            number of nodes retrieved from the search ellipsoid,
+                            for each category, set -1 for unlimited
 
     :param searchNeighborhoodSortMode:
-                        (sequence of ncategory ints (or int, recycled)) indicating
-                            how to sort the search neighboorhood nodes (neighbors)
-                            for each category, they are sorted in increasing order
-                            according to:
-                                - searchNeighborhoodSortMode = 0:
-                                  distance in the usual axes system
-                                - searchNeighborhoodSortMode = 1:
-                                  distance in the axes sytem supporting the covariance model
-                                  and accounting for anisotropy given by the ranges
-                                - searchNeighborhoodSortMode = 2:
-                                  minus the evaluation of the covariance model
-                            (unused if use_unique_neighborhood is True)
-                            Note:
-                                - if the covariance model has any variable parameter (non-stationary),
-                                  then searchNeighborhoodSortMode = 2 is not allowed
-                                - if the covariance model has any range or angle set as a variable parameter,
-                                  then searchNeighborhoodSortMode must be set to 0
-                                - greatest possible value as default
+                        (sequence of ncategory ints (or int, recycled))
+                            indicating how to sort the search neighboorhood nodes
+                            (neighbors) for each category, they are sorted in
+                            increasing order according to:
+                            - searchNeighborhoodSortMode = 0:
+                                distance in the usual axes system
+                            - searchNeighborhoodSortMode = 1:
+                                distance in the axes sytem supporting the
+                                covariance model and accounting for anisotropy
+                                given by the ranges
+                            - searchNeighborhoodSortMode = 2:
+                                minus the evaluation of the covariance model
+                            Notes:
+                            - if the covariance model has any variable parameter
+                                (non-stationary), then
+                                searchNeighborhoodSortMode = 2 is not allowed
+                            - if the covariance model has any range or angle set
+                                as a variable parameter, then
+                                searchNeighborhoodSortMode must be set to 0
+                            - greatest possible value as default
 
     :param outputReportFile:
-                    (string or None) name of the report file, if None: no report file
+                        (string or None) name of the report file,
+                            if None: no report file
 
     :param nthreads:
-                (int) number of thread(s) to use for "GeosClassicSim" program (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
+                        (int) number of thread(s) to use for "GeosClassicSim"
+                            program (C), (nthreads = -n <= 0: for maximal number
+                            of threads except n, but at least 1)
     :param verbose:
                 (int) verbose mode, integer >=0, higher implies more display
                     - 0: no display
@@ -8443,9 +8694,10 @@ def estimateIndicator3D(
             {'image':image,
              'nwarning':nwarning,
              'warnings':warnings}
-        image:  (Img (class)) output image, with image.nv=ncategory variables
+        image:  (Img class) output image, with image.nv=ncategory variables
                     (estimate probabilities (for each category))
-                    (image is None if mpds_geosClassicOutput->outputImage is NULL)
+                    (image is None if mpds_geosClassicOutput->outputImage is
+                    NULL)
         nwarning:
                 (int) total number of warning(s) encountered
                     (same warnings can be counted several times)
@@ -8792,35 +9044,39 @@ def imgDistanceImage(
         distance_negative=False,
         nthreads=-1):
     """
-    Computes the image of the distances to the set of non zero values in the input image.
-    The distances are computed for each variable v over the image grid: distance to the
-    set S = {v!=0}. Distance is equal to zero for all cells in S if the keyword argument
-    distance_negative is False (default). If distance_negative is True, the distance
-    to the border of S is computed for the cells in the interior of S (i.e. in S but not
-    on the border), and the opposite (negative) is retrieved for that cells.
-    The output image has the same number of variable(s) and the same size (grid geometry)
-    as the input image.
+    Computes the image of the distances to the set of non zero values in the
+    input image. The distances are computed for each variable v over the image
+    grid: distance to the set S = {v!=0}. Distance is equal to zero for all cells
+    in S if the keyword argument distance_negative is False (default). If
+    distance_negative is True, the distance to the border of S is computed for
+    the cells in the interior of S (i.e. in S but not on the border), and the
+    opposite (negative) is retrieved for that cells. The output image has the
+    same number of variable(s) and the same size (grid geometry) as the input
+    image.
 
-    Algorithm from "A GENERAL ALGORITHM FOR COMPUTING DISTANCE TRANSFORMS IN LINEAR TIME"
-    by A. MEIJSTER, J.B.T.M. ROERDINK, and W.H. HESSELINK
+    Algorithm from "A GENERAL ALGORITHM FOR COMPUTING DISTANCE TRANSFORMS IN
+    LINEAR TIME" by A. MEIJSTER, J.B.T.M. ROERDINK, and W.H. HESSELINK
 
     :param input_image:     (Img class) input image
     :param distance_type:   (string) type of distance, available types:
                                 'L1', 'L2' (default)
 
     :param distance_negative:
-                            (bool) indicates what is computed for cell in the set S = {v!=0}
-                                (for a variable v):
-                                    False (default): distance set to zero for all cells in S
-                                    True: zero for cells on the border of S, and negative
-                                        distance to the border of S for cells in the interior
-                                        of S (i.e. in S but not in the border)
+                            (bool) indicates what is computed for cell in the
+                                set S = {v!=0} (for a variable v):
+                                - False (default): distance set to zero for all
+                                    cells in S
+                                - True: zero for cells on the border of S, and
+                                    negative distance to the border of S for
+                                    cells in the interior of S (i.e. in S but
+                                    not in the border)
 
     :param nthreads:        (int) number of thread(s) to use for program (C),
-                                (nthreads = -n <= 0: for maximal number of threads except n,
-                                but at least 1)
+                                (nthreads = -n <= 0: for maximal number of
+                                threads except n, but at least 1)
 
-    :return output_image:   (Img class) output image containing the computed distances.
+    :return output_image:   (Img class) output image containing the computed
+                                distances.
     """
 
     # --- Check
@@ -8920,7 +9176,8 @@ def imgGeobodyImage(
     Following this definition, we have
         x <-> y iff C(x) = C(y) > 0
 
-    The definition of adjacent cells depends on the keyword argument connect_type:
+    The definition of adjacent cells depends on the keyword argument
+    connect_type:
         - connect_type = connect_face (default):
             two grid cells are adjacent if they have a common face
         - connect_type = connect_face_edge:
@@ -8936,26 +9193,31 @@ def imgGeobodyImage(
     :param input_image:     (Img class) input image
     :param var_index:       (int) index of the considered variable in input image
                                 (default: 0)
-    :param bound_inf:       (float) lower bound of the interval defining the indicator
-                                variable (default: 0.0)
-    :param bound_sup:       (float) upper bound of the interval defining the indicator
-                                variable (default: None, bound_sup is set to "infinity")
+    :param bound_inf:       (float) lower bound of the interval defining the
+                                indicator variable (default: 0.0)
+    :param bound_sup:       (float) upper bound of the interval defining the
+                                indicator variable (default: None, bound_sup is
+                                set to "infinity")
     :param bound_inf_excluded:
-                            (bool) lower bound is excluded from the interval defining the
-                                indicator variable (True, default) or included (False)
+                            (bool) lower bound is excluded from the interval
+                                defining the indicator variable (True, default)
+                                or included (False)
     :param bound_sup_excluded:
-                            (bool) upper bound is excluded from the interval defining the
-                                indicator variable (True, default) or included (False)
+                            (bool) upper bound is excluded from the interval
+                                defining the indicator variable (True, default)
+                                or included (False)
     :param complementary_set:
-                            (bool) the complementary indicator variable (IC = 1-I) is used
-                                if True, indicator variable I is used if False (default)
-    :param connect_type:    (string) indicates which definition of adjacent cells is used
-                                (see above), available mode:
+                            (bool) the complementary indicator variable
+                                (IC = 1-I) is used if True, indicator variable I
+                                is used if False (default)
+    :param connect_type:    (string) indicates which definition of adjacent
+                                cells is used (see above), available mode:
                                     'connect_face' (default),
                                     'connect_face_edge',
                                     'connect_face_edge_corner'
 
-    :return output_image:   (Img class) output image containing the geobody labels.
+    :return output_image:   (Img class) output image containing the geobody
+                                labels.
     """
 
     # --- Check
@@ -9055,39 +9317,40 @@ def imgTwoPointStatisticsImage(
     """
     Computes two-point statistics image (map) for one variable of the input image,
     i.e. g(h) (see below) for given lag vector h.
-    The type of two-point statistics is indicated by the keyword argument stat_type.
-    Available two-point statistics (h is a lag vector, v(x) is the value of the
-    variable at cell x):
-        correlogram            :    g(h) = cor(v(x), v(x+h))   (linear correlation)
-        connectivity_func0     :    g(h) = P(v(x) = v(x+h) > 0)
-        connectivity_func1     :    g(h) = P(v(x) = v(x+h) > 0 | v(x) > 0)
-        connectivity_func2     :    g(h) = P(v(x) = v(x+h) > 0 | v(x) > 0, v(x+h) > 0)
-        covariance (default)   :    g(h) = cov(v(x), v(x+h))
-        covariance_not_centered:    g(h) = E[v(x)*v(x+h)]
-        transiogram            :    g(h) = P(v(x+h) > 0 | v(x) > 0)
-        variogram              :    g(h) = 0.5 * E[(v(x)-v(x+h))**2]
+    The type of two-point statistics is indicated by the keyword argument
+    stat_type. Available two-point statistics (h is a lag vector, v(x) is the
+    value of the variable at cell x):
+        correlogram            : g(h) = cor(v(x), v(x+h)) (linear correlation)
+        connectivity_func0     : g(h) = P(v(x)=v(x+h) > 0)
+        connectivity_func1     : g(h) = P(v(x)=v(x+h) > 0 | v(x) > 0)
+        connectivity_func2     : g(h) = P(v(x)=v(x+h) > 0 | v(x) > 0, v(x+h) > 0)
+        covariance (default)   : g(h) = cov(v(x), v(x+h))
+        covariance_not_centered: g(h) = E[v(x)*v(x+h)]
+        transiogram            : g(h) = P(v(x+h) > 0 | v(x) > 0)
+        variogram              : g(h) = 0.5 * E[(v(x)-v(x+h))**2]
 
     Notes:
-        - a transiogram can be applied on a binary variable
-        - a connectivity function (connectivity_func[012]) should be applied on
-            a variable consisting of geobody (connected component) labels,
-            i.e. input_image should be the output image returned by the function
-            imgGeobodyImage;
-            in that case, denoting I(x) is the indicator variable defined as
-            I(x) = 1 iff v(x)>0, the variable v is the geobody label for the
-            indicator variable I an we have the relations
-                P(v(x) = v(x+h) > 0)
-                    = P(v(x) = v(x+h) > 0 | v(x) > 0, v(x+h) > 0) * P(v(x) > 0, v(x+h) > 0)
-                    = P(v(x) = v(x+h) > 0 | v(x) > 0, v(x+h) > 0) * P(I(x)*I(x+h))
-                    = P(v(x) = v(x+h) > 0 | v(x) > 0, v(x+h) > 0) * E(I(x)*I(x+h))
-            i.e.
-                P(x <-> x+h) = P(x <-> x+h | x, x+h in {I=1}) * E(I(x)*I(x+h))
-                "connectivity_func0(v) = connectivity_func2(v) * covariance_not_centered(I)"
-            (see definition of "is connected to" (<->) in the function imgGeobodyImage).
-            See reference:
-                Renard P, Allard D (2013), Connectivity metrics for subsurface flow
-                and transport. Adv Water Resour 51:168–196.
-                https://doi.org/10.1016/j.advwatres.2011.12.001
+    - a transiogram can be applied on a binary variable
+    - a connectivity function (connectivity_func[012]) should be applied on
+        a variable consisting of geobody (connected component) labels,
+        i.e. input_image should be the output image returned by the function
+        imgGeobodyImage;
+        in that case, denoting I(x) is the indicator variable defined as
+        I(x) = 1 iff v(x)>0, the variable v is the geobody label for the
+        indicator variable I an we have the relations
+            P(v(x) = v(x+h) > 0)
+            = P(v(x)=v(x+h) > 0 | v(x) > 0, v(x+h) > 0) * P(v(x) > 0, v(x+h) > 0)
+            = P(v(x)=v(x+h) > 0 | v(x) > 0, v(x+h) > 0) * P(I(x)*I(x+h))
+            = P(v(x)=v(x+h) > 0 | v(x) > 0, v(x+h) > 0) * E(I(x)*I(x+h))
+        i.e.
+            P(x <-> x+h) = P(x <-> x+h | x, x+h in {I=1}) * E(I(x)*I(x+h))
+        "connectivity_func0(v) = connectivity_func2(v)*covariance_not_centered(I)"
+        (see definition of "is connected to" (<->) in the function
+        imgGeobodyImage).
+        See reference:
+            Renard P, Allard D (2013), Connectivity metrics for subsurface flow
+            and transport. Adv Water Resour 51:168–196.
+            https://doi.org/10.1016/j.advwatres.2011.12.001
 
     The output image has one variable and its grid is defined according the
     considered lags h given through the arguments:
@@ -9101,36 +9364,35 @@ def imgTwoPointStatisticsImage(
     Hence, the output image grid will have 1 + (hx_max-hx_min)//hx_step cells
     in x direction. This is similar for y and z direction.
 
-    For example, hx_min=-10, hx_max=10, hx_step=2 implies that lags in x direction
-    of -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10 cells (in input image) will be
-    considered.
+    For example, hx_min=-10, hx_max=10, hx_step=2 implies that lags in x
+    direction of -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10 cells (in input image)
+    will be considered.
 
     :param input_image:     (Img class) input image
-    :param var_index:       (int) index of the considered variable in input image
-                                (default: 0)
+    :param var_index:       (int) index of the considered variable in input
+                                image (default: 0)
     :param hx_min, hy_min, hz_min:
-                            (int) minimal lags in x, y, z directions, expressed in
-                                number of cells,
-                                default (None):
+                            (int) minimal lags in x, y, z directions, expressed
+                                in number of cells, default (None):
                                     hx_min = - (input_image.nx // 2)
                                     hy_min = - (input_image.ny // 2)
                                     hz_min = - (input_image.nz // 2)
 
     :param hx_max, hy_max, hz_max:
-                            (int) maximal lags in x, y, z directions, expressed in
-                                number of cells,
-                                default (None):
+                            (int) maximal lags in x, y, z directions, expressed
+                                in number of cells, default (None):
                                     hx_max = input_image.nx // 2
                                     hy_max = input_image.ny // 2
                                     hz_max = input_image.nz // 2
                                 of cells, default (None): input_image.nx // 2
 
     :param hx_step, hy_step, hz_step:
-                            (int) steps for considered lags in x, y, z directions,
-                                expressed in number of cells, default: 1
+                            (int) steps for considered lags in x, y, z
+                                directions, expressed in number of cells,
+                                default: 1
 
-    :param stat_type:       (string) type of two-point statistics that is computed,
-                                available type (see above):
+    :param stat_type:       (string) type of two-point statistics that is
+                                computed, available type (see above):
                                     'correlogram',
                                     'connectivity_func0',
                                     'connectivity_func1',
@@ -9139,17 +9401,18 @@ def imgTwoPointStatisticsImage(
                                     'covariance_not_centered',
                                     'transiogram',
                                     'variogram'
-                                For type 'connectivity_func[012]', the input image
-                                is assumed to be a geobody image (see above)
+                                For type 'connectivity_func[012]', the input
+                                image is assumed to be a geobody image (see above)
 
     :param show_progress:   (bool) indicates if progress is displayed (True) or
                                 not (False), default: False
 
     :param nthreads:        (int) number of thread(s) to use for program (C),
-                                (nthreads = -n <= 0: for maximal number of threads except n,
-                                but at least 1)
+                                (nthreads = -n <= 0: for maximal number of
+                                threads except n, but at least 1)
 
-    :return output_image:   (Img class) output image containing the computed distances.
+    :return output_image:   (Img class) output image containing the computed
+                                distances.
     """
 
     # --- Check
@@ -9291,8 +9554,8 @@ def imgConnectivityGammaValue(
         and transport. Adv Water Resour 51:168–196.
         https://doi.org/10.1016/j.advwatres.2011.12.001
 
-    The definition of adjacent cells, required to compute the connected components,
-    depends on the keyword argument connect_type:
+    The definition of adjacent cells, required to compute the connected
+    components, depends on the keyword argument connect_type:
         - connect_type = connect_face (default):
             two grid cells are adjacent if they have a common face
         - connect_type = connect_face_edge:
@@ -9303,25 +9566,28 @@ def imgConnectivityGammaValue(
             or a common edge or a common corner
 
     :param input_image:     (Img class) input image
-    :param var_index:       (int) index of the considered variable in input image
-                                (default: 0)
+    :param var_index:       (int) index of the considered variable in input
+                                image (default: 0)
     :param geobody_image_in_input:
                             (bool)
-                                - True: the input image is already the geobody image,
-                                    (variable 'var_index' is the geobody label)
-                                    in this case the keyword arguments 'complementary_set'
-                                    and 'connect_type' are ignored, the geobody image
-                                    is not computed
-                                - False: the geobody image for the indicator variable {v>0}
-                                    (v variable of index 'var_index') is computed (default)
+                                - True: the input image is already the geobody
+                                    image, (variable 'var_index' is the geobody
+                                    label) in this case the keyword arguments
+                                    'complementary_set' and 'connect_type' are
+                                    ignored, the geobody image is not computed
+                                - False: the geobody image for the indicator
+                                    variable {v>0} (v variable of index
+                                    'var_index') is computed (default)
     :param complementary_set:
-                            (bool) the complementary indicator variable (IC = 1-I) is used
-                                if True, indicator variable I is used if False (default)
-    :param connect_type:    (string) indicates which definition of adjacent cells is used
-                                to compute connected component (see above), available mode:
+                            (bool) the complementary indicator variable
+                                (IC = 1-I) is used if True, indicator variable I
+                                is used if False (default)
+    :param connect_type:    (string) indicates which definition of adjacent
+                                cells is used (see above), available mode:
                                     'connect_face' (default),
                                     'connect_face_edge',
                                     'connect_face_edge_corner'
+
     :return:                (float) Gamma value (see above)
     """
 
@@ -9396,8 +9662,8 @@ def imgConnectivityGammaCurves(
         and transport. Adv Water Resour 51:168–196.
         https://doi.org/10.1016/j.advwatres.2011.12.001
 
-    The definition of adjacent cells, required to compute the connected components,
-    depends on the keyword argument connect_type:
+    The definition of adjacent cells, required to compute the connected
+    components, depends on the keyword argument connect_type:
         - connect_type = connect_face (default):
             two grid cells are adjacent if they have a common face
         - connect_type = connect_face_edge:
@@ -9407,7 +9673,8 @@ def imgConnectivityGammaCurves(
             two grid cells are adjacent if they have a common face
             or a common edge or a common corner
 
-    :param input_image:     (Img class) input image, should have only one variable
+    :param input_image:     (Img class) input image, should have only one
+                                variable
     :param threshold_min:   (float) minimal value of the threshold,
                                 default (None): min of the input variable values
                                                 minus 1.e-10
@@ -9416,9 +9683,11 @@ def imgConnectivityGammaCurves(
                                                 plus 1.e-10
     :param nthreshold:      (int) number of thresholds considered (default: 50),
                                 the threshold values will be:
-                                numpy.linspace(threshold_min, threshold_max, nthreshold)
-    :param connect_type:    (string) indicates which definition of adjacent cells is used
-                                (see above), available mode:
+                                numpy.linspace(threshold_min,
+                                               threshold_max,
+                                               nthreshold)
+    :param connect_type:    (string) indicates which definition of adjacent
+                                cells is used (see above), available mode:
                                     'connect_face' (default),
                                     'connect_face_edge',
                                     'connect_face_edge_corner'
@@ -9427,14 +9696,17 @@ def imgConnectivityGammaCurves(
                                 not (False), default: False
 
     :param nthreads:        (int) number of thread(s) to use for program (C),
-                                (nthreads = -n <= 0: for maximal number of threads except n,
-                                but at least 1)
+                                (nthreads = -n <= 0: for maximal number of
+                                threads except n, but at least 1)
 
-    :return out_array:      (numpy 2d-array of floats) array of shape (nthreshold, 3),
-                                with the threshold values in the column of index 0, and
-                                the corresponding gamma and gammaC values in the column
-                                of index 1 and column of index 2, i.e.:
-                                    out_array[:,0]: numpy.linspace(threshold_min, threshold_max, nthreshold)
+    :return out_array:      (numpy 2d-array of floats) array of shape
+                                (nthreshold, 3), with the threshold values in
+                                the column of index 0, and the corresponding
+                                gamma and gammaC values in the column of index 1
+                                and column of index 2, i.e.:
+                                    out_array[:,0]: numpy.linspace(threshold_min,
+                                                                   threshold_max,
+                                                                   nthreshold)
                                     out_array[i,1]: gamma(out_array[i,0])
                                     out_array[i,2]: gammaC(out_array[i,0])
     """
@@ -9541,8 +9813,8 @@ def imgConnectivityEulerNumber(
         complementary_set=False,
         nthreads=-1):
     """
-    Computes the Euler number defined related to one variable v of the input image,
-    defined for the 3D image grid as
+    Computes the Euler number defined related to one variable v of the input
+    image, defined for the 3D image grid as
         E = number of connected components (geobodies)
             + number of "holes"
             - number of "handles"
@@ -9569,23 +9841,26 @@ def imgConnectivityEulerNumber(
     for the computation of the geobody image (see function imgGeobodyImage).
 
     :param input_image:     (Img class) input image
-    :param var_index:       (int) index of the considered variable in input image
-                                (default: 0)
+    :param var_index:       (int) index of the considered variable in input
+                                image (default: 0)
     :param geobody_image_in_input:
                             (bool)
-                                - True: the input image is already the geobody image,
-                                    (variable 'var_index' is the geobody label)
-                                    in this case the keyword argument 'complementary_set'
-                                    is ignored, the geobody image is not computed
-                                - False: the geobody image for the indicator variable {v>0}
-                                    (v variable of index 'var_index') is computed (default)
+                                - True: the input image is already the geobody
+                                    image, (variable 'var_index' is the geobody
+                                    label) in this case the keyword arguments
+                                    'complementary_set' and 'connect_type' are
+                                    ignored, the geobody image is not computed
+                                - False: the geobody image for the indicator
+                                    variable {v>0} (v variable of index
+                                    'var_index') is computed (default)
     :param complementary_set:
-                            (bool) the complementary indicator variable (IC = 1-I) is used
-                                if True, indicator variable I is used if False (default)
+                            (bool) the complementary indicator variable
+                                (IC = 1-I) is used if True, indicator variable I
+                                is used if False (default)
 
     :param nthreads:        (int) number of thread(s) to use for program (C),
-                                (nthreads = -n <= 0: for maximal number of threads except n,
-                                but at least 1)
+                                (nthreads = -n <= 0: for maximal number of
+                                threads except n, but at least 1)
 
     :return:                (float) Euler number (see above)
     """
@@ -9686,7 +9961,8 @@ def imgConnectivityEulerNumberCurves(
     adjacent as soon as they have a common face (connect_type='connect_face'
     for the computation of the geobody image (see function imgGeobodyImage)).
 
-    :param input_image:     (Img class) input image, should have only one variable
+    :param input_image:     (Img class) input image, should have only one
+                                variable
     :param threshold_min:   (float) minimal value of the threshold,
                                 default (None): min of the input variable values
                                                 minus 1.e-10
@@ -9695,20 +9971,25 @@ def imgConnectivityEulerNumberCurves(
                                                 plus 1.e-10
     :param nthreshold:      (int) number of thresholds considered (default: 50),
                                 the threshold values will be:
-                                numpy.linspace(threshold_min, threshold_max, nthreshold)
+                                numpy.linspace(threshold_min,
+                                               threshold_max,
+                                               nthreshold)
 
     :param show_progress:   (bool) indicates if progress is displayed (True) or
                                 not (False), default: False
 
     :param nthreads:        (int) number of thread(s) to use for program (C),
-                                (nthreads = -n <= 0: for maximal number of threads except n,
-                                but at least 1)
+                                (nthreads = -n <= 0: for maximal number of
+                                threads except n, but at least 1)
 
-    :return out_array:      (numpy 2d-array of floats) array of shape (nthreshold, 3),
-                                with the threshold values in the column of index 0, and
-                                the corresponding Euler numbers E and EC in the column
-                                of index 1 and column of index 2, i.e.:
-                                    out_array[:,0]: numpy.linspace(threshold_min, threshold_max, nthreshold)
+    :return out_array:      (numpy 2d-array of floats) array of shape
+                                (nthreshold, 3), with the threshold values in
+                                the column of index 0, and the corresponding
+                                Euler numbers E and EC in the column of index 1
+                                and column of index 2, i.e.:
+                                    out_array[:,0]: numpy.linspace(threshold_min,
+                                                                   threshold_max,
+                                                                   nthreshold)
                                     out_array[i,1]: E(out_array[i,0])
                                     out_array[i,2]: EC(out_array[i,0])
     """
