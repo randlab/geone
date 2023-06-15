@@ -61,6 +61,8 @@ def custom_cmap(cseq,
     :return: (LinearSegmentedColormap) colormap
     """
 
+    fname = 'custom_cmap'
+
     # Set alpha sequence
     if alpha is None:
         alpha = 1.0
@@ -68,17 +70,17 @@ def custom_cmap(cseq,
     if aseq.size == 1:
         aseq = aseq.flat[0] * np.ones(len(cseq))
     elif aseq.size != len(cseq):
-        print ('ERROR: length of alpha not compatible with cseq')
+        print(f'ERROR ({fname}): length of alpha not compatible with cseq')
         return
 
     # Set vseqn: sequence of values rescaled in [0,1]
     if vseq is not None:
         if len(vseq) != len(cseq):
-            print("ERROR: length of vseq and cseq differs")
+            print(f'ERROR ({fname}): length of vseq and cseq differs')
             return None
 
         if sum(np.diff(vseq) <= 0.0 ):
-            print("ERROR: vseq is not an increasing sequence")
+            print(f'ERROR ({fname}): vseq is not an increasing sequence')
             return None
 
         # Linearly rescale vseq on [0,1]
@@ -126,6 +128,10 @@ def custom_cmap(cseq,
     return cmap
 # ----------------------------------------------------------------------------
 
+# Default colormap for function in geone
+# ======================================
+cmap_def = 'viridis'
+
 # Some colors and colormaps
 # =========================
 
@@ -168,8 +174,11 @@ col_chart_list_s = [col_chart_list[i] for i in (8, 0, 11, 5, 3, 6, 7, 2, 9, 1, 1
 # Default color for bad value (nan)
 cbad_def = (.9, .9, .9, 0.5)
 
-# colormaps
-# ... default color map
+# Pre-defined colormaps
+# =====================
+
+# colormap cmap1 / cmap1_alpha (increasing alpha values)
+# --------------
 cbad1   = (.9, .9, .9, 0.5)
 # cunder1 = [x/255. for x in (160, 40, 160)] + [0.5] # +[0.5] ... for appending alpha channel
 # cover1  = [x/255. for x in (250,  80, 120)] + [0.5] # +[0.5] ... for appending alpha channel
@@ -180,32 +189,46 @@ cmaplist1 = ([x/255. for x in (160,  40, 240)],
              [x/255. for x in (240, 240,   0)],
              [x/255. for x in (180,  10,  10)])
 cmap1 = custom_cmap(cmaplist1, cunder=cunder1, cover=cover1, cbad=cbad1, alpha=1.0)
+cmap1_alpha = custom_cmap(cmaplist1, alpha=np.linspace(0, 1, len(cmaplist1)), cunder=cunder1, cover=cover1, cbad=cbad1)
 
-cmap2 = custom_cmap(['purple', 'blue', 'cyan', 'yellow', 'red', 'black'],
-                    cunder=cbad_def, cover=cbad_def, cbad=cbad_def, alpha=1.0)
+# colormap cmap2 / cmap2_alpha (increasing alpha values)
+# --------------
+cmaplist2 = ['purple', 'blue', 'cyan', 'yellow', 'red', 'black']
+cbad2   = cbad_def
+cunder2 = cbad_def
+cover2  = cbad_def
+cmap2 = custom_cmap(cmaplist2, cunder=cunder2, cover=cover2, cbad=cbad2, alpha=1.0)
+cmap2_alpha = custom_cmap(cmaplist2, alpha=np.linspace(0, 2, len(cmaplist2)), cunder=cunder2, cover=cover2, cbad=cbad2)
 
+# colormap cmapW2B / cmapB2W (white to black / black to white)
+# --------------
 cmapW2B = custom_cmap(['white', 'black'], cunder=(0.0, 0.0, 1.0, 0.5), cover=(1.0, 0.0, 0.0, 0.5), cbad=col_chart_yellow+[0.5], alpha=1.0)
 cmapB2W = custom_cmap(['black', 'white'], cunder=(0.0, 0.0, 1.0, 0.5), cover=(1.0, 0.0, 0.0, 0.5), cbad=col_chart_yellow+[0.5], alpha=1.0)
 
+# "Extended" existing colormap from matplotlib, by adding specific colors for under values, over values and bad values
+# # Example for cmap 'terrain'
+cmap_terrain_ext = custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0, 1, 256)], ncol=256, cunder='pink', cover='orange', cbad='red')
+
+# ----------------------------------------------------------------------------
 # # Notes:
 # # =====
-# # To use some colormaps (LinearSegmentedColormap) from matplotlib
-# cm_name = [name for name in plt.cm.datad.keys()] # name of the colormaps
-# cmap = plt.get_cmap('ocean')  # get the colormap named 'ocean' (cm_name[105])
-# # To get current rcParams (matplotlib)
-# import matplotlib as mpl
-# mpl.rcParams
-# # Useful function to convert color from/to rgb[a]/hex:
-# mcolors.to_rgb()
-# mcolors.to_rgba()
-# mcolors.to_hex()
-# mcolors.to_hex(,keep_alpha=True)
+# # To show available colormaps in matplotlib:
+# plt.colormaps()
 #
-# To customize existing colormap from matplotlib:
-# Example, add specific colors for under values, over values and bad values in map 'terrain' with nn colors
-#cmap_new_terrain = custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0,1,nn)], ncol=nn, cunder='pink', cover='orange', cbad='red')
-cmap_new_terrain = custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0,1,256)], ncol=256, cunder='pink', cover='orange', cbad='red')
-#####cmap_details = ccol.custom_cmap(ccol.cmaplist1, alpha=np.linspace(0, 1, len(ccol.cmaplist1), cunder=ccol.cunder1, cover=ccol.cover1, cbad=ccol.cbad1)
+# # To show some colormaps (LinearSegmentedColormap) from matplotlib:
+# cm_name = [name for name in plt.cm.datad.keys()]
+# cmap = plt.get_cmap('ocean')  # get the colormap named 'ocean' (cm_name[105])
+#
+# # To get current rcParams (matplotlib)
+# import matplotlib
+# matplotlib.rcParams
+#
+# # Useful function to convert color from/to rgb[a]/hex:
+# import matplotlib
+# matplotlib.mcolors.to_rgb()
+# matplotlib.mcolors.to_rgba()
+# matplotlib.mcolors.to_hex()
+# matplotlib.mcolors.to_hex(,keep_alpha=True)
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":

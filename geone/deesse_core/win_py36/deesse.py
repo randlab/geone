@@ -1926,6 +1926,423 @@ MPDSPrintVersion = _deesse.MPDSPrintVersion
 def MPDSValidateSimInput(arg1, arg2, arg3, arg4):
     return _deesse.MPDSValidateSimInput(arg1, arg2, arg3, arg4)
 MPDSValidateSimInput = _deesse.MPDSValidateSimInput
+POST_PROCESSING_PARAMETERS_DEFAULT = _deesse.POST_PROCESSING_PARAMETERS_DEFAULT
+POST_PROCESSING_PARAMETERS_SAME = _deesse.POST_PROCESSING_PARAMETERS_SAME
+POST_PROCESSING_PARAMETERS_MANUAL = _deesse.POST_PROCESSING_PARAMETERS_MANUAL
+class mpds_simInputASCII(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_simInputASCII, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, mpds_simInputASCII, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["simName"] = _deesse.mpds_simInputASCII_simName_set
+    __swig_getmethods__["simName"] = _deesse.mpds_simInputASCII_simName_get
+    if _newclass:
+        simName = _swig_property(_deesse.mpds_simInputASCII_simName_get, _deesse.mpds_simInputASCII_simName_set)
+    __swig_setmethods__["simGridNx"] = _deesse.mpds_simInputASCII_simGridNx_set
+    __swig_getmethods__["simGridNx"] = _deesse.mpds_simInputASCII_simGridNx_get
+    if _newclass:
+        simGridNx = _swig_property(_deesse.mpds_simInputASCII_simGridNx_get, _deesse.mpds_simInputASCII_simGridNx_set)
+    __swig_setmethods__["simGridNy"] = _deesse.mpds_simInputASCII_simGridNy_set
+    __swig_getmethods__["simGridNy"] = _deesse.mpds_simInputASCII_simGridNy_get
+    if _newclass:
+        simGridNy = _swig_property(_deesse.mpds_simInputASCII_simGridNy_get, _deesse.mpds_simInputASCII_simGridNy_set)
+    __swig_setmethods__["simGridNz"] = _deesse.mpds_simInputASCII_simGridNz_set
+    __swig_getmethods__["simGridNz"] = _deesse.mpds_simInputASCII_simGridNz_get
+    if _newclass:
+        simGridNz = _swig_property(_deesse.mpds_simInputASCII_simGridNz_get, _deesse.mpds_simInputASCII_simGridNz_set)
+    __swig_setmethods__["simGridSx"] = _deesse.mpds_simInputASCII_simGridSx_set
+    __swig_getmethods__["simGridSx"] = _deesse.mpds_simInputASCII_simGridSx_get
+    if _newclass:
+        simGridSx = _swig_property(_deesse.mpds_simInputASCII_simGridSx_get, _deesse.mpds_simInputASCII_simGridSx_set)
+    __swig_setmethods__["simGridSy"] = _deesse.mpds_simInputASCII_simGridSy_set
+    __swig_getmethods__["simGridSy"] = _deesse.mpds_simInputASCII_simGridSy_get
+    if _newclass:
+        simGridSy = _swig_property(_deesse.mpds_simInputASCII_simGridSy_get, _deesse.mpds_simInputASCII_simGridSy_set)
+    __swig_setmethods__["simGridSz"] = _deesse.mpds_simInputASCII_simGridSz_set
+    __swig_getmethods__["simGridSz"] = _deesse.mpds_simInputASCII_simGridSz_get
+    if _newclass:
+        simGridSz = _swig_property(_deesse.mpds_simInputASCII_simGridSz_get, _deesse.mpds_simInputASCII_simGridSz_set)
+    __swig_setmethods__["simGridOx"] = _deesse.mpds_simInputASCII_simGridOx_set
+    __swig_getmethods__["simGridOx"] = _deesse.mpds_simInputASCII_simGridOx_get
+    if _newclass:
+        simGridOx = _swig_property(_deesse.mpds_simInputASCII_simGridOx_get, _deesse.mpds_simInputASCII_simGridOx_set)
+    __swig_setmethods__["simGridOy"] = _deesse.mpds_simInputASCII_simGridOy_set
+    __swig_getmethods__["simGridOy"] = _deesse.mpds_simInputASCII_simGridOy_get
+    if _newclass:
+        simGridOy = _swig_property(_deesse.mpds_simInputASCII_simGridOy_get, _deesse.mpds_simInputASCII_simGridOy_set)
+    __swig_setmethods__["simGridOz"] = _deesse.mpds_simInputASCII_simGridOz_set
+    __swig_getmethods__["simGridOz"] = _deesse.mpds_simInputASCII_simGridOz_get
+    if _newclass:
+        simGridOz = _swig_property(_deesse.mpds_simInputASCII_simGridOz_get, _deesse.mpds_simInputASCII_simGridOz_set)
+    __swig_setmethods__["nsimVar"] = _deesse.mpds_simInputASCII_nsimVar_set
+    __swig_getmethods__["nsimVar"] = _deesse.mpds_simInputASCII_nsimVar_get
+    if _newclass:
+        nsimVar = _swig_property(_deesse.mpds_simInputASCII_nsimVar_get, _deesse.mpds_simInputASCII_nsimVar_set)
+    __swig_setmethods__["simVarName"] = _deesse.mpds_simInputASCII_simVarName_set
+    __swig_getmethods__["simVarName"] = _deesse.mpds_simInputASCII_simVarName_get
+    if _newclass:
+        simVarName = _swig_property(_deesse.mpds_simInputASCII_simVarName_get, _deesse.mpds_simInputASCII_simVarName_set)
+    __swig_setmethods__["outputVarFlag"] = _deesse.mpds_simInputASCII_outputVarFlag_set
+    __swig_getmethods__["outputVarFlag"] = _deesse.mpds_simInputASCII_outputVarFlag_get
+    if _newclass:
+        outputVarFlag = _swig_property(_deesse.mpds_simInputASCII_outputVarFlag_get, _deesse.mpds_simInputASCII_outputVarFlag_set)
+    __swig_setmethods__["formatStringVar"] = _deesse.mpds_simInputASCII_formatStringVar_set
+    __swig_getmethods__["formatStringVar"] = _deesse.mpds_simInputASCII_formatStringVar_get
+    if _newclass:
+        formatStringVar = _swig_property(_deesse.mpds_simInputASCII_formatStringVar_get, _deesse.mpds_simInputASCII_formatStringVar_set)
+    __swig_setmethods__["outputSimJob"] = _deesse.mpds_simInputASCII_outputSimJob_set
+    __swig_getmethods__["outputSimJob"] = _deesse.mpds_simInputASCII_outputSimJob_get
+    if _newclass:
+        outputSimJob = _swig_property(_deesse.mpds_simInputASCII_outputSimJob_get, _deesse.mpds_simInputASCII_outputSimJob_set)
+    __swig_setmethods__["outputSimImageFileName"] = _deesse.mpds_simInputASCII_outputSimImageFileName_set
+    __swig_getmethods__["outputSimImageFileName"] = _deesse.mpds_simInputASCII_outputSimImageFileName_get
+    if _newclass:
+        outputSimImageFileName = _swig_property(_deesse.mpds_simInputASCII_outputSimImageFileName_get, _deesse.mpds_simInputASCII_outputSimImageFileName_set)
+    __swig_setmethods__["outputPathIndexFlag"] = _deesse.mpds_simInputASCII_outputPathIndexFlag_set
+    __swig_getmethods__["outputPathIndexFlag"] = _deesse.mpds_simInputASCII_outputPathIndexFlag_get
+    if _newclass:
+        outputPathIndexFlag = _swig_property(_deesse.mpds_simInputASCII_outputPathIndexFlag_get, _deesse.mpds_simInputASCII_outputPathIndexFlag_set)
+    __swig_setmethods__["outputPathIndexFileName"] = _deesse.mpds_simInputASCII_outputPathIndexFileName_set
+    __swig_getmethods__["outputPathIndexFileName"] = _deesse.mpds_simInputASCII_outputPathIndexFileName_get
+    if _newclass:
+        outputPathIndexFileName = _swig_property(_deesse.mpds_simInputASCII_outputPathIndexFileName_get, _deesse.mpds_simInputASCII_outputPathIndexFileName_set)
+    __swig_setmethods__["outputErrorFlag"] = _deesse.mpds_simInputASCII_outputErrorFlag_set
+    __swig_getmethods__["outputErrorFlag"] = _deesse.mpds_simInputASCII_outputErrorFlag_get
+    if _newclass:
+        outputErrorFlag = _swig_property(_deesse.mpds_simInputASCII_outputErrorFlag_get, _deesse.mpds_simInputASCII_outputErrorFlag_set)
+    __swig_setmethods__["outputErrorFileName"] = _deesse.mpds_simInputASCII_outputErrorFileName_set
+    __swig_getmethods__["outputErrorFileName"] = _deesse.mpds_simInputASCII_outputErrorFileName_get
+    if _newclass:
+        outputErrorFileName = _swig_property(_deesse.mpds_simInputASCII_outputErrorFileName_get, _deesse.mpds_simInputASCII_outputErrorFileName_set)
+    __swig_setmethods__["outputTiGridNodeIndexFlag"] = _deesse.mpds_simInputASCII_outputTiGridNodeIndexFlag_set
+    __swig_getmethods__["outputTiGridNodeIndexFlag"] = _deesse.mpds_simInputASCII_outputTiGridNodeIndexFlag_get
+    if _newclass:
+        outputTiGridNodeIndexFlag = _swig_property(_deesse.mpds_simInputASCII_outputTiGridNodeIndexFlag_get, _deesse.mpds_simInputASCII_outputTiGridNodeIndexFlag_set)
+    __swig_setmethods__["outputTiGridNodeIndexFileName"] = _deesse.mpds_simInputASCII_outputTiGridNodeIndexFileName_set
+    __swig_getmethods__["outputTiGridNodeIndexFileName"] = _deesse.mpds_simInputASCII_outputTiGridNodeIndexFileName_get
+    if _newclass:
+        outputTiGridNodeIndexFileName = _swig_property(_deesse.mpds_simInputASCII_outputTiGridNodeIndexFileName_get, _deesse.mpds_simInputASCII_outputTiGridNodeIndexFileName_set)
+    __swig_setmethods__["outputTiIndexFlag"] = _deesse.mpds_simInputASCII_outputTiIndexFlag_set
+    __swig_getmethods__["outputTiIndexFlag"] = _deesse.mpds_simInputASCII_outputTiIndexFlag_get
+    if _newclass:
+        outputTiIndexFlag = _swig_property(_deesse.mpds_simInputASCII_outputTiIndexFlag_get, _deesse.mpds_simInputASCII_outputTiIndexFlag_set)
+    __swig_setmethods__["outputTiIndexFileName"] = _deesse.mpds_simInputASCII_outputTiIndexFileName_set
+    __swig_getmethods__["outputTiIndexFileName"] = _deesse.mpds_simInputASCII_outputTiIndexFileName_get
+    if _newclass:
+        outputTiIndexFileName = _swig_property(_deesse.mpds_simInputASCII_outputTiIndexFileName_get, _deesse.mpds_simInputASCII_outputTiIndexFileName_set)
+    __swig_setmethods__["outputReportFlag"] = _deesse.mpds_simInputASCII_outputReportFlag_set
+    __swig_getmethods__["outputReportFlag"] = _deesse.mpds_simInputASCII_outputReportFlag_get
+    if _newclass:
+        outputReportFlag = _swig_property(_deesse.mpds_simInputASCII_outputReportFlag_get, _deesse.mpds_simInputASCII_outputReportFlag_set)
+    __swig_setmethods__["outputReportFileName"] = _deesse.mpds_simInputASCII_outputReportFileName_set
+    __swig_getmethods__["outputReportFileName"] = _deesse.mpds_simInputASCII_outputReportFileName_get
+    if _newclass:
+        outputReportFileName = _swig_property(_deesse.mpds_simInputASCII_outputReportFileName_get, _deesse.mpds_simInputASCII_outputReportFileName_set)
+    __swig_setmethods__["ntrainImage"] = _deesse.mpds_simInputASCII_ntrainImage_set
+    __swig_getmethods__["ntrainImage"] = _deesse.mpds_simInputASCII_ntrainImage_get
+    if _newclass:
+        ntrainImage = _swig_property(_deesse.mpds_simInputASCII_ntrainImage_get, _deesse.mpds_simInputASCII_ntrainImage_set)
+    __swig_setmethods__["trainImageFileName"] = _deesse.mpds_simInputASCII_trainImageFileName_set
+    __swig_getmethods__["trainImageFileName"] = _deesse.mpds_simInputASCII_trainImageFileName_get
+    if _newclass:
+        trainImageFileName = _swig_property(_deesse.mpds_simInputASCII_trainImageFileName_get, _deesse.mpds_simInputASCII_trainImageFileName_set)
+    __swig_setmethods__["pdfTrainImageFileName"] = _deesse.mpds_simInputASCII_pdfTrainImageFileName_set
+    __swig_getmethods__["pdfTrainImageFileName"] = _deesse.mpds_simInputASCII_pdfTrainImageFileName_get
+    if _newclass:
+        pdfTrainImageFileName = _swig_property(_deesse.mpds_simInputASCII_pdfTrainImageFileName_get, _deesse.mpds_simInputASCII_pdfTrainImageFileName_set)
+    __swig_setmethods__["ndataImageFile"] = _deesse.mpds_simInputASCII_ndataImageFile_set
+    __swig_getmethods__["ndataImageFile"] = _deesse.mpds_simInputASCII_ndataImageFile_get
+    if _newclass:
+        ndataImageFile = _swig_property(_deesse.mpds_simInputASCII_ndataImageFile_get, _deesse.mpds_simInputASCII_ndataImageFile_set)
+    __swig_setmethods__["dataImageFileName"] = _deesse.mpds_simInputASCII_dataImageFileName_set
+    __swig_getmethods__["dataImageFileName"] = _deesse.mpds_simInputASCII_dataImageFileName_get
+    if _newclass:
+        dataImageFileName = _swig_property(_deesse.mpds_simInputASCII_dataImageFileName_get, _deesse.mpds_simInputASCII_dataImageFileName_set)
+    __swig_setmethods__["ndataPointSetFile"] = _deesse.mpds_simInputASCII_ndataPointSetFile_set
+    __swig_getmethods__["ndataPointSetFile"] = _deesse.mpds_simInputASCII_ndataPointSetFile_get
+    if _newclass:
+        ndataPointSetFile = _swig_property(_deesse.mpds_simInputASCII_ndataPointSetFile_get, _deesse.mpds_simInputASCII_ndataPointSetFile_set)
+    __swig_setmethods__["dataPointSetFileName"] = _deesse.mpds_simInputASCII_dataPointSetFileName_set
+    __swig_getmethods__["dataPointSetFileName"] = _deesse.mpds_simInputASCII_dataPointSetFileName_get
+    if _newclass:
+        dataPointSetFileName = _swig_property(_deesse.mpds_simInputASCII_dataPointSetFileName_get, _deesse.mpds_simInputASCII_dataPointSetFileName_set)
+    __swig_setmethods__["maskImageFlag"] = _deesse.mpds_simInputASCII_maskImageFlag_set
+    __swig_getmethods__["maskImageFlag"] = _deesse.mpds_simInputASCII_maskImageFlag_get
+    if _newclass:
+        maskImageFlag = _swig_property(_deesse.mpds_simInputASCII_maskImageFlag_get, _deesse.mpds_simInputASCII_maskImageFlag_set)
+    __swig_setmethods__["maskImageFileName"] = _deesse.mpds_simInputASCII_maskImageFileName_set
+    __swig_getmethods__["maskImageFileName"] = _deesse.mpds_simInputASCII_maskImageFileName_get
+    if _newclass:
+        maskImageFileName = _swig_property(_deesse.mpds_simInputASCII_maskImageFileName_get, _deesse.mpds_simInputASCII_maskImageFileName_set)
+    __swig_setmethods__["homothetyUsage"] = _deesse.mpds_simInputASCII_homothetyUsage_set
+    __swig_getmethods__["homothetyUsage"] = _deesse.mpds_simInputASCII_homothetyUsage_get
+    if _newclass:
+        homothetyUsage = _swig_property(_deesse.mpds_simInputASCII_homothetyUsage_get, _deesse.mpds_simInputASCII_homothetyUsage_set)
+    __swig_setmethods__["homothetyXRatioImageFlag"] = _deesse.mpds_simInputASCII_homothetyXRatioImageFlag_set
+    __swig_getmethods__["homothetyXRatioImageFlag"] = _deesse.mpds_simInputASCII_homothetyXRatioImageFlag_get
+    if _newclass:
+        homothetyXRatioImageFlag = _swig_property(_deesse.mpds_simInputASCII_homothetyXRatioImageFlag_get, _deesse.mpds_simInputASCII_homothetyXRatioImageFlag_set)
+    __swig_setmethods__["homothetyYRatioImageFlag"] = _deesse.mpds_simInputASCII_homothetyYRatioImageFlag_set
+    __swig_getmethods__["homothetyYRatioImageFlag"] = _deesse.mpds_simInputASCII_homothetyYRatioImageFlag_get
+    if _newclass:
+        homothetyYRatioImageFlag = _swig_property(_deesse.mpds_simInputASCII_homothetyYRatioImageFlag_get, _deesse.mpds_simInputASCII_homothetyYRatioImageFlag_set)
+    __swig_setmethods__["homothetyZRatioImageFlag"] = _deesse.mpds_simInputASCII_homothetyZRatioImageFlag_set
+    __swig_getmethods__["homothetyZRatioImageFlag"] = _deesse.mpds_simInputASCII_homothetyZRatioImageFlag_get
+    if _newclass:
+        homothetyZRatioImageFlag = _swig_property(_deesse.mpds_simInputASCII_homothetyZRatioImageFlag_get, _deesse.mpds_simInputASCII_homothetyZRatioImageFlag_set)
+    __swig_setmethods__["homothetyXRatioImageFileName"] = _deesse.mpds_simInputASCII_homothetyXRatioImageFileName_set
+    __swig_getmethods__["homothetyXRatioImageFileName"] = _deesse.mpds_simInputASCII_homothetyXRatioImageFileName_get
+    if _newclass:
+        homothetyXRatioImageFileName = _swig_property(_deesse.mpds_simInputASCII_homothetyXRatioImageFileName_get, _deesse.mpds_simInputASCII_homothetyXRatioImageFileName_set)
+    __swig_setmethods__["homothetyYRatioImageFileName"] = _deesse.mpds_simInputASCII_homothetyYRatioImageFileName_set
+    __swig_getmethods__["homothetyYRatioImageFileName"] = _deesse.mpds_simInputASCII_homothetyYRatioImageFileName_get
+    if _newclass:
+        homothetyYRatioImageFileName = _swig_property(_deesse.mpds_simInputASCII_homothetyYRatioImageFileName_get, _deesse.mpds_simInputASCII_homothetyYRatioImageFileName_set)
+    __swig_setmethods__["homothetyZRatioImageFileName"] = _deesse.mpds_simInputASCII_homothetyZRatioImageFileName_set
+    __swig_getmethods__["homothetyZRatioImageFileName"] = _deesse.mpds_simInputASCII_homothetyZRatioImageFileName_get
+    if _newclass:
+        homothetyZRatioImageFileName = _swig_property(_deesse.mpds_simInputASCII_homothetyZRatioImageFileName_get, _deesse.mpds_simInputASCII_homothetyZRatioImageFileName_set)
+    __swig_setmethods__["homothetyXRatioValue"] = _deesse.mpds_simInputASCII_homothetyXRatioValue_set
+    __swig_getmethods__["homothetyXRatioValue"] = _deesse.mpds_simInputASCII_homothetyXRatioValue_get
+    if _newclass:
+        homothetyXRatioValue = _swig_property(_deesse.mpds_simInputASCII_homothetyXRatioValue_get, _deesse.mpds_simInputASCII_homothetyXRatioValue_set)
+    __swig_setmethods__["homothetyYRatioValue"] = _deesse.mpds_simInputASCII_homothetyYRatioValue_set
+    __swig_getmethods__["homothetyYRatioValue"] = _deesse.mpds_simInputASCII_homothetyYRatioValue_get
+    if _newclass:
+        homothetyYRatioValue = _swig_property(_deesse.mpds_simInputASCII_homothetyYRatioValue_get, _deesse.mpds_simInputASCII_homothetyYRatioValue_set)
+    __swig_setmethods__["homothetyZRatioValue"] = _deesse.mpds_simInputASCII_homothetyZRatioValue_set
+    __swig_getmethods__["homothetyZRatioValue"] = _deesse.mpds_simInputASCII_homothetyZRatioValue_get
+    if _newclass:
+        homothetyZRatioValue = _swig_property(_deesse.mpds_simInputASCII_homothetyZRatioValue_get, _deesse.mpds_simInputASCII_homothetyZRatioValue_set)
+    __swig_setmethods__["rotationUsage"] = _deesse.mpds_simInputASCII_rotationUsage_set
+    __swig_getmethods__["rotationUsage"] = _deesse.mpds_simInputASCII_rotationUsage_get
+    if _newclass:
+        rotationUsage = _swig_property(_deesse.mpds_simInputASCII_rotationUsage_get, _deesse.mpds_simInputASCII_rotationUsage_set)
+    __swig_setmethods__["rotationAzimuthImageFlag"] = _deesse.mpds_simInputASCII_rotationAzimuthImageFlag_set
+    __swig_getmethods__["rotationAzimuthImageFlag"] = _deesse.mpds_simInputASCII_rotationAzimuthImageFlag_get
+    if _newclass:
+        rotationAzimuthImageFlag = _swig_property(_deesse.mpds_simInputASCII_rotationAzimuthImageFlag_get, _deesse.mpds_simInputASCII_rotationAzimuthImageFlag_set)
+    __swig_setmethods__["rotationDipImageFlag"] = _deesse.mpds_simInputASCII_rotationDipImageFlag_set
+    __swig_getmethods__["rotationDipImageFlag"] = _deesse.mpds_simInputASCII_rotationDipImageFlag_get
+    if _newclass:
+        rotationDipImageFlag = _swig_property(_deesse.mpds_simInputASCII_rotationDipImageFlag_get, _deesse.mpds_simInputASCII_rotationDipImageFlag_set)
+    __swig_setmethods__["rotationPlungeImageFlag"] = _deesse.mpds_simInputASCII_rotationPlungeImageFlag_set
+    __swig_getmethods__["rotationPlungeImageFlag"] = _deesse.mpds_simInputASCII_rotationPlungeImageFlag_get
+    if _newclass:
+        rotationPlungeImageFlag = _swig_property(_deesse.mpds_simInputASCII_rotationPlungeImageFlag_get, _deesse.mpds_simInputASCII_rotationPlungeImageFlag_set)
+    __swig_setmethods__["rotationAzimuthImageFileName"] = _deesse.mpds_simInputASCII_rotationAzimuthImageFileName_set
+    __swig_getmethods__["rotationAzimuthImageFileName"] = _deesse.mpds_simInputASCII_rotationAzimuthImageFileName_get
+    if _newclass:
+        rotationAzimuthImageFileName = _swig_property(_deesse.mpds_simInputASCII_rotationAzimuthImageFileName_get, _deesse.mpds_simInputASCII_rotationAzimuthImageFileName_set)
+    __swig_setmethods__["rotationDipImageFileName"] = _deesse.mpds_simInputASCII_rotationDipImageFileName_set
+    __swig_getmethods__["rotationDipImageFileName"] = _deesse.mpds_simInputASCII_rotationDipImageFileName_get
+    if _newclass:
+        rotationDipImageFileName = _swig_property(_deesse.mpds_simInputASCII_rotationDipImageFileName_get, _deesse.mpds_simInputASCII_rotationDipImageFileName_set)
+    __swig_setmethods__["rotationPlungeImageFileName"] = _deesse.mpds_simInputASCII_rotationPlungeImageFileName_set
+    __swig_getmethods__["rotationPlungeImageFileName"] = _deesse.mpds_simInputASCII_rotationPlungeImageFileName_get
+    if _newclass:
+        rotationPlungeImageFileName = _swig_property(_deesse.mpds_simInputASCII_rotationPlungeImageFileName_get, _deesse.mpds_simInputASCII_rotationPlungeImageFileName_set)
+    __swig_setmethods__["rotationAzimuthValue"] = _deesse.mpds_simInputASCII_rotationAzimuthValue_set
+    __swig_getmethods__["rotationAzimuthValue"] = _deesse.mpds_simInputASCII_rotationAzimuthValue_get
+    if _newclass:
+        rotationAzimuthValue = _swig_property(_deesse.mpds_simInputASCII_rotationAzimuthValue_get, _deesse.mpds_simInputASCII_rotationAzimuthValue_set)
+    __swig_setmethods__["rotationDipValue"] = _deesse.mpds_simInputASCII_rotationDipValue_set
+    __swig_getmethods__["rotationDipValue"] = _deesse.mpds_simInputASCII_rotationDipValue_get
+    if _newclass:
+        rotationDipValue = _swig_property(_deesse.mpds_simInputASCII_rotationDipValue_get, _deesse.mpds_simInputASCII_rotationDipValue_set)
+    __swig_setmethods__["rotationPlungeValue"] = _deesse.mpds_simInputASCII_rotationPlungeValue_set
+    __swig_getmethods__["rotationPlungeValue"] = _deesse.mpds_simInputASCII_rotationPlungeValue_get
+    if _newclass:
+        rotationPlungeValue = _swig_property(_deesse.mpds_simInputASCII_rotationPlungeValue_get, _deesse.mpds_simInputASCII_rotationPlungeValue_set)
+    __swig_setmethods__["trainValueRangeExtensionMax"] = _deesse.mpds_simInputASCII_trainValueRangeExtensionMax_set
+    __swig_getmethods__["trainValueRangeExtensionMax"] = _deesse.mpds_simInputASCII_trainValueRangeExtensionMax_get
+    if _newclass:
+        trainValueRangeExtensionMax = _swig_property(_deesse.mpds_simInputASCII_trainValueRangeExtensionMax_get, _deesse.mpds_simInputASCII_trainValueRangeExtensionMax_set)
+    __swig_setmethods__["normalizingType"] = _deesse.mpds_simInputASCII_normalizingType_set
+    __swig_getmethods__["normalizingType"] = _deesse.mpds_simInputASCII_normalizingType_get
+    if _newclass:
+        normalizingType = _swig_property(_deesse.mpds_simInputASCII_normalizingType_get, _deesse.mpds_simInputASCII_normalizingType_set)
+    __swig_setmethods__["searchNeighborhoodParameters"] = _deesse.mpds_simInputASCII_searchNeighborhoodParameters_set
+    __swig_getmethods__["searchNeighborhoodParameters"] = _deesse.mpds_simInputASCII_searchNeighborhoodParameters_get
+    if _newclass:
+        searchNeighborhoodParameters = _swig_property(_deesse.mpds_simInputASCII_searchNeighborhoodParameters_get, _deesse.mpds_simInputASCII_searchNeighborhoodParameters_set)
+    __swig_setmethods__["nneighboringNode"] = _deesse.mpds_simInputASCII_nneighboringNode_set
+    __swig_getmethods__["nneighboringNode"] = _deesse.mpds_simInputASCII_nneighboringNode_get
+    if _newclass:
+        nneighboringNode = _swig_property(_deesse.mpds_simInputASCII_nneighboringNode_get, _deesse.mpds_simInputASCII_nneighboringNode_set)
+    __swig_setmethods__["maxPropInequalityNode"] = _deesse.mpds_simInputASCII_maxPropInequalityNode_set
+    __swig_getmethods__["maxPropInequalityNode"] = _deesse.mpds_simInputASCII_maxPropInequalityNode_get
+    if _newclass:
+        maxPropInequalityNode = _swig_property(_deesse.mpds_simInputASCII_maxPropInequalityNode_get, _deesse.mpds_simInputASCII_maxPropInequalityNode_set)
+    __swig_setmethods__["neighboringNodeDensity"] = _deesse.mpds_simInputASCII_neighboringNodeDensity_set
+    __swig_getmethods__["neighboringNodeDensity"] = _deesse.mpds_simInputASCII_neighboringNodeDensity_get
+    if _newclass:
+        neighboringNodeDensity = _swig_property(_deesse.mpds_simInputASCII_neighboringNodeDensity_get, _deesse.mpds_simInputASCII_neighboringNodeDensity_set)
+    __swig_setmethods__["relativeDistanceFlag"] = _deesse.mpds_simInputASCII_relativeDistanceFlag_set
+    __swig_getmethods__["relativeDistanceFlag"] = _deesse.mpds_simInputASCII_relativeDistanceFlag_get
+    if _newclass:
+        relativeDistanceFlag = _swig_property(_deesse.mpds_simInputASCII_relativeDistanceFlag_get, _deesse.mpds_simInputASCII_relativeDistanceFlag_set)
+    __swig_setmethods__["rescalingMode"] = _deesse.mpds_simInputASCII_rescalingMode_set
+    __swig_getmethods__["rescalingMode"] = _deesse.mpds_simInputASCII_rescalingMode_get
+    if _newclass:
+        rescalingMode = _swig_property(_deesse.mpds_simInputASCII_rescalingMode_get, _deesse.mpds_simInputASCII_rescalingMode_set)
+    __swig_setmethods__["rescalingTargetMin"] = _deesse.mpds_simInputASCII_rescalingTargetMin_set
+    __swig_getmethods__["rescalingTargetMin"] = _deesse.mpds_simInputASCII_rescalingTargetMin_get
+    if _newclass:
+        rescalingTargetMin = _swig_property(_deesse.mpds_simInputASCII_rescalingTargetMin_get, _deesse.mpds_simInputASCII_rescalingTargetMin_set)
+    __swig_setmethods__["rescalingTargetMax"] = _deesse.mpds_simInputASCII_rescalingTargetMax_set
+    __swig_getmethods__["rescalingTargetMax"] = _deesse.mpds_simInputASCII_rescalingTargetMax_get
+    if _newclass:
+        rescalingTargetMax = _swig_property(_deesse.mpds_simInputASCII_rescalingTargetMax_get, _deesse.mpds_simInputASCII_rescalingTargetMax_set)
+    __swig_setmethods__["rescalingTargetMean"] = _deesse.mpds_simInputASCII_rescalingTargetMean_set
+    __swig_getmethods__["rescalingTargetMean"] = _deesse.mpds_simInputASCII_rescalingTargetMean_get
+    if _newclass:
+        rescalingTargetMean = _swig_property(_deesse.mpds_simInputASCII_rescalingTargetMean_get, _deesse.mpds_simInputASCII_rescalingTargetMean_set)
+    __swig_setmethods__["rescalingTargetLength"] = _deesse.mpds_simInputASCII_rescalingTargetLength_set
+    __swig_getmethods__["rescalingTargetLength"] = _deesse.mpds_simInputASCII_rescalingTargetLength_get
+    if _newclass:
+        rescalingTargetLength = _swig_property(_deesse.mpds_simInputASCII_rescalingTargetLength_get, _deesse.mpds_simInputASCII_rescalingTargetLength_set)
+    __swig_setmethods__["distanceType"] = _deesse.mpds_simInputASCII_distanceType_set
+    __swig_getmethods__["distanceType"] = _deesse.mpds_simInputASCII_distanceType_get
+    if _newclass:
+        distanceType = _swig_property(_deesse.mpds_simInputASCII_distanceType_get, _deesse.mpds_simInputASCII_distanceType_set)
+    __swig_setmethods__["powerLpDistance"] = _deesse.mpds_simInputASCII_powerLpDistance_set
+    __swig_getmethods__["powerLpDistance"] = _deesse.mpds_simInputASCII_powerLpDistance_get
+    if _newclass:
+        powerLpDistance = _swig_property(_deesse.mpds_simInputASCII_powerLpDistance_get, _deesse.mpds_simInputASCII_powerLpDistance_set)
+    __swig_setmethods__["conditioningWeightFactor"] = _deesse.mpds_simInputASCII_conditioningWeightFactor_set
+    __swig_getmethods__["conditioningWeightFactor"] = _deesse.mpds_simInputASCII_conditioningWeightFactor_get
+    if _newclass:
+        conditioningWeightFactor = _swig_property(_deesse.mpds_simInputASCII_conditioningWeightFactor_get, _deesse.mpds_simInputASCII_conditioningWeightFactor_set)
+    __swig_setmethods__["simAndPathParameters"] = _deesse.mpds_simInputASCII_simAndPathParameters_set
+    __swig_getmethods__["simAndPathParameters"] = _deesse.mpds_simInputASCII_simAndPathParameters_get
+    if _newclass:
+        simAndPathParameters = _swig_property(_deesse.mpds_simInputASCII_simAndPathParameters_get, _deesse.mpds_simInputASCII_simAndPathParameters_set)
+    __swig_setmethods__["distanceThreshold"] = _deesse.mpds_simInputASCII_distanceThreshold_set
+    __swig_getmethods__["distanceThreshold"] = _deesse.mpds_simInputASCII_distanceThreshold_get
+    if _newclass:
+        distanceThreshold = _swig_property(_deesse.mpds_simInputASCII_distanceThreshold_get, _deesse.mpds_simInputASCII_distanceThreshold_set)
+    __swig_setmethods__["softProbabilityASCII"] = _deesse.mpds_simInputASCII_softProbabilityASCII_set
+    __swig_getmethods__["softProbabilityASCII"] = _deesse.mpds_simInputASCII_softProbabilityASCII_get
+    if _newclass:
+        softProbabilityASCII = _swig_property(_deesse.mpds_simInputASCII_softProbabilityASCII_get, _deesse.mpds_simInputASCII_softProbabilityASCII_set)
+    __swig_setmethods__["connectivityASCII"] = _deesse.mpds_simInputASCII_connectivityASCII_set
+    __swig_getmethods__["connectivityASCII"] = _deesse.mpds_simInputASCII_connectivityASCII_get
+    if _newclass:
+        connectivityASCII = _swig_property(_deesse.mpds_simInputASCII_connectivityASCII_get, _deesse.mpds_simInputASCII_connectivityASCII_set)
+    __swig_setmethods__["blockDataASCII"] = _deesse.mpds_simInputASCII_blockDataASCII_set
+    __swig_getmethods__["blockDataASCII"] = _deesse.mpds_simInputASCII_blockDataASCII_get
+    if _newclass:
+        blockDataASCII = _swig_property(_deesse.mpds_simInputASCII_blockDataASCII_get, _deesse.mpds_simInputASCII_blockDataASCII_set)
+    __swig_setmethods__["maxScanFraction"] = _deesse.mpds_simInputASCII_maxScanFraction_set
+    __swig_getmethods__["maxScanFraction"] = _deesse.mpds_simInputASCII_maxScanFraction_get
+    if _newclass:
+        maxScanFraction = _swig_property(_deesse.mpds_simInputASCII_maxScanFraction_get, _deesse.mpds_simInputASCII_maxScanFraction_set)
+    __swig_setmethods__["pyramidGeneralParametersASCII"] = _deesse.mpds_simInputASCII_pyramidGeneralParametersASCII_set
+    __swig_getmethods__["pyramidGeneralParametersASCII"] = _deesse.mpds_simInputASCII_pyramidGeneralParametersASCII_get
+    if _newclass:
+        pyramidGeneralParametersASCII = _swig_property(_deesse.mpds_simInputASCII_pyramidGeneralParametersASCII_get, _deesse.mpds_simInputASCII_pyramidGeneralParametersASCII_set)
+    __swig_setmethods__["pyramidParameters"] = _deesse.mpds_simInputASCII_pyramidParameters_set
+    __swig_getmethods__["pyramidParameters"] = _deesse.mpds_simInputASCII_pyramidParameters_get
+    if _newclass:
+        pyramidParameters = _swig_property(_deesse.mpds_simInputASCII_pyramidParameters_get, _deesse.mpds_simInputASCII_pyramidParameters_set)
+    __swig_setmethods__["ndataImageInPyramidFile"] = _deesse.mpds_simInputASCII_ndataImageInPyramidFile_set
+    __swig_getmethods__["ndataImageInPyramidFile"] = _deesse.mpds_simInputASCII_ndataImageInPyramidFile_get
+    if _newclass:
+        ndataImageInPyramidFile = _swig_property(_deesse.mpds_simInputASCII_ndataImageInPyramidFile_get, _deesse.mpds_simInputASCII_ndataImageInPyramidFile_set)
+    __swig_setmethods__["dataImageInPyramidFileName"] = _deesse.mpds_simInputASCII_dataImageInPyramidFileName_set
+    __swig_getmethods__["dataImageInPyramidFileName"] = _deesse.mpds_simInputASCII_dataImageInPyramidFileName_get
+    if _newclass:
+        dataImageInPyramidFileName = _swig_property(_deesse.mpds_simInputASCII_dataImageInPyramidFileName_get, _deesse.mpds_simInputASCII_dataImageInPyramidFileName_set)
+    __swig_setmethods__["ndataPointSetInPyramidFile"] = _deesse.mpds_simInputASCII_ndataPointSetInPyramidFile_set
+    __swig_getmethods__["ndataPointSetInPyramidFile"] = _deesse.mpds_simInputASCII_ndataPointSetInPyramidFile_get
+    if _newclass:
+        ndataPointSetInPyramidFile = _swig_property(_deesse.mpds_simInputASCII_ndataPointSetInPyramidFile_get, _deesse.mpds_simInputASCII_ndataPointSetInPyramidFile_set)
+    __swig_setmethods__["dataPointSetInPyramidFileName"] = _deesse.mpds_simInputASCII_dataPointSetInPyramidFileName_set
+    __swig_getmethods__["dataPointSetInPyramidFileName"] = _deesse.mpds_simInputASCII_dataPointSetInPyramidFileName_get
+    if _newclass:
+        dataPointSetInPyramidFileName = _swig_property(_deesse.mpds_simInputASCII_dataPointSetInPyramidFileName_get, _deesse.mpds_simInputASCII_dataPointSetInPyramidFileName_set)
+    __swig_setmethods__["tolerance"] = _deesse.mpds_simInputASCII_tolerance_set
+    __swig_getmethods__["tolerance"] = _deesse.mpds_simInputASCII_tolerance_get
+    if _newclass:
+        tolerance = _swig_property(_deesse.mpds_simInputASCII_tolerance_get, _deesse.mpds_simInputASCII_tolerance_set)
+    __swig_setmethods__["npostProcessingPathMax"] = _deesse.mpds_simInputASCII_npostProcessingPathMax_set
+    __swig_getmethods__["npostProcessingPathMax"] = _deesse.mpds_simInputASCII_npostProcessingPathMax_get
+    if _newclass:
+        npostProcessingPathMax = _swig_property(_deesse.mpds_simInputASCII_npostProcessingPathMax_get, _deesse.mpds_simInputASCII_npostProcessingPathMax_set)
+    __swig_setmethods__["postProcessingParametersJob"] = _deesse.mpds_simInputASCII_postProcessingParametersJob_set
+    __swig_getmethods__["postProcessingParametersJob"] = _deesse.mpds_simInputASCII_postProcessingParametersJob_get
+    if _newclass:
+        postProcessingParametersJob = _swig_property(_deesse.mpds_simInputASCII_postProcessingParametersJob_get, _deesse.mpds_simInputASCII_postProcessingParametersJob_set)
+    __swig_setmethods__["postProcessingNneighboringNode"] = _deesse.mpds_simInputASCII_postProcessingNneighboringNode_set
+    __swig_getmethods__["postProcessingNneighboringNode"] = _deesse.mpds_simInputASCII_postProcessingNneighboringNode_get
+    if _newclass:
+        postProcessingNneighboringNode = _swig_property(_deesse.mpds_simInputASCII_postProcessingNneighboringNode_get, _deesse.mpds_simInputASCII_postProcessingNneighboringNode_set)
+    __swig_setmethods__["postProcessingNeighboringNodeDensity"] = _deesse.mpds_simInputASCII_postProcessingNeighboringNodeDensity_set
+    __swig_getmethods__["postProcessingNeighboringNodeDensity"] = _deesse.mpds_simInputASCII_postProcessingNeighboringNodeDensity_get
+    if _newclass:
+        postProcessingNeighboringNodeDensity = _swig_property(_deesse.mpds_simInputASCII_postProcessingNeighboringNodeDensity_get, _deesse.mpds_simInputASCII_postProcessingNeighboringNodeDensity_set)
+    __swig_setmethods__["postProcessingDistanceThreshold"] = _deesse.mpds_simInputASCII_postProcessingDistanceThreshold_set
+    __swig_getmethods__["postProcessingDistanceThreshold"] = _deesse.mpds_simInputASCII_postProcessingDistanceThreshold_get
+    if _newclass:
+        postProcessingDistanceThreshold = _swig_property(_deesse.mpds_simInputASCII_postProcessingDistanceThreshold_get, _deesse.mpds_simInputASCII_postProcessingDistanceThreshold_set)
+    __swig_setmethods__["postProcessingMaxScanFraction"] = _deesse.mpds_simInputASCII_postProcessingMaxScanFraction_set
+    __swig_getmethods__["postProcessingMaxScanFraction"] = _deesse.mpds_simInputASCII_postProcessingMaxScanFraction_get
+    if _newclass:
+        postProcessingMaxScanFraction = _swig_property(_deesse.mpds_simInputASCII_postProcessingMaxScanFraction_get, _deesse.mpds_simInputASCII_postProcessingMaxScanFraction_set)
+    __swig_setmethods__["postProcessingTolerance"] = _deesse.mpds_simInputASCII_postProcessingTolerance_set
+    __swig_getmethods__["postProcessingTolerance"] = _deesse.mpds_simInputASCII_postProcessingTolerance_get
+    if _newclass:
+        postProcessingTolerance = _swig_property(_deesse.mpds_simInputASCII_postProcessingTolerance_get, _deesse.mpds_simInputASCII_postProcessingTolerance_set)
+    __swig_setmethods__["seed"] = _deesse.mpds_simInputASCII_seed_set
+    __swig_getmethods__["seed"] = _deesse.mpds_simInputASCII_seed_get
+    if _newclass:
+        seed = _swig_property(_deesse.mpds_simInputASCII_seed_get, _deesse.mpds_simInputASCII_seed_set)
+    __swig_setmethods__["seedIncrement"] = _deesse.mpds_simInputASCII_seedIncrement_set
+    __swig_getmethods__["seedIncrement"] = _deesse.mpds_simInputASCII_seedIncrement_get
+    if _newclass:
+        seedIncrement = _swig_property(_deesse.mpds_simInputASCII_seedIncrement_get, _deesse.mpds_simInputASCII_seedIncrement_set)
+    __swig_setmethods__["nrealization"] = _deesse.mpds_simInputASCII_nrealization_set
+    __swig_getmethods__["nrealization"] = _deesse.mpds_simInputASCII_nrealization_get
+    if _newclass:
+        nrealization = _swig_property(_deesse.mpds_simInputASCII_nrealization_get, _deesse.mpds_simInputASCII_nrealization_set)
+
+    def __init__(self):
+        this = _deesse.new_mpds_simInputASCII()
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _deesse.delete_mpds_simInputASCII
+    __del__ = lambda self: None
+mpds_simInputASCII_swigregister = _deesse.mpds_simInputASCII_swigregister
+mpds_simInputASCII_swigregister(mpds_simInputASCII)
+
+
+def MPDSFreeSimInputASCII(arg1):
+    return _deesse.MPDSFreeSimInputASCII(arg1)
+MPDSFreeSimInputASCII = _deesse.MPDSFreeSimInputASCII
+
+def MPDSImportSimInput(arg1, arg2):
+    return _deesse.MPDSImportSimInput(arg1, arg2)
+MPDSImportSimInput = _deesse.MPDSImportSimInput
+
+def MPDSInitSimInputASCII(arg1):
+    return _deesse.MPDSInitSimInputASCII(arg1)
+MPDSInitSimInputASCII = _deesse.MPDSInitSimInputASCII
+
+def MPDSPrintSimInputASCII(arg1, arg2, arg3):
+    return _deesse.MPDSPrintSimInputASCII(arg1, arg2, arg3)
+MPDSPrintSimInputASCII = _deesse.MPDSPrintSimInputASCII
+
+def MPDSReadSimInputASCII(arg1, arg2):
+    return _deesse.MPDSReadSimInputASCII(arg1, arg2)
+MPDSReadSimInputASCII = _deesse.MPDSReadSimInputASCII
+
+def MPDSSimInputASCIIToSimInput(arg1, arg2):
+    return _deesse.MPDSSimInputASCIIToSimInput(arg1, arg2)
+MPDSSimInputASCIIToSimInput = _deesse.MPDSSimInputASCIIToSimInput
 class mpds_simOutput(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_simOutput, name, value)
@@ -2530,6 +2947,454 @@ MPDSValidateXSimInput = _deesse.MPDSValidateXSimInput
 def MPDSValidateXSubSimInput(arg1, arg2, arg3, arg4, arg5):
     return _deesse.MPDSValidateXSubSimInput(arg1, arg2, arg3, arg4, arg5)
 MPDSValidateXSubSimInput = _deesse.MPDSValidateXSubSimInput
+class mpds_XSubSimInputASCII(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_XSubSimInputASCII, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, mpds_XSubSimInputASCII, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["sectionType"] = _deesse.mpds_XSubSimInputASCII_sectionType_set
+    __swig_getmethods__["sectionType"] = _deesse.mpds_XSubSimInputASCII_sectionType_get
+    if _newclass:
+        sectionType = _swig_property(_deesse.mpds_XSubSimInputASCII_sectionType_get, _deesse.mpds_XSubSimInputASCII_sectionType_set)
+    __swig_setmethods__["nsimVar"] = _deesse.mpds_XSubSimInputASCII_nsimVar_set
+    __swig_getmethods__["nsimVar"] = _deesse.mpds_XSubSimInputASCII_nsimVar_get
+    if _newclass:
+        nsimVar = _swig_property(_deesse.mpds_XSubSimInputASCII_nsimVar_get, _deesse.mpds_XSubSimInputASCII_nsimVar_set)
+    __swig_setmethods__["ntrainImage"] = _deesse.mpds_XSubSimInputASCII_ntrainImage_set
+    __swig_getmethods__["ntrainImage"] = _deesse.mpds_XSubSimInputASCII_ntrainImage_get
+    if _newclass:
+        ntrainImage = _swig_property(_deesse.mpds_XSubSimInputASCII_ntrainImage_get, _deesse.mpds_XSubSimInputASCII_ntrainImage_set)
+    __swig_setmethods__["trainImageFileName"] = _deesse.mpds_XSubSimInputASCII_trainImageFileName_set
+    __swig_getmethods__["trainImageFileName"] = _deesse.mpds_XSubSimInputASCII_trainImageFileName_get
+    if _newclass:
+        trainImageFileName = _swig_property(_deesse.mpds_XSubSimInputASCII_trainImageFileName_get, _deesse.mpds_XSubSimInputASCII_trainImageFileName_set)
+    __swig_setmethods__["pdfTrainImageFileName"] = _deesse.mpds_XSubSimInputASCII_pdfTrainImageFileName_set
+    __swig_getmethods__["pdfTrainImageFileName"] = _deesse.mpds_XSubSimInputASCII_pdfTrainImageFileName_get
+    if _newclass:
+        pdfTrainImageFileName = _swig_property(_deesse.mpds_XSubSimInputASCII_pdfTrainImageFileName_get, _deesse.mpds_XSubSimInputASCII_pdfTrainImageFileName_set)
+    __swig_setmethods__["homothetyUsage"] = _deesse.mpds_XSubSimInputASCII_homothetyUsage_set
+    __swig_getmethods__["homothetyUsage"] = _deesse.mpds_XSubSimInputASCII_homothetyUsage_get
+    if _newclass:
+        homothetyUsage = _swig_property(_deesse.mpds_XSubSimInputASCII_homothetyUsage_get, _deesse.mpds_XSubSimInputASCII_homothetyUsage_set)
+    __swig_setmethods__["homothetyXRatioImageFlag"] = _deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFlag_set
+    __swig_getmethods__["homothetyXRatioImageFlag"] = _deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFlag_get
+    if _newclass:
+        homothetyXRatioImageFlag = _swig_property(_deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFlag_get, _deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFlag_set)
+    __swig_setmethods__["homothetyYRatioImageFlag"] = _deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFlag_set
+    __swig_getmethods__["homothetyYRatioImageFlag"] = _deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFlag_get
+    if _newclass:
+        homothetyYRatioImageFlag = _swig_property(_deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFlag_get, _deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFlag_set)
+    __swig_setmethods__["homothetyZRatioImageFlag"] = _deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFlag_set
+    __swig_getmethods__["homothetyZRatioImageFlag"] = _deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFlag_get
+    if _newclass:
+        homothetyZRatioImageFlag = _swig_property(_deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFlag_get, _deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFlag_set)
+    __swig_setmethods__["homothetyXRatioImageFileName"] = _deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFileName_set
+    __swig_getmethods__["homothetyXRatioImageFileName"] = _deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFileName_get
+    if _newclass:
+        homothetyXRatioImageFileName = _swig_property(_deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFileName_get, _deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFileName_set)
+    __swig_setmethods__["homothetyYRatioImageFileName"] = _deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFileName_set
+    __swig_getmethods__["homothetyYRatioImageFileName"] = _deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFileName_get
+    if _newclass:
+        homothetyYRatioImageFileName = _swig_property(_deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFileName_get, _deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFileName_set)
+    __swig_setmethods__["homothetyZRatioImageFileName"] = _deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFileName_set
+    __swig_getmethods__["homothetyZRatioImageFileName"] = _deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFileName_get
+    if _newclass:
+        homothetyZRatioImageFileName = _swig_property(_deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFileName_get, _deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFileName_set)
+    __swig_setmethods__["homothetyXRatioValue"] = _deesse.mpds_XSubSimInputASCII_homothetyXRatioValue_set
+    __swig_getmethods__["homothetyXRatioValue"] = _deesse.mpds_XSubSimInputASCII_homothetyXRatioValue_get
+    if _newclass:
+        homothetyXRatioValue = _swig_property(_deesse.mpds_XSubSimInputASCII_homothetyXRatioValue_get, _deesse.mpds_XSubSimInputASCII_homothetyXRatioValue_set)
+    __swig_setmethods__["homothetyYRatioValue"] = _deesse.mpds_XSubSimInputASCII_homothetyYRatioValue_set
+    __swig_getmethods__["homothetyYRatioValue"] = _deesse.mpds_XSubSimInputASCII_homothetyYRatioValue_get
+    if _newclass:
+        homothetyYRatioValue = _swig_property(_deesse.mpds_XSubSimInputASCII_homothetyYRatioValue_get, _deesse.mpds_XSubSimInputASCII_homothetyYRatioValue_set)
+    __swig_setmethods__["homothetyZRatioValue"] = _deesse.mpds_XSubSimInputASCII_homothetyZRatioValue_set
+    __swig_getmethods__["homothetyZRatioValue"] = _deesse.mpds_XSubSimInputASCII_homothetyZRatioValue_get
+    if _newclass:
+        homothetyZRatioValue = _swig_property(_deesse.mpds_XSubSimInputASCII_homothetyZRatioValue_get, _deesse.mpds_XSubSimInputASCII_homothetyZRatioValue_set)
+    __swig_setmethods__["rotationUsage"] = _deesse.mpds_XSubSimInputASCII_rotationUsage_set
+    __swig_getmethods__["rotationUsage"] = _deesse.mpds_XSubSimInputASCII_rotationUsage_get
+    if _newclass:
+        rotationUsage = _swig_property(_deesse.mpds_XSubSimInputASCII_rotationUsage_get, _deesse.mpds_XSubSimInputASCII_rotationUsage_set)
+    __swig_setmethods__["rotationAzimuthImageFlag"] = _deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFlag_set
+    __swig_getmethods__["rotationAzimuthImageFlag"] = _deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFlag_get
+    if _newclass:
+        rotationAzimuthImageFlag = _swig_property(_deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFlag_get, _deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFlag_set)
+    __swig_setmethods__["rotationDipImageFlag"] = _deesse.mpds_XSubSimInputASCII_rotationDipImageFlag_set
+    __swig_getmethods__["rotationDipImageFlag"] = _deesse.mpds_XSubSimInputASCII_rotationDipImageFlag_get
+    if _newclass:
+        rotationDipImageFlag = _swig_property(_deesse.mpds_XSubSimInputASCII_rotationDipImageFlag_get, _deesse.mpds_XSubSimInputASCII_rotationDipImageFlag_set)
+    __swig_setmethods__["rotationPlungeImageFlag"] = _deesse.mpds_XSubSimInputASCII_rotationPlungeImageFlag_set
+    __swig_getmethods__["rotationPlungeImageFlag"] = _deesse.mpds_XSubSimInputASCII_rotationPlungeImageFlag_get
+    if _newclass:
+        rotationPlungeImageFlag = _swig_property(_deesse.mpds_XSubSimInputASCII_rotationPlungeImageFlag_get, _deesse.mpds_XSubSimInputASCII_rotationPlungeImageFlag_set)
+    __swig_setmethods__["rotationAzimuthImageFileName"] = _deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFileName_set
+    __swig_getmethods__["rotationAzimuthImageFileName"] = _deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFileName_get
+    if _newclass:
+        rotationAzimuthImageFileName = _swig_property(_deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFileName_get, _deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFileName_set)
+    __swig_setmethods__["rotationDipImageFileName"] = _deesse.mpds_XSubSimInputASCII_rotationDipImageFileName_set
+    __swig_getmethods__["rotationDipImageFileName"] = _deesse.mpds_XSubSimInputASCII_rotationDipImageFileName_get
+    if _newclass:
+        rotationDipImageFileName = _swig_property(_deesse.mpds_XSubSimInputASCII_rotationDipImageFileName_get, _deesse.mpds_XSubSimInputASCII_rotationDipImageFileName_set)
+    __swig_setmethods__["rotationPlungeImageFileName"] = _deesse.mpds_XSubSimInputASCII_rotationPlungeImageFileName_set
+    __swig_getmethods__["rotationPlungeImageFileName"] = _deesse.mpds_XSubSimInputASCII_rotationPlungeImageFileName_get
+    if _newclass:
+        rotationPlungeImageFileName = _swig_property(_deesse.mpds_XSubSimInputASCII_rotationPlungeImageFileName_get, _deesse.mpds_XSubSimInputASCII_rotationPlungeImageFileName_set)
+    __swig_setmethods__["rotationAzimuthValue"] = _deesse.mpds_XSubSimInputASCII_rotationAzimuthValue_set
+    __swig_getmethods__["rotationAzimuthValue"] = _deesse.mpds_XSubSimInputASCII_rotationAzimuthValue_get
+    if _newclass:
+        rotationAzimuthValue = _swig_property(_deesse.mpds_XSubSimInputASCII_rotationAzimuthValue_get, _deesse.mpds_XSubSimInputASCII_rotationAzimuthValue_set)
+    __swig_setmethods__["rotationDipValue"] = _deesse.mpds_XSubSimInputASCII_rotationDipValue_set
+    __swig_getmethods__["rotationDipValue"] = _deesse.mpds_XSubSimInputASCII_rotationDipValue_get
+    if _newclass:
+        rotationDipValue = _swig_property(_deesse.mpds_XSubSimInputASCII_rotationDipValue_get, _deesse.mpds_XSubSimInputASCII_rotationDipValue_set)
+    __swig_setmethods__["rotationPlungeValue"] = _deesse.mpds_XSubSimInputASCII_rotationPlungeValue_set
+    __swig_getmethods__["rotationPlungeValue"] = _deesse.mpds_XSubSimInputASCII_rotationPlungeValue_get
+    if _newclass:
+        rotationPlungeValue = _swig_property(_deesse.mpds_XSubSimInputASCII_rotationPlungeValue_get, _deesse.mpds_XSubSimInputASCII_rotationPlungeValue_set)
+    __swig_setmethods__["searchNeighborhoodParameters"] = _deesse.mpds_XSubSimInputASCII_searchNeighborhoodParameters_set
+    __swig_getmethods__["searchNeighborhoodParameters"] = _deesse.mpds_XSubSimInputASCII_searchNeighborhoodParameters_get
+    if _newclass:
+        searchNeighborhoodParameters = _swig_property(_deesse.mpds_XSubSimInputASCII_searchNeighborhoodParameters_get, _deesse.mpds_XSubSimInputASCII_searchNeighborhoodParameters_set)
+    __swig_setmethods__["nneighboringNode"] = _deesse.mpds_XSubSimInputASCII_nneighboringNode_set
+    __swig_getmethods__["nneighboringNode"] = _deesse.mpds_XSubSimInputASCII_nneighboringNode_get
+    if _newclass:
+        nneighboringNode = _swig_property(_deesse.mpds_XSubSimInputASCII_nneighboringNode_get, _deesse.mpds_XSubSimInputASCII_nneighboringNode_set)
+    __swig_setmethods__["maxPropInequalityNode"] = _deesse.mpds_XSubSimInputASCII_maxPropInequalityNode_set
+    __swig_getmethods__["maxPropInequalityNode"] = _deesse.mpds_XSubSimInputASCII_maxPropInequalityNode_get
+    if _newclass:
+        maxPropInequalityNode = _swig_property(_deesse.mpds_XSubSimInputASCII_maxPropInequalityNode_get, _deesse.mpds_XSubSimInputASCII_maxPropInequalityNode_set)
+    __swig_setmethods__["neighboringNodeDensity"] = _deesse.mpds_XSubSimInputASCII_neighboringNodeDensity_set
+    __swig_getmethods__["neighboringNodeDensity"] = _deesse.mpds_XSubSimInputASCII_neighboringNodeDensity_get
+    if _newclass:
+        neighboringNodeDensity = _swig_property(_deesse.mpds_XSubSimInputASCII_neighboringNodeDensity_get, _deesse.mpds_XSubSimInputASCII_neighboringNodeDensity_set)
+    __swig_setmethods__["simAndPathParameters"] = _deesse.mpds_XSubSimInputASCII_simAndPathParameters_set
+    __swig_getmethods__["simAndPathParameters"] = _deesse.mpds_XSubSimInputASCII_simAndPathParameters_get
+    if _newclass:
+        simAndPathParameters = _swig_property(_deesse.mpds_XSubSimInputASCII_simAndPathParameters_get, _deesse.mpds_XSubSimInputASCII_simAndPathParameters_set)
+    __swig_setmethods__["distanceThreshold"] = _deesse.mpds_XSubSimInputASCII_distanceThreshold_set
+    __swig_getmethods__["distanceThreshold"] = _deesse.mpds_XSubSimInputASCII_distanceThreshold_get
+    if _newclass:
+        distanceThreshold = _swig_property(_deesse.mpds_XSubSimInputASCII_distanceThreshold_get, _deesse.mpds_XSubSimInputASCII_distanceThreshold_set)
+    __swig_setmethods__["softProbabilityASCII"] = _deesse.mpds_XSubSimInputASCII_softProbabilityASCII_set
+    __swig_getmethods__["softProbabilityASCII"] = _deesse.mpds_XSubSimInputASCII_softProbabilityASCII_get
+    if _newclass:
+        softProbabilityASCII = _swig_property(_deesse.mpds_XSubSimInputASCII_softProbabilityASCII_get, _deesse.mpds_XSubSimInputASCII_softProbabilityASCII_set)
+    __swig_setmethods__["maxScanFraction"] = _deesse.mpds_XSubSimInputASCII_maxScanFraction_set
+    __swig_getmethods__["maxScanFraction"] = _deesse.mpds_XSubSimInputASCII_maxScanFraction_get
+    if _newclass:
+        maxScanFraction = _swig_property(_deesse.mpds_XSubSimInputASCII_maxScanFraction_get, _deesse.mpds_XSubSimInputASCII_maxScanFraction_set)
+    __swig_setmethods__["pyramidGeneralParametersASCII"] = _deesse.mpds_XSubSimInputASCII_pyramidGeneralParametersASCII_set
+    __swig_getmethods__["pyramidGeneralParametersASCII"] = _deesse.mpds_XSubSimInputASCII_pyramidGeneralParametersASCII_get
+    if _newclass:
+        pyramidGeneralParametersASCII = _swig_property(_deesse.mpds_XSubSimInputASCII_pyramidGeneralParametersASCII_get, _deesse.mpds_XSubSimInputASCII_pyramidGeneralParametersASCII_set)
+    __swig_setmethods__["pyramidParameters"] = _deesse.mpds_XSubSimInputASCII_pyramidParameters_set
+    __swig_getmethods__["pyramidParameters"] = _deesse.mpds_XSubSimInputASCII_pyramidParameters_get
+    if _newclass:
+        pyramidParameters = _swig_property(_deesse.mpds_XSubSimInputASCII_pyramidParameters_get, _deesse.mpds_XSubSimInputASCII_pyramidParameters_set)
+    __swig_setmethods__["tolerance"] = _deesse.mpds_XSubSimInputASCII_tolerance_set
+    __swig_getmethods__["tolerance"] = _deesse.mpds_XSubSimInputASCII_tolerance_get
+    if _newclass:
+        tolerance = _swig_property(_deesse.mpds_XSubSimInputASCII_tolerance_get, _deesse.mpds_XSubSimInputASCII_tolerance_set)
+    __swig_setmethods__["npostProcessingPathMax"] = _deesse.mpds_XSubSimInputASCII_npostProcessingPathMax_set
+    __swig_getmethods__["npostProcessingPathMax"] = _deesse.mpds_XSubSimInputASCII_npostProcessingPathMax_get
+    if _newclass:
+        npostProcessingPathMax = _swig_property(_deesse.mpds_XSubSimInputASCII_npostProcessingPathMax_get, _deesse.mpds_XSubSimInputASCII_npostProcessingPathMax_set)
+    __swig_setmethods__["postProcessingParametersJob"] = _deesse.mpds_XSubSimInputASCII_postProcessingParametersJob_set
+    __swig_getmethods__["postProcessingParametersJob"] = _deesse.mpds_XSubSimInputASCII_postProcessingParametersJob_get
+    if _newclass:
+        postProcessingParametersJob = _swig_property(_deesse.mpds_XSubSimInputASCII_postProcessingParametersJob_get, _deesse.mpds_XSubSimInputASCII_postProcessingParametersJob_set)
+    __swig_setmethods__["postProcessingNneighboringNode"] = _deesse.mpds_XSubSimInputASCII_postProcessingNneighboringNode_set
+    __swig_getmethods__["postProcessingNneighboringNode"] = _deesse.mpds_XSubSimInputASCII_postProcessingNneighboringNode_get
+    if _newclass:
+        postProcessingNneighboringNode = _swig_property(_deesse.mpds_XSubSimInputASCII_postProcessingNneighboringNode_get, _deesse.mpds_XSubSimInputASCII_postProcessingNneighboringNode_set)
+    __swig_setmethods__["postProcessingNeighboringNodeDensity"] = _deesse.mpds_XSubSimInputASCII_postProcessingNeighboringNodeDensity_set
+    __swig_getmethods__["postProcessingNeighboringNodeDensity"] = _deesse.mpds_XSubSimInputASCII_postProcessingNeighboringNodeDensity_get
+    if _newclass:
+        postProcessingNeighboringNodeDensity = _swig_property(_deesse.mpds_XSubSimInputASCII_postProcessingNeighboringNodeDensity_get, _deesse.mpds_XSubSimInputASCII_postProcessingNeighboringNodeDensity_set)
+    __swig_setmethods__["postProcessingDistanceThreshold"] = _deesse.mpds_XSubSimInputASCII_postProcessingDistanceThreshold_set
+    __swig_getmethods__["postProcessingDistanceThreshold"] = _deesse.mpds_XSubSimInputASCII_postProcessingDistanceThreshold_get
+    if _newclass:
+        postProcessingDistanceThreshold = _swig_property(_deesse.mpds_XSubSimInputASCII_postProcessingDistanceThreshold_get, _deesse.mpds_XSubSimInputASCII_postProcessingDistanceThreshold_set)
+    __swig_setmethods__["postProcessingMaxScanFraction"] = _deesse.mpds_XSubSimInputASCII_postProcessingMaxScanFraction_set
+    __swig_getmethods__["postProcessingMaxScanFraction"] = _deesse.mpds_XSubSimInputASCII_postProcessingMaxScanFraction_get
+    if _newclass:
+        postProcessingMaxScanFraction = _swig_property(_deesse.mpds_XSubSimInputASCII_postProcessingMaxScanFraction_get, _deesse.mpds_XSubSimInputASCII_postProcessingMaxScanFraction_set)
+    __swig_setmethods__["postProcessingTolerance"] = _deesse.mpds_XSubSimInputASCII_postProcessingTolerance_set
+    __swig_getmethods__["postProcessingTolerance"] = _deesse.mpds_XSubSimInputASCII_postProcessingTolerance_get
+    if _newclass:
+        postProcessingTolerance = _swig_property(_deesse.mpds_XSubSimInputASCII_postProcessingTolerance_get, _deesse.mpds_XSubSimInputASCII_postProcessingTolerance_set)
+
+    def __init__(self):
+        this = _deesse.new_mpds_XSubSimInputASCII()
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _deesse.delete_mpds_XSubSimInputASCII
+    __del__ = lambda self: None
+mpds_XSubSimInputASCII_swigregister = _deesse.mpds_XSubSimInputASCII_swigregister
+mpds_XSubSimInputASCII_swigregister(mpds_XSubSimInputASCII)
+
+class mpds_XSimInputASCII(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, mpds_XSimInputASCII, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, mpds_XSimInputASCII, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["simName"] = _deesse.mpds_XSimInputASCII_simName_set
+    __swig_getmethods__["simName"] = _deesse.mpds_XSimInputASCII_simName_get
+    if _newclass:
+        simName = _swig_property(_deesse.mpds_XSimInputASCII_simName_get, _deesse.mpds_XSimInputASCII_simName_set)
+    __swig_setmethods__["simGridNx"] = _deesse.mpds_XSimInputASCII_simGridNx_set
+    __swig_getmethods__["simGridNx"] = _deesse.mpds_XSimInputASCII_simGridNx_get
+    if _newclass:
+        simGridNx = _swig_property(_deesse.mpds_XSimInputASCII_simGridNx_get, _deesse.mpds_XSimInputASCII_simGridNx_set)
+    __swig_setmethods__["simGridNy"] = _deesse.mpds_XSimInputASCII_simGridNy_set
+    __swig_getmethods__["simGridNy"] = _deesse.mpds_XSimInputASCII_simGridNy_get
+    if _newclass:
+        simGridNy = _swig_property(_deesse.mpds_XSimInputASCII_simGridNy_get, _deesse.mpds_XSimInputASCII_simGridNy_set)
+    __swig_setmethods__["simGridNz"] = _deesse.mpds_XSimInputASCII_simGridNz_set
+    __swig_getmethods__["simGridNz"] = _deesse.mpds_XSimInputASCII_simGridNz_get
+    if _newclass:
+        simGridNz = _swig_property(_deesse.mpds_XSimInputASCII_simGridNz_get, _deesse.mpds_XSimInputASCII_simGridNz_set)
+    __swig_setmethods__["simGridSx"] = _deesse.mpds_XSimInputASCII_simGridSx_set
+    __swig_getmethods__["simGridSx"] = _deesse.mpds_XSimInputASCII_simGridSx_get
+    if _newclass:
+        simGridSx = _swig_property(_deesse.mpds_XSimInputASCII_simGridSx_get, _deesse.mpds_XSimInputASCII_simGridSx_set)
+    __swig_setmethods__["simGridSy"] = _deesse.mpds_XSimInputASCII_simGridSy_set
+    __swig_getmethods__["simGridSy"] = _deesse.mpds_XSimInputASCII_simGridSy_get
+    if _newclass:
+        simGridSy = _swig_property(_deesse.mpds_XSimInputASCII_simGridSy_get, _deesse.mpds_XSimInputASCII_simGridSy_set)
+    __swig_setmethods__["simGridSz"] = _deesse.mpds_XSimInputASCII_simGridSz_set
+    __swig_getmethods__["simGridSz"] = _deesse.mpds_XSimInputASCII_simGridSz_get
+    if _newclass:
+        simGridSz = _swig_property(_deesse.mpds_XSimInputASCII_simGridSz_get, _deesse.mpds_XSimInputASCII_simGridSz_set)
+    __swig_setmethods__["simGridOx"] = _deesse.mpds_XSimInputASCII_simGridOx_set
+    __swig_getmethods__["simGridOx"] = _deesse.mpds_XSimInputASCII_simGridOx_get
+    if _newclass:
+        simGridOx = _swig_property(_deesse.mpds_XSimInputASCII_simGridOx_get, _deesse.mpds_XSimInputASCII_simGridOx_set)
+    __swig_setmethods__["simGridOy"] = _deesse.mpds_XSimInputASCII_simGridOy_set
+    __swig_getmethods__["simGridOy"] = _deesse.mpds_XSimInputASCII_simGridOy_get
+    if _newclass:
+        simGridOy = _swig_property(_deesse.mpds_XSimInputASCII_simGridOy_get, _deesse.mpds_XSimInputASCII_simGridOy_set)
+    __swig_setmethods__["simGridOz"] = _deesse.mpds_XSimInputASCII_simGridOz_set
+    __swig_getmethods__["simGridOz"] = _deesse.mpds_XSimInputASCII_simGridOz_get
+    if _newclass:
+        simGridOz = _swig_property(_deesse.mpds_XSimInputASCII_simGridOz_get, _deesse.mpds_XSimInputASCII_simGridOz_set)
+    __swig_setmethods__["nsimVar"] = _deesse.mpds_XSimInputASCII_nsimVar_set
+    __swig_getmethods__["nsimVar"] = _deesse.mpds_XSimInputASCII_nsimVar_get
+    if _newclass:
+        nsimVar = _swig_property(_deesse.mpds_XSimInputASCII_nsimVar_get, _deesse.mpds_XSimInputASCII_nsimVar_set)
+    __swig_setmethods__["simVarName"] = _deesse.mpds_XSimInputASCII_simVarName_set
+    __swig_getmethods__["simVarName"] = _deesse.mpds_XSimInputASCII_simVarName_get
+    if _newclass:
+        simVarName = _swig_property(_deesse.mpds_XSimInputASCII_simVarName_get, _deesse.mpds_XSimInputASCII_simVarName_set)
+    __swig_setmethods__["outputVarFlag"] = _deesse.mpds_XSimInputASCII_outputVarFlag_set
+    __swig_getmethods__["outputVarFlag"] = _deesse.mpds_XSimInputASCII_outputVarFlag_get
+    if _newclass:
+        outputVarFlag = _swig_property(_deesse.mpds_XSimInputASCII_outputVarFlag_get, _deesse.mpds_XSimInputASCII_outputVarFlag_set)
+    __swig_setmethods__["formatStringVar"] = _deesse.mpds_XSimInputASCII_formatStringVar_set
+    __swig_getmethods__["formatStringVar"] = _deesse.mpds_XSimInputASCII_formatStringVar_get
+    if _newclass:
+        formatStringVar = _swig_property(_deesse.mpds_XSimInputASCII_formatStringVar_get, _deesse.mpds_XSimInputASCII_formatStringVar_set)
+    __swig_setmethods__["outputSimJob"] = _deesse.mpds_XSimInputASCII_outputSimJob_set
+    __swig_getmethods__["outputSimJob"] = _deesse.mpds_XSimInputASCII_outputSimJob_get
+    if _newclass:
+        outputSimJob = _swig_property(_deesse.mpds_XSimInputASCII_outputSimJob_get, _deesse.mpds_XSimInputASCII_outputSimJob_set)
+    __swig_setmethods__["outputSimImageFileName"] = _deesse.mpds_XSimInputASCII_outputSimImageFileName_set
+    __swig_getmethods__["outputSimImageFileName"] = _deesse.mpds_XSimInputASCII_outputSimImageFileName_get
+    if _newclass:
+        outputSimImageFileName = _swig_property(_deesse.mpds_XSimInputASCII_outputSimImageFileName_get, _deesse.mpds_XSimInputASCII_outputSimImageFileName_set)
+    __swig_setmethods__["outputSectionTypeFlag"] = _deesse.mpds_XSimInputASCII_outputSectionTypeFlag_set
+    __swig_getmethods__["outputSectionTypeFlag"] = _deesse.mpds_XSimInputASCII_outputSectionTypeFlag_get
+    if _newclass:
+        outputSectionTypeFlag = _swig_property(_deesse.mpds_XSimInputASCII_outputSectionTypeFlag_get, _deesse.mpds_XSimInputASCII_outputSectionTypeFlag_set)
+    __swig_setmethods__["outputSectionTypeFileName"] = _deesse.mpds_XSimInputASCII_outputSectionTypeFileName_set
+    __swig_getmethods__["outputSectionTypeFileName"] = _deesse.mpds_XSimInputASCII_outputSectionTypeFileName_get
+    if _newclass:
+        outputSectionTypeFileName = _swig_property(_deesse.mpds_XSimInputASCII_outputSectionTypeFileName_get, _deesse.mpds_XSimInputASCII_outputSectionTypeFileName_set)
+    __swig_setmethods__["outputSectionStepFlag"] = _deesse.mpds_XSimInputASCII_outputSectionStepFlag_set
+    __swig_getmethods__["outputSectionStepFlag"] = _deesse.mpds_XSimInputASCII_outputSectionStepFlag_get
+    if _newclass:
+        outputSectionStepFlag = _swig_property(_deesse.mpds_XSimInputASCII_outputSectionStepFlag_get, _deesse.mpds_XSimInputASCII_outputSectionStepFlag_set)
+    __swig_setmethods__["outputSectionStepFileName"] = _deesse.mpds_XSimInputASCII_outputSectionStepFileName_set
+    __swig_getmethods__["outputSectionStepFileName"] = _deesse.mpds_XSimInputASCII_outputSectionStepFileName_get
+    if _newclass:
+        outputSectionStepFileName = _swig_property(_deesse.mpds_XSimInputASCII_outputSectionStepFileName_get, _deesse.mpds_XSimInputASCII_outputSectionStepFileName_set)
+    __swig_setmethods__["outputReportFlag"] = _deesse.mpds_XSimInputASCII_outputReportFlag_set
+    __swig_getmethods__["outputReportFlag"] = _deesse.mpds_XSimInputASCII_outputReportFlag_get
+    if _newclass:
+        outputReportFlag = _swig_property(_deesse.mpds_XSimInputASCII_outputReportFlag_get, _deesse.mpds_XSimInputASCII_outputReportFlag_set)
+    __swig_setmethods__["outputReportFileName"] = _deesse.mpds_XSimInputASCII_outputReportFileName_set
+    __swig_getmethods__["outputReportFileName"] = _deesse.mpds_XSimInputASCII_outputReportFileName_get
+    if _newclass:
+        outputReportFileName = _swig_property(_deesse.mpds_XSimInputASCII_outputReportFileName_get, _deesse.mpds_XSimInputASCII_outputReportFileName_set)
+    __swig_setmethods__["ndataImageFile"] = _deesse.mpds_XSimInputASCII_ndataImageFile_set
+    __swig_getmethods__["ndataImageFile"] = _deesse.mpds_XSimInputASCII_ndataImageFile_get
+    if _newclass:
+        ndataImageFile = _swig_property(_deesse.mpds_XSimInputASCII_ndataImageFile_get, _deesse.mpds_XSimInputASCII_ndataImageFile_set)
+    __swig_setmethods__["dataImageFileName"] = _deesse.mpds_XSimInputASCII_dataImageFileName_set
+    __swig_getmethods__["dataImageFileName"] = _deesse.mpds_XSimInputASCII_dataImageFileName_get
+    if _newclass:
+        dataImageFileName = _swig_property(_deesse.mpds_XSimInputASCII_dataImageFileName_get, _deesse.mpds_XSimInputASCII_dataImageFileName_set)
+    __swig_setmethods__["ndataPointSetFile"] = _deesse.mpds_XSimInputASCII_ndataPointSetFile_set
+    __swig_getmethods__["ndataPointSetFile"] = _deesse.mpds_XSimInputASCII_ndataPointSetFile_get
+    if _newclass:
+        ndataPointSetFile = _swig_property(_deesse.mpds_XSimInputASCII_ndataPointSetFile_get, _deesse.mpds_XSimInputASCII_ndataPointSetFile_set)
+    __swig_setmethods__["dataPointSetFileName"] = _deesse.mpds_XSimInputASCII_dataPointSetFileName_set
+    __swig_getmethods__["dataPointSetFileName"] = _deesse.mpds_XSimInputASCII_dataPointSetFileName_get
+    if _newclass:
+        dataPointSetFileName = _swig_property(_deesse.mpds_XSimInputASCII_dataPointSetFileName_get, _deesse.mpds_XSimInputASCII_dataPointSetFileName_set)
+    __swig_setmethods__["maskImageFlag"] = _deesse.mpds_XSimInputASCII_maskImageFlag_set
+    __swig_getmethods__["maskImageFlag"] = _deesse.mpds_XSimInputASCII_maskImageFlag_get
+    if _newclass:
+        maskImageFlag = _swig_property(_deesse.mpds_XSimInputASCII_maskImageFlag_get, _deesse.mpds_XSimInputASCII_maskImageFlag_set)
+    __swig_setmethods__["maskImageFileName"] = _deesse.mpds_XSimInputASCII_maskImageFileName_set
+    __swig_getmethods__["maskImageFileName"] = _deesse.mpds_XSimInputASCII_maskImageFileName_get
+    if _newclass:
+        maskImageFileName = _swig_property(_deesse.mpds_XSimInputASCII_maskImageFileName_get, _deesse.mpds_XSimInputASCII_maskImageFileName_set)
+    __swig_setmethods__["trainValueRangeExtensionMax"] = _deesse.mpds_XSimInputASCII_trainValueRangeExtensionMax_set
+    __swig_getmethods__["trainValueRangeExtensionMax"] = _deesse.mpds_XSimInputASCII_trainValueRangeExtensionMax_get
+    if _newclass:
+        trainValueRangeExtensionMax = _swig_property(_deesse.mpds_XSimInputASCII_trainValueRangeExtensionMax_get, _deesse.mpds_XSimInputASCII_trainValueRangeExtensionMax_set)
+    __swig_setmethods__["normalizingType"] = _deesse.mpds_XSimInputASCII_normalizingType_set
+    __swig_getmethods__["normalizingType"] = _deesse.mpds_XSimInputASCII_normalizingType_get
+    if _newclass:
+        normalizingType = _swig_property(_deesse.mpds_XSimInputASCII_normalizingType_get, _deesse.mpds_XSimInputASCII_normalizingType_set)
+    __swig_setmethods__["relativeDistanceFlag"] = _deesse.mpds_XSimInputASCII_relativeDistanceFlag_set
+    __swig_getmethods__["relativeDistanceFlag"] = _deesse.mpds_XSimInputASCII_relativeDistanceFlag_get
+    if _newclass:
+        relativeDistanceFlag = _swig_property(_deesse.mpds_XSimInputASCII_relativeDistanceFlag_get, _deesse.mpds_XSimInputASCII_relativeDistanceFlag_set)
+    __swig_setmethods__["rescalingMode"] = _deesse.mpds_XSimInputASCII_rescalingMode_set
+    __swig_getmethods__["rescalingMode"] = _deesse.mpds_XSimInputASCII_rescalingMode_get
+    if _newclass:
+        rescalingMode = _swig_property(_deesse.mpds_XSimInputASCII_rescalingMode_get, _deesse.mpds_XSimInputASCII_rescalingMode_set)
+    __swig_setmethods__["rescalingTargetMin"] = _deesse.mpds_XSimInputASCII_rescalingTargetMin_set
+    __swig_getmethods__["rescalingTargetMin"] = _deesse.mpds_XSimInputASCII_rescalingTargetMin_get
+    if _newclass:
+        rescalingTargetMin = _swig_property(_deesse.mpds_XSimInputASCII_rescalingTargetMin_get, _deesse.mpds_XSimInputASCII_rescalingTargetMin_set)
+    __swig_setmethods__["rescalingTargetMax"] = _deesse.mpds_XSimInputASCII_rescalingTargetMax_set
+    __swig_getmethods__["rescalingTargetMax"] = _deesse.mpds_XSimInputASCII_rescalingTargetMax_get
+    if _newclass:
+        rescalingTargetMax = _swig_property(_deesse.mpds_XSimInputASCII_rescalingTargetMax_get, _deesse.mpds_XSimInputASCII_rescalingTargetMax_set)
+    __swig_setmethods__["rescalingTargetMean"] = _deesse.mpds_XSimInputASCII_rescalingTargetMean_set
+    __swig_getmethods__["rescalingTargetMean"] = _deesse.mpds_XSimInputASCII_rescalingTargetMean_get
+    if _newclass:
+        rescalingTargetMean = _swig_property(_deesse.mpds_XSimInputASCII_rescalingTargetMean_get, _deesse.mpds_XSimInputASCII_rescalingTargetMean_set)
+    __swig_setmethods__["rescalingTargetLength"] = _deesse.mpds_XSimInputASCII_rescalingTargetLength_set
+    __swig_getmethods__["rescalingTargetLength"] = _deesse.mpds_XSimInputASCII_rescalingTargetLength_get
+    if _newclass:
+        rescalingTargetLength = _swig_property(_deesse.mpds_XSimInputASCII_rescalingTargetLength_get, _deesse.mpds_XSimInputASCII_rescalingTargetLength_set)
+    __swig_setmethods__["distanceType"] = _deesse.mpds_XSimInputASCII_distanceType_set
+    __swig_getmethods__["distanceType"] = _deesse.mpds_XSimInputASCII_distanceType_get
+    if _newclass:
+        distanceType = _swig_property(_deesse.mpds_XSimInputASCII_distanceType_get, _deesse.mpds_XSimInputASCII_distanceType_set)
+    __swig_setmethods__["powerLpDistance"] = _deesse.mpds_XSimInputASCII_powerLpDistance_set
+    __swig_getmethods__["powerLpDistance"] = _deesse.mpds_XSimInputASCII_powerLpDistance_get
+    if _newclass:
+        powerLpDistance = _swig_property(_deesse.mpds_XSimInputASCII_powerLpDistance_get, _deesse.mpds_XSimInputASCII_powerLpDistance_set)
+    __swig_setmethods__["conditioningWeightFactor"] = _deesse.mpds_XSimInputASCII_conditioningWeightFactor_set
+    __swig_getmethods__["conditioningWeightFactor"] = _deesse.mpds_XSimInputASCII_conditioningWeightFactor_get
+    if _newclass:
+        conditioningWeightFactor = _swig_property(_deesse.mpds_XSimInputASCII_conditioningWeightFactor_get, _deesse.mpds_XSimInputASCII_conditioningWeightFactor_set)
+    __swig_setmethods__["XSectionParameters"] = _deesse.mpds_XSimInputASCII_XSectionParameters_set
+    __swig_getmethods__["XSectionParameters"] = _deesse.mpds_XSimInputASCII_XSectionParameters_get
+    if _newclass:
+        XSectionParameters = _swig_property(_deesse.mpds_XSimInputASCII_XSectionParameters_get, _deesse.mpds_XSimInputASCII_XSectionParameters_set)
+    __swig_setmethods__["XSubSimInputASCII_xy"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_xy_set
+    __swig_getmethods__["XSubSimInputASCII_xy"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_xy_get
+    if _newclass:
+        XSubSimInputASCII_xy = _swig_property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_xy_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_xy_set)
+    __swig_setmethods__["XSubSimInputASCII_xz"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_xz_set
+    __swig_getmethods__["XSubSimInputASCII_xz"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_xz_get
+    if _newclass:
+        XSubSimInputASCII_xz = _swig_property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_xz_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_xz_set)
+    __swig_setmethods__["XSubSimInputASCII_yz"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_yz_set
+    __swig_getmethods__["XSubSimInputASCII_yz"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_yz_get
+    if _newclass:
+        XSubSimInputASCII_yz = _swig_property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_yz_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_yz_set)
+    __swig_setmethods__["XSubSimInputASCII_z"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_z_set
+    __swig_getmethods__["XSubSimInputASCII_z"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_z_get
+    if _newclass:
+        XSubSimInputASCII_z = _swig_property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_z_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_z_set)
+    __swig_setmethods__["XSubSimInputASCII_y"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_y_set
+    __swig_getmethods__["XSubSimInputASCII_y"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_y_get
+    if _newclass:
+        XSubSimInputASCII_y = _swig_property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_y_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_y_set)
+    __swig_setmethods__["XSubSimInputASCII_x"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_x_set
+    __swig_getmethods__["XSubSimInputASCII_x"] = _deesse.mpds_XSimInputASCII_XSubSimInputASCII_x_get
+    if _newclass:
+        XSubSimInputASCII_x = _swig_property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_x_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_x_set)
+    __swig_setmethods__["seed"] = _deesse.mpds_XSimInputASCII_seed_set
+    __swig_getmethods__["seed"] = _deesse.mpds_XSimInputASCII_seed_get
+    if _newclass:
+        seed = _swig_property(_deesse.mpds_XSimInputASCII_seed_get, _deesse.mpds_XSimInputASCII_seed_set)
+    __swig_setmethods__["seedIncrement"] = _deesse.mpds_XSimInputASCII_seedIncrement_set
+    __swig_getmethods__["seedIncrement"] = _deesse.mpds_XSimInputASCII_seedIncrement_get
+    if _newclass:
+        seedIncrement = _swig_property(_deesse.mpds_XSimInputASCII_seedIncrement_get, _deesse.mpds_XSimInputASCII_seedIncrement_set)
+    __swig_setmethods__["nrealization"] = _deesse.mpds_XSimInputASCII_nrealization_set
+    __swig_getmethods__["nrealization"] = _deesse.mpds_XSimInputASCII_nrealization_get
+    if _newclass:
+        nrealization = _swig_property(_deesse.mpds_XSimInputASCII_nrealization_get, _deesse.mpds_XSimInputASCII_nrealization_set)
+
+    def __init__(self):
+        this = _deesse.new_mpds_XSimInputASCII()
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _deesse.delete_mpds_XSimInputASCII
+    __del__ = lambda self: None
+mpds_XSimInputASCII_swigregister = _deesse.mpds_XSimInputASCII_swigregister
+mpds_XSimInputASCII_swigregister(mpds_XSimInputASCII)
+
+
+def MPDSFreeXSimInputASCII(arg1):
+    return _deesse.MPDSFreeXSimInputASCII(arg1)
+MPDSFreeXSimInputASCII = _deesse.MPDSFreeXSimInputASCII
+
+def MPDSFreeXSubSimInputASCII(arg1):
+    return _deesse.MPDSFreeXSubSimInputASCII(arg1)
+MPDSFreeXSubSimInputASCII = _deesse.MPDSFreeXSubSimInputASCII
+
+def MPDSImportXSimInput(arg1, arg2):
+    return _deesse.MPDSImportXSimInput(arg1, arg2)
+MPDSImportXSimInput = _deesse.MPDSImportXSimInput
+
+def MPDSInitXSimInputASCII(arg1):
+    return _deesse.MPDSInitXSimInputASCII(arg1)
+MPDSInitXSimInputASCII = _deesse.MPDSInitXSimInputASCII
+
+def MPDSInitXSubSimInputASCII(arg1):
+    return _deesse.MPDSInitXSubSimInputASCII(arg1)
+MPDSInitXSubSimInputASCII = _deesse.MPDSInitXSubSimInputASCII
+
+def MPDSPrintXSimInputASCII(arg1, arg2, arg3):
+    return _deesse.MPDSPrintXSimInputASCII(arg1, arg2, arg3)
+MPDSPrintXSimInputASCII = _deesse.MPDSPrintXSimInputASCII
+
+def MPDSPrintXSubSimInputASCII(arg1, arg2, arg3):
+    return _deesse.MPDSPrintXSubSimInputASCII(arg1, arg2, arg3)
+MPDSPrintXSubSimInputASCII = _deesse.MPDSPrintXSubSimInputASCII
+
+def MPDSReadXSimInputASCII(arg1, arg2):
+    return _deesse.MPDSReadXSimInputASCII(arg1, arg2)
+MPDSReadXSimInputASCII = _deesse.MPDSReadXSimInputASCII
+
+def MPDSReadXSubSimInputASCII(arg1, arg2):
+    return _deesse.MPDSReadXSubSimInputASCII(arg1, arg2)
+MPDSReadXSubSimInputASCII = _deesse.MPDSReadXSubSimInputASCII
+
+def MPDSXSimInputASCIIToXSimInput(arg1, arg2):
+    return _deesse.MPDSXSimInputASCIIToXSimInput(arg1, arg2)
+MPDSXSimInputASCIIToXSimInput = _deesse.MPDSXSimInputASCIIToXSimInput
+
+def MPDSXSubSimInputASCIIToXSubSimInput(arg1, arg2, arg3, arg4):
+    return _deesse.MPDSXSubSimInputASCIIToXSubSimInput(arg1, arg2, arg3, arg4)
+MPDSXSubSimInputASCIIToXSubSimInput = _deesse.MPDSXSubSimInputASCIIToXSubSimInput
 SECTION_XY_XZ_YZ = _deesse.SECTION_XY_XZ_YZ
 SECTION_XY_YZ_XZ = _deesse.SECTION_XY_YZ_XZ
 SECTION_XZ_XY_YZ = _deesse.SECTION_XZ_XY_YZ
@@ -2984,6 +3849,46 @@ MPDS_X_VERSION_NUMBER = _deesse.MPDS_X_VERSION_NUMBER
 MPDS_X_BUILD_NUMBER = _deesse.MPDS_X_BUILD_NUMBER
 MPDS_X_SUFFIX_FOR_REALIZATION = _deesse.MPDS_X_SUFFIX_FOR_REALIZATION
 MPDS_X_NB_DIGIT_FOR_REALIZATION_NUMBER = _deesse.MPDS_X_NB_DIGIT_FOR_REALIZATION_NUMBER
+
+def new_MPDS_SIMINPUTp():
+    return _deesse.new_MPDS_SIMINPUTp()
+new_MPDS_SIMINPUTp = _deesse.new_MPDS_SIMINPUTp
+
+def copy_MPDS_SIMINPUTp(value):
+    return _deesse.copy_MPDS_SIMINPUTp(value)
+copy_MPDS_SIMINPUTp = _deesse.copy_MPDS_SIMINPUTp
+
+def delete_MPDS_SIMINPUTp(obj):
+    return _deesse.delete_MPDS_SIMINPUTp(obj)
+delete_MPDS_SIMINPUTp = _deesse.delete_MPDS_SIMINPUTp
+
+def MPDS_SIMINPUTp_assign(obj, value):
+    return _deesse.MPDS_SIMINPUTp_assign(obj, value)
+MPDS_SIMINPUTp_assign = _deesse.MPDS_SIMINPUTp_assign
+
+def MPDS_SIMINPUTp_value(obj):
+    return _deesse.MPDS_SIMINPUTp_value(obj)
+MPDS_SIMINPUTp_value = _deesse.MPDS_SIMINPUTp_value
+
+def new_MPDS_XSIMINPUTp():
+    return _deesse.new_MPDS_XSIMINPUTp()
+new_MPDS_XSIMINPUTp = _deesse.new_MPDS_XSIMINPUTp
+
+def copy_MPDS_XSIMINPUTp(value):
+    return _deesse.copy_MPDS_XSIMINPUTp(value)
+copy_MPDS_XSIMINPUTp = _deesse.copy_MPDS_XSIMINPUTp
+
+def delete_MPDS_XSIMINPUTp(obj):
+    return _deesse.delete_MPDS_XSIMINPUTp(obj)
+delete_MPDS_XSIMINPUTp = _deesse.delete_MPDS_XSIMINPUTp
+
+def MPDS_XSIMINPUTp_assign(obj, value):
+    return _deesse.MPDS_XSIMINPUTp_assign(obj, value)
+MPDS_XSIMINPUTp_assign = _deesse.MPDS_XSIMINPUTp_assign
+
+def MPDS_XSIMINPUTp_value(obj):
+    return _deesse.MPDS_XSIMINPUTp_value(obj)
+MPDS_XSIMINPUTp_value = _deesse.MPDS_XSIMINPUTp_value
 
 def new_int_array(nelements):
     return _deesse.new_int_array(nelements)
@@ -3583,6 +4488,34 @@ mpds_x_allocate_and_set_relativeDistanceFlag = _deesse.mpds_x_allocate_and_set_r
 def mpds_allocate_and_set_pyramid_outputLevelFlag(pyramidParameters, flag):
     return _deesse.mpds_allocate_and_set_pyramid_outputLevelFlag(pyramidParameters, flag)
 mpds_allocate_and_set_pyramid_outputLevelFlag = _deesse.mpds_allocate_and_set_pyramid_outputLevelFlag
+
+def mpds_get_outputVarFlag(simInput, flag):
+    return _deesse.mpds_get_outputVarFlag(simInput, flag)
+mpds_get_outputVarFlag = _deesse.mpds_get_outputVarFlag
+
+def mpds_x_get_outputVarFlag(XSimInput, flag):
+    return _deesse.mpds_x_get_outputVarFlag(XSimInput, flag)
+mpds_x_get_outputVarFlag = _deesse.mpds_x_get_outputVarFlag
+
+def mpds_get_simGridAsTiFlag(simInput, flag):
+    return _deesse.mpds_get_simGridAsTiFlag(simInput, flag)
+mpds_get_simGridAsTiFlag = _deesse.mpds_get_simGridAsTiFlag
+
+def mpds_xsub_get_simGridAsTiFlag(XSubSimInput, flag):
+    return _deesse.mpds_xsub_get_simGridAsTiFlag(XSubSimInput, flag)
+mpds_xsub_get_simGridAsTiFlag = _deesse.mpds_xsub_get_simGridAsTiFlag
+
+def mpds_get_relativeDistanceFlag(simInput, flag):
+    return _deesse.mpds_get_relativeDistanceFlag(simInput, flag)
+mpds_get_relativeDistanceFlag = _deesse.mpds_get_relativeDistanceFlag
+
+def mpds_x_get_relativeDistanceFlag(XSimInput, flag):
+    return _deesse.mpds_x_get_relativeDistanceFlag(XSimInput, flag)
+mpds_x_get_relativeDistanceFlag = _deesse.mpds_x_get_relativeDistanceFlag
+
+def mpds_get_pyramid_outputLevelFlag(pyramidParameters, flag):
+    return _deesse.mpds_get_pyramid_outputLevelFlag(pyramidParameters, flag)
+mpds_get_pyramid_outputLevelFlag = _deesse.mpds_get_pyramid_outputLevelFlag
 
 def mpds_allocate_and_set_simname(simInput, STRING):
     return _deesse.mpds_allocate_and_set_simname(simInput, STRING)

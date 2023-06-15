@@ -107,6 +107,9 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
                     - for 3D: (nreal, nz, ny, nx), where nx, ny, nz = dimension
                     T2[k] is the k-th realization
     """
+
+    fname = 'pluriGaussianSim_unconditional'
+
     if full_output:
         out = None, None, None
     else:
@@ -114,17 +117,17 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
 
     if not callable(flag_value):
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'flag_value' invalid, should be a function (callable) of two arguments")
+            print(f"ERROR ({fname}): 'flag_value' invalid, should be a function (callable) of two arguments")
         return out
 
     if algo_T1 not in ('fft', 'FFT', 'classic', 'CLASSIC', 'deterministic', 'DETERMINISTIC'):
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'algo_T1' invalid, should be 'fft' (default) or 'classic' or 'deterministic'")
+            print(f"ERROR ({fname}): 'algo_T1' invalid, should be 'fft' (default) or 'classic' or 'deterministic'")
         return out
 
     if algo_T2 not in ('fft', 'FFT', 'classic', 'CLASSIC', 'deterministic', 'DETERMINISTIC'):
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'algo_T2' invalid, should be 'fft' (default) or 'classic' or 'deterministic'")
+            print(f"ERROR ({fname}): 'algo_T2' invalid, should be 'fft' (default) or 'classic' or 'deterministic'")
         return out
 
     # Ignore covariance model if 'algo' is deterministic for T1, T2
@@ -139,7 +142,7 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
     if cov_model_T1 is None:
         if algo_T1 not in ('deterministic', 'DETERMINISTIC'):
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'cov_model_T1' is None, then 'algo_T1' must be 'deterministic'")
+                print(f"ERROR ({fname}): 'cov_model_T1' is None, then 'algo_T1' must be 'deterministic'")
             return out
     elif isinstance(cov_model_T1, gcm.CovModel1D):
         d = 1
@@ -149,21 +152,21 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
         d = 3
     else:
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'cov_model_T1' invalid, should be a class: <geone.covModel.CovModel1D>, <geone.covModel.CovModel2D>, or <geone.covModel.CovModel3D>")
+            print(f"ERROR ({fname}): 'cov_model_T1' invalid, should be a class: <geone.covModel.CovModel1D>, <geone.covModel.CovModel2D>, or <geone.covModel.CovModel3D>")
         return out
 
     if cov_model_T2 is None:
         if algo_T2 not in ('deterministic', 'DETERMINISTIC'):
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'cov_model_T2' is None, then 'algo_T2' must be 'deterministic'")
+                print(f"ERROR ({fname}): 'cov_model_T2' is None, then 'algo_T2' must be 'deterministic'")
             return out
         # if d == 0:
         #     if verbose > 0:
-        #         print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'cov_model_T1' and 'cov_model_T2' are None, at least one covariance model is required")
+        #         print(f"ERROR ({fname}): 'cov_model_T1' and 'cov_model_T2' are None, at least one covariance model is required")
         #     return out
     elif (d == 1 and not isinstance(cov_model_T2, gcm.CovModel1D)) or (d == 2 and not isinstance(cov_model_T2, gcm.CovModel2D)) or (d == 3 and not isinstance(cov_model_T2, gcm.CovModel3D)):
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'cov_model_T1' and 'cov_model_T2' not compatible (dimension differs)")
+            print(f"ERROR ({fname}): 'cov_model_T1' and 'cov_model_T2' not compatible (dimension differs)")
         return out
 
     if d == 0:
@@ -176,7 +179,7 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
     # Check argument 'dimension'
     if hasattr(dimension, '__len__') and len(dimension) != d:
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'dimension' of incompatible length")
+            print(f"ERROR ({fname}): 'dimension' of incompatible length")
         return out
 
     if d == 1:
@@ -193,7 +196,7 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
     else:
         if hasattr(spacing, '__len__') and len(spacing) != d:
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'spacing' of incompatible length")
+                print(f"ERROR ({fname}): 'spacing' of incompatible length")
             return out
 
     # Check (or set) argument 'origin'
@@ -205,16 +208,16 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
     else:
         if hasattr(origin, '__len__') and len(origin) != d:
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'origin' of incompatible length")
+                print(f"ERROR ({fname}): 'origin' of incompatible length")
             return out
 
 #    if not cov_model_T1.is_stationary(): # prevent calculation if covariance model is not stationary
 #         if verbose > 0:
-#             print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'cov_model_T1' is not stationary")
+#             print(f"ERROR ({fname}): 'cov_model_T1' is not stationary")
 
 #    if not cov_model_T2.is_stationary(): # prevent calculation if covariance model is not stationary
 #         if verbose > 0:
-#             print("ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): 'cov_model_T2' is not stationary")
+#             print(f"ERROR ({fname}): 'cov_model_T2' is not stationary")
 
     # Set default parameter 'verbose' for params_T1, params_T2
     if 'verbose' not in params_T1.keys():
@@ -235,7 +238,7 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
     #      (nreal_T, dimension[2], dimension[1], dimension[0]) (for T1 in 3D)
     if sim_T1 is None:
         if verbose > 0:
-            print('ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): simulation of T1 failed')
+            print(f'ERROR ({fname}): simulation of T1 failed')
         return out
     #
     # Generate T2
@@ -251,7 +254,7 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
     #      (nreal_T, dimension[2], dimension[1], dimension[0]) (for T2 in 3D)
     if sim_T2 is None:
         if verbose > 0:
-            print('ERROR (PLURIGAUSSIANSIM_UNCONDITIONAL): simulation of T2 failed')
+            print(f'ERROR ({fname}): simulation of T2 failed')
         return out
 
     # Generate Z
@@ -419,6 +422,9 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
                         iteration done, n_cond_ok[k][-1] is the number of
                         conditioning location honoured at the end
     """
+
+    fname = 'pluriGaussianSim'
+
     if full_output:
         out = None, None, None, None
     else:
@@ -426,17 +432,17 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
 
     if not callable(flag_value):
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM): 'flag_value' invalid, should be a function (callable) of two arguments")
+            print(f"ERROR ({fname}): 'flag_value' invalid, should be a function (callable) of two arguments")
         return out
 
     if algo_T1 not in ('fft', 'FFT', 'classic', 'CLASSIC', 'deterministic', 'DETERMINISTIC'):
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM): 'algo_T1' invalid, should be 'fft' (default) or 'classic' or 'deterministic'")
+            print(f"ERROR ({fname}): 'algo_T1' invalid, should be 'fft' (default) or 'classic' or 'deterministic'")
         return out
 
     if algo_T2 not in ('fft', 'FFT', 'classic', 'CLASSIC', 'deterministic', 'DETERMINISTIC'):
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM): 'algo_T2' invalid, should be 'fft' (default) or 'classic' or 'deterministic'")
+            print(f"ERROR ({fname}): 'algo_T2' invalid, should be 'fft' (default) or 'classic' or 'deterministic'")
         return out
 
     # Ignore covariance model if 'algo' is deterministic for T1, T2
@@ -451,7 +457,7 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
     if cov_model_T1 is None:
         if algo_T1 not in ('deterministic', 'DETERMINISTIC'):
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM): 'cov_model_T1' is None, then 'algo_T1' must be 'deterministic'")
+                print(f"ERROR ({fname}): 'cov_model_T1' is None, then 'algo_T1' must be 'deterministic'")
             return out
     elif isinstance(cov_model_T1, gcm.CovModel1D):
         d = 1
@@ -461,21 +467,21 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
         d = 3
     else:
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM): 'cov_model_T1' invalid, should be a class: <geone.covModel.CovModel1D>, <geone.covModel.CovModel2D>, or <geone.covModel.CovModel3D>")
+            print(f"ERROR ({fname}): 'cov_model_T1' invalid, should be a class: <geone.covModel.CovModel1D>, <geone.covModel.CovModel2D>, or <geone.covModel.CovModel3D>")
         return out
 
     if cov_model_T2 is None:
         if algo_T2 not in ('deterministic', 'DETERMINISTIC'):
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM): 'cov_model_T2' is None, then 'algo_T2' must be 'deterministic'")
+                print(f"ERROR ({fname}): 'cov_model_T2' is None, then 'algo_T2' must be 'deterministic'")
             return out
         # if d == 0:
         #     if verbose > 0:
-        #         print("ERROR (PLURIGAUSSIANSIM): 'cov_model_T1' and 'cov_model_T2' are None, at least one covariance model is required")
+        #         print(f"ERROR ({fname}): 'cov_model_T1' and 'cov_model_T2' are None, at least one covariance model is required")
         #     return out
     elif (d == 1 and not isinstance(cov_model_T2, gcm.CovModel1D)) or (d == 2 and not isinstance(cov_model_T2, gcm.CovModel2D)) or (d == 3 and not isinstance(cov_model_T2, gcm.CovModel3D)):
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM): 'cov_model_T1' and 'cov_model_T2' not compatible (dimension differs)")
+            print(f"ERROR ({fname}): 'cov_model_T1' and 'cov_model_T2' not compatible (dimension differs)")
         return out
 
     if d == 0:
@@ -488,7 +494,7 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
     # Check argument 'dimension'
     if hasattr(dimension, '__len__') and len(dimension) != d:
         if verbose > 0:
-            print("ERROR (PLURIGAUSSIANSIM): 'dimension' of incompatible length")
+            print(f"ERROR ({fname}): 'dimension' of incompatible length")
         return out
 
     if d == 1:
@@ -505,7 +511,7 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
     else:
         if hasattr(spacing, '__len__') and len(spacing) != d:
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM): 'spacing' of incompatible length")
+                print(f"ERROR ({fname}): 'spacing' of incompatible length")
             return out
 
     # Check (or set) argument 'origin'
@@ -517,16 +523,16 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
     else:
         if hasattr(origin, '__len__') and len(origin) != d:
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM): 'origin' of incompatible length")
+                print(f"ERROR ({fname}): 'origin' of incompatible length")
             return out
 
 #    if not cov_model_T1.is_stationary(): # prevent calculation if covariance model is not stationary
 #         if verbose > 0:
-#             print("ERROR (PLURIGAUSSIANSIM): 'cov_model_T1' is not stationary")
+#             print(f"ERROR ({fname}): 'cov_model_T1' is not stationary")
 
 #    if not cov_model_T2.is_stationary(): # prevent calculation if covariance model is not stationary
 #         if verbose > 0:
-#             print("ERROR (PLURIGAUSSIANSIM): 'cov_model_T2' is not stationary")
+#             print(f"ERROR ({fname}): 'cov_model_T2' is not stationary")
 
     # Compute meshgrid over simulation domain if needed (see below)
     if ('mean' in params_T1.keys() and callable(params_T1['mean'])) or ('var' in params_T1.keys() and callable(params_T1['var'])) \
@@ -561,7 +567,7 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
             mean_T1 = np.asarray(mean_T1).reshape(-1)
             if mean_T1.size not in (1, grid_size):
                 if verbose > 0:
-                    print("ERROR (PLURIGAUSSIANSIM): 'mean' parameter for T1 (in 'params_T1') has incompatible size")
+                    print(f"ERROR ({fname}): 'mean' parameter for T1 (in 'params_T1') has incompatible size")
                 return out
 
     # Set var_T1 (as array) from params_T1, if given
@@ -580,7 +586,7 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
                 var_T1 = np.asarray(var_T1).reshape(-1)
                 if var_T1.size not in (1, grid_size):
                     if verbose > 0:
-                        print("ERROR (PLURIGAUSSIANSIM): 'var' parameter for T1 (in 'params_T1') has incompatible size")
+                        print(f"ERROR ({fname}): 'var' parameter for T1 (in 'params_T1') has incompatible size")
                     return out
 
     # Set mean_T2 (as array) from params_T2
@@ -601,7 +607,7 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
             mean_T2 = np.asarray(mean_T2).reshape(-1)
             if mean_T2.size not in (1, grid_size):
                 if verbose > 0:
-                    print("ERROR (PLURIGAUSSIANSIM): 'mean' parameter for T2 (in 'params_T2') has incompatible size")
+                    print(f"ERROR ({fname}): 'mean' parameter for T2 (in 'params_T2') has incompatible size")
                 return out
 
     # Set var_T2 (as array) from params_T2, if given
@@ -620,7 +626,7 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
                 var_T2 = np.asarray(var_T2).reshape(-1)
                 if var_T2.size not in (1, grid_size):
                     if verbose > 0:
-                        print("ERROR (PLURIGAUSSIANSIM): 'var' parameter for T2 (in 'params_T2') has incompatible size")
+                        print(f"ERROR ({fname}): 'var' parameter for T2 (in 'params_T2') has incompatible size")
                     return out
 
     # Note: format of data (x, v) not checked !
@@ -628,21 +634,21 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
     if x is None:
         if v is not None:
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM): 'x' is not given (None) but 'v' is given (not None)")
+                print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
             return out
     #
     else:
         # Preparation for conditional case
         if v is None:
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM): 'x' is given (not None) but 'v' is not given (None)")
+                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
             return out
         #
         x = np.asarray(x, dtype='float').reshape(-1, d) # cast in d-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("ERROR (PLURIGAUSSIANSIM): length of 'v' is not valid")
+                print(f"ERROR ({fname}): length of 'v' is not valid")
             return out
         #
         # Compute
@@ -661,11 +667,11 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
         if len(indc_unique) != len(x):
             if np.any([len(np.unique(v[indc_inv==j])) > 1 for j in range(len(indc_unique))]):
                 if verbose > 0:
-                    print('ERROR (PLURIGAUSSIANSIM): more than one conditioning point fall in a same grid cell and have different conditioning values')
+                    print(f'ERROR ({fname}): more than one conditioning point fall in a same grid cell and have different conditioning values')
                 return out
             else:
                 if verbose > 1:
-                    print('WARNING (PLURIGAUSSIANSIM): more than one conditioning point fall in a same grid cell with same conditioning value (consistent)')
+                    print(f'WARNING ({fname}): more than one conditioning point fall in a same grid cell with same conditioning value (consistent)')
                 x = np.array([x[indc_inv==j][0] for j in range(len(indc_unique))])
                 v = np.array([v[indc_inv==j][0] for j in range(len(indc_unique))])
         #
@@ -1057,7 +1063,7 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
                             break
                         else:
                             if verbose > 1:
-                                print('WARNING (PLURIGAUSSIANSIM): realization does not honoured all data, but retrieved anyway')
+                                print(f'WARNING ({fname}): realization does not honoured all data, but retrieved anyway')
                 Z_real = flag_value(sim_T1[0], sim_T2[0])
                 Z.append(Z_real)
                 if full_output:
@@ -1068,7 +1074,7 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
 
     # Get Z
     if verbose > 1 and len(Z) < nreal:
-        print('WARNING (PLURIGAUSSIANSIM): some realization failed (missing)')
+        print(f'WARNING ({fname}): some realization failed (missing)')
     Z = np.asarray(Z).reshape(len(Z), *np.atleast_1d(dimension)[::-1])
 
     if full_output:

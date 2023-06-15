@@ -1118,6 +1118,131 @@ def MPDSPrintVersion(arg1, arg2, arg3, arg4, arg5):
 
 def MPDSValidateSimInput(arg1, arg2, arg3, arg4):
     return _deesse.MPDSValidateSimInput(arg1, arg2, arg3, arg4)
+POST_PROCESSING_PARAMETERS_DEFAULT = _deesse.POST_PROCESSING_PARAMETERS_DEFAULT
+POST_PROCESSING_PARAMETERS_SAME = _deesse.POST_PROCESSING_PARAMETERS_SAME
+POST_PROCESSING_PARAMETERS_MANUAL = _deesse.POST_PROCESSING_PARAMETERS_MANUAL
+class mpds_simInputASCII(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+    simName = property(_deesse.mpds_simInputASCII_simName_get, _deesse.mpds_simInputASCII_simName_set)
+    simGridNx = property(_deesse.mpds_simInputASCII_simGridNx_get, _deesse.mpds_simInputASCII_simGridNx_set)
+    simGridNy = property(_deesse.mpds_simInputASCII_simGridNy_get, _deesse.mpds_simInputASCII_simGridNy_set)
+    simGridNz = property(_deesse.mpds_simInputASCII_simGridNz_get, _deesse.mpds_simInputASCII_simGridNz_set)
+    simGridSx = property(_deesse.mpds_simInputASCII_simGridSx_get, _deesse.mpds_simInputASCII_simGridSx_set)
+    simGridSy = property(_deesse.mpds_simInputASCII_simGridSy_get, _deesse.mpds_simInputASCII_simGridSy_set)
+    simGridSz = property(_deesse.mpds_simInputASCII_simGridSz_get, _deesse.mpds_simInputASCII_simGridSz_set)
+    simGridOx = property(_deesse.mpds_simInputASCII_simGridOx_get, _deesse.mpds_simInputASCII_simGridOx_set)
+    simGridOy = property(_deesse.mpds_simInputASCII_simGridOy_get, _deesse.mpds_simInputASCII_simGridOy_set)
+    simGridOz = property(_deesse.mpds_simInputASCII_simGridOz_get, _deesse.mpds_simInputASCII_simGridOz_set)
+    nsimVar = property(_deesse.mpds_simInputASCII_nsimVar_get, _deesse.mpds_simInputASCII_nsimVar_set)
+    simVarName = property(_deesse.mpds_simInputASCII_simVarName_get, _deesse.mpds_simInputASCII_simVarName_set)
+    outputVarFlag = property(_deesse.mpds_simInputASCII_outputVarFlag_get, _deesse.mpds_simInputASCII_outputVarFlag_set)
+    formatStringVar = property(_deesse.mpds_simInputASCII_formatStringVar_get, _deesse.mpds_simInputASCII_formatStringVar_set)
+    outputSimJob = property(_deesse.mpds_simInputASCII_outputSimJob_get, _deesse.mpds_simInputASCII_outputSimJob_set)
+    outputSimImageFileName = property(_deesse.mpds_simInputASCII_outputSimImageFileName_get, _deesse.mpds_simInputASCII_outputSimImageFileName_set)
+    outputPathIndexFlag = property(_deesse.mpds_simInputASCII_outputPathIndexFlag_get, _deesse.mpds_simInputASCII_outputPathIndexFlag_set)
+    outputPathIndexFileName = property(_deesse.mpds_simInputASCII_outputPathIndexFileName_get, _deesse.mpds_simInputASCII_outputPathIndexFileName_set)
+    outputErrorFlag = property(_deesse.mpds_simInputASCII_outputErrorFlag_get, _deesse.mpds_simInputASCII_outputErrorFlag_set)
+    outputErrorFileName = property(_deesse.mpds_simInputASCII_outputErrorFileName_get, _deesse.mpds_simInputASCII_outputErrorFileName_set)
+    outputTiGridNodeIndexFlag = property(_deesse.mpds_simInputASCII_outputTiGridNodeIndexFlag_get, _deesse.mpds_simInputASCII_outputTiGridNodeIndexFlag_set)
+    outputTiGridNodeIndexFileName = property(_deesse.mpds_simInputASCII_outputTiGridNodeIndexFileName_get, _deesse.mpds_simInputASCII_outputTiGridNodeIndexFileName_set)
+    outputTiIndexFlag = property(_deesse.mpds_simInputASCII_outputTiIndexFlag_get, _deesse.mpds_simInputASCII_outputTiIndexFlag_set)
+    outputTiIndexFileName = property(_deesse.mpds_simInputASCII_outputTiIndexFileName_get, _deesse.mpds_simInputASCII_outputTiIndexFileName_set)
+    outputReportFlag = property(_deesse.mpds_simInputASCII_outputReportFlag_get, _deesse.mpds_simInputASCII_outputReportFlag_set)
+    outputReportFileName = property(_deesse.mpds_simInputASCII_outputReportFileName_get, _deesse.mpds_simInputASCII_outputReportFileName_set)
+    ntrainImage = property(_deesse.mpds_simInputASCII_ntrainImage_get, _deesse.mpds_simInputASCII_ntrainImage_set)
+    trainImageFileName = property(_deesse.mpds_simInputASCII_trainImageFileName_get, _deesse.mpds_simInputASCII_trainImageFileName_set)
+    pdfTrainImageFileName = property(_deesse.mpds_simInputASCII_pdfTrainImageFileName_get, _deesse.mpds_simInputASCII_pdfTrainImageFileName_set)
+    ndataImageFile = property(_deesse.mpds_simInputASCII_ndataImageFile_get, _deesse.mpds_simInputASCII_ndataImageFile_set)
+    dataImageFileName = property(_deesse.mpds_simInputASCII_dataImageFileName_get, _deesse.mpds_simInputASCII_dataImageFileName_set)
+    ndataPointSetFile = property(_deesse.mpds_simInputASCII_ndataPointSetFile_get, _deesse.mpds_simInputASCII_ndataPointSetFile_set)
+    dataPointSetFileName = property(_deesse.mpds_simInputASCII_dataPointSetFileName_get, _deesse.mpds_simInputASCII_dataPointSetFileName_set)
+    maskImageFlag = property(_deesse.mpds_simInputASCII_maskImageFlag_get, _deesse.mpds_simInputASCII_maskImageFlag_set)
+    maskImageFileName = property(_deesse.mpds_simInputASCII_maskImageFileName_get, _deesse.mpds_simInputASCII_maskImageFileName_set)
+    homothetyUsage = property(_deesse.mpds_simInputASCII_homothetyUsage_get, _deesse.mpds_simInputASCII_homothetyUsage_set)
+    homothetyXRatioImageFlag = property(_deesse.mpds_simInputASCII_homothetyXRatioImageFlag_get, _deesse.mpds_simInputASCII_homothetyXRatioImageFlag_set)
+    homothetyYRatioImageFlag = property(_deesse.mpds_simInputASCII_homothetyYRatioImageFlag_get, _deesse.mpds_simInputASCII_homothetyYRatioImageFlag_set)
+    homothetyZRatioImageFlag = property(_deesse.mpds_simInputASCII_homothetyZRatioImageFlag_get, _deesse.mpds_simInputASCII_homothetyZRatioImageFlag_set)
+    homothetyXRatioImageFileName = property(_deesse.mpds_simInputASCII_homothetyXRatioImageFileName_get, _deesse.mpds_simInputASCII_homothetyXRatioImageFileName_set)
+    homothetyYRatioImageFileName = property(_deesse.mpds_simInputASCII_homothetyYRatioImageFileName_get, _deesse.mpds_simInputASCII_homothetyYRatioImageFileName_set)
+    homothetyZRatioImageFileName = property(_deesse.mpds_simInputASCII_homothetyZRatioImageFileName_get, _deesse.mpds_simInputASCII_homothetyZRatioImageFileName_set)
+    homothetyXRatioValue = property(_deesse.mpds_simInputASCII_homothetyXRatioValue_get, _deesse.mpds_simInputASCII_homothetyXRatioValue_set)
+    homothetyYRatioValue = property(_deesse.mpds_simInputASCII_homothetyYRatioValue_get, _deesse.mpds_simInputASCII_homothetyYRatioValue_set)
+    homothetyZRatioValue = property(_deesse.mpds_simInputASCII_homothetyZRatioValue_get, _deesse.mpds_simInputASCII_homothetyZRatioValue_set)
+    rotationUsage = property(_deesse.mpds_simInputASCII_rotationUsage_get, _deesse.mpds_simInputASCII_rotationUsage_set)
+    rotationAzimuthImageFlag = property(_deesse.mpds_simInputASCII_rotationAzimuthImageFlag_get, _deesse.mpds_simInputASCII_rotationAzimuthImageFlag_set)
+    rotationDipImageFlag = property(_deesse.mpds_simInputASCII_rotationDipImageFlag_get, _deesse.mpds_simInputASCII_rotationDipImageFlag_set)
+    rotationPlungeImageFlag = property(_deesse.mpds_simInputASCII_rotationPlungeImageFlag_get, _deesse.mpds_simInputASCII_rotationPlungeImageFlag_set)
+    rotationAzimuthImageFileName = property(_deesse.mpds_simInputASCII_rotationAzimuthImageFileName_get, _deesse.mpds_simInputASCII_rotationAzimuthImageFileName_set)
+    rotationDipImageFileName = property(_deesse.mpds_simInputASCII_rotationDipImageFileName_get, _deesse.mpds_simInputASCII_rotationDipImageFileName_set)
+    rotationPlungeImageFileName = property(_deesse.mpds_simInputASCII_rotationPlungeImageFileName_get, _deesse.mpds_simInputASCII_rotationPlungeImageFileName_set)
+    rotationAzimuthValue = property(_deesse.mpds_simInputASCII_rotationAzimuthValue_get, _deesse.mpds_simInputASCII_rotationAzimuthValue_set)
+    rotationDipValue = property(_deesse.mpds_simInputASCII_rotationDipValue_get, _deesse.mpds_simInputASCII_rotationDipValue_set)
+    rotationPlungeValue = property(_deesse.mpds_simInputASCII_rotationPlungeValue_get, _deesse.mpds_simInputASCII_rotationPlungeValue_set)
+    trainValueRangeExtensionMax = property(_deesse.mpds_simInputASCII_trainValueRangeExtensionMax_get, _deesse.mpds_simInputASCII_trainValueRangeExtensionMax_set)
+    normalizingType = property(_deesse.mpds_simInputASCII_normalizingType_get, _deesse.mpds_simInputASCII_normalizingType_set)
+    searchNeighborhoodParameters = property(_deesse.mpds_simInputASCII_searchNeighborhoodParameters_get, _deesse.mpds_simInputASCII_searchNeighborhoodParameters_set)
+    nneighboringNode = property(_deesse.mpds_simInputASCII_nneighboringNode_get, _deesse.mpds_simInputASCII_nneighboringNode_set)
+    maxPropInequalityNode = property(_deesse.mpds_simInputASCII_maxPropInequalityNode_get, _deesse.mpds_simInputASCII_maxPropInequalityNode_set)
+    neighboringNodeDensity = property(_deesse.mpds_simInputASCII_neighboringNodeDensity_get, _deesse.mpds_simInputASCII_neighboringNodeDensity_set)
+    relativeDistanceFlag = property(_deesse.mpds_simInputASCII_relativeDistanceFlag_get, _deesse.mpds_simInputASCII_relativeDistanceFlag_set)
+    rescalingMode = property(_deesse.mpds_simInputASCII_rescalingMode_get, _deesse.mpds_simInputASCII_rescalingMode_set)
+    rescalingTargetMin = property(_deesse.mpds_simInputASCII_rescalingTargetMin_get, _deesse.mpds_simInputASCII_rescalingTargetMin_set)
+    rescalingTargetMax = property(_deesse.mpds_simInputASCII_rescalingTargetMax_get, _deesse.mpds_simInputASCII_rescalingTargetMax_set)
+    rescalingTargetMean = property(_deesse.mpds_simInputASCII_rescalingTargetMean_get, _deesse.mpds_simInputASCII_rescalingTargetMean_set)
+    rescalingTargetLength = property(_deesse.mpds_simInputASCII_rescalingTargetLength_get, _deesse.mpds_simInputASCII_rescalingTargetLength_set)
+    distanceType = property(_deesse.mpds_simInputASCII_distanceType_get, _deesse.mpds_simInputASCII_distanceType_set)
+    powerLpDistance = property(_deesse.mpds_simInputASCII_powerLpDistance_get, _deesse.mpds_simInputASCII_powerLpDistance_set)
+    conditioningWeightFactor = property(_deesse.mpds_simInputASCII_conditioningWeightFactor_get, _deesse.mpds_simInputASCII_conditioningWeightFactor_set)
+    simAndPathParameters = property(_deesse.mpds_simInputASCII_simAndPathParameters_get, _deesse.mpds_simInputASCII_simAndPathParameters_set)
+    distanceThreshold = property(_deesse.mpds_simInputASCII_distanceThreshold_get, _deesse.mpds_simInputASCII_distanceThreshold_set)
+    softProbabilityASCII = property(_deesse.mpds_simInputASCII_softProbabilityASCII_get, _deesse.mpds_simInputASCII_softProbabilityASCII_set)
+    connectivityASCII = property(_deesse.mpds_simInputASCII_connectivityASCII_get, _deesse.mpds_simInputASCII_connectivityASCII_set)
+    blockDataASCII = property(_deesse.mpds_simInputASCII_blockDataASCII_get, _deesse.mpds_simInputASCII_blockDataASCII_set)
+    maxScanFraction = property(_deesse.mpds_simInputASCII_maxScanFraction_get, _deesse.mpds_simInputASCII_maxScanFraction_set)
+    pyramidGeneralParametersASCII = property(_deesse.mpds_simInputASCII_pyramidGeneralParametersASCII_get, _deesse.mpds_simInputASCII_pyramidGeneralParametersASCII_set)
+    pyramidParameters = property(_deesse.mpds_simInputASCII_pyramidParameters_get, _deesse.mpds_simInputASCII_pyramidParameters_set)
+    ndataImageInPyramidFile = property(_deesse.mpds_simInputASCII_ndataImageInPyramidFile_get, _deesse.mpds_simInputASCII_ndataImageInPyramidFile_set)
+    dataImageInPyramidFileName = property(_deesse.mpds_simInputASCII_dataImageInPyramidFileName_get, _deesse.mpds_simInputASCII_dataImageInPyramidFileName_set)
+    ndataPointSetInPyramidFile = property(_deesse.mpds_simInputASCII_ndataPointSetInPyramidFile_get, _deesse.mpds_simInputASCII_ndataPointSetInPyramidFile_set)
+    dataPointSetInPyramidFileName = property(_deesse.mpds_simInputASCII_dataPointSetInPyramidFileName_get, _deesse.mpds_simInputASCII_dataPointSetInPyramidFileName_set)
+    tolerance = property(_deesse.mpds_simInputASCII_tolerance_get, _deesse.mpds_simInputASCII_tolerance_set)
+    npostProcessingPathMax = property(_deesse.mpds_simInputASCII_npostProcessingPathMax_get, _deesse.mpds_simInputASCII_npostProcessingPathMax_set)
+    postProcessingParametersJob = property(_deesse.mpds_simInputASCII_postProcessingParametersJob_get, _deesse.mpds_simInputASCII_postProcessingParametersJob_set)
+    postProcessingNneighboringNode = property(_deesse.mpds_simInputASCII_postProcessingNneighboringNode_get, _deesse.mpds_simInputASCII_postProcessingNneighboringNode_set)
+    postProcessingNeighboringNodeDensity = property(_deesse.mpds_simInputASCII_postProcessingNeighboringNodeDensity_get, _deesse.mpds_simInputASCII_postProcessingNeighboringNodeDensity_set)
+    postProcessingDistanceThreshold = property(_deesse.mpds_simInputASCII_postProcessingDistanceThreshold_get, _deesse.mpds_simInputASCII_postProcessingDistanceThreshold_set)
+    postProcessingMaxScanFraction = property(_deesse.mpds_simInputASCII_postProcessingMaxScanFraction_get, _deesse.mpds_simInputASCII_postProcessingMaxScanFraction_set)
+    postProcessingTolerance = property(_deesse.mpds_simInputASCII_postProcessingTolerance_get, _deesse.mpds_simInputASCII_postProcessingTolerance_set)
+    seed = property(_deesse.mpds_simInputASCII_seed_get, _deesse.mpds_simInputASCII_seed_set)
+    seedIncrement = property(_deesse.mpds_simInputASCII_seedIncrement_get, _deesse.mpds_simInputASCII_seedIncrement_set)
+    nrealization = property(_deesse.mpds_simInputASCII_nrealization_get, _deesse.mpds_simInputASCII_nrealization_set)
+
+    def __init__(self):
+        _deesse.mpds_simInputASCII_swiginit(self, _deesse.new_mpds_simInputASCII())
+    __swig_destroy__ = _deesse.delete_mpds_simInputASCII
+
+# Register mpds_simInputASCII in _deesse:
+_deesse.mpds_simInputASCII_swigregister(mpds_simInputASCII)
+
+
+def MPDSFreeSimInputASCII(arg1):
+    return _deesse.MPDSFreeSimInputASCII(arg1)
+
+def MPDSImportSimInput(arg1, arg2):
+    return _deesse.MPDSImportSimInput(arg1, arg2)
+
+def MPDSInitSimInputASCII(arg1):
+    return _deesse.MPDSInitSimInputASCII(arg1)
+
+def MPDSPrintSimInputASCII(arg1, arg2, arg3):
+    return _deesse.MPDSPrintSimInputASCII(arg1, arg2, arg3)
+
+def MPDSReadSimInputASCII(arg1, arg2):
+    return _deesse.MPDSReadSimInputASCII(arg1, arg2)
+
+def MPDSSimInputASCIIToSimInput(arg1, arg2):
+    return _deesse.MPDSSimInputASCIIToSimInput(arg1, arg2)
 class mpds_simOutput(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -1333,6 +1458,153 @@ def MPDSValidateXSimInput(arg1, arg2, arg3, arg4):
 
 def MPDSValidateXSubSimInput(arg1, arg2, arg3, arg4, arg5):
     return _deesse.MPDSValidateXSubSimInput(arg1, arg2, arg3, arg4, arg5)
+class mpds_XSubSimInputASCII(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+    sectionType = property(_deesse.mpds_XSubSimInputASCII_sectionType_get, _deesse.mpds_XSubSimInputASCII_sectionType_set)
+    nsimVar = property(_deesse.mpds_XSubSimInputASCII_nsimVar_get, _deesse.mpds_XSubSimInputASCII_nsimVar_set)
+    ntrainImage = property(_deesse.mpds_XSubSimInputASCII_ntrainImage_get, _deesse.mpds_XSubSimInputASCII_ntrainImage_set)
+    trainImageFileName = property(_deesse.mpds_XSubSimInputASCII_trainImageFileName_get, _deesse.mpds_XSubSimInputASCII_trainImageFileName_set)
+    pdfTrainImageFileName = property(_deesse.mpds_XSubSimInputASCII_pdfTrainImageFileName_get, _deesse.mpds_XSubSimInputASCII_pdfTrainImageFileName_set)
+    homothetyUsage = property(_deesse.mpds_XSubSimInputASCII_homothetyUsage_get, _deesse.mpds_XSubSimInputASCII_homothetyUsage_set)
+    homothetyXRatioImageFlag = property(_deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFlag_get, _deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFlag_set)
+    homothetyYRatioImageFlag = property(_deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFlag_get, _deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFlag_set)
+    homothetyZRatioImageFlag = property(_deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFlag_get, _deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFlag_set)
+    homothetyXRatioImageFileName = property(_deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFileName_get, _deesse.mpds_XSubSimInputASCII_homothetyXRatioImageFileName_set)
+    homothetyYRatioImageFileName = property(_deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFileName_get, _deesse.mpds_XSubSimInputASCII_homothetyYRatioImageFileName_set)
+    homothetyZRatioImageFileName = property(_deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFileName_get, _deesse.mpds_XSubSimInputASCII_homothetyZRatioImageFileName_set)
+    homothetyXRatioValue = property(_deesse.mpds_XSubSimInputASCII_homothetyXRatioValue_get, _deesse.mpds_XSubSimInputASCII_homothetyXRatioValue_set)
+    homothetyYRatioValue = property(_deesse.mpds_XSubSimInputASCII_homothetyYRatioValue_get, _deesse.mpds_XSubSimInputASCII_homothetyYRatioValue_set)
+    homothetyZRatioValue = property(_deesse.mpds_XSubSimInputASCII_homothetyZRatioValue_get, _deesse.mpds_XSubSimInputASCII_homothetyZRatioValue_set)
+    rotationUsage = property(_deesse.mpds_XSubSimInputASCII_rotationUsage_get, _deesse.mpds_XSubSimInputASCII_rotationUsage_set)
+    rotationAzimuthImageFlag = property(_deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFlag_get, _deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFlag_set)
+    rotationDipImageFlag = property(_deesse.mpds_XSubSimInputASCII_rotationDipImageFlag_get, _deesse.mpds_XSubSimInputASCII_rotationDipImageFlag_set)
+    rotationPlungeImageFlag = property(_deesse.mpds_XSubSimInputASCII_rotationPlungeImageFlag_get, _deesse.mpds_XSubSimInputASCII_rotationPlungeImageFlag_set)
+    rotationAzimuthImageFileName = property(_deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFileName_get, _deesse.mpds_XSubSimInputASCII_rotationAzimuthImageFileName_set)
+    rotationDipImageFileName = property(_deesse.mpds_XSubSimInputASCII_rotationDipImageFileName_get, _deesse.mpds_XSubSimInputASCII_rotationDipImageFileName_set)
+    rotationPlungeImageFileName = property(_deesse.mpds_XSubSimInputASCII_rotationPlungeImageFileName_get, _deesse.mpds_XSubSimInputASCII_rotationPlungeImageFileName_set)
+    rotationAzimuthValue = property(_deesse.mpds_XSubSimInputASCII_rotationAzimuthValue_get, _deesse.mpds_XSubSimInputASCII_rotationAzimuthValue_set)
+    rotationDipValue = property(_deesse.mpds_XSubSimInputASCII_rotationDipValue_get, _deesse.mpds_XSubSimInputASCII_rotationDipValue_set)
+    rotationPlungeValue = property(_deesse.mpds_XSubSimInputASCII_rotationPlungeValue_get, _deesse.mpds_XSubSimInputASCII_rotationPlungeValue_set)
+    searchNeighborhoodParameters = property(_deesse.mpds_XSubSimInputASCII_searchNeighborhoodParameters_get, _deesse.mpds_XSubSimInputASCII_searchNeighborhoodParameters_set)
+    nneighboringNode = property(_deesse.mpds_XSubSimInputASCII_nneighboringNode_get, _deesse.mpds_XSubSimInputASCII_nneighboringNode_set)
+    maxPropInequalityNode = property(_deesse.mpds_XSubSimInputASCII_maxPropInequalityNode_get, _deesse.mpds_XSubSimInputASCII_maxPropInequalityNode_set)
+    neighboringNodeDensity = property(_deesse.mpds_XSubSimInputASCII_neighboringNodeDensity_get, _deesse.mpds_XSubSimInputASCII_neighboringNodeDensity_set)
+    simAndPathParameters = property(_deesse.mpds_XSubSimInputASCII_simAndPathParameters_get, _deesse.mpds_XSubSimInputASCII_simAndPathParameters_set)
+    distanceThreshold = property(_deesse.mpds_XSubSimInputASCII_distanceThreshold_get, _deesse.mpds_XSubSimInputASCII_distanceThreshold_set)
+    softProbabilityASCII = property(_deesse.mpds_XSubSimInputASCII_softProbabilityASCII_get, _deesse.mpds_XSubSimInputASCII_softProbabilityASCII_set)
+    maxScanFraction = property(_deesse.mpds_XSubSimInputASCII_maxScanFraction_get, _deesse.mpds_XSubSimInputASCII_maxScanFraction_set)
+    pyramidGeneralParametersASCII = property(_deesse.mpds_XSubSimInputASCII_pyramidGeneralParametersASCII_get, _deesse.mpds_XSubSimInputASCII_pyramidGeneralParametersASCII_set)
+    pyramidParameters = property(_deesse.mpds_XSubSimInputASCII_pyramidParameters_get, _deesse.mpds_XSubSimInputASCII_pyramidParameters_set)
+    tolerance = property(_deesse.mpds_XSubSimInputASCII_tolerance_get, _deesse.mpds_XSubSimInputASCII_tolerance_set)
+    npostProcessingPathMax = property(_deesse.mpds_XSubSimInputASCII_npostProcessingPathMax_get, _deesse.mpds_XSubSimInputASCII_npostProcessingPathMax_set)
+    postProcessingParametersJob = property(_deesse.mpds_XSubSimInputASCII_postProcessingParametersJob_get, _deesse.mpds_XSubSimInputASCII_postProcessingParametersJob_set)
+    postProcessingNneighboringNode = property(_deesse.mpds_XSubSimInputASCII_postProcessingNneighboringNode_get, _deesse.mpds_XSubSimInputASCII_postProcessingNneighboringNode_set)
+    postProcessingNeighboringNodeDensity = property(_deesse.mpds_XSubSimInputASCII_postProcessingNeighboringNodeDensity_get, _deesse.mpds_XSubSimInputASCII_postProcessingNeighboringNodeDensity_set)
+    postProcessingDistanceThreshold = property(_deesse.mpds_XSubSimInputASCII_postProcessingDistanceThreshold_get, _deesse.mpds_XSubSimInputASCII_postProcessingDistanceThreshold_set)
+    postProcessingMaxScanFraction = property(_deesse.mpds_XSubSimInputASCII_postProcessingMaxScanFraction_get, _deesse.mpds_XSubSimInputASCII_postProcessingMaxScanFraction_set)
+    postProcessingTolerance = property(_deesse.mpds_XSubSimInputASCII_postProcessingTolerance_get, _deesse.mpds_XSubSimInputASCII_postProcessingTolerance_set)
+
+    def __init__(self):
+        _deesse.mpds_XSubSimInputASCII_swiginit(self, _deesse.new_mpds_XSubSimInputASCII())
+    __swig_destroy__ = _deesse.delete_mpds_XSubSimInputASCII
+
+# Register mpds_XSubSimInputASCII in _deesse:
+_deesse.mpds_XSubSimInputASCII_swigregister(mpds_XSubSimInputASCII)
+
+class mpds_XSimInputASCII(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+    simName = property(_deesse.mpds_XSimInputASCII_simName_get, _deesse.mpds_XSimInputASCII_simName_set)
+    simGridNx = property(_deesse.mpds_XSimInputASCII_simGridNx_get, _deesse.mpds_XSimInputASCII_simGridNx_set)
+    simGridNy = property(_deesse.mpds_XSimInputASCII_simGridNy_get, _deesse.mpds_XSimInputASCII_simGridNy_set)
+    simGridNz = property(_deesse.mpds_XSimInputASCII_simGridNz_get, _deesse.mpds_XSimInputASCII_simGridNz_set)
+    simGridSx = property(_deesse.mpds_XSimInputASCII_simGridSx_get, _deesse.mpds_XSimInputASCII_simGridSx_set)
+    simGridSy = property(_deesse.mpds_XSimInputASCII_simGridSy_get, _deesse.mpds_XSimInputASCII_simGridSy_set)
+    simGridSz = property(_deesse.mpds_XSimInputASCII_simGridSz_get, _deesse.mpds_XSimInputASCII_simGridSz_set)
+    simGridOx = property(_deesse.mpds_XSimInputASCII_simGridOx_get, _deesse.mpds_XSimInputASCII_simGridOx_set)
+    simGridOy = property(_deesse.mpds_XSimInputASCII_simGridOy_get, _deesse.mpds_XSimInputASCII_simGridOy_set)
+    simGridOz = property(_deesse.mpds_XSimInputASCII_simGridOz_get, _deesse.mpds_XSimInputASCII_simGridOz_set)
+    nsimVar = property(_deesse.mpds_XSimInputASCII_nsimVar_get, _deesse.mpds_XSimInputASCII_nsimVar_set)
+    simVarName = property(_deesse.mpds_XSimInputASCII_simVarName_get, _deesse.mpds_XSimInputASCII_simVarName_set)
+    outputVarFlag = property(_deesse.mpds_XSimInputASCII_outputVarFlag_get, _deesse.mpds_XSimInputASCII_outputVarFlag_set)
+    formatStringVar = property(_deesse.mpds_XSimInputASCII_formatStringVar_get, _deesse.mpds_XSimInputASCII_formatStringVar_set)
+    outputSimJob = property(_deesse.mpds_XSimInputASCII_outputSimJob_get, _deesse.mpds_XSimInputASCII_outputSimJob_set)
+    outputSimImageFileName = property(_deesse.mpds_XSimInputASCII_outputSimImageFileName_get, _deesse.mpds_XSimInputASCII_outputSimImageFileName_set)
+    outputSectionTypeFlag = property(_deesse.mpds_XSimInputASCII_outputSectionTypeFlag_get, _deesse.mpds_XSimInputASCII_outputSectionTypeFlag_set)
+    outputSectionTypeFileName = property(_deesse.mpds_XSimInputASCII_outputSectionTypeFileName_get, _deesse.mpds_XSimInputASCII_outputSectionTypeFileName_set)
+    outputSectionStepFlag = property(_deesse.mpds_XSimInputASCII_outputSectionStepFlag_get, _deesse.mpds_XSimInputASCII_outputSectionStepFlag_set)
+    outputSectionStepFileName = property(_deesse.mpds_XSimInputASCII_outputSectionStepFileName_get, _deesse.mpds_XSimInputASCII_outputSectionStepFileName_set)
+    outputReportFlag = property(_deesse.mpds_XSimInputASCII_outputReportFlag_get, _deesse.mpds_XSimInputASCII_outputReportFlag_set)
+    outputReportFileName = property(_deesse.mpds_XSimInputASCII_outputReportFileName_get, _deesse.mpds_XSimInputASCII_outputReportFileName_set)
+    ndataImageFile = property(_deesse.mpds_XSimInputASCII_ndataImageFile_get, _deesse.mpds_XSimInputASCII_ndataImageFile_set)
+    dataImageFileName = property(_deesse.mpds_XSimInputASCII_dataImageFileName_get, _deesse.mpds_XSimInputASCII_dataImageFileName_set)
+    ndataPointSetFile = property(_deesse.mpds_XSimInputASCII_ndataPointSetFile_get, _deesse.mpds_XSimInputASCII_ndataPointSetFile_set)
+    dataPointSetFileName = property(_deesse.mpds_XSimInputASCII_dataPointSetFileName_get, _deesse.mpds_XSimInputASCII_dataPointSetFileName_set)
+    maskImageFlag = property(_deesse.mpds_XSimInputASCII_maskImageFlag_get, _deesse.mpds_XSimInputASCII_maskImageFlag_set)
+    maskImageFileName = property(_deesse.mpds_XSimInputASCII_maskImageFileName_get, _deesse.mpds_XSimInputASCII_maskImageFileName_set)
+    trainValueRangeExtensionMax = property(_deesse.mpds_XSimInputASCII_trainValueRangeExtensionMax_get, _deesse.mpds_XSimInputASCII_trainValueRangeExtensionMax_set)
+    normalizingType = property(_deesse.mpds_XSimInputASCII_normalizingType_get, _deesse.mpds_XSimInputASCII_normalizingType_set)
+    relativeDistanceFlag = property(_deesse.mpds_XSimInputASCII_relativeDistanceFlag_get, _deesse.mpds_XSimInputASCII_relativeDistanceFlag_set)
+    rescalingMode = property(_deesse.mpds_XSimInputASCII_rescalingMode_get, _deesse.mpds_XSimInputASCII_rescalingMode_set)
+    rescalingTargetMin = property(_deesse.mpds_XSimInputASCII_rescalingTargetMin_get, _deesse.mpds_XSimInputASCII_rescalingTargetMin_set)
+    rescalingTargetMax = property(_deesse.mpds_XSimInputASCII_rescalingTargetMax_get, _deesse.mpds_XSimInputASCII_rescalingTargetMax_set)
+    rescalingTargetMean = property(_deesse.mpds_XSimInputASCII_rescalingTargetMean_get, _deesse.mpds_XSimInputASCII_rescalingTargetMean_set)
+    rescalingTargetLength = property(_deesse.mpds_XSimInputASCII_rescalingTargetLength_get, _deesse.mpds_XSimInputASCII_rescalingTargetLength_set)
+    distanceType = property(_deesse.mpds_XSimInputASCII_distanceType_get, _deesse.mpds_XSimInputASCII_distanceType_set)
+    powerLpDistance = property(_deesse.mpds_XSimInputASCII_powerLpDistance_get, _deesse.mpds_XSimInputASCII_powerLpDistance_set)
+    conditioningWeightFactor = property(_deesse.mpds_XSimInputASCII_conditioningWeightFactor_get, _deesse.mpds_XSimInputASCII_conditioningWeightFactor_set)
+    XSectionParameters = property(_deesse.mpds_XSimInputASCII_XSectionParameters_get, _deesse.mpds_XSimInputASCII_XSectionParameters_set)
+    XSubSimInputASCII_xy = property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_xy_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_xy_set)
+    XSubSimInputASCII_xz = property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_xz_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_xz_set)
+    XSubSimInputASCII_yz = property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_yz_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_yz_set)
+    XSubSimInputASCII_z = property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_z_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_z_set)
+    XSubSimInputASCII_y = property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_y_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_y_set)
+    XSubSimInputASCII_x = property(_deesse.mpds_XSimInputASCII_XSubSimInputASCII_x_get, _deesse.mpds_XSimInputASCII_XSubSimInputASCII_x_set)
+    seed = property(_deesse.mpds_XSimInputASCII_seed_get, _deesse.mpds_XSimInputASCII_seed_set)
+    seedIncrement = property(_deesse.mpds_XSimInputASCII_seedIncrement_get, _deesse.mpds_XSimInputASCII_seedIncrement_set)
+    nrealization = property(_deesse.mpds_XSimInputASCII_nrealization_get, _deesse.mpds_XSimInputASCII_nrealization_set)
+
+    def __init__(self):
+        _deesse.mpds_XSimInputASCII_swiginit(self, _deesse.new_mpds_XSimInputASCII())
+    __swig_destroy__ = _deesse.delete_mpds_XSimInputASCII
+
+# Register mpds_XSimInputASCII in _deesse:
+_deesse.mpds_XSimInputASCII_swigregister(mpds_XSimInputASCII)
+
+
+def MPDSFreeXSimInputASCII(arg1):
+    return _deesse.MPDSFreeXSimInputASCII(arg1)
+
+def MPDSFreeXSubSimInputASCII(arg1):
+    return _deesse.MPDSFreeXSubSimInputASCII(arg1)
+
+def MPDSImportXSimInput(arg1, arg2):
+    return _deesse.MPDSImportXSimInput(arg1, arg2)
+
+def MPDSInitXSimInputASCII(arg1):
+    return _deesse.MPDSInitXSimInputASCII(arg1)
+
+def MPDSInitXSubSimInputASCII(arg1):
+    return _deesse.MPDSInitXSubSimInputASCII(arg1)
+
+def MPDSPrintXSimInputASCII(arg1, arg2, arg3):
+    return _deesse.MPDSPrintXSimInputASCII(arg1, arg2, arg3)
+
+def MPDSPrintXSubSimInputASCII(arg1, arg2, arg3):
+    return _deesse.MPDSPrintXSubSimInputASCII(arg1, arg2, arg3)
+
+def MPDSReadXSimInputASCII(arg1, arg2):
+    return _deesse.MPDSReadXSimInputASCII(arg1, arg2)
+
+def MPDSReadXSubSimInputASCII(arg1, arg2):
+    return _deesse.MPDSReadXSubSimInputASCII(arg1, arg2)
+
+def MPDSXSimInputASCIIToXSimInput(arg1, arg2):
+    return _deesse.MPDSXSimInputASCIIToXSimInput(arg1, arg2)
+
+def MPDSXSubSimInputASCIIToXSubSimInput(arg1, arg2, arg3, arg4):
+    return _deesse.MPDSXSubSimInputASCIIToXSubSimInput(arg1, arg2, arg3, arg4)
 SECTION_XY_XZ_YZ = _deesse.SECTION_XY_XZ_YZ
 SECTION_XY_YZ_XZ = _deesse.SECTION_XY_YZ_XZ
 SECTION_XZ_XY_YZ = _deesse.SECTION_XZ_XY_YZ
@@ -1642,6 +1914,36 @@ MPDS_X_VERSION_NUMBER = _deesse.MPDS_X_VERSION_NUMBER
 MPDS_X_BUILD_NUMBER = _deesse.MPDS_X_BUILD_NUMBER
 MPDS_X_SUFFIX_FOR_REALIZATION = _deesse.MPDS_X_SUFFIX_FOR_REALIZATION
 MPDS_X_NB_DIGIT_FOR_REALIZATION_NUMBER = _deesse.MPDS_X_NB_DIGIT_FOR_REALIZATION_NUMBER
+
+def new_MPDS_SIMINPUTp():
+    return _deesse.new_MPDS_SIMINPUTp()
+
+def copy_MPDS_SIMINPUTp(value):
+    return _deesse.copy_MPDS_SIMINPUTp(value)
+
+def delete_MPDS_SIMINPUTp(obj):
+    return _deesse.delete_MPDS_SIMINPUTp(obj)
+
+def MPDS_SIMINPUTp_assign(obj, value):
+    return _deesse.MPDS_SIMINPUTp_assign(obj, value)
+
+def MPDS_SIMINPUTp_value(obj):
+    return _deesse.MPDS_SIMINPUTp_value(obj)
+
+def new_MPDS_XSIMINPUTp():
+    return _deesse.new_MPDS_XSIMINPUTp()
+
+def copy_MPDS_XSIMINPUTp(value):
+    return _deesse.copy_MPDS_XSIMINPUTp(value)
+
+def delete_MPDS_XSIMINPUTp(obj):
+    return _deesse.delete_MPDS_XSIMINPUTp(obj)
+
+def MPDS_XSIMINPUTp_assign(obj, value):
+    return _deesse.MPDS_XSIMINPUTp_assign(obj, value)
+
+def MPDS_XSIMINPUTp_value(obj):
+    return _deesse.MPDS_XSIMINPUTp_value(obj)
 
 def new_int_array(nelements):
     return _deesse.new_int_array(nelements)
@@ -2097,6 +2399,27 @@ def mpds_x_allocate_and_set_relativeDistanceFlag(XSimInput, flag):
 
 def mpds_allocate_and_set_pyramid_outputLevelFlag(pyramidParameters, flag):
     return _deesse.mpds_allocate_and_set_pyramid_outputLevelFlag(pyramidParameters, flag)
+
+def mpds_get_outputVarFlag(simInput, flag):
+    return _deesse.mpds_get_outputVarFlag(simInput, flag)
+
+def mpds_x_get_outputVarFlag(XSimInput, flag):
+    return _deesse.mpds_x_get_outputVarFlag(XSimInput, flag)
+
+def mpds_get_simGridAsTiFlag(simInput, flag):
+    return _deesse.mpds_get_simGridAsTiFlag(simInput, flag)
+
+def mpds_xsub_get_simGridAsTiFlag(XSubSimInput, flag):
+    return _deesse.mpds_xsub_get_simGridAsTiFlag(XSubSimInput, flag)
+
+def mpds_get_relativeDistanceFlag(simInput, flag):
+    return _deesse.mpds_get_relativeDistanceFlag(simInput, flag)
+
+def mpds_x_get_relativeDistanceFlag(XSimInput, flag):
+    return _deesse.mpds_x_get_relativeDistanceFlag(XSimInput, flag)
+
+def mpds_get_pyramid_outputLevelFlag(pyramidParameters, flag):
+    return _deesse.mpds_get_pyramid_outputLevelFlag(pyramidParameters, flag)
 
 def mpds_allocate_and_set_simname(simInput, STRING):
     return _deesse.mpds_allocate_and_set_simname(simInput, STRING)

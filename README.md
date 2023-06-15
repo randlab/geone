@@ -14,6 +14,8 @@ cd geone
 pip install .
 ```
 
+*Note:* use `pip install . --verbose` or `pip install . -v` for printing (more) messages during the installation.
+
  **Remove geone**
 
 `pip uninstall -y geone`
@@ -35,7 +37,7 @@ The following python packages are used by GEONE (tested on python 3.10.9):
 
 ## Important notes
 - GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The DEESSE version provided with GEONE is a test version with restricted capabilities. **To unlock the full capabilities of DEESSE, the user must obtain a commercial or academic license from the University of Neuchâtel. See LICENSE file for details.**
-- DEESSE and some other geostatistical tools provided by GEONE are compiled in C for windows and linux, and for python3.6 to python3.10. **Note that for linux, the provided libraries depend on the library GLIBC 2.35, hence the library GLIBC of your OS has to be compatible with that version to ensure proper operation of GEONE.**
+- DEESSE and some other geostatistical tools provided by GEONE are compiled in C for windows and linux, and for python3.6 to python3.10. **Note that for linux, libraries depending on the library GLIBC 2.35 or GLIBC 2.27 are provided, hence the library GLIBC of your OS has to be compatible with one of those versions to ensure proper operation of GEONE.**
 
 ## DEESSE - Introduction
 DEESSE is a parallel software for multiple point statistics (MPS) simulations. MPS allows to generate random fields reproducing the spatial statistics -- within and between variable(s) -- of a training data set (TDS). DEESSE follows an approach based on the *direct sampling* of the TDS. The simulation grid is sequentially populated by values borrowed from the TDS, selected after a random search for similar patterns. Many features are handled by DEESSE and illustrated in the proposed examples below.

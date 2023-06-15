@@ -30,7 +30,7 @@ class Img(object):
     """
 
     def __init__(self,
-                 nx=0,   ny=0,   nz=0,
+                 nx=1,   ny=1,   nz=1,
                  sx=1.0, sy=1.0, sz=1.0,
                  ox=0.0, oy=0.0, oz=0.0,
                  nv=0, val=np.nan, varname=None,
@@ -45,6 +45,8 @@ class Img(object):
                             which are put in the image (after reshape if
                             needed)
         """
+
+        fname = 'Img'
 
         self.nx = int(nx)
         self.ny = int(ny)
@@ -61,7 +63,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(nx*ny*nz*nv)
         elif valarr.size != nx*ny*nz*nv:
-            print ('ERROR: val does not have an acceptable size')
+            print(f'ERROR ({fname}): val does not have an acceptable size')
             return None
 
         self.val = valarr.reshape(nv, nz, ny, nx)
@@ -75,7 +77,7 @@ class Img(object):
             elif len(varname) == 1: # more than one variable and only one varname
                 self.varname = ["{}{:d}".format(varname[0], i) for i in range(nv)]
             else:
-                print ('ERROR: varname has not an acceptable size')
+                print(f'ERROR ({fname}): varname has not an acceptable size')
                 return None
 
         self.name = name
@@ -294,6 +296,8 @@ class Img(object):
         :param ind:     (int) index where the new variable(s) is (are) inserted
         """
 
+        fname = 'insert_var'
+
         # Check / set ind
         if ind < 0:
             ii = self.nv + ind
@@ -309,7 +313,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size % self.nxyz() != 0:
-            print ('ERROR: val does not have an acceptable size')
+            print(f'ERROR ({fname}): val does not have an acceptable size')
             return None
 
         m = valarr.size // self.nxyz() # number of variable(s) to be inserted
@@ -319,7 +323,7 @@ class Img(object):
             if isinstance(varname, str):
                 varname = [varname]
             elif (not isinstance(varname, tuple) and not isinstance(varname, list) and not (isinstance(varname, np.ndarray) and im_list.ndim==1)) or len(varname)!=m:
-                print ('ERROR: varname does not have an acceptable size')
+                print(f'ERROR ({fname}): varname does not have an acceptable size')
                 return None
             else:
                 varname = list(varname)
@@ -361,29 +365,36 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def remove_var(self, ind=-1):
+    def remove_var(self, ind=None, indlist=None):
         """
-        Removes one variable (of given index).
-        """
-        if ind < 0:
-            ii = self.nv + ind
-        else:
-            ii = ind
+        Removes variable(s) (of given index-es).
 
-        if ii < 0 or ii >= self.nv:
+        :param ind:     (int or list of ints) index or list of index-es of the
+                            variable(s) to be removed
+
+        :param indlist: used for ind if ind is not given (None)
+                            (obsolete, kept for compatibility with older
+                                versions)
+        """
+
+        if ind is None:
+            ind = indList
+            if ind is None:
+                print("Nothing is done! (no index given)")
+                return
+
+        ind = np.atleast_1d(ind).reshape(-1)
+        if ind.size == 0:
+            return
+
+        ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
+        if np.any((ind < 0, ind >= self.nv)):
             print("Nothing is done! (invalid index)")
-            return None
+            return
 
-        # Update val array
-        iv =[i for i in range(self.nv)]
-        del iv[ii]
-        self.val = self.val[iv,...]
+        ind = np.setdiff1d(np.arange(self.nv), ind)
 
-        # Update varname list
-        del self.varname[ii]
-
-        # Update nv
-        self.nv = self.nv - 1
+        self.extract_var(ind)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -416,6 +427,8 @@ class Img(object):
         :param ind:     (int) index where the variable to be set
         """
 
+        fname = 'set_var'
+
         if ind < 0:
             ii = self.nv + ind
         else:
@@ -429,7 +442,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
-            print ('ERROR: val does not have an acceptable size')
+            print(f'ERROR ({fname}): val does not have an acceptable size')
             return None
 
         # Set variable of index ii
@@ -441,29 +454,43 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def extract_var(self, indlist):
+    def extract_var(self, ind=None, indlist=None):
         """
         Extracts variable(s) (of given index-es).
+        (May be used for reordering / duplicating variables.)
 
-        :param indlist: (int or list of ints) index or list of index-es of the
+        :param ind:     (int or list of ints) index or list of index-es of the
                             variable(s) to be extracted (kept)
+
+        :param indlist: used for ind if ind is not given (None)
+                            (obsolete, kept for compatibility with older
+                                versions)
         """
 
-        indlist = list(np.asarray(indlist).flatten())
-        indlist = [self.nv + i if i < 0 else i for i in indlist]
+        if ind is None:
+            ind = indList
+            if ind is None:
+                print("Nothing is done! (no index given)")
+                return
 
-        if np.sum([i >= self.nv or i < 0 for i in indlist]) > 0:
-            print("Nothing is done! (invalid index list)")
-            return None
+        ind = np.atleast_1d(ind).reshape(-1)
+        if ind.size == 0:
+            self.remove_allvar()
+            return
+
+        ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
+        if np.any((ind < 0, ind >= self.nv)):
+            print("Nothing is done! (invalid index)")
+            return
 
         # Update val array
-        self.val = self.val[indlist,...]
+        self.val = self.val[ind,...]
 
         # Update varname list
-        self.varname = [self.varname[i] for i in indlist]
+        self.varname = [self.varname[i] for i in ind]
 
         # Update nv
-        self.nv = len(indlist)
+        self.nv = len(ind)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -920,6 +947,8 @@ class PointSet(object):
                         if tuple/list/ndarray: must contain npt values
         """
 
+        fname = 'PointSet'
+
         self.npt = int(npt)
         self.nv = int(nv)
 
@@ -927,7 +956,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(npt*nv)
         elif valarr.size != npt*nv:
-            print ('ERROR: val does not have an acceptable size')
+            print(f'ERROR ({fname}): val does not have an acceptable size')
             return None
 
         self.val = valarr.reshape(nv, npt)
@@ -951,7 +980,7 @@ class PointSet(object):
         else:
             varname = list(np.asarray(varname).reshape(-1))
             if len(varname) != nv:
-                print ('ERROR: varname has not an acceptable size')
+                print(f'ERROR ({fname}): varname has not an acceptable size')
                 return None
 
             self.varname = list(np.asarray(varname).reshape(-1))
@@ -1034,6 +1063,8 @@ class PointSet(object):
         :param ind:     (int) index where the new variable(s) is (are) inserted
         """
 
+        fname = 'insert_var'
+
         # Check / set ind
         if ind < 0:
             ii = self.nv + ind
@@ -1049,7 +1080,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size % self.npt != 0:
-            print ('ERROR: val does not have an acceptable size')
+            print(f'ERROR ({fname}): val does not have an acceptable size')
             return None
 
         m = valarr.size // self.npt # number of variable to be inserted
@@ -1059,7 +1090,7 @@ class PointSet(object):
             if isinstance(varname, str):
                 varname = [varname]
             elif (not isinstance(varname, tuple) and not isinstance(varname, list) and not (isinstance(varname, np.ndarray) and im_list.ndim==1)) or len(varname)!=m:
-                print ('ERROR: varname does not have an acceptable size')
+                print(f'ERROR ({fname}): varname does not have an acceptable size')
                 return None
             else:
                 varname = list(varname)
@@ -1101,30 +1132,36 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def remove_var(self, ind=-1):
+    def remove_var(self, ind=None, indlist=None):
         """
-        Removes one variable (of given index).
+        Removes variable(s) (of given index-es).
+
+        :param ind:     (int or list of ints) index or list of index-es of the
+                            variable(s) to be removed
+
+        :param indlist: used for ind if ind is not given (None)
+                            (obsolete, kept for compatibility with older
+                                versions)
         """
 
-        if ind < 0:
-            ii = self.nv + ind
-        else:
-            ii = ind
+        if ind is None:
+            ind = indList
+            if ind is None:
+                print("Nothing is done! (no index given)")
+                return
 
-        if ii < 0 or ii >= self.nv:
+        ind = np.atleast_1d(ind).reshape(-1)
+        if ind.size == 0:
+            return
+
+        ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
+        if np.any((ind < 0, ind >= self.nv)):
             print("Nothing is done! (invalid index)")
-            return None
+            return
 
-        # Update val array
-        iv =[i for i in range(self.nv)]
-        del iv[ii]
-        self.val = self.val[iv,...]
+        ind = np.setdiff1d(np.arange(self.nv), ind)
 
-        # Update varname list
-        del self.varname[ii]
-
-        # Update nv
-        self.nv = self.nv - 1
+        self.extract_var(ind)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -1156,6 +1193,8 @@ class PointSet(object):
         :param ind:     (int) index where the variable to be set
         """
 
+        fname = 'set_var'
+
         if ind < 0:
             ii = self.nv + ind
         else:
@@ -1169,7 +1208,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
-            print ('ERROR: val does not have an acceptable size')
+            print(f'ERROR ({fname}): val does not have an acceptable size')
             return None
 
         # Set variable of index ii
@@ -1181,29 +1220,129 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def extract_var(self, indlist):
+    def extract_var(self, ind=None, indlist=None):
         """
         Extracts variable(s) (of given index-es).
+        (May be used for reordering / duplicating variables.)
 
-        :param indlist: (int or list of ints) index or list of index-es of the
+        :param ind:     (int or list of ints) index or list of index-es of the
                             variable(s) to be extracted (kept)
+
+        :param indlist: used for ind if ind is not given (None)
+                            (obsolete, kept for compatibility with older
+                                versions)
         """
 
-        indlist = list(np.asarray(indlist).flatten())
-        indlist = [self.nv + i if i < 0 else i for i in indlist]
+        if ind is None:
+            ind = indList
+            if ind is None:
+                print("Nothing is done! (no index given)")
+                return
 
-        if np.sum([i >= self.nv or i < 0 for i in indlist]) > 0:
-            print("Nothing is done! (invalid index list)")
-            return None
+        ind = np.atleast_1d(ind).reshape(-1)
+        if ind.size == 0:
+            self.remove_allvar()
+            return
+
+        ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
+        if np.any((ind < 0, ind >= self.nv)):
+            print("Nothing is done! (invalid index)")
+            return
 
         # Update val array
-        self.val = self.val[indlist,...]
+        self.val = self.val[ind,...]
 
         # Update varname list
-        self.varname = [self.varname[i] for i in indlist]
+        self.varname = [self.varname[i] for i in ind]
 
         # Update nv
-        self.nv = len(indlist)
+        self.nv = len(ind)
+    # ------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------
+    def remove_point(self, ind=None):
+        """
+        Removes point(s) (of given index-es).
+
+        :param ind:     (int or list of ints) index or list of index-es of the
+                            point(s) to be removed
+        """
+
+        if ind is None:
+            print("Nothing is done! (no index given)")
+            return
+
+        ind = np.atleast_1d(ind).reshape(-1)
+        if ind.size == 0:
+            return
+
+        ind[ind<0] = self.npt + ind[ind<0] # deal with negative index-es
+        if np.any((ind < 0, ind >= self.npt)):
+            print("Nothing is done! (invalid index)")
+            return
+
+        ind = np.setdiff1d(np.arange(self.npt), ind)
+
+        self.extract_point(ind)
+    # ------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------
+    def remove_allpoint(self):
+        """
+        Removes all points.
+        """
+
+        # Update val array
+        self.val = np.zeros((self.nv, 0))
+
+        # Update npt
+        self.npt = 0
+    # ------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------
+    def remove_uninformed_point(self):
+        """
+        Removes point(s) where all variables are undefined (nan).
+        """
+
+        # Get index of variables that are not coordinates
+        ind = np.where([not (self.varname[i] in ('x', 'X', 'y', 'Y', 'z', 'Z')) for i in range(self.nv)])
+
+        # Remove uninformed points
+        self.val = self.val[:, ~np.all(np.isnan(self.val[ind]), axis=0)]
+
+        # Update npt
+        self.npt = self.val.shape[1]
+    # ------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------
+    def extract_point(self, ind=None):
+        """
+        Extracts point(s) (of given index-es).
+
+        :param ind:     (int or list of ints) index or list of index-es of the
+                            point(s) to be extracted (kept)
+        """
+
+        if ind is None:
+            print("Nothing is done! (no index given)")
+            return
+
+        ind = np.atleast_1d(ind).reshape(-1)
+        if ind.size == 0:
+            self.remove_allpt()
+            return
+
+        ind[ind<0] = self.npt + ind[ind<0] # deal with negative index-es
+        if np.any((ind < 0, ind >= self.npt)):
+            print("Nothing is done! (invalid index)")
+            return
+
+        # Update val array
+        self.val = self.val[:, ind]
+
+        # Update npt
+        self.npt = len(ind)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -1332,6 +1471,8 @@ def copyImg(im, varInd=None, varIndList=None):
     :return:   (Img class) a copy of the input image (not a reference to)
     """
 
+    fname = 'copyImg'
+
     if varInd is None:
         varInd = varIndList
 
@@ -1346,7 +1487,7 @@ def copyImg(im, varInd=None, varIndList=None):
         else:
             # Check if each index is valid
             if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
-                print("ERROR: invalid index-es")
+                print(f'ERROR ({fname}): invalid index-es')
                 return None
             imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
                         sx=im.sx, sy=im.sy, sz=im.sz,
@@ -1387,6 +1528,8 @@ def copyPointSet(ps, varInd=None, varIndList=None):
                     to)
     """
 
+    fname = 'copyPointSet'
+
     if varInd is None:
         varInd = varIndList
 
@@ -1394,7 +1537,7 @@ def copyPointSet(ps, varInd=None, varIndList=None):
         varInd = np.atleast_1d(varInd).reshape(-1)
         # Check if each index is valid
         if np.sum([iv in range(ps.nv) for iv in varInd]) != len(varInd):
-            print("ERROR: invalid index-es")
+            print(f'ERROR ({fname}): invalid index-es')
             return None
         psOut = PointSet(npt=ps.npt,
                          nv=len(varInd), val=ps.val[varInd], varname=[ps.varname[i] for i in varInd],
@@ -1409,7 +1552,7 @@ def copyPointSet(ps, varInd=None, varIndList=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageToPointSet(im):
+def imageToPointSet(im, remove_uninformed_cell=True):
     """
     Returns a point set corresponding to the input image.
 
@@ -1417,63 +1560,64 @@ def imageToPointSet(im):
     is not considered in the output point set.
 
     :param im:  (Img class) input image
+    :param remove_uninformed_cell:
+                (bool) if True, any image cell with no value (i.e. all variables
+                    are missing (nan)) is not considered in the output point set;
+                    if False, every image cell are considered in the output point
+                    set
 
     :return ps: (PointSet class) point set corresponding to the input image
     """
 
-    ind_known = ~np.all(np.isnan(im.val), axis=0)
-    ps_val = np.vstack((
-                im.xx()[ind_known],
-                im.yy()[ind_known],
-                im.zz()[ind_known],
-                im.val[:, ind_known]))
+    if remove_uninformed_cell:
+        ind_known = ~np.all(np.isnan(im.val), axis=0)
+        ps_val = np.vstack((
+                    im.xx()[ind_known],
+                    im.yy()[ind_known],
+                    im.zz()[ind_known],
+                    im.val[:, ind_known]))
+    else:
+        ps_val = np.vstack((im.xx(), im.yy(), im.zz(), im.val.reshape(im.nv, -1)))
 
     # Initialize point set
     ps = PointSet(npt=ps_val.shape[1], nv=ps_val.shape[0], val=ps_val,
                   varname=['X', 'Y', 'Z'] + im.varname)
 
-    # # Set x-coordinate
-    # t = im.x()
-    # v = []
-    # for i in range(im.nyz()):
-    #     v.append(t)
-    #
-    # ps.set_var(val=v, varname='X', ind=0)
-    #
-    # # Set y-coordinate
-    # t = np.repeat(im.y(), im.nx)
-    # v = []
-    # for i in range(im.nz):
-    #     v.append(t)
-    #
-    # ps.set_var(val=v, varname='Y', ind=1)
-    #
-    # # Set z-coordinate
-    # v = np.repeat(im.z(), im.nxy())
-    # ps.set_var(val=v, varname='Z', ind=2)
-    #
-    # # Set next variable(s)
-    # for i in range(im.nv):
-    #     ps.set_var(val=im.val[i,...], varname=im.varname[i], ind=3+i)
-
     return ps
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def pointSetToImage(ps, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0, job=0):
+def pointSetToImage(ps,
+                    nx=None, ny=None, nz=None,
+                    sx=None, sy=None, sz=None,
+                    ox=None, oy=None, oz=None,
+                    nx_max=10000, ny_max=10000, nz_max=10000, nxyz_max=10000000,
+                    sx_min=1.e-6, sy_min=1.e-6, sz_min=1.e-6,
+                    job=0):
     """
-    Returns an image corresponding to the input point set and grid.
+    Returns an image corresponding to the input point set.
+    The output image grid geometry is defined according to the input parameters
+    (nx, ny, nz, sx, sy, sz, ox, oy, oz). Parameters not given (None) are
+    automatically computed such that, if possible, the grid covers all points of
+    the input point set, with cell size such that only one point is in a same
+    cell.
 
     Note: the last point is selected if more than one point fall in a same cell.
 
     :param ps:  (PointSet class) input point set, with x, y, z-coordinates as
                     first three variable
     :param nx, ny, nz:
-                (int) number of grid cells along each axis
+                (int or None) number of grid cells along each axis
     :param sx, sy, sz:
-                (float) cell size along each axis
+                (float or None) cell size along each axis
     :param ox, oy, oz:
-                (float) origin of the grid (bottom-lower-left corner)
+                (float or None) origin of the grid (bottom-lower-left corner)
+    :param nx_max, ny_max, nz_max:
+                (int) maximal values for nx, ny, nz
+    :param nxyz_max:
+                (int) maximal value for the product nx*ny*nz
+    :param sx_min, sy_min, sz_min:
+                (float) minimal values for sx, sy, sz
     :param job: (int) defines some behaviour:
                     - if 0: an error occurs if one data is located outside of
                         the image grid, otherwise all data are integrated in the
@@ -1485,9 +1629,58 @@ def pointSetToImage(ps, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0
     :return im: (Img class) image corresponding to the input point set and grid
     """
 
+    fname = 'pointSetToImage'
+
     if ps.nv < 3:
-        print("ERROR: invalid number of variable (should be > 3)")
+        print(f'ERROR ({fname}): invalid number of variable (should be > 3)')
         return None
+
+    if ps.varname[0].lower() != 'x' or ps.varname[1].lower() != 'y' or ps.varname[2].lower() != 'z':
+        print(f'ERROR ({fname}): invalid variable: 3 first ones must be x, y, z coordinates')
+        return None
+
+    if (nx is None or ny is None or nz is None \
+    or sx is None or sy is None or sz is None \
+    or ox is None or oy is None or oz is None) \
+    and ps.npt == 0:
+        print(f'ERROR ({fname}): number of point is 0, unable to compute grid geometry')
+        return None
+
+    # Compute cell size (if not given)
+    if sx is None:
+        t = np.unique(ps.x())
+        if t.size > 1:
+            sx = max(np.min(np.diff(t)), sx_min)
+        else:
+            sx = 1.0
+    if sy is None:
+        t = np.unique(ps.y())
+        if t.size > 1:
+            sy = max(np.min(np.diff(t)), sy_min)
+        else:
+            sy = 1.0
+    if sz is None:
+        t = np.unique(ps.z())
+        if t.size > 1:
+            sz = max(np.min(np.diff(t)), sz_min)
+        else:
+            sz = 1.0
+
+    # Compute origin (if not given)
+    if ox is None:
+        ox = ps.x().min() - 0.5*sx
+    if oy is None:
+        oy = ps.y().min() - 0.5*sy
+    if oz is None:
+        oz = ps.z().min() - 0.5*sz
+
+    # Compute dimension, i.e. number of cells (if not given)
+    if nx is None:
+        nx = min(int(np.ceil((ps.x().max() - ox)/sx)), nx_max)
+    if ny is None:
+        ny = min(int(np.ceil((ps.y().max() - oy)/sy)), ny_max)
+    if nz is None:
+        nz = min(int(np.ceil((ps.z().max() - oz)/sz)), nz_max)
 
     # Initialize image
     im = Img(nx=nx, ny=ny, nz=nz,
@@ -1520,28 +1713,27 @@ def pointSetToImage(ps, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0
                 iz[i] = nz-1
 
     # Check which index is out of the image grid
-    # iout = np.any([np.array(ix < 0), np.array(ix >= nx),
-    #                np.array(iy < 0), np.array(iy >= ny),
-    #                np.array(iz < 0), np.array(iz >= nz)],
-    #               0)
-    iout = np.any(np.array((ix < 0, ix >= nx,
-                            iy < 0, iy >= ny,
-                            iz < 0, iz >= nz)), 0)
+    iout = np.any(np.array((ix < 0, ix >= nx, iy < 0, iy >= ny, iz < 0, iz >= nz)), axis=0)
 
-    if not job and sum(iout) > 0:
-        print ("ERROR: point out of the image grid!")
+    if not job and np.sum(iout) > 0:
+        print(f'ERROR ({fname}): point out of the image grid!')
         return None
 
     # Set values in the image (last point is selected if more than one in a cell)
     for i in range(ps.npt): # ps.npt is equal to iout.size
         if not iout[i]:
+            # if not np.isnan(im.val[0, iz[i], iy[i], ix[i]]:
+            #     print(f'WARNING ({fname}): more than one point in the same cell!')
             im.val[:,iz[i], iy[i], ix[i]] = ps.val[3:ps.nv,i]
+
+    if np.sum(~np.isnan(im.val[0])) != ps.npt:
+        print(f'WARNING ({fname}): more than one point in the same cell!')
 
     return im
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def isImageDimensionEqual (im1, im2):
+def isImageDimensionEqual(im1, im2):
     """
     Checks if grid dimensions of two images are equal.
     """
@@ -1550,7 +1742,7 @@ def isImageDimensionEqual (im1, im2):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def isImageEqual (im1, im2):
+def isImageEqual(im1, im2):
     """
     Checks if two images are equal (dimension, spacing, origin, variables).
     """
@@ -1570,7 +1762,7 @@ def isImageEqual (im1, im2):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def isPointSetEqual (ps1, ps2):
+def isPointSetEqual(ps1, ps2):
     """
     Checks if two point sets are equal (npt, nv, variable values).
     """
@@ -1606,12 +1798,14 @@ def indicatorImage(im, ind=0, categ=None):
                     variable(s) as number of category values given by 'categ')
     """
 
+    fname = 'indicatorImage'
+
     # Check (set) ind
     if ind < 0:
         ind = im.nv + ind
 
     if ind < 0 or ind >= im.nv:
-        print("ERROR: invalid index")
+        print(f'ERROR ({fname}): invalid index')
         return None
 
     # Set categ if not given (None)
@@ -1637,7 +1831,7 @@ def indicatorImage(im, ind=0, categ=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def gatherImages (imlist, varInd=None, keep_varname=False, rem_var_from_source=False, treat_image_one_by_one=False):
+def gatherImages(imlist, varInd=None, keep_varname=False, rem_var_from_source=False, treat_image_one_by_one=False):
     """
     Gathers images.
 
@@ -1676,18 +1870,20 @@ def gatherImages (imlist, varInd=None, keep_varname=False, rem_var_from_source=F
                     images in imlist
     """
 
+    fname = 'gatherImages'
+
     if len(imlist) == 0:
         return None
 
     for i in range(1,len(imlist)):
         if not isImageDimensionEqual(imlist[0], imlist[i]):
-            print("ERROR: grid dimensions differ, nothing done!")
+            print(f'ERROR ({fname}): grid dimensions differ, nothing done!')
             return None
 
     if varInd is not None:
         varInd = np.atleast_1d(varInd).reshape(-1)
         if np.sum([iv in range(im.nv) for im in imlist for iv in varInd]) != len(imlist)*len(varInd):
-            print("ERROR: invalid index-es")
+            print(f'ERROR ({fname}): invalid index-es')
             return None
 
     varname = None # default
@@ -1745,7 +1941,7 @@ def gatherImages (imlist, varInd=None, keep_varname=False, rem_var_from_source=F
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageContStat (im, op='mean', **kwargs):
+def imageContStat(im, op='mean', **kwargs):
     """
     Computes "pixel-wise" statistics over every variable of an image.
 
@@ -1767,6 +1963,8 @@ def imageContStat (im, op='mean', **kwargs):
                     over every variable of the input image
     """
 
+    fname = 'imageContStat'
+
     # Prepare operation
     if op == 'max':
         func = np.nanmax
@@ -1786,11 +1984,11 @@ def imageContStat (im, op='mean', **kwargs):
     elif op == 'quantile':
         func = np.nanquantile
         if 'q' not in kwargs:
-            print("ERROR: keyword argument 'q' required for op='quantile', nothing done!")
+            print(f"ERROR ({fname}): keyword argument 'q' required for op='quantile', nothing done!")
             return None
         varname = [op + '_' + str(v) for v in kwargs['q']]
     else:
-        print("ERROR: unkown operation {}, nothing done!".format(op))
+        print(f"ERROR ({fname}): unkown operation '{op}', nothing done!")
         return None
 
     imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
@@ -1807,7 +2005,7 @@ def imageContStat (im, op='mean', **kwargs):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageListContStat (im_list, op='mean', ind=0, **kwargs):
+def imageListContStat(im_list, op='mean', ind=0, **kwargs):
     """
     Computes "pixel-wise" statistics over one variable of a list of images.
 
@@ -1833,9 +2031,11 @@ def imageListContStat (im_list, op='mean', ind=0, **kwargs):
                     over the variable of index 'ind' of the input images
     """
 
+    fname = 'imageListContStat'
+
     # Check input images
     if not isinstance(im_list, list) and not (isinstance(im_list, np.ndarray) and im_list.ndim==1):
-        print("ERROR: first argument must be a list (or a 1d-array) of images")
+        print(f'ERROR ({fname}): first argument must be a list (or a 1d-array) of images')
         return None
 
     if len(im_list) == 0:
@@ -1844,7 +2044,7 @@ def imageListContStat (im_list, op='mean', ind=0, **kwargs):
     im0 = im_list[0]
     for im in im_list[1:]:
         if im.val.shape != im0.val.shape:
-            print("ERROR: images in list of incompatible size")
+            print(f'ERROR ({fname}): images in list of incompatible size')
             return None
 
     # Check (set) ind
@@ -1852,7 +2052,7 @@ def imageListContStat (im_list, op='mean', ind=0, **kwargs):
         ind = im0.nv + ind
 
     if ind < 0 or ind >= im0.nv:
-        print("ERROR: invalid index")
+        print(f'ERROR ({fname}): invalid index')
         return None
 
     # Prepare operation
@@ -1874,11 +2074,11 @@ def imageListContStat (im_list, op='mean', ind=0, **kwargs):
     elif op == 'quantile':
         func = np.nanquantile
         if 'q' not in kwargs:
-            print("ERROR: keyword argument 'q' required for op='quantile', nothing done!")
+            print(f"ERROR ({fname}): keyword argument 'q' required for op='quantile', nothing done!")
             return None
         varname = [op + '_' + str(v) for v in kwargs['q']]
     else:
-        print("ERROR: unkown operation {}, nothing done!".format(op))
+        print(f"ERROR ({fname}): unkown operation '{op}', nothing done!")
         return None
 
     imOut = Img(nx=im0.nx, ny=im0.ny, nz=im0.nz,
@@ -1895,7 +2095,7 @@ def imageListContStat (im_list, op='mean', ind=0, **kwargs):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageCategProp (im, categ):
+def imageCategProp(im, categ):
     """
     Computes "pixel-wise" proportions of given categories over every
     variable of an image.
@@ -1927,7 +2127,7 @@ def imageCategProp (im, categ):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageListCategProp (im_list, categ, ind=0):
+def imageListCategProp(im_list, categ, ind=0):
     """
     Computes "pixel-wise" proportions of given categories over one variable of a
     list of images.
@@ -1946,9 +2146,11 @@ def imageListCategProp (im_list, categ, ind=0):
                     of index 'ind' of the input images
     """
 
+    fname = 'imageListCategProp'
+
     # Check input images
     if not isinstance(im_list, list) and not (isinstance(im_list, np.ndarray) and im_list.ndim==1):
-        print("ERROR: first argument must be a list (or a 1d-array) of images")
+        print(f'ERROR ({fname}): first argument must be a list (or a 1d-array) of images')
         return None
 
     if len(im_list) == 0:
@@ -1957,7 +2159,7 @@ def imageListCategProp (im_list, categ, ind=0):
     im0 = im_list[0]
     for im in im_list[1:]:
         if im.val.shape != im0.val.shape:
-            print("ERROR: images in list of incompatible size")
+            print(f'ERROR ({fname}): images in list of incompatible size')
             return None
 
     # Check (set) ind
@@ -1965,7 +2167,7 @@ def imageListCategProp (im_list, categ, ind=0):
         ind = im0.nv + ind
 
     if ind < 0 or ind >= im0.nv:
-        print("ERROR: invalid index")
+        print(f'ERROR ({fname}): invalid index')
         return None
 
     # Array of categories
@@ -1986,7 +2188,7 @@ def imageListCategProp (im_list, categ, ind=0):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageEntropy (im, varInd=None, varIndList=None):
+def imageEntropy(im, varInd=None, varIndList=None):
     """
     Computes "pixel-wise" entropy for proprotions given as variables in an
     image.
@@ -2007,6 +2209,8 @@ def imageEntropy (im, varInd=None, varIndList=None):
                     variables. Note that sum_{v} p(v(i)) should be equal to 1
     """
 
+    fname = 'imageEntropy'
+
     if varInd is None:
         varInd = varIndList
 
@@ -2014,13 +2218,13 @@ def imageEntropy (im, varInd=None, varIndList=None):
         varInd = np.atleast_1d(varInd).reshape(-1)
         # Check if each index is valid
         if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
-            print("ERROR: invalid index-es")
+            print(f'ERROR ({fname}): invalid index-es')
             return None
     else:
         varInd = range(im.nv)
 
     if len(varInd) < 2:
-        print("ERROR: at least 2 indexes should be given")
+        print(f'ERROR ({fname}): at least 2 indexes should be given')
         return None
 
     imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
@@ -2253,7 +2457,7 @@ def sampleFromImage(image, size, seed=None, mask=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def extractRandomPointFromImage (im, npt, seed=None):
+def extractRandomPointFromImage(im, npt, seed=None):
     """
     Extracts random points from an image (at center of grid cells) and return
     the corresponding point set.
@@ -2267,8 +2471,10 @@ def extractRandomPointFromImage (im, npt, seed=None):
     :return:    (PointSet class) a point set containing the sample points
     """
 
+    fname = 'extractRandomPointFromImage'
+
     if npt <= 0:
-        print("ERROR: number of points negative or zero (npt={}), nothing done!".format(npt))
+        print(f'ERROR ({fname}): number of points negative or zero (npt={npt}), nothing done!')
         return None
 
     if npt >= im.nxyz():
@@ -2349,9 +2555,11 @@ def readVarsTxt(fname, missing_value=None, delimiter=' ', comments='#', usecols=
                                 val[:,i] the values of variable of index i
     """
 
+    funcname = 'readVarsTxt'
+
     # Check comments identifier
     if comments is not None and comments == '':
-        print("ERROR: comments cannot be an empty string, use comments=None to disable comments")
+        print(f'ERROR ({funcname}): comments cannot be an empty string, use comments=None to disable comments')
         return None
 
     # Use pandas.read_csv to read (the rest of) the file (variable names and variable values)
@@ -2432,12 +2640,14 @@ def writeVarsTxt(fname, varname, val, missing_value=None, delimiter=' ', usecols
     :return None:
     """
 
+    funcname = 'writeVarsTxt'
+
     if not isinstance(varname, list):
-        print('ERROR: varname invalid, should be a list')
+        print(f'ERROR ({funcname}): varname invalid, should be a list')
         return None
 
     if val.ndim != 2 or val.shape[1] != len(varname):
-        print('ERROR: val is incompatible with varname')
+        print(f'ERROR ({funcname}): val is incompatible with varname')
         return None
 
     # Extract columns if needed
@@ -2597,15 +2807,17 @@ def readGridInfoFromHeaderTxt(
                                 mode of filling
     """
 
+    fname = 'readGridInfoFromHeaderTxt'
+
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("ERROR (readGridInfoFromHeaderTxt): invalid filename ({})".format(filename))
+        print(f'ERROR ({fname}): invalid filename ({filename})')
         return None
 
     # Check header_str identifier
     if header_str is not None:
         if header_str == '':
-            print("ERROR (readGridInfoFromHeaderTxt): header_str identifier cannot be an empty string, use header_str=None instead")
+            print(f'ERROR ({fname}): header_str identifier cannot be an empty string, use header_str=None instead')
             return None
         else:
             nhs = len(header_str)
@@ -2643,122 +2855,122 @@ def readGridInfoFromHeaderTxt(
                 entry = line_s[k].lower()
                 if entry in key_nx: # entry for nx ?
                     if nx_flag:
-                        print('ERROR (readGridInfoFromHeaderTxt): more than one entry for "nx"')
+                        print(f'ERROR ({fname}): more than one entry for "nx"')
                         return None
                     try:
                         nx = int(line_s[k+1])
                         k = k+2
                         nx_flag = True
                     except:
-                        print('ERROR (readGridInfoFromHeaderTxt): reading entry for "nx"')
+                        print(f'ERROR ({fname}): reading entry for "nx"')
                         return None
 
                 elif entry in key_ny: # entry for ny ?
                     if ny_flag:
-                        print('ERROR (readGridInfoFromHeaderTxt): more than one entry for "ny"')
+                        print(f'ERROR ({fname}): more than one entry for "ny"')
                         return None
                     try:
                         ny = int(line_s[k+1])
                         k = k+2
                         ny_flag = True
                     except:
-                        print('ERROR (readGridInfoFromHeaderTxt): reading entry for "ny"')
+                        print(f'ERROR ({fname}): reading entry for "ny"')
                         return None
 
                 elif entry in key_nz: # entry for nz ?
                     if nz_flag:
-                        print('ERROR (readGridInfoFromHeaderTxt): more than one entry for "nz"')
+                        print(f'ERROR ({fname}): more than one entry for "nz"')
                         return None
                     try:
                         nz = int(line_s[k+1])
                         k = k+2
                         nz_flag = True
                     except:
-                        print('ERROR (readGridInfoFromHeaderTxt): reading entry for "nz"')
+                        print(f'ERROR ({fname}): reading entry for "nz"')
                         return None
 
                 elif entry in key_sx: # entry for sx ?
                     if sx_flag:
-                        print('ERROR (readGridInfoFromHeaderTxt): more than one entry for "sx"')
+                        print(f'ERROR ({fname}): more than one entry for "sx"')
                         return None
                     try:
                         sx = float(line_s[k+1])
                         k = k+2
                         sx_flag = True
                     except:
-                        print('ERROR (readGridInfoFromHeaderTxt): reading entry for "sx"')
+                        print(f'ERROR ({fname}): reading entry for "sx"')
                         return None
 
                 elif entry in key_sy: # entry for sy ?
                     if sy_flag:
-                        print('ERROR (readGridInfoFromHeaderTxt): more than one entry for "sy"')
+                        print(f'ERROR ({fname}): more than one entry for "sy"')
                         return None
                     try:
                         sy = float(line_s[k+1])
                         k = k+2
                         sy_flag = True
                     except:
-                        print('ERROR (readGridInfoFromHeaderTxt): reading entry for "sy"')
+                        print(f'ERROR ({fname}): reading entry for "sy"')
                         return None
 
                 elif entry in key_sz: # entry for sz ?
                     if sz_flag:
-                        print('ERROR (readGridInfoFromHeaderTxt): more than one entry for "sz"')
+                        print(f'ERROR ({fname}): more than one entry for "sz"')
                         return None
                     try:
                         sz = float(line_s[k+1])
                         k = k+2
                         sz_flag = True
                     except:
-                        print('ERROR (readGridInfoFromHeaderTxt): reading entry for "sz"')
+                        print(f'ERROR ({fname}): reading entry for "sz"')
                         return None
 
                 elif entry in key_ox: # entry for ox ?
                     if ox_flag:
-                        print('ERROR (readGridInfoFromHeaderTxt): more than one entry for "ox"')
+                        print(f'ERROR ({fname}): more than one entry for "ox"')
                         return None
                     try:
                         ox = float(line_s[k+1])
                         k = k+2
                         ox_flag = True
                     except:
-                        print('ERROR (readGridInfoFromHeaderTxt): reading entry for "ox"')
+                        print(f'ERROR ({fname}): reading entry for "ox"')
                         return None
 
                 elif entry in key_oy: # entry for oy ?
                     if oy_flag:
-                        print('ERROR (readGridInfoFromHeaderTxt): more than one entry for "oy"')
+                        print(f'ERROR ({fname}): more than one entry for "oy"')
                         return None
                     try:
                         oy = float(line_s[k+1])
                         k = k+2
                         oy_flag = True
                     except:
-                        print('ERROR (readGridInfoFromHeaderTxt): reading entry for "oy"')
+                        print(f'ERROR ({fname}): reading entry for "oy"')
                         return None
 
                 elif entry in key_oz: # entry for oz ?
                     if oz_flag:
-                        print('ERROR (readGridInfoFromHeaderTxt): more than one entry for "oz"')
+                        print(f'ERROR ({fname}): more than one entry for "oz"')
                         return None
                     try:
                         oz = float(line_s[k+1])
                         k = k+2
                         oz_flag = True
                     except:
-                        print('ERROR (readGridInfoFromHeaderTxt): reading entry for "oz"')
+                        print(f'ERROR ({fname}): reading entry for "oz"')
                         return None
 
                 elif entry in key_sorting and get_sorting: # entry for sorting (and get_sorting)?
                     if sorting_flag:
-                        print('ERROR (readGridInfoFromHeaderTxt): more than one entry for "sorting"')
+                        print(f'ERROR ({fname}): more than one entry for "sorting"')
                         return None
                     try:
                         sorting = line_s[k+1]
                         k = k+2
                         sorting_flag = True
                     except:
-                        print('ERROR (readGridInfoFromHeaderTxt): reading entry for "sorting"')
+                        print(f'ERROR ({fname}): reading entry for "sorting"')
                         return None
 
                 else:
@@ -2776,15 +2988,16 @@ def readGridInfoFromHeaderTxt(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def readImageTxt(filename,
-                 nx=1, ny=1, nz=1,
-                 sx=1.0, sy=1.0, sz=1.0,
-                 ox=0.0, oy=0.0, oz=0.0,
-                 sorting='+X+Y+Z',
-                 missing_value=None,
-                 delimiter=' ',
-                 comments='#',
-                 usecols=None):
+def readImageTxt(
+        filename,
+        nx=1, ny=1, nz=1,
+        sx=1.0, sy=1.0, sz=1.0,
+        ox=0.0, oy=0.0, oz=0.0,
+        sorting='+X+Y+Z',
+        missing_value=None,
+        delimiter=' ',
+        comments='#',
+        usecols=None):
     """
     Reads an image from a txt file, including grid geometry information, and
     sorting mode of filling.
@@ -2874,14 +3087,16 @@ def readImageTxt(filename,
     :return im: (Img class) image containing the variables that have been read
     """
 
+    fname = 'readImageTxt'
+
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("ERROR: invalid filename ({})".format(filename))
+        print(f'ERROR ({fname}): invalid filename ({filename})')
         return None
 
     # Check comments identifier
     if comments is None or comments == '':
-        print("ERROR: comments cannot be an empty string (nor None)")
+        print(f'ERROR ({fname}): comments cannot be an empty string (nor None)')
         return None
 
     # Read grid geometry information and sorting mode from header
@@ -2896,7 +3111,7 @@ def readImageTxt(filename,
                 header_str=comments,
                 get_sorting=True)
     except:
-        print('ERROR: grid geometry information cannot be read')
+        print(f'ERROR ({fname}): grid geometry information cannot be read')
         return None
 
     # Deal with sorting
@@ -2904,7 +3119,7 @@ def readImageTxt(filename,
         sorting = sorting + '+Z'
 
     if len(sorting) != 6:
-        print('ERROR: invalid sorting (string)')
+        print(f'ERROR ({fname}): invalid sorting (string)')
         return None
 
     sorting = sorting.lower() # tranform to lower case
@@ -2928,7 +3143,7 @@ def readImageTxt(filename,
         sha = (nx, ny, nz)
         tr = (3, 2, 1)
     else:
-        print('ERROR: invalid sorting (string)')
+        print(f'ERROR ({fname}): invalid sorting (string)')
         return None
 
     flip = [1, 1, 1]
@@ -2937,18 +3152,18 @@ def readImageTxt(filename,
         if s == '-':
             flip[i] = -1
         elif s != '+':
-            print('ERROR: invalid sorting (string)')
+            print(f'ERROR ({fname}): invalid sorting (string)')
             return None
 
     # Read variale names and values from file
     try:
         varname, val = readVarsTxt(filename, missing_value=missing_value, delimiter=delimiter, comments=comments, usecols=usecols)
     except:
-        print('ERROR: variables names / values cannot be read')
+        print(f'ERROR ({fname}): variables names / values cannot be read')
         return None
 
     if val.shape[0] != nx*ny*nz:
-        print('ERROR: number of grid cells and number of values for each variable differs')
+        print(f'ERROR ({fname}): number of grid cells and number of values for each variable differs')
         return None
 
     # Reorganize val array according to sorting, final shape: (len(varname), nz, ny, nx)
@@ -2961,15 +3176,16 @@ def readImageTxt(filename,
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def writeImageTxt(filename,
-                  im,
-                  sorting='+X+Y+Z',
-                  missing_value=None,
-                  delimiter=' ',
-                  comments='#',
-                  endofline='\n',
-                  usevars=None,
-                  fmt="%.10g"):
+def writeImageTxt(
+        filename,
+        im,
+        sorting='+X+Y+Z',
+        missing_value=None,
+        delimiter=' ',
+        comments='#',
+        endofline='\n',
+        usevars=None,
+        fmt="%.10g"):
     """
     Writes an image in a txt file, including grid geometry information, and
     sorting mode of filling.
@@ -3043,19 +3259,21 @@ def writeImageTxt(filename,
     :return None:
     """
 
+    fname = 'writeImageTxt'
+
     # Check comments identifier
     if comments is None or comments == '':
-        print("ERROR: comments cannot be an empty string (nor None)")
+        print(f'ERROR ({fname}): comments cannot be an empty string (nor None)')
         return None
 
     if usevars is not None:
         if isinstance(usevars, int):
             if usevars < 0 or usevars >= im.nv:
-                print("ERROR: usevars invalid")
+                print(f'ERROR ({fname}): usevars invalid')
                 return None
         else:
             if np.any([iv < 0 or iv >= im.nv for iv in usevars]):
-                print("ERROR: usevars invalid")
+                print(f'ERROR ({fname}): usevars invalid')
                 return None
 
     # Deal with sorting
@@ -3063,7 +3281,7 @@ def writeImageTxt(filename,
         sorting = sorting + '+Z'
 
     if len(sorting) != 6:
-        print('ERROR: invalid sorting (string)')
+        print(f'ERROR ({fname}): invalid sorting (string)')
         return None
 
     sorting = sorting.lower() # tranform to lower case
@@ -3081,7 +3299,7 @@ def writeImageTxt(filename,
     elif s == 'zyx': # "transpose_xyz_to_zyx (inv. of "transpose_xyz_to_zyx") to do
         tr = (3, 2, 1)
     else:
-        print('ERROR: invalid sorting (string)')
+        print(f'ERROR ({fname}): invalid sorting (string)')
         return None
 
     flip = [1, 1, 1]
@@ -3097,7 +3315,7 @@ def writeImageTxt(filename,
             else: # s2 == 'z'
                 flip[2] = -1
         elif s1 != '+':
-            print('ERROR: invalid sorting (string)')
+            print(f'ERROR ({fname}): invalid sorting (string)')
             return None
 
     # Reorganize val array according to sorting, final shape: (im.nx*im.ny*im.nz, len(varname))
@@ -3134,13 +3352,14 @@ def writeImageTxt(filename,
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def readPointSetTxt(filename,
-                    missing_value=None,
-                    delimiter=' ',
-                    comments='#',
-                    usecols=None,
-                    set_xyz_as_first_vars=True,
-                    x_def=0.0, y_def=0.0, z_def=0.0):
+def readPointSetTxt(
+        filename,
+        missing_value=None,
+        delimiter=' ',
+        comments='#',
+        usecols=None,
+        set_xyz_as_first_vars=True,
+        x_def=0.0, y_def=0.0, z_def=0.0):
     """
     Reads a point set from a txt file.
 
@@ -3196,16 +3415,18 @@ def readPointSetTxt(filename,
     :return ps: (PointSet class) point set
     """
 
+    fname = 'readPointSetTxt'
+
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("ERROR: invalid filename ({})".format(filename))
+        print(f'ERROR ({fname}): invalid filename ({filename})')
         return None
 
     # Read variale names and values from file
     try:
         varname, val = readVarsTxt(filename, missing_value=missing_value, delimiter=delimiter, comments=comments, usecols=usecols)
     except:
-        print('ERROR: variables names / values cannot be read')
+        print(f'ERROR ({fname}): variables names / values cannot be read')
         return None
 
     # Number of points and number of variables
@@ -3220,7 +3441,7 @@ def readPointSetTxt(filename,
             ix = ix[0]
             ic.append(ix)
         elif len(ix) > 1:
-            print("ERROR: x-coordinates given more than once")
+            print(f"ERROR ({fname}): x-coordinates given more than once")
         else:
             ix = -1 # x-coordinates not given
 
@@ -3229,7 +3450,7 @@ def readPointSetTxt(filename,
             iy = iy[0]
             ic.append(iy)
         elif len(iy) > 1:
-            print("ERROR: y-coordinates given more than once")
+            print(f"ERROR ({fname}): y-coordinates given more than once")
         else:
             iy = -1 # y-coordinates not given
 
@@ -3238,7 +3459,7 @@ def readPointSetTxt(filename,
             iz = iz[0]
             ic.append(iz)
         elif len(iz) > 1:
-            print("ERROR: z-coordinates given more than once")
+            print(f"ERROR ({fname}): z-coordinates given more than once")
         else:
             iz = -1 # z-coordinates not given
 
@@ -3279,14 +3500,15 @@ def readPointSetTxt(filename,
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def writePointSetTxt(filename,
-                     ps,
-                     missing_value=None,
-                     delimiter=' ',
-                     comments='#',
-                     endofline='\n',
-                     usevars=None,
-                     fmt="%.10g"):
+def writePointSetTxt(
+        filename,
+        ps,
+        missing_value=None,
+        delimiter=' ',
+        comments='#',
+        endofline='\n',
+        usevars=None,
+        fmt="%.10g"):
     """
     Writes a point set in a txt file.
 
@@ -3326,19 +3548,21 @@ def writePointSetTxt(filename,
     :return None:
     """
 
+    fname = 'writePointSetTxt'
+
     # Check comments identifier
     if comments is None or comments == '':
-        print("ERROR: comments cannot be an empty string (nor None)")
+        print(f'ERROR ({fname}): comments cannot be an empty string (nor None)')
         return None
 
     if usevars is not None:
         if isinstance(usevars, int):
             if usevars < 0 or usevars >= ps.nv:
-                print("ERROR: usevars invalid")
+                print(f'ERROR ({fname}): usevars invalid')
                 return None
         else:
             if np.any([iv < 0 or iv >= ps.nv for iv in usevars]):
-                print("ERROR: usevars invalid")
+                print(f'ERROR ({fname}): usevars invalid')
                 return None
 
     # Set header
@@ -3436,9 +3660,11 @@ def readImage2Drgb(filename, categ=False, nancol=None, keep_channels=True, rgb_w
                                         the index of the color
     """
 
+    fname = 'readImage2Drgb'
+
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("ERROR: invalid filename ({})".format(filename))
+        print(f'ERROR ({fname}): invalid filename ({filename})')
         return None
 
     # Read image
@@ -3451,7 +3677,7 @@ def readImage2Drgb(filename, categ=False, nancol=None, keep_channels=True, rgb_w
 
     # Check input image
     if nv != 3 and nv != 4:
-        print("ERROR: the input image must be in RGB or RGBA (3 or 4 channels for each pixel)")
+        print(f'ERROR ({fname}): the input image must be in RGB or RGBA (3 or 4 channels for each pixel)')
         return None
 
     # Normalize channels if needed
@@ -3552,13 +3778,15 @@ def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0),
     :return None:
     """
 
+    fname = 'writeImage2Drgb'
+
     # Check image parameters
     if im.nz != 1:
-        print("ERROR: 'im.nz' must be 1")
+        print(f"ERROR ({fname}): 'im.nz' must be 1")
         return None
 
     if im.nv not in [1, 3, 4]:
-        print("ERROR: 'im.nv' must be 1, 3, or 4")
+        print(f"ERROR ({fname}): 'im.nv' must be 1, 3, or 4")
         return None
 
     # Extract the array of values
@@ -3575,11 +3803,11 @@ def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0),
             try:
                 nchan = len(col[0])
             except:
-                print("ERROR: col must be a sequence of RGB or RBGA color (each entry is a sequence of length 3 or 4)")
+                print(f'ERROR ({fname}): col must be a sequence of RGB or RBGA color (each entry is a sequence of length 3 or 4)')
                 return None
 
             if not np.all(np.array([len(c) for c in col]) == nchan):
-                print("ERROR: same format is required for every color in col")
+                print(f'ERROR ({fname}): same format is required for every color in col')
                 return None
 
             # "format" nancol
@@ -3588,12 +3816,12 @@ def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0),
             elif nchan == 4:
                 nancolf = mcolors.to_rgba(nancol)
             else:
-                print("ERROR: invalid format for the colors (RGB or RGBA required)")
+                print(f'ERROR ({fname}): invalid format for the colors (RGB or RGBA required)')
                 return None
 
             # Check value in vv
             if np.any((vv < 0, vv >= len(col))):
-                print("ERROR: variable value in image cannot be treated as index in col")
+                print(f'ERROR ({fname}): variable value in image cannot be treated as index in col')
                 return None
 
             # Set ouput colors
@@ -3609,11 +3837,11 @@ def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0),
                 try:
                     cmap = plt.get_cmap(cmap)
                 except:
-                    print("ERROR: invalid cmap string! (grayscale is used)")
+                    print(f'ERROR ({fname}): invalid cmap string! (grayscale is used)')
                     cmap = plt.get_cmap("gray")
 
             if np.any((vv < 0, vv > 1)):
-                print("WARNING: variable values in image are not in interval [0,1], they are rescaled")
+                print(f'WARNING ({fname}): variable values in image are not in interval [0,1], they are rescaled')
                 ind = np.where(~np.isnan(vv))
                 vmin = np.min(vv[ind])
                 vmax = np.max(vv[ind])
@@ -3662,9 +3890,11 @@ def readImageGslib(filename, missing_value=None):
     :return im: (Img class) image containing the variables that have been read
     """
 
+    fname = 'readImageGslib'
+
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("ERROR: invalid filename ({})".format(filename))
+        print(f'ERROR ({fname}): invalid filename ({filename})')
         return None
 
     # Open the file in read mode
@@ -3772,9 +4002,11 @@ def readImageVtk(filename, missing_value=None):
     :return im: (Img class) image containing the variables that have been read
     """
 
+    fname = 'readImageVtk'
+
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("ERROR: invalid filename ({})".format(filename))
+        print(f'ERROR ({fname}): invalid filename ({filename})')
         return None
 
     # Open the file in read mode
@@ -3887,9 +4119,11 @@ def readPointSetGslib(filename, missing_value=None):
     :return ps: (PointSet class) point set
     """
 
+    fname = 'readPointSetGslib'
+
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("ERROR: invalid filename ({})".format(filename))
+        print(f'ERROR ({fname}): invalid filename ({filename})')
         return None
 
     # Open the file in read mode

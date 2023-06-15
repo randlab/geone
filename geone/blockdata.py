@@ -120,9 +120,12 @@ def readBlockData(filename):
 
     :return:                (BlockData class) block data
     """
+
+    fname = 'readBlockData'
+
     # Check if the file exists
     if not os.path.isfile(filename):
-        print("ERROR: invalid filename ({})".format(filename))
+        print(f'ERROR ({fname}): invalid filename ({filename})')
         return
 
     # Open the file in read mode

@@ -46,15 +46,18 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
                         of the given intensity (`mu`) and m the dimension of the
                         domain
     """
+
+    fname = 'poissonPointProcess'
+
     xmin = np.atleast_1d(xmin)
     xmax = np.atleast_1d(xmax)
 
     if xmin.ndim != xmax.ndim or xmin.ndim != 1:
-        print("ERROR (poissonPointProcess): xmin, xmax not valid (dimension or shape)")
+        print(f'ERROR ({fname}): xmin, xmax not valid (dimension or shape)')
         return None
 
     if np.any(xmin >= xmax):
-        print("ERROR (poissonPointProcess): xmin, xmax not valid ((component of) xmin less than or equal to xmax)")
+        print(f'ERROR ({fname}): xmin, xmax not valid ((component of) xmin less than or equal to xmax)')
         return None
 
     # dimension
@@ -62,23 +65,23 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
 
     if callable(mu):
         if ninterval is None:
-            print("ERROR (poissonPointProcess): ninterval must be specified when a function is passed for the intensity (mu)")
+            print(f'ERROR ({fname}): ninterval must be specified when a function is passed for the intensity (mu)')
             return None
 
         ninterval = np.asarray(ninterval, dtype=int)  # possibly 0-dimensional
         if ninterval.size == 1:
             ninterval = ninterval.flat[0] * np.ones(dim)
         elif ninterval.size != dim:
-            print ('ERROR (poissonPointProcess): ninterval does not have an acceptable size')
+            print(f'ERROR ({fname}): ninterval does not have an acceptable size')
             return None
 
         if np.any(ninterval < 1):
-            print ('ERROR (poissonPointProcess): ninterval has negative or zero value')
+            print(f'ERROR ({fname}): ninterval has negative or zero value')
             return None
 
     elif isinstance(mu, np.ndarray):
         if mu.ndim != dim:
-            print ('ERROR (poissonPointProcess): inconsistent number of dimension for the ndarray `mu`')
+            print(f'ERROR ({fname}): inconsistent number of dimension for the ndarray `mu`')
             return None
 
         ninterval = mu.shape[::-1]
@@ -178,6 +181,9 @@ def chentsov1D(n_mean,
                                     number of hyper-planes for the i-th
                                     realization
     """
+
+    fname = 'chentsov1D'
+
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
@@ -199,7 +205,7 @@ def chentsov1D(n_mean,
             p_max = d
 
     if p_min >= p_max:
-        print ("ERROR (CHENTSOV1D): 'p_min' is greater than or equal to 'p_max'")
+        print(f"ERROR ({fname}): 'p_min' is greater than or equal to 'p_max'")
         return None
 
     # center of each grid cell of the simulation domain
@@ -313,6 +319,9 @@ def chentsov2D(n_mean,
                                     number of hyper-planes for the i-th
                                     realization
     """
+
+    fname = 'chentsov2D'
+
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
@@ -334,11 +343,11 @@ def chentsov2D(n_mean,
             p_max = d
 
     if p_min >= p_max:
-        print ("ERROR (CHENTSOV2D): 'p_min' is greater than or equal to 'p_max'")
+        print(f"ERROR ({fname}): 'p_min' is greater than or equal to 'p_max'")
         return None
 
     if phi_min >= phi_max:
-        print ("ERROR (CHENTSOV2D): 'phi_min' is greater than or equal to 'phi_max'")
+        print(f"ERROR ({fname}): 'phi_min' is greater than or equal to 'phi_max'")
         return None
 
     # center of each grid cell of the simulation domain
@@ -470,7 +479,7 @@ def chentsov3D(n_mean,
                             above); if p_min is None, p_min is set automatically
                             to
                                 - half of the diagonal of the 2D simulation domain
-    :param p_max:       (float) maximal value for orthogonal projection (see 
+    :param p_max:       (float) maximal value for orthogonal projection (see
                             above); if p_max is None, p_max is set automatically
                             to
                                 + half of the diagonal of the 2D simulation domain
@@ -488,6 +497,9 @@ def chentsov3D(n_mean,
                                     number of hyper-planes for the i-th
                                     realization
     """
+
+    fname = 'chentsov3D'
+
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
@@ -509,15 +521,15 @@ def chentsov3D(n_mean,
             p_max = d
 
     if p_min >= p_max:
-        print ("ERROR (CHENTSOV3D): 'p_min' is greater than or equal to 'p_max'")
+        print(f"ERROR ({fname}): 'p_min' is greater than or equal to 'p_max'")
         return None
 
     if phi_min >= phi_max:
-        print ("ERROR (CHENTSOV3D): 'phi_min' is greater than or equal to 'phi_max'")
+        print(f"ERROR ({fname}): 'phi_min' is greater than or equal to 'phi_max'")
         return None
 
     if theta_min >= theta_max:
-        print ("ERROR (CHENTSOV3D): 'theta_min' is greater than or equal to 'theta_max'")
+        print(f"ERROR ({fname}): 'theta_min' is greater than or equal to 'theta_max'")
         return None
 
     # center of each grid cell of the simulation domain

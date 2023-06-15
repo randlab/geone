@@ -303,6 +303,9 @@ class CovModel1D (object):
     def __init__(self,
                  elem=[],
                  name=None):
+
+        fname = 'CovModel1D'
+
         for el in elem:
             if el[0] not in (
                     'nugget',
@@ -317,7 +320,7 @@ class CovModel1D (object):
                     'exponential_generalized',
                     'matern'
                     ):
-                print('ERROR: unknown elementary contribution')
+                print(f'ERROR ({fname}): unknown elementary contribution')
                 return None
         self.elem = elem
         if name is None:
@@ -582,7 +585,7 @@ class CovModel1D (object):
         return f
 
     def plot_model(self, vario=False, hmin=0, hmax=None, npts=500,
-        grid=True, show_xlabel=True, show_ylabel=True, **kwargs):
+                   grid=True, show_xlabel=True, show_ylabel=True, **kwargs):
         """
         Plot covariance or variogram function (in current figure axis).
 
@@ -690,6 +693,9 @@ class CovModel2D (object):
                  elem=[],
                  alpha=0.,
                  name=None):
+
+        fname = 'CovModel2D'
+
         for el in elem:
             if el[0] not in (
                     'nugget',
@@ -704,7 +710,7 @@ class CovModel2D (object):
                     'exponential_generalized',
                     'matern'
                     ):
-                print('ERROR: unknown elementary contribution')
+                print(f'ERROR ({fname}): unknown elementary contribution')
                 return None
         self.elem = elem
         self.alpha = alpha
@@ -1263,11 +1269,14 @@ class CovModel2D (object):
                             is displayed (True by default)
         :kwargs:        keyword arguments passed to the funtion plt.plot
         """
+
+        fname = 'plot_model_one_curve'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
         if main_axis not in (1, 2):
-            print('ERROR: main_axis not valid (should be 1 or 2)')
+            print(f'ERROR ({fname}): main_axis not valid (should be 1 or 2)')
             return None
 
         # In kwargs:
@@ -1374,6 +1383,9 @@ class CovModel3D (object):
                  elem=[],
                  alpha=0., beta=0., gamma=0.,
                  name=None):
+
+        fname = 'CovModel3D'
+
         for el in elem:
             if el[0] not in (
                     'nugget',
@@ -1388,7 +1400,7 @@ class CovModel3D (object):
                     'exponential_generalized',
                     'matern'
                     ):
-                print('ERROR: unknown elementary contribution')
+                print(f'ERROR ({fname}): unknown elementary contribution')
                 return None
         self.elem = elem
         self.alpha = alpha
@@ -1779,8 +1791,8 @@ class CovModel3D (object):
         # plt.show()
 
     def plot_model3d_volume(self, plotter=None, vario=False,
-        color0='red', color1='green', color2='blue',
-        extent=None, ncell=(101, 101, 101), **kwargs):
+                            color0='red', color1='green', color2='blue',
+                            extent=None, ncell=(101, 101, 101), **kwargs):
         """
         Plot covariance or variogram function in 3D (using the function
         drawImage3D_volume from geone.imgplot3d (based on pyvista)).
@@ -1876,8 +1888,8 @@ class CovModel3D (object):
             plotter.show()
 
     def plot_model3d_slice(self, plotter=None, vario=False,
-        color0='red', color1='green', color2='blue',
-        extent=None, ncell=(101, 101, 101), **kwargs):
+                           color0='red', color1='green', color2='blue',
+                           extent=None, ncell=(101, 101, 101), **kwargs):
         """
         Plot covariance or variogram function in 3D (sclices in 3D volume, using
         the function drawImage3D_slice from geone.imgplot3d (based on pyvista)).
@@ -1976,9 +1988,9 @@ class CovModel3D (object):
             plotter.show()
 
     def plot_model_curves(self, plotter=None, vario=False,
-        color0='red', color1='green', color2='blue',
-        h1min=0, h1max=None, h2min=0, h2max=None, h3min=0, h3max=None,
-        n1=500, n2=500, n3=500, grid=True, show_xlabel=True, show_ylabel=True):
+                          color0='red', color1='green', color2='blue',
+                          h1min=0, h1max=None, h2min=0, h2max=None, h3min=0, h3max=None,
+                          n1=500, n2=500, n3=500, grid=True, show_xlabel=True, show_ylabel=True):
         """
         Plot covariance or variogram function along the main axes
         x''', y''', z''' (in current figure axis).
@@ -2065,7 +2077,7 @@ class CovModel3D (object):
             plt.grid(True)
 
     def plot_model_one_curve(self, main_axis=1, vario=False, hmin=0, hmax=None, npts=500,
-        grid=True, show_xlabel=True, show_ylabel=True, **kwargs):
+                             grid=True, show_xlabel=True, show_ylabel=True, **kwargs):
         """
         Plot covariance or variogram curve along one main axis (in current
         figure axis).
@@ -2087,11 +2099,14 @@ class CovModel3D (object):
                             is displayed (True by default)
         :kwargs:        keyword arguments passed to the funtion plt.plot
         """
+
+        fname = 'plot_model_one_curve'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
         if main_axis not in (1, 2, 3):
-            print('ERROR: main_axis not valid (should be 1, 2 or 3)')
+            print(f'ERROR ({fname}): main_axis not valid (should be 1, 2 or 3)')
             return None
 
         # In kwargs:
@@ -2322,6 +2337,9 @@ def variogramCloud1D(x, v, hmax=np.nan, make_plot=True, grid=True, **kwargs):
                     npair is an int, the number of points (pairs of data points
                         considered) in the variogram cloud
     """
+
+    fname = 'variogramCloud1D'
+
     # Get dimension (d) from x
     if np.asarray(x).ndim == 1:
         # x is a 1-dimensional array
@@ -2336,7 +2354,7 @@ def variogramCloud1D(x, v, hmax=np.nan, make_plot=True, grid=True, **kwargs):
 
     # Check length of v
     if len(v) != n:
-        print("ERROR: length of 'v' is not valid")
+        print(f"ERROR ({fname}): length of 'v' is not valid")
         return None, None, None
 
     if np.isnan(hmax):
@@ -2446,6 +2464,9 @@ def variogramExp1D(x, v, hmax=np.nan, ncla=10, cla_center=None, cla_length=None,
                         hexp and gexp, containing the number of points from the
                         variogram cloud in each class
     """
+
+    fname = 'variogramExp1D'
+
     # Compute variogram cloud if needed (npair won't be used)
     if variogramCloud is None:
         h, g, npair = variogramCloud1D(x, v, hmax=hmax, make_plot=False)
@@ -2469,7 +2490,7 @@ def variogramExp1D(x, v, hmax=np.nan, ncla=10, cla_center=None, cla_length=None,
         if len(cla_length) == 1:
             cla_length = np.repeat(cla_length, ncla)
         elif len(cla_length) != ncla:
-            print("ERROR: 'cla_length' not valid")
+            print(f"ERROR ({fname}): 'cla_length' not valid")
             return None, None, None
     else:
         if ncla == 1:
@@ -2549,9 +2570,12 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
                             (sequence of floats) vector of optimized parameters
                                 returned by curve_fit
     """
+
+    fname = 'covModel1D_fit'
+
     # Check cov_model
     if not isinstance(cov_model, CovModel1D):
-        print("ERROR: 'cov_model' is not a covariance model in 1D")
+        print(f"ERROR ({fname}): 'cov_model' is not a covariance model in 1D")
         return None, None
     # if cov_model.__class__.__name__ != 'CovModel1D':
     #     print("ERROR: 'cov_model' is incompatible with dimension (1D)")
@@ -2559,7 +2583,7 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print("ERROR: 'cov_model' is not stationary: fit can not be applied")
+        print(f"ERROR ({fname}): 'cov_model' is not stationary: fit can not be applied")
         return None, None
 
     # Work on a (deep) copy of cov_model
@@ -2627,7 +2651,7 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
         kwargs['p0'] = p0
     else:
         if len(kwargs['p0']) != nparam:
-            print("ERROR: length of 'p0' not compatible")
+            print(f"ERROR ({fname}): length of 'p0' not compatible")
             return None, None
 
     # Fit with curve_fit
@@ -2648,7 +2672,7 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
 # ============================================================================
 # ----------------------------------------------------------------------------
 def variogramCloud2D(x, v, alpha=0.0, tol_dist=10.0, tol_angle=45.0, hmax=(np.nan, np.nan),
-    make_plot=True, color0='red', color1='green', figsize=None):
+                     make_plot=True, color0='red', color1='green', figsize=None):
     """
     Computes two directional variogram clouds for a data set in 2D:
         - one along axis x',
@@ -2710,12 +2734,15 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=10.0, tol_angle=45.0, hmax=(np.na
                     - (h1, g1, npair1) is the directional variogram cloud along
                         the axis y' (same type of object as for axis x')
     """
+
+    fname = 'variogramCloud2D'
+
     # Number of data points
     n = x.shape[0]
 
     # Check length of v
     if len(v) != n:
-        print("ERROR: length of 'v' is not valid")
+        print(f"ERROR ({fname}): length of 'v' is not valid")
         return ((None, None, None), (None, None, None))
 
     # Rotation matrix
@@ -2820,8 +2847,8 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=10.0, tol_angle=45.0, hmax=(np.na
 
 # ----------------------------------------------------------------------------
 def variogramExp2D(x, v, alpha=0.0, tol_dist=10.0, tol_angle=45.0, hmax=(np.nan, np.nan),
-    ncla=(10, 10), cla_center=(None, None), cla_length=(None, None),
-    variogramCloud=None, make_plot=True, color0='red', color1='green', figsize=None):
+                   ncla=(10, 10), cla_center=(None, None), cla_length=(None, None),
+                   variogramCloud=None, make_plot=True, color0='red', color1='green', figsize=None):
     """
     Computes two directional exprimental variograms for a data set in 2D:
         - one along axis x',
@@ -3053,12 +3080,15 @@ def variogramExp2D_rose(x, v, r_max=np.nan, r_ncla=10, phi_ncla=12, set_polar_su
     :kwargs:        keyword arguments passed to the funtion plt.pcolormesh
                         (cmap, ...)
     """
+
+    fname = 'variogramExp2D_rose'
+
     # Number of data points
     n = x.shape[0]
 
     # Check length of v
     if len(v) != n:
-        print("ERROR: length of 'v' is not valid")
+        print(f"ERROR ({fname}): length of 'v' is not valid")
         return
 
     # Compute lag vector (h) and gamma value (g) for pair of points with distance less than or equal to hmax
@@ -3179,9 +3209,12 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
                             (sequence of floats) vector of optimized parameters
                                 returned by curve_fit
     """
+
+    fname = 'covModel2D_fit'
+
     # Check cov_model
     if not isinstance(cov_model, CovModel2D):
-        print("ERROR: 'cov_model' is not a covariance model in 2D")
+        print(f"ERROR ({fname}): 'cov_model' is not a covariance model in 2D")
         return None, None
     # if cov_model.__class__.__name__ != 'CovModel2D':
     #     print("ERROR: 'cov_model' is incompatible with dimension (2D)")
@@ -3189,7 +3222,7 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print("ERROR: 'cov_model' is not stationary: fit can not be applied")
+        print(f"ERROR ({fname}): 'cov_model' is not stationary: fit can not be applied")
         return None, None
 
     # Work on a (deep) copy of cov_model
@@ -3302,7 +3335,7 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
         kwargs['p0'] = p0
     else:
         if len(kwargs['p0']) != nparam:
-            print("ERROR: length of 'p0' not compatible")
+            print(f"ERROR ({fname}): length of 'p0' not compatible")
             return None, None
 
     # Fit with curve_fit
@@ -3324,7 +3357,7 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
 # ============================================================================
 # ----------------------------------------------------------------------------
 def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=10.0, tol_angle=45.0, hmax=(np.nan, np.nan, np.nan),
-    make_plot=True, color0='red', color1='green', color2='blue', figsize=None):
+                     make_plot=True, color0='red', color1='green', color2='blue', figsize=None):
     """
     Computes three directional variogram clouds for a data set in 3D:
         - one along axis x''',
@@ -3401,12 +3434,15 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=10.0, tol_an
                     - (h2, g2, npair2) is the directional variogram cloud along
                         the axis z''' (same type of object as for axis x''')
     """
+
+    fname = 'variogramCloud3D'
+
     # Number of data points
     n = x.shape[0]
 
     # Check length of v
     if len(v) != n:
-        print("ERROR: length of 'v' is not valid")
+        print(f"ERROR ({fname}): length of 'v' is not valid")
         return ((None, None, None), (None, None, None), (None, None, None))
 
     # Rotation matrix
@@ -3516,8 +3552,8 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=10.0, tol_an
 
 # ----------------------------------------------------------------------------
 def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=10.0, tol_angle=45.0, hmax=(np.nan, np.nan, np.nan),
-    ncla=(10, 10, 10), cla_center=(None, None, None), cla_length=(None, None, None),
-    variogramCloud=None, make_plot=True, color0='red', color1='green', color2='blue', figsize=None):
+                   ncla=(10, 10, 10), cla_center=(None, None, None), cla_length=(None, None, None),
+                   variogramCloud=None, make_plot=True, color0='red', color1='green', color2='blue', figsize=None):
     """
     Computes three directional experimental variograms for a data set in 3D:
         - one along axis x''',
@@ -3779,17 +3815,20 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
                             (sequence of floats) vector of optimized parameters
                                 returned by curve_fit
     """
+
+    fname = 'covModel3D_fit'
+
     # Check cov_model
     if not isinstance(cov_model, CovModel3D):
-        print("ERROR: 'cov_model' is not a covariance model in 3D")
+        print(f"ERROR ({fname}): 'cov_model' is not a covariance model in 3D")
         return None, None
     # if cov_model.__class__.__name__ != 'CovModel3D':
-    #     print("ERROR: 'cov_model' is incompatible with dimension (3D)")
+    #     print(f"ERROR ({fname}): 'cov_model' is incompatible with dimension (3D)")
     #     return None, None
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print("ERROR: 'cov_model' is not stationary: fit can not be applied")
+        print(f"ERROR ({fname}): 'cov_model' is not stationary: fit can not be applied")
         return None, None
 
     # Work on a (deep) copy of cov_model
@@ -3907,7 +3946,7 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
         kwargs['p0'] = p0
     else:
         if len(kwargs['p0']) != nparam:
-            print("ERROR: length of 'p0' not compatible")
+            print(f"ERROR ({fname}): length of 'p0' not compatible")
             return None, None
 
     # Fit with curve_fit
@@ -3975,9 +4014,12 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
                         vu_std: (1-dimensional array of shape (nu,))
                                     kriged standard deviation at points xu
     """
+
+    fname = 'krige'
+
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print("ERROR: 'cov_model' is not stationary: krige can not be applied")
+        print(f"ERROR ({fname}): 'cov_model' is not stationary: krige can not be applied")
         return None, None
 
     # Get dimension (d) from x
@@ -4000,7 +4042,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
 
     # Check dimension of x and xu
     if d != du:
-        print("ERROR: 'x' and 'xu' do not have same dimension")
+        print(f"ERROR ({fname}): 'x' and 'xu' do not have same dimension")
         return None, None
 
     # Check dimension of cov_model and set if used as omni-directional model
@@ -4008,7 +4050,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
         if isinstance(cov_model, CovModel1D):
             omni_dir = True
         else:
-            print("ERROR: 'cov_model' is incompatible with dimension of points")
+            print(f"ERROR ({fname}): 'cov_model' is incompatible with dimension of points")
             return None, None
     else:
         omni_dir = False
@@ -4021,7 +4063,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
     # Check size of v
     v = np.asarray(v).reshape(-1)
     if v.size != n:
-        print("ERROR: size of 'v' is not valid")
+        print(f"ERROR ({fname}): size of 'v' is not valid")
         return None, None
 
     # Method
@@ -4034,7 +4076,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
             if mean.size == 1:
                 mean = mean * np.ones(n + nu)
             elif mean.size != n + nu:
-                print("ERROR: size of 'mean' is not valid")
+                print(f"ERROR ({fname}): size of 'mean' is not valid")
                 return None, None
             # if mean.size not in (1, n + nu):
             #     print("ERROR: size of 'mean' is not valid")
@@ -4043,12 +4085,12 @@ def krige(x, v, xu, cov_model, method='simple_kriging', mean=None):
         nmat = n # order of the kriging matrix
     elif method == 'ordinary_kriging':
         if mean is not None:
-            print("ERROR: 'mean' must be None with 'method' set to 'ordinary_kriging'")
+            print(f"ERROR ({fname}): 'mean' must be None with 'method' set to 'ordinary_kriging'")
             return None, None
         ordinary_kriging = True
         nmat = n + 1 # order of the kriging matrix
     else:
-        print("ERROR: 'method' is not valid")
+        print(f"ERROR ({fname}): 'method' is not valid")
         return None, None
 
     # Covariance function
@@ -4172,9 +4214,12 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
                     test_chi2:      (bool) result of test (1) (chi2), True
                                         if success, False otherwise
     """
+
+    fname = 'cross_valid_loo'
+
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print("ERROR: 'cov_model' is not stationary: cross validation can not be applied")
+        print(f"ERROR ({fname}): 'cov_model' is not stationary: cross validation can not be applied")
         return None, None
 
     # Get dimension (d) from x
@@ -4191,7 +4236,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
         if isinstance(cov_model, CovModel1D):
             omni_dir = True
         else:
-            print("ERROR: 'cov_model' is incompatible with dimension of points")
+            print(f"ERROR ({fname}): 'cov_model' is incompatible with dimension of points")
             return None, None
     else:
         omni_dir = False
@@ -4202,7 +4247,7 @@ def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=krige, interp
     # Check size of v
     v = np.asarray(v).reshape(-1)
     if v.size != n:
-        print("ERROR: size of 'v' is not valid")
+        print(f"ERROR ({fname}): size of 'v' is not valid")
         return None, None
 
     # Leave-one-out (loo) cross validation
@@ -4315,9 +4360,12 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
                         vu[i] are the simulated values at points xu for the i-th
                         realization
     """
+
+    fname = 'sgs'
+
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print("ERROR: 'cov_model' is not stationary: sgs can not be applied")
+        print(f"ERROR ({fname}): 'cov_model' is not stationary: sgs can not be applied")
         return None
 
     # Get dimension (d) from x
@@ -4340,7 +4388,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
 
     # Check dimension of x and xu
     if d != du:
-        print("ERROR: 'x' and 'xu' do not have same dimension")
+        print(f"ERROR ({fname}): 'x' and 'xu' do not have same dimension")
         return None
 
     # Check dimension of cov_model and set if used as omni-directional model
@@ -4348,7 +4396,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
         if isinstance(cov_model, CovModel1D):
             omni_dir = True
         else:
-            print("ERROR: 'cov_model' is incompatible with dimension of points")
+            print(f"ERROR ({fname}): 'cov_model' is incompatible with dimension of points")
             return None
     else:
         omni_dir = False
@@ -4361,7 +4409,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
     # Check size of v
     v = np.asarray(v).reshape(-1)
     if v.size != n:
-        print("ERROR: size of 'v' is not valid")
+        print(f"ERROR ({fname}): size of 'v' is not valid")
         return None
 
     # Method
@@ -4378,19 +4426,19 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
             if mean.size == 1:
                 mean = mean * np.ones(n + nu)
             elif mean.size != n + nu:
-                print("ERROR: size of 'mean' is not valid")
+                print(f"ERROR ({fname}): size of 'mean' is not valid")
                 return None
             # if mean.size not in (1, n + nu):
-            #     print("ERROR: size of 'mean' is not valid")
+            #     print(f"ERROR ({fname}): size of 'mean' is not valid")
             #     return None
     elif method == 'ordinary_kriging':
         if mean is not None:
-            print("ERROR: 'mean' must be None with 'method' set to 'ordinary_kriging'")
+            print(f"ERROR ({fname}): 'mean' must be None with 'method' set to 'ordinary_kriging'")
             return None
         ordinary_kriging = True
         # nmat = n + 1 # order of the kriging matrix
     else:
-        print("ERROR: 'method' is not valid")
+        print(f"ERROR ({fname}): 'method' is not valid")
         return None
 
     # Allocate memory for output
@@ -4472,7 +4520,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
                             np.hstack((mat[ind[:nj], ind[nj]], np.array([1.]))) # second member
                         )
                 except:
-                    print("ERROR: unable to solve kriging system...")
+                    print(f"ERROR ({fname}): unable to solve kriging system...")
                     return None
                 # Mean (kriged) value at xu[k]
                 mu = np.hstack((v, vu[i, indu[:j]])).dot(w[:nj])
@@ -4485,7 +4533,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
                             mat[ind[:nj], ind[nj]], # second member
                         )
                 except:
-                    print("ERROR: unable to solve kriging system...")
+                    print(f"ERROR ({fname}): unable to solve kriging system...")
                     return None
                 # Mean (kriged) value at xu[k]
                 mu = mean[ind[nj]] + (np.hstack((v, vu[i, indu[:j]])) - mean[ind[:nj]]).dot(w[:nj])
@@ -4496,518 +4544,6 @@ def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
 
     return vu
 # ----------------------------------------------------------------------------
-
-# --- OLD ---
-# # ----------------------------------------------------------------------------
-# def simple_kriging(x, v, xu, cov_model, mean=0):
-#     """
-#     Simple kriging - interpolates at locations xu the values v measured at locations x.
-#     Covariance model given should be:
-#         - in same dimension as dimension of locations x, xu
-#         - in 1D, it is then used as an omni-directional covariance model
-#     (see below).
-#
-#     :param x:       (2-dimensional array of shape (n, d)) coordinates
-#                         of the data points (n: number of points, d: dimension)
-#                         Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
-#     :param v:       (1-dimensional array of shape (n,)) values at data points
-#
-#     :param xu:      (2-dimensional array of shape (nu, d)) coordinates
-#                         of the points where the interpolation has to be done
-#                         (nu: number of points, d: dimension same as for x),
-#                         called unknown points
-#                         Note: for data in 1D, it can be a 1-dimensional array of shape (nu,)
-#
-#     :param cov_model:   covariance model:
-#                             - in same dimension as dimension of points (d), i.e.:
-#                                 - CovModel1D class if data in 1D (d=1)
-#                                 - CovModel2D class if data in 2D (d=2)
-#                                 - CovModel3D class if data in 3D (d=3)
-#                             - or CovModel1D whatever dimension of points (d):
-#                                 - used as an omni-directional covariance model
-#     :param mean:    (float) mean for simple kriging: the value (v-mean) are interpolated by
-#                         simple kriging, and then the mean is added to get the final interpolated
-#                         values
-#
-#     :return:        (vu, vu_std) with:
-#                         vu:     (1-dimensional array of shape (nu,)) kriged values (estimates) at points xu
-#                         vu_std: (1-dimensional array of shape (nu,)) kriged standard deviation at points xu
-#     """
-#     # Get dimension (d) from x
-#     if np.asarray(x).ndim == 1:
-#         # x is a 1-dimensional array
-#         x = np.asarray(x).reshape(-1, 1)
-#         d = 1
-#     else:
-#         # x is a 2-dimensional array
-#         d = x.shape[1]
-#
-#     # Get dimension (du) from xu
-#     if np.asarray(xu).ndim == 1:
-#         # xu is a 1-dimensional array
-#         xu = np.asarray(xu).reshape(-1, 1)
-#         du = 1
-#     else:
-#         # xu is a 2-dimensional array
-#         du = xu.shape[1]
-#
-#     # Check dimension of x and xu
-#     if d != du:
-#         print("ERROR: 'x' and 'xu' do not have same dimension")
-#         return None, None
-#
-#     # Check dimension of cov_model and set if used as omni-directional model
-#     if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
-#         if cov_model.__class__.__name__ == 'CovModel1D':
-#             omni_dir = True
-#         else:
-#             print("ERROR: 'cov_model' is incompatible with dimension of points")
-#             return None, None
-#     else:
-#         omni_dir = False
-#
-#     # Number of data points
-#     n = x.shape[0]
-#     # Number of unknown points
-#     nu = xu.shape[0]
-#
-#     # Check length of v
-#     if len(v) != n:
-#         print("ERROR: length of 'v' is not valid")
-#         return None, None
-#
-#     # Covariance function
-#     cov_func = cov_model.func() # covariance function
-#     if omni_dir:
-#         # covariance model in 1D is used
-#         cov0 = cov_func(0.) # covariance function at origin (lag=0)
-#     else:
-#         cov0 = cov_func(np.zeros(d)) # covariance function at origin (lag=0)
-#
-#     # Fill matrix of simple kriging system (matOK)
-#     nSK = n # order of the matrix
-#     matSK = np.ones((nSK, nSK))
-#     for i in range(n-1):
-#         # lag between x[i] and x[j], j=i+1, ..., n-1
-#         h = x[(i+1):] - x[i]
-#         if omni_dir:
-#             # compute norm of lag
-#             h = np.sqrt(np.sum(h**2, axis=1))
-#         cov_h = cov_func(h)
-#         matSK[i, (i+1):] = cov_h
-#         matSK[(i+1):, i] = cov_h
-#         matSK[i,i] = cov0
-#     matSK[-1,-1] = cov0
-#
-#     # Right hand side of the simple kriging system (b):
-#     #   b is a matrix of dimension nSK x nu
-#     b = np.ones((nSK, nu))
-#     for i in range(n):
-#         # lag between x[i] and every xu
-#         h = xu - x[i]
-#         if omni_dir:
-#             # compute norm of lag
-#             h = np.sqrt(np.sum(h**2, axis=1))
-#         b[i,:] = cov_func(h)
-#
-#     # Solve the kriging system
-#     w = np.linalg.solve(matSK,b) # w: matrix of dimension nOK x nu
-#
-#     # Kriged values at unknown points
-#     vu = mean + (v-mean).dot(w)
-#
-#     # Kriged standard deviation at unknown points
-#     vu_std = np.sqrt(np.maximum(0, cov0 - np.array([np.dot(w[:,i], b[:,i]) for i in range(nu)])))
-#
-#     return (vu, vu_std)
-# # ----------------------------------------------------------------------------
-#
-# # ----------------------------------------------------------------------------
-# def ordinary_kriging(x, v, xu, cov_model):
-#     """
-#     Ordinary kriging - interpolates at locations xu the values v measured at locations x.
-#     Covariance model given should be:
-#         - in same dimension as dimension of locations x, xu
-#         - in 1D, it is then used as an omni-directional covariance model
-#     (see below).
-#
-#     :param x:       (2-dimensional array of shape (n, d)) coordinates
-#                         of the data points (n: number of points, d: dimension)
-#                         Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
-#     :param v:       (1-dimensional array of shape (n,)) values at data points
-#
-#     :param xu:      (2-dimensional array of shape (nu, d)) coordinates
-#                         of the points where the interpolation has to be done
-#                         (nu: number of points, d: dimension same as for x),
-#                         called unknown points
-#                         Note: for data in 1D, it can be a 1-dimensional array of shape (nu,)
-#
-#     :param cov_model:   covariance model:
-#                             - in same dimension as dimension of points (d), i.e.:
-#                                 - CovModel1D class if data in 1D (d=1)
-#                                 - CovModel2D class if data in 2D (d=2)
-#                                 - CovModel3D class if data in 3D (d=3)
-#                             - or CovModel1D whatever dimension of points (d):
-#                                 - used as an omni-directional covariance model
-#
-#     :return:        (vu, vu_std) with:
-#                         vu:     (1-dimensional array of shape (nu,)) kriged values (estimates) at points xu
-#                         vu_std: (1-dimensional array of shape (nu,)) kriged standard deviation at points xu
-#     """
-#     # Get dimension (d) from x
-#     if np.asarray(x).ndim == 1:
-#         # x is a 1-dimensional array
-#         x = np.asarray(x).reshape(-1, 1)
-#         d = 1
-#     else:
-#         # x is a 2-dimensional array
-#         d = x.shape[1]
-#
-#     # Get dimension (du) from xu
-#     if np.asarray(xu).ndim == 1:
-#         # xu is a 1-dimensional array
-#         xu = np.asarray(xu).reshape(-1, 1)
-#         du = 1
-#     else:
-#         # xu is a 2-dimensional array
-#         du = xu.shape[1]
-#
-#     # Check dimension of x and xu
-#     if d != du:
-#         print("ERROR: 'x' and 'xu' do not have same dimension")
-#         return None, None
-#
-#     # Check dimension of cov_model and set if used as omni-directional model
-#     if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
-#         if cov_model.__class__.__name__ == 'CovModel1D':
-#             omni_dir = True
-#         else:
-#             print("ERROR: 'cov_model' is incompatible with dimension of points")
-#             return None, None
-#     else:
-#         omni_dir = False
-#
-#     # Number of data points
-#     n = x.shape[0]
-#     # Number of unknown points
-#     nu = xu.shape[0]
-#
-#     # Check length of v
-#     if len(v) != n:
-#         print("ERROR: length of 'v' is not valid")
-#         return None, None
-#
-#     # Covariance function
-#     cov_func = cov_model.func() # covariance function
-#     if omni_dir:
-#         # covariance model in 1D is used
-#         cov0 = cov_func(0.) # covariance function at origin (lag=0)
-#     else:
-#         cov0 = cov_func(np.zeros(d)) # covariance function at origin (lag=0)
-#
-#     # Fill matrix of ordinary kriging system (matOK)
-#     nOK = n+1 # order of the matrix
-#     matOK = np.ones((nOK, nOK))
-#     for i in range(n-1):
-#         # lag between x[i] and x[j], j=i+1, ..., n-1
-#         h = x[(i+1):] - x[i]
-#         if omni_dir:
-#             # compute norm of lag
-#             h = np.sqrt(np.sum(h**2, axis=1))
-#         cov_h = cov_func(h)
-#         matOK[i, (i+1):-1] = cov_h
-#         matOK[(i+1):-1, i] = cov_h
-#         matOK[i,i] = cov0
-#     matOK[-2,-2] = cov0
-#     matOK[-1,-1] = 0.0
-#
-#     # Right hand side of the ordinary kriging system (b):
-#     #   b is a matrix of dimension nOK x nu
-#     b = np.ones((nOK, nu))
-#     for i in range(n):
-#         # lag between x[i] and every xu
-#         h = xu - x[i]
-#         if omni_dir:
-#             # compute norm of lag
-#             h = np.sqrt(np.sum(h**2, axis=1))
-#         b[i,:] = cov_func(h)
-#
-#     # Solve the kriging system
-#     w = np.linalg.solve(matOK,b) # w: matrix of dimension nOK x nu
-#
-#     # Kriged values at unknown points
-#     vu = v.dot(w[:-1,:])
-#
-#     # Kriged standard deviation at unknown points
-#     vu_std = np.sqrt(np.maximum(0, cov0 - np.array([np.dot(w[:,i], b[:,i]) for i in range(nu)])))
-#
-#     return (vu, vu_std)
-# # ----------------------------------------------------------------------------
-# # ----------------------------------------------------------------------------
-# def cross_valid_loo(x, v, cov_model, confidence=0.05, interpolator=ordinary_kriging, interpolator_kwargs={}, make_plot=True, figsize=None):
-#     """
-#     Cross-validation of covariance model by leave-one-out error based on given interpolator.
-#
-#     Covariance model given should be:
-#         - in same dimension as dimension of locations x
-#         - in 1D, it is then used as an omni-directional covariance model
-#     Interpolator should be:
-#         - the function 'ordinary_kriging' (default)
-#         - the function 'simple_kriging'; in this case, the mean can be passed in
-#           the dictionary: interpolator_kwargs={'mean':<value>}
-#     Two statisic tests are performed:
-#         (1) normal law test for mean of normalized error:
-#             Mean of normalized error times the square root of n-1
-#             should follow approximately a law N(0,1) (CLT)
-#         (2) Chi2 test for sum of squares of normalized error:
-#             Sum of square of normalized error should follow a law
-#             Chi2 with n-1 degrees of freedom,
-#     n being the number of data points.
-#     The statistc test passes with success if the obtained value is within
-#     the central interval covering the 1-confidence  part of the corresponding
-#     distribution (by default: confidence is set to 5%), otherwise the test fails.
-#
-#     :param x:       (2-dimensional array of shape (n, d)) coordinates
-#                         of the data points (n: number of points, d: dimension)
-#                         Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
-#     :param v:       (1-dimensional array of shape (n,)) values at data points
-#
-#     :param cov_model:   covariance model:
-#                             - in same dimension as dimension of points (d), i.e.:
-#                                 - CovModel1D class if data in 1D (d=1)
-#                                 - CovModel2D class if data in 2D (d=2)
-#                                 - CovModel3D class if data in 3D (d=3)
-#                             - or CovModel1D whatever dimension of points (d):
-#                                 - used as an omni-directional covariance model
-#
-#     :param confidence:  (float) in [0,1] for setting limit in the two statistic tests
-#                             (see above)
-#
-#     :param interpolator:
-#                     (function) function used for interpolation, ordinary_kriging (default),
-#                     or simple_kriging
-#
-#     :interpolator_kwargs:
-#                     (dict) keyword argument passed to interpolator; e.g. if
-#                     interpolator=simple_kriging, then interpolator_kwargs={'mean':<value>},
-#                     allows to specify the mean used
-#
-#     :param make_plot:
-#                     (bool) if True: a plot is done (in a new 1x2 figure)
-#
-#     :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is True)
-#
-#     :return:    (v_est, v_std, test_normal, test_chi2), tuple of length 4:
-#                     v_est: (1-dimensional array of shape (n,)) estimated values at data points
-#                     v_std: (1-dimensional array of shape (n,)) standard deviation values at data points
-#                     test_normal:    (bool) result of test (1) (normal law), True if success, False otherwise
-#                     test_chi2:      (bool) result of test (1) (chi2), True if success, False otherwise
-#     """
-#     # Get dimension (d) from x
-#     if np.asarray(x).ndim == 1:
-#         # x is a 1-dimensional array
-#         x = np.asarray(x).reshape(-1, 1)
-#         d = 1
-#     else:
-#         # x is a 2-dimensional array
-#         d = x.shape[1]
-#
-#     # Check dimension of cov_model and set if used as omni-directional model
-#     if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
-#         if cov_model.__class__.__name__ == 'CovModel1D':
-#             omni_dir = True
-#         else:
-#             print("ERROR: 'cov_model' is incompatible with dimension of points")
-#             return None, None
-#     else:
-#         omni_dir = False
-#
-#     # Number of data points
-#     n = x.shape[0]
-#
-#     # Check length of v
-#     if len(v) != n:
-#         print("ERROR: length of 'v' is not valid")
-#         return None, None
-#
-#     # Leave-one-out (loo) cross validation
-#     v_est, v_std = np.zeros(n), np.zeros(n)
-#     ind = np.arange(n)
-#     for i in range(n):
-#         indx = np.delete(ind, i)
-#         v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
-#
-#     # Normalized error
-#     err = (v_est - v) / v_std
-#     # Each err[i] should follows a law N(0,1), the set of err[i] has n-1 degrees of freedom (?), and:
-#     #   (1) sqrt(n-1)*mean(err) follows approximately a law N(0,1) (CLT)
-#     #   (2) sum(err^2) follows a law Chi2 with n-1 degrees of freedom
-#     me = np.mean(err)
-#     s2 = np.sum(err**2)
-#
-#     t = np.sqrt(n-1)*me
-#     tlim = stats.norm.ppf(1.-0.5*confidence)
-#     if np.abs(t) > tlim:
-#         print("Model does not pass test for mean of normalized error!")
-#         print("   Mean of normalized error times square root of number of data points = {}, not within interval +/-{}".format(t, tlim))
-#         test_normal = False
-#     else:
-#         test_normal = True
-#
-#     s2lim = stats.chi2.ppf(1.-confidence, df=n-1)
-#     if s2 > s2lim:
-#         print("Model does not pass test for sum of square of normalized error (chi2)!")
-#         print("   Sum of squares of normalized error = {}, above limit: {}".format(s2, s2lim))
-#         test_chi2 = False
-#     else:
-#         test_chi2 = True
-#
-#     if make_plot:
-#         fig, ax = plt.subplots(1,2, figsize=figsize)
-#
-#         plt.sca(ax[0])
-#         plt.plot(v, v_est, 'o')
-#         tmp = [np.min(v), np.max(v)]
-#         plt.plot(tmp, tmp, ls='dashed')
-#         plt.xlabel('True value Z(x)')
-#         plt.ylabel('Estimation Z*(x)')
-#         # plt.plot(v_est, v, 'o')
-#         # tmp = [np.min(v_est), np.max(v_est)]
-#         # plt.plot(tmp, tmp, ls='dashed')
-#         # plt.xlabel('Estimation Z*(x)')
-#         # plt.ylabel('True value Z(x)')
-#         plt.title('Cross plot Z(x) vs Z*(x)')
-#
-#         plt.sca(ax[1])
-#         plt.hist(err, density=True)
-#         plt.xlabel(r'Normalized error $(Z*(x)-Z(x))/\sigma*(x)$')
-#
-#         # plt.show()
-#
-#     return (v_est, v_std, test_normal, test_chi2)
-# # ----------------------------------------------------------------------------
-# # ----------------------------------------------------------------------------
-# def cross_valid_loo_ok(x, v, cov_model, confidence=0.05, make_plot=True, figsize=None):
-#     """
-#     Cross-validation of covariance model by leave-one-out error based on ordinary kriging.
-#     Covariance model given should be:
-#         - in same dimension as dimension of locations x
-#         - in 1D, it is then used as an omni-directional covariance model
-#     Two statisic tests are performed:
-#         (1) normal law test for mean of normalized error:
-#             Mean of normalized error times the square root of n-1
-#             should follow approximately a law N(0,1) (CLT)
-#         (2) Chi2 test for sum of squares of normalized error:
-#             Sum of square of normalized error should follow a law
-#             Chi2 with n-1 degrees of freedom,
-#     n being the number of data points.
-#     The statistc test passes with success if the obtained value is within
-#     the central interval covering the 1-confidence  part of the corresponding
-#     distribution (by default: confidence is set to 5%), otherwise the test fails.
-#
-#     :param x:       (2-dimensional array of shape (n, d)) coordinates
-#                         of the data points (n: number of points, d: dimension)
-#                         Note: for data in 1D, it can be a 1-dimensional array of shape (n,)
-#     :param v:       (1-dimensional array of shape (n,)) values at data points
-#
-#     :param cov_model:   covariance model:
-#                             - in same dimension as dimension of points (d), i.e.:
-#                                 - CovModel1D class if data in 1D (d=1)
-#                                 - CovModel2D class if data in 2D (d=2)
-#                                 - CovModel3D class if data in 3D (d=3)
-#                             - or CovModel1D whatever dimension of points (d):
-#                                 - used as an omni-directional covariance model
-#
-#     :param confidence:  (float) in [0,1] for setting limit in the two statistic tests
-#                             (see above)
-#
-#     :param make_plot:
-#                     (bool) if True: a plot is done (in a new 1x2 figure)
-#
-#     :param figsize: (tuple of 2 ints) size of the figure (used if make_plot is True)
-#
-#     :return:    (valid_code1, valid_code2), a tuple of 2 bools:
-#                     valid_code1: True if test (1) passed with success, False otherwise
-#                     valid_code2: True if test (2) passed with success, False otherwise
-#     """
-#     # Get dimension (d) from x
-#     if np.asarray(x).ndim == 1:
-#         # x is a 1-dimensional array
-#         x = np.asarray(x).reshape(-1, 1)
-#         d = 1
-#     else:
-#         # x is a 2-dimensional array
-#         d = x.shape[1]
-#
-#     # Check dimension of cov_model and set if used as omni-directional model
-#     if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
-#         if cov_model.__class__.__name__ == 'CovModel1D':
-#             omni_dir = True
-#         else:
-#             print("ERROR: 'cov_model' is incompatible with dimension of points")
-#             return None, None
-#     else:
-#         omni_dir = False
-#
-#     # Number of data points
-#     n = x.shape[0]
-#
-#     # Check length of v
-#     if len(v) != n:
-#         print("ERROR: length of 'v' is not valid")
-#         return None, None
-#
-#     # Leave-one-out (loo) cross validation
-#     v_est, v_std = np.zeros(n), np.zeros(n)
-#     ind = np.arange(n)
-#     for i in range(n):
-#         indx = np.delete(ind, i)
-#         v_est[i], v_std[i] = ordinary_kriging(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model)
-#
-#     # Normalized error
-#     err = (v_est - v) / v_std
-#     # Each err[i] should follows a law N(0,1), the set of err[i] has n-1 degrees of freedom (?), and:
-#     #   (1) sqrt(n-1)*mean(err) follows approximately a law N(0,1) (CLT)
-#     #   (2) sum(err^2) follows a law Chi2 with n-1 degrees of freedom
-#     me = np.mean(err)
-#     s2 = np.sum(err**2)
-#
-#     t = np.sqrt(n-1)*me
-#     tlim = stats.norm.ppf(1.-0.5*confidence)
-#     if np.abs(t) > tlim:
-#         print("Model does not pass test for mean of normalized error!")
-#         print("   Mean of normalized error times square root of number of data points = {}, not within interval +/-{}".format(t, tlim))
-#         valid_code1 = False
-#     else:
-#         valid_code1 = True
-#
-#     s2lim = stats.chi2.ppf(1.-confidence, df=n-1)
-#     if s2 > s2lim:
-#         print("Model does not pass test for sum of square of normalized error (chi2)!")
-#         print("   Sum of squares of normalized error = {}, above limit: {}".format(s2, s2lim))
-#         valid_code2 = False
-#     else:
-#         valid_code2 = True
-#
-#     if make_plot:
-#         fig, ax = plt.subplots(1,2, figsize=figsize)
-#
-#         plt.sca(ax[0])
-#         plt.plot(v_est, v, 'o')
-#         tmp = [np.min(v_est), np.max(v_est)]
-#         plt.plot(tmp, tmp, ls='dashed')
-#         plt.xlabel('Estimation Z*(x)')
-#         plt.ylabel('True value Z(x)')
-#         plt.title('Cross plot Z(x) vs Z*(x)')
-#
-#         plt.sca(ax[1])
-#         plt.hist(err, density=True)
-#         plt.xlabel(r'Normalized error $(Z*(x)-Z(x))/\sigma*(x)$')
-#
-#         # plt.show()
-#
-#     return (valid_code1, valid_code2)
-# # ----------------------------------------------------------------------------
 
 # ============================================================================
 if __name__ == "__main__":

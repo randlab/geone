@@ -247,6 +247,9 @@ def grf1D(cov_model,
             numpy.fft.fft() = DFT
             numpy.fft.ifft() = DFT^(-1)
     """
+
+    fname = 'grf1D'
+
     # Set verbose mode according to printInfo (if given)
     if printInfo is not None:
         if printInfo:
@@ -263,13 +266,13 @@ def grf1D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print("ERROR (GRF1D): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): 'cov_model' is not stationary")
             return None
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.r()
     else:
         if verbose > 0:
-            print("ERROR (GRF1D): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
         return None
 
     # Number of realization(s)
@@ -290,28 +293,28 @@ def grf1D(cov_model,
 
     if method not in (1, 2, 3):
         if verbose > 0:
-            print('ERROR (GRF1D): invalid method')
+            print(f'ERROR ({fname}): invalid method')
         return None
 
     if x is None and v is not None:
         if verbose > 0:
-            print("ERROR (GRF1D): 'x' is not given (None) but 'v' is given (not None)")
+            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
         return None
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             if verbose > 0:
-                print('ERROR (GRF1D): invalid method for conditioning')
+                print(f'ERROR ({fname}): invalid method for conditioning')
             return None
         if v is None:
             if verbose > 0:
-                print("ERROR (GRF1D): 'x' is given (not None) but 'v' is not given (None)")
+                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
             return None
         x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("ERROR (GRF1D): length of 'v' is not valid")
+                print(f"ERROR ({fname}): length of 'v' is not valid")
             return None
 
     if mean is not None:
@@ -322,7 +325,7 @@ def grf1D(cov_model,
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nx):
             if verbose > 0:
-                print("ERROR (GRF1D): size of 'mean' is not valid")
+                print(f"ERROR ({fname}): size of 'mean' is not valid")
             return None
     # if mean is None, set mean further according to possible conditioning value (v)
 
@@ -334,23 +337,23 @@ def grf1D(cov_model,
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nx):
             if verbose > 0:
-                print("ERROR (GRF1D): size of 'var' is not valid")
+                print(f"ERROR ({fname}): size of 'var' is not valid")
             return None
 
     if not crop:
         if x is not None: # conditional simulation
             if verbose > 0:
-                print('ERROR (GRF1D): "no crop" is not valid with conditional simulation')
+                print(f'ERROR ({fname}): "no crop" is not valid with conditional simulation')
             return None
 
         if mean is not None and mean.size > 1:
             if verbose > 0:
-                print('ERROR (GRF1D): "no crop" is not valid with non stationary mean')
+                print(f'ERROR ({fname}): "no crop" is not valid with non stationary mean')
             return None
 
         if var is not None and var.size > 1:
             if verbose > 0:
-                print('ERROR (GRF1D): "no crop" is not valid with non stationary variance')
+                print(f'ERROR ({fname}): "no crop" is not valid with non stationary variance')
             return None
 
     if extensionMin is None:
@@ -447,7 +450,7 @@ def grf1D(cov_model,
 
         if np.any(x < origin) or np.any(x > origin + dimension * spacing):
             if verbose > 0:
-                print('ERROR (GRF1D): a conditioning point is out of the grid')
+                print(f'ERROR ({fname}): a conditioning point is out of the grid')
             return None
 
         # Compute
@@ -459,13 +462,13 @@ def grf1D(cov_model,
 
         # if len(np.unique(indc)) != len(x):
         #     if verbose > 0:
-        #         print('ERROR (GRF1D): more than one conditioning point in a same grid cell')
+        #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
         #     return None
 
         indc_unique, indc_inv = np.unique(indc, return_inverse=True)
         if len(indc_unique) != len(x):
             if verbose > 1:
-                print('WARNING (GRF1D): aggregating (mean) conditioning points falling in a same grid cell')
+                print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
             indc = indc_unique
             x = np.array([x[indc_inv==j].mean(axis=0) for j in range(len(indc_unique))])
             v = np.array([v[indc_inv==j].mean() for j in range(len(indc_unique))])
@@ -485,7 +488,7 @@ def grf1D(cov_model,
         # Test if rAA is almost singular...
         if 1./np.linalg.cond(rAA) < tolInvKappa:
             if verbose > 0:
-                print('ERROR (GRF1D): conditioning issue: condition number of matrix rAA is too big')
+                print(f'ERROR ({fname}): conditioning issue: condition number of matrix rAA is too big')
             return None
 
         # Compute:
@@ -913,6 +916,9 @@ def krige1D(cov_model,
             numpy.fft.fft() = DFT
             numpy.fft.ifft() = DFT^(-1)
     """
+
+    fname = 'krige1D'
+
     # Set verbose mode according to printInfo (if given)
     if printInfo is not None:
         if printInfo:
@@ -934,19 +940,19 @@ def krige1D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print("ERROR (KRIGE1D): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): 'cov_model' is not stationary")
             return out
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.r()
     else:
         if verbose > 0:
-            print("ERROR (KRIGE1D): 'cov_model' (third argument) is not valid")
+            print(f"ERROR ({fname}): 'cov_model' (third argument) is not valid")
         return out
 
     # Check conditioning method
     if conditioningMethod not in (1, 2):
         if verbose > 0:
-            print('ERROR (KRIGE1D): invalid method!')
+            print(f'ERROR ({fname}): invalid method!')
         return out
 
     nx = dimension
@@ -955,19 +961,19 @@ def krige1D(cov_model,
 
     if x is None and v is not None:
         if verbose > 0:
-            print("ERROR (KRIGE1D): 'x' is not given (None) but 'v' is given (not None)")
+            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
         return out
 
     if x is not None:
         if v is None:
             if verbose > 0:
-                print("ERROR (KRIGE1D): 'x' is given (not None) but 'v' is not given (None)")
+                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
             return out
         x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("ERROR (KRIGE1D): length of 'v' is not valid")
+                print(f"ERROR ({fname}): length of 'v' is not valid")
             return out
 
     if mean is not None:
@@ -978,7 +984,7 @@ def krige1D(cov_model,
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nx):
             if verbose > 0:
-                print("ERROR (KRIGE1D): size of 'mean' is not valid")
+                print(f"ERROR ({fname}): size of 'mean' is not valid")
             return out
     # if mean is None, set mean further according to possible conditioning value (v)
 
@@ -990,7 +996,7 @@ def krige1D(cov_model,
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nx):
             if verbose > 0:
-                print("ERROR (KRIGE1D): size of 'var' is not valid")
+                print(f"ERROR ({fname}): size of 'var' is not valid")
             return out
 
     if x is None:
@@ -1111,7 +1117,7 @@ def krige1D(cov_model,
 
     if np.any(x < origin) or np.any(x > origin + dimension * spacing):
         if verbose > 0:
-            print('ERROR (KRIGE1D): a conditioning point is out of the grid')
+            print(f'ERROR ({fname}): a conditioning point is out of the grid')
         return out
 
     # Compute
@@ -1123,13 +1129,13 @@ def krige1D(cov_model,
 
     # if len(np.unique(indc)) != len(x):
     #     if verbose > 0:
-    #         print('ERROR (KRIGE1D): more than one conditioning point in a same grid cell')
+    #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
     #     return out
 
     indc_unique, indc_inv = np.unique(indc, return_inverse=True)
     if len(indc_unique) != len(x):
         if verbose > 1:
-            print('WARNING (KRIGE1D): aggregating (mean) conditioning points falling in a same grid cell')
+            print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
         indc = indc_unique
         x = np.array([x[indc_inv==j].mean(axis=0) for j in range(len(indc_unique))])
         v = np.array([v[indc_inv==j].mean() for j in range(len(indc_unique))])
@@ -1149,7 +1155,7 @@ def krige1D(cov_model,
     # Test if rAA is almost singular...
     if 1./np.linalg.cond(rAA) < tolInvKappa:
         if verbose > 0:
-            print('ERROR (KRIGE1D): conditioning issue: condition number of matrix rAA is too big')
+            print(f'ERROR ({fname}): conditioning issue: condition number of matrix rAA is too big')
         return out
 
     # Compute:
@@ -1494,6 +1500,9 @@ def grf2D(cov_model,
             numpy.fft.fft2() = DFT
             numpy.fft.ifft2() = DFT^(-1)
     """
+
+    fname = 'grf2D'
+
     # Set verbose mode according to printInfo (if given)
     if printInfo is not None:
         if printInfo:
@@ -1510,7 +1519,7 @@ def grf2D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print("ERROR (GRF2D): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): 'cov_model' is not stationary")
             return None
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxy()
@@ -1519,13 +1528,13 @@ def grf2D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model_2D.is_stationary():
             if verbose > 0:
-                print("ERROR (GRF2D): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): 'cov_model' is not stationary")
             return None
         cov_func = cov_model_2D.func() # covariance function
         cov_range = cov_model_2D.rxy()
     else:
         if verbose > 0:
-            print("ERROR (GRF2D): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
         return None
 
     # Number of realization(s)
@@ -1548,33 +1557,33 @@ def grf2D(cov_model,
 
     if method not in (1, 2, 3):
         if verbose > 0:
-            print('ERROR (GRF2D): invalid method')
+            print(f'ERROR ({fname}): invalid method')
         return None
 
     if method == 2:
         if verbose > 0:
-            print('ERROR (GRF2D): Unconditional simulation: "method=2" not implemented...')
+            print(f'ERROR ({fname}): Unconditional simulation: "method=2" not implemented...')
         return None
 
     if x is None and v is not None:
         if verbose > 0:
-            print("ERROR (GRF2D): 'x' is not given (None) but 'v' is given (not None)")
+            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
         return None
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             if verbose > 0:
-                print('ERROR (GRF2D): invalid method for conditioning')
+                print(f'ERROR ({fname}): invalid method for conditioning')
             return None
         if v is None:
             if verbose > 0:
-                print("ERROR (GRF2D): 'x' is given (not None) but 'v' is not given (None)")
+                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
             return None
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("ERROR (GRF2D): length of 'v' is not valid")
+                print(f"ERROR ({fname}): length of 'v' is not valid")
             return None
 
     if mean is not None:
@@ -1587,7 +1596,7 @@ def grf2D(cov_model,
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nxy):
             if verbose > 0:
-                print("ERROR (GRF2D): size of 'mean' is not valid")
+                print(f"ERROR ({fname}): size of 'mean' is not valid")
             return None
         if mean.size == nxy:
             mean = np.asarray(mean).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
@@ -1603,7 +1612,7 @@ def grf2D(cov_model,
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nxy):
             if verbose > 0:
-                print("ERROR (GRF2D): size of 'var' is not valid")
+                print(f"ERROR ({fname}): size of 'var' is not valid")
             return None
         if var.size == nxy:
             var = np.asarray(var).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
@@ -1611,17 +1620,17 @@ def grf2D(cov_model,
     if not crop:
         if x is not None: # conditional simulation
             if verbose > 0:
-                print('ERROR (GRF2D): "no crop" is not valid with conditional simulation')
+                print(f'ERROR ({fname}): "no crop" is not valid with conditional simulation')
             return None
 
         if mean is not None and mean.size > 1:
             if verbose > 0:
-                print('ERROR (GRF2D): "no crop" is not valid with non stationary mean')
+                print(f'ERROR ({fname}): "no crop" is not valid with non stationary mean')
             return None
 
         if var is not None and var.size > 1:
             if verbose > 0:
-                print('ERROR (GRF2D): "no crop" is not valid with non stationary variance')
+                print(f'ERROR ({fname}): "no crop" is not valid with non stationary variance')
             return None
 
     if extensionMin is None:
@@ -1731,7 +1740,7 @@ def grf2D(cov_model,
 
         if np.any(x < origin) or np.any(x > np.asarray(origin) + np.asarray(dimension) * np.asarray(spacing)):
             if verbose > 0:
-                print('ERROR (GRF2D): a conditioning point is out of the grid')
+                print(f'ERROR ({fname}): a conditioning point is out of the grid')
             return None
 
         # Compute
@@ -1746,13 +1755,13 @@ def grf2D(cov_model,
 
         # if len(np.unique(indc)) != len(x):
         #     if verbose > 0:
-        #         print('ERROR (GRF2D): more than one conditioning point in a same grid cell')
+        #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
         #     return None
 
         indc_unique, indc_inv = np.unique(indc, return_inverse=True)
         if len(indc_unique) != len(x):
             if verbose > 1:
-                print('WARNING (GRF2D): aggregating (mean) conditioning points falling in a same grid cell')
+                print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
             indc = indc_unique
             iy = indc//nx
             ix = indc%nx
@@ -1774,7 +1783,7 @@ def grf2D(cov_model,
         # Test if rAA is almost singular...
         if 1./np.linalg.cond(rAA) < tolInvKappa:
             if verbose > 0:
-                print('ERROR (GRF2D): conditioning issue: condition number of matrix rAA is too big')
+                print(f'ERROR ({fname}): conditioning issue: condition number of matrix rAA is too big')
             return None
 
         # Compute:
@@ -1893,7 +1902,7 @@ def grf2D(cov_model,
         # Method B
         # --------
         if verbose > 0:
-            print('ERROR (GRF2D): Unconditional simulation: "method=2" not implemented...')
+            print(f'ERROR ({fname}): Unconditional simulation: "method=2" not implemented...')
         return None
 
     elif method == 3:
@@ -2195,6 +2204,9 @@ def krige2D(cov_model,
             numpy.fft.fft2() = DFT
             numpy.fft.ifft2() = DFT^(-1)
     """
+
+    fname = 'krige2D'
+
     # Set verbose mode according to printInfo (if given)
     if printInfo is not None:
         if printInfo:
@@ -2216,7 +2228,7 @@ def krige2D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print("ERROR (KRIGE2D): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): 'cov_model' is not stationary")
             return out
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxy()
@@ -2225,19 +2237,19 @@ def krige2D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model_2D.is_stationary():
             if verbose > 0:
-                print("ERROR (KRIGE2D): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): 'cov_model' is not stationary")
             return None
         cov_func = cov_model_2D.func() # covariance function
         cov_range = cov_model_2D.rxy()
     else:
         if verbose > 0:
-            print("ERROR (KRIGE2D): 'cov_model' (third argument) is not valid")
+            print(f"ERROR ({fname}): 'cov_model' (third argument) is not valid")
         return out
 
     # Check conditioning method
     if conditioningMethod not in (1, 2):
         if verbose > 0:
-            print('ERROR (KRIGE2D): invalid method!')
+            print(f'ERROR ({fname}): invalid method!')
         return out
 
     nx, ny = dimension
@@ -2248,19 +2260,19 @@ def krige2D(cov_model,
 
     if x is None and v is not None:
         if verbose > 0:
-            print("ERROR (KRIGE2D): 'x' is not given (None) but 'v' is given (not None)")
+            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
         return out
 
     if x is not None:
         if v is None:
             if verbose > 0:
-                print("ERROR (KRIGE2D): 'x' is given (not None) but 'v' is not given (None)")
+                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
             return out
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("ERROR (KRIGE2D): length of 'v' is not valid")
+                print(f"ERROR ({fname}): length of 'v' is not valid")
             return out
 
     if mean is not None:
@@ -2273,7 +2285,7 @@ def krige2D(cov_model,
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nxy):
             if verbose > 0:
-                print("ERROR (KRIGE2D): size of 'mean' is not valid")
+                print(f"ERROR ({fname}): size of 'mean' is not valid")
             return out
         if mean.size == nxy:
             mean = np.asarray(mean).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
@@ -2289,7 +2301,7 @@ def krige2D(cov_model,
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nxy):
             if verbose > 0:
-                print("ERROR (KRIGE2D): size of 'var' is not valid")
+                print(f"ERROR ({fname}): size of 'var' is not valid")
             return out
         if var.size == nxy:
             var = np.asarray(var).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
@@ -2426,7 +2438,7 @@ def krige2D(cov_model,
 
     if np.any(x < origin) or np.any(x > np.asarray(origin) + np.asarray(dimension) * np.asarray(spacing)):
         if verbose > 0:
-            print('ERROR (KRIGE2D): a conditioning point is out of the grid')
+            print(f'ERROR ({fname}): a conditioning point is out of the grid')
         return out
 
     # Compute
@@ -2441,13 +2453,13 @@ def krige2D(cov_model,
 
     # if len(np.unique(indc)) != len(x):
     #     if verbose > 0:
-    #         print('ERROR (KRIGE2D): more than one conditioning point in a same grid cell')
+    #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
     #     return out
 
     indc_unique, indc_inv = np.unique(indc, return_inverse=True)
     if len(indc_unique) != len(x):
         if verbose > 1:
-            print('WARNING (KRIGE2D): aggregating (mean) conditioning points falling in a same grid cell')
+            print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
         indc = indc_unique
         iy = indc//nx
         ix = indc%nx
@@ -2469,7 +2481,7 @@ def krige2D(cov_model,
     # Test if rAA is almost singular...
     if 1./np.linalg.cond(rAA) < tolInvKappa:
         if verbose > 0:
-            print('ERROR (KRIGE2D): conditioning issue: condition number of matrix rAA is too big')
+            print(f'ERROR ({fname}): conditioning issue: condition number of matrix rAA is too big')
         return out
 
     # Compute:
@@ -2825,6 +2837,9 @@ def grf3D(cov_model,
             numpy.fft.fftn() = DFT
             numpy.fft.ifftn() = DFT^(-1)
     """
+
+    fname = 'grf3D'
+
     # Set verbose mode according to printInfo (if given)
     if printInfo is not None:
         if printInfo:
@@ -2841,7 +2856,7 @@ def grf3D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print("ERROR (GRF3D): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): 'cov_model' is not stationary")
             return None
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxyz()
@@ -2850,13 +2865,13 @@ def grf3D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model_3D.is_stationary():
             if verbose > 0:
-                print("ERROR (GRF3D): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): 'cov_model' is not stationary")
             return None
         cov_func = cov_model_3D.func() # covariance function
         cov_range = cov_model_3D.rxyz()
     else:
         if verbose > 0:
-            print("ERROR (GRF3D): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
         return None
 
     # Number of realization(s)
@@ -2880,33 +2895,33 @@ def grf3D(cov_model,
 
     if method not in (1, 2, 3):
         if verbose > 0:
-            print('ERROR (GRF3D): invalid method')
+            print(f'ERROR ({fname}): invalid method')
         return None
 
     if method == 2:
         if verbose > 0:
-            print('ERROR (GRF3D): Unconditional simulation: "method=2" not implemented...')
+            print(f'ERROR ({fname}): Unconditional simulation: "method=2" not implemented...')
         return None
 
     if x is None and v is not None:
         if verbose > 0:
-            print("ERROR (GRF3D): 'x' is not given (None) but 'v' is given (not None)")
+            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
         return None
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             if verbose > 0:
-                print('ERROR (GRF3D): invalid method for conditioning')
+                print(f'ERROR ({fname}): invalid method for conditioning')
             return None
         if v is None:
             if verbose > 0:
-                print("ERROR (GRF3D): 'x' is given (not None) but 'v' is not given (None)")
+                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
             return None
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 3-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("ERROR (GRF3D): length of 'v' is not valid")
+                print(f"ERROR ({fname}): length of 'v' is not valid")
             return None
 
     if mean is not None:
@@ -2920,7 +2935,7 @@ def grf3D(cov_model,
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nxyz):
             if verbose > 0:
-                print("ERROR (GRF3D): size of 'mean' is not valid")
+                print(f"ERROR ({fname}): size of 'mean' is not valid")
             return None
         if mean.size == nxyz:
             mean = np.asarray(mean).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
@@ -2937,7 +2952,7 @@ def grf3D(cov_model,
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nxyz):
             if verbose > 0:
-                print("ERROR (GRF3D): size of 'var' is not valid")
+                print(f"ERROR ({fname}): size of 'var' is not valid")
             return None
         if var.size == nxyz:
             var = np.asarray(var).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
@@ -2945,17 +2960,17 @@ def grf3D(cov_model,
     if not crop:
         if x is not None: # conditional simulation
             if verbose > 0:
-                print('ERROR (GRF3D): "no crop" is not valid with conditional simulation')
+                print(f'ERROR ({fname}): "no crop" is not valid with conditional simulation')
             return None
 
         if mean is not None and mean.size > 1:
             if verbose > 0:
-                print('ERROR (GRF3D): "no crop" is not valid with non stationary mean')
+                print(f'ERROR ({fname}): "no crop" is not valid with non stationary mean')
             return None
 
         if var is not None and var.size > 1:
             if verbose > 0:
-                print('ERROR (GRF3D): "no crop" is not valid with non stationary variance')
+                print(f'ERROR ({fname}): "no crop" is not valid with non stationary variance')
             return None
 
     if extensionMin is None:
@@ -3076,7 +3091,7 @@ def grf3D(cov_model,
 
         if np.any(x < origin) or np.any(x > np.asarray(origin) + np.asarray(dimension) * np.asarray(spacing)):
             if verbose > 0:
-                print('ERROR (GRF3D): a conditioning point is out of the grid')
+                print(f'ERROR ({fname}): a conditioning point is out of the grid')
             return None
 
         # Compute
@@ -3091,13 +3106,13 @@ def grf3D(cov_model,
 
         # if len(np.unique(indc)) != len(x):
         #     if verbose > 0:
-        #         print('ERROR (GRF3D): more than one conditioning point in a same grid cell')
+        #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
         #     return None
 
         indc_unique, indc_inv = np.unique(indc, return_inverse=True)
         if len(indc_unique) != len(x):
             if verbose > 1:
-                print('WARNING (GRF3D): aggregating (mean) conditioning points falling in a same grid cell')
+                print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
             indc = indc_unique
             iz = indc//nxy
             j = indc%nxy
@@ -3121,7 +3136,7 @@ def grf3D(cov_model,
         # Test if rAA is almost singular...
         if 1./np.linalg.cond(rAA) < tolInvKappa:
             if verbose > 0:
-                print('ERROR (GRF3D): conditioning issue: condition number of matrix rAA is too big')
+                print(f'ERROR ({fname}): conditioning issue: condition number of matrix rAA is too big')
             return None
 
         # Compute:
@@ -3243,7 +3258,7 @@ def grf3D(cov_model,
         # Method B
         # --------
         if verbose > 0:
-            print('ERROR (GRF3D): Unconditional simulation: "method=2" not implemented...')
+            print(f'ERROR ({fname}): Unconditional simulation: "method=2" not implemented...')
         return None
 
     elif method == 3:
@@ -3547,6 +3562,9 @@ def krige3D(cov_model,
             numpy.fft.fftn() = DFT
             numpy.fft.ifftn() = DFT^(-1)
     """
+
+    fname = 'krige3D'
+
     # Set verbose mode according to printInfo (if given)
     if printInfo is not None:
         if printInfo:
@@ -3568,7 +3586,7 @@ def krige3D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print("ERROR (KRIGE3D): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): 'cov_model' is not stationary")
             return out
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxyz()
@@ -3577,19 +3595,19 @@ def krige3D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model_3D.is_stationary():
             if verbose > 0:
-                print("ERROR (KRIGE3D): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): 'cov_model' is not stationary")
             return None
         cov_func = cov_model_3D.func() # covariance function
         cov_range = cov_model_3D.rxyz()
     else:
         if verbose > 0:
-            print("ERROR (KRIGE3D): 'cov_model' (third argument) is not valid")
+            print(f"ERROR ({fname}): 'cov_model' (third argument) is not valid")
         return out
 
     # Check conditioning method
     if conditioningMethod not in (1, 2):
         if verbose > 0:
-            print('ERROR (KRIGE3D): invalid method!')
+            print(f'ERROR ({fname}): invalid method!')
         return out
 
     nx, ny, nz = dimension
@@ -3601,19 +3619,19 @@ def krige3D(cov_model,
 
     if x is None and v is not None:
         if verbose > 0:
-            print("ERROR (KRIGE3D): 'x' is not given (None) but 'v' is given (not None)")
+            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
         return out
 
     if x is not None:
         if v is None:
             if verbose > 0:
-                print("ERROR (KRIGE3D): 'x' is given (not None) but 'v' is not given (None)")
+                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
             return out
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 3-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("ERROR (KRIGE3D): length of 'v' is not valid")
+                print(f"ERROR ({fname}): length of 'v' is not valid")
             return out
 
     if mean is not None:
@@ -3627,7 +3645,7 @@ def krige3D(cov_model,
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if mean.size not in (1, nxyz):
             if verbose > 0:
-                print("ERROR (KRIGE3D): size of 'mean' is not valid")
+                print(f"ERROR ({fname}): size of 'mean' is not valid")
             return out
         if mean.size == nxyz:
             mean = np.asarray(mean).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
@@ -3644,7 +3662,7 @@ def krige3D(cov_model,
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if var.size not in (1, nxyz):
             if verbose > 0:
-                print("ERROR (KRIGE3D): size of 'var' is not valid")
+                print(f"ERROR ({fname}): size of 'var' is not valid")
             return out
         if var.size == nxyz:
             var = np.asarray(var).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
@@ -3792,7 +3810,7 @@ def krige3D(cov_model,
 
     if np.any(x < origin) or np.any(x > np.asarray(origin) + np.asarray(dimension) * np.asarray(spacing)):
         if verbose > 0:
-            print('ERROR (KRIGE3D): a conditioning point is out of the grid')
+            print(f'ERROR ({fname}): a conditioning point is out of the grid')
         return out
 
     # Compute
@@ -3807,13 +3825,13 @@ def krige3D(cov_model,
 
     # if len(np.unique(indc)) != len(x):
     #     if verbose > 0:
-    #         print('ERROR (KRIGE3D): more than one conditioning point in a same grid cell')
+    #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
     #     return out
 
     indc_unique, indc_inv = np.unique(indc, return_inverse=True)
     if len(indc_unique) != len(x):
         if verbose > 1:
-            print('WARNING (KRIGE3D): aggregating (mean) conditioning points falling in a same grid cell')
+            print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
         indc = indc_unique
         iz = indc//nxy
         j = indc%nxy
@@ -3837,7 +3855,7 @@ def krige3D(cov_model,
     # Test if rAA is almost singular...
     if 1./np.linalg.cond(rAA) < tolInvKappa:
         if verbose > 0:
-            print('ERROR (KRIGE3D): conditioning issue: condition number of matrix rAA is too big')
+            print(f'ERROR ({fname}): conditioning issue: condition number of matrix rAA is too big')
         return out
 
     # Compute:
