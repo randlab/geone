@@ -381,16 +381,16 @@ class Img(object):
             ind = indList
             if ind is None:
                 print("Nothing is done! (no index given)")
-                return
+                return None
 
         ind = np.atleast_1d(ind).reshape(-1)
         if ind.size == 0:
-            return
+            return None
 
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         ind = np.setdiff1d(np.arange(self.nv), ind)
 
@@ -471,17 +471,17 @@ class Img(object):
             ind = indList
             if ind is None:
                 print("Nothing is done! (no index given)")
-                return
+                return None
 
         ind = np.atleast_1d(ind).reshape(-1)
         if ind.size == 0:
             self.remove_allvar()
-            return
+            return None
 
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         # Update val array
         self.val = self.val[ind,...]
@@ -1148,16 +1148,16 @@ class PointSet(object):
             ind = indList
             if ind is None:
                 print("Nothing is done! (no index given)")
-                return
+                return None
 
         ind = np.atleast_1d(ind).reshape(-1)
         if ind.size == 0:
-            return
+            return None
 
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         ind = np.setdiff1d(np.arange(self.nv), ind)
 
@@ -1237,17 +1237,17 @@ class PointSet(object):
             ind = indList
             if ind is None:
                 print("Nothing is done! (no index given)")
-                return
+                return None
 
         ind = np.atleast_1d(ind).reshape(-1)
         if ind.size == 0:
             self.remove_allvar()
-            return
+            return None
 
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         # Update val array
         self.val = self.val[ind,...]
@@ -1270,16 +1270,16 @@ class PointSet(object):
 
         if ind is None:
             print("Nothing is done! (no index given)")
-            return
+            return None
 
         ind = np.atleast_1d(ind).reshape(-1)
         if ind.size == 0:
-            return
+            return None
 
         ind[ind<0] = self.npt + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.npt)):
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         ind = np.setdiff1d(np.arange(self.npt), ind)
 
@@ -1326,17 +1326,17 @@ class PointSet(object):
 
         if ind is None:
             print("Nothing is done! (no index given)")
-            return
+            return None
 
         ind = np.atleast_1d(ind).reshape(-1)
         if ind.size == 0:
             self.remove_allpt()
-            return
+            return None
 
         ind[ind<0] = self.npt + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.npt)):
             print("Nothing is done! (invalid index)")
-            return
+            return None
 
         # Update val array
         self.val = self.val[:, ind]

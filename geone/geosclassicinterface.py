@@ -38,7 +38,7 @@ def img_py2C(im_py):
     err = geosclassic.MPDSMallocImage(im_c, im_py.nxyz(), im_py.nv)
     if err:
         print(f'ERROR ({fname}): can not convert image from python to C')
-        return
+        return None
 
     im_c.grid.nx = im_py.nx
     im_c.grid.ny = im_py.ny
@@ -112,7 +112,7 @@ def ps_py2C(ps_py):
 
     if ps_py.nv < 4:
         print(f'ERROR ({fname}): point set (python) have less than 4 variables')
-        return
+        return None
 
     nvar = ps_py.nv - 3
 
@@ -122,7 +122,7 @@ def ps_py2C(ps_py):
     err = geosclassic.MPDSMallocPointSet(ps_c, ps_py.npt, nvar)
     if err:
         print(f'ERROR ({fname}): can not convert point set from python to C')
-        return
+        return None
 
     ps_c.npoint = ps_py.npt
     ps_c.nvar = nvar

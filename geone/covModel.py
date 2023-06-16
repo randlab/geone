@@ -3089,7 +3089,7 @@ def variogramExp2D_rose(x, v, r_max=np.nan, r_ncla=10, phi_ncla=12, set_polar_su
     # Check length of v
     if len(v) != n:
         print(f"ERROR ({fname}): length of 'v' is not valid")
-        return
+        return None
 
     # Compute lag vector (h) and gamma value (g) for pair of points with distance less than or equal to hmax
     if np.isnan(r_max):

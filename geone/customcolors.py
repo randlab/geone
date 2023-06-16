@@ -71,7 +71,7 @@ def custom_cmap(cseq,
         aseq = aseq.flat[0] * np.ones(len(cseq))
     elif aseq.size != len(cseq):
         print(f'ERROR ({fname}): length of alpha not compatible with cseq')
-        return
+        return None
 
     # Set vseqn: sequence of values rescaled in [0,1]
     if vseq is not None:

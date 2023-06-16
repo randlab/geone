@@ -853,7 +853,7 @@ def writeImage2Dppm(im, filename,
 
     if iv < 0 or iv >= im.nv:
         print(f'ERROR ({fname}): invalid iv index!')
-        return
+        return None
 
     # Check slice direction and indices
     n = int(ix is not None) + int(iy is not None) + int(iz is not None)
@@ -869,7 +869,7 @@ def writeImage2Dppm(im, filename,
 
             if ix < 0 or ix >= im.nx:
                 print(f'ERROR ({fname}): invalid ix index!')
-                return
+                return None
 
             sliceDir = 'x'
 
@@ -879,7 +879,7 @@ def writeImage2Dppm(im, filename,
 
             if iy < 0 or iy >= im.ny:
                 print(f'ERROR ({fname}): invalid iy index!')
-                return
+                return None
 
             sliceDir = 'y'
 
@@ -889,13 +889,13 @@ def writeImage2Dppm(im, filename,
 
             if iz < 0 or iz >= im.nz:
                 print(f'ERROR ({fname}): invalid iz index!')
-                return
+                return None
 
             sliceDir = 'z'
 
     else: # n > 1
         print(f'ERROR ({fname}): slice specified in more than one direction!')
-        return
+        return None
 
     # Extract what to be plotted
     if sliceDir == 'x':
@@ -935,7 +935,7 @@ def writeImage2Dppm(im, filename,
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
             print(f"ERROR ({fname}): 'categCol' must be a list or a tuple (if not None)!")
-            return
+            return None
 
         # Get array 'dval' of displayed values
         if categVal is not None:
@@ -943,12 +943,12 @@ def writeImage2Dppm(im, filename,
 
             if len(np.unique(dval)) != len(dval):
                 print(f"ERROR ({fname}): 'categVal' contains duplicated entries!")
-                return
+                return None
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 print(f"ERROR ({fname}): length of 'categVal' and 'categCol' differs!")
-                return
+                return None
 
         else:
             # Possibly exclude values from zz

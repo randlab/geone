@@ -240,7 +240,7 @@ def drawImage3D_surface (
 
     if iv < 0 or iv >= im.nv:
         print(f'ERROR ({fname}): invalid iv index!')
-        return
+        return None
 
     # Set indices to be plotted
     if ix1 is None:
@@ -254,15 +254,15 @@ def drawImage3D_surface (
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
         print("Invalid indices along x)")
-        return
+        return None
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
         print("Invalid indices along y)")
-        return
+        return None
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         print("Invalid indices along z)")
-        return
+        return None
 
     # Get the color map
     if isinstance(cmap, str):
@@ -270,7 +270,7 @@ def drawImage3D_surface (
             cmap = plt.get_cmap(cmap)
         except:
             print(f'ERROR ({fname}): invalid cmap string!')
-            return
+            return None
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
@@ -301,7 +301,7 @@ def drawImage3D_surface (
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
             print(f"ERROR ({fname}): 'categCol' must be a list or a tuple (if not None)!")
-            return
+            return None
 
         # Get array 'dval' of displayed values (at least for color bar)
         if categVal is not None:
@@ -309,12 +309,12 @@ def drawImage3D_surface (
 
             if len(np.unique(dval)) != len(dval):
                 print(f"ERROR ({fname}): 'categVal' contains duplicated entries!")
-                return
+                return None
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 print(f"ERROR ({fname}): length of 'categVal' and 'categCol' differs!")
-                return
+                return None
 
         else:
             # Possibly exclude values from zz
@@ -326,16 +326,16 @@ def drawImage3D_surface (
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
             if len(dval) > ncateg_max:
                 print(f'ERROR ({fname}): too many categories, set categ=False')
-                return
+                return None
 
         if not len(dval): # len(dval) == 0
             print(f'ERROR ({fname}): no value to be drawn!')
-            return
+            return None
 
         if categActive is not None:
             if len(categActive) != len(dval):
                 print(f"ERROR ({fname}): length of 'categActive' not valid (should be the same as length of categVal)")
-                return
+                return None
         else:
             categActive = np.ones(len(dval), dtype='bool')
 
@@ -697,7 +697,7 @@ def drawImage3D_slice (
 
     if iv < 0 or iv >= im.nv:
         print(f'ERROR ({fname}): invalid iv index!')
-        return
+        return None
 
     # Set indices to be plotted
     if ix1 is None:
@@ -711,15 +711,15 @@ def drawImage3D_slice (
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
         print("Invalid indices along x)")
-        return
+        return None
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
         print("Invalid indices along y)")
-        return
+        return None
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         print("Invalid indices along z)")
-        return
+        return None
 
     # Get the color map
     if isinstance(cmap, str):
@@ -727,7 +727,7 @@ def drawImage3D_slice (
             cmap = plt.get_cmap(cmap)
         except:
             print(f'ERROR ({fname}): invalid cmap string!')
-            return
+            return None
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
@@ -758,7 +758,7 @@ def drawImage3D_slice (
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
             print(f"ERROR ({fname}): 'categCol' must be a list or a tuple (if not None)!")
-            return
+            return None
 
         # Get array 'dval' of displayed values (at least for color bar)
         if categVal is not None:
@@ -766,12 +766,12 @@ def drawImage3D_slice (
 
             if len(np.unique(dval)) != len(dval):
                 print(f"ERROR ({fname}): 'categVal' contains duplicated entries!")
-                return
+                return None
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 print(f"ERROR ({fname}): length of 'categVal' and 'categCol' differs!")
-                return
+                return None
 
         else:
             # Possibly exclude values from zz
@@ -783,16 +783,16 @@ def drawImage3D_slice (
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
             if len(dval) > ncateg_max:
                 print(f'ERROR ({fname}): too many categories, set categ=False')
-                return
+                return None
 
         if not len(dval): # len(dval) == 0
             print(f'ERROR ({fname}): no value to be drawn!')
-            return
+            return None
 
         if categActive is not None:
             if len(categActive) != len(dval):
                 print(f"ERROR ({fname}): length of 'categActive' not valid (should be the same as length of categVal)")
-                return
+                return None
         else:
             categActive = np.ones(len(dval), dtype='bool')
 
@@ -989,15 +989,15 @@ def drawImage3D_empty_grid (
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
         print("Invalid indices along x)")
-        return
+        return None
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
         print("Invalid indices along y)")
-        return
+        return None
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         print("Invalid indices along z)")
-        return
+        return None
 
     # Get the color map
     if isinstance(cmap, str):
@@ -1005,7 +1005,7 @@ def drawImage3D_empty_grid (
             cmap = plt.get_cmap(cmap)
         except:
             print(f'ERROR ({fname}): invalid cmap string!')
-            return
+            return None
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
@@ -1036,7 +1036,7 @@ def drawImage3D_empty_grid (
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
             print(f"ERROR ({fname}): 'categCol' must be a list or a tuple (if not None)!")
-            return
+            return None
 
         # Get array 'dval' of displayed values (at least for color bar)
         if categVal is not None:
@@ -1044,12 +1044,12 @@ def drawImage3D_empty_grid (
 
             if len(np.unique(dval)) != len(dval):
                 print(f"ERROR ({fname}): 'categVal' contains duplicated entries!")
-                return
+                return None
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 print(f"ERROR ({fname}): length of 'categVal' and 'categCol' differs!")
-                return
+                return None
 
         else:
             # Possibly exclude values from zz
@@ -1061,16 +1061,16 @@ def drawImage3D_empty_grid (
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
             if len(dval) > ncateg_max:
                 print(f'ERROR ({fname}): too many categories, set categ=False')
-                return
+                return None
 
         if not len(dval): # len(dval) == 0
             print(f'ERROR ({fname}): no value to be drawn!')
-            return
+            return None
 
         if categActive is not None:
             if len(categActive) != len(dval):
                 print(f"ERROR ({fname}): length of 'categActive' not valid (should be the same as length of categVal)")
-                return
+                return None
         else:
             categActive = np.ones(len(dval), dtype='bool')
 
@@ -1332,7 +1332,7 @@ def drawImage3D_volume (
 
     if iv < 0 or iv >= im.nv:
         print(f'ERROR ({fname}): invalid iv index!')
-        return
+        return None
 
     # Set indices to be plotted
     if ix1 is None:
@@ -1346,15 +1346,15 @@ def drawImage3D_volume (
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
         print("Invalid indices along x)")
-        return
+        return None
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
         print("Invalid indices along y)")
-        return
+        return None
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         print("Invalid indices along z)")
-        return
+        return None
 
     # Get the color map
     if isinstance(cmap, str):
@@ -1362,7 +1362,7 @@ def drawImage3D_volume (
             cmap = plt.get_cmap(cmap)
         except:
             print(f'ERROR ({fname}): invalid cmap string!')
-            return
+            return None
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:

@@ -126,7 +126,7 @@ def readBlockData(filename):
     # Check if the file exists
     if not os.path.isfile(filename):
         print(f'ERROR ({fname}): invalid filename ({filename})')
-        return
+        return None
 
     # Open the file in read mode
     with open(filename,'r') as ff:
@@ -157,7 +157,7 @@ def readBlockData(filename):
                    activatePropMin=activatePropMin,
                    activatePropMax=activatePropMax)
 
-    return (bd)
+    return bd
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -171,7 +171,7 @@ def writeBlockData(bd, filename, fmt='.5g'):
     """
 
     if bd.blockDataUsage == 0:
-        return
+        return None
 
     # Open the file in write binary mode
     with open(filename,'wb') as ff:
