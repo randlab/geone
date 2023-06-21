@@ -322,8 +322,7 @@ if __name__ == "__main__":
 
     # --- 3rd plot ---
     plt.subplot(2,2,3)
-    im_plot = plt.imshow(zz, cmap=custom_cmap(col_chart_list,
-                                              ncol=len(col_chart_list)),
+    im_plot = plt.imshow(zz, cmap=custom_cmap(col_chart_list, ncol=len(col_chart_list)),
                          vmin=vmin, vmax=vmax, origin='lower',
                          extent=[xmin,xmax,ymin,ymax], interpolation='none')
     plt.grid()
