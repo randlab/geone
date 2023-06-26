@@ -70,8 +70,6 @@ else:
 # Set subdir_name
 if prefix is None or suffix is None:
     subdir_name = None
-elif prefix == 'linux_old' and suffix == 'py311':
-    subdir_name = None # not available for this version
 else:
     subdir_name = f'{prefix}_{suffix}'
 

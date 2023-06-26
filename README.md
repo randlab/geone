@@ -31,13 +31,13 @@ The following python packages are used by GEONE (tested on python 3.10.9):
    - matplotlib (3.6.2)
    - multiprocessing (for parallel processes)
    - numpy (tested with version 1.23.5)
-     pandas (tested with version 1.5.2)
+   - pandas (tested with version 1.5.2)
    - pyvista (tested with version 0.38.5)
    - scipy (tested with version 1.10.0)
 
 ## Important notes
-- GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. The DEESSE version provided with GEONE is a test version with restricted capabilities. **To unlock the full capabilities of DEESSE, the user must obtain a commercial or academic license from the University of Neuchâtel. See LICENSE file for details.**
-- DEESSE and some other geostatistical tools provided by GEONE are compiled in C for windows and linux, and for python3.6 to python3.10. **Note that for linux, libraries depending on the library GLIBC 2.35 or GLIBC 2.27 are provided, hence the library GLIBC of your OS has to be compatible with one of those versions to ensure proper operation of GEONE.**
+- GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. DEESSE is a commercial product which is not provided as an open source software and belongs to the University of Neuchâtel. See [LICENSE](LICENSE).
+- DEESSE and some other geostatistical tools provided by GEONE are compiled in C for windows and linux, and for python3.6 to python3.11. **Note that for linux, libraries depending on the library GLIBC 2.35 or GLIBC 2.27 are provided, hence the library GLIBC of your OS has to be compatible with one of those versions to ensure proper operation of GEONE.**
 
 ## DEESSE - Introduction
 DEESSE is a parallel software for multiple point statistics (MPS) simulations. MPS allows to generate random fields reproducing the spatial statistics -- within and between variable(s) -- of a training data set (TDS). DEESSE follows an approach based on the *direct sampling* of the TDS. The simulation grid is sequentially populated by values borrowed from the TDS, selected after a random search for similar patterns. Many features are handled by DEESSE and illustrated in the proposed examples below.
@@ -116,8 +116,7 @@ Multiple-point statistics - X-simulation using the DEESSEX wrapper:
 - J. Straubhaar, P. Renard (2021) Conditioning Multiple-Point Statistics Simulation to Inequality Data. Earth and Space Science, [doi:10.1029/2020EA001515](https://dx.doi.org/10.1029/2020EA001515)
 - J. Straubhaar, P. Renard, T. Chugunova (2020) Multiple-point statistics using multi-resolution images. Stochastic Environmental Research and Risk Assessment 20, 251-273, [doi:10.1007/s00477-020-01770-8](https://dx.doi.org/10.1007/s00477-020-01770-8)
 - J. Straubhaar, P. Renard, G. Mariethoz (2016) Conditioning multiple-point statistics simulations to block data. Spatial Statistics 16, 53-71, [doi:10.1016/j.spasta.2016.02.005](https://dx.doi.org/10.1016/j.spasta.2016.02.005)
-- G. Mariethoz, J. Straubhaar, P. Renard, T. Chugunova, P. Biver (2015) Constraining distance-based multipoint simulations to proportions and trends. Environmental Modelling & Software 72, 184-197, DOI:
-   10.1016/j.envsoft.2015.07.007
+- G. Mariethoz, J. Straubhaar, P. Renard, T. Chugunova, P. Biver (2015) Constraining distance-based multipoint simulations to proportions and trends. Environmental Modelling & Software 72, 184-197, [doi:10.1016/j.envsoft.2015.07.007](https://dx.doi.org/10.1016/j.envsoft.2015.07.007)
 - G. Mariethoz, P. Renard, J. Straubhaar (2010) The Direct Sampling method to perform multiple-point geostatistical simulation. Water Resources Research 46, W11536, [doi:10.1029/2008WR007621](https://dx.doi.org/10.1029/2008WR007621)
 
 ## Reference about DEESSEX
