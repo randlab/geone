@@ -208,7 +208,11 @@ cmapB2W = custom_cmap(['black', 'white'], cunder=(0.0, 0.0, 1.0, 0.5), cover=(1.
 # "Extended" existing colormap from matplotlib, by adding specific colors for under values, over values and bad values
 # # Example for cmap 'terrain'
 cmap_terrain_ext = custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0, 1, 256)], ncol=256, cunder='pink', cover='orange', cbad='red')
-
+# or:
+xcmap_terrain_ext = plt.get_cmap('terrain')
+xcmap_terrain_ext.set_under('pink')
+xcmap_terrain_ext.set_over('orange')
+xcmap_terrain_ext.set_bad('red')
 # ----------------------------------------------------------------------------
 # # Notes:
 # # =====

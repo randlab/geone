@@ -2655,7 +2655,11 @@ def covModel1D_fit(x, v, cov_model, hmax=np.nan, variogramCloud=None, make_plot=
             return None, None
 
     # Fit with curve_fit
-    popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
+    try:
+        popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
+    except:
+        print('Curve fit failed!')
+        return (cov_model_opt, np.nan * np.ones(nparam))
 
     if make_plot:
         cov_model_opt.plot_model(vario=True, hmax=np.max(h), label='vario opt.')
@@ -3339,7 +3343,11 @@ def covModel2D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, figsize=None, *
             return None, None
 
     # Fit with curve_fit
-    popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
+    try:
+        popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
+    except:
+        print('Curve fit failed!')
+        return (cov_model_opt, np.nan * np.ones(nparam))
 
     if make_plot:
         cov_model_opt.plot_model(vario=True, figsize=figsize)
@@ -3950,7 +3958,11 @@ def covModel3D_fit(x, v, cov_model, hmax=np.nan, make_plot=True, **kwargs):
             return None, None
 
     # Fit with curve_fit
-    popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
+    try:
+        popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
+    except:
+        print('Curve fit failed!')
+        return (cov_model_opt, np.nan * np.ones(nparam))
 
     if make_plot:
         # plt.suptitle(textwrap.TextWrapper(width=50).fill(s))

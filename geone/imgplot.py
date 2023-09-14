@@ -459,14 +459,18 @@ def drawImage2D(
     cticks_kwargs = {}
     cticklabels_kwargs = {}
 
+    colorbar_kwargs = {'aspect':colorbar_aspect, 'pad_fraction':colorbar_pad_fraction}
+
     sub_prefix = ['title_',
                   'xlabel_', 'xticks_', 'xticklabels_',
                   'ylabel_', 'yticks_', 'yticklabels_',
-                  'clabel_', 'cticks_', 'cticklabels_']
+                  'clabel_', 'cticks_', 'cticklabels_',
+                  'colorbar_']
     sub_kwargs = [title_kwargs,
                   xlabel_kwargs, xticks_kwargs, xticklabels_kwargs,
                   ylabel_kwargs, yticks_kwargs, yticklabels_kwargs,
-                  clabel_kwargs, cticks_kwargs, cticklabels_kwargs] # list of dictionaries
+                  clabel_kwargs, cticks_kwargs, cticklabels_kwargs,
+                  colorbar_kwargs] # list of dictionaries
 
     for k, v in kwargs.items():
         for i in range(len(sub_kwargs)):
@@ -561,10 +565,10 @@ def drawImage2D(
 
     # Colorbar
     if showColorbar:
-        cbar_kwargs = {'aspect':colorbar_aspect, 'pad_fraction':colorbar_pad_fraction}
+        #cbar_kwargs = {'aspect':colorbar_aspect, 'pad_fraction':colorbar_pad_fraction}
         if not contourf:
-            cbar_kwargs['extend']=colorbar_extend
-        cbar = add_colorbar(im_plot, **cbar_kwargs)
+            colorbar_kwargs['extend']=colorbar_extend
+        cbar = add_colorbar(im_plot, **colorbar_kwargs)
 
         if clabel is not None:
             cbar.set_label(clabel, **clabel_kwargs)
