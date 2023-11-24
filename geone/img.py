@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import scipy
 
 
 # ============================================================================
@@ -322,7 +323,7 @@ class Img(object):
         if varname is not None:
             if isinstance(varname, str):
                 varname = [varname]
-            elif (not isinstance(varname, tuple) and not isinstance(varname, list) and not (isinstance(varname, np.ndarray) and im_list.ndim==1)) or len(varname)!=m:
+            elif (not isinstance(varname, tuple) and not isinstance(varname, list) and not isinstance(varname, np.ndarray)) or len(varname)!=m:
                 print(f'ERROR ({fname}): varname does not have an acceptable size')
                 return None
             else:
@@ -1454,6 +1455,195 @@ class PointSet(object):
         return np.max(self.val[2])
 # ============================================================================
 
+# ============================================================================
+class Img_interp_func(object):
+    """
+    Defines an interpolator from one variable defined in a geone image,
+    based on `scipy.ndimage.map_coordinates`(see documentation for
+    parameters `order`, `mode`, `cval` below).
+
+    See web page
+        docs.scipy.org/doc/scipy/tutorial/interpolate/ND_regular_grid.html
+    under "Uniformly space data", introducing a similar class originating
+    from the Johanness Buchner's 'regulargrid' package:
+        github.com/JohannesBuchner/regulargrid/
+
+    Parameters:
+    im:         (geone.img.Img) geone image
+    ind:        (int) variable index (default: 0)
+    ix, iy, iz: (int or None): for ix (similar for iy, iz):
+                    if None: no slice, all values in the array of the
+                        variable values along the x-axis are considered,
+                        and coordinate along x-axis will be a variable
+                        for the interpolator
+                    if not None: slice index along x-axis,
+                        only the given slice corresponding to x-axis
+                        in the array of the variable values is considered,
+                        and coordinate along x-axis will not be a variable
+                        for the interpolator
+    order:      (int: 1, 3, or 5) order for the interpolator within the
+                    domain of the image grid
+                    (1: linear, 3: cubic, 5:quintic)
+    mode:       (str) determines the behaviour of the interpolator beyond
+                    the domain of the image grid
+    cval:       (float) value used for evaluation beyond the domain of the
+                    image grid, used if `mode=constant`
+
+    Returns an interpolator (function) whose argument is a 2d-array, each
+    line defining the coordinates of a point where the interpolation is
+    done; the number of columns (coordinates) is equal to the number of
+    "no slice" axes (see parameters `ix`, `iy`, `iz` above), each column
+    being to the coordinate in the corresponding axis direction
+
+    Example:
+    >>> # Define an image
+    >>> nx, ny, nz = 4, 5, 6
+    >>> sx, sy, sz = 1.0, 1.0, 1.0
+    >>> ox, oy, oz = 0.0, 0.0, 0.0
+    >>> im = Img(nx=nx, ny=ny, nz=nz,
+    >>>          sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
+    >>>          nv=1, val=np.arange(nx*ny*nz))
+    >>> # Define an interpolator
+    >>> interp = Img_interp_func(im)
+    >>> # Evaluate the interpolator on some points
+    >>> points = np.array([[2.2, 3.4, 1.2], [2.7, 4.1, 5.2]])
+    >>> v = interp(points)
+
+    >>> interp2 = scipy.interpolate.RegularGridInterpolator(
+    >>>     (im.x(), im.y(), im.z()), im.val[0].transpose(2, 1, 0),
+    >>>     method='linear', bounds_error=False, fill_value=np.nan)
+    >>> v2 = interp2(points) # gives same values except for points beyond
+    >>>                      # the domain of the image grid
+    """
+    def __init__(self,
+                 im,
+                 ind=0, ix=None, iy=None, iz=None,
+                 order=1, mode='nearest', cval=np.nan):
+
+        fname = 'Img_interp_func'
+
+        # Check image
+        if not isinstance(im, Img):
+            print(f'ERROR ({fname}): `im` is not a geone image')
+            return None
+
+        # Check set variable index
+        if ind < 0:
+            iv = im.nv + ind
+        else:
+            iv = ind
+
+        if iv < 0 or iv >= im.nv:
+            print(f'ERROR ({fname}): invalid variable index (`ind`)')
+            return None
+
+        # Check index along x-axis
+        if ix is not None:
+            if ix < 0:
+                ix = im.nx + ix
+
+            if ix < 0 or ix >= im.nx:
+                print(f'ERROR ({fname}): invalid index for x-axis (`ix`)')
+                return None
+
+        # Check index along y-axis
+        if iy is not None:
+            if iy < 0:
+                iy = im.ny + iy
+
+            if iy < 0 or iy >= im.ny:
+                print(f'ERROR ({fname}): invalid index for y-axis (`iy`)')
+                return None
+
+        # Check index along z-axis
+        if iz is not None:
+            if iz < 0:
+                iz = im.nz + iz
+
+            if iz < 0 or iz >= im.nz:
+                print(f'ERROR ({fname}): invalid index for z-axis (`iz`)')
+                return None
+
+        # Get array of values, spacing, and minimal coordinates for the interpolator
+        if ix is None:
+            if iy is None:
+                if iz is None:
+                    # interpolator along x, y, z axes
+                    values = im.val[iv, :, :, :].transpose(2, 1, 0)
+                    spacing = np.array([im.sx, im.sy, im.sz])
+                    min_coords = np.array([im.ox, im.oy, im.oz]) + 0.5*spacing
+                else:
+                    # interpolator along x, y axes
+                    values = im.val[iv, iz, :, :].transpose(1, 0)
+                    spacing = np.array([im.sx, im.sy])
+                    min_coords = np.array([im.ox, im.oy]) + 0.5*spacing
+            else:
+                if iz is None:
+                    # interpolator along x, z axes
+                    values = im.val[iv, :, iy, :].transpose(1, 0)
+                    spacing = np.array([im.sx, im.sz])
+                    min_coords = np.array([im.ox, im.oz]) + 0.5*spacing
+                else:
+                    # interpolator along x axis
+                    values = im.val[iv, iz, iy, :]
+                    spacing = np.array([im.sx])
+                    min_coords = np.array([im.ox]) + 0.5*spacing
+        else:
+            if iy is None:
+                if iz is None:
+                    # interpolator along y, z axes
+                    values = im.val[iv, :, :, ix].transpose(1, 0)
+                    spacing = np.array([im.sy, im.sz])
+                    min_coords = np.array([im.oy, im.oz]) + 0.5*spacing
+                else:
+                    # interpolator along y axis
+                    values = im.val[iv, iz, :, ix]
+                    spacing = np.array([im.sy])
+                    min_coords = np.array([im.oy]) + 0.5*spacing
+            else:
+                if iz is None:
+                    # interpolator along z axis
+                    values = im.val[iv, :, iy, ix]
+                    spacing = np.array([im.sz])
+                    min_coords = np.array([im.oz]) + 0.5*spacing
+                else:
+                    print(f'ERROR ({fname}): none of the axis correpsonds to "no slice"')
+                    return None
+
+        self.values = values
+        self.spacing = spacing
+        self.min_coords = min_coords
+        self.order = order
+        self.mode = mode
+        self.cval = cval
+
+    def __call__(self, points):
+        """
+        Defines the evaluation of the interpolation at the given
+        points.
+
+        :param points:  (2d-array of shape (n, d)) each row is
+                            a point where the interpolation is done,
+                            the d columns corresponds to the d
+                            coordinates along the "no sliced" axes
+                        notes:
+                        * list of length d or 1d-array of shape (d, ) is
+                            accepted for the evaluation at one point
+                        * if d=1: list of length m or 1d-array of shape (m, )
+                            is accepted for the evaluation at m points
+        """
+        points = np.atleast_2d(points)
+
+        if self.values.ndim == 1:
+            points = points.reshape(-1, 1)
+
+        # Convert points coordinates to grid (pixel) coordinates
+        grid_coords = (points - self.min_coords)/self.spacing
+
+        # Do interpolation
+        return scipy.ndimage.map_coordinates(self.values, grid_coords.T, order=self.order, mode=self.mode, cval=self.cval)
+# ============================================================================
+
 # ----------------------------------------------------------------------------
 def copyImg(im, varInd=None, varIndList=None):
     """
@@ -1552,6 +1742,81 @@ def copyPointSet(ps, varInd=None, varIndList=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
+    """
+    Convert real point coordinates to index grid.
+
+    :param x, y, z:     (float, or 1-d array of floats) coordinates of point(s)
+    :param sx, sy, sz:  (float) cell size along each axis
+    :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
+
+    :return (ix, iy, iz):
+                        (3-tuple of floats or 1-d of floats) grid node index
+                            in x-, y-, z-axis direction respectively for each
+                            point given in input
+                            Warning: no check if the node(s) is within the grid
+    """
+    # Get node index (nearest node)
+    c = np.array((np.atleast_1d(x), np.atleast_1d(y), np.atleast_1d(z))).T
+    jc = (c - np.array([ox, oy, oz]))/np.array([sx, sy, sz])
+    ic = jc.astype(int)
+
+    # Round to lower index if between two grid node and index is positive
+    ic = ic - 1 * np.all((ic == jc, ic > 0), axis=0)
+
+    ix = ic[:, 0]
+    iy = ic[:, 1]
+    iz = ic[:, 2]
+
+    # Set ix (resp. iy, iz) as int if x (resp. y, z) is float (or int) in input
+    if np.asarray(x).ndim == 0:
+        ix = ix[0]
+    if np.asarray(y).ndim == 0:
+        iy = iy[0]
+    if np.asarray(z).ndim == 0:
+        iz = iz[0]
+
+    return ix, iy, iz
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz):
+    """
+    Convert a grid index (3 indices) into a single grid index.
+
+    :param ix, iy, iz:  (int) grid index in x-, y-, z-axis direction
+    :param nx, ny, nz:  (int) number of grid cells along each axis
+
+    :return i:  (int) single grid index
+                    Note: ix, iy, iz can be ndarray of same shape, then i is a
+                    ndarray of that shape
+    """
+    return ix + nx * (iy + ny * iz)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def singleGridIndexToGridIndex(i, nx, ny, nz):
+    """
+    Convert a single into a grid index (3 indices).
+
+    :param i:           (int) single grid index
+    :param nx, ny, nz:  (int) number of grid cells along each axis
+
+    :return (ix, iy, iz):
+                        (3-tuple) grid index in x-, y-, z-axis direction
+                            Note: i can be a ndarray, then ix, iy, iz in output
+                            are ndarray (of same shape)
+    """
+    nxy = nx*ny
+    iz = i//nxy
+    j = i%nxy
+    iy = j//nx
+    ix = j%nx
+
+    return ix, iy, iz
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def imageToPointSet(im, remove_uninformed_cell=True):
     """
     Returns a point set corresponding to the input image.
@@ -1587,22 +1852,385 @@ def imageToPointSet(im, remove_uninformed_cell=True):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def aggregateDataPointsWrtGrid(x, y, z, v,
+                               nx, ny, nz,
+                               sx=1.0, sy=1.0, sz=1.0,
+                               ox=0.0, oy=0.0, oz=0.0,
+                               op='mean', **kwargs):
+    r"""
+    Remove points out of the grid (defined with given parameters) and aggregate
+    data points falling in a same grid cell by taking the mean coordinates and
+    applying the operation `op` for the value of each variable.
+
+    :param x, y, z:     (1-d array of floats) coordinates of point(s)
+    :param v:           (1-d array of floats, or 2-d array of floats)
+                            values attached to point(s), each row of v (if 2d
+                            array) corresponds to a same variable
+    :param nx, ny, nz:  (int) number of grid cells along each axis
+    :param sx, sy, sz:  (float) cell size along each axis
+    :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
+    :param op:          (string) statistic operator, can be:
+                            'max': max
+                            'mean': mean
+                            'min': min
+                            'std': standard deviation
+                            'var': variance
+                            'quantile': quantile
+                                this operator requires the keyword argument
+                                q=<sequence of quantile to compute>
+                            'most_freq': most frequent value (smallest ones if
+                                more than one values with the maximal frequence)
+    :param kwargs:      additional key word arguments passed to np.<op> function,
+                            typically: ddof=1 if op is 'std' or 'var'
+
+    :return (x, y, z, v):
+                        (4-tuple): points with aggregated information
+                            x, y, z: 1-d arrays of floats
+                            v: 1- or 2-d arrays of floats
+    """
+    v_ndim = v.ndim
+
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    z = np.atleast_1d(z)
+    v = np.atleast_2d(v)
+
+    # Keep only the points within the grid
+    ind = np.all((x >= ox, x <= ox+sx*nx, y >= oy, y <= oy+sy*ny, z >= oz, z <= oz+sz*nz), axis=0)
+    if not np.any(ind):
+        # no point in the grid
+        x = np.zeros(0)
+        y = np.zeros(0)
+        z = np.zeros(0)
+        v = np.zeros(shape=np.repeat(0, v.ndim))
+        return x, y, z, v
+
+    x = x[ind]
+    y = y[ind]
+    z = z[ind]
+    v = v[:, ind].T
+
+    # Get node index (nearest node)
+    c = np.array((x, y, z)).T
+    jc = (c - np.array([ox, oy, oz]))/np.array([sx, sy, sz])
+    ic = jc.astype(int)
+
+    # Round to lower index if between two grid node and index is positive
+    ic = ic - 1 * np.all((ic == jc, ic > 0), axis=0)
+
+    ix, iy, iz = ic[:, 0], ic[:, 1], ic[:, 2]
+    # ix, iy, iz = pointToGridIndex(x, y, z, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz) # Equivalent
+    ic = ix + nx * (iy + ny * iz) # single-indices
+
+    ic_unique, ic_inv = np.unique(ic, return_inverse=True)
+    if len(ic_unique) != len(ic):
+        # Aggretation is needed
+        # print(f'WARNING ({fname}): more than one point in the same cell (aggregation operation: {op})!')
+        # Prepare operation
+        if op == 'max':
+            func = np.nanmax
+        elif op == 'mean':
+            func = np.nanmean
+        elif op == 'min':
+            func = np.nanmin
+        elif op == 'std':
+            func = np.nanstd
+        elif op == 'var':
+            func = np.nanvar
+        elif op == 'quantile':
+            func = np.nanquantile
+            if 'q' not in kwargs:
+                print(f"ERROR ({fname}): keyword argument 'q' required for op='quantile', nothing done!")
+                return None
+        elif op == 'most_freq':
+            def func(arr):
+                arr_unique, arr_count = np.unique(arr, return_counts=True)
+                return arr_unique[np.argmax(arr_count)]
+        else:
+            print(f"ERROR ({fname}): unkown operation '{op}', nothing done!")
+            return None
+
+        nxy = nx*ny
+        ic = ic_unique
+        iz = ic//nxy
+        j = ic%nxy
+        iy = j//nx
+        ix = j%nx
+        c = np.array([c[ic_inv==j].mean(axis=0) for j in range(len(ic_unique))])
+        v = np.array([func(np.asarray(v[ic_inv==j]), axis=0, **kwargs) for j in range(len(ic_unique))])
+        #v = np.array([v[ic_inv==j].mean(axis=0) for j in range(len(ic_unique))])
+
+    x, y, z = c.T # unpack
+    v = v.T
+    if v_ndim == 1:
+        v = v[0]
+
+    return x, y, z, v
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def imageFromPoints(points, values=None, varname=None,
+                    nx=None, ny=None, nz=None,
+                    sx=None, sy=None, sz=None,
+                    ox=None, oy=None, oz=None,
+                    xmin_ext=0.0, xmax_ext=0.0,
+                    ymin_ext=0.0, ymax_ext=0.0,
+                    zmin_ext=0.0, zmax_ext=0.0,
+                    indicator_var=False, count_var=False,
+                    op='mean', **kwargs):
+    """
+    Returns an image whose the grid geometry is set by the given parameters or
+    computed from the given points (coordinates), and with variable(s) defined as
+    aggregated points values according to the operation `op` (points falling in
+    the same grid cells are aggregated). In addition an indicator variable with
+    value 1 at cells cointaining at least one points (0 elsewhere) and a count
+    variable indicating the number of points in the cells, can be computed.
+
+    The output image grid geometry is defined according to what is given in
+    input; for x-axis direction (similar for y, z):
+        - `ox` (origin), `nx` (dimension, number of cells)
+            and `sx` (resolution, cell size)
+        - or only `nx`: `ox` and `sx` automatically computed
+        - or only `sx`: `ox` and `nx` automatically computed
+    In the two last cases, the parameters `xmin_ext`, `xmax_ext`, are used and
+    the approximate limit of the grid in x-axis direction is set to x0, x1,
+    where
+        x0: minimal of x coordinate of the points minus `xmin_ext`
+        x1: maximal of x coordinate of the points plus `xmax_ext`
+    Note that points in 1D or 2D are accepted, if the points are in 1D,
+    the default values
+        `ny`=`nz`=1, `sy`=`sz`=1.0, `oy`=`oz`=-0.5 are used
+    and if the points are in 2D, the default values
+        `nz`=1, `sz`=1.0, `oz`=-0.5 are used
+
+    :param points:  (2d-array of floats of shape (n, d)) each row is a point
+                        given in dimension d (1, 2, or 3)
+                        note: list of 1d-array of shape (d, ) is also accepted;
+    :param values:  (None or 1-d array of floats, or 2-d array of floats)
+                        values attached to point(s), each row of v (if 2d
+                        array) corresponds to a same variable
+    :param varname: (None or string or list of strings) variable name
+                        (one name per row of `values`, default names are
+                        used if not given)
+    :param nx, ny, nz:
+                (int or None) number of grid cells along each axis
+    :param sx, sy, sz:
+                (float or None) cell size along each axis
+    :param ox, oy, oz:
+                (float or None) origin of the grid (bottom-lower-left corner)
+
+    :param xmin_ext:(float) extension from the minimal x coordinate
+    :param xmax_ext:(float) extension from the maximal x coordinate
+    :param ymin_ext:(float) extension from the minimal y coordinate
+    :param ymax_ext:(float) extension from the maximal y coordinate
+    :param zmin_ext:(float) extension from the minimal z coordinate
+    :param zmax_ext:(float) extension from the maximal z coordinate
+
+    :param indicator_var:
+        (bool) indicating if the "indicator_var" variable is added (prepended)
+            (see above)
+    :param count_var:
+        (bool) indicating if the "count" variable is added (prepended)
+            (see above)
+
+    :param op:          (string) statistic operator used for the aggregation
+                            of point values, can be:
+                                'max': max
+                                'mean': mean
+                                'min': min
+                                'std': standard deviation
+                                'var': variance
+                                'quantile': quantile
+                                    this operator requires the keyword argument
+                                    q=<sequence of quantile to compute>
+                                'most_freq': most frequent value (smallest ones if
+                                    more than one values with the maximal frequence)
+    :param kwargs:      additional key word arguments passed to np.<op> function,
+                            typically: ddof=1 if op is 'std' or 'var'
+
+    :return im: (Img class) output image (see above)
+    """
+
+    fname = 'imageFromPoints'
+
+    points = np.atleast_2d(points)
+    d = points.shape[1]
+    if d == 0:
+        print(f'ERROR ({fname}): no points given')
+        return None
+
+    if d not in (1, 2, 3):
+        print(f'ERROR ({fname}): `points` of invalid dimension')
+        return None
+
+    # Deal with x-axis
+    # ----------------
+    if ox is not None:
+        if nx is None or sx is None:
+            print(f'ERROR ({fname}): if `ox` is given, `nx` and `sx` must be given')
+    else:
+        x0, x1 = points[:, 0].min() - xmin_ext, points[:, 0].max() + xmax_ext
+        if nx is None and sx is not None:
+            nx = int((x1 - x0)/sx) + 1
+        elif nx is not None and sx is None:
+            sx = (x1 - x0)/nx
+        else:
+            print(f'ERROR ({fname}): defining grid (x-axis)')
+            return None
+        ox = x0 - 0.5*(nx*sx - (x1-x0))
+
+    # Deal with y-axis
+    # ----------------
+    if d == 1:
+        ny, sy, oy = 1, 1.0, -0.5
+    elif oy is not None:
+        if ny is None or sy is None:
+            print(f'ERROR ({fname}): if `oy` is given, `ny` and `sy` must be given')
+    else:
+        y0, y1 = points[:, 1].min() - ymin_ext, points[:, 1].max() + ymax_ext
+        if ny is None and sy is not None:
+            ny = int((y1 - y0)/sy) + 1
+        elif ny is not None and sy is None:
+            sy = (y1 - y0)/ny
+        else:
+            print(f'ERROR ({fname}): defining grid (y-axis)')
+            return None
+        oy = y0 - 0.5*(ny*sy - (y1-y0))
+
+    # Deal with z-axis
+    # ----------------
+    if d < 3:
+        nz, sz, oz = 1, 1.0, -0.5
+    elif oz is not None:
+        if nz is None or sz is None:
+            print(f'ERROR ({fname}): if `oz` is given, `nz` and `sz` must be given')
+    else:
+        z0, z1 = points[:, 2].min() - zmin_ext, points[:, 2].max() + zmax_ext
+        if nz is None and sz is not None:
+            nz = int((z1 - z0)/sz) + 1
+        elif nz is not None and sz is None:
+            sz = (z1 - z0)/nz
+        else:
+            print(f'ERROR ({fname}): defining grid (z-axis)')
+            return None
+        oz = z0 - 0.5*(nz*sz - (z1-z0))
+
+    # Define output image (without variable)
+    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=0)
+
+    # Return if no values and no additional variable
+    if values is None and not indicator_var and not count_var:
+        return im
+
+    # Get grid index of points
+    x = points[:, 0]
+    if d > 1:
+        y = points[:, 1]
+    else:
+        y = np.zeros_like(x)
+    if d > 2:
+        z = points[:, 2]
+    else:
+        z = np.zeros_like(x)
+
+    # Get node index (nearest node)
+    c = np.array((x, y, z)).T
+    jc = (c - np.array([ox, oy, oz]))/np.array([sx, sy, sz])
+    ic = jc.astype(int)
+
+    # Round to lower index if between two grid node and index is positive
+    ic = ic - 1 * np.all((ic == jc, ic > 0), axis=0)
+
+    ix, iy, iz = ic[:, 0], ic[:, 1], ic[:, 2]
+    # ix, iy, iz = pointToGridIndex(x, y, z, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz) # Equivalent
+
+    # Check if the points are within the grid
+    ind = np.all((ix >= 0, ix < nx, iy >= 0, iy < ny, iz >= 0, iz < nz), axis=0)
+    if not np.all(ind):
+        print(f'WARNING ({fname}): point(s) out of the grid')
+
+    # Keep points within the grid
+    ix, iy, iz = ix[ind], iy[ind], iz[ind]
+
+    ic = ix + nx * (iy + ny * iz) # single-indices
+
+    nxyz = nx*ny*nz
+
+    # First, set variable "indicator" and "count" if asked for
+    if indicator_var:
+        v = np.zeros(nxyz)
+        v[ic] = 1.0
+        im.append_var(v, varname='indicator')
+    if count_var:
+        v = np.zeros(nxyz)
+        for i in ic:
+            v[i] += 1.0
+        im.append_var(v, varname='count')
+
+    # Add variable from values
+    if values is not None:
+        values = np.atleast_2d(values)
+        nv = values.shape[0] # number of variables
+
+        # keep points within the grid
+        values = values[:, ind].T
+
+        # Prepare array for image variables
+        v = np.full((nv, nxyz), np.nan)
+
+        # Aggregate values in grid
+        ic_unique, ic_inv = np.unique(ic, return_inverse=True)
+        if len(ic_unique) != len(ic):
+            # Aggretation is needed
+            print(f'WARNING ({fname}): more than one point in the same cell (aggregation operation: {op})!')
+            # Prepare operation
+            if op == 'max':
+                func = np.nanmax
+            elif op == 'mean':
+                func = np.nanmean
+            elif op == 'min':
+                func = np.nanmin
+            elif op == 'std':
+                func = np.nanstd
+            elif op == 'var':
+                func = np.nanvar
+            elif op == 'quantile':
+                func = np.nanquantile
+                if 'q' not in kwargs:
+                    print(f"ERROR ({fname}): keyword argument 'q' required for op='quantile', nothing done!")
+                    return None
+            elif op == 'most_freq':
+                def func(arr):
+                    arr_unique, arr_count = np.unique(arr, return_counts=True)
+                    return arr_unique[np.argmax(arr_count)]
+            else:
+                print(f"ERROR ({fname}): unkown operation '{op}', nothing done!")
+                return None
+            values = np.array([func(np.asarray(values[ic_inv==j]), axis=0, **kwargs) for j in range(len(ic_unique))])
+            v[:, ic_unique] = values.T
+        else:
+            v[:, ic] = values.T
+
+        im.append_var(v, varname=varname)
+
+    return im
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def pointSetToImage(ps,
                     nx=None, ny=None, nz=None,
                     sx=None, sy=None, sz=None,
                     ox=None, oy=None, oz=None,
-                    nx_max=10000, ny_max=10000, nz_max=10000, nxyz_max=10000000,
-                    sx_min=1.e-6, sy_min=1.e-6, sz_min=1.e-6,
-                    job=0):
+                    xmin_ext=0.0, xmax_ext=0.0,
+                    ymin_ext=0.0, ymax_ext=0.0,
+                    zmin_ext=0.0, zmax_ext=0.0,
+                    op='mean', **kwargs):
     """
-    Returns an image corresponding to the input point set.
-    The output image grid geometry is defined according to the input parameters
-    (nx, ny, nz, sx, sy, sz, ox, oy, oz). Parameters not given (None) are
-    automatically computed such that, if possible, the grid covers all points of
-    the input point set, with cell size such that only one point is in a same
-    cell.
-
-    Note: the last point is selected if more than one point fall in a same cell.
+    Returns an image whose the grid geometry is set by the given parameters or
+    computed from the given point set (point coordinates), and with variable(s)
+    defined as aggregated values of the point set according to the operation `op`
+    (points falling in the same grid cells are aggregated). See function
+    `imageFromPoints`.
 
     :param ps:  (PointSet class) input point set, with x, y, z-coordinates as
                     first three variable
@@ -1612,21 +2240,35 @@ def pointSetToImage(ps,
                 (float or None) cell size along each axis
     :param ox, oy, oz:
                 (float or None) origin of the grid (bottom-lower-left corner)
-    :param nx_max, ny_max, nz_max:
-                (int) maximal values for nx, ny, nz
-    :param nxyz_max:
-                (int) maximal value for the product nx*ny*nz
-    :param sx_min, sy_min, sz_min:
-                (float) minimal values for sx, sy, sz
-    :param job: (int) defines some behaviour:
-                    - if 0: an error occurs if one data is located outside of
-                        the image grid, otherwise all data are integrated in the
-                        image
-                    - if 1: data located outside of the image grid are ignored
-                        (no error occurs), and all data located within the image
-                        grid are integrated in the image
 
-    :return im: (Img class) image corresponding to the input point set and grid
+    :param xmin_ext:(float) extension from the minimal x coordinate
+    :param xmax_ext:(float) extension from the maximal x coordinate
+    :param ymin_ext:(float) extension from the minimal y coordinate
+    :param ymax_ext:(float) extension from the maximal y coordinate
+    :param zmin_ext:(float) extension from the minimal z coordinate
+    :param zmax_ext:(float) extension from the maximal z coordinate
+
+    :param indicator_var:
+        (bool) indicating if the "indicator" variable is added (prepended)
+            (see above)
+    :param count_var:
+        (bool) indicating if the "count" variable is added (prepended)
+            (see above)
+
+    :param op:          (string) statistic operator used for the aggregation
+                            of point values, can be:
+                                'max': max
+                                'mean': mean
+                                'min': min
+                                'std': standard deviation
+                                'var': variance
+                                'quantile': quantile
+                                    this operator requires the keyword argument
+                                    q=<sequence of quantile to compute>
+    :param kwargs:      additional key word arguments passed to np.<op> function,
+                            typically: ddof=1 if op is 'std' or 'var'
+
+    :return im: (Img class) output image (see above)
     """
 
     fname = 'pointSetToImage'
@@ -1639,95 +2281,17 @@ def pointSetToImage(ps,
         print(f'ERROR ({fname}): invalid variable: 3 first ones must be x, y, z coordinates')
         return None
 
-    if (nx is None or ny is None or nz is None \
-    or sx is None or sy is None or sz is None \
-    or ox is None or oy is None or oz is None) \
-    and ps.npt == 0:
-        print(f'ERROR ({fname}): number of point is 0, unable to compute grid geometry')
-        return None
+    points = np.array((ps.x(), ps.y(), ps.z())).T
 
-    # Compute cell size (if not given)
-    if sx is None:
-        t = np.unique(ps.x())
-        if t.size > 1:
-            sx = max(np.min(np.diff(t)), sx_min)
-        else:
-            sx = 1.0
-    if sy is None:
-        t = np.unique(ps.y())
-        if t.size > 1:
-            sy = max(np.min(np.diff(t)), sy_min)
-        else:
-            sy = 1.0
-    if sz is None:
-        t = np.unique(ps.z())
-        if t.size > 1:
-            sz = max(np.min(np.diff(t)), sz_min)
-        else:
-            sz = 1.0
-
-    # Compute origin (if not given)
-    if ox is None:
-        ox = ps.x().min() - 0.5*sx
-    if oy is None:
-        oy = ps.y().min() - 0.5*sy
-    if oz is None:
-        oz = ps.z().min() - 0.5*sz
-
-    # Compute dimension, i.e. number of cells (if not given)
-    if nx is None:
-        nx = min(int(np.ceil((ps.x().max() - ox)/sx)), nx_max)
-    if ny is None:
-        ny = min(int(np.ceil((ps.y().max() - oy)/sy)), ny_max)
-    if nz is None:
-        nz = min(int(np.ceil((ps.z().max() - oz)/sz)), nz_max)
-
-    # Initialize image
-    im = Img(nx=nx, ny=ny, nz=nz,
-             sx=sx, sy=sy, sz=sz,
-             ox=ox, oy=oy, oz=oz,
-             nv=ps.nv-3, val=np.nan,
-             varname=[ps.varname[3+i] for i in range(ps.nv-3)])
-
-    # Get index of point in the image
-    xmin, xmax = im.xmin(), im.xmax()
-    ymin, ymax = im.ymin(), im.ymax()
-    zmin, zmax = im.zmin(), im.zmax()
-    ix = np.array(np.floor((ps.val[0]-xmin)/sx),dtype=int)
-    iy = np.array(np.floor((ps.val[1]-ymin)/sy),dtype=int)
-    iz = np.array(np.floor((ps.val[2]-zmin)/sz),dtype=int)
-    # ix = [np.floor((x-xmin)/sx + 0.5) for x in ps.val[0]]
-    # iy = [np.floor((y-ymin)/sy + 0.5) for y in ps.val[1]]
-    # iz = [np.floor((z-zmin)/sz + 0.5) for z in ps.val[2]]
-    for i in range(ps.npt):
-        if ix[i] == nx:
-            if (ps.val[0,i]-xmin)/sx - nx < 1.e-10:
-                ix[i] = nx-1
-
-        if iy[i] == ny:
-            if (ps.val[1,i]-ymin)/sy - ny < 1.e-10:
-                iy[i] = ny-1
-
-        if iz[i] == nz:
-            if (ps.val[2,i]-zmin)/sz - nz < 1.e-10:
-                iz[i] = nz-1
-
-    # Check which index is out of the image grid
-    iout = np.any(np.array((ix < 0, ix >= nx, iy < 0, iy >= ny, iz < 0, iz >= nz)), axis=0)
-
-    if not job and np.sum(iout) > 0:
-        print(f'ERROR ({fname}): point out of the image grid!')
-        return None
-
-    # Set values in the image (last point is selected if more than one in a cell)
-    for i in range(ps.npt): # ps.npt is equal to iout.size
-        if not iout[i]:
-            # if not np.isnan(im.val[0, iz[i], iy[i], ix[i]]:
-            #     print(f'WARNING ({fname}): more than one point in the same cell!')
-            im.val[:,iz[i], iy[i], ix[i]] = ps.val[3:ps.nv,i]
-
-    if np.sum(~np.isnan(im.val[0])) != ps.npt:
-        print(f'WARNING ({fname}): more than one point in the same cell!')
+    im = imageFromPoints(points, values=ps.val[3:], varname=ps.varname[3:],
+                         nx=nx, ny=ny, nz=nz,
+                         sx=sx, sy=sy, sz=sz,
+                         ox=ox, oy=oy, oz=oz,
+                         xmin_ext=xmin_ext, xmax_ext=xmax_ext,
+                         ymin_ext=ymin_ext, ymax_ext=ymax_ext,
+                         zmin_ext=zmin_ext, zmax_ext=zmax_ext,
+                         indicator_var=indicator_var, count_var=count_var,
+                         op=op, **kwargs)
 
     return im
 # ----------------------------------------------------------------------------
@@ -1778,7 +2342,7 @@ def isPointSetEqual(ps1, ps2):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def indicatorImage(im, ind=0, categ=None):
+def indicatorImage(im, ind=0, categ=None, return_categ=False):
     """
     Retrieve the image with the indicator variable of each category in the list
     of categories 'categ', from the variable of index 'ind' in the input image
@@ -1788,14 +2352,24 @@ def indicatorImage(im, ind=0, categ=None):
     :param ind:     (int) index of the variable in the input image for which
                         the indicator variable(s) are computed
     :param categ:   (sequence of values or float (or int) or None)
-                        list of category value: one indicator variable per value
+                        list of category values: one indicator variable per value
                         in that list is computed for the variable of index 'ind'
                         in the input image; if None (default), categ is set to
                         the list of all distinct values (in increasing order)
                         taken by the variable of index 'ind' in the input image
+    :param return_categ:
+                    (bool) indicates if the list of category values for which
+                        the indicator variable is computed (corresponding to
+                        `categ`, is returned
 
-    :return:    (Img class) output image with indicator variable(s) (as many
-                    variable(s) as number of category values given by 'categ')
+    :return:    im_out[, categ] (depending on `return_categ` parameter)
+                    im_out:
+                        (Img class) output image with indicator variable(s)
+                            (as many variable(s) as number of category values
+                            given by 'categ')
+                    categ:  (1d-array) category values for which the indicator
+                                variable is computed
+                                (returned if `return_categ`=True)
     """
 
     fname = 'indicatorImage'
@@ -1827,7 +2401,12 @@ def indicatorImage(im, ind=0, categ=None):
         val[np.where(np.isnan(im.val[ind]))] = np.nan
         im_out.val[i,...] = val
 
-    return im_out
+    if return_categ:
+        out = im_out, np.asarray(categ)
+    else:
+        out = im_out
+
+    return out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -2111,14 +2690,14 @@ def imageCategProp(im, categ):
     """
 
     # Array of categories
-    categarr = np.array(categ,dtype=float).reshape(-1)
+    categ_arr = np.array(categ, dtype=float).reshape(-1)
 
     imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
                 sx=im.sx, sy=im.sy, sz=im.sz,
                 ox=im.ox, oy=im.oy, oz=im.oz,
                 nv=0, val=0.0)
 
-    for i, code in enumerate(categarr):
+    for i, code in enumerate(categ_arr):
         x = 1.0*(im.val.reshape(im.nv,-1) == code)
         np.putmask(x, np.isnan(im.val.reshape(im.nv,-1)), np.nan)
         imOut.append_var(np.mean(x, axis=0), varname=f'prop{i}')
@@ -2171,7 +2750,7 @@ def imageListCategProp(im_list, categ, ind=0):
         return None
 
     # Array of categories
-    categarr = np.array(categ,dtype=float).reshape(-1)
+    categ_arr = np.array(categ, dtype=float).reshape(-1)
 
     imOut = Img(nx=im0.nx, ny=im0.ny, nz=im0.nz,
                 sx=im0.sx, sy=im0.sy, sz=im0.sz,
@@ -2179,7 +2758,7 @@ def imageListCategProp(im_list, categ, ind=0):
                 nv=0, val=0.0)
 
     v = np.asarray([im.val[ind] for im in im_list]).reshape(len(im_list),-1)
-    for i, code in enumerate(categarr):
+    for i, code in enumerate(categ_arr):
         x = 1.0*(v == code)
         np.putmask(x, np.isnan(v), np.nan)
         imOut.append_var(np.mean(x, axis=0), varname=f'prop{i}')
@@ -2190,8 +2769,9 @@ def imageListCategProp(im_list, categ, ind=0):
 # ----------------------------------------------------------------------------
 def imageEntropy(im, varInd=None, varIndList=None):
     """
-    Computes "pixel-wise" entropy for proprotions given as variables in an
-    image.
+    Computes "pixel-wise" entropy from proportions given as variables in an
+    image, i.e. the i-th variable of the input image represents the proportion
+    of the i-th category.
 
     :param im:          (Img class) input image
     :param varInd:      (sequence of ints or None) index-es of the variables
@@ -2214,7 +2794,7 @@ def imageEntropy(im, varInd=None, varIndList=None):
     if varInd is None:
         varInd = varIndList
 
-    if varIndList is not None:
+    if varInd is not None:
         varInd = np.atleast_1d(varInd).reshape(-1)
         # Check if each index is valid
         if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
@@ -2259,201 +2839,463 @@ def imageEntropy(im, varInd=None, varIndList=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
+def imageCategFromImageOfProp(im, mode='most_probable', target_prop=None, varInd=None, categ=None):
     """
-    Convert real point coordinates to index grid.
+    Computes a categorical image from proportions given as variables in an
+    image, i.e. the i-th variable of the input image represents the proportion
+    of the i-th category.
 
-    :param x, y, z:     (float, or 1-d array of floats) coordinates of point(s)
-    :param sx, sy, sz:  (float) cell size along each axis
-    :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
+    :param im:          (Img class) input image not
+    :param mode:        (str) defines what is computed for the variable in
+                            the output image:
+                            - 'most_probable': most probable category (index)
+                            - 'target_prop': category (index) such that the
+                                proportions over the image grid match as much
+                                as possible the proportions given by the
+                                parameter `target_prop`
+    :param target_prop: (sequence or None) target proportion for each category
+                            index, used if `mode`='target_prop':
+                            if None, the target proportions are set according
+                            to the proportions of the input image, i.e.
+                                target_prop[i] = mean(im.val[varInd[i]])
+                            (see below)
 
-    :return (ix, iy, iz):
-                        (3-tuple of floats or 1-d of floats) grid node index
-                            in x-, y-, z-axis direction respectively for each
-                            point given in input
-                            Warning: no check if the node(s) is within the grid
+    :param varInd:      (sequence of ints or None) index-es of the variables
+                            to take into account in the input image, corresponding
+                            ot category indexes (default None: all variables, i.e.
+                            varInd is the sequence [0, 1,..., im.nv-1]),
+                            (length of varInd should be at least 2)
+
+    :param categ:       (sequence or None) list of category values to be assigned
+                            in place of the category indexes in the output image,
+                            i.e. output index i (corresponding to variable `varInd[i]`
+                            in the input image) is replaced by categ[i];
+                            note: the length of the sequence must be the same as
+                            the length of `varInd`; (if None, categ[i] = i, is used)
+
+    :return:    (Img class) an image with one variable containing the category
+                    index (or value) according to the used mode
     """
-    # Get node index (nearest node)
-    c = np.array((np.atleast_1d(x), np.atleast_1d(y), np.atleast_1d(z))).T
-    jc = (c - np.array([ox, oy, oz]))/np.array([sx, sy, sz])
-    ic = jc.astype(int)
 
-    # Round to lower index if between two grid node and index is positive
-    ic = ic - 1 * np.all((ic == jc, ic > 0), axis=0)
+    fname = 'imageCategFromImageOfProp'
 
-    ix = ic[:, 0]
-    iy = ic[:, 1]
-    iz = ic[:, 2]
+    if varInd is not None:
+        varInd = np.atleast_1d(varInd).reshape(-1)
+        # Check if each index is valid
+        if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
+            print(f'ERROR ({fname}): invalid index-es')
+            return None
+    else:
+        varInd = range(im.nv)
 
-    # Set ix (resp. iy, iz) as int if x (resp. y, z) is float (or int) in input
-    if np.asarray(x).ndim == 0:
-        ix = ix[0]
-    if np.asarray(y).ndim == 0:
-        iy = iy[0]
-    if np.asarray(z).ndim == 0:
-        iz = iz[0]
+    n = len(varInd)
 
-    return ix, iy, iz
+    if n < 2:
+        print(f'ERROR ({fname}): at least 2 indexes should be given')
+        return None
+
+    # Array of categories
+    if categ is not None:
+        categ_arr = np.array(categ, dtype=float).reshape(-1)
+        if len(categ_arr) != n:
+            print(f'ERROR ({fname}): `categ` of incompatible length')
+            return None
+    else:
+        categ_arr = np.arange(float(n))
+
+    val = im.val[varInd,:,:,:] # (copy)
+
+    if mode == 'most_probable':
+        # Get index (id) of the greatest proportion (at each cell)
+        id = np.argsort(-val, axis=0)[0]
+        v = np.asarray([categ_arr[i] for i in id.ravel()]).reshape(id.shape)
+        np.putmask(v, np.any(np.isnan(val), axis=0), np.nan)
+
+    elif mode == 'target_prop':
+        # Array of target proportions
+        if target_prop is not None:
+            target_prop_arr = np.array(target_prop, dtype=float).reshape(-1)
+            if len(target_prop_arr) != n:
+                print(f'ERROR ({fname}): `target_prop` of incompatible length')
+                return None
+        else:
+            target_prop_arr = np.maximum(0.0, np.minimum(1.0, np.nanmean(val, axis=(1, 2, 3))))
+
+        # Check target proportions
+        if np.any((target_prop_arr < 0.0, target_prop_arr > 1.0)):
+            print(f'ERROR ({fname}): `target_prop` invalid (value not in [0,1])')
+            return None
+
+        if not np.isclose(target_prop_arr.sum(), 1.0):
+            print(f'ERROR ({fname}): `target_prop` invalid (do not sum to 1.0)')
+            return None
+
+        # Fill the output variable by starting with the index of the smallest target proportion
+        id_prop = np.argsort(target_prop_arr)
+        # Initialization
+        cells = np.any(np.isnan(val), axis=0)   # grid image cell already set
+        id = np.zeros_like(cells, dtype='int')  # output id on grid image
+        # Treat all variable indexes
+        for i in range(n):
+            j = id_prop[i]
+            a = val[j]
+            q = np.quantile(a[~cells], 1.0-target_prop_arr[j])
+            cells_ind = np.all((a > q, ~cells), axis=0)
+            id[cells_ind] = j
+            cells = np.any((cells, cells_ind), axis=0)
+
+        # Treat remaining cells (not yet assigned), using most probable index
+        id[~cells] = np.argsort(-val[:,~cells], axis=0)[0]
+        v = np.asarray([categ_arr[i] for i in id.ravel()]).reshape(id.shape)
+        np.putmask(v, np.any(np.isnan(val), axis=0), np.nan)
+
+    imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                sx=im.sx, sy=im.sy, sz=im.sz,
+                ox=im.ox, oy=im.oy, oz=im.oz,
+                nv=1, val=v,
+                name=mode)
+
+    return imOut
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz):
+def interpolateImage(im, categVar=None,
+                     nx=None, ny=None, nz=None,
+                     sx=None, sy=None, sz=None,
+                     ox=None, oy=None, oz=None,
+                     **kwargs):
     """
-    Convert a grid index (3 indices) into a single grid index.
+    Interpolates (each variable of) an image on a given grid, and returns
+    the result on an output image. This allows for example to refine an image.
 
-    :param ix, iy, iz:  (int) grid index in x-, y-, z-axis direction
-    :param nx, ny, nz:  (int) number of grid cells along each axis
+    :param im:      (Img class) input image
+    :param categVar:(sequence or None) sequence of `im.nv` boolean
+                        - categVar[i] = True: the variable i is treated as a
+                            categorical variable
+                        - categVar[i] = False: the variable i is treated as a
+                            continuous variable
+    :param nx, ny, nz:
+    :param sx, sy, sz:
+    :param ox, oy, oz:
+                    parameters defining the output grid image:
+                        nx, ny, nz: (int) number of grid cells along each axis
+                        sx, sy, sz: (float) cell size along each axis,
+                        ox ,oy, oz: (float) origin of the grid (bottom-lower-left corner)
+                    if ox is None:
+                        ox = im.ox is used (same for oy, oz)
+                    if nx is None and sx is not None:
+                        nx = int(np.round(im.nx*im.sx/sx)) is used (same for ny, nz)
+                    if nx is not None and sx is None:
+                        sx = im.nx*im.sx/nx is used (same for sy, sz)
+                    if nx is None and sx is None:
+                        nx = im.nx and sx = im.sx are used (same for sy, sz)
+    :param kwargs:  keyword arguments passed to the interpolator (class Img_interp_func),
+                        e.g. keys 'order', 'mode', 'cval'
 
-    :return i:  (int) single grid index
-                    Note: ix, iy, iz can be ndarray of same shape, then i is a
-                    ndarray of that shape
+    :return:    (Img class) output image with all variables of the input image
+                    interpolated on the specified grid
     """
-    return ix + nx * (iy + ny * iz)
+
+    fname = 'interpolateImage'
+
+    # Variable type
+    if categVar is None:
+        categVar = np.zeros(im.nv, dtype='bool')
+    else:
+        categVar = np.atleast_1d(categVar)
+
+    if len(categVar) != im.nv:
+        print(f'ERROR ({fname}): `categVar` of incompatible length')
+        return None
+
+    # Set output image grid
+    if ox is None:
+        ox = im.ox
+
+    if oy is None:
+        oy = im.oy
+
+    if oz is None:
+        oz = im.oz
+
+    if nx is None:
+        if sx is None:
+            nx = im.nx
+            sx = im.sx
+        else:
+            nx = int(np.round(im.nx*im.sx / sx))
+    elif sx is None:
+            sx = im.nx*im.sx / nx
+
+    if ny is None:
+        if sy is None:
+            ny = im.ny
+            sy = im.sy
+        else:
+            ny = int(np.round(im.ny*im.sy / sy))
+    elif sy is None:
+            sy = im.ny*im.sy / ny
+
+    if nz is None:
+        if sz is None:
+            nz = im.nz
+            sz = im.sz
+        else:
+            nz = int(np.round(im.nz*im.sz / sz))
+    elif sz is None:
+            sz = im.nz*im.sz / nz
+
+    # Initialize output image
+    im_out = Img(nx=nx, ny=ny, nz=nz,
+                 sx=sx, sy=sy, sz=sz,
+                 ox=ox, oy=oy, oz=oz,
+                 nv=im.nv, val=np.nan, varname=im.varname)
+
+    # Points where the variables will be evaluated by interpolation
+    points = np.array((im_out.xx().reshape(-1), im_out.yy().reshape(-1), im_out.zz().reshape(-1))).T
+    for i in range(im.nv):
+        if categVar[i]:
+            # Get the image of indicator variables
+            im_indic, categVal = indicatorImage(im, ind=i, return_categ=True)
+            # Get the interpolator function for each indicator variable
+            interp_indic = [Img_interp_func(im_indic, ind=j, **kwargs) for j in range(len(categVal))]
+            # Interpolate each indicator variable at points (above)
+            v = [interp(points) for interp in interp_indic]
+
+            # Define image of indicator variables on the output image grid (reuse im_indic)
+            im_indic = Img(nx=nx, ny=ny, nz=nz,
+                           sx=sx, sy=sy, sz=sz,
+                           ox=ox, oy=oy, oz=oz,
+                           nv=len(categVal), val=v)
+
+            # Get the image of the resulting categorical variable from the indicator variables
+            im_tmp = imageCategFromImageOfProp(im_indic, mode='target_prop', categ=categVal)
+            im_out.val[i,:,:,:] = im_tmp.val[0]
+        else:
+            # Interpolate the variable at points (above)
+            v = Img_interp_func(im, ind=i, **kwargs)(points)
+            im_out.val[i,:,:,:] = v.reshape(im_out.val.shape[1:])
+
+    return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def singleGridIndexToGridIndex(i, nx, ny, nz):
+def imageCategFromImageOfProp(im, mode='most_probable', target_prop=None, varInd=None, categ=None):
     """
-    Convert a single into a grid index (3 indices).
+    Computes a categorical image from proportions given as variables in an
+    image, i.e. the i-th variable of the input image represents the proportion
+    of the i-th category.
 
-    :param i:           (int) single grid index
-    :param nx, ny, nz:  (int) number of grid cells along each axis
+    :param im:          (Img class) input image not
+    :param mode:        (str) defines what is computed for the variable in
+                            the output image:
+                            - 'most_probable': most probable category (index)
+                            - 'target_prop': category (index) such that the
+                                proportions over the image grid match as much
+                                as possible the proportions given by the
+                                parameter `target_prop`
+    :param target_prop: (sequence or None) target proportion for each category
+                            index, used if `mode`='target_prop':
+                            if None, the target proportions are set according
+                            to the proportions of the input image, i.e.
+                                target_prop[i] = mean(im.val[varInd[i]])
+                            (see below)
 
-    :return (ix, iy, iz):
-                        (3-tuple) grid index in x-, y-, z-axis direction
-                            Note: i can be a ndarray, then ix, iy, iz in output
-                            are ndarray (of same shape)
+    :param varInd:      (sequence of ints or None) index-es of the variables
+                            to take into account in the input image, corresponding
+                            ot category indexes (default None: all variables, i.e.
+                            varInd is the sequence [0, 1,..., im.nv-1]),
+                            (length of varInd should be at least 2)
+
+    :param categ:       (sequence or None) list of category values to be assigned
+                            in place of the category indexes in the output image,
+                            i.e. output index i (corresponding to variable `varInd[i]`
+                            in the input image) is replaced by categ[i];
+                            note: the length of the sequence must be the same as
+                            the length of `varInd`; (if None, categ[i] = i, is used)
+
+    :return:    (Img class) an image with one variable containing the category
+                    index (or value) according to the used mode
     """
-    nxy = nx*ny
-    iz = i//nxy
-    j = i%nxy
-    iy = j//nx
-    ix = j%nx
 
-    return ix, iy, iz
+    fname = 'imageCategFromImageOfProp'
+
+    if varInd is not None:
+        varInd = np.atleast_1d(varInd).reshape(-1)
+        # Check if each index is valid
+        if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
+            print(f'ERROR ({fname}): invalid index-es')
+            return None
+    else:
+        varInd = range(im.nv)
+
+    n = len(varInd)
+
+    if n < 2:
+        print(f'ERROR ({fname}): at least 2 indexes should be given')
+        return None
+
+    # Array of categories
+    if categ is not None:
+        categ_arr = np.array(categ, dtype=float).reshape(-1)
+        if len(categ_arr) != n:
+            print(f'ERROR ({fname}): `categ` of incompatible length')
+            return None
+    else:
+        categ_arr = np.arange(float(n))
+
+    val = im.val[varInd,:,:,:] # (copy)
+
+    if mode == 'most_probable':
+        # Get index (id) of the greatest proportion (at each cell)
+        id = np.argsort(-val, axis=0)[0]
+        v = np.asarray([categ_arr[i] for i in id.ravel()]).reshape(id.shape)
+        np.putmask(v, np.any(np.isnan(val), axis=0), np.nan)
+
+    elif mode == 'target_prop':
+        # Array of target proportions
+        if target_prop is not None:
+            target_prop_arr = np.array(target_prop, dtype=float).reshape(-1)
+            if len(target_prop_arr) != n:
+                print(f'ERROR ({fname}): `target_prop` of incompatible length')
+                return None
+        else:
+            target_prop_arr = np.maximum(0.0, np.minimum(1.0, np.nanmean(val, axis=(1, 2, 3))))
+
+        # Check target proportions
+        if np.any((target_prop_arr < 0.0, target_prop_arr > 1.0)):
+            print(f'ERROR ({fname}): `target_prop` invalid (value not in [0,1])')
+            return None
+
+        if not np.isclose(target_prop_arr.sum(), 1.0):
+            print(f'ERROR ({fname}): `target_prop` invalid (do not sum to 1.0)')
+            return None
+
+        # Fill the output variable by starting with the index of the smallest target proportion
+        id_prop = np.argsort(target_prop_arr)
+        # Initialization
+        cells = np.any(np.isnan(val), axis=0)   # grid image cell already set
+        id = np.zeros_like(cells, dtype='int')  # output id on grid image
+        # Treat all variable indexes
+        for i in range(n):
+            j = id_prop[i]
+            a = val[j]
+            q = np.quantile(a[~cells], 1.0-target_prop_arr[j])
+            cells_ind = np.all((a > q, ~cells), axis=0)
+            id[cells_ind] = j
+            cells = np.any((cells, cells_ind), axis=0)
+
+        # Treat remaining cells (not yet assigned), using most probable index
+        id[~cells] = np.argsort(-val[:,~cells], axis=0)[0]
+        v = np.asarray([categ_arr[i] for i in id.ravel()]).reshape(id.shape)
+        np.putmask(v, np.any(np.isnan(val), axis=0), np.nan)
+
+    imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                sx=im.sx, sy=im.sy, sz=im.sz,
+                ox=im.ox, oy=im.oy, oz=im.oz,
+                nv=1, val=v,
+                name=mode)
+
+    return imOut
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def aggregateDataPointsInGrid(x, y, z, v, nx, ny, nz, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
-    """
-    Remove points out of the grid and aggregate data points falling in a same
-    grid cell by taking the mean coordinates and the mean value for each
-    variable.
-
-    :param x, y, z:     (1-d array of floats) coordinates of point(s)
-    :param v:           (float, or 1-d array of floats, or 2-d array of floats)
-                            values attached to point(s), each row of v (if 2d
-                            array) corresponds to a same variable
-    :param nx, ny, nz:  (int) number of grid cells along each axis
-    :param sx, sy, sz:  (float) cell size along each axis
-    :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
-
-    :return (x, y, z, v):
-                        (4-tuple): points with aggregated information
-                            x, y, z: 1-d arrays of floats
-                            v: 1- or 2-d arrays of floats
-    """
-    x = np.atleast_1d(x)
-    y = np.atleast_1d(y)
-    z = np.atleast_1d(z)
-    v = np.atleast_2d(v)
-
-    # Keep only the points within the grid
-    ind = np.all((x >= ox, x <= ox+sx*nx, y >= oy, y <= oy+sy*ny, z >= oz, z <= oz+sz*nz), axis=0)
-    if not np.any(ind):
-        # no point in the grid
-        x = np.zeros(0)
-        y = np.zeros(0)
-        z = np.zeros(0)
-        v = np.zeros(shape=np.repeat(0, v.ndim))
-        return x, y, z, v
-
-    x = x[ind]
-    y = y[ind]
-    z = z[ind]
-    v = v[:, ind].T
-
-    # Get node index (nearest node)
-    c = np.array((x, y, z)).T
-    jc = (c - np.array([ox, oy, oz]))/np.array([sx, sy, sz])
-    ic = jc.astype(int)
-
-    # Round to lower index if between two grid node and index is positive
-    ic = ic - 1 * np.all((ic == jc, ic > 0), axis=0)
-
-    ix, iy, iz = ic[:, 0], ic[:, 1], ic[:, 2]
-    ic = ix + nx * (iy + ny * iz) # single-indices
-
-    ic_unique, ic_inv = np.unique(ic, return_inverse=True)
-    if len(ic_unique) != len(ic):
-        nxy = nx*ny
-        ic = ic_unique
-        iz = ic//nxy
-        j = ic%nxy
-        iy = j//nx
-        ix = j%nx
-        c = np.array([c[ic_inv==j].mean(axis=0) for j in range(len(ic_unique))])
-        v = np.array([v[ic_inv==j].mean(axis=0) for j in range(len(ic_unique))])
-
-    x, y, z = c.T # unpack
-    v = v.T
-
-    return x, y, z, v
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
-def sampleFromPointSet(point_set, size, seed=None, mask=None):
+def sampleFromPointSet(ps, size, mask_val=None, seed=None):
     """
     Sample random points from PointSet object and return a point set.
 
-    :param point_set:   (PointSet class) point set to sample from
-    :param size:        (int) number of points to be sampled
-    :param seed:        (int) optional random seed
-    :param mask:        (PointSet class) point set of the same size showing where
-                            to sample points where mask == 0 will be not taken
-                            into account
+    :param ps:      (PointSet class) point set to sample from
+    :param size:    (int) number of points to be sampled
+    :param mask_val:(array-like) array of floats or ints or bools,
+                        of size point_set.npt, indicating for each
+                        point if it can be sampled (value not equal
+                        to 0) or not (otherwise)
+    :param seed:    (int) optional random seed
 
     :return:    (PointSet class) a point set containing the sample points
     """
-    # Initialise the seed; will randomly reseed the generator if None
-    np.random.seed(seed)
 
-    if mask is not None:
-        indices = np.where(mask.val[3,:] != 0)[0]
+    fname = 'sampleFromPointSet'
+
+    if seed is not None:
+        np.random.seed(seed)
+
+    if mask_val is not None:
+        mask_val = np.asarray(mask_val).reshape(-1)
+        if mask_val.size != ps.npt:
+            print(f'ERROR ({fname}): size of `mask_val` invalid')
+            return None
+        indices = np.where(mask_val != 0)[0]
+        if size > len(indices):
+            print(f'ERROR ({fname}): `size` greater than number of active points in `ps`')
+            return None
     else:
-        indices = point_set.npt
+        indices = ps.npt
+        if size > indices:
+            print(f'ERROR ({fname}): `size` greater than number of points in `ps`')
+            return None
 
-    # Sample only some points from the point set
-    sampled_indices = np.random.choice(indices, size, replace=False)
+    sample_indices = np.sort(np.random.choice(indices, size, replace=False))
 
     # Return the new object
-    return PointSet(npt=size,
-            nv=point_set.nv,
-            val=point_set.val[:,sampled_indices],
-            varname=point_set.varname,
-            name=point_set.name)
+    return PointSet(
+            npt=size,
+            nv=ps.nv,
+            val=ps.val[:, sample_indices],
+            varname=ps.varname,
+            name='sample_from_' + ps.name)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def sampleFromImage(image, size, seed=None, mask=None):
+def sampleFromImage(im, size, seed=None, mask_val=None):
     """
     Samples random points from Img object and returns a point set.
 
-    :param image:   (Img class) image to sample from
+    :param im:      (Img class) image to sample from
     :param size:    (int) number of points to be sampled
+    :param mask_val:(array-like) array of floats or ints or bools,
+                        of size im.nxyz(), indicating for each
+                        cell if it can be sampled (value not equal to 0)
+                        or not (otherwise)
     :param seed:    (int) optional random seed
-    :param mask:    (Img class) image of the same size indicating where to
-                        sample points where mask == 0 will be not taken into
-                        account
 
     :return:    (PointSet class) a point set containing the sample points
     """
-    # Create point set from image
-    point_set = imageToPointSet(image)
-    if mask is not None:
-        mask = imageToPointSet(mask)
 
-    return sampleFromPointSet(point_set, size, seed, mask)
+    fname = 'sampleFromImage'
+
+    if seed is not None:
+        np.random.seed(seed)
+
+    if mask_val is not None:
+        mask_val = np.asarray(mask_val).reshape(-1)
+        if mask_val.size != im.nxyz():
+            print(f'ERROR ({fname}): size of `mask_val` invalid')
+            return None
+        indices = np.where(mask_val != 0)[0]
+        if size > len(indices):
+            print(f'ERROR ({fname}): `size` greater than number of active grid cells in `im`')
+            return None
+    else:
+        indices = im.nxyz()
+        if size > indices:
+            print(f'ERROR ({fname}): `size` greater than number of grid cells in `im`')
+            return None
+
+    sample_indices = np.sort(np.random.choice(indices, size, replace=False))
+
+    x = im.xx().reshape(-1)[sample_indices]
+    y = im.yy().reshape(-1)[sample_indices]
+    z = im.zz().reshape(-1)[sample_indices]
+    val = im.val.reshape(im.nv, -1)[:, sample_indices]
+
+    # Return the sampled point set
+    return PointSet(
+            npt=size,
+            nv=3+im.nv,
+            val=np.vstack((x, y, z, val)),
+            varname=np.hstack((['x', 'y', 'z'], im.varname)),
+            name='sample_from_' + im.name)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -4202,6 +5044,152 @@ if __name__ == "__main__":
 
 
 # === OLD BELOW ===
+# # ----------------------------------------------------------------------------
+# def pointSetToImage(ps,
+#                     nx=None, ny=None, nz=None,
+#                     sx=None, sy=None, sz=None,
+#                     ox=None, oy=None, oz=None,
+#                     nx_max=10000, ny_max=10000, nz_max=10000, nxyz_max=10000000,
+#                     sx_min=1.e-6, sy_min=1.e-6, sz_min=1.e-6,
+#                     job=0):
+#     """
+#     Returns an image corresponding to the input point set.
+#     The output image grid geometry is defined according to the input parameters
+#     (nx, ny, nz, sx, sy, sz, ox, oy, oz). Parameters not given (None) are
+#     automatically computed such that, if possible, the grid covers all points of
+#     the input point set, with cell size such that only one point is in a same
+#     cell.
+#
+#     Note: the last point is selected if more than one point fall in a same cell.
+#
+#     :param ps:  (PointSet class) input point set, with x, y, z-coordinates as
+#                     first three variable
+#     :param nx, ny, nz:
+#                 (int or None) number of grid cells along each axis
+#     :param sx, sy, sz:
+#                 (float or None) cell size along each axis
+#     :param ox, oy, oz:
+#                 (float or None) origin of the grid (bottom-lower-left corner)
+#     :param nx_max, ny_max, nz_max:
+#                 (int) maximal values for nx, ny, nz
+#     :param nxyz_max:
+#                 (int) maximal value for the product nx*ny*nz
+#     :param sx_min, sy_min, sz_min:
+#                 (float) minimal values for sx, sy, sz
+#     :param job: (int) defines some behaviour:
+#                     - if 0: an error occurs if one data is located outside of
+#                         the image grid, otherwise all data are integrated in the
+#                         image
+#                     - if 1: data located outside of the image grid are ignored
+#                         (no error occurs), and all data located within the image
+#                         grid are integrated in the image
+#
+#     :return im: (Img class) image corresponding to the input point set and grid
+#                     parameters
+#     """
+#
+#     fname = 'pointSetToImage'
+#
+#     if ps.nv < 3:
+#         print(f'ERROR ({fname}): invalid number of variable (should be > 3)')
+#         return None
+#
+#     if ps.varname[0].lower() != 'x' or ps.varname[1].lower() != 'y' or ps.varname[2].lower() != 'z':
+#         print(f'ERROR ({fname}): invalid variable: 3 first ones must be x, y, z coordinates')
+#         return None
+#
+#     if (nx is None or ny is None or nz is None \
+#     or sx is None or sy is None or sz is None \
+#     or ox is None or oy is None or oz is None) \
+#     and ps.npt == 0:
+#         print(f'ERROR ({fname}): number of point is 0, unable to compute grid geometry')
+#         return None
+#
+#     # Compute cell size (if not given)
+#     if sx is None:
+#         t = np.unique(ps.x())
+#         if t.size > 1:
+#             sx = max(np.min(np.diff(t)), sx_min)
+#         else:
+#             sx = 1.0
+#     if sy is None:
+#         t = np.unique(ps.y())
+#         if t.size > 1:
+#             sy = max(np.min(np.diff(t)), sy_min)
+#         else:
+#             sy = 1.0
+#     if sz is None:
+#         t = np.unique(ps.z())
+#         if t.size > 1:
+#             sz = max(np.min(np.diff(t)), sz_min)
+#         else:
+#             sz = 1.0
+#
+#     # Compute origin (if not given)
+#     if ox is None:
+#         ox = ps.x().min() - 0.5*sx
+#     if oy is None:
+#         oy = ps.y().min() - 0.5*sy
+#     if oz is None:
+#         oz = ps.z().min() - 0.5*sz
+#
+#     # Compute dimension, i.e. number of cells (if not given)
+#     if nx is None:
+#         nx = min(int(np.ceil((ps.x().max() - ox)/sx)), nx_max)
+#     if ny is None:
+#         ny = min(int(np.ceil((ps.y().max() - oy)/sy)), ny_max)
+#     if nz is None:
+#         nz = min(int(np.ceil((ps.z().max() - oz)/sz)), nz_max)
+#
+#     # Initialize image
+#     im = Img(nx=nx, ny=ny, nz=nz,
+#              sx=sx, sy=sy, sz=sz,
+#              ox=ox, oy=oy, oz=oz,
+#              nv=ps.nv-3, val=np.nan,
+#              varname=[ps.varname[3+i] for i in range(ps.nv-3)])
+#
+#     # Get index of point in the image
+#     xmin, xmax = im.xmin(), im.xmax()
+#     ymin, ymax = im.ymin(), im.ymax()
+#     zmin, zmax = im.zmin(), im.zmax()
+#     ix = np.array(np.floor((ps.val[0]-xmin)/sx),dtype=int)
+#     iy = np.array(np.floor((ps.val[1]-ymin)/sy),dtype=int)
+#     iz = np.array(np.floor((ps.val[2]-zmin)/sz),dtype=int)
+#     # ix = [np.floor((x-xmin)/sx + 0.5) for x in ps.val[0]]
+#     # iy = [np.floor((y-ymin)/sy + 0.5) for y in ps.val[1]]
+#     # iz = [np.floor((z-zmin)/sz + 0.5) for z in ps.val[2]]
+#     for i in range(ps.npt):
+#         if ix[i] == nx:
+#             if (ps.val[0,i]-xmin)/sx - nx < 1.e-10:
+#                 ix[i] = nx-1
+#
+#         if iy[i] == ny:
+#             if (ps.val[1,i]-ymin)/sy - ny < 1.e-10:
+#                 iy[i] = ny-1
+#
+#         if iz[i] == nz:
+#             if (ps.val[2,i]-zmin)/sz - nz < 1.e-10:
+#                 iz[i] = nz-1
+#
+#     # Check which index is out of the image grid
+#     iout = np.any(np.array((ix < 0, ix >= nx, iy < 0, iy >= ny, iz < 0, iz >= nz)), axis=0)
+#
+#     if not job and np.sum(iout) > 0:
+#         print(f'ERROR ({fname}): point out of the image grid!')
+#         return None
+#
+#     # Set values in the image (last point is selected if more than one in a cell)
+#     for i in range(ps.npt): # ps.npt is equal to iout.size
+#         if not iout[i]:
+#             # if not np.isnan(im.val[0, iz[i], iy[i], ix[i]]:
+#             #     print(f'WARNING ({fname}): more than one point in the same cell!')
+#             im.val[:,iz[i], iy[i], ix[i]] = ps.val[3:ps.nv,i]
+#
+#     if np.sum(~np.isnan(im.val[0])) != ps.npt:
+#         print(f'WARNING ({fname}): more than one point in the same cell!')
+#
+#     return im
+# # ----------------------------------------------------------------------------
 
 # # ----------------------------------------------------------------------------
 # def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):

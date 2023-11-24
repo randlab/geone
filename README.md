@@ -52,6 +52,7 @@ Various examples are provided (notebooks in 'examples' directory) to get started
 #### Images and point sets in geone
 - `ex_a_01_image_and_pointset.ipynb`: classes for images and point sets, reading from files, writing to files, plotting
 - `ex_a_02_image2d_rgb.ipynb`: reading / writing RGB 2D images, files in png format
+- `ex_a_03_image_interpolation.ipynb`: some tools to interpolate images (e.g. make them finer or coarser)
 
 #### DEESSE Examples
 Multiple-point statistics - simulation using the DEESSE wrapper:
@@ -100,11 +101,14 @@ Multiple-point statistics - X-simulation using the DEESSEX wrapper:
 - `ex_geosclassic_image_analysis.ipynb`:example for two-point statistics analysis (covariance, variogram, connectivity, ...) of images (maps)
 
 #### Examples - Variogram analysis tools and kriging:
-- `ex_vario_analysis_data1D.ipynb`: example for variogram analysis and ordinary kriging for data in 1D
+- `ex_vario_analysis_data1D_1.ipynb`: example for variogram analysis and ordinary kriging for data in 1D
+- `ex_vario_analysis_data1D_2_non_stationary.ipynb`: example how dealing with non stationary data set in 1D
 - `ex_vario_analysis_data2D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 2D (omni-directional)
 - `ex_vario_analysis_data2D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 2D (general)
+- `ex_vario_analysis_data2D_3_non_stationary.ipynb`: example how dealing with non stationary data set in 2D
 - `ex_vario_analysis_data3D_1_omnidirectional.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (omni-directional)
 - `ex_vario_analysis_data3D_2_general.ipynb`: example for variogram analysis and ordinary kriging for data in 3D (general)
+- `ex_vario_analysis_data3D_3_non_stationary.ipynb`: example how dealing with non stationary data set in 3D
 
 #### Examples - Pluri-Gaussian simulation
 - `ex_pgs.ipynb`: example of pluri-Gaussian simulations in 1D, 2D and 3D (categorical, conditional or not), based on two latent Gaussian fields

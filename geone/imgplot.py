@@ -235,6 +235,7 @@ def drawImage2D(
 
     if plot_empty_grid:
         iv = None
+        showColorbar = False
     else:
         # Check / set iv
         if iv is None:

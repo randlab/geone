@@ -399,7 +399,7 @@ def drawImage3D_surface (
     if cmax is None:
         cmax = np.nanmax(zz)
 
-    # Set pyvista UniformGrid
+    # Set pyvista ImageData (previously: UniformGrid)
     xmin = im.ox + ix0 * im.sx
     xmax = im.ox + ix1 * im.sx
     xdim = ix1 - ix0 + 1
@@ -413,7 +413,8 @@ def drawImage3D_surface (
     zdim = iz1 - iz0 + 1
 
     # pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
-    pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    # pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    pg = pv.ImageData(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
 
     pg.cell_data[im.varname[iv]] = zz #.flatten()
 
@@ -856,7 +857,7 @@ def drawImage3D_slice (
     if cmax is None:
         cmax = np.nanmax(zz)
 
-    # Set pyvista UniformGrid
+    # Set pyvista ImageData (previously: UniformGrid)
     xmin = im.ox + ix0 * im.sx
     xmax = im.ox + ix1 * im.sx
     xdim = ix1 - ix0 + 1
@@ -870,7 +871,8 @@ def drawImage3D_slice (
     zdim = iz1 - iz0 + 1
 
     # pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
-    pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    # pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    pg = pv.ImageData(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
 
     pg.cell_data[im.varname[iv]] = zz #.flatten()
 
@@ -1134,7 +1136,7 @@ def drawImage3D_empty_grid (
     if cmax is None:
         cmax = np.nanmax(zz)
 
-    # Set pyvista UniformGrid
+    # Set pyvista ImageData (previously: UniformGrid)
     xmin = im.ox + ix0 * im.sx
     xmax = im.ox + ix1 * im.sx
     xdim = ix1 - ix0 + 1
@@ -1148,7 +1150,8 @@ def drawImage3D_empty_grid (
     zdim = iz1 - iz0 + 1
 
     # pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
-    pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    # pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    pg = pv.ImageData(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
 
     pg.cell_data[vname] = zz #.flatten()
 
@@ -1397,7 +1400,7 @@ def drawImage3D_volume (
     if set_out_values_to_nan:
         np.putmask(zz, np.any((np.isnan(zz), zz < cmin, zz > cmax), axis=0), np.nan)
 
-    # Set pyvista UniformGrid
+    # Set pyvista ImageData (previously: UniformGrid)
     xmin = im.ox + ix0 * im.sx
     xmax = im.ox + ix1 * im.sx
     xdim = ix1 - ix0 + 1
@@ -1411,7 +1414,8 @@ def drawImage3D_volume (
     zdim = iz1 - iz0 + 1
 
     # pg = pv.UniformGrid(dims=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
-    pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    # pg = pv.UniformGrid(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
+    pg = pv.ImageData(dimensions=(xdim, ydim, zdim), spacing=(im.sx, im.sy, im.sz), origin=(xmin, ymin, zmin))
 
     pg.cell_data[im.varname[iv]] = zz #.flatten()
 

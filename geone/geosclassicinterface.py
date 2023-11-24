@@ -1108,6 +1108,7 @@ def simulate1D(
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -1187,6 +1188,13 @@ def simulate1D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (float) indicating how restricting the search ellipsoid
@@ -1390,6 +1398,19 @@ def simulate1D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
         if verbose > 0:
@@ -1552,6 +1573,10 @@ def simulate1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
@@ -1575,6 +1600,7 @@ def simulate1D_mp(
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -1663,6 +1689,13 @@ def simulate1D_mp(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (float) indicating how restricting the search ellipsoid
@@ -1834,6 +1867,7 @@ def simulate1D_mp(
                 xIneqMin, vIneqMin,
                 xIneqMax, vIneqMax,
                 mask,
+                add_data_point_to_mask,
                 searchRadiusRelative,
                 nneighborMax,
                 searchNeighborhoodSortMode,
@@ -1905,6 +1939,7 @@ def simulate2D(
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -1996,6 +2031,13 @@ def simulate2D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (float) indicating how restricting the search ellipsoid
@@ -2214,6 +2256,19 @@ def simulate2D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
         if verbose > 0:
@@ -2380,6 +2435,10 @@ def simulate2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
@@ -2403,6 +2462,7 @@ def simulate2D_mp(
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -2503,6 +2563,13 @@ def simulate2D_mp(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (float) indicating how restricting the search ellipsoid
@@ -2678,6 +2745,7 @@ def simulate2D_mp(
                 xIneqMin, vIneqMin,
                 xIneqMax, vIneqMax,
                 mask,
+                add_data_point_to_mask,
                 searchRadiusRelative,
                 nneighborMax,
                 searchNeighborhoodSortMode,
@@ -2749,6 +2817,7 @@ def simulate3D(
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -2841,6 +2910,13 @@ def simulate3D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (float) indicating how restricting the search ellipsoid
@@ -3073,6 +3149,19 @@ def simulate3D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
         if verbose > 0:
@@ -3241,6 +3330,10 @@ def simulate3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
@@ -3264,6 +3357,7 @@ def simulate3D_mp(
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -3365,6 +3459,13 @@ def simulate3D_mp(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (float) indicating how restricting the search ellipsoid
@@ -3540,6 +3641,7 @@ def simulate3D_mp(
                 xIneqMin, vIneqMin,
                 xIneqMax, vIneqMax,
                 mask,
+                add_data_point_to_mask,
                 searchRadiusRelative,
                 nneighborMax,
                 searchNeighborhoodSortMode,
@@ -3608,6 +3710,7 @@ def estimate1D(
         mean=None, var=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         use_unique_neighborhood=False,
         searchRadiusRelative=1.0,
         nneighborMax=12,
@@ -3672,6 +3775,13 @@ def estimate1D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param use_unique_neighborhood:
                         (bool) indicating if a unique neighborhood is used
@@ -3846,6 +3956,19 @@ def estimate1D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # If unique neighborhood is used, set searchRadiusRelative to -1
     #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
     if use_unique_neighborhood:
@@ -4008,6 +4131,10 @@ def estimate1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
@@ -4028,6 +4155,7 @@ def estimate2D(
         mean=None, var=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         use_unique_neighborhood=False,
         searchRadiusRelative=1.0,
         nneighborMax=12,
@@ -4102,6 +4230,13 @@ def estimate2D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param use_unique_neighborhood:
                         (bool) indicating if a unique neighborhood is used
@@ -4291,6 +4426,19 @@ def estimate2D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # If unique neighborhood is used, set searchRadiusRelative to -1
     #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
     if use_unique_neighborhood:
@@ -4457,6 +4605,10 @@ def estimate2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
@@ -4477,6 +4629,7 @@ def estimate3D(
         mean=None, var=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         use_unique_neighborhood=False,
         searchRadiusRelative=1.0,
         nneighborMax=12,
@@ -4552,6 +4705,13 @@ def estimate3D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param use_unique_neighborhood:
                         (bool) indicating if a unique neighborhood is used
@@ -4755,6 +4915,19 @@ def estimate3D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # If unique neighborhood is used, set searchRadiusRelative to -1
     #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
     if use_unique_neighborhood:
@@ -4922,6 +5095,10 @@ def estimate3D(
     # Free memory on C side: mpds_progressMonitor
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
@@ -5143,6 +5320,7 @@ def simulateIndicator1D(
         probability=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -5222,6 +5400,13 @@ def simulateIndicator1D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
@@ -5412,6 +5597,19 @@ def simulateIndicator1D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # Check parameters - searchRadiusRelative
     searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
     if len(searchRadiusRelative) == 1:
@@ -5583,6 +5781,10 @@ def simulateIndicator1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
@@ -5605,6 +5807,7 @@ def simulateIndicator1D_mp(
         probability=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -5693,6 +5896,13 @@ def simulateIndicator1D_mp(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
@@ -5856,6 +6066,7 @@ def simulateIndicator1D_mp(
                 probability,
                 x, v,
                 mask,
+                add_data_point_to_mask,
                 searchRadiusRelative,
                 nneighborMax,
                 searchNeighborhoodSortMode,
@@ -5924,6 +6135,7 @@ def simulateIndicator2D(
         probability=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -6013,6 +6225,13 @@ def simulateIndicator2D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
@@ -6224,6 +6443,19 @@ def simulateIndicator2D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # Check parameters - searchRadiusRelative
     searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
     if len(searchRadiusRelative) == 1:
@@ -6394,6 +6626,10 @@ def simulateIndicator2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
@@ -6416,6 +6652,7 @@ def simulateIndicator2D_mp(
         probability=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -6514,6 +6751,13 @@ def simulateIndicator2D_mp(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
@@ -6681,6 +6925,7 @@ def simulateIndicator2D_mp(
                 probability,
                 x, v,
                 mask,
+                add_data_point_to_mask,
                 searchRadiusRelative,
                 nneighborMax,
                 searchNeighborhoodSortMode,
@@ -6749,6 +6994,7 @@ def simulateIndicator3D(
         probability=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -6838,6 +7084,13 @@ def simulateIndicator3D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
@@ -7063,6 +7316,19 @@ def simulateIndicator3D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # Check parameters - searchRadiusRelative
     searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
     if len(searchRadiusRelative) == 1:
@@ -7233,6 +7499,10 @@ def simulateIndicator3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
@@ -7255,6 +7525,7 @@ def simulateIndicator3D_mp(
         probability=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         searchRadiusRelative=1.,
         nneighborMax=12,
         searchNeighborhoodSortMode=None,
@@ -7353,6 +7624,13 @@ def simulateIndicator3D_mp(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param searchRadiusRelative:
                         (sequence of ncategory floats (or float, recycled))
@@ -7520,6 +7798,7 @@ def simulateIndicator3D_mp(
                 probability,
                 x, v,
                 mask,
+                add_data_point_to_mask,
                 searchRadiusRelative,
                 nneighborMax,
                 searchNeighborhoodSortMode,
@@ -7587,6 +7866,7 @@ def estimateIndicator1D(
         probability=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         use_unique_neighborhood=False,
         searchRadiusRelative=1.,
         nneighborMax=12,
@@ -7666,6 +7946,13 @@ def estimateIndicator1D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param use_unique_neighborhood:
                         (sequence of ncategory bools (or bool, recycled))
@@ -7869,6 +8156,19 @@ def estimateIndicator1D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # Check parameters - use_unique_neighborhood (length)
     use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
     if len(use_unique_neighborhood) == 1:
@@ -8047,6 +8347,10 @@ def estimateIndicator1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
@@ -8068,6 +8372,7 @@ def estimateIndicator2D(
         probability=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         use_unique_neighborhood=False,
         searchRadiusRelative=1.,
         nneighborMax=12,
@@ -8157,6 +8462,13 @@ def estimateIndicator2D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param use_unique_neighborhood:
                         (sequence of ncategory bools (or bool, recycled))
@@ -8378,6 +8690,19 @@ def estimateIndicator2D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # Check parameters - use_unique_neighborhood (length)
     use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
     if len(use_unique_neighborhood) == 1:
@@ -8556,6 +8881,10 @@ def estimateIndicator2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')
 
@@ -8577,6 +8906,7 @@ def estimateIndicator3D(
         probability=None,
         x=None, v=None,
         mask=None,
+        add_data_point_to_mask=True,
         use_unique_neighborhood=False,
         searchRadiusRelative=1.,
         nneighborMax=12,
@@ -8666,6 +8996,13 @@ def estimateIndicator3D(
                             over the SG: 1 for simulated cell / 0 for not
                             simulated cell (nunber of entries should be equal to
                             the number of grid cells)
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
 
     :param use_unique_neighborhood:
                         (sequence of ncategory bools (or bool, recycled))
@@ -8901,6 +9238,19 @@ def estimateIndicator3D(
                 print(f"ERROR ({fname}): 'mask' is not valid")
             return None
 
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        for ps in dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=nx, ny=ny, nz=nz,
+                    sx=sx, sy=sy, sz=sz,
+                    ox=ox, oy=oy, oz=oz,
+                    indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del (im_tmp)
+
     # Check parameters - use_unique_neighborhood (length)
     use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
     if len(use_unique_neighborhood) == 1:
@@ -9078,6 +9428,10 @@ def estimateIndicator3D(
     # Free memory on C side: mpds_progressMonitor
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
+    if mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
     if verbose >= 2 and geosclassic_output:
         print('Geos-Classic run complete')

@@ -1,5 +1,7 @@
 .ipy*
 
+zzz*
+
 build/
 geone.egg-info/
 

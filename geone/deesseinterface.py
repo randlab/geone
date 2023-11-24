@@ -4744,12 +4744,21 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseRun(deesse_input, nthreads=-1, verbose=2):
+def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2):
     """
     Launches deesse.
 
     :param deesse_input:
                 (DeesseInput (class)): deesse input parameter (python)
+
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
+
     :param nthreads:
                 (int) number of thread(s) to use for deesse (C),
                     (nthreads = -n <= 0: for maximal number of threads except n,
@@ -4892,6 +4901,19 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
     else:
         nth = nthreads
 
+    if deesse_input.mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(deesse_input.mask)
+        # Add cell to mask if needed
+        for ps in deesse_input.dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
+                    sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
+                    ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+                    indicator_var=True)
+            deesse_input.mask = 1.0*np.any((im_tmp.val[0], deesse_input.mask), axis=0)
+            del (im_tmp)
+
     if verbose >= 2:
         print('DeeSse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
         sys.stdout.flush()
@@ -4956,6 +4978,11 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
     #deesse.MPDSFree(mpds_progressMonitor)
     deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if deesse_input.mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        for im in deesse_output['sim']:
+            im.val[:, mask_original==0.0] = np.nan
+
     if verbose >= 2 and deesse_output:
         print('DeeSse run complete')
 
@@ -4969,7 +4996,7 @@ def deesseRun(deesse_input, nthreads=-1, verbose=2):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
+def deesseRun_mp(deesse_input, add_data_point_to_mask=True, nproc=None, nthreads_per_proc=None, verbose=2):
     """
     Launches deesse through multiple processes.
 
@@ -4984,6 +5011,13 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
     :param deesse_input:
                 (DeesseInput (class)): deesse input parameter (python)
 
+    :param add_data_point_to_mask:
+                        (bool) indicating if grid cells out of the mask (simulated
+                        part, if used) contains some data points (if present) are
+                        added to the mask for the computation (this allows to
+                        account for such data points, otherwise they are ignored);
+                        at the end of the computation, the new mask cell are (if
+                        any) are removed
     :param nproc:
                 (int) number of processes (can be modified in the function)
                     nproc = None: nproc is set to
@@ -5137,7 +5171,7 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
         nthreads = nthreads_per_proc
         if nthreads is None:
             nthreads = -1
-        deesse_output = deesseRun(deesse_input, nthreads=nthreads, verbose=verbose)
+        deesse_output = deesseRun(deesse_input, add_data_point_to_mask=add_data_point_to_mask, nthreads=nthreads, verbose=verbose)
         return deesse_output
 
     # Set number of processes: nproc
@@ -5159,6 +5193,19 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
         print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+
+    if deesse_input.mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(deesse_input.mask)
+        # Add cell to mask if needed
+        for ps in deesse_input.dataPointSet:
+            im_tmp = img.imageFromPoints(ps.val[:3].T,
+                    nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
+                    sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
+                    ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
+                    indicator_var=True)
+            deesse_input.mask = 1.0*np.any((im_tmp.val[0], deesse_input.mask), axis=0)
+            del (im_tmp)
 
     # Set the distribution of the realizations over the processes
     # Condider the Euclidean division of nreal by nproc:
@@ -5191,7 +5238,7 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
         else:
             verb = 0
         # Launch deesse (i-th process)
-        out_pool.append(pool.apply_async(deesseRun, args=(input, nth, verb)))
+        out_pool.append(pool.apply_async(deesseRun, args=(input, False, nth, verb)))
 
     # Properly end working process
     pool.close() # Prevents any more tasks from being submitted to the pool,
@@ -5311,6 +5358,11 @@ def deesseRun_mp(deesse_input, nproc=None, nthreads_per_proc=None, verbose=2):
         for i in range(deesse_input.nrealization):
             for k in range(tiIndex[i].nv):
                 tiIndex[i].varname[k] = tiIndex[i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
+
+    if deesse_input.mask is not None and add_data_point_to_mask:
+        # Remove the value out of the original mask (using its copy see above)
+        for im in sim:
+            im.val[:, mask_original==0.0] = np.nan
 
     deesse_output = {
         'sim':sim, 'sim_var_original_index':sim_var_original_index,

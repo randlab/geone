@@ -15,6 +15,7 @@ from . import img
 from . import multiGaussian
 from . import pgs
 from . import randProcess
+from . import tools
 
 # # import all modules
 # import geone.blockdata
