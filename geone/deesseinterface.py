@@ -23,83 +23,111 @@ version = [deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER]
 # ============================================================================
 class SearchNeighborhoodParameters(object):
     """
-    Defines search neighborhood parameters:
-        radiusMode: (string) radius mode, possible strings:
-                        - 'large_default':
-                            large radii set according to the size of the SG and
-                            the TI(s), and the use of homothethy and/or rotation
-                            for the simulation
-                            (automatically computed)
-                        - 'ti_range_default':
-                            search radii set according to the TI(s) variogram
-                            ranges, one of the 5 next modes 'ti_range_*' will be
-                            used according to the use of homothethy and/or
-                            rotation for the simulation
-                            (automatically computed)
-                        - 'ti_range':
-                            search radii set according to the TI(s) variogram
-                            ranges, independently in each direction
-                            (automatically computed)
-                        - 'ti_range_xy':
-                            search radii set according to the TI(s) variogram
-                            ranges, rx = ry independently from rz
-                            (automatically computed)
-                        - 'ti_range_xz':
-                            search radii set according to the TI(s) variogram
-                            ranges, rx = rz independently from ry
-                            (automatically computed)
-                        - 'ti_range_yz':
-                            search radii set according to the TI(s) variogram
-                            ranges, ry = rz independently from rx
-                            (automatically computed)
-                        - 'ti_range_xyz':
-                            search radii set according to the TI(s) variogram
-                            ranges, rx = ry = rz
-                            (automatically computed)
-                        - 'manual':
-                            search radii rx, ry, rz, in number of cells, are
-                            explicitly given
+    Class defining search neighborhood parameters (for deesse).
 
-        rx, ry, rz: (floats) radii, in number of cells, in each direction
-                        (used only if radiusMode is set to 'manual')
+    Attributes
+    ----------
+    radiusMode : str {'large_default', 'ti_range_default', 'ti_range',
+                    'ti_range_xy', 'ti_range_xz', 'ti_range_yz', 'ti_range_xyz',
+                    'manual'}, default: 'large_default'
+        radius mode, defining how the search radii `rx`, `ry`, `rz` are set:
+        - 'large_default':
+            large radii set according to the size of the SG and the TI(s), and
+            the use of homothethy and/or rotation for the simulation
+            (automatically computed)
+        - 'ti_range_default':
+            search radii set according to the TI(s) variogram ranges, one of
+            the 5 next modes 'ti_range_*' will be used according to the use of
+            homothethy and/or rotation for the simulation
+            (automatically computed)
+        - 'ti_range':
+            search radii set according to the TI(s) variogram ranges,
+            independently in each direction
+            (automatically computed)
+        - 'ti_range_xy':
+            search radii set according to the TI(s) variogram ranges,
+            `rx` = `ry` independently from `rz`
+            (automatically computed)
+        - 'ti_range_xz':
+            search radii set according to the TI(s) variogram ranges,
+            `rx` = `rz` independently from `ry`
+            (automatically computed)
+        - 'ti_range_yz':
+            search radii set according to the TI(s) variogram ranges,
+            `ry` = `rz` independently from `rx`
+            (automatically computed)
+        - 'ti_range_xyz':
+            search radii set according to the TI(s) variogram ranges,
+            `rx` = `ry` = `rz`
+            (automatically computed)
+        - 'manual':
+            search radii `rx`, `ry`, `rz`, in number of cells, are
+            explicitly given
 
-        anisotropyRatioMode:
-                    (string) anisotropy ratio mode (describing how to set
-                        up the anisotropy - i.e. inverse unit distance,
-                        ax, ay, az - in each direction), possible strings:
-                            - 'one': ax = ay = az = 1
-                            - 'radius': ax = rx, ay = ry, az = rz
-                            - 'radius_xy': ax = ay = max(rx, ry), az = rz
-                            - 'radius_xz': ax = az = max(rx, rz), ay = ry
-                            - 'radius_yz': ay = az = max(ry, rz), ax = rx
-                            - 'radius_xyz': ax = ay = az = max(rx, ry, rz)
-                            - 'manual': ax, ay, az explicitly given
-                        if anisotropyRatioMode is set to 'one':
-                            isotropic distance - maximal distance for search
-                            neighborhood nodes will be equal to the maximum of
-                            the search radii
-                        if anisotropyRatioMode is set to 'radius':
-                            anisotropic distance - nodes at distance one on the
-                            border of the search neighborhood, maximal distance
-                            for search neighborhood nodes will be 1
-                        if anisotropyRatioMode is set to 'radius_*':
-                            anisotropic distance - maximal distance for search
-                            neighborhood nodes will be 1
+    rx, ry, rz : floats, default: 0.0, 0.0, 0.0
+        radii, in number of cells, in each direction
+        (used only if radiusMode is set to 'manual')
 
-        ax, ay, az: (floats) anisotropy (inverse unit distance) in each direction
+    anisotropyRatioMode : str {'one', 'radius', 'radius_xy', 'radius_xz',
+                    'radius_yz', 'radius_xyz', 'manual'}, default: 'one'
+        anisotropy ratio mode, defining how the anisotropy - i.e. inverse
+        unit distance `ax`, `ay`, `az` along x, y, z axis - is set:
+            - 'one': `ax` = `ay` = `az` = 1
+            - 'radius': `ax` = `rx`, `ay` = `ry`, `az` = `rz`
+            - 'radius_xy': `ax` = `ay = `max(rx, ry)`, `az` = `rz`
+            - 'radius_xz': `ax` = `az = `max(rx, rz)`, `ay` = `ry`
+            - 'radius_yz': `ay` = `az = `max(ry, rz)`, `ax` = `rx`
+            - 'radius_xyz': `ax` = `ay` = `az` = `max(rx, ry, rz)`
+            - 'manual': `ax`, `ay`, `az` explicitly given
+        notes:
+        - if `anisotropyRatioMode='one'`:
+            isotropic distance - maximal distance for search neighborhood nodes
+            will be equal to the maximum of the search radii
+        - if `anisotropyRatioMode='radius'`:
+            anisotropic distance - nodes at distance one on the border of the
+            search neighborhood, maximal distance for search neighborhood nodes
+            will be 1
+        - if `anisotropyRatioMode='radius_*'`:
+            anisotropic distance - maximal distance for search neighborhood nodes
+            will be 1
 
-        angle1, angle2, angle3:
-                    (floats) angles (azimuth, dip, plunge in degrees) for rotation
-        power:      (float) power for computing weight according to distance
+    ax, ay, az : floats, default: 0.0, 0.0, 0.0
+        anisotropy (inverse unit distance) in each direction
+
+    angle1, angle2, angle3 : floats, default: 0.0, 0.0, 0.0
+        angles (azimuth, dip, plunge in degrees) for rotation
+    power : float, default: 0.0
+        power for computing weight according to distance
     """
-
     def __init__(self,
                  radiusMode='large_default',
-                 rx=0., ry=0., rz=0.,
+                 rx=0.0, ry=0.0, rz=0.0,
                  anisotropyRatioMode='one',
-                 ax=0., ay=0., az=0.,
-                 angle1=0., angle2=0., angle3=0.,
-                 power=0.):
+                 ax=0.0, ay=0.0, az=0.0,
+                 angle1=0.0, angle2=0.0, angle3=0.0,
+                 power=0.0):
+        """
+        Inits an instance of the class.
+
+        Parameters
+        ----------
+        radiusMode : str {'large_default', 'ti_range_default', 'ti_range',
+                        'ti_range_xy', 'ti_range_xz', 'ti_range_yz',
+                        'ti_range_xyz', 'manual'}, default: 'large_default'
+            radius mode, defining how the search radii `rx`, `ry`, `rz` are set
+        rx, ry, rz : floats, default: 0.0, 0.0, 0.0
+            radii, in number of cells, in each direction
+        anisotropyRatioMode : str {'one', 'radius', 'radius_xy', 'radius_xz',
+                            'radius_yz', 'radius_xyz', 'manual'}, default: 'one'
+            anisotropy ratio mode, defining how the anisotropy - i.e. inverse
+            unit distance `ax`, `ay`, `az` along x, y, z axis
+        ax, ay, az : floats, default: 0.0, 0.0, 0.0
+            anisotropy (inverse unit distance) in each direction
+        angle1, angle2, angle3 : floats, default: 0.0, 0.0, 0.0
+            angles (azimuth, dip, plunge in degrees) for rotation
+        power : float, default: 0.0
+            power for computing weight according to distance
+        """
         self.radiusMode = radiusMode
         self.rx = rx
         self.ry = ry
@@ -132,106 +160,87 @@ class SearchNeighborhoodParameters(object):
 # ============================================================================
 class SoftProbability(object):
     """
-    Defines probability constraints (for one variable):
-        probabilityConstraintUsage:
-                    (int) indicates the usage of probability constraints:
-                        - 0: no probability constraint
-                        - 1: global probability constraints
-                        - 2: local probability constraints using support
-                        - 3: local probability constraints based on rejection
+    Class defining probability constraints for one variable (for deesse).
 
-        nclass:     (int) number of classes of values
-                        (unused if probabilityConstraintUsage == 0)
-        classInterval:
-                    (list of nclass 2-dimensional array of floats with 2 columns)
-                        definition of the classes of values by intervals,
-                        classInterval[i] is a (n_i, 2) array a, defining the
-                        i-th class as the union of intervals:
-                            [a[0,0],a[0,1][ U ... [a[n_i-1,0],a[n_i-1,1][
-
-        globalPdf:  (1-dimensional array of floats of size nclass)
-                        global probability for each class,
-                        used when probabilityConstraintUsage == 1
-
-        localPdf:   ((nclass, nz, ny, nx) array of floats) probability for
-                        each class, localPdf[i] is the "map defined on the
-                        simulation grid (SG)", nx x ny x nz being the dimensions
-                        of the SG, used when probabilityConstraintUsage in [2, 3]
-
-        localPdfSupportRadius:
-                    (float) support radius for local pdf, used when
-                        probabilityConstraintUsage == 2
-
-        localCurrentPdfComputation:
-                    (int) indicates the method used for computing the local
-                        current pdf:
-                            - 0: "COMPLETE" mode: all the informed nodes in
-                                the search neighborhood, and within the support
-                                are taken into account
-                            - 1: "APPROXIMATE" mode: only the neighboring nodes
-                                (used for the search in the TI) within the
-                                support are taken into account
-                        used when probabilityConstraintUsage == 2
-
-        comparingPdfMethod:
-                    (int) indicates  the method used for comparing pdf's:
-                            - 0: MAE (Mean Absolute Error)
-                            - 1: RMSE (Root Mean Squared Error)
-                            - 2: KLD (Kullback Leibler Divergence)
-                            - 3: JSD (Jensen-Shannon Divergence)
-                            - 4: MLikRsym (Mean Likelihood Ratio (over each
-                                    class indicator, symmetric target interval))
-                            - 5: MLikRopt (Mean Likelihood Ratio (over each
-                                    class indicator, optimal target interval))
-                        used when robabilityConstraintUsage in [1, 2]
-
-        rejectionMode:
-                    (int) indicates the mode of rejection (during the scan of
-                        the training image):
-                            - 0: rejection is done first (before checking pattern
-                                (and other constraint)) according to acceptation
-                                probabilities proportional to p[i]/q[i] (for
-                                class i), where
-                                    - q is the marginal pdf of the scanned
-                                        training image
-                                    - p is the given local pdf at the simulated
-                                        node
-                            - 1: rejection is done last (after checking pattern
-                                (and other constraint)) according to acceptation
-                                probabilities proportional to p[i] (for class i),
-                                where
-                                    - p is the given local pdf at the simulated
-                                        node
-                                method used when probabilityConstraintUsage == 3
-
-        deactivationDistance:
-                    (float) deactivation distance (the probability constraint
-                        is deactivated if the distance between the current
-                        simulated node and the last node in its neighbors (used
-                        for the search in the TI) (distance computed according
-                        to the corresponding search neighborhood parameters) is
-                        below the given deactivation distance),
-                        used when probabilityConstraintUsage > 0
-
-        probabilityConstraintThresholdType:
-                    (int) indicates the type of (acceptance) threhsold for
-                        pdf's comparison:
-                            - 0: constant threshold
-                            - 1: dynamic threshold
-                        used when robabilityConstraintUsage in [1, 2]
-
-        constantThreshold:
-                    (float) (acceptance) threshold value for pdf's comparison,
-                        used when robabilityConstraintUsage in [1, 2] and
-                        probabilityConstraintThresholdType == 0
-
-        dynamicThresholdParameters:
-                    (1-dimensional array of floats of size 7) parameters for
-                        dynamic threshold (used for pdf's comparison),
-                        used when probabilityConstraintUsage in [1, 2] and
-                        probabilityConstraintThresholdType == 1
+    Attributes
+    ----------
+    probabilityConstraintUsage : int, default: 0
+        defines the usage of probability constraints:
+            - 0: no probability constraint
+            - 1: global probability constraints
+            - 2: local probability constraints using support
+            - 3: local probability constraints based on rejection
+    nclass : int, default: 0
+        number of classes of values;
+        used if `probabilityConstraintUsage>0`
+    classInterval : list of 2D array-like of floats with two columns, optional
+        definition of the classes of values by intervals:
+            - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
+                i-th class as the union of intervals as
+                `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
+        used if `probabilityConstraintUsage>0`
+    globalPdf : 1D array-like of floats of shape (nclass, ), optional
+        global probability for each class;
+        used if `probabilityConstraintUsage=1`
+    localPdf : 4D array-like of floats of shape (nclass, nz, ny, nx), optional
+        probability for each class:
+            - `localPdf[i]` is the "map defined on the simulation grid (SG)" of
+            of dimension nx x ny x nz (number of cell along each axis);
+        used if `probabilityConstraintUsage` in [2, 3]
+    localPdfSupportRadius : float, default: 12.0
+        support radius for local pdf;
+        used if `probabilityConstraintUsage=2`
+    localCurrentPdfComputation : int, default: 0
+        defines the method used for computing the local current pdf:
+            - 0: "COMPLETE" mode: all the informed nodes in the search
+                neighborhood, and within the support are taken into account
+            - 1: "APPROXIMATE" mode: only the neighboring nodes (used for the
+                search in the TI) within the support are taken into account
+        used if `probabilityConstraintUsage=2`
+    comparingPdfMethod : int, default: 5
+        defines the method used for comparing pdf's:
+            - 0: MAE (Mean Absolute Error)
+            - 1: RMSE (Root Mean Squared Error)
+            - 2: KLD (Kullback Leibler Divergence)
+            - 3: JSD (Jensen-Shannon Divergence)
+            - 4: MLikRsym (Mean Likelihood Ratio (over each class indicator,
+                symmetric target interval))
+            - 5: MLikRopt (Mean Likelihood Ratio (over each class indicator,
+                optimal target interval))
+        used if `probabilityConstraintUsage` in [1, 2]
+    rejectionMode : int, default: 0
+        defines the mode of rejection (during the scan of the TI):
+            - 0: rejection is done first (before checking pattern (and other
+                constraint)) according to acceptation probabilities proportional
+                to p[i]/q[i] (for class i), where
+                    - q is the marginal pdf of the scanned TI
+                    - p is the given local pdf at the simulated node
+            - 1: rejection is done last (after checking pattern (and other
+                constraint)) according to acceptation probabilities proportional
+                to p[i] (for class i), where
+                    - p is the given local pdf at the simulated node
+        used if `probabilityConstraintUsage=3`
+    deactivationDistance : float, default: 4.0
+        deactivation distance (the probability constraint is deactivated if
+        the distance between the current simulated node and the last node in
+        its neighbors (used for the search in the TI) (distance computed
+        according to the corresponding search neighborhood parameters) is below
+        the given deactivation distance);
+        used if `probabilityConstraintUsage>0`
+    probabilityConstraintThresholdType : int, default: 0
+        defines the type of (acceptance) threhsold for pdfs' comparison:
+            - 0: constant threshold
+            - 1: dynamic threshold
+        used if `probabilityConstraintUsage` in [1, 2]
+    constantThreshold : float, default: 1.e-3
+        (acceptance) threshold value for pdfs' comparison;
+        used if `probabilityConstraintUsage` in [1, 2] and
+        `probabilityConstraintThresholdType=0`
+    dynamicThresholdParameters : sequence of 7 floats, optional
+        parameters for dynamic threshold (used for pdfs' comparison);
+        used if `probabilityConstraintUsage` in [1, 2] and
+        `probabilityConstraintThresholdType=1`
     """
-
     def __init__(self,
                  probabilityConstraintUsage=0,
                  nclass=0,
@@ -246,7 +255,38 @@ class SoftProbability(object):
                  probabilityConstraintThresholdType=0,
                  constantThreshold=1.e-3,
                  dynamicThresholdParameters=None):
+        """
+        Inits an instance of the class.
 
+        Parameters
+        ----------
+        probabilityConstraintUsage : int, default: 0
+            defines the usage of probability constraints
+        nclass : int, default: 0
+            number of classes of values
+        classInterval : list of 2D array-like of floats with two columns, optional
+            definition of the classes of values by intervals
+        globalPdf : 1D array-like of floats of shape (nclass, ), optional
+            global probability for each class
+        localPdf : 4D array-like of floats of shape (nclass, nz, ny, nx), optional
+            probability for each class in each cell of the simulation grid (SG)
+        localPdfSupportRadius : float, default: 12.0
+            support radius for local pdf
+        localCurrentPdfComputation : int, default: 0
+            defines the method used for computing the local current pdf
+        comparingPdfMethod : int, default: 5
+            defines the method used for comparing pdf's
+        rejectionMode : int, default: 0
+            defines the mode of rejection (during the scan of the TI)
+        deactivationDistance : float, default: 4.0
+            deactivation distance (of probability constraint)
+        probabilityConstraintThresholdType : int, default: 0
+            defines the type of (acceptance) threhsold for pdfs' comparison
+        constantThreshold : float, default: 1.e-3
+            (acceptance) threshold value for pdfs' comparison
+        dynamicThresholdParameters : sequence of 7 floats, optional
+            parameters for dynamic threshold (used for pdfs' comparison)
+        """
         fname = 'SoftProbability'
 
         self.probabilityConstraintUsage = probabilityConstraintUsage
@@ -360,76 +400,72 @@ class SoftProbability(object):
 # ============================================================================
 class Connectivity(object):
     """
-    Defines connectivity constraints (for one variable):
-        connectivityConstraintUsage:
-                (int) indicates the usage of connectivity constraints:
-                    - 0: no connectivity constraint
-                    - 1: set connecting paths before simulation by successively
-                         binding the nodes to be connected in a random order
-                    - 2: set connecting paths before simulation by successively
-                         binding the nodes to be connected beginning with
-                         the pair of nodes with the smallest distance and then
-                         the remaining nodes in increasing order according to
-                         their distance to the set of nodes already connected;
-                         the distance between two nodes is defined as the length
-                         (in number of nodes) of the minimal path binding the two
-                         nodes in an homogeneous connected medium according to the
-                         type of connectivity connectivityType
-                    - 3: check connectivity pattern during simulation
+    Class defining connectivity constraints for one variable (for deesse).
 
-        connectivityType:
-                (string) connectivity type, possible strings:
-                    - 'connect_face':
-                          6-neighbors connection (by face)
-                    - 'connect_face_edge':
-                         18-neighbors connection (by face or edge)
-                    - 'connect_face_edge_corner':
-                         26-neighbors connection (by face, edge or corner)
-
-        nclass:
-                (int) number of classes of values
-                    (unused if connectivityConstraintUsage == 0)
-        classInterval:
-                (list of nclass 2-dimensional array of floats with 2 columns)
-                    definition of the classes of values by intervals,
-                    classInterval[i] is a (n_i, 2) array a, defining the
-                    i-th class as the union of intervals:
-                        [a[0,0],a[0,1][ U ... [a[n_i-1,0],a[n_i-1,1][
-
-        varname:
-                (string) variable name for connected component label (should be
-                    in a conditioning data set)
-                    Note: label negative or zero means no connectivity constraint
-
-        tiAsRefFlag:
-                (bool) indicates that the (first) training image is used as
-                    reference for connectivity (True) or that the reference image
-                    for connectivity is given by refConnectivityImage (False,
-                    possible only if connectivityConstraintUsage == 1 or 2)
-
-        refConnectivityImage:
-                (Img class, or None) reference image for connectivity
-                    (used only if tiAsRefFlag is False)
-
-        refConnectivityVarIndex:
-                (int) variable index in image refConnectivityImage for
-                    the search of connected paths (used only if tiAsRefFlag is
-                    False)
-
-        deactivationDistance:
-                (float) deactivation distance (the connectivity constraint is
-                    deactivated if the distance between the current
-                    simulated node and the last node in its neighbors (used for
-                    the search in the TI) (distance computed according to the
-                    corresponding search neighborhood parameters) is below the
-                    given deactivation distance), used when
-                    connectivityConstraintUsage == 3
-
-        threshold:
-                (float) threshold value for connectivity patterns comparison,
-                    used when connectivityConstraintUsage == 3
+    Attributes
+    ----------
+    connectivityConstraintUsage : int, default: 0
+        defines the usage of connectivity constraints:
+            - 0: no connectivity constraint
+            - 1: set connecting paths before the simulation by successively
+                binding the nodes to be connected in a random order
+            - 2: set connecting paths before the simulation by successively
+                binding the nodes to be connected beginning with the pair of
+                nodes with the smallest distance and then the remaining nodes
+                in increasing order according to their distance to the set of
+                nodes already connected; the distance between two nodes is
+                defined as the length (in number of nodes) of the minimal path
+                binding the two nodes in an homogeneous connected medium
+                according to the type of connectivity (`connectivityType`)
+            - 3: check connectivity pattern during the simulation
+    connectivityType : str {'connect_face', 'connect_face_edge',
+                    'connect_face_edge_corner'}, default: 'connect_face'
+        connectivity type:
+            - 'connect_face':
+                6-neighbors connection (by face)
+            - 'connect_face_edge':
+                18-neighbors connection (by face or edge)
+            - 'connect_face_edge_corner':
+                26-neighbors connection (by face, edge or corner)
+        used if `connectivityConstraintUsage>0`
+    nclass : int, default: 0
+        number of classes of values;
+        used if `connectivityConstraintUsage>0`
+    classInterval : list of 2D array-like of floats with two columns, optional
+        definition of the classes of values by intervals:
+            - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
+                i-th class as the union of intervals as
+                `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
+        used if `connectivityConstraintUsage>0`
+    varname : str, default: ''
+        variable name for connected component label (should be in a conditioning
+        data set); note: label negative or zero means no connectivity constraint
+    tiAsRefFlag : bool, default: True
+        - if True: the (first) TI is used as reference for connectivity
+        - if False: the reference image for connectivity is given by
+        `refConnectivityImage` (possible only if `connectivityConstraintUsage=1`
+        or `connectivityConstraintUsage=2`)
+        used if `connectivityConstraintUsage>0`
+    refConnectivityImage : :class:`geone.img.Img`, optional
+        reference image for connectivity;
+        used only if `connectivityConstraintUsage` in [1, 2] and
+        `tiAsRefFlag=False`
+    refConnectivityVarIndex : int, default: 0
+        variable index in image `refConnectivityImage` for the search of
+        connected paths;
+        used only if `connectivityConstraintUsage` in [1, 2] and
+        `tiAsRefFlag=False`
+    deactivationDistance : float, default: 0.0
+        deactivation distance (the connectivity constraint is deactivated if
+        the distance between the current simulated node and the last node in
+        its neighbors (used for the search in the TI) (distance computed
+        according to the corresponding search neighborhood parameters) is below
+        the given deactivation distance);
+        used if `connectivityConstraintUsage=3`
+    threshold : float, default: 0.01
+        threshold value for connectivity patterns comparison;
+        used if `connectivityConstraintUsage=3`
     """
-
     def __init__(self,
                  connectivityConstraintUsage=0,
                  connectivityType='connect_face',
@@ -441,7 +477,37 @@ class Connectivity(object):
                  refConnectivityVarIndex=0,
                  deactivationDistance=0.0,
                  threshold=0.01):
+        """
+        Inits an instance of the class.
 
+        Parameters
+        ----------
+        connectivityConstraintUsage : int, default: 0
+            defines the usage of connectivity constraints
+        connectivityType : str {'connect_face', 'connect_face_edge',
+                        'connect_face_edge_corner'}, default: 'connect_face'
+            connectivity type
+        nclass : int, default: 0
+            number of classes of values
+        classInterval : list of 2D array-like of floats with two columns, optional
+            definition of the classes of values by intervals
+        varname : str, default: ''
+            variable name for connected component label (should be in a conditioning
+            data set)
+        tiAsRefFlag : bool, default: True
+            - if True: the (first) TI is used as reference for connectivity
+            - if False: the reference image for connectivity is given by
+            `refConnectivityImage`
+        refConnectivityImage : :class:`geone.img.Img`, optional
+            reference image for connectivity
+        refConnectivityVarIndex : int, default: 0
+            variable index in image `refConnectivityImage` for the search of
+            connected paths
+        deactivationDistance : float, default: 0.0
+            deactivation distance (of connectivity constraint)
+        threshold : float, default: 0.01
+            threshold value for connectivity patterns comparison
+        """
         fname = 'Connectivity'
 
         self.connectivityConstraintUsage = connectivityConstraintUsage
@@ -510,102 +576,87 @@ class Connectivity(object):
 # ============================================================================
 class PyramidGeneralParameters(object):
     """
-    Defines the general parameters for pyramids (all variables):
-        npyramidLevel:
-                (int) number of pyramid level(s) (in addition to original
-                    simulation grid), integer greater than or equal to zero,
-                    if positive, pyramid is used and pyramid levels are
-                    indexed from fine to coarse:
-                    - index 0            : original simulation grid
-                    - index npyramidLevel: coarsest level
+    Class defining "pyramid general parameters" (for all variables) (for deesse).
 
-        kx:     (1-dimensional array of ints of size npyramidLevel)
-                    reduction step along x-direction for each level:
-                    - kx[.] = 0: nothing is done, same dimension after reduction
-                    - kx[.] = 1: same dimension after reduction
-                                 (with weighted average over 3 nodes)
-                    - kx[.] = 2: classical gaussian pyramid
-                    - kx[.] > 2: generalized gaussian pyramid
-                    (unused if npyramidLevel == 0)
-
-        ky:     (1-dimensional array of ints of size npyramidLevel)
-                    reduction step along y-direction for each level:
-                    - ky[.] = 0: nothing is done, same dimension after reduction
-                    - ky[.] = 1: same dimension after reduction
-                                 (with weighted average over 3 nodes)
-                    - ky[.] = 2: classical gaussian pyramid
-                    - ky[.] > 2: generalized gaussian pyramid
-                    (unused if npyramidLevel == 0)
-
-        kz:     (1-dimensional array of ints of size npyramidLevel)
-                    reduction step along z-direction for each level:
-                    - kz[.] = 0: nothing is done, same dimension after reduction
-                    - kz[.] = 1: same dimension after reduction
-                                 (with weighted average over 3 nodes)
-                    - kz[.] = 2: classical gaussian pyramid
-                    - kz[.] > 2: generalized gaussian pyramid
-                    (unused if npyramidLevel == 0)
-
-        pyramidSimulationMode:
-                (string) simulation mode for pyramids, possible values:
-                    - 'hierarchical':
-                        (a) spreading conditioning data through the pyramid
-                            by simulation at each level, from fine to coarse,
-                            conditioned to the level one rank finer
-                        (b) simulation at the coarsest level, then simulation
-                            of each level, from coarse to fine, conditioned
-                            to the level one rank coarser
-                    - 'hierarchical_using_expansion':
-                        (a) spreading conditioning data through the pyramid
-                            by simulation at each level, from fine to coarse,
-                            conditioned to the level one rank finer
-                        (b) simulation at the coarsest level, then simulation
-                            of each level, from coarse to fine, conditioned to
-                            the gaussian expansion of the level one rank coarser
-                    - 'all_level_one_by_one':
-                        co-simulation of all levels, simulation done at one
-                        level at a time
-
-        factorNneighboringNode:
-                (1-dimensional array of doubles) factors for adpating the
-                    maximal number of neighboring nodes,
-                    - if pyramidSimulationMode == 'hierarchical' or
-                        pyramidSimulationMode == 'hierarchical_using_expansion':
-                        array of size 4 * npyramidLevel + 1 with entries:
-                            faCond[0], faSim[0], fbCond[0], fbSim[0],
-                            ...,
-                            faCond[n-1], faSim[n-1], fbCond[n-1], fbSim[n-1],
-                            fbSim[n]:
-                        i.e. (4*n+1) positive numbers where n = npyramidLevel,
-                        with the following meaning. The maximal number of
-                        neighboring nodes (according to each variable)
-                        is multiplied by
-                            (a) faCond[j] and faSim[j] for the conditioning level
-                                (level j) and the simulated level (level j+1) resp.
-                                during step (a) above
-                            (b) fbCond[j] and fbSim[j] for the conditioning level
-                                (level j+1) (expanded if pyramidSimulationMode ==
-                                'hierarchical_using_expansion') and the simulated
-                                level (level j) resp. during step (b) above
-                    - if pyramidSimulationMode == all_level_one_by_one':
-                        array of size npyramidLevel + 1 with entries:
-                           f[0],...,f[npyramidLevel-1],f[npyramidLevel]
-                        i.e. (npyramidLevel + 1) positive numbers, with the
-                        following meaning. The maximal number of neighboring
-                        nodes (according to each variable) is multiplied by f[j]
-                        for the j-th pyramid level
-
-        factorDistanceThreshold:
-                (1-dimensional array of floats) factors for adpating the distance
-                    (acceptance) threshold (similar to factorNneighboringNode)
-
-        factorMaxScanFraction:
-                (1-dimensional array of floats of size npyramidLevel + 1)
-                    factors for adpating the maximal scan fraction: the maximal
-                    scan fraction (according to each training image) is multiplied
-                    by factorMaxScanFraction[j] for the j-th pyramid level
+    Attributes
+    ----------
+    npyramidLevel : int, default: 0
+        number of pyramid level(s) (in addition to original simulation grid),
+        integer greater than or equal to zero; if positive, pyramid is used and
+        pyramid levels are indexed from fine to coarse resolution:
+            - index 0            : original simulation grid
+            - index npyramidLevel: coarsest level
+    kx : sequence of ints of length `npyramidLevel`, optional
+        reduction step along x-direction for each level:
+        - kx[.] = 0: nothing is done, same dimension after reduction
+        - kx[.] = 1: same dimension after reduction(with weighted average over
+                     3 nodes)
+        - kx[.] = 2: classical gaussian pyramid
+        - kx[.] > 2: generalized gaussian pyramid
+    kx : sequence of ints of length `npyramidLevel`, optional
+        reduction step along y-direction for each level:
+        - ky[.] = 0: nothing is done, same dimension after reduction
+        - ky[.] = 1: same dimension after reduction(with weighted average over
+                     3 nodes)
+        - ky[.] = 2: classical gaussian pyramid
+        - ky[.] > 2: generalized gaussian pyramid
+    kz : sequence of ints of length `npyramidLevel`, optional
+        reduction step along z-direction for each level:
+        - kz[.] = 0: nothing is done, same dimension after reduction
+        - kz[.] = 1: same dimension after reduction(with weighted average over
+                     3 nodes)
+        - kz[.] = 2: classical gaussian pyramid
+        - kz[.] > 2: generalized gaussian pyramid
+    pyramidSimulationMode : str {'hierarchical', 'hierarchical_using_expansion'},
+                                default: 'hierarchical_using_expansion'
+        simulation mode for pyramids:
+        - 'hierarchical':
+            (a) spreading conditioning data through the pyramid by simulation at
+            each level, from fine to coarse resolution, conditioned to the level
+            one rank finer
+            (b) simulation at the coarsest level, then simulation of each level,
+            from coarse to fine resolution, conditioned to the level one rank
+            coarser
+        - 'hierarchical_using_expansion':
+            (a) spreading conditioning data through the pyramid by simulation at
+            each level, from fine to coarse resolution, conditioned to the level
+            one rank finer
+            (b) simulation at the coarsest level, then simulation of each level,
+            from coarse to fine resolution, conditioned to the gaussian expansion
+            of the level one rank coarser
+        - 'all_level_one_by_one':
+            co-simulation of all levels, simulation done at one level at a time
+    factorNneighboringNode : 1D array-like (of doubles), optional
+        factors for adpating the maximal number of neighboring nodes:
+        - if `pyramidSimulationMode='hierarchical'` or
+                `pyramidSimulationMode='hierarchical_using_expansion'`:
+            array of size `4 * npyramidLevel + 1` with entries:
+                faCond[0], faSim[0], fbCond[0], fbSim[0],
+                ...,
+                faCond[n-1], faSim[n-1], fbCond[n-1], fbSim[n-1],
+                fbSim[n]:
+            i.e. (4*n+1) positive numbers where n = `npyramidLevel`, with the
+            following meaning; the maximal number of neighboring nodes (according
+            to each variable) is multiplied by
+                (a) faCond[j] and faSim[j] for the conditioning level (level j)
+                and the simulated level (level j+1) resp. during step (a) above
+                (b) fbCond[j] and fbSim[j] for the conditioning level (level j+1)
+                (expanded if `pyramidSimulationMode='hierarchical_using_expansion'`)
+                and the simulated level (level j) resp. during step (b) above
+        - if `pyramidSimulationMode=all_level_one_by_one'`:
+            array of size `npyramidLevel + 1` with entries:
+               f[0],..., f[npyramidLevel-1], f[npyramidLevel]
+            i.e. `npyramidLevel + 1` positive numbers, with the following
+            meaning; the maximal number of neighboring nodes (according to each
+            variable) is multiplied by f[j] for the j-th pyramid level
+    factorDistanceThreshold : 1D array-like of floats, optional
+        factors for adpating the distance (acceptance) threshold (similar to
+        `factorNneighboringNode`)
+    factorMaxScanFraction : sequence of floats of length `npyramidLevel + 1`, optional
+        factors for adpating the maximal scan fraction: the maximal scan
+        fraction (according to each TI) is multiplied by `factorMaxScanFraction[j]`
+        for the j-th pyramid level
     """
-
     def __init__(self,
                  npyramidLevel=0,
                  nx=100, ny=100, nz=100,
@@ -615,11 +666,32 @@ class PyramidGeneralParameters(object):
                  factorDistanceThreshold=None,
                  factorMaxScanFraction=None):
         """
-        Init Function for the class:
-            note that the parameters nx, ny, nz should be the dimension
-            of the simulation grid
-        """
+        Inits an instance of the class.
 
+        Parameters
+        ----------
+        npyramidLevel : int, default: 0
+            number of pyramid level(s) (in addition to original simulation grid)
+        nx, ny, nz : ints, default: 100, 100, 100
+            dimension number of cells along each axis of the simulation grid
+            note: these parameters are used to set consistent default values
+            for others parameters
+        kx : sequence of ints of length `npyramidLevel`, optional
+            reduction step along x-direction for each level
+        kx : sequence of ints of length `npyramidLevel`, optional
+            reduction step along y-direction for each level
+        kz : sequence of ints of length `npyramidLevel`, optional
+            reduction step along z-direction for each level
+        pyramidSimulationMode : str {'hierarchical', 'hierarchical_using_expansion'},
+                                    default: 'hierarchical_using_expansion'
+            simulation mode for pyramids
+        factorNneighboringNode : 1D array-like (of doubles), optional
+            factors for adpating the maximal number of neighboring nodes
+        factorDistanceThreshold : 1D array-like of floats, optional
+            factors for adpating the distance (acceptance) threshold
+        factorMaxScanFraction : sequence of floats of length `npyramidLevel + 1`, optional
+            factors for adpating the maximal scan fraction
+        """
         fname = 'PyramidGeneralParameters'
 
         self.npyramidLevel = npyramidLevel
@@ -754,72 +826,87 @@ class PyramidGeneralParameters(object):
 # ============================================================================
 class PyramidParameters(object):
     """
-    Defines the parameters for pyramid for one variable:
-        nlevel: (int) number of pyramid level(s) (in addition to original
-                    simulation grid)
+    Class defining "pyramid parameters" for one variable (for deesse).
 
-        pyramidType:
-                (string) type of pyramid, possible values:
-                    - 'none':
-                        no pyramid simulation
-                    - 'continuous':
-                        pyramid applied to continuous variable (direct)
-                    - 'categorical_auto':
-                        pyramid for categorical variable, pyramid for
-                        indicator variable of each category except one
-                        (one pyramid per indicator variable)
-                    - 'categorical_custom':
-                        pyramid for categorical variable, pyramid for
-                        indicator variable of each class of values given
-                        explicitly (one pyramid per indicator variable)
-                    - 'categorical_to_continuous':
-                        pyramid for categorical variable, the variable is
-                        transformed to a continuous variable (according to
-                        connection between adjacent nodes, the new values
-                        are ordered such that close values correspond to the
-                        most connected categories), then one pyramid for the
-                        transformed variable is used
-
-        nclass: (int) number of classes of values
-                    (used when pyramidType == 'categorical_custom')
-        classInterval:
-                (list of nclass 2-dimensional array of floats with 2 columns)
-                    definition of the classes of values by intervals,
-                    classInterval[i] is a (n_i, 2) array a, defining the
-                    i-th class as the union of intervals:
-                        [a[0,0],a[0,1][ U ... [a[n_i-1,0],a[n_i-1,1][
-                    (used when pyramidType == 'categorical_custom')
-
-        outputLevelFlag:
-                (1-dimensional array of 'bool', of size nlevel)
-                    flag indicating which level is saved in output:
-                    - outputLevelFlag[j]:
-                        - False: level of index (j+1) will not be saved in output
-                        - True: level of index (j+1) will be saved in output
-                            (only the pyramid for the original variables flagged
-                            for output in the field 'outputVarFlag' of the parent
-                            class 'DeesseInput' will be saved)
-                    - the name of the output variables are set to
-                            <vname>_ind<i>_lev<k>_real<n>
-                        where
-                        - <vname> is the name of the "original" variable,
-                        - <i> is a pyramid index for that variable which starts
-                            at 0 (more than one index can be required if the
-                            pyramid type is set to 'categorical_auto' or
-                            'categorical_custom'),
-                        - <k> is the level index,
-                        - <n> is the realization index (starting from 0)
-                    - the values of the output variables are the normalized
-                        values (as used during the simulation in every level)
+    Attributes
+    ----------
+    nlevel : int, default: 0
+        number of pyramid level(s) (in addition to original simulation grid)
+    pyramidType : str {'none', 'continuous', 'categorical_auto',
+                    'categorical_custom', 'categorical_to_continuous'},
+                    default: 'none'
+        type of pyramid:
+        - 'none':
+            no pyramid simulation
+        - 'continuous':
+            pyramid applied to continuous variable (direct)
+        - 'categorical_auto':
+            pyramid for categorical variable, pyramid for indicator variable of
+            each category except one (one pyramid per indicator variable)
+        - 'categorical_custom':
+            pyramid for categorical variable, pyramid for indicator variable of
+            each class of values given explicitly (one pyramid per indicator
+            variable)
+        - 'categorical_to_continuous':
+            pyramid for categorical variable, the variable is transformed to a
+            continuous variable (according to connection between adjacent nodes,
+            the new values are ordered such that close values correspond to the
+            most connected categories), then one pyramid for the transformed
+            variable is used
+    nclass : int, default: 0
+        number of classes of values;
+        used if `pyramidType='categorical_custom'`
+    classInterval : list of 2D array-like of floats with two columns, optional
+        definition of the classes of values by intervals:
+            - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
+                i-th class as the union of intervals as
+                `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
+        used if `pyramidType='categorical_custom'`
+    outputLevelFlag : sequence of bools of length `nlevel`, optional
+        indicates which level is saved in output:
+            - `outputLevelFlag[j]`:
+                - False: level of index (j+1) will not be saved in output
+                - True: level of index (j+1) will be saved in output
+                    (only the pyramid for the original variables flagged
+                    for output in the field `outputVarFlag` of the parent
+                    class `DeesseInput` will be saved)
+        notes:
+        * the name of the output variables are set to
+            <vname>_ind<i>_lev<k>_real<n>
+        where
+            - <vname> is the name of the "original" variable,
+            - <i> is a pyramid index for that variable which starts at 0 (more
+                than one index can be required if the pyramid type is set to
+                'categorical_auto' or 'categorical_custom'),
+            - <k> is the level index,
+            - <n> is the realization index (starting from 0)
+        * the values of the output variables are the normalized values (as used
+        during the simulation in every level)
     """
-
     def __init__(self,
                  nlevel=0,
                  pyramidType='none',
                  nclass=0,
                  classInterval=None,
                  outputLevelFlag=None):
+        """
+        Inits an instance of the class.
 
+        Parameters
+        ----------
+        nlevel : int, default: 0
+            number of pyramid level(s) (in addition to original simulation grid)
+        pyramidType : str {'none', 'continuous', 'categorical_auto',
+                        'categorical_custom', 'categorical_to_continuous'},
+                        default: 'none'
+            type of pyramid
+        nclass : int, default: 0
+            number of classes of values (for `pyramidType='categorical_custom'`)
+        classInterval : list of 2D array-like of floats with two columns, optional
+            definition of the classes of values by intervals
+        outputLevelFlag : sequence of bools of length `nlevel`, optional
+            indicates which level is saved in output
+        """
         fname = 'PyramidParameters'
 
         self.nlevel = nlevel
@@ -865,402 +952,357 @@ class PyramidParameters(object):
 # ============================================================================
 class DeesseInput(object):
     """
-    Defines deesse input:
-        simName:    (str) simulation name (not useful)
-        nx, ny, nz: (ints) number of simulation grid (SG) cells in each direction
-        sx, sy, sz: (floats) cell size in each direction
-        ox, oy, oz: (floats) origin of the SG (bottom-lower-left corner)
-        nv:         (int) number of variable(s) / attribute(s), should be
-                        at least 1
+    Class defining main input parameters for deesse.
 
-        varname:    (list of strings of length nv) variable names
+    Attributes
+    ----------
+    simName : str, default: 'deesse_py'
+        simulation name (useless)
+    nx, ny, nz : ints, default: 1, 1, 1
+        number of simulation grid (SG) cells in each direction
+    sx, sy, sz : floats, default: 1.0, 1.0, 1.0
+        cell size in each direction
+    ox, oy, oz : floats, default: 0.0, 0.0, 0.0
+        origin of the SG (bottom-lower-left corner)
+    nv : int, default: 0
+        number of variable(s) / attribute(s), should be at least 1 to launch
+        deesse
+    varname : sequence of strs of length `nv`, optional
+        variable names
+    outputVarFlag : sequence of bools of length `nv`, optional
+        flags indicating which variable(s) is (are) saved in output
+    outputPathIndexFlag : bool, default: False
+        indicates if path index maps are retrieved in output;
+        path index map: index in the simulation path
+    outputErrorFlag : bool, default: False
+        indicates if error maps are retrieved in output;
+        error map: error for the retained candidate
+    outputTiGridNodeIndexFlag : bool, default: False
+        indicates if TI grid node index maps are retrieved in output;
+        TI grid node index map: index of the grid node of the retained candidate
+        in the TI
+    outputTiIndexFlag : bool, default: False
+        indicates if TI index maps are retrieved in output;
+        TI index map: index of the TI used (makes sense if number of TIs (nTI)
+        is greater than 1)
+    outputReportFlag : bool, default: False
+        indicates if a report file will be written
+    outputReportFileName : str, optional
+        name of the report file (if `outputReportFlag=True`)
+    nTI : int, optional
+        number of training image(s) (TI(s))
+        (deprecated, computed automatically from `TI` and `simGridAsTiFlag`,
+        `nTI=None` should be used)
+    TI : [sequence of] :class:`geone.img.Img`
+        training image(s) (TI(s)) used for the simulation, may contain `None`
+        entries; it must be compatible with `simGridAsTiFlag`
+    simGridAsTiFlag : [sequence of] bool(s), optional
+        flags indicating if the simulation grid itself is used as TI, for each
+        TI; by default (`None`): an array of `False` is considered
+    pdfTI : array-like of floats, optional
+        array of shape (nTI, nz, ny, nx) (reshaped if needed), probability for
+        TI selection:
+            - `pdfTI[i]` is the "map defined on the SG" of the probability to
+            select the i-th TI
+        used if more than one TI are used (`nTI>1`)
+    dataImage : sequence of :class:`geone.img.Img`, optional
+        list of data image(s); image(s) used as conditioning data, each data
+        image should have the same grid dimensions as those of the SG and its
+        variable name(s) should be included in the list `varname`
+    dataPointSet : sequence of :class:`geone.img.PointSet`, optional
+        list of data point set(s); point set(s) used as conditioning data,
+        each data point set should have at least 4 variables: 'X', 'Y', 'Z',
+        the coordinates in the SG and at least one variable with name in the
+        list `varname`
+    mask : array-like, optional
+        mask value at grid cells (value 1 for simulated cells, value 0 for not
+        simulated cells); the size of the array must be equal to the number of
+        grid cells (the array is reshaped if needed)
+    homothetyUsage : int, default: 0
+        defines the usage of homothety:
+            - 0: no homothety
+            - 1: homothety without tolerance
+            - 2: homothety with tolerance
+    homothetyXLocal : bool, default: False
+        indicates if homothety according to X axis is local (True) or global
+        (False);
+        used if `homothetyUsage>0`
+    homothetyXRatio : array-like of floats, or float, optional
+        homothety ratio according to X axis:
+            -if `homothetyUsage=1`:
+                - if `homothetyXLocal=True`:
+                    3D array of shape (nz, ny, nx): values in the SG
+                - else:
+                    float: value
+            -if `homothetyUsage=2`:
+                - if `homothetyXLocal=True`:
+                    4D array of shape (2, nz, ny, nx):
+                        min values (`homothetyXRatio[0]`) and
+                        max values (`homothetyXRatio[1]`) in the SG
+                - else:
+                    sequence of 2 floats: min value and max value
+        used if `homothetyUsage>0`
+    homothetyYLocal, homothetyYRatio :
+        as homothetyXLocal and homothetyXRatio, but for the Y axis
+    homothetyZLocal, homothetyZRatio :
+        as homothetyXLocal and homothetyXRatio, but for the Z axis
+    rotationUsage : int, default: 0
+        defines the usage of rotation:
+            - 0: no rotation
+            - 1: rotation without tolerance
+            - 2: rotation with tolerance
+    rotationAzimuthLocal : bool, default: False
+        indicates if azimuth angle is local (True) or global (False);
+        used if `rotationUsage>0`
+    rotationAzimuth : array-like of floats, or float, optional
+        azimuth angle in degrees:
+            -if `rotationUsage=1`:
+                - if `rotationAzimuth=True`:
+                    3D array of shape (nz, ny, nx): values in the SG
+                - else:
+                    float: value
+            -if `rotationUsage=2`:
+                - if `rotationAzimuth=True`:
+                    4D array of shape (2, nz, ny, nx):
+                        min values (`rotationAzimuth[0]`) and
+                        max values (`rotationAzimuth[1]`) in the SG
+                - else:
+                    sequence of 2 floats: min value and max value
+        used if `rotationUsage>0`
+    rotationDipLocal, rotationDip :
+        as rotationAzimuthLocal and rotationAzimuth, but for the dip angle
+    rotationPlungeLocal, rotationPlunge :
+        as rotationAzimuthLocal and rotationAzimuth, but for the plunge angle
+    expMax : float, default: 0.05
+        maximal expansion (negative to not check consistency); the following is
+        applied for each variable separetely:
+        - for variable with distance type set to 0 (see below):
+            * expMax >= 0:
+                if a conditioning data value is not in the set of TI values,
+                an error occurs
+            * expMax < 0:
+                if a conditioning data value is not in the set of TI values,
+                a warning is displayed (no error occurs)
+        - for variable with distance type not set to 0 (see below):
+            if relative distance flag is set to 1 (see below), nothing is done,
+            else:
+            * expMax >= 0:
+                maximal accepted expansion of the range of the TI values for
+                covering the conditioning data values:
+                - if conditioning data values are within the range of the TI
+                values: nothing is done
+                - if a conditioning data value is out of the range of the TI
+                values: let
+                    new_min_ti = min ( min_cd, min_ti )
+                    new_max_ti = max ( max_cd, max_ti )
+                with
+                    min_cd, max_cd, the min and max of the conditioning values,
+                    min_ti, max_ti, the min and max of the TI values;
+                if new_max_ti-new_min_ti <= (1+expMax)*(ti_max-ti_min), then
+                the TI values are linearly rescaled from [ti_min, ti_max] to
+                [new_ti_min, new_ti_max], and a warning is displayed (no error
+                occurs); otherwise, an error occurs.
+            * expMax < 0:
+                if a conditioning data value is out of the range of the TI
+                values, a warning is displayed (no error occurs), the TI values
+                are not modified
+    normalizingType : str {'linear', 'uniform', 'normal'}, default: 'linear'
+        normalizing type for continuous variable(s) (with distance type not
+        equal to 0)
+    searchNeighborhoodParameters : [sequence of] :class:`SearchNeighborhoodParameters`, optional
+        search neighborhood parameters for each variable
+        (sequence of length `nv`)
+    nneighboringNode : [sequence of] int(s), optional
+        maximal number of neighbors in the search pattern, for each variable
+        (sequence of length `nv`)
+    maxPropInequalityNode : [sequence of] double(s), optional
+        maximal proportion of nodes with inequality data in the search pattern,
+        for each variable
+        (sequence of length `nv`)
+    neighboringNodeDensity : [sequence of] double(s), optional
+        density of neighbors in the search pattern, for each variable
+        (sequence of length `nv`)
+    rescalingMode : [sequence of] str(s), optional
+        rescaling mode for each variable, {'none', 'min_max', 'mean_length'}
+        (sequence of length `nv`)
+    rescalingTargetMin : [sequence of] double(s), optional
+        target min value, for each variable (used for variable with
+        `rescalingMode` set to 'min_max')
+        (sequence of length `nv`)
+    rescalingTargetMax : [sequence of] double(s), optional
+        target max value, for each variable (used for variable with
+        `rescalingMode` set to 'min_max')
+        (sequence of length `nv`)
+    rescalingTargetMean : [sequence of] double(s), optional
+        target mean value, for each variable (used for variable with
+        `rescalingMode` set to 'mean_length')
+        (sequence of length `nv`)
+    rescalingTargetLength : [sequence of] double(s), optional
+        target length value, for each variable (used for variable with
+        `rescalingMode` set to 'mean_length')
+        (sequence of length `nv`)
+    relativeDistanceFlag : [sequence of] bool(s), optional
+        flag indicating if relative distance is used (True) or not (False),
+        for each variable
+        (sequence of length `nv`)
+    distanceType : [sequence of] int(s) or str(s), optional
+        type of distance (between pattern) for each variable,
+            - 0 or 'categorical' : non-matching nodes (default if None)
+            - 1 or 'continuous'  : L-1 distance
+            - 2 : L-2 distance
+            - 3 : L-p distance, requires the parameter p (positive float)
+            - 4 : L-infinity
+        (sequence of length `nv`)
+    powerLpDistance : [sequence of] double(s), optional
+        p parameter for L-p distance, for each variable (used for variable using
+        L-p distance)
+        (sequence of length `nv`)
+    powerLpDistanceInv : [sequence of] double(s), optional
+        p parameter for L-p distance, for each variable (used for variable using
+        L-p distance)
+        (sequence of length `nv`)
+    conditioningWeightFactor : [sequence of] float(s), optional
+        weight factor for conditioning data, for each variable
+        (sequence of length `nv`)
+    simType : str {'sim_one_by_one', 'sim_variable_vector'}, default: 'sim_one_by_one'
+        simulation type:
+            - 'sim_one_by_one': successive simulation of one variable
+            at one node in the simulation grid (4D path)
+            - 'sim_variable_vector': successive simulation of all variable(s)
+            at one node in the simulation grid (3D path)
+    simPathType : str {'random',
+                    'random_hd_distance_pdf', 'random_hd_distance_sort',
+                    'random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort',
+                    'unilateral'}, default: 'random'
+        simulation path type:
+            - 'random': random path
+            - 'random_hd_distance_pdf': random path set according to
+                distance to conditioning nodes based on pdf,
+                requires parameter `simPathStrength`
+            - 'random_hd_distance_sort': random path set according to
+                distance to conditioning nodes based on sort (with a
+                random noise contribution),
+                requires parameter `simPathStrength`
+            - 'random_hd_distance_sum_pdf': random path set according to
+                sum of distance to conditioning nodes based on pdf,
+                requires parameters `simPathPower` and `simPathStrength`
+            - 'random_hd_distance_sum_sort': random path set according to
+                sum of distance to conditioning nodes based on sort (with
+                a random noise contribution),
+                required fields 'simPathPower' and 'simPathStrength'
+            - 'unilateral': unilateral path or stratified random path,
+                requires parameter `simPathUnilateralOrder`
+    simPathStrength : double, optional
+        strength in [0,1] attached to distance, if `simPathType` in
+        ('random_hd_distance_pdf', 'random_hd_distance_sort',
+        'random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort')
+    simPathPower : double, optional
+        power (>0) to which the distance to each conditioning node are raised,
+        if `simPathType` is in
+        ('random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort')
+    simPathUnilateralOrder : sequence of ints, optional
+        used if `simPathType='unilateral'`:
+            - if `simType='sim_one_by_one'`: `simPathUnilateralOrder` is of
+                length 4, example: [0, -2, 1, 0] means that the path will visit
+                all nodes: randomly in xv-sections, with increasing z-coordinate,
+                and then decreasing y-coordinate
+            - if `simType='sim_variable_vector'`: `simPathUnilateralOrder` is of
+                length 3, example: [-1, 0, 2] means that the path will visit
+                all nodes: randomly in y-sections, with decreasing x-coordinate,
+                and then increasing z-coordinate
+    distanceThreshold : [sequence of] float(s), optional
+        distance (acceptance) for each variable
+        (sequence of length `nv`)
+    softProbability : [sequence of] :class:`SoftProbability`, optional
+        probability constraints parameters for each variable
+        (sequence of length `nv`)
+    connectivity : [sequence of] :class:`SoftProbability`, optional
+        connectivity constraints parameters for each variable
+        (sequence of length `nv`)
+    blockData : [sequence of] :class:`geone.blockdata.BlockData`, optional
+        block data parameters for each variable
+        (sequence of length `nv`)
+    maxScanFraction : [sequence of] double(s), optional
+        maximal scan fraction of each TI
+        (sequence of length `nTI`)
+    pyramidGeneralParameters : :class:`PyramidGeneralParameters`, optional
+        general pyramid parameters
+    pyramidParameters : [sequence of] :class:`PyramidParameters`, optional
+        pyramid parameters for each variable
+        (sequence of length `nv`)
+    pyramidDataImage : sequence of :class:`geone.img.Img`, optional
+        list of data image(s); image(s) used as conditioning data in pyramid
+        (in additional levels); for each image:
+            - the variables are identified by their name:
+                the name should be set to <vname>_ind<j>_lev<k>, where
+                <vname> is the name of the "original" variable,
+                <j> is the pyramid index for that variable, and
+                <k> is the level index in {1, ...}
+                (<j> and <k> are written on 3 digits with leading zeros)
+            - the conditioning data values are the (already) normalized
+                values (as used during the simulation in every level)
+            - the grid dimensions (support) of the level in which the data
+                are given are used: the image grid must be compatible
+        note: conditioning data integrated in pyramid may erased (replaced)
+        data already set or computed from conditioning data at the level one
+        rank finer
+    pyramidDataPointSet : sequence of :class:`geone.img.PointSet`, optional
+        list of data point set(s); point set(s) used as conditioning data in
+        pyramid (in additional levels); for each point set:
+            - the variables are identified by their name:
+                the name should be set to <vname>_ind<j>_lev<k>, where
+                <vname> is the name of the "original" variable,
+                <j> is the pyramid index for that variable, and
+                <k> is the level index in {1, ...}
+                (<j> and <k> are written on 3 digits with leading zeros)
+            - the conditioning data values are the (already) normalized
+                values (as used during the simulation in every level)
+            - the grid dimensions (support) of the level in which the data
+                are given are used: locations (coordinates) of the points
+                must be given accordingly
+        note: conditioning data integrated in pyramid may erased (replaced)
+        data already set or computed from conditioning data at the level one
+        rank finer
+    tolerance : float, default: 0.0
+        tolerance on the (acceptance) threshold value for flagging nodes
+        (for post-processing)
+    npostProcessingPathMax : int, default: 0
+        maximal number of post-processing path(s) (0 for no post-processing)
+    postProcessingNneighboringNode : [sequence of] int(s), optional
+        maximal number of neighbors in the search pattern, for each variable,
+        for all post-processing paths
+        (sequence of length `nv`)
+    postProcessingNeighboringNodeDensity : [sequence of] double(s), optional
+        density of neighbors in the search pattern, for each variable,
+        for all post-processing paths
+        (sequence of length `nv`)
+    postProcessingDistanceThreshold : [sequence of] float(s), optional
+        distance (acceptance) for each variable,
+        for all post-processing paths
+        (sequence of length `nv`)
+    postProcessingMaxScanFraction : [sequence of] double(s), optional
+        maximal scan fraction of each TI,
+        for all post-processing paths
+        (sequence of length `nTI`)
+    postProcessingTolerance : float, default: 0.0
+        tolerance on the (acceptance) threshold value for flagging nodes
+        (for post-processing),
+        for all post-processing paths
+    seed : int, default: 1234
+        initial seed
+    seedIncrement : int, default: 1
+        seed increment
+    nrealization : int, default: 1
+        number of realization(s)
 
-        outputVarFlag:
-                    (1-dimensional array of 'bool', of size nv)
-                        flag indicating which variable is saved in output
-
-        outputPathIndexFlag:
-                    (bool) indicates if path index maps are retrieved in output
-                        path index map: index in the simulation path
-
-        outputErrorFlag:
-                    (bool) indicates if error maps are retrieved in output
-                        error map: error for the retained candidate
-
-        outputTiGridNodeIndexFlag:
-                    (bool) indicates if TI grid node index maps are retrieved in
-                        TI grid node index map: index of the grid node of the
-                        retained candidate in the TI
-
-        outputTiIndexFlag:
-                    (bool) indicates if TI index maps are retrieved in output
-                        TI index map: index of the TI used (makes sense if
-                        number of TIs (nTI) is greater than 1)
-
-        outputReportFlag:
-                    (bool) indicates if a report file will be written
-        outputReportFileName:
-                    (string) name of the report file (unused if
-                        outputReportFlag is False)
-
-        nTI:        (int) number of training image(s) (TI)
-                        (obsolete, computed automatically from TI and
-                        simGridAsTiFlag, should be set to None)
-
-        TI:         (1-dimensional array of Img (class)) TI(s) used for the
-                        simulation, may contain None entries;
-                        it must be compatible with simGridAsTiFlag
-
-        simGridAsTiFlag:
-                    (1-dimensional array of 'bool' or None)
-                        flag indicating if the simulation grid itself is used
-                        as TI, for each TI;
-                        if None, an array of False is considered;
-                        must be compatible with simGridAsTiFlag
-
-        pdfTI:      ((nTI, nz, ny, nx) array of floats) probability for TI
-                        selection, pdf[i] is the "map defined on the SG" of the
-                        probability to select the i-th TI, unused if only more
-                        than one TI are used (nTI > 1)
-
-        dataImage:  (1-dimensional array of Img (class), or None) data images
-                        used as conditioning data (if any), each data image
-                        should have the same grid dimensions as those of the SG
-                        and its variable name(s) should be included in 'varname';
-                        note that the variable names should be distinct, and each
-                        data image initializes the corresponding variable in the
-                        SG
-        dataPointSet:
-                    (1-dimensional array of PointSet (class), or None) point sets
-                        defining hard data (if any), each point set should have
-                        at least 4 variables: 'X', 'Y', 'Z', the coordinates in
-                        the SG and at least one variable with name in 'varname'
-
-        mask:       ((nz, ny, nx) array of ints, or None) if given, mask values
-                        over the SG: 1 for simulated node / 0 for not simulated
-                        node
-
-        homothetyUsage:
-                    (int) indicates the usage of homothety (0/1/2):
-                        - 0: no homothety
-                        - 1: homothety without tolerance
-                        - 2: homothety with tolerance
-        homothetyXLocal:
-                    (bool) indicates if homothety according to X axis is local
-                        (True) or global (False)
-                        (unused if homothetyUsage == 0)
-        homothetyXRatio:
-                    (nd array or None) homothety ratio according to X axis:
-                        if homothetyUsage == 1:
-                            if homothetyXLocal is True:
-                                ((nz, ny, nx) array of floats) values on the SG
-                            else:
-                                (1-dimensional array of 1 float) value
-                        if homothetyUsage == 2:
-                            if homothetyXLocal is True:
-                                ((2, nz, ny, nx) array of floats)
-                                    min (homothetyXRatio[0]) and
-                                    max (homothetyXRatio[1]) values on the SG
-                            else:
-                                (1-dimensional array of 2 floats)
-                                min and max values
-                        (unused if homothetyUsage == 0)
-        homothetyYLocal, homothetyYRatio:
-                    as homothetyXLocal and homothetyXRatio, but for the Y axis
-        homothetyZLocal, homothetyZRatio:
-                    as homothetyXLocal and homothetyXRatio, but for the Z axis
-
-        rotationUsage:
-                    (int) indicates the usage of rotation (0/1/2):
-                        - 0: no rotation
-                        - 1: rotation without tolerance
-                        - 2: rotation with tolerance
-        rotationAzimuthLocal:
-                    (bool) indicates if azimuth angle is local (True) or
-                        global (False)
-                        (unused if rotationUsage == 0)
-        rotationAzimuth:
-                    (nd array or None) azimuth angle in degrees:
-                        if rotationUsage == 1:
-                            if rotationAzimuthLocal is True:
-                                ((nz, ny, nx) array of floats) values on the SG
-                            else:
-                                (1-dimensional array of 1 float) value
-                        if rotationUsage == 2:
-                            if rotationAzimuthLocal is True:
-                                ((2, nz, ny, nx) array of floats)
-                                    min (rotationAzimuth[0]) and
-                                    max (rotationAzimuth[1]) values on the SG
-                            else:
-                                (1-dimensional array of 2 floats)
-                                min and max values
-                        (unused if rotationUsage == 0)
-        rotationDipLocal, rotationDip:
-                        as rotationAzimuthLocal and rotationAzimuth, but for
-                            the dip angle
-        rotationPlungeLocal, rotationPlunge:
-                        as rotationAzimuthLocal and rotationAzimuth, but for
-                            the plunge angle
-        expMax:
-            (float) maximal expansion (negative to not check consistency):
-                the following is applied for each variable separetely:
-                - for variable with distance type set to 0 (see below):
-                    * expMax >= 0:
-                        if a conditioning data value is not in the set of
-                        training image values, an error occurs
-                    * expMax < 0:
-                        if a conditioning data value is not in the set of
-                        training image values, a warning is displayed (no error
-                        occurs)
-                - for variable with distance type not set to 0 (see below):
-                    if relative distance flag is set to 1 (see below), nothing
-                    is done, else:
-                    * expMax >= 0:
-                        maximal accepted expansion of the range of the training
-                        image values for covering the conditioning data values:
-                        - if conditioning data values are within the range of the
-                            training image values: nothing is done
-                        - if a conditioning data value is out of the range of the
-                            training image values: let
-                                new_min_ti = min ( min_cd, min_ti )
-                                new_max_ti = max ( max_cd, max_ti )
-                            with
-                                min_cd, max_cd, the min and max of the
-                                    conditioning values,
-                                min_ti, max_ti, the min and max of the training
-                                    imges values.
-                            If new_max_ti-new_min_ti <= (1+expMax)*(ti_max-ti_min)
-                            then the training image values are linearly rescaled
-                            from [ti_min, ti_max] to [new_ti_min, new_ti_max], and
-                            a warning is displayed (no error occurs). Otherwise,
-                            an error occurs.
-                    * expMax < 0:
-                        if a conditioning data value is out of the range of the
-                        training image values, a warning is displayed (no error
-                        occurs), the training image values are not modified
-
-        normalizingType:
-                (string) normalizing type for non categorical variable
-                    (distance type not equal to 0), possible strings:
-                    'linear', 'uniform', 'normal'
-
-        searchNeighborhoodParameters:
-                (1-dimensional array of SearchNeighborhoodParameters (class) of
-                    size nv) search neighborhood parameters for each variable
-        nneighboringNode:
-                (1-dimensional array of ints of size nv) maximal number of
-                    neighbors in the search pattern, for each variable
-        maxPropInequalityNode:
-                (1-dimensional array of doubles of size nv) maximal proportion
-                    of nodes with inequality data in the search pattern, for each
-                    variable
-        neighboringNodeDensity:
-                (1-dimensional array of doubles of size nv) density of neighbors
-                    in the search pattern, for each variable
-
-        rescalingMode:
-                (list of strings of length nv) rescaling mode for each variable,
-                    possible strings: 'none', 'min_max', 'mean_length'
-        rescalingTargetMin:
-                (1-dimensional array of doubles of size nv) target min value,
-                    for each variable (used for variable with rescalingMode set
-                    to 'min_max')
-        rescalingTargetMax:
-                (1-dimensional array of doubles of size nv) target max value,
-                    for each variable (used for variable with rescalingMode set
-                    to 'min_max')
-        rescalingTargetMean:
-                (1-dimensional array of doubles of size nv) target mean value,
-                    for each variable (used for variable with rescalingMode set
-                    to 'mean_length')
-        rescalingTargetLength:
-                (1-dimensional array of doubles of size nv) target length value,
-                    for each variable (used for variable with rescalingMode set
-                    to 'mean_length')
-
-        relativeDistanceFlag:
-                (1-dimensional array of 'bool', of size nv)
-                    flag for each variable indicating if relative distance is
-                    used (True) or not (False)
-        distanceType:
-                (list (or 1-dimensional array) of ints or strings of size nv)
-                    distance type (between pattern) for each variable; possible
-                    values:
-                    - 0 or 'categorical' : non-matching nodes (default if None)
-                    - 1 or 'continuous'  : L-1 distance
-                    - 2 : L-2 distance
-                    - 3 : L-p distance, requires the real positive parameter p
-                    - 4 : L-infinity
-        powerLpDistance
-                (1-dimensional array of doubles of size nv) p parameter for L-p
-                    distance, for each variable (unused for variable not using
-                    L-p distance)
-        powerLpDistanceInv
-                (1-dimensional array of doubles of size nv) inverse of p parameter
-                    for L-p distance, for each variable (unused for variable not
-                    using L-p distance)
-
-        conditioningWeightFactor:
-                (1-dimensional array of floats of size nv) weight factor for
-                    conditioning data, for each variable
-
-        simType:(string) simulation type, possible strings:
-                    - 'sim_one_by_one': successive simulation of one variable at
-                        one node in the simulation grid (4D path)
-                    - 'sim_variable_vector': successive simulation of all
-                        variable(s) at one node in the simulation grid (3D path)
-        simPathType:
-                (string) simulation path type: possible strings:
-                    - 'random': random path
-                    - 'random_hd_distance_pdf': random path set according to
-                        distance to conditioning nodes based on pdf,
-                        required field 'simPathStrength', see below
-                    - 'random_hd_distance_sort': random path set according to
-                        distance to conditioning nodes based on sort (with a
-                        random noise contribution),
-                        required field 'simPathStrength', see below
-                    - 'random_hd_distance_sum_pdf': random path set according to
-                        sum of distance to conditioning nodes based on pdf,
-                        required fields 'simPathPower' and 'simPathStrength',
-                        see below
-                    - 'random_hd_distance_sum_sort': random path set according to
-                        sum of distance to conditioning nodes based on sort (with
-                        a random noise contribution),
-                        required fields 'simPathPower' and 'simPathStrength',
-                        see below
-                    - 'unilateral': unilateral path or stratified random path,
-                        required field 'simPathUnilateralOrder', see below
-        simPathStrength:
-                (double) strength in [0,1] attached to distance if simPathType is
-                    'random_hd_distance_pdf' or 'random_hd_distance_sort' or
-                    'random_hd_distance_sum_pdf' or 'random_hd_distance_sum_sort'
-                    (unused otherwise)
-        simPathPower:
-                (double) power (>0) to which the distance to each conditioning
-                    node are elevated, if simPathType is
-                    'random_hd_distance_sum_pdf' or 'random_hd_distance_sum_sort'
-                    (unused otherwise)
-        simPathUnilateralOrder:
-                (1-dimesional array of ints), used when simPathType == 'unilateral'
-                    - if simType == 'sim_one_by_one': simPathUnilateralOrder is
-                        of length 4, example: [0, -2, 1, 0] means that the path
-                        will visit all nodes: randomly in xv-sections, with
-                        increasing z-coordinate, and then decreasing y-coordinate
-                    - if simType == 'sim_variable_vector': simPathUnilateralOrder
-                        is of length 3, example: [-1, 0, 2] means that the path
-                        will visit all nodes: randomly in y-sections, with
-                        decreasing x-coordinate, and then increasing z-coordinate
-
-        distanceThreshold:
-                (1-dimensional array of floats of size nv) distance (acceptance)
-                    threshold for each variable
-
-        softProbability:
-                (1-dimensional array of SoftProbability (class) of size nv)
-                    probability constraints parameters for each variable
-
-        connectivity:
-                (1-dimensional array of Connectivity (class) of size nv)
-                    connectivity constraints parameters for each variable
-
-        blockData:
-                (1-dimensional array of BlockData (class) of size nv)
-                    block data parameters for each variable
-
-        maxScanFraction:
-                (1-dimensional array of doubles of size nTI)
-                    maximal scan fraction of each TI
-
-        pyramidGeneralParameters:
-                (PyramidGeneralParameters (class))
-                    defines the general pyramid parameters
-
-        pyramidParameters:
-                (1-dimensional array of PyramidParameters (class) of size nv)
-                    pyramid parameters for each variable
-
-        pyramidDataImage:
-            (1-dimensional array of Img (class), or None) data images
-                used as conditioning data (if any) in pyramid (in additional
-                levels); for each data image:
-                    - the variables are identified by their name:
-                        the name should be set to <vname>_ind<j>_lev<k>,
-                        where <vname> is the name of the "original"
-                        variable, <j> is the pyramid index for that variable,
-                        and <k> is the level index in {1, ...}
-                        (<j> and <k> are written on 3 digits with leading zeros)
-                    - the conditioning data values are the (already) normalized
-                        values (as used during the simulation in every level)
-                    - the grid dimensions (support) of the level in which the data
-                        are given are used: the image grid must be compatible
-                Note: conditioning data integrated in pyramid may erased
-                (replaced) data already set or computed from conditioning data at
-                the level one rank finer
-
-        pyramidDataPointSet:
-            (1-dimensional array of PointSet (class), or None) point sets
-                defining hard data (if any) in pyramid (in additional
-                levels); for each point set:
-                    - the variables are identified by their name:
-                        the name should be set to <vname>_ind<j>_lev<k>,
-                        where <vname> is the name of the "original"
-                        variable, <j> is the pyramid index for that variable,
-                        and <k> is the level index in {1, ...}
-                        (<j> and <k> are written on 3 digits with leading zeros)
-                    - the conditioning data values are the (already) normalized
-                        values (as used during the simulation in every level)
-                    - the grid dimensions (support) of the level in which the data
-                        are given are used: locations (coordinates) of the points
-                        must be given accordingly
-                Note: conditioning data integrated in pyramid may erased
-                (replaced) data already set or computed from conditioning data at
-                the level one rank finer
-
-        tolerance:
-                (float) tolerance on the (acceptance) threshold value for
-                    flagging nodes (for post-processing)
-
-        npostProcessingPathMax:
-                (int) maximal number of post-processing path(s)
-                    (0 for no post-processing)
-
-        postProcessingNneighboringNode:
-                (1-dimensional array of ints of size nv) maximal number of
-                    neighbors in the search pattern, for each variable (for all
-                    post-processing paths)
-
-        postProcessingNeighboringNodeDensity:
-                (1-dimensional array of doubles of size nv) density of neighbors
-                    in the search pattern, for each variable (for all
-                    post-processing paths)
-
-        postProcessingDistanceThreshold:
-                (1-dimensional array of floats of size nv) distance (acceptance)
-                    threshold for each variable (for all post-processing paths)
-
-        postProcessingMaxScanFraction:
-                (1-dimensional array of doubles of size nTI) maximal scan
-                    fraction of each TI (for all post-processing paths)
-
-        postProcessingTolerance:
-                (float) tolerance on the (acceptance) threshold value for
-                    flagging nodes (for post-processing) (for all post-processing
-                    paths)
-
-        seed:   (int) initial seed
-        seedIncrement:
-                (int) increment seed
-
-        nrealization:
-                (int) number of realization(s)
-
-    Note: in output simulated images (obtained by running DeeSse), the names
-        of the output variables are set to <vname>_real<n>, where
-            - <vname> is the name of the variable,
-            - <n> is the realization index (starting from 0)
-            [<n> is written on 5 digits, with leading zeros]
+    Notes
+    -----
+    In output simulated images (obtained by running DeeSse), the names of the
+    output variables are set to <vname>_real<n>, where
+        - <vname> is the name of the variable,
+        - <n> is the realization index (starting from 0)
+        [<n> is written on 5 digits, with leading zeros]
     """
-
     def __init__(self,
                  simName='deesse_py',
                  nx=1,   ny=1,   nz=1,
@@ -1318,7 +1360,9 @@ class DeesseInput(object):
                  seed=1234,
                  seedIncrement=1,
                  nrealization=1):
-
+        """
+        Inits an instance of the class.
+        """
         fname = 'DeesseInput'
 
         self.ok = False # flag to "validate" the class [temporary to False]
@@ -2075,48 +2119,54 @@ class DeesseInput(object):
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-def img_py2C(im):
+def img_py2C(im_py):
     """
     Converts an image from python to C.
 
-    :param im:      (Img class) image (python class)
-    :return im_c:   (MPDS_IMAGE *) image converted (C struct)
-    """
+    Parameters
+    ----------
+    im_py : :class:`geone.img.Img`
+        image in python
 
+    Returns
+    -------
+    im_c : (MPDS_IMAGE *)
+        image in C
+    """
     fname = 'img_py2C'
 
     im_c = deesse.malloc_MPDS_IMAGE()
     deesse.MPDSInitImage(im_c)
 
-    err = deesse.MPDSMallocImage(im_c, im.nxyz(), im.nv)
+    err = deesse.MPDSMallocImage(im_c, im_py.nxyz(), im_py.nv)
     if err:
         print(f'ERROR ({fname}): can not convert image from python to C')
         return None
 
-    im_c.grid.nx = im.nx
-    im_c.grid.ny = im.ny
-    im_c.grid.nz = im.nz
+    im_c.grid.nx = im_py.nx
+    im_c.grid.ny = im_py.ny
+    im_c.grid.nz = im_py.nz
 
-    im_c.grid.sx = im.sx
-    im_c.grid.sy = im.sy
-    im_c.grid.sz = im.sz
+    im_c.grid.sx = im_py.sx
+    im_c.grid.sy = im_py.sy
+    im_c.grid.sz = im_py.sz
 
-    im_c.grid.ox = im.ox
-    im_c.grid.oy = im.oy
-    im_c.grid.oz = im.oz
+    im_c.grid.ox = im_py.ox
+    im_c.grid.oy = im_py.oy
+    im_c.grid.oz = im_py.oz
 
-    im_c.grid.nxy = im.nxy()
-    im_c.grid.nxyz = im.nxyz()
+    im_c.grid.nxy = im_py.nxy()
+    im_c.grid.nxyz = im_py.nxyz()
 
-    im_c.nvar = im.nv
+    im_c.nvar = im_py.nv
 
-    im_c.nxyzv = im.nxyz() * im.nv
+    im_c.nxyzv = im_py.nxyz() * im_py.nv
 
-    for i in range(im.nv):
-        deesse.mpds_set_varname(im_c.varName, i, im.varname[i])
-        # deesse.charp_array_setitem(im_c.varName, i, im.varname[i]) # does not work!
+    for i in range(im_py.nv):
+        deesse.mpds_set_varname(im_c.varName, i, im_py.varname[i])
+        # deesse.charp_array_setitem(im_c.varName, i, im_py.varname[i]) # does not work!
 
-    v = im.val.reshape(-1)
+    v = im_py.val.reshape(-1)
     np.putmask(v, np.isnan(v), deesse.MPDS_MISSING_VALUE)
     deesse.mpds_set_real_vector_from_array(im_c.var, 0, v)
     np.putmask(v, v == deesse.MPDS_MISSING_VALUE, np.nan) # replace missing_value by np.nan (restore) (v is not a copy...)
@@ -2129,10 +2179,16 @@ def img_C2py(im_c):
     """
     Converts an image from C to python.
 
-    :param im_c:     (MPDS_IMAGE *) image (C struct)
-    :return im:      (Img class) image converted (python class)
-    """
+    Parameters
+    ----------
+    im_c : (MPDS_IMAGE *)
+        image in C
 
+    Returns
+    -------
+    im_py : :class:`geone.img.Img`
+        image in python
+    """
     nxyz = im_c.grid.nx * im_c.grid.ny * im_c.grid.nz
     nxyzv = nxyz * im_c.nvar
 
@@ -2142,52 +2198,58 @@ def img_C2py(im_c):
     v = np.zeros(nxyzv)
     deesse.mpds_get_array_from_real_vector(im_c.var, 0, v)
 
-    im = Img(nx=im_c.grid.nx, ny=im_c.grid.ny, nz=im_c.grid.nz,
-             sx=im_c.grid.sx, sy=im_c.grid.sy, sz=im_c.grid.sz,
-             ox=im_c.grid.ox, oy=im_c.grid.oy, oz=im_c.grid.oz,
-             nv=im_c.nvar, val=v, varname=varname)
+    im_py = Img(nx=im_c.grid.nx, ny=im_c.grid.ny, nz=im_c.grid.nz,
+                sx=im_c.grid.sx, sy=im_c.grid.sy, sz=im_c.grid.sz,
+                ox=im_c.grid.ox, oy=im_c.grid.oy, oz=im_c.grid.oz,
+                nv=im_c.nvar, val=v, varname=varname)
 
-    np.putmask(im.val, im.val == deesse.MPDS_MISSING_VALUE, np.nan)
+    np.putmask(im_py.val, im_py.val == deesse.MPDS_MISSING_VALUE, np.nan)
 
-    return im
+    return im_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def ps_py2C(ps):
+def ps_py2C(ps_py):
     """
-    Converts a point set from python to C.
+    Converts an image from python to C.
 
-    :param ps:      (PointSet class) point set (python class)
-    :return ps_c:   (MPDS_POINTSET *) point set converted (C struct)
+    Parameters
+    ----------
+    ps_py : :class:`geone.img.PointSet`
+        point set in python
+
+    Returns
+    -------
+    ps_c : (MPDS_POINTSET *)
+        point set in C
     """
-
     fname = 'ps_py2C'
 
-    if ps.nv < 4:
+    if ps_py.nv < 4:
         print(f'ERROR ({fname}): point set (python) have less than 4 variables')
         return None
 
-    nvar = ps.nv - 3
+    nvar = ps_py.nv - 3
 
     ps_c = deesse.malloc_MPDS_POINTSET()
     deesse.MPDSInitPointSet(ps_c)
 
-    err = deesse.MPDSMallocPointSet(ps_c, ps.npt, nvar)
+    err = deesse.MPDSMallocPointSet(ps_c, ps_py.npt, nvar)
     if err:
         print(f'ERROR ({fname}): can not convert point set from python to C')
         return None
 
-    ps_c.npoint = ps.npt
+    ps_c.npoint = ps_py.npt
     ps_c.nvar = nvar
 
     for i in range(nvar):
-        deesse.mpds_set_varname(ps_c.varName, i, ps.varname[i+3])
+        deesse.mpds_set_varname(ps_c.varName, i, ps_py.varname[i+3])
 
-    deesse.mpds_set_real_vector_from_array(ps_c.x, 0, ps.val[0].reshape(-1))
-    deesse.mpds_set_real_vector_from_array(ps_c.y, 0, ps.val[1].reshape(-1))
-    deesse.mpds_set_real_vector_from_array(ps_c.z, 0, ps.val[2].reshape(-1))
+    deesse.mpds_set_real_vector_from_array(ps_c.x, 0, ps_py.val[0].reshape(-1))
+    deesse.mpds_set_real_vector_from_array(ps_c.y, 0, ps_py.val[1].reshape(-1))
+    deesse.mpds_set_real_vector_from_array(ps_c.z, 0, ps_py.val[2].reshape(-1))
 
-    v = ps.val[3:].reshape(-1)
+    v = ps_py.val[3:].reshape(-1)
     np.putmask(v, np.isnan(v), deesse.MPDS_MISSING_VALUE)
     deesse.mpds_set_real_vector_from_array(ps_c.var, 0, v)
     np.putmask(v, v == deesse.MPDS_MISSING_VALUE, np.nan)  # replace missing_value by np.nan (restore) (v is not a copy...)
@@ -2198,14 +2260,19 @@ def ps_py2C(ps):
 # ----------------------------------------------------------------------------
 def ps_C2py(ps_c):
     """
-    Converts a point set from C to python.
+    Converts an image from C to python.
 
-    :param ps_c:    (MPDS_POINTSET *) point set (C struct)
-    :return ps:     (PointSet class) point set converted (python class)
+    Parameters
+    ----------
+    ps_c : (MPDS_POINTSET *)
+        point set in C
+
+    Returns
+    -------
+    ps_py : :class:`geone.img.PointSet`
+        point set in python
     """
-
     varname = ['X', 'Y', 'Z'] + [deesse.mpds_get_varname(ps_c.varName, i) for i in range(ps_c.nvar)]
-    # varname = ['X', 'Y', 'Z'] + [deesse.charp_array_getitem(ps_c.varName, i) for i in range(ps_c.nvar)] # also works
 
     v = np.zeros(ps_c.npoint*ps_c.nvar)
     deesse.mpds_get_array_from_real_vector(ps_c.var, 0, v)
@@ -2226,12 +2293,12 @@ def ps_C2py(ps_c):
     deesse.mpds_get_array_from_real_vector(ps_c.z, 0, cz)
     v = np.hstack((cx, cy, cz, v))
 
-    ps = PointSet(npt=ps_c.npoint,
+    ps_py = PointSet(npt=ps_c.npoint,
                      nv=ps_c.nvar+3, val=v, varname=varname)
 
-    np.putmask(ps.val, ps.val == deesse.MPDS_MISSING_VALUE, np.nan)
+    np.putmask(ps_py.val, ps_py.val == deesse.MPDS_MISSING_VALUE, np.nan)
 
-    return ps
+    return ps_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -2239,15 +2306,19 @@ def classInterval2classOfValues(classInterval):
     """
     Converts classInterval (python) to classOfValues (C).
 
-    :param classInterval:
-                    (list of nclass 2-dimensional array of floats with 2 columns)
-                        definition of the classes of values by intervals,
-                        classInterval[i] is a (n_i, 2) array a, defining the
-                        i-th class as the union of intervals:
-                            [a[0,0],a[0,1][ U ... [a[n_i-1,0],a[n_i-1,1][
-    :return cv:     (MPDS_CLASSOFVALUES *) corresponding structure in C
-    """
+    Parameters
+    ----------
+    classInterval : list of 2D array-like of floats with two columns
+        definition of the classes of values by intervals:
+            - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
+                i-th class as the union of intervals as
+                `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
 
+    Returns
+    -------
+    cv : (MPDS_CLASSOFVALUES *)
+        classOfValues (C)
+    """
     cv = deesse.malloc_MPDS_CLASSOFVALUES()
     deesse.MPDSInitClassOfValues(cv)
 
@@ -2274,16 +2345,19 @@ def classOfValues2classInterval(classOfValues):
     """
     Converts classOfValues (C) to classInterval (python).
 
-    :param cv:  (MPDS_CLASSOFVALUES *) corresponding structure in C
+    Parameters
+    ----------
+    cv : (MPDS_CLASSOFVALUES *)
+        classOfValues (C)
 
-    :return classInterval:
-                    (list of nclass 2-dimensional array of floats with 2 columns)
-                        definition of the classes of values by intervals,
-                        classInterval[i] is a (n_i, 2) array a, defining the
-                        i-th class as the union of intervals:
-                            [a[0,0],a[0,1][ U ... [a[n_i-1,0],a[n_i-1,1][
+    Returns
+    -------
+    classInterval : list of 2D array-like of floats with two columns
+        definition of the classes of values by intervals:
+            - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
+                i-th class as the union of intervals as
+                `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
     """
-
     nclass = classOfValues.nclass
 
     ninterval = np.zeros(nclass, dtype='intc')
@@ -2304,14 +2378,20 @@ def classOfValues2classInterval(classOfValues):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def search_neighborhood_parameters_py2C(sn):
+def search_neighborhood_parameters_py2C(sn_py):
     """
     Converts search neighborhood parameters from python to C.
 
-    :param sn:      (SearchNeighborhoodParameters class) - python
-    :return sn_c:   (MPDS_SEARCHNEIGHBORHOODPARAMETERS *) - C
-    """
+    Parameters
+    ----------
+    sn_py : :class:`SearchNeighborhoodParameters`
+        search neighborhood parameters in python
 
+    Returns
+    -------
+    sn_c : (MPDS_SEARCHNEIGHBORHOODPARAMETERS *)
+        search neighborhood parameters in C
+    """
     fname = 'search_neighborhood_parameters_py2C'
 
     sn_c = deesse.malloc_MPDS_SEARCHNEIGHBORHOODPARAMETERS()
@@ -2328,14 +2408,14 @@ def search_neighborhood_parameters_py2C(sn):
         'manual'           : deesse.SEARCHNEIGHBORHOOD_RADIUS_MANUAL
     }
     try:
-        sn_c.radiusMode = radiusMode_dict[sn.radiusMode]
+        sn_c.radiusMode = radiusMode_dict[sn_py.radiusMode]
     except:
         print(f'ERROR ({fname}): radius mode (search neighborhood parameters) unknown')
         return None
 
-    sn_c.rx = sn.rx
-    sn_c.ry = sn.ry
-    sn_c.rz = sn.rz
+    sn_c.rx = sn_py.rx
+    sn_c.ry = sn_py.ry
+    sn_c.rz = sn_py.rz
 
     anisotropyRatioMode_dict = {
         'one'        : deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_ONE,
@@ -2347,22 +2427,22 @@ def search_neighborhood_parameters_py2C(sn):
         'manual'     : deesse.SEARCHNEIGHBORHOOD_ANISOTROPY_RATIO_MANUAL
     }
     try:
-        sn_c.anisotropyRatioMode = anisotropyRatioMode_dict[sn.anisotropyRatioMode]
+        sn_c.anisotropyRatioMode = anisotropyRatioMode_dict[sn_py.anisotropyRatioMode]
     except:
         print(f'ERROR ({fname}): anisotropy ratio mode (search neighborhood parameters) unknown')
         return None
 
-    sn_c.ax = sn.ax
-    sn_c.ay = sn.ay
-    sn_c.az = sn.az
-    sn_c.angle1 = sn.angle1
-    sn_c.angle2 = sn.angle2
-    sn_c.angle3 = sn.angle3
+    sn_c.ax = sn_py.ax
+    sn_c.ay = sn_py.ay
+    sn_c.az = sn_py.az
+    sn_c.angle1 = sn_py.angle1
+    sn_c.angle2 = sn_py.angle2
+    sn_c.angle3 = sn_py.angle3
     if sn_c.angle1 != 0 or sn_c.angle2 != 0 or sn_c.angle3 != 0:
         sn_c.rotationFlag = deesse.TRUE
     else:
         sn_c.rotationFlag = deesse.FALSE
-    sn_c.power = sn.power
+    sn_c.power = sn_py.power
 
     return sn_c
 # ----------------------------------------------------------------------------
@@ -2370,12 +2450,18 @@ def search_neighborhood_parameters_py2C(sn):
 # ----------------------------------------------------------------------------
 def search_neighborhood_parameters_C2py(sn_c):
     """
-    Converts search neighborhood parameters from python to C.
+    Converts search neighborhood parameters from C to python.
 
-    :param sn_c:    (MPDS_SEARCHNEIGHBORHOODPARAMETERS *) - C
-    :return sn:     (SearchNeighborhoodParameters class) - python
+    Parameters
+    ----------
+    sn_c : (MPDS_SEARCHNEIGHBORHOODPARAMETERS *)
+        search neighborhood parameters in C
+
+    Returns
+    -------
+    sn_py : :class:`SearchNeighborhoodParameters`
+        search neighborhood parameters in python
     """
-
     fname = 'search_neighborhood_parameters_C2py'
 
     radiusMode_dict = {
@@ -2421,7 +2507,7 @@ def search_neighborhood_parameters_C2py(sn_c):
     angle3 = sn_c.angle3
     power = sn_c.power
 
-    sn = SearchNeighborhoodParameters(
+    sn_py = SearchNeighborhoodParameters(
         radiusMode=radiusMode,
         rx=rx, ry=ry, rz=rz,
         anisotropyRatioMode=anisotropyRatioMode,
@@ -2430,7 +2516,7 @@ def search_neighborhood_parameters_C2py(sn_c):
         power=power
     )
 
-    return sn
+    return sn_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -2441,14 +2527,26 @@ def set_simAndPathParameters_C(
         simPathPower,
         simPathUnilateralOrder):
     """
-    Set simAndPathParameters (C struct) from relevant parameters (python).
+    Sets simAndPathParameters (C) from relevant parameters (python).
 
-    :param simType, simPathType, simPathStrength, simPathUnilateralOrder:
-                    relevant parameters - python
+    Parameters
+    ----------
+    simType : str
+        simulation type
+    simPathType : str
+        simulation path type
+    simPathStrength : double, or None
+        strength in [0,1] attached to distance
+    simPathPower : double, or None
+        power (>0) to which the distance to each conditioning node are raised
+    simPathUnilateralOrder : sequence of ints, or None
+        defines unilatera path
 
-    :return sapp_c:   (MPDS_SIMANDPATHPARAMETERS *) - C
+    Returns
+    -------
+    sapp_c : (MPDS_SIMANDPATHPARAMETERS *)
+        simAndPathParameters (C)
     """
-
     fname = 'set_simAndPathParameters_C'
 
     sapp_c = deesse.malloc_MPDS_SIMANDPATHPARAMETERS()
@@ -2494,86 +2592,90 @@ def set_simAndPathParameters_C(
 
 # ----------------------------------------------------------------------------
 def softProbability_py2C(
-        sp,
+        sp_py,
         nx, ny, nz,
         sx, sy, sz,
         ox, oy, oz):
     """
     Converts soft probability parameters from python to C.
 
-    :param sp:          (SoftProbability class) soft probability parameters
-                            (python)
-    :param nx, ny, nz:  (ints) number of simulation grid (SG) cells in each
-                            direction
-    :param sx, sy, sz:  (floats) cell size in each direction
-    :param ox, oy, oz:  (floats) origin of the SG (bottom-lower-left corner)
-    :param nv:          (int) number of variable(s) / attribute(s)
+    Parameters
+    ----------
+    sp_py :class:`SoftProbability`
+        soft probability parameters in python
+    nx, ny, nz : ints
+        number of grid cells along each axis
+    sx, sy, sz : floats
+        cell size along each axis
+    ox, oy, oz : floats
+        origin of the grid (bottom-lower-left corner)
 
-    :return sp_c:       (MPDS_SOFTPROBABILITY *) corresponding parameters
-                            (C struct)
+    Returns
+    -------
+    sp_c : (MPDS_SOFTPROBABILITY *)
+        soft probability parameters in C
     """
-
     #fname = 'softProbability_py2C'
 
     sp_c = deesse.malloc_MPDS_SOFTPROBABILITY()
     deesse.MPDSInitSoftProbability(sp_c)
 
     # ... probabilityConstraintUsage
-    sp_c.probabilityConstraintUsage = sp.probabilityConstraintUsage
-    if sp.probabilityConstraintUsage == 0:
+    sp_c.probabilityConstraintUsage = sp_py.probabilityConstraintUsage
+    if sp_py.probabilityConstraintUsage == 0:
         return sp_c
 
     # ... classOfValues
-    sp_c.classOfValues = classInterval2classOfValues(sp.classInterval)
+    sp_c.classOfValues = classInterval2classOfValues(sp_py.classInterval)
 
-    if sp.probabilityConstraintUsage == 1:
+    if sp_py.probabilityConstraintUsage == 1:
         # ... globalPdf
-        sp_c.globalPdf = deesse.new_real_array(sp.nclass)
+        sp_c.globalPdf = deesse.new_real_array(sp_py.nclass)
         deesse.mpds_set_real_vector_from_array(
             sp_c.globalPdf, 0,
-            np.asarray(sp.globalPdf).reshape(sp.nclass))
+            np.asarray(sp_py.globalPdf).reshape(sp_py.nclass))
 
-    elif sp.probabilityConstraintUsage == 2 or sp.probabilityConstraintUsage == 3:
+    elif sp_py.probabilityConstraintUsage == 2 or sp_py.probabilityConstraintUsage == 3:
         # ... localPdf
         im = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
-                 nv=sp.nclass, val=sp.localPdf)
+                 nv=sp_py.nclass, val=sp_py.localPdf)
         sp_c.localPdfImage = img_py2C(im)
 
-    if sp.probabilityConstraintUsage == 2:
+    if sp_py.probabilityConstraintUsage == 2:
         # ... localPdfSupportRadius
         sp_c.localPdfSupportRadius = deesse.new_real_array(1)
         deesse.mpds_set_real_vector_from_array(
             sp_c.localPdfSupportRadius, 0,
-            np.asarray(sp.localPdfSupportRadius).reshape(1))
+            np.asarray(sp_py.localPdfSupportRadius).reshape(1))
 
         # ... localCurrentPdfComputation
-        sp_c.localCurrentPdfComputation = sp.localCurrentPdfComputation
+        sp_c.localCurrentPdfComputation = sp_py.localCurrentPdfComputation
 
-    if sp.probabilityConstraintUsage == 1 or sp.probabilityConstraintUsage == 2:
+    if sp_py.probabilityConstraintUsage == 1 or sp_py.probabilityConstraintUsage == 2:
         # ... comparingPdfMethod
-        sp_c.comparingPdfMethod = sp.comparingPdfMethod
+        sp_c.comparingPdfMethod = sp_py.comparingPdfMethod
 
         # ... probabilityConstraintThresholdType
-        sp_c.probabilityConstraintThresholdType = sp.probabilityConstraintThresholdType
+        sp_c.probabilityConstraintThresholdType = sp_py.probabilityConstraintThresholdType
 
         # ... constantThreshold
-        sp_c.constantThreshold = sp.constantThreshold
+        sp_c.constantThreshold = sp_py.constantThreshold
 
-        if sp.probabilityConstraintThresholdType == 1:
+        if sp_py.probabilityConstraintThresholdType == 1:
             # ... dynamicThresholdParameters
             sp_c.dynamicThresholdParameters = deesse.new_real_array(7)
             deesse.mpds_set_real_vector_from_array(
                 sp_c.dynamicThresholdParameters, 0,
-                np.asarray(sp.dynamicThresholdParameters).reshape(7))
+                np.asarray(sp_py.dynamicThresholdParameters).reshape(7))
 
-    if sp.probabilityConstraintUsage == 3:
+    if sp_py.probabilityConstraintUsage == 3:
         # ... rejectionMode
-        sp_c.rejectionMode = sp.rejectionMode
+        sp_c.rejectionMode = sp_py.rejectionMode
 
     # ... deactivationDistance
-    sp_c.deactivationDistance = sp.deactivationDistance
+    sp_c.deactivationDistance = sp_py.deactivationDistance
 
     return sp_c
 # ----------------------------------------------------------------------------
@@ -2583,17 +2685,21 @@ def softProbability_C2py(sp_c):
     """
     Converts soft probability parameters from C to python.
 
-    :param sp_c:       (MPDS_SOFTPROBABILITY *) corresponding parameters
-                            (C struct)
-    :return sp:         (SoftProbability class) soft probability parameters
-                            (python)
-    """
+    Parameters
+    ----------
+    sp_c : (MPDS_SOFTPROBABILITY *)
+        soft probability parameters in C
 
+    Returns
+    -------
+    sp_py :class:`SoftProbability`
+        soft probability parameters in python
+    """
     # ... probabilityConstraintUsage
     probabilityConstraintUsage = sp_c.probabilityConstraintUsage
     if probabilityConstraintUsage == 0:
-        sp = SoftProbability()
-        return sp
+        sp_py = SoftProbability()
+        return sp_py
 
     # default parameters
     nclass = 0
@@ -2654,7 +2760,7 @@ def softProbability_C2py(sp_c):
     # ... deactivationDistance
     deactivationDistance = sp_c.deactivationDistance
 
-    sp = SoftProbability(
+    sp_py = SoftProbability(
         probabilityConstraintUsage=probabilityConstraintUsage,
         nclass=nclass,
         classInterval=classInterval,
@@ -2670,26 +2776,32 @@ def softProbability_C2py(sp_c):
         dynamicThresholdParameters=dynamicThresholdParameters
     )
 
-    return sp
+    return sp_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def connectivity_py2C(co):
+def connectivity_py2C(co_py):
     """
     Converts connectivity parameters from python to C.
 
-    :param co:      (Connectivity class) connectivity parameters (python)
-    :return co_c:   (MPDS_CONNECTIVITY *) corresponding parameters (C struct)
-    """
+    Parameters
+    ----------
+    co_py :class:`Connectivity`
+        connectivity parameters in python
 
+    Returns
+    -------
+    co_c : (MPDS_CONNECTIVITY *)
+        connectivity parameters in C
+    """
     fname = 'connectivity_py2C'
 
     co_c = deesse.malloc_MPDS_CONNECTIVITY()
     deesse.MPDSInitConnectivity(co_c)
 
     # ... connectivityConstraintUsage
-    co_c.connectivityConstraintUsage = co.connectivityConstraintUsage
-    if co.connectivityConstraintUsage == 0:
+    co_c.connectivityConstraintUsage = co_py.connectivityConstraintUsage
+    if co_py.connectivityConstraintUsage == 0:
         return co_c
 
     # ... connectivityType
@@ -2699,34 +2811,34 @@ def connectivity_py2C(co):
         'connect_face_edge_corner' : deesse.CONNECT_FACE_EDGE_CORNER
     }
     try:
-        co_c.connectivityType = connectivityType_dict[co.connectivityType]
+        co_c.connectivityType = connectivityType_dict[co_py.connectivityType]
     except:
         print(f'ERROR ({fname}): connectivity type unknown')
         return None
 
     # ... varName
-    deesse.mpds_allocate_and_set_connectivity_varname(co_c, co.varname)
+    deesse.mpds_allocate_and_set_connectivity_varname(co_c, co_py.varname)
 
     # ... classOfValues
-    co_c.classOfValues = classInterval2classOfValues(co.classInterval)
+    co_c.classOfValues = classInterval2classOfValues(co_py.classInterval)
 
     # ... tiAsRefFlag
-    if co.tiAsRefFlag:
+    if co_py.tiAsRefFlag:
         co_c.tiAsRefFlag = deesse.TRUE
     else:
         co_c.tiAsRefFlag = deesse.FALSE
 
-    if not co.tiAsRefFlag:
+    if not co_py.tiAsRefFlag:
         # ... refConnectivityImage
-        im = img.copyImg(co.refConnectivityImage)
-        im.extract_var([co.refConnectivityVarIndex])
+        im = img.copyImg(co_py.refConnectivityImage)
+        im.extract_var([co_py.refConnectivityVarIndex])
         co_c.refConnectivityImage = img_py2C(im)
 
     # ... deactivationDistance
-    co_c.deactivationDistance = co.deactivationDistance
+    co_c.deactivationDistance = co_py.deactivationDistance
 
     # ... threshold
-    co_c.threshold = co.threshold
+    co_c.threshold = co_py.threshold
 
     return co_c
 # ----------------------------------------------------------------------------
@@ -2736,17 +2848,23 @@ def connectivity_C2py(co_c):
     """
     Converts connectivity parameters from C to python.
 
-    :param  co_c:   (MPDS_CONNECTIVITY *) corresponding parameters (C struct)
-    :return co:     (Connectivity class) connectivity parameters (python)
-    """
+    Parameters
+    ----------
+    co_c : (MPDS_CONNECTIVITY *)
+        connectivity parameters in C
 
+    Returns
+    -------
+    co_py :class:`Connectivity`
+        connectivity parameters in python
+    """
     fname = 'connectivity_C2py'
 
     # ... connectivityConstraintUsage
     connectivityConstraintUsage = co_c.connectivityConstraintUsage
     if connectivityConstraintUsage == 0:
-        co = Connectivity()
-        return co
+        co_py = Connectivity()
+        return co_py
 
     # default parameters
     connectivityType = 'connect_face'
@@ -2792,7 +2910,7 @@ def connectivity_C2py(co_c):
     # ... threshold
     threshold = co_c.threshold
 
-    co = Connectivity(
+    co_py = Connectivity(
         connectivityConstraintUsage=connectivityConstraintUsage,
         connectivityType=connectivityType,
         nclass=nclass,
@@ -2805,36 +2923,42 @@ def connectivity_C2py(co_c):
         threshold=threshold
     )
 
-    return co
+    return co_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def blockData_py2C(bd):
+def blockData_py2C(bd_py):
     """
     Converts block data parameters from python to C.
 
-    :param bd:      (BlockData class) block data parameters (python)
-    :return bd_c:   (MPDS_BLOCKDATA *) corresponding parameters (C struct)
-    """
+    Parameters
+    ----------
+    bd_py :class:`BlockData`
+        block data parameters in python
 
+    Returns
+    -------
+    bd_c : (MPDS_BLOCKDATA *)
+        block data parameters in C
+    """
     bd_c = deesse.malloc_MPDS_BLOCKDATA()
     deesse.MPDSInitBlockData(bd_c)
 
     # ... blockDataUsage
-    bd_c.blockDataUsage = bd.blockDataUsage
-    if bd.blockDataUsage == 0:
+    bd_c.blockDataUsage = bd_py.blockDataUsage
+    if bd_py.blockDataUsage == 0:
         return bd_c
 
     # ... nblock
-    bd_c.nblock = bd.nblock
+    bd_c.nblock = bd_py.nblock
 
     # ... nnode, ix, iy, iz
-    bd_c.nnode = deesse.new_int_array(bd.nblock)
-    bd_c.ix = deesse.new_intp_array(bd.nblock)
-    bd_c.iy = deesse.new_intp_array(bd.nblock)
-    bd_c.iz = deesse.new_intp_array(bd.nblock)
+    bd_c.nnode = deesse.new_int_array(bd_py.nblock)
+    bd_c.ix = deesse.new_intp_array(bd_py.nblock)
+    bd_c.iy = deesse.new_intp_array(bd_py.nblock)
+    bd_c.iz = deesse.new_intp_array(bd_py.nblock)
 
-    for j, ni in enumerate(bd.nodeIndex):
+    for j, ni in enumerate(bd_py.nodeIndex):
         nn = len(ni) # = ni.shape[0]
         deesse.int_array_setitem(bd_c.nnode, j, nn)
         ix_c = deesse.new_int_array(nn)
@@ -2848,24 +2972,24 @@ def blockData_py2C(bd):
         deesse.intp_array_setitem(bd_c.iz, j, iz_c)
 
     # ... value
-    bd_c.value = deesse.new_real_array(bd.nblock)
+    bd_c.value = deesse.new_real_array(bd_py.nblock)
     deesse.mpds_set_real_vector_from_array(bd_c.value, 0,
-        np.asarray(bd.value).reshape(bd.nblock))
+        np.asarray(bd_py.value).reshape(bd_py.nblock))
 
     # ... tolerance
-    bd_c.tolerance = deesse.new_real_array(bd.nblock)
+    bd_c.tolerance = deesse.new_real_array(bd_py.nblock)
     deesse.mpds_set_real_vector_from_array(bd_c.tolerance, 0,
-        np.asarray(bd.tolerance).reshape(bd.nblock))
+        np.asarray(bd_py.tolerance).reshape(bd_py.nblock))
 
     # ... activatePropMin
-    bd_c.activatePropMin = deesse.new_real_array(bd.nblock)
+    bd_c.activatePropMin = deesse.new_real_array(bd_py.nblock)
     deesse.mpds_set_real_vector_from_array(bd_c.activatePropMin, 0,
-        np.asarray(bd.activatePropMin).reshape(bd.nblock))
+        np.asarray(bd_py.activatePropMin).reshape(bd_py.nblock))
 
     # ... activatePropMax
-    bd_c.activatePropMax = deesse.new_real_array(bd.nblock)
+    bd_c.activatePropMax = deesse.new_real_array(bd_py.nblock)
     deesse.mpds_set_real_vector_from_array(bd_c.activatePropMax, 0,
-        np.asarray(bd.activatePropMax).reshape(bd.nblock))
+        np.asarray(bd_py.activatePropMax).reshape(bd_py.nblock))
 
     return bd_c
 # ----------------------------------------------------------------------------
@@ -2875,15 +2999,21 @@ def blockData_C2py(bd_c):
     """
     Converts block data parameters from C to python.
 
-    :param bd_c:    (MPDS_BLOCKDATA *) corresponding parameters (C struct)
-    :return bd:     (BlockData class) block data parameters (python)
-    """
+    Parameters
+    ----------
+    bd_c : (MPDS_BLOCKDATA *)
+        block data parameters in C
 
+    Returns
+    -------
+    bd_py :class:`BlockData`
+        block data parameters in python
+    """
     # ... blockDataUsage
     blockDataUsage = bd_c.blockDataUsage
     if blockDataUsage == 0:
-        bd = BlockData()
-        return bd
+        bd_py = BlockData()
+        return bd_py
 
     # default parameters
     nblock = 0
@@ -2936,7 +3066,7 @@ def blockData_C2py(bd_c):
     activatePropMax = np.zeros(nblock, dtype=float)
     deesse.mpds_get_array_from_real_vector(bd_c.activatePropMax, 0, activatePropMax)
 
-    bd = BlockData(
+    bd_py = BlockData(
          blockDataUsage=blockDataUsage,
          nblock=nblock,
          nodeIndex=nodeIndex,
@@ -2946,25 +3076,29 @@ def blockData_C2py(bd_c):
          activatePropMax=activatePropMax
     )
 
-    return bd
+    return bd_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def pyramidGeneralParameters_py2C(pgp):
+def pyramidGeneralParameters_py2C(pgp_py):
     """
     Converts pyramid general parameters from python to C.
 
-    :param pgp:     (PyramidGeneralParameters class) pyramid general parameters
-                        (python)
-    :return pgp_c:  (MPDS_PYRAMIDGENERALPARAMETERS *) corresponding parameters
-                        (C struct)
-    """
+    Parameters
+    ----------
+    pgp_py :class:`PyramidGeneralParameters`
+        pyramid general parameters in python
 
+    Returns
+    -------
+    pgp_c : (MPDS_PYRAMIDGENERALPARAMETERS *)
+        pyramid general parameters in C
+    """
     pgp_c = deesse.malloc_MPDS_PYRAMIDGENERALPARAMETERS()
     deesse.MPDSInitPyramidGeneralParameters(pgp_c)
 
     # ... npyramidLevel
-    nl = int(pgp.npyramidLevel)
+    nl = int(pgp_py.npyramidLevel)
     pgp_c.npyramidLevel = nl
 
     # ... pyramidSimulationMode
@@ -2975,7 +3109,7 @@ def pyramidGeneralParameters_py2C(pgp):
         'pyramid_sim_none'             : deesse.PYRAMID_SIM_NONE
     }
     try:
-        pgp_c.pyramidSimulationMode = pyramidSimulationMode_dict[pgp.pyramidSimulationMode]
+        pgp_c.pyramidSimulationMode = pyramidSimulationMode_dict[pgp_py.pyramidSimulationMode]
     except:
         pgp_c.pyramidSimulationMode = pyramidSimulationMode_dict['pyramid_sim_none']
 
@@ -2984,22 +3118,22 @@ def pyramidGeneralParameters_py2C(pgp):
         pgp_c.kx = deesse.new_int_array(nl)
         deesse.mpds_set_int_vector_from_array(
             pgp_c.kx, 0,
-                np.asarray(pgp.kx, dtype='intc').reshape(nl))
+                np.asarray(pgp_py.kx, dtype='intc').reshape(nl))
 
         # ... ky
         pgp_c.ky = deesse.new_int_array(nl)
         deesse.mpds_set_int_vector_from_array(
             pgp_c.ky, 0,
-                np.asarray(pgp.ky, dtype='intc').reshape(nl))
+                np.asarray(pgp_py.ky, dtype='intc').reshape(nl))
 
         # ... kz
         pgp_c.kz = deesse.new_int_array(nl)
         deesse.mpds_set_int_vector_from_array(
             pgp_c.kz, 0,
-                np.asarray(pgp.kz, dtype='intc').reshape(nl))
+                np.asarray(pgp_py.kz, dtype='intc').reshape(nl))
 
         # ... factorNneighboringNode and factorDistanceThreshold ...
-        if pgp.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
+        if pgp_py.pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
             nn = 4*nl + 1
         else: # pyramidSimulationMode == 'all_level_one_by_one'
             nn = nl + 1
@@ -3008,19 +3142,19 @@ def pyramidGeneralParameters_py2C(pgp):
         pgp_c.factorNneighboringNode = deesse.new_double_array(nn)
         deesse.mpds_set_double_vector_from_array(
             pgp_c.factorNneighboringNode, 0,
-                np.asarray(pgp.factorNneighboringNode).reshape(nn))
+                np.asarray(pgp_py.factorNneighboringNode).reshape(nn))
 
         # ... factorDistanceThreshold
         pgp_c.factorDistanceThreshold = deesse.new_real_array(nn)
         deesse.mpds_set_real_vector_from_array(
             pgp_c.factorDistanceThreshold, 0,
-                np.asarray(pgp.factorDistanceThreshold).reshape(nn))
+                np.asarray(pgp_py.factorDistanceThreshold).reshape(nn))
 
         # ... factorMaxScanFraction
         pgp_c.factorMaxScanFraction = deesse.new_double_array(nl+1)
         deesse.mpds_set_double_vector_from_array(
             pgp_c.factorMaxScanFraction, 0,
-                np.asarray(pgp.factorMaxScanFraction).reshape(nl+1))
+                np.asarray(pgp_py.factorMaxScanFraction).reshape(nl+1))
 
     return pgp_c
 # ----------------------------------------------------------------------------
@@ -3030,17 +3164,21 @@ def pyramidGeneralParameters_C2py(pgp_c):
     """
     Converts pyramid general parameters from C to python.
 
-    :param pgp_c:   (MPDS_PYRAMIDGENERALPARAMETERS *) corresponding parameters
-                        (C struct)
-    :return pgp:    (PyramidGeneralParameters class) pyramid general parameters
-                        (python)
-    """
+    Parameters
+    ----------
+    pgp_c : (MPDS_PYRAMIDGENERALPARAMETERS *)
+        pyramid general parameters in C
 
+    Returns
+    -------
+    pgp_py :class:`PyramidGeneralParameters`
+        pyramid general parameters in python
+    """
     # ... npyramidLevel
     npyramidLevel = pgp_c.npyramidLevel
     if npyramidLevel == 0:
-        pgp = PyramidGeneralParameters()
-        return pgp
+        pgp_py = PyramidGeneralParameters()
+        return pgp_py
 
     # default parameters
     kx=None
@@ -3100,7 +3238,7 @@ def pyramidGeneralParameters_C2py(pgp_c):
         deesse.mpds_get_array_from_double_vector(pgp_c.factorMaxScanFraction, 0, factorMaxScanFraction)
         factorMaxScanFraction = factorMaxScanFraction.astype('float')
 
-    pgp = PyramidGeneralParameters(
+    pgp_py = PyramidGeneralParameters(
         npyramidLevel=npyramidLevel,
         kx=kx, ky=ky, kz=kz,
         pyramidSimulationMode=pyramidSimulationMode,
@@ -3109,25 +3247,31 @@ def pyramidGeneralParameters_C2py(pgp_c):
         factorMaxScanFraction=factorMaxScanFraction
     )
 
-    return pgp
+    return pgp_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def pyramidParameters_py2C(pp):
+def pyramidParameters_py2C(pp_py):
     """
     Converts pyramid parameters from python to C.
 
-    :param pp:      (PyramidParameters class) pyramid parameters (python)
-    :return pp_c:   (MPDS_PYRAMIDPARAMETERS *) corresponding parameters (C struct)
-    """
+    Parameters
+    ----------
+    pp_py :class:`PyramidParameters`
+        pyramid parameters in python
 
+    Returns
+    -------
+    pp_c : (MPDS_PYRAMIDPARAMETERS *)
+        pyramid parameters in C
+    """
     fname = 'pyramidParameters_py2C'
 
     pp_c = deesse.malloc_MPDS_PYRAMIDPARAMETERS()
     deesse.MPDSInitPyramidParameters(pp_c)
 
     # ... nlevel
-    pp_c.nlevel = int(pp.nlevel)
+    pp_c.nlevel = int(pp_py.nlevel)
 
     # ... pyramidType
     pyramidType_dict = {
@@ -3138,17 +3282,17 @@ def pyramidParameters_py2C(pp):
         'categorical_to_continuous' : deesse.PYRAMID_CATEGORICAL_TO_CONTINUOUS
     }
     try:
-        pp_c.pyramidType = pyramidType_dict[pp.pyramidType]
+        pp_c.pyramidType = pyramidType_dict[pp_py.pyramidType]
     except:
         print(f'ERROR ({fname}): pyramid type unknown')
         return None
 
-    if pp.pyramidType == 'categorical_custom':
+    if pp_py.pyramidType == 'categorical_custom':
         # ... classOfValues
-        pp_c.classOfValues = classInterval2classOfValues(pp.classInterval)
+        pp_c.classOfValues = classInterval2classOfValues(pp_py.classInterval)
 
     # ... outputLevelFlag
-    deesse.mpds_allocate_and_set_pyramid_outputLevelFlag(pp_c, np.array([int(i) for i in pp.outputLevelFlag], dtype='intc'))
+    deesse.mpds_allocate_and_set_pyramid_outputLevelFlag(pp_c, np.array([int(i) for i in pp_py.outputLevelFlag], dtype='intc'))
 
     return pp_c
 # ----------------------------------------------------------------------------
@@ -3158,17 +3302,23 @@ def pyramidParameters_C2py(pp_c):
     """
     Converts pyramid parameters from C to python.
 
-    :param pp_c:    (MPDS_PYRAMIDPARAMETERS *) corresponding parameters (C struct)
-    :return pp:     (PyramidParameters class) pyramid parameters (python)
-    """
+    Parameters
+    ----------
+    pp_c : (MPDS_PYRAMIDPARAMETERS *)
+        pyramid parameters in C
 
+    Returns
+    -------
+    pp_py :class:`PyramidParameters`
+        pyramid parameters in python
+    """
     fname = 'pyramidParameters_C2py'
 
     # ... nlevel
     nlevel = pp_c.nlevel
     if nlevel == 0:
-        pp = PyramidParameters()
-        return pp
+        pp_py = PyramidParameters()
+        return pp_py
 
     # default parameters
     pyramidType='none'
@@ -3200,7 +3350,7 @@ def pyramidParameters_C2py(pp_c):
     deesse.mpds_get_pyramid_outputLevelFlag(pp_c, outputLevelFlag)
     outputLevelFlag = outputLevelFlag.astype('bool')
 
-    pp = PyramidParameters(
+    pp_py = PyramidParameters(
          nlevel=nlevel,
          pyramidType=pyramidType,
          nclass=nclass,
@@ -3208,7 +3358,7 @@ def pyramidParameters_C2py(pp_c):
          outputLevelFlag=outputLevelFlag
     )
 
-    return pp
+    return pp_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -3216,10 +3366,16 @@ def deesse_input_py2C(deesse_input):
     """
     Converts deesse input from python to C.
 
-    :param deesse_input:    (DeesseInput class) deesse input - python
-    :return:                (MPDS_SIMINPUT *) deesse input - C
-    """
+    Parameters
+    ----------
+    deesse_input :class:`DeesseInput`
+        deesse input in python
 
+    Returns
+    -------
+    mpds_siminput : (MPDS_SIMINPUT *)
+        deesse input in C
+    """
     fname = 'deesse_input_py2C'
 
     nx = int(deesse_input.nx)
@@ -3891,10 +4047,16 @@ def deesse_input_C2py(mpds_siminput):
     """
     Converts deesse input from C to python.
 
-    :param mpds_siminput:   (MPDS_SIMINPUT *) deesse input - C
-    :return:                (DeesseInput class) deesse input - python
-    """
+    Parameters
+    ----------
+    mpds_siminput : (MPDS_SIMINPUT *)
+        deesse input in C
 
+    Returns
+    -------
+    deesse_input :class:`DeesseInput`
+        deesse input in python
+    """
     fname = 'deesse_input_C2py'
 
     # simName
@@ -4426,17 +4588,19 @@ def deesse_input_C2py(mpds_siminput):
 # ----------------------------------------------------------------------------
 def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
     """
-    Get deesse output for python from C.
+    Converts deesse output from C to python.
 
-    :param mpds_simoutput:  (MPDS_SIMOUTPUT *) simulation output - (C struct)
-                                contains output of deesse simulation
-    :param mpds_progressMonitor:
-                            (MPDS_PROGRESSMONITOR *) progress monitor - (C struct)
-                                contains output messages (warnings) of deesse
-                                simulation
+    Parameters
+    ----------
+    mpds_simoutput : (MPDS_SIMOUTPUT *)
+        deesse output in C
+    mpds_progressMonitor : (MPDS_PROGRESSMONITOR *)
+        progress monitor in C
 
-    :return deesse_output:
-        (dict)
+    Returns
+    -------
+    deesse_output : dict
+        deesse output in python, dictionary
             {'sim':sim,
              'sim_var_original_index':sim_var_original_index,
              'sim_pyramid':sim_pyramid,
@@ -4448,111 +4612,84 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
              'tiIndex':tiIndex,
              'nwarning':nwarning,
              'warnings':warnings}
-
-        With nreal = mpds_simoutput->nreal (number of realizations):
-
-        sim:    (1-dimensional array of Img (class) of size nreal or None)
-                    sim[i]: i-th realisation,
-                        k-th variable stored refers to
-                            - the original variable sim_var_original_index[k]
-                        (get from mpds_simoutput->outputSimImage[0])
-                    (sim is None if mpds_simoutput->outputSimImage is NULL)
-
-        sim_var_original_index:
-                (1-dimensional array of ints or None)
-                    sim_var_original_index[k]: index of the original variable
-                        (given in deesse_input) of the k-th variable stored in
-                        in sim[i] for any i
-                        (array of length array of length sim[*].nv,
-                        get from mpds_simoutput->originalVarIndex)
-                    (sim_var_original_index is None if
-                    mpds_simoutput->originalVarIndex is NULL)
-
-        sim_pyramid:
-                (list or None) realizations in pyramid levels (depends on input
-                parameters given in deesse_input); if pyramid was used and output
-                in pyramid required:
-                    sim_pyramid[j]:
-                        (1-dimensional array of Img (class) of size nreal or None)
-                        sim_pyramid[j][i]: i-th realisation in pyramid level of
-                            index j+1, k-th variable stored refers to
-                                - the original variable
-                                    sim_pyramid_var_original_index[j][k]
-                                - and pyramid index
-                                    sim_pyramid_var_pyramid_index[j][k]
-                            (get from
-                            mpds_simoutput->outputSimImagePyramidLevel[j])
-                        (sim_pyramid[j] is None if
-                        mpds_simoutput->outputSimImagePyramidLevel[j] is NULL)
-                (sim_pyramid is None otherwise)
-
-        sim_pyramid_var_original_index:
-                (list or None) index of original variable for realizations in
-                pyramid levels (depends on input parameters given in
-                deesse_input); if pyramid was used and output in pyramid required:
-                    sim_pyramid_var_original_index[j]:
-                        (1-dimensional array of ints or None)
-                        sim_pyramid_var_original_index[j][k]: index of the
-                            original variable (given in deesse_input) of the k-th
-                            variable stored in sim_pyramid[j][i], for any i
-                            (array of length array of length sim_pyramid[j][*].nv,
-                            get from
-                            mpds_simoutput->originalVarIndexPyramidLevel[j])
-                        (sim_pyramid_var_original_index[j] is None if
-                        mpds_simoutput->originalVarIndexPyramidLevel[j] is NULL)
-                (sim_pyramid_var_original_index is None otherwise)
-
-        sim_pyramid_var_pyramid_index:
-                (list or None) pyramid index of original variable for
-                realizations in pyramid levels (depends on input parameters given
-                in deesse_input); if pyramid was used and output in pyramid
-                required:
-                    sim_pyramid_var_pyramid_index[j]:
-                        (1-dimensional array of ints or None)
-                        sim_pyramid_var_pyramid_index[j][k]: pyramid index of
-                            original variable (given in deesse_input) of the k-th
-                            variable stored in sim_pyramid[j][i], for any i
-                            (array of length array of length sim_pyramid[j][*].nv,
-                            get from
-                            mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j])
-                        (sim_pyramid_var_pyramid_index[j] is None if
-                        mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j]
-                        is NULL)
-                (sim_pyramid_var_pyramid_index is None otherwise)
-
-        path:   (1-dimensional array of Img (class) of size nreal or None)
-                    path[i]: path index map for the i-th realisation
-                        (mpds_simoutput->outputPathIndexImage[0])
-                    (path is None if mpds_simoutput->outputPathIndexImage is NULL)
-
-        error:   (1-dimensional array of Img (class) of size nreal or None)
-                    error[i]: error map for the i-th realisation
-                        (mpds_simoutput->outputErrorImage[0])
-                    (error is None if mpds_simoutput->outputErrorImage is NULL)
-
-        tiGridNode:
-                (1-dimensional array of Img (class) of size nreal or None)
-                    tiGridNode[i]: TI grid node index map for the i-th realisation
-                        (mpds_simoutput->outputTiGridNodeIndexImage[0])
-                    (tiGridNode is None if
-                    mpds_simoutput->outputTiGridNodeIndexImage is NULL)
-
-        tiIndex:
-                (1-dimensional array of Img (class) of size nreal or None)
-                    tiIndex[i]: TI index map for the i-th realisation
-                        (mpds_simoutput->outputTiIndexImage[0])
-                    (tiIndex is None if
-                    mpds_simoutput->outputTiIndexImage is NULL)
-
-        nwarning:
-                (int) total number of warning(s) encountered
-                    (same warnings can be counted several times)
-
-        warnings:
-                (list of strings) list of distinct warnings encountered
-                    (can be empty)
+        with (`nreal=mpds_simoutput->nreal`, the number of realization(s)):
+        sim: 1D array of :class:`geone.img.Img` of shape (nreal,)
+            `sim[i]`: i-th realisation,
+                k-th variable stored refers to
+                    - the original variable `sim_var_original_index[k]`
+                (get from `mpds_simoutput->outputSimImage[0]`)
+            note: `sim=None` if `mpds_simoutput->outputSimImage=NULL`
+        sim_var_original_index : 1D array of ints
+            `sim_var_original_index[k]`: index of the original variable
+                (given in deesse_input) of the k-th variable stored in
+                in `sim[i]` for any i
+                (array of length `sim[*].nv`,
+                get from `mpds_simoutput->originalVarIndex`)
+            note: `sim_var_original_index=None`
+            if `mpds_simoutput->originalVarIndex=NULL`
+        sim_pyramid : list, optional
+            realizations in pyramid levels (depends on input parameters given in
+            deesse_input); if pyramid was used and output in pyramid required:
+                `sim_pyramid[j]` : 1D array of `nreal` `:class:`geone.img.Img`
+                (or None):
+                    `sim_pyramid[j][i]`: i-th realisation in pyramid level of
+                        index j+1, k-th variable stored refers to
+                            - the original variable
+                                `sim_pyramid_var_original_index[j][k]`
+                            - and pyramid index
+                                `sim_pyramid_var_pyramid_index[j][k]`
+                        (get from
+                        `mpds_simoutput->outputSimImagePyramidLevel[j]`)
+                    note: `sim_pyramid[j]=None` if
+                    `mpds_simoutput->outputSimImagePyramidLevel[j]=NULL`
+        sim_pyramid_var_original_index : list, optional
+            index of original variable for realizations in pyramid levels
+            (depends on input parameters given in deesse_input); if pyramid was
+            used and output in pyramid required:
+                `sim_pyramid_var_original_index[j]` : 1D array of ints (or None):
+                    `sim_pyramid_var_original_index[j][k]`: index of the
+                        original variable (given in deesse_input) of the k-th
+                        variable stored in `sim_pyramid[j][i]`, for any i
+                        (array of length sim_pyramid[j][*].nv,
+                        get from
+                        `mpds_simoutput->originalVarIndexPyramidLevel[j]`)
+                    note: `sim_pyramid_var_original_index[j]=None` if
+                    `mpds_simoutput->originalVarIndexPyramidLevel[j]=NULL`
+        sim_pyramid_var_pyramid_index : list, optional
+            pyramid index of original variable for realizations in pyramid levels
+            (depends on input parameters given in deesse_input); if pyramid was
+            used and output in pyramid required:
+                `sim_pyramid_var_pyramid_index[j]` : 1D array of ints (or None):
+                    `sim_pyramid_var_pyramid_index[j][k]`: pyramid index of
+                        original variable (given in deesse_input) of the k-th
+                        variable stored in `sim_pyramid[j][i]`, for any i
+                        (array of length `sim_pyramid[j][*].nv`,
+                        get from
+                        `mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j]`)
+                    note: `sim_pyramid_var_pyramid_index[j]=None` if
+                    `mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j]=NULL`
+        path : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `path[i]`: path index map for the i-th realisation
+            (`mpds_simoutput->outputPathIndexImage[0]`)
+            note: `path=None` if `mpds_simoutput->outputPathIndexImage=NULL`
+        error : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `error[i]`: error map for the i-th realisation
+            (`mpds_simoutput->outputErrorImage[0]`)
+            note: `error=None` if `mpds_simoutput->outputErrorImage=NULL`
+        tiGridNode : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `tiGridNode[i]`: TI grid node index map for the i-th realisation
+            (`mpds_simoutput->outputTiGridNodeIndexImage[0]`)
+            note: `tiGridNode=None` if `mpds_simoutput->outputTiGridNodeIndexImage=NULL`
+        tiIndex : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `tiIndex[i]`: TI index map for the i-th realisation
+            (`mpds_simoutput->outputTiIndexImage[0]`)
+            note: `tiIndex=None` if `mpds_simoutput->outputTiIndexImage=NULL`
+        nwarning : int
+            total number of warning(s) encountered (same warnings can be counted
+            several times)
+        warnings : list of strs
+            list of distinct warnings encountered (can be empty)
     """
-
     # Initialization
     sim, sim_var_original_index = None, None
     sim_pyramid, sim_pyramid_var_original_index, sim_pyramid_var_pyramid_index = None, None, None
@@ -4748,30 +4885,33 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
     """
     Launches deesse.
 
-    :param deesse_input:
-                (DeesseInput (class)): deesse input parameter (python)
+    Parameters
+    ----------
+    deesse_input :class:`DeesseInput`
+        deesse input in python
+    add_data_point_to_mask : bool, default: True
+        - if True: any grid cell that contains a data point is added to (the
+        simulated part of) the mask (if present), i.e. mask value at those cells
+        are set to 1; at the end of the computation the "new mask cells" are
+        removed (by setting a missing value (`numpy.nan`) for the variable out of
+        the original mask)
+        - if False: original mask is kept as given in input, and data point
+        falling out of (the simulated part of) the mask (if present) are ignored
+    nthreads : int, default: -1
+        number of thread(s) to use for C program;
+        `nthreads = -n <= 0`: maximal number of threads of the system except n
+        (but at least 1)
+    verbose : int, default: 2
+        verbose mode, higher implies more printing (info):
+        - 0: no display
+        - 1: only errors
+        - 2: errors and warnings
+        - 3 (or >2): version, progress, and warning(s) encountered
 
-    :param add_data_point_to_mask:
-                        (bool) indicating if grid cells out of the mask (simulated
-                        part, if used) contains some data points (if present) are
-                        added to the mask for the computation (this allows to
-                        account for such data points, otherwise they are ignored);
-                        at the end of the computation, the new mask cell are (if
-                        any) are removed
-
-    :param nthreads:
-                (int) number of thread(s) to use for deesse (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
-    :param verbose:
-                (int) indicates what is displayed during the deesse run:
-                    - 0: mininal display
-                    - 1: only errors
-                    - 2: version and warning(s) encountered
-                    - 3 (or >2): version, progress, and warning(s) encountered
-
-    :return deesse_output:
-        (dict)
+    Returns
+    -------
+    deesse_output : dict
+        deesse output in python, dictionary
             {'sim':sim,
              'sim_var_original_index':sim_var_original_index,
              'sim_pyramid':sim_pyramid,
@@ -4783,111 +4923,84 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
              'tiIndex':tiIndex,
              'nwarning':nwarning,
              'warnings':warnings}
-
-        With nreal = deesse_input.nrealization:
-
-        sim:    (1-dimensional array of Img (class) of size nreal or None)
-                    sim[i]: i-th realisation,
-                        k-th variable stored refers to
-                            - the original variable sim_var_original_index[k]
-                        (get from mpds_simoutput->outputSimImage[0])
-                    (sim is None if mpds_simoutput->outputSimImage is NULL)
-
-        sim_var_original_index:
-                (1-dimensional array of ints or None)
-                    sim_var_original_index[k]: index of the original variable
-                        (given in deesse_input) of the k-th variable stored in
-                        in sim[i] for any i
-                        (array of length array of length sim[*].nv,
-                        get from mpds_simoutput->originalVarIndex)
-                    (sim_var_original_index is None if
-                    mpds_simoutput->originalVarIndex is NULL)
-
-        sim_pyramid:
-                (list or None) realizations in pyramid levels (depends on input
-                parameters given in deesse_input); if pyramid was used and output
-                in pyramid required:
-                    sim_pyramid[j]:
-                        (1-dimensional array of Img (class) of size nreal or None)
-                        sim_pyramid[j][i]: i-th realisation in pyramid level of
-                            index j+1, k-th variable stored refers to
-                                - the original variable
-                                    sim_pyramid_var_original_index[j][k]
-                                - and pyramid index
-                                    sim_pyramid_var_pyramid_index[j][k]
-                            (get from
-                            mpds_simoutput->outputSimImagePyramidLevel[j])
-                        (sim_pyramid[j] is None if
-                        mpds_simoutput->outputSimImagePyramidLevel[j] is NULL)
-                (sim_pyramid is None otherwise)
-
-        sim_pyramid_var_original_index:
-                (list or None) index of original variable for realizations in
-                pyramid levels (depends on input parameters given in
-                deesse_input); if pyramid was used and output in pyramid required:
-                    sim_pyramid_var_original_index[j]:
-                        (1-dimensional array of ints or None)
-                        sim_pyramid_var_original_index[j][k]: index of the
-                            original variable (given in deesse_input) of the k-th
-                            variable stored in sim_pyramid[j][i], for any i
-                            (array of length array of length sim_pyramid[j][*].nv,
-                            get from
-                            mpds_simoutput->originalVarIndexPyramidLevel[j])
-                        (sim_pyramid_var_original_index[j] is None if
-                        mpds_simoutput->originalVarIndexPyramidLevel[j] is NULL)
-                (sim_pyramid_var_original_index is None otherwise)
-
-        sim_pyramid_var_pyramid_index:
-                (list or None) pyramid index of original variable for
-                realizations in pyramid levels (depends on input parameters given
-                in deesse_input); if pyramid was used and output in pyramid
-                required:
-                    sim_pyramid_var_pyramid_index[j]:
-                        (1-dimensional array of ints or None)
-                        sim_pyramid_var_pyramid_index[j][k]: pyramid index of
-                            original variable (given in deesse_input) of the k-th
-                            variable stored in sim_pyramid[j][i], for any i
-                            (array of length array of length sim_pyramid[j][*].nv,
-                            get from
-                            mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j])
-                        (sim_pyramid_var_pyramid_index[j] is None if
-                        mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j]
-                        is NULL)
-                (sim_pyramid_var_pyramid_index is None otherwise)
-
-        path:   (1-dimensional array of Img (class) of size nreal or None)
-                    path[i]: path index map for the i-th realisation
-                        (mpds_simoutput->outputPathIndexImage[0])
-                    (path is None if mpds_simoutput->outputPathIndexImage is NULL)
-
-        error:   (1-dimensional array of Img (class) of size nreal or None)
-                    error[i]: error map for the i-th realisation
-                        (mpds_simoutput->outputErrorImage[0])
-                    (error is None if mpds_simoutput->outputErrorImage is NULL)
-
-        tiGridNode:
-                (1-dimensional array of Img (class) of size nreal or None)
-                    tiGridNode[i]: TI grid node index map for the i-th realisation
-                        (mpds_simoutput->outputTiGridNodeIndexImage[0])
-                    (tiGridNode is None if
-                    mpds_simoutput->outputTiGridNodeIndexImage is NULL)
-
-        tiIndex:
-                (1-dimensional array of Img (class) of size nreal or None)
-                    tiIndex[i]: TI index map for the i-th realisation
-                        (mpds_simoutput->outputTiIndexImage[0])
-                    (tiIndex is None if
-                    mpds_simoutput->outputTiIndexImage is NULL)
-
-        nwarning:
-                (int) total number of warning(s) encountered
-                    (same warnings can be counted several times)
-
-        warnings:
-                (list of strings) list of distinct warnings encountered
-                    (can be empty)
+        with `nreal=deesse_input.nrealization`:
+        sim: 1D array of :class:`geone.img.Img` of shape (nreal,)
+            `sim[i]`: i-th realisation,
+                k-th variable stored refers to
+                    - the original variable `sim_var_original_index[k]`
+                (get from `mpds_simoutput->outputSimImage[0]`)
+            note: `sim=None` if `mpds_simoutput->outputSimImage=NULL`
+        sim_var_original_index : 1D array of ints
+            `sim_var_original_index[k]`: index of the original variable
+                (given in deesse_input) of the k-th variable stored in
+                in `sim[i]` for any i
+                (array of length `sim[*].nv`,
+                get from `mpds_simoutput->originalVarIndex`)
+            note: `sim_var_original_index=None`
+            if `mpds_simoutput->originalVarIndex=NULL`
+        sim_pyramid : list, optional
+            realizations in pyramid levels (depends on input parameters given in
+            deesse_input); if pyramid was used and output in pyramid required:
+                `sim_pyramid[j]` : 1D array of `nreal` `:class:`geone.img.Img`
+                (or None):
+                    `sim_pyramid[j][i]`: i-th realisation in pyramid level of
+                        index j+1, k-th variable stored refers to
+                            - the original variable
+                                `sim_pyramid_var_original_index[j][k]`
+                            - and pyramid index
+                                `sim_pyramid_var_pyramid_index[j][k]`
+                        (get from
+                        `mpds_simoutput->outputSimImagePyramidLevel[j]`)
+                    note: `sim_pyramid[j]=None` if
+                    `mpds_simoutput->outputSimImagePyramidLevel[j]=NULL`
+        sim_pyramid_var_original_index : list, optional
+            index of original variable for realizations in pyramid levels
+            (depends on input parameters given in deesse_input); if pyramid was
+            used and output in pyramid required:
+                `sim_pyramid_var_original_index[j]` : 1D array of ints (or None):
+                    `sim_pyramid_var_original_index[j][k]`: index of the
+                        original variable (given in deesse_input) of the k-th
+                        variable stored in `sim_pyramid[j][i]`, for any i
+                        (array of length sim_pyramid[j][*].nv,
+                        get from
+                        `mpds_simoutput->originalVarIndexPyramidLevel[j]`)
+                    note: `sim_pyramid_var_original_index[j]=None` if
+                    `mpds_simoutput->originalVarIndexPyramidLevel[j]=NULL`
+        sim_pyramid_var_pyramid_index : list, optional
+            pyramid index of original variable for realizations in pyramid levels
+            (depends on input parameters given in deesse_input); if pyramid was
+            used and output in pyramid required:
+                `sim_pyramid_var_pyramid_index[j]` : 1D array of ints (or None):
+                    `sim_pyramid_var_pyramid_index[j][k]`: pyramid index of
+                        original variable (given in deesse_input) of the k-th
+                        variable stored in `sim_pyramid[j][i]`, for any i
+                        (array of length `sim_pyramid[j][*].nv`,
+                        get from
+                        `mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j]`)
+                    note: `sim_pyramid_var_pyramid_index[j]=None` if
+                    `mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j]=NULL`
+        path : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `path[i]`: path index map for the i-th realisation
+            (`mpds_simoutput->outputPathIndexImage[0]`)
+            note: `path=None` if `mpds_simoutput->outputPathIndexImage=NULL`
+        error : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `error[i]`: error map for the i-th realisation
+            (`mpds_simoutput->outputErrorImage[0]`)
+            note: `error=None` if `mpds_simoutput->outputErrorImage=NULL`
+        tiGridNode : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `tiGridNode[i]`: TI grid node index map for the i-th realisation
+            (`mpds_simoutput->outputTiGridNodeIndexImage[0]`)
+            note: `tiGridNode=None` if `mpds_simoutput->outputTiGridNodeIndexImage=NULL`
+        tiIndex : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `tiIndex[i]`: TI index map for the i-th realisation
+            (`mpds_simoutput->outputTiIndexImage[0]`)
+            note: `tiIndex=None` if `mpds_simoutput->outputTiIndexImage=NULL`
+        nwarning : int
+            total number of warning(s) encountered (same warnings can be counted
+            several times)
+        warnings : list of strs
+            list of distinct warnings encountered (can be empty)
     """
-
     fname = 'deesseRun'
 
     if not deesse_input.ok:
@@ -4901,7 +5014,7 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
     else:
         nth = nthreads
 
-    if deesse_input.mask is not None and add_data_point_to_mask:
+    if deesse_input.mask is not None and add_data_point_to_mask and deesse_input.dataPointSet is not None:
         # Make a copy of the original mask, to remove value in added mask cell at the end
         mask_original = np.copy(deesse_input.mask)
         # Add cell to mask if needed
@@ -4978,7 +5091,7 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
     #deesse.MPDSFree(mpds_progressMonitor)
     deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if deesse_input.mask is not None and add_data_point_to_mask:
+    if deesse_input.mask is not None and add_data_point_to_mask and deesse_input.dataPointSet is not None:
         # Remove the value out of the original mask (using its copy see above)
         for im in deesse_output['sim']:
             im.val[:, mask_original==0.0] = np.nan
@@ -4998,166 +5111,38 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
 # ----------------------------------------------------------------------------
 def deesseRun_mp(deesse_input, add_data_point_to_mask=True, nproc=None, nthreads_per_proc=None, verbose=2):
     """
-    Launches deesse through multiple processes.
+    Computes the same as the function `deesseRun`, using multiprocessing.
 
-    Launches multiple processes (based on multiprocessing package):
-        - nproc parallel processes using each one nthreads_per_proc threads will
-            be launched [parallel calls of the function deesseRun],
-        - the set of realizations (specified by deesse_input.nrealization) is
-            distributed in a balanced way over the processes,
-        - in terms of resources, this implies the use of
-            nproc * nthreads_per_proc cpu(s).
+    All the parameters are the same as those of the function `deesseRun`,
+    except `nthreads` that is replaced by the parameters `nproc` and
+    `nthreads_per_proc`.
 
-    :param deesse_input:
-                (DeesseInput (class)): deesse input parameter (python)
+    This function launches multiple processes (based on `multiprocessing`
+    package):
+    - `nproc` parallel processes using each one `nthreads_per_proc` threads
+    are launched [parallel calls of the function `deesseRun`];
+    - the set of realizations (specified by `nreal`) is distributed in a
+    balanced way over the processes;
+    - in terms of resources, this implies the use of `nproc*nthreads_per_proc`
+    cpu(s).
 
-    :param add_data_point_to_mask:
-                        (bool) indicating if grid cells out of the mask (simulated
-                        part, if used) contains some data points (if present) are
-                        added to the mask for the computation (this allows to
-                        account for such data points, otherwise they are ignored);
-                        at the end of the computation, the new mask cell are (if
-                        any) are removed
-    :param nproc:
-                (int) number of processes (can be modified in the function)
-                    nproc = None: nproc is set to
-                        min(nmax-1, nreal) (but at least 1),
-                    where nmax is the total number of cpu(s) of the system
-                    (retrieved by multiprocessing.cpu_count()), and
-                    nreal is the number of realization (deesse_input.nrealization)
+    Parameters
+    ----------
+    (new parameters)
+    nproc : int, optional
+        number of processes; by default (`None`):
+        `nproc` is set to `min(nmax-1, nreal)` (but at least 1), where nmax is
+        the total number of cpu(s) of the system (retrieved by
+        `multiprocessing.cpu_count()`)
+    nthreads_per_proc : int, optional
+        number of thread(s) per process (should be > 0); by default (`None`):
+        `nthreads_per_proc` is automatically computed as the maximal integer
+        (but at least 1) such that `nproc*nthreads_per_proc <= nmax-1`, where
+        nmax is the total number of cpu(s) of the system (retrieved by
+        `multiprocessing.cpu_count()`)
 
-    :param nthreads_per_proc:
-                (int) number of thread(s) per process (should be > 0 or None):
-                    nthreads_per_proc = None: nthreads_per_proc is automatically
-                    computed as the maximal integer (but at least 1) such that
-                            nproc * nthreads_per_proc <= nmax-1
-                    where nmax is the total number of cpu(s) of the system
-                    (retrieved by multiprocessing.cpu_count())
-
-    :param verbose:
-                (int) indicates what information is displayed:
-                    - 0: mininal display
-                    - 1: only errors (and note(s))
-                    - 2: version and warning(s) encountered
-
-    :return deesse_output:
-        (dict)
-            {'sim':sim,
-             'sim_var_original_index':sim_var_original_index,
-             'sim_pyramid':sim_pyramid,
-             'sim_pyramid_var_original_index':sim_pyramid_var_original_index,
-             'sim_pyramid_var_pyramid_index':sim_pyramid_var_pyramid_index,
-             'path':path,
-             'error':error,
-             'tiGridNode':tiGridNode,
-             'tiIndex':tiIndex,
-             'nwarning':nwarning,
-             'warnings':warnings}
-
-        With nreal = deesse_input.nrealization:
-
-        sim:    (1-dimensional array of Img (class) of size nreal or None)
-                    sim[i]: i-th realisation,
-                        k-th variable stored refers to
-                            - the original variable sim_var_original_index[k]
-                        (get from mpds_simoutput->outputSimImage[0])
-                    (sim is None if mpds_simoutput->outputSimImage is NULL)
-
-        sim_var_original_index:
-                (1-dimensional array of ints or None)
-                    sim_var_original_index[k]: index of the original variable
-                        (given in deesse_input) of the k-th variable stored in
-                        in sim[i] for any i
-                        (array of length array of length sim[*].nv,
-                        get from mpds_simoutput->originalVarIndex)
-                    (sim_var_original_index is None if
-                    mpds_simoutput->originalVarIndex is NULL)
-
-        sim_pyramid:
-                (list or None) realizations in pyramid levels (depends on input
-                parameters given in deesse_input); if pyramid was used and output
-                in pyramid required:
-                    sim_pyramid[j]:
-                        (1-dimensional array of Img (class) of size nreal or None)
-                        sim_pyramid[j][i]: i-th realisation in pyramid level of
-                            index j+1, k-th variable stored refers to
-                                - the original variable
-                                    sim_pyramid_var_original_index[j][k]
-                                - and pyramid index
-                                    sim_pyramid_var_pyramid_index[j][k]
-                            (get from
-                            mpds_simoutput->outputSimImagePyramidLevel[j])
-                        (sim_pyramid[j] is None if
-                        mpds_simoutput->outputSimImagePyramidLevel[j] is NULL)
-                (sim_pyramid is None otherwise)
-
-        sim_pyramid_var_original_index:
-                (list or None) index of original variable for realizations in
-                pyramid levels (depends on input parameters given in
-                deesse_input); if pyramid was used and output in pyramid required:
-                    sim_pyramid_var_original_index[j]:
-                        (1-dimensional array of ints or None)
-                        sim_pyramid_var_original_index[j][k]: index of the
-                            original variable (given in deesse_input) of the k-th
-                            variable stored in sim_pyramid[j][i], for any i
-                            (array of length array of length sim_pyramid[j][*].nv,
-                            get from
-                            mpds_simoutput->originalVarIndexPyramidLevel[j])
-                        (sim_pyramid_var_original_index[j] is None if
-                        mpds_simoutput->originalVarIndexPyramidLevel[j] is NULL)
-                (sim_pyramid_var_original_index is None otherwise)
-
-        sim_pyramid_var_pyramid_index:
-                (list or None) pyramid index of original variable for
-                realizations in pyramid levels (depends on input parameters given
-                in deesse_input); if pyramid was used and output in pyramid
-                required:
-                    sim_pyramid_var_pyramid_index[j]:
-                        (1-dimensional array of ints or None)
-                        sim_pyramid_var_pyramid_index[j][k]: pyramid index of
-                            original variable (given in deesse_input) of the k-th
-                            variable stored in sim_pyramid[j][i], for any i
-                            (array of length array of length sim_pyramid[j][*].nv,
-                            get from
-                            mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j])
-                        (sim_pyramid_var_pyramid_index[j] is None if
-                        mpds_simoutput->pyramidIndexOfOriginalVarPyramidLevel[j]
-                        is NULL)
-                (sim_pyramid_var_pyramid_index is None otherwise)
-
-        path:   (1-dimensional array of Img (class) of size nreal or None)
-                    path[i]: path index map for the i-th realisation
-                        (mpds_simoutput->outputPathIndexImage[0])
-                    (path is None if mpds_simoutput->outputPathIndexImage is NULL)
-
-        error:   (1-dimensional array of Img (class) of size nreal or None)
-                    error[i]: error map for the i-th realisation
-                        (mpds_simoutput->outputErrorImage[0])
-                    (error is None if mpds_simoutput->outputErrorImage is NULL)
-
-        tiGridNode:
-                (1-dimensional array of Img (class) of size nreal or None)
-                    tiGridNode[i]: TI grid node index map for the i-th realisation
-                        (mpds_simoutput->outputTiGridNodeIndexImage[0])
-                    (tiGridNode is None if
-                    mpds_simoutput->outputTiGridNodeIndexImage is NULL)
-
-        tiIndex:
-                (1-dimensional array of Img (class) of size nreal or None)
-                    tiIndex[i]: TI index map for the i-th realisation
-                        (mpds_simoutput->outputTiIndexImage[0])
-                    (tiIndex is None if
-                    mpds_simoutput->outputTiIndexImage is NULL)
-
-        nwarning:
-                (int) total number of warning(s) encountered
-                    (same warnings can be counted several times)
-
-        warnings:
-                (list of strings) list of distinct warnings encountered
-                    (can be empty)
+    See function `deesseRun`.
     """
-
     fname = 'deesseRun_mp'
 
     if not deesse_input.ok:
@@ -5194,7 +5179,7 @@ def deesseRun_mp(deesse_input, add_data_point_to_mask=True, nproc=None, nthreads
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
         print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
-    if deesse_input.mask is not None and add_data_point_to_mask:
+    if deesse_input.mask is not None and add_data_point_to_mask and deesse_input.dataPointSet is not None:
         # Make a copy of the original mask, to remove value in added mask cell at the end
         mask_original = np.copy(deesse_input.mask)
         # Add cell to mask if needed
@@ -5359,7 +5344,7 @@ def deesseRun_mp(deesse_input, add_data_point_to_mask=True, nproc=None, nthreads
             for k in range(tiIndex[i].nv):
                 tiIndex[i].varname[k] = tiIndex[i].varname[k][:-ndigit] + f'{i:0{ndigit}d}'
 
-    if deesse_input.mask is not None and add_data_point_to_mask:
+    if deesse_input.mask is not None and add_data_point_to_mask and deesse_input.dataPointSet is not None:
         # Remove the value out of the original mask (using its copy see above)
         for im in sim:
             im.val[:, mask_original==0.0] = np.nan
@@ -5391,27 +5376,30 @@ def exportDeesseInput(
         endofline='\n',
         verbose=1):
     """
-    Exports deesse input as ASCII files (in the directory named <dirname>).
+    Exports deesse input in txt (ASCII) files (in the directory `dirname`).
+
     The command line version of deesse can then be launched from the directory
-    <dirname> by using the generated ASCII files.
+    `dirname` by using the generated txt files.
 
-    :param deesse_input:    (DeesseInput class) deesse input - python
-    :param dirname:         (string) name of the directory in which the files
-                                will be written; if not existing, it will be
-                                created;
-                                WARNING: the generated files might erase already
-                                existing ones!
-    :param fileprefix:      (string) prefix for generated files, the main input
-                                file will be <dirname>/<fileprefix>.in
-    :param endofline:       (string) end of line string to be used for the deesse
-                                input file
-    :param verbose:         (int) indicates which degree of detail is used when
-                                writing comments in the deesse input file
-                                - 0: no comment
-                                - 1: basic comments
-                                - 2: detailed comments
+    Parameters
+    ----------
+    deesse_input :class:`DeesseInput`
+        deesse input in python
+    dirname : str, default: 'input_ascii'
+        name of the directory in which the files will be written;
+        if not existing, it will be created;
+        WARNING: the generated files might erase already existing ones!
+    fileprefix : str, default: 'ds'
+        prefix for generated files, the main input file will be
+        "`dirname`/`fileprefix`.in"
+    endofline : str, default: '\n'
+        end of line character
+    verbose : int, default: 2
+        verbose mode for comments in the written main input file:
+        - 0: no comment
+        - 1: basic comments
+        - 2: detailed comments
     """
-
     fname = 'exportDeesseInput'
 
     if not deesse_input.ok:
@@ -5450,20 +5438,26 @@ def exportDeesseInput(
 # ----------------------------------------------------------------------------
 def importDeesseInput(filename, dirname='.'):
     """
-    Imports deesse input from ASCII files, used for command line version of
-    deesse (from the directory named <dirname>).
+    Imports deesse input from txt (ASCII) files.
 
-    :param filename:        (string) name of the general input ASCII file
-                                (without path) used for the command line
-                                version of deesse
-    :param dirname:         (string) name of the directory in which the input
-                                ASCII files are stored (and from which the
-                                command line version of deesse would be
-                                launched)
+    The files used for command line version of deesse (from the directory named
+    `dirname`) are read and the corresponding deesse input in python is
+    returned.
 
-    :param deesse_input:    (DeesseInput class) deesse input - python
+    Parameters
+    ----------
+    filename : str
+        name of the main input txt (ASCII) file (without path) used for the
+        command line version of deesse
+    dirname : str, default: '.'
+        name of the directory in which the main input txt (ASCII) file is stored
+        (and from which the command line version of deesse would be launched)
+
+    Returns
+    -------
+    deesse_input :class:`DeesseInput`
+        deesse input in python
     """
-
     fname = 'importDeesseInput'
 
     # Check directory
@@ -5521,6 +5515,7 @@ def imgPyramidImage(
         nthreads=-1):
     """
     Computes the Gaussian (pyramid) reduction or expansion of the input image.
+
     This function applies the Gaussian pyramid reduction or expansion to all
     variables (treated as continuous) of the input image, and returns an output
     image with the same number of variables, whose the names are the same as the
@@ -5533,57 +5528,54 @@ def imgPyramidImage(
     along x, y, z-axis will be divided (resp. multiplied) by a factor (of about)
     kx, ky, kz respectively if reduction (resp. expansion) is applied.
 
-    :param input_image:
-                    (Img class) input image
-    :param operation:
-                    (string) operation to apply, either 'reduce' (default)
-                        or 'expand'
+    Parameters
+    ----------
+    input_image : :class:`geone.img.Img`
+        input image
+    operation : str {'reduce', 'expand'}, default: 'reduce'
+        operation to apply
+    kx, ky, kz : ints, optional
+        reduction step along x, y, z-direction:
+            k[x|y|z] = 0: nothing is done, same dimension in output
+            k[x|y|z] = 1: same dimension in output (with weighted average
+                          over 3 nodes)
+            k[x|y|z] = 2: classical gaussian pyramid
+            k[x|y|z] > 2: generalized gaussian pyramid
+        By defaut (`None`): the reduction step will be set to 2 in directions
+        where the input image grid has more than one cell, and to 0 in other
+        directions
+    w0x, w0y, w0z : floats, optional
+        weight for central cell in the kernel (filter) when computing average
+        during Gaussian pyramid operation in x,y,z-direction;
+        specifying a positive value or zero implies to explicitly set the weight;
+        by default (`None`) or if a negative value is set: the default weight
+        derived from proportionality with Gaussian weights (binomial
+        coefficients) will be used
+   minWeight : float, optional
+        minimal weight on informed cells within the filter to define output
+        value: when applying the moving weighted average, if the total weight
+        on informed cells within the kernel (filter) is less than `minWeight`,
+        undefined value (`numpy.nan`) is set as output value, otherwise the
+        weighted average is set;
+        specifying a positive value or zero implies to explicitly set the
+        minimal weight;
+        by default (`None`) or if a negative value is set: a default minimal
+        weight will be used;
+        note: the default minimal weight is
+        `geone.deesse_core.deesse.MPDS_GAUSSIAN_PYRAMID_RED_TOTAL_WEIGHT_MIN`
+        for reduction, and
+        `geone.deesse_core.deesse.MPDS_GAUSSIAN_PYRAMID_EXP_TOTAL_WEIGHT_MIN`
+        for expansion
+    nthreads : int, default: -1
+        number of thread(s) to use for C program;
+        `nthreads = -n <= 0`: maximal number of threads of the system except n
+        (but at least 1)
 
-    :param kx, ky, kz:
-                    (ints) reduction step along x, y, z-direction:
-                            k[x|y|z] = 0: nothing is done, same dimension
-                                            in output
-                            k[x|y|z] = 1: same dimension in output (with
-                                            weighted average over 3 nodes)
-                            k[x|y|z] = 2: classical gaussian pyramid
-                            k[x|y|z] > 2: generalized gaussian pyramid
-                        By defaut (None), the reduction step will be set to 2 in
-                        directions where the input image grid has more than one
-                        cell, and to 0 in other directions
-
-    :param w0x, w0y, w0z:
-                    (floats) weight for central cell in the kernel (filter) when
-                        computing average during Gaussian pyramid operation in
-                        x,y,z-direction; specifying None (default) or a negative
-                        value, the default weight derived from proportionality
-                        with Gaussian weights (binomial coefficients) will be
-                        used; specifying a positive value or zero implies to
-                        explicitly set the weight to that value
-
-   :param minWeight:
-                    (float) minimal weight on informed cells within the filter to
-                        define output value: when applying the moving weighted
-                        average, if the total weight on informed cells within the
-                        kernel (filter) is less than minWeight, undefined value
-                        (np.nan) is set as output value, otherwise the weigted
-                        average is set; specifiying None (default) or a negative
-                        value, a default minimal weight will be used; specifying
-                        a positive value or zero implies to explicitly set the
-                        minimal weight to that value;
-                        Note: the default minimal weight is
-                        geone.deesse_core.deesse.MPDS_GAUSSIAN_PYRAMID_RED_TOTAL_WEIGHT_MIN
-                        for reduction, and
-                        geone.deesse_core.deesse.MPDS_GAUSSIAN_PYRAMID_EXP_TOTAL_WEIGHT_MIN
-                        for expansion
-
-    :param nthreads:
-                    (int) number of thread(s) to use for program (C),
-                        (nthreads = -n <= 0: for maximal number of threads
-                        except n, but at least 1)
-
-    :return output_image:   (Img class) output image
+    Returns
+    -------
+    output_image : :class:`geone.img.Img`
+        output image (see above)
     """
-
     fname = 'imgPyramidImage'
 
     # --- Check
@@ -5692,37 +5684,42 @@ def imgCategoricalToContinuous(
         zConnectFlag=None,
         nthreads=-1):
     """
-    Transforms the desired variable(s), considered as categorical, from the input
-    image, into "continuous" variable(s) (with values in [0, 1]), and returns the
-    corresponding output image. The transformation for a variable with n
-    categories is done such that:
-        - each category in input will correspond to a distinct output value
-            in {i/(n-1), i=0, ..., n-1}
-        - the output values are set such that "closer values correspond to better
-            connected (more contact btw.) categories"
-        - this is the transformation done by deesse when pyramid is used with
-            pyramid type ('pyramidType') set to 'categorical_to_continuous'.
+    Transforms variable(s) of an image from "categorical" to "continuous".
 
-    :param input_image: (Img class) input image
+    Transforms the desired variable(s), considered as "categorical", from the
+    input image, into "continuous" variable(s) (with values in [0, 1]), and
+    returns the corresponding output image. The transformation for a variable
+    with n categories is done such that:
+    - each category in input will correspond to a distinct output value
+        in {i/(n-1), i=0, ..., n-1}
+    - the output values are set such that "closer values correspond to better
+        connected (more contact btw.) categories"
+    - this is the transformation done by deesse when pyramid is used with
+        pyramid type ('pyramidType') set to 'categorical_to_continuous'.
 
-    :param varInd:      (sequence of ints or int or None) index-es of the
-                            variables for which the transformation has to be done
+    Parameters
+    ----------
+    input_image : :class:`geone.img.Img`
+        input image
+    varInd : sequence of ints, or int, optional
+        index(es) of the variables for which the transformation has to be done;
+        by default: all variables are transformed
+    xConnectFlag, yConnectFlag, zConnectFlag : bools, optional
+        flags indicating if the connction (contact btw.) categories are
+        accounted for in x, y, z-direction (corresponding flag set to True)
+        or not (corresponding flag set to False);
+        by default (`None`), these flags will be set to True, provided that the
+        number of cells in the corresponding direction is greater than 1
+    nthreads : int, default: -1
+        number of thread(s) to use for C program;
+        `nthreads = -n <= 0`: maximal number of threads of the system except n
+        (but at least 1)
 
-    :param xConnectFlag, yConnectFlag, zConnectFlag:
-                        (bool) flag indicating if the connction (contact btw.)
-                            categories are accounted for in x, y, z-direction
-                            (corresponding flag set to True) or not (corresponding
-                            flag set to False); By default (None), these flag will
-                            be set to True, provided that the number of cells in
-                            the corresponding direction is greater than 1
-
-    :param nthreads:    (int) number of thread(s) to use for program (C),
-                            (nthreads = -n <= 0: for maximal number of threads
-                            except n, but at least 1)
-
-    :return output_image:   (Img class) output image
+    Returns
+    -------
+    output_image : :class:`geone.img.Img`
+        output image (see above)
     """
-
     fname = 'imgCategoricalToContinuous'
 
     # --- Check
@@ -5834,178 +5831,166 @@ def imgCategoricalToContinuous(
 # ============================================================================
 class DeesseXInputSectionPath(object):
     """
-    Defines section mode and path for cross-simulation (deesseX):
-        sectionMode:
-            (string) section mode, defining which type of section will be
-                simulated alternately, possible values:
-                    'section_xy_xz_yz',
-                    'section_xy_yz_xz',
-                    'section_xz_xy_yz',
-                    'section_xz_yz_xy',
-                    'section_yz_xy_xz',
-                    'section_yz_xz_xy',
-                    'section_xy_xz',
-                    'section_xz_xy',
-                    'section_xy_yz',
-                    'section_yz_xy',
-                    'section_xz_yz',
-                    'section_yz_xz',
-                    'section_xy_z',
-                    'section_z_xy',
-                    'section_xz_y',
-                    'section_y_xz',
-                    'section_yz_x',
-                    'section_x_yz',
-                    'section_x_y_z',
-                    'section_x_z_y',
-                    'section_y_x_z',
-                    'section_y_z_x',
-                    'section_z_x_y',
-                    'section_z_y_x',
-                    'section_x_y',
-                    'section_y_x',
-                    'section_x_z',
-                    'section_z_x',
-                    'section_y_z',
-                    'section_z_y'
-                'section_<t_1>_<t_2>[_<t_3>]': means that simulation in 2D
-                    (resp. 1D) will be done alternately in sections parallel to
-                    the plane (resp. axis) given in the string '<t_i>';
-                notes:
-                    - the order can matter (depending on sectionPathMode)
-                    - the mode involving only two 1D axis as section (i.e.
-                        'section_x_y' to 'section_z_y') can be used for a
-                        two-dimensional simulation grid
+    Class defining main input parameters for cross-simulation (deesseX).
 
-        sectionPathMode:
-            (string) section path mode, defining the section path, i.e. the
-                succession of simulated section, possible values:
-                - 'section_path_random': random section path
-
-                - 'section_path_pow_2': indexes (of cells locating the section)
-                    in the orthogonal direction of the sections, are chosen as
-                    decreasing power of 2 (dealing alternately with each section
-                    orientation in the order given by sectionMode)
-
-                - 'section_path_subdiv': succession of sections is defined as:
-                    (a) for each section orientation (in the order given by
-                        sectionMode), the section corresponding to the most left
-                        border (containing the origin) of the simulation grid is
-                        selected
-                    (b) let minspaceX, minspaceY, minspaceZ (see parameters
-                        below), the minimal space (or step) in number of cells
-                        along x, y, z axis resp. between two successive sections
-                        of the same type and orthogonal to x, y, z axis resp.:
-                        (i) for each section orientation (in the order given by
-                            sectionMode): the section(s) corresponding to the
-                            most right border (face or edge located at one largest
-                            index in the corresponding direction) of the
-                            simulation grid is selected, provided that the space
-                            (step) with the previous section (selected in (a))
-                            satisfies the minimal space in the relevant direction
-                        (ii) for each section orientation (in the order given by
-                            sectionMode): the sections between the borders are
-                            selected, such that they are regularly spaced along
-                            any direction (with a difference of at most one cell)
-                            and such that the minimal space is satisfied (i.e.
-                            the number of cell from one section to the next one
-                            is at least equal to corresponding parameter
-                            minspaceX, minspaceY or minspaceZ)
-                        (iii) for each section orientation (in the order given by
-                            sectionMode): if in step (i) the right border was not
-                            selected (due to a space less than the minimal space
-                            paremeter(s)), then it is selected here
-                        note that at the end of step (b), there are at least two
-                        sections of same type along any axis direction (having
-                        more than one cell in the entire simulation grid)
-                    (c) next, the middle sections (along each direction) between
-                        each pair of consecutive sections already selected are
-                        selected, until the entire simulation grid is filled,
-                        following one of the two methods (see parameter
-                        balancedFillingFlag below):
-                        - if balancedFillingFlag is False:
-                            considering alternately each section orientation, in
-                            the order given by sectionMode,
-                        - if balancedFillingFlag is True:
-                            choosing the axis direction (x, y, or z) for which
-                            the space (in number of cells) between two
-                            consecutive sections already selected is the largest,
-                            then selecting the section orientation(s) (among
-                            those given by sectionMode) orthogonal to that
-                            direction, and considering the middle sections with
-                            respect to that direction
-
-                    - 'section_path_manual':  succession of sections explicitly
-                        given (see nsection, sectionType and sectionLoc below)
-
-        minSpaceX:
-            used iff sectionPathMode is set to 'section_path_subdiv',
-            (float) minimal space in number of cells along x direction,
-                in step (b) above;
-                note:
-                    - if minSpaceX > 0: use as it in step (b)
-                    - if minSpaceX = 0: ignore (skip) step (b,ii) for x direction
-                    - if minSpaceX < 0: this parameter is automatically computed,
-                        and defined as the "range" in the x direction computed
-                        from the training image(s) used in section(s) including
-                        the x direction
-
-        minSpaceY:
-            (float) same as minSpaceX, but in y direction
-
-        minSpaceZ:
-            (float) same as minSpaceZ, but in z direction
-
-        balancedFillingFlag:
-            used iff sectionPathMode is set to 'section_path_subdiv',
-            (bool) boolean flag defining the method used in step (c) above
-
-        nsection:
-            used iff sectionPathMode is set to 'section_path_manual',
-            (int) number of section(s) to be simulated at toatl [sections
-                (2D and/or 1D)]
-                note: a partial filling of the simulation grid can be considered
-
-        sectionType:
-            used iff sectionPathMode is set to 'section_path_manual',
-            (sequence of ints of length nsection) indexes identifying the type
-                of sections:
-                - sectionType[i]: type id of the i-th simulated section,
-                    0 <= i < nsectionm, with:
-                        id = 0: xy section (2D)
-                        id = 1: xz section (2D)
-                        id = 2: yz section (2D)
-                        id = 3: z section (1D)
-                        id = 4: y section (1D)
-                        id = 5: x section (1D)
-
-        sectionLoc:
-            used iff sectionPathMode is set to 'section_path_manual',
-            (sequence of ints of length nsection) indexes location of sections:
-                - sectionLoc[i]: location of the i-th simulated section,
-                    0 <= i < nsection, with:
-                    - if sectionType[i] = 0 (xy), then
-                        sectionLoc[i]=k in {0, ..., nz-1},
-                        k is the index location along x axis
-                    - if sectionType[i] = 1 (xz), then
-                        sectionLoc[i]=k in {0, ..., ny-1},
-                        k is the index location along y axis
-                    - if sectionType[i] = 2 (yz), then
-                        sectionLoc[i]=k in {0, ..., nx-1},
-                        k is the index location along z axis
-                    - if sectionType[i] = 3 (z), then
-                        sectionLoc[i]=k in {0, ..., nx*ny-1},
-                        (k%nx, k//nx) is the two index locations in xy section
-                    - if sectionType[i] = 4 (y), then
-                        sectionLoc[i]=k in {0, ..., nx*nz-1},
-                        (k%nx, k//nx) is the two index locations in xz section
-                    - if sectionType[i] = 5 (x), then
-                        sectionLoc[i]=k in {0, ..., ny*nz-1},
-                        (k%ny, k//ny) is the two index locations in yz section
-                    and with nx, ny, nz the number of nodes in the entire
-                    simulation grid along x, y, z axis respectively
+    Attributes
+    ----------
+    sectionMode: str {'section_xy_xz_yz',
+                      'section_xy_yz_xz',
+                      'section_xz_xy_yz',
+                      'section_xz_yz_xy',
+                      'section_yz_xy_xz',
+                      'section_yz_xz_xy',
+                      'section_xy_xz',
+                      'section_xz_xy',
+                      'section_xy_yz',
+                      'section_yz_xy',
+                      'section_xz_yz',
+                      'section_yz_xz',
+                      'section_xy_z',
+                      'section_z_xy',
+                      'section_xz_y',
+                      'section_y_xz',
+                      'section_yz_x',
+                      'section_x_yz',
+                      'section_x_y_z',
+                      'section_x_z_y',
+                      'section_y_x_z',
+                      'section_y_z_x',
+                      'section_z_x_y',
+                      'section_z_y_x',
+                      'section_x_y',
+                      'section_y_x',
+                      'section_x_z',
+                      'section_z_x',
+                      'section_y_z',
+                      'section_z_y'}, default: 'section_xz_yz'
+        section mode, defining which type of section will be simulated
+        alternately: 'section_<t_1>_<t_2>[_<t_3>]': means that simulation in 2D
+        (resp. 1D) will be done alternately in sections parallel to the plane
+        (resp. axis) given in the string '<t_i>';
+        notes:
+        - the order can matter (depending on `sectionPathMode`)
+        - the mode involving only two 1D axis as section (i.e. 'section_x_y' to
+        'section_z_y') can be used for a two-dimensional simulation grid
+    sectionPathMode : str {'section_path_random', 'section_path_pow_2',
+                        'section_path_subdiv', 'section_path_manual'},
+                        default: 'section_path_subdiv'
+        section path mode, defining the section path, i.e. the succession of
+        simulated sections:
+        - 'section_path_random': random section path
+        - 'section_path_pow_2': indexes (of cells locating the section)
+            in the orthogonal direction of the sections, are chosen as
+            decreasing power of 2 (dealing alternately with each section
+            orientation in the order given by `sectionMode`)
+        - 'section_path_subdiv': succession of sections is defined as:
+            (a) for each section orientation (in the order given by
+                `sectionMode`), the section corresponding to the most left
+                border (containing the origin) of the simulation grid is
+                selected
+            (b) let minspaceX, minspaceY, minspaceZ (see parameters
+                below), the minimal space (or step) in number of cells
+                along x, y, z axis resp. between two successive sections
+                of the same type and orthogonal to x, y, z axis resp.:
+                (i) for each section orientation (in the order given by
+                    `sectionMode`): the section(s) corresponding to the
+                    most right border (face or edge located at one largest
+                    index in the corresponding direction) of the
+                    simulation grid is selected, provided that the space
+                    (step) with the previous section (selected in (a))
+                    satisfies the minimal space in the relevant direction
+                (ii) for each section orientation (in the order given by
+                    `sectionMode`): the sections between the borders are
+                    selected, such that they are regularly spaced along
+                    any direction (with a difference of at most one cell)
+                    and such that the minimal space is satisfied (i.e.
+                    the number of cell from one section to the next one
+                    is at least equal to corresponding parameter
+                    minspaceX, minspaceY or minspaceZ)
+                (iii) for each section orientation (in the order given by
+                    `sectionMode`): if in step (i) the right border was not
+                    selected (due to a space less than the minimal space
+                    paremeter(s)), then it is selected here
+                note that at the end of step (b), there are at least two
+                sections of same type along any axis direction (having
+                more than one cell in the entire simulation grid)
+            (c) next, the middle sections (along each direction) between
+                each pair of consecutive sections already selected are
+                selected, until the entire simulation grid is filled,
+                following one of the two methods (see parameter
+                `balancedFillingFlag`):
+                - if `balancedFillingFlag=False`:
+                    considering alternately each section orientation, in
+                    the order given by `sectionMode`,
+                - if `balancedFillingFlag=True`:
+                    choosing the axis direction (x, y, or z) for which
+                    the space (in number of cells) between two
+                    consecutive sections already selected is the largest,
+                    then selecting the section orientation(s) (among
+                    those given by `sectionMode`) orthogonal to that
+                    direction, and considering the middle sections with
+                    respect to that direction
+            - 'section_path_manual': succession of sections explicitly
+                given (see parameters `nsection`, `sectionType` and
+                `sectionLoc`)
+    minSpaceX : float, optional
+        used iff `sectionPathMode='section_path_subdiv'`,
+        minimal space in number of cells along x direction, in step (b) above;
+        note:
+        - if `minSpaceX > 0`: use as it in step (b)
+        - if `minSpaceX = 0`: ignore (skip) step (b,ii) for x direction
+        - if `minSpaceX < 0`: this parameter is automatically computed,
+            and defined as the "range" in the x direction computed
+            from the training image(s) used in section(s) including
+            the x direction
+    minSpaceY : float, optional
+        same as `minSpaceX`, but in y direction
+    minSpaceZ : float, optional
+        same as `minSpaceX`, but in z direction
+    balancedFillingFlag : bool, default: True
+        used iff `sectionPathMode='section_path_subdiv'`,
+        flag defining the method used in step (c) above
+    nsection : int, default: 0
+        used iff `sectionPathMode='section_path_manual'`,
+        number of section(s) to be simulated at total [sections (2D and/or 1D)];
+        note: a partial filling of the simulation grid can be considered
+    sectionType : sequence of ints of length `nsection`, optional
+        used iff `sectionPathMode='section_path_manual'`,
+        indexes identifying the type of sections:
+        - `sectionType[i]`: type id of the i-th simulated section,
+        for 0 <= i < `nsection`, with:
+            id = 0: xy section (2D)
+            id = 1: xz section (2D)
+            id = 2: yz section (2D)
+            id = 3: z section (1D)
+            id = 4: y section (1D)
+            id = 5: x section (1D)
+    sectionLoc : sequence of ints of length `nsection`, optional
+        used iff `sectionPathMode='section_path_manual'`,
+        indexes location of sections:
+        - `sectionLoc[i]`: location of the i-th simulated section,
+        for 0 <= i < `nsection`, with:
+            - if sectionType[i] = 0 (xy), then
+                sectionLoc[i]=k in {0, ..., nz-1},
+                k is the index location along x axis
+            - if sectionType[i] = 1 (xz), then
+                sectionLoc[i]=k in {0, ..., ny-1},
+                k is the index location along y axis
+            - if sectionType[i] = 2 (yz), then
+                sectionLoc[i]=k in {0, ..., nx-1},
+                k is the index location along z axis
+            - if sectionType[i] = 3 (z), then
+                sectionLoc[i]=k in {0, ..., nx*ny-1},
+                (k%nx, k//nx) is the two index locations in xy section
+            - if sectionType[i] = 4 (y), then
+                sectionLoc[i]=k in {0, ..., nx*nz-1},
+                (k%nx, k//nx) is the two index locations in xz section
+            - if sectionType[i] = 5 (x), then
+                sectionLoc[i]=k in {0, ..., ny*nz-1},
+                (k%ny, k//ny) is the two index locations in yz section
+            and with nx, ny, nz the number of nodes in the entire
+            simulation grid along x, y, z axis respectively
     """
-
     def __init__(self,
                  sectionMode='section_xz_yz',
                  sectionPathMode='section_path_subdiv',
@@ -6016,6 +6001,11 @@ class DeesseXInputSectionPath(object):
                  nsection=0,
                  sectionType=None,
                  sectionLoc=None):
+        """
+        Inits an instance of the class.
+        """
+        fname = 'DeesseXInputSectionPath'
+
         # sectionMode
         sectionMode_avail = (
             'section_xy_xz_yz',
@@ -6049,8 +6039,6 @@ class DeesseXInputSectionPath(object):
             'section_y_z',
             'section_z_y'
         )
-
-        fname = 'DeesseXInputSectionPath'
 
         if sectionMode not in sectionMode_avail:
             print(f'ERROR ({fname}): unknown sectionMode')
@@ -6143,163 +6131,111 @@ class DeesseXInputSectionPath(object):
 # ============================================================================
 class DeesseXInputSection(object):
     """
-    Defines input parameters for one section type (deesseX):
-        nx, ny, nz: (ints) number of cells in each direction in the entire
-                        simulation grid (SG);
-                        should be consistent with the "parent" DeesseXInput class
-                        (as defined in the "parent" DeesseXInput class)
+    Class input parameters for one section type (deesseX).
 
-        nv:         (int) number of variable(s) / attribute(s);
-                        should be consistent with the "parent" DeesseXInput class
-                        (as defined in the "parent" DeesseXInput class)
-
-        distanceType:
-                    (list (or 1-dimensional array) of ints or strings of size nv)
-                        distance type (between pattern) for each variable
-                        (as defined in the "parent" DeesseXInput class)
-
-        sectionType:
-                    (string or int) type of section, possible values:
-                        - 'xy' or 'XY' or 0: 2D section parallel to the plane xy
-                        - 'xz' or 'XZ' or 1: 2D section parallel to the plane xz
-                        - 'yz' or 'YZ' or 2: 2D section parallel to the plane yz
-                        - 'z' or 'Z' or 3:   1D section parallel to the axis z
-                        - 'y' or 'Y' or 4:   1D section parallel to the axis y
-                        - 'x' or 'X' or 5:   1D section parallel to the axis x
-
-        nTI:        (int)
-                        as in DeesseInput class (see this class)
-
-        TI:         (1-dimensional array of Img (class))
-                        as in DeesseInput class (see this class)
-
-        simGridAsTiFlag:
-                    (1-dimensional array of 'bool')
-                        as in DeesseInput class (see this class)
-
-        pdfTI:      ((nTI, nz, ny, nx) array of floats)
-                        as in DeesseInput class (see this class);
-
-        homothetyUsage:
-                    (int)
-                        as in DeesseInput class (see this class)
-
-        homothetyXLocal, homothetyYLocal, homothetyZLocal:
-                    (bool)
-                        as in DeesseInput class (see this class)
-
-        homothetyXRatio, homothetyYRatio, homothetyZRatio:
-                    (nd array or None)
-                        as in DeesseInput class (see this class)
-                        note: if given "locally", the dimension of the
-                        entire simulation grid is considered
-
-        rotationUsage:
-                    (int)
-                        as in DeesseInput class (see this class)
-
-        rotationAzimuthLocal, rotationDipLocal, rotationPlungeLocal:
-                    (bool)
-                        as in DeesseInput class (see this class)
-
-        rotationAzimuth, rotationDip, rotationPlunge:
-                    (nd array or None)
-                        as in DeesseInput class (see this class)
-                        note: if given "locally", the dimension of the
-                        entire simulation grid is considered
-
-        searchNeighborhoodParameters:
-                    (1-dimensional array of SearchNeighborhoodParameters (class)
-                        of size nv) as in DeesseInput class (see this class);
-
-        nneighboringNode:
-                    (1-dimensional array of ints of size nv)
-                        as in DeesseInput class (see this class);
-
-        maxPropInequalityNode:
-                    (1-dimensional array of doubles of size nv)
-                        as in DeesseInput class (see this class);
-
-        neighboringNodeDensity:
-                    (1-dimensional array of doubles of size nv)
-                        as in DeesseInput class (see this class);
-
-        simType:    (string)
-                        as in DeesseInput class (see this class);
-                        note: defining the type of simulation within the section
-
-        simPathType:
-                    (string)
-                        as in DeesseInput class (see this class);
-                        note: defining the type of path within the section
-
-        simPathStrength:
-                    (double)
-                        as in DeesseInput class (see this class);
-                        note: defining the type of path within the section
-
-        simPathPower:
-                    (double)
-                        as in DeesseInput class (see this class);
-                        note: defining the type of path within the section
-
-        simPathUnilateralOrder:
-                    (1-dimesional array of ints)
-                        as in DeesseInput class (see this class);
-                        note: defining the type of path within the section
-
-        distanceThreshold:
-                    (1-dimensional array of floats of size nv)
-                        as in DeesseInput class (see this class);
-
-        softProbability:
-                    (1-dimensional array of SoftProbability (class) of size nv)
-                        as in DeesseInput class (see this class);
-
-        maxScanFraction:
-                    (1-dimensional array of doubles of size nTI)
-                        as in DeesseInput class (see this class);
-
-        pyramidGeneralParameters:
-                    (PyramidGeneralParameters (class))
-                        as in DeesseInput class (see this class);
-                        note: defining the general pyramid parameters
-                        for the simulation within the section
-
-        pyramidParameters:
-                    (1-dimensional array of PyramidParameters (class) of size nv)
-                        as in DeesseInput class (see this class);
-                        note: defining the pyramid parameters
-                        for the simulation within the section
-
-        tolerance:  (float)
-                        as in DeesseInput class (see this class);
-
-        npostProcessingPathMax:
-                    (int)
-                        as in DeesseInput class (see this class);
-
-        postProcessingNneighboringNode:
-                    (1-dimensional array of ints of size nv)
-                        as in DeesseInput class (see this class);
-
-        postProcessingNeighboringNodeDensity:
-                    (1-dimensional array of doubles of size nv)
-                        as in DeesseInput class (see this class);
-
-        postProcessingDistanceThreshold:
-                    (1-dimensional array of floats of size nv)
-                        as in DeesseInput class (see this class);
-
-        postProcessingMaxScanFraction:
-                    (1-dimensional array of doubles of size nTI)
-                        as in DeesseInput class (see this class);
-
-        postProcessingTolerance:
-                    (float)
-                        as in DeesseInput class (see this class);
+    Attributes
+    ----------
+    nx, ny, nz : ints, default: 0, 0, 0
+        number of cell in each direction in the entire simulation grid (SG);
+        should be consistent with the "parent" DeesseXInput class
+        (as defined in the "parent" DeesseXInput class)
+    nv : int, default: 0
+        number of variable(s) / attribute(s);
+        should be consistent with the "parent" DeesseXInput class
+        (as defined in the "parent" DeesseXInput class)
+    distanceType : [sequence of] int(s) or str(s), optional
+        type of distance (between pattern) for each variable
+        (as defined in the "parent" DeesseXInput class)
+    sectionType : str or int, optional
+        type of section, possible values:
+            - 'xy' or 'XY' or 0: 2D section parallel to the plane xy
+            - 'xz' or 'XZ' or 1: 2D section parallel to the plane xz
+            - 'yz' or 'YZ' or 2: 2D section parallel to the plane yz
+            - 'z' or 'Z' or 3:   1D section parallel to the axis z
+            - 'y' or 'Y' or 4:   1D section parallel to the axis y
+            - 'x' or 'X' or 5:   1D section parallel to the axis x
+    nTI : int, optional
+        as in :class:`DeesseInput`
+    TI : [sequence of] :class:`geone.img.Img`
+        as in :class:`DeesseInput`
+    simGridAsTiFlag : [sequence of] bool(s), optional
+        as in :class:`DeesseInput`
+    pdfTI : array-like of floats, optional
+        as in :class:`DeesseInput`
+    homothetyUsage : int, default: 0
+        as in :class:`DeesseInput`
+    homothetyXLocal : bool, default: False
+        as in :class:`DeesseInput`
+    homothetyXRatio: array-like of floats, or float, optional
+        as in :class:`DeesseInput`
+        note: if given "locally", the dimension of the entire SG is considered
+    homothetyYLocal, homothetyYRatio :
+        as in :class:`DeesseInput`
+    homothetyZLocal, homothetyZRatio :
+        as in :class:`DeesseInput`
+    rotationUsage : int, default: 0
+        as in :class:`DeesseInput`
+    rotationAzimuthLocal : bool, default: False
+        as in :class:`DeesseInput`
+        note: if given "locally", the dimension of the entire SG is considered
+    rotationAzimuth : array-like of floats, or float, optional
+        as in :class:`DeesseInput`
+    rotationDipLocal, rotationDip :
+        as in :class:`DeesseInput`
+    rotationPlungeLocal, rotationPlunge :
+        as in :class:`DeesseInput`
+    searchNeighborhoodParameters : [sequence of] :class:`SearchNeighborhoodParameters`, optional
+        as in :class:`DeesseInput`
+    nneighboringNode : [sequence of] int(s), optional
+        as in :class:`DeesseInput`
+    maxPropInequalityNode : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    neighboringNodeDensity : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    simType : str {'sim_one_by_one', 'sim_variable_vector'}, default: 'sim_one_by_one'
+        as in :class:`DeesseInput`
+        note: defines the type of simulation within the section
+    simPathType : str {'random',
+        as in :class:`DeesseInput`
+        note: defines the type of path within the section
+    simPathStrength : double, optional
+        as in :class:`DeesseInput`
+        note: defines the type of path within the section
+    simPathPower : double, optional
+        as in :class:`DeesseInput`
+        note: defines the type of path within the section
+    simPathUnilateralOrder : sequence of ints, optional
+        as in :class:`DeesseInput`
+        note: defines the type of path within the section
+    distanceThreshold : [sequence of] float(s), optional
+        as in :class:`DeesseInput`
+    softProbability : [sequence of] :class:`SoftProbability`, optional
+        as in :class:`DeesseInput`
+    maxScanFraction : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    pyramidGeneralParameters : :class:`PyramidGeneralParameters`, optional
+        as in :class:`DeesseInput`
+        note: defining the general pyramid parameters for the simulation within
+        the section
+    pyramidParameters : [sequence of] :class:`PyramidParameters`, optional
+        as in :class:`DeesseInput`
+        note: defining the pyramid parameters for the simulation within
+        the section
+    tolerance : float, default: 0.0
+        as in :class:`DeesseInput`
+    npostProcessingPathMax : int, default: 0
+        as in :class:`DeesseInput`
+    postProcessingNneighboringNode : [sequence of] int(s), optional
+        as in :class:`DeesseInput`
+    postProcessingNeighboringNodeDensity : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    postProcessingDistanceThreshold : [sequence of] float(s), optional
+        as in :class:`DeesseInput`
+    postProcessingMaxScanFraction : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    postProcessingTolerance : float, default: 0.0
+        as in :class:`DeesseInput`
     """
-
     def __init__(self,
                  nx=0, ny=0, nz=0,
                  nv=0, distanceType=None,
@@ -6333,7 +6269,9 @@ class DeesseXInputSection(object):
                  postProcessingDistanceThreshold=None,
                  postProcessingMaxScanFraction=None,
                  postProcessingTolerance=0.0):
-
+        """
+        Inits an instance of the class.
+        """
         fname = 'DeesseXInputSection'
 
         self.ok = False # flag to "validate" the class [temporary to False]
@@ -6924,135 +6862,92 @@ class DeesseXInputSection(object):
 # ============================================================================
 class DeesseXInput(object):
     """
-    Defines general input parameters for deesseX (cross-simulation/X-simulation):
-        simName:    (str) simulation name (not useful)
-        nx, ny, nz: (ints) number of simulation grid (SG) cells in each direction
-                        as in DeesseInput class (see this class)
-        sx, sy, sz: (floats) cell size in each direction
-                        as in DeesseInput class (see this class)
-        ox, oy, oz: (floats) origin of the SG (bottom-lower-left corner)
-                        as in DeesseInput class (see this class)
-        nv:         (int) number of variable(s) / attribute(s), should be
-                        at least 1
-                        as in DeesseInput class (see this class)
+    Class defining main input parameters for deesseX (cross-simulation/X-simulation).
 
-        varname:    (list of strings of length nv) variable names
-                        as in DeesseInput class (see this class)
+    Attributes
+    ----------
+    simName : str, default: 'deesseX_py'
+        simulation name (useless)
+    nx, ny, nz : ints, default: 0, 0, 0
+        as in :class:`DeesseInput`
+    sx, sy, sz : floats, default: 1.0, 1.0, 1.0
+        as in :class:`DeesseInput`
+    ox, oy, oz : floats, default: 0.0, 0.0, 0.0
+        as in :class:`DeesseInput`
+    nv : int, default: 0
+        as in :class:`DeesseInput`
+    varname : sequence of strs of length `nv`, optional
+        as in :class:`DeesseInput`
+    outputVarFlag : sequence of bools of length `nv`, optional
+        as in :class:`DeesseInput`
+    outputSectionTypeFlag : bool, default: False
+        indicates if "section type" map(s) is (are) retrieved in output;
+        one file per realization if `sectionPathMode='section_path_random'`,
+        and one file in all otherwise (same for each realization);
+        "section type" is an index identifiying the type of section;
+        see `sectionPath_parameters` (below) and
+        `sectionPathMode` and `sectionType` in :class:`DeesseXInputSectionPath`
+    outputSectionStepFlag : bool, default: False
+        indicates if "section step" map(s) is (are) retrieved in output;
+        one file per realization if `sectionPathMode='section_path_random'`,
+        and one file in all otherwise (same for each realization;
+        "section step" is the step index of simulation by deesse of (a bunch of)
+        sections of same type;
+        see `sectionPath_parameters` (below) and
+        `sectionPathMode` in :class:`DeesseXInputSectionPath`
+    outputReportFlag : bool, default: False
+        as in :class:`DeesseInput`
+    outputReportFileName : str, optional
+        as in :class:`DeesseInput`
+    dataImage : sequence of :class:`geone.img.Img`, optional
+        as in :class:`DeesseInput`
+    dataPointSet : sequence of :class:`geone.img.PointSet`, optional
+        as in :class:`DeesseInput`
+    mask : array-like, optional
+        as in :class:`DeesseInput`
+    expMax : float, default: 0.05
+        as in :class:`DeesseInput`
+    normalizingType : str {'linear', 'uniform', 'normal'}, default: 'linear'
+        as in :class:`DeesseInput`
+    rescalingMode : [sequence of] str(s), optional
+        as in :class:`DeesseInput`
+    rescalingTargetMin : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    rescalingTargetMax : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    rescalingTargetMean : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    rescalingTargetLength : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    relativeDistanceFlag : [sequence of] bool(s), optional
+        as in :class:`DeesseInput`
+    distanceType : [sequence of] int(s) or str(s), optional
+        as in :class:`DeesseInput`
+    powerLpDistance : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    powerLpDistanceInv : [sequence of] double(s), optional
+        as in :class:`DeesseInput`
+    conditioningWeightFactor : [sequence of] float(s), optional
+        as in :class:`DeesseInput`
+    sectionPath_parameters : :class:`DeesseXInputSectionPath`
+       defines the overall strategy of simulation as a succession of section
+    section_parameters : sequence of :class:`DeesseXInputSection`
+        each element defines the parameter for one section type
+    seed : int, default: 1234
+        as in :class:`DeesseInput`
+    seedIncrement : int, default: 1
+        as in :class:`DeesseInput`
+    nrealization : int, default: 1
+        as in :class:`DeesseInput`
 
-        outputVarFlag:
-                    (1-dimensional array of 'bool', of size nv)
-                        as in DeesseInput class (see this class)
-
-        outputSectionTypeFlag:
-                    (bool) indicates if "section type" map(s) is (are) retrieved
-                        in output; one file per realization if section path mode
-                        is set to 'section_path_random', and one file in all
-                        otherwise (same for each realization), (see
-                        sectionPathMode in DeesseXInputSectionPath class);
-                        "section type" is an index identifiying the type of
-                        section (see sectionType in DeesseXInputSectionPath class)
-
-        outputSectionStepFlag:
-                    (bool) indicates if "section step" map(s) is (are) retrieved
-                        in output; one file per realization if section path mode
-                        is set to 'section_path_random', and one file in all
-                        otherwise (same for each realization (see sectionPathMode
-                        in DeesseXInputSectionPath class); "section step" is the
-                        step index of simulation by deesse of (a bunch of)
-                        sections of same type
-
-
-        outputReportFlag:
-                    (bool)
-                        as in DeesseInput class (see this class)
-
-        outputReportFileName:
-                    (string)
-                        as in DeesseInput class (see this class)
-
-        dataImage:  (1-dimensional array of Img (class), or None)
-                        as in DeesseInput class (see this class)
-        dataPointSet:
-                    (1-dimensional array of PointSet (class), or None)
-                        as in DeesseInput class (see this class)
-
-        mask:       ((nz, ny, nx) array of ints, or None)
-                        as in DeesseInput class (see this class)
-
-        expMax:     (float)
-                        as in DeesseInput class (see this class)
-
-        normalizingType:
-                    (string)
-                        as in DeesseInput class (see this class)
-
-        rescalingMode:
-                    (list of strings of length nv)
-                        as in DeesseInput class (see this class)
-
-        rescalingTargetMin:
-                    (1-dimensional array of doubles of size nv)
-                        as in DeesseInput class (see this class)
-
-        rescalingTargetMax:
-                    (1-dimensional array of doubles of size nv)
-                        as in DeesseInput class (see this class)
-
-        rescalingTargetMean:
-                    (1-dimensional array of doubles of size nv)
-                        as in DeesseInput class (see this class)
-
-        rescalingTargetLength:
-                    (1-dimensional array of doubles of size nv)
-                        as in DeesseInput class (see this class)
-
-        relativeDistanceFlag:
-                    (1-dimensional array of 'bool', of size nv)
-                        as in DeesseInput class (see this class)
-        distanceType:
-                    (list (or 1-dimensional array) of ints or strings of size nv)
-                        as in DeesseInput class (see this class)
-
-        powerLpDistance
-                    (1-dimensional array of doubles of size nv)
-                        as in DeesseInput class (see this class)
-
-        powerLpDistanceInv
-                    (1-dimensional array of doubles of size nv)
-                        as in DeesseInput class (see this class)
-
-        conditioningWeightFactor:
-                    (1-dimensional array of floats of size nv)
-                        as in DeesseInput class (see this class)
-
-        sectionPath_parameters:
-                    (DeesseXInputSectionPath (class))
-                       defines the overall strategy of simulation
-                       as a succession of section (see this class)
-
-        section_parameters:
-                    (1-dimensional array of DeesseXInputSection (class))
-                        each component defines the parameter for
-                        one section type (see this class);
-
-        seed:       (int) initial seed
-                        as in DeesseInput class (see this class)
-
-        seedIncrement:
-                    (int) increment seed
-                        as in DeesseInput class (see this class)
-
-        nrealization:
-                    (int) number of realization(s)
-                        as in DeesseInput class (see this class)
-
-    Note: in output simulated images (obtained by running deesseX), the names
-        of the output variables are set to <vname>_real<n>, where
-            - <vname> is the name of the variable,
-            - <n> is the realization index (starting from 0)
-            [<n> is written on 5 digits, with leading zeros]
+    Notes
+    -----
+    In output simulated images (obtained by running deesseX), the names of the
+    output variables are set to <vname>_real<n>, where
+        - <vname> is the name of the variable,
+        - <n> is the realization index (starting from 0)
+        [<n> is written on 5 digits, with leading zeros]
     """
-
     def __init__(self,
                  simName='deesseX_py',
                  nx=0,   ny=0,   nz=0,
@@ -7078,7 +6973,9 @@ class DeesseXInput(object):
                  seed=1234,
                  seedIncrement=1,
                  nrealization=1):
-
+        """
+        Inits an instance of the class.
+        """
         fname = 'DeesseXInput'
 
         self.ok = False # flag to "validate" the class [temporary to False]
@@ -7398,18 +7295,18 @@ def deesseX_input_sectionPath_py2C(sectionPath_parameters):
 # ----------------------------------------------------------------------------
 def deesseX_input_sectionPath_C2py(mpds_xsectionParameters):
     """
-    Converts section path parameters (deesseX) from C (MPDS_XSECTIONPARAMETERS)
-    to python.
+    Converts section path parameters (deesseX) from C to python.
 
-    :param mpds_xsectionParameters:
-                                (MPDS_XSECTIONPARAMETERS *) C parameters
-                                    (C struct)
+    Parameters
+    ----------
+    mpds_xsectionParameters : (MPDS_XSECTIONPARAMETERS *)
+        parameters in C
 
-    :return sectionPath_parameters:
-                                (DeesseXInputSectionPath class) section path
-                                    parameters (strategy of simulation) (python)
+    Returns
+    -------
+    sectionPath_parameters : :class:`DeesseXInputSectionPath`
+        parameters in python
     """
-
     fname = 'deesseX_input_sectionPath_C2py'
 
     # sectionMode
@@ -7513,23 +7410,28 @@ def deesseX_input_section_py2C(
         ox, oy, oz,
         nv):
     """
-    Converts section parameters (parameters for one section) (deesseX) from
-    python to C (MPDS_XSUBSIMINPUT).
+    Converts section parameters (for one section) (deesseX) from python to C.
 
-    :param section_parameters:  (DeesseXInputSection class) section parameters
-                                    (parameters for one section) (python)
-    :param sectionType:         (int) id of the section type
-    :param nx, ny, nz:          (ints) number of simulation grid (SG) cells in
-                                    each direction
-    :param sx, sy, sz:          (floats) cell size in each direction
-    :param ox, oy, oz:          (floats) origin of the SG
-                                    (bottom-lower-left corner)
-    :param nv:                  (int) number of variable(s) / attribute(s)
+    Parameters
+    ----------
+    section_parameters : :class:`DeesseXInputSection`
+        section parameters (for one section) in python
+    sectionType : int
+        id of the section type
+    nx, ny, nz : ints
+        number of grid cells along each axis
+    sx, sy, sz : floats
+        cell size along each axis
+    ox, oy, oz : floats
+        origin of the grid (bottom-lower-left corner)
+    nv : int
+        number of variable(s) / attribute(s)
 
-    :return mpds_xsubsiminput:  (MPDS_XSUBSIMINPUT *) corresponding parameters
-                                    (C struct)
+    Returns
+    -------
+    mpds_xsubsiminput : (MPDS_XSUBSIMINPUT *)
+        parameters in C
     """
-
     fname = 'deesseX_input_section_py2C'
 
     nx = int(nx)
@@ -7888,23 +7790,26 @@ def deesseX_input_section_C2py(
         nx, ny, nz,
         nv, distanceType):
     """
-    Converts section parameters (parameters for one section) (deesseX) from C
-    (MPDS_XSUBSIMINPUT) to python.
+    Converts section parameters (for one section) (deesseX) from C to python.
 
-    :param mpds_xsubsiminput:   (MPDS_XSUBSIMINPUT *) C parameters
-                                    (C struct)
-    :param sectionType:         (int) id of the section type
-    :param nx, ny, nz:          (ints) number of simulation grid (SG) cells in
-                                    each direction
-    :param nv:                  (int) number of variable(s) / attribute(s)
-    :param distanceType:        (list (or 1-dimensional array) of ints or
-                                    strings of size nv) distance type (between
-                                    pattern) for each variable
+    Parameters
+    ----------
+    mpds_xsubsiminput : (MPDS_XSUBSIMINPUT *)
+        parameters in C
+    sectionType : int
+        id of the section type
+    nx, ny, nz : ints
+        number of grid cells along each axis
+    nv : int
+        number of variable(s) / attribute(s)
+    distanceType : [sequence of] int(s) or str(s)
+        type of distance (between pattern) for each variable
 
-    :return section_parameters: (DeesseXInputSection class) section parameters
-                                    (parameters for one section) (python)
+    Returns
+    -------
+    section_parameters : :class:`DeesseXInputSection`
+        section parameters (for one section) in python
     """
-
     fname = 'deesseX_input_section_C2py'
 
     nx = int(nx)
@@ -8234,10 +8139,16 @@ def deesseX_input_py2C(deesseX_input):
     """
     Converts deesseX input from python to C.
 
-    :param deesseX_input: (DeesseXInput class) deesseX input - python
-    :return:              (MPDS_XSIMINPUT *) deesseX input - C
-    """
+    Parameters
+    ----------
+    deesseX_input : :class:`DeesseXInput`
+        deesseX input in python
 
+    Returns
+    -------
+    mpds_xsiminput : (MPDS_XSIMINPUT *)
+        deesseX input in C
+    """
     fname = 'deesseX_input_py2C'
 
     nx = int(deesseX_input.nx)
@@ -8632,10 +8543,16 @@ def deesseX_input_C2py(mpds_xsiminput):
     """
     Converts deesseX input from C to python.
 
-    :param mpds_xsiminput:  (MPDS_XSIMINPUT *) deesseX input - C
-    :return:                (DeesseInput class) deesseX input - python
-    """
+    Parameters
+    ----------
+    mpds_xsiminput : (MPDS_XSIMINPUT *)
+        deesseX input in C
 
+    Returns
+    -------
+    deesseX_input : :class:`DeesseXInput`
+        deesseX input in python
+    """
     fname = 'deesseX_input_C2py'
 
     # simName
@@ -8921,79 +8838,68 @@ def deesseX_input_C2py(mpds_xsiminput):
 # ----------------------------------------------------------------------------
 def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
     """
-    Get deesseX output for python from C.
+    Converts deesse output from C to python.
 
-    :param mpds_xsimoutput: (MPDS_XSIMOUTPUT *) simulation output - (C struct)
-                                contains output of deesseX simulation
-    :param mpds_progressMonitor:
-                            (MPDS_PROGRESSMONITOR *) progress monitor - (C struct)
-                                contains output messages (warnings) of deesseX
-                                simulation
+    Parameters
+    ----------
+    mpds_xsimoutput : (MPDS_XSIMOUTPUT *)
+        deesseX output in C
+    mpds_progressMonitor : (MPDS_PROGRESSMONITOR *)
+        progress monitor in C
 
-    :return deesseX_output:
-        (dict)
+    Returns
+    -------
+    deesseX_output : dict
+        deesseX output in python, dictionary
             {'sim':sim,
              'sim_var_original_index':sim_var_original_index,
              'simSectionType':simSectionType,
              'simSectionStep':simSectionStep,
              'nwarning':nwarning,
              'warnings':warnings}
-
-        With nreal = mpds_xsimoutput->nreal (number of realizations):
-
-        sim:    (1-dimensional array of Img (class) of size nreal or None)
-                    sim[i]: i-th realisation,
-                        k-th variable stored refers to
-                            - the original variable sim_var_original_index[k]
-                        (get from mpds_xsimoutput->outputSimImage[0])
-                    (sim is None if mpds_xsimoutput->outputSimImage is NULL)
-
-        sim_var_original_index:
-                (1-dimensional array of ints or None)
-                    sim_var_original_index[k]: index of the original variable
-                        (given in deesse_input) of the k-th variable stored in
-                        in sim[i] for any i
-                        (array of length array of length sim[*].nv,
-                        get from mpds_xsimoutput->originalVarIndex)
-                    (sim_var_original_index is None if
-                    mpds_xsimoutput->originalVarIndex is NULL)
-
-        simSectionType:
-                (1-dimensional array of Img (class) of size nreal, or 1 or None)
-                    simSectionType[i]: section type (id identifying which type of
-                        section is used) map for the i-th realisation
-                        (mpds_xsimoutput->outputSectionTypeImage[0]); note:
-                        depending on section path mode (see class DeesseXInput:
-                        deesseX_input.sectionPath_parameters.sectionPathMode)
-                        that was used, simSectionType may be of size 1 even if
-                        nreal is greater than 1, in such a case the same map is
-                        valid for all realisations
-                    (simSectionType is None if
-                    mpds_xsimoutput->outputSectionTypeImage is NULL)
-
-        simSectionStep:
-                (1-dimensional array of Img (class) of size nreal, or 1 or None)
-                    simSectionStep[i]: section step (index of simulation by
-                        direct sampling of (a bunch of) sections of same type)
-                        map for the i-th realisation,
-                        (mpds_xsimoutput->outputSectionStepImage[0]); note:
-                        depending on section path mode (see class DeesseXInput:
-                        deesseX_input.sectionPath_parameters.sectionPathMode)
-                        that was used, simSectionStep may be of size 1 even if
-                        nreal is greater than 1, in such a case the same map is
-                        valid for all realisations
-                    (simSectionStep is None if
-                    mpds_xsimoutput->outputSectionStepImage is NULL)
-
-        nwarning:
-                (int) total number of warning(s) encountered
-                    (same warnings can be counted several times)
-
-        warnings:
-                (list of strings) list of distinct warnings encountered
-                    (can be empty)
+        with (`nreal=mpds_xsimoutput->nreal`, the number of realization(s)):
+        sim: 1D array of :class:`geone.img.Img` of shape (nreal,)
+            `sim[i]`: i-th realisation,
+                k-th variable stored refers to
+                    - the original variable `sim_var_original_index[k]`
+                (get from `mpds_xsimoutput->outputSimImage[0]`)
+            note: `sim=None` if `mpds_xsimoutput->outputSimImage=NULL`
+        sim_var_original_index : 1D array of ints
+            `sim_var_original_index[k]`: index of the original variable
+                (given in deesse_input) of the k-th variable stored in
+                in `sim[i]` for any i
+                (array of length `sim[*].nv`,
+                get from `mpds_xsimoutput->originalVarIndex`)
+            note: `sim_var_original_index=None`
+            if `mpds_xsimoutput->originalVarIndex=NULL`
+        simSectionType : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `simSectionType[i]`: section type (id identifying which type of
+                section is used) map for the i-th realisation
+                (`mpds_xsimoutput->outputSectionTypeImage[0]`);
+                note: depending on section path mode (see :class:`DeesseXInput`:
+                `deesseX_input.sectionPath_parameters.sectionPathMode`) that was
+                used, `simSectionType` may be of size 1 even if `nreal` is
+                greater than 1, in such a case the same map is valid for all
+                realizations
+            note: `simSectionType=None` if
+            `mpds_xsimoutput->outputSectionTypeImage=NULL`
+        simSectionStep : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `simSectionStep[i]`: section step (index of simulation by direct
+                sampling of (a bunch of) sections of same type) map for the i-th
+                realisation (`mpds_xsimoutput->outputSectionStepImage[0]`);
+                note: depending on section path mode (see :class:`DeesseXInput`:
+                `deesseX_input.sectionPath_parameters.sectionPathMode`) that was
+                used, `simSectionStep` may be of size 1 even if `nreal` is
+                greater than 1, in such a case the same map is valid for all
+                realizations
+            note: `simSectionStep=None` if
+            `mpds_xsimoutput->outputSectionStepImage=NULL`
+        nwarning : int
+            total number of warning(s) encountered (same warnings can be counted
+            several times)
+        warnings : list of strs
+            list of distinct warnings encountered (can be empty)
     """
-
     # fname = 'deesseX_output_C2py'
 
     # Initialization
@@ -9091,81 +8997,73 @@ def deesseXRun(deesseX_input, nthreads=-1, verbose=2):
     """
     Launches deesseX.
 
-    :param deesseX_input:
-                (DeesseXInput (class)): deesseX input parameter (python)
-    :param nthreads:
-                (int) number of thread(s) to use for deesseX (C),
-                    (nthreads = -n <= 0: for maximal number of threads except n,
-                    but at least 1)
-    :param verbose:
-                (int) indicates what is displayed during the deesseX run:
-                    - 0: mininal display
-                    - 1: only errors
-                    - 2: version and warning(s) encountered
-                    - 3 (or >2): version, progress, and warning(s) encountered
+    Parameters
+    ----------
+    deesseX_input :class:`DeesseXInput`
+        deesseX input in python
+    nthreads : int, default: -1
+        number of thread(s) to use for C program;
+        `nthreads = -n <= 0`: maximal number of threads of the system except n
+        (but at least 1)
+    verbose : int, default: 2
+        verbose mode, higher implies more printing (info):
+        - 0: no display
+        - 1: only errors
+        - 2: errors and warnings
+        - 3 (or >2): version, progress, and warning(s) encountered
 
-    :return deesseX_output:
-        (dict)
+    Returns
+    -------
+    deesseX_output : dict
+        deesseX output in python, dictionary
             {'sim':sim,
              'sim_var_original_index':sim_var_original_index,
              'simSectionType':simSectionType,
              'simSectionStep':simSectionStep,
              'nwarning':nwarning,
              'warnings':warnings}
-
-        With nreal = deesseX_input.nrealization:
-
-        sim:    (1-dimensional array of Img (class) of size nreal or None)
-                    sim[i]: i-th realisation,
-                        k-th variable stored refers to
-                            - the original variable sim_var_original_index[k]
-                        (get from mpds_xsimoutput->outputSimImage[0])
-                    (sim is None if mpds_xsimoutput->outputSimImage is NULL)
-
-        sim_var_original_index:
-                (1-dimensional array of ints or None)
-                    sim_var_original_index[k]: index of the original variable
-                        (given in deesse_input) of the k-th variable stored in
-                        in sim[i] for any i
-                        (array of length array of length sim[*].nv,
-                        get from mpds_xsimoutput->originalVarIndex)
-                    (sim_var_original_index is None if
-                    mpds_xsimoutput->originalVarIndex is NULL)
-
-        simSectionType:
-                (1-dimensional array of Img (class) of size nreal, or 1 or None)
-                    simSectionType[i]: section type (id identifying which type of
-                        section is used) map for the i-th realisation
-                        (mpds_xsimoutput->outputSectionTypeImage[0]); note:
-                        depending on section path mode (see class DeesseXInput:
-                        deesseX_input.sectionPath_parameters.sectionPathMode)
-                        that was used, simSectionType may be of size 1 even if
-                        nreal is greater than 1, in such a case the same map is
-                        valid for all realisations
-                    (simSectionType is None if
-                    mpds_xsimoutput->outputSectionTypeImage is NULL)
-
-        simSectionStep:
-                (1-dimensional array of Img (class) of size nreal, or 1 or None)
-                    simSectionStep[i]: section step (index of simulation by
-                        direct sampling of (a bunch of) sections of same type)
-                        map for the i-th realisation,
-                        (mpds_xsimoutput->outputSectionStepImage[0]); note:
-                        depending on section path mode (see class DeesseXInput:
-                        deesseX_input.sectionPath_parameters.sectionPathMode)
-                        that was used, simSectionStep may be of size 1 even if
-                        nreal is greater than 1, in such a case the same map is
-                        valid for all realisations
-                    (simSectionStep is None if
-                    mpds_xsimoutput->outputSectionStepImage is NULL)
-
-        nwarning:
-                (int) total number of warning(s) encountered
-                    (same warnings can be counted several times)
-
-        warnings:
-                (list of strings) list of distinct warnings encountered
-                    (can be empty)
+        with `nreal=deesseX_input.nrealization`:
+        sim: 1D array of :class:`geone.img.Img` of shape (nreal,)
+            `sim[i]`: i-th realisation,
+                k-th variable stored refers to
+                    - the original variable `sim_var_original_index[k]`
+                (get from `mpds_xsimoutput->outputSimImage[0]`)
+            note: `sim=None` if `mpds_xsimoutput->outputSimImage=NULL`
+        sim_var_original_index : 1D array of ints
+            `sim_var_original_index[k]`: index of the original variable
+                (given in deesse_input) of the k-th variable stored in
+                in `sim[i]` for any i
+                (array of length `sim[*].nv`,
+                get from `mpds_xsimoutput->originalVarIndex`)
+            note: `sim_var_original_index=None`
+            if `mpds_xsimoutput->originalVarIndex=NULL`
+        simSectionType : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `simSectionType[i]`: section type (id identifying which type of
+                section is used) map for the i-th realisation
+                (`mpds_xsimoutput->outputSectionTypeImage[0]`);
+                note: depending on section path mode (see :class:`DeesseXInput`:
+                `deesseX_input.sectionPath_parameters.sectionPathMode`) that was
+                used, `simSectionType` may be of size 1 even if `nreal` is
+                greater than 1, in such a case the same map is valid for all
+                realizations
+            note: `simSectionType=None` if
+            `mpds_xsimoutput->outputSectionTypeImage=NULL`
+        simSectionStep : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
+            `simSectionStep[i]`: section step (index of simulation by direct
+                sampling of (a bunch of) sections of same type) map for the i-th
+                realisation (`mpds_xsimoutput->outputSectionStepImage[0]`);
+                note: depending on section path mode (see :class:`DeesseXInput`:
+                `deesseX_input.sectionPath_parameters.sectionPathMode`) that was
+                used, `simSectionStep` may be of size 1 even if `nreal` is
+                greater than 1, in such a case the same map is valid for all
+                realizations
+            note: `simSectionStep=None` if
+            `mpds_xsimoutput->outputSectionStepImage=NULL`
+        nwarning : int
+            total number of warning(s) encountered (same warnings can be counted
+            several times)
+        warnings : list of strs
+            list of distinct warnings encountered (can be empty)
     """
 
     fname = 'deesseXRun'
@@ -9260,106 +9158,38 @@ def deesseXRun(deesseX_input, nthreads=-1, verbose=2):
 # ----------------------------------------------------------------------------
 def deesseXRun_mp(deesseX_input, nproc=None, nthreads_per_proc=None, verbose=2):
     """
-    Launches deesseX through multiple processes.
+    Computes the same as the function `deesseXRun`, using multiprocessing.
 
-    Launches multiple processes (based on multiprocessing package):
-        - nproc parallel processes using each one nthreads_per_proc threads will
-            be launched [parallel calls of the function deesseXRun],
-        - the set of realizations (specified by deesseX_input.nrealization) is
-            distributed in a balanced way over the processes,
-        - in terms of resources, this implies the use of
-            nproc * nthreads_per_proc cpu(s).
+    All the parameters are the same as those of the function `deesseXRun`,
+    except `nthreads` that is replaced by the parameters `nproc` and
+    `nthreads_per_proc`.
 
-    :param deesseX_input:
-                (DeesseXInput (class)): deesseX input parameter (python)
+    This function launches multiple processes (based on `multiprocessing`
+    package):
+    - `nproc` parallel processes using each one `nthreads_per_proc` threads
+    are launched [parallel calls of the function `deesseXRun`];
+    - the set of realizations (specified by `nreal`) is distributed in a
+    balanced way over the processes;
+    - in terms of resources, this implies the use of `nproc*nthreads_per_proc`
+    cpu(s).
 
-    :param nproc:
-                (int) number of processes (can be modified in the function)
-                    nproc = None: nproc is set to
-                        min(nmax-1, nreal) (but at least 1),
-                    where nmax is the total number of cpu(s) of the system
-                    (retrieved by multiprocessing.cpu_count()), and
-                    nreal is the number of realization
-                    (deesseX_input.nrealization)
+    Parameters
+    ----------
+    (new parameters)
+    nproc : int, optional
+        number of processes; by default (`None`):
+        `nproc` is set to `min(nmax-1, nreal)` (but at least 1), where nmax is
+        the total number of cpu(s) of the system (retrieved by
+        `multiprocessing.cpu_count()`)
+    nthreads_per_proc : int, optional
+        number of thread(s) per process (should be > 0); by default (`None`):
+        `nthreads_per_proc` is automatically computed as the maximal integer
+        (but at least 1) such that `nproc*nthreads_per_proc <= nmax-1`, where
+        nmax is the total number of cpu(s) of the system (retrieved by
+        `multiprocessing.cpu_count()`)
 
-    :param nthreads_per_proc:
-                (int) number of thread(s) per process (should be > 0 or None):
-                    nthreads_per_proc = None: nthreads_per_proc is automatically
-                    computed as the maximal integer (but at least 1) such that
-                            nproc * nthreads_per_proc <= nmax-1
-                    where nmax is the total number of cpu(s) of the system
-                    (retrieved by multiprocessing.cpu_count())
-
-    :param verbose:
-                (int) indicates what information is displayed:
-                    - 0: mininal display
-                    - 1: only errors (and note(s))
-                    - 2: version and warning(s) encountered
-
-    :return deesseX_output:
-        (dict)
-            {'sim':sim,
-             'sim_var_original_index':sim_var_original_index,
-             'simSectionType':simSectionType,
-             'simSectionStep':simSectionStep,
-             'nwarning':nwarning,
-             'warnings':warnings}
-
-        With nreal = deesseX_input.nrealization:
-
-        sim:    (1-dimensional array of Img (class) of size nreal or None)
-                    sim[i]: i-th realisation,
-                        k-th variable stored refers to
-                            - the original variable sim_var_original_index[k]
-                        (get from mpds_xsimoutput->outputSimImage[0])
-                    (sim is None if mpds_xsimoutput->outputSimImage is NULL)
-
-        sim_var_original_index:
-                (1-dimensional array of ints or None)
-                    sim_var_original_index[k]: index of the original variable
-                        (given in deesse_input) of the k-th variable stored in
-                        in sim[i] for any i
-                        (array of length array of length sim[*].nv,
-                        get from mpds_xsimoutput->originalVarIndex)
-                    (sim_var_original_index is None if
-                    mpds_xsimoutput->originalVarIndex is NULL)
-
-        simSectionType:
-                (1-dimensional array of Img (class) of size nreal, or 1 or None)
-                    simSectionType[i]: section type (id identifying which type of
-                        section is used) map for the i-th realisation
-                        (mpds_xsimoutput->outputSectionTypeImage[0]); note:
-                        depending on section path mode (see class DeesseXInput:
-                        deesseX_input.sectionPath_parameters.sectionPathMode)
-                        that was used, simSectionType may be of size 1 even if
-                        nreal is greater than 1, in such a case the same map is
-                        valid for all realisations
-                    (simSectionType is None if
-                    mpds_xsimoutput->outputSectionTypeImage is NULL)
-
-        simSectionStep:
-                (1-dimensional array of Img (class) of size nreal, or 1 or None)
-                    simSectionStep[i]: section step (index of simulation by
-                        direct sampling of (a bunch of) sections of same type)
-                        map for the i-th realisation,
-                        (mpds_xsimoutput->outputSectionStepImage[0]); note:
-                        depending on section path mode (see class DeesseXInput:
-                        deesseX_input.sectionPath_parameters.sectionPathMode)
-                        that was used, simSectionStep may be of size 1 even if
-                        nreal is greater than 1, in such a case the same map is
-                        valid for all realisations
-                    (simSectionStep is None if
-                    mpds_xsimoutput->outputSectionStepImage is NULL)
-
-        nwarning:
-                (int) total number of warning(s) encountered
-                    (same warnings can be counted several times)
-
-        warnings:
-                (list of strings) list of distinct warnings encountered
-                    (can be empty)
+    See function `deesseXRun`.
     """
-
     fname = 'deesseXRun_mp'
 
     if not deesseX_input.ok:
@@ -9523,27 +9353,30 @@ def exportDeesseXInput(
         endofline='\n',
         verbose=2):
     """
-    Exports deesseX input as ASCII files (in the directory named <dirname>).
+    Exports deesseX input in txt (ASCII) files (in the directory `dirname`).
+
     The command line version of deesseX can then be launched from the directory
-    <dirname> by using the generated ASCII files.
+    `dirname` by using the generated txt files.
 
-    :param deesseX_input:   (DeesseXInput class) deesseX input - python
-    :param dirname:         (string) name of the directory in which the files
-                                will be written; if not existing, it will be
-                                created;
-                                WARNING: the generated files might erase already
-                                existing ones!
-    :param fileprefix:      (string) prefix for generated files, the main input
-                                file will be <dirname>/<fileprefix>.in
-    :param endofline:       (string) end of line string to be used for the
-                                deesseX input file
-    :param verbose:         (int) indicates which degree of detail is used when
-                                writing comments in the deesseX input file
-                                - 0: no comment
-                                - 1: basic comments
-                                - 2: detailed comments
+    Parameters
+    ----------
+    deesseX_input :class:`DeesseXInput`
+        deesse input in python
+    dirname : str, default: 'input_ascii'
+        name of the directory in which the files will be written;
+        if not existing, it will be created;
+        WARNING: the generated files might erase already existing ones!
+    fileprefix : str, default: 'dsX'
+        prefix for generated files, the main input file will be
+        "`dirname`/`fileprefix`.in"
+    endofline : str, default: '\n'
+        end of line character
+    verbose : int, default: 2
+        verbose mode for comments in the written main input file:
+        - 0: no comment
+        - 1: basic comments
+        - 2: detailed comments
     """
-
     fname = 'exportDeesseXInput'
 
     if not deesseX_input.ok:
@@ -9582,20 +9415,26 @@ def exportDeesseXInput(
 # ----------------------------------------------------------------------------
 def importDeesseXInput(filename, dirname='.'):
     """
-    Imports deesseX input from ASCII files, used for command line version of
-    deesse (from the directory named <dirname>).
+    Imports deesseX input from txt (ASCII) files.
 
-    :param filename:        (string) name of the general input ASCII file
-                                (without path) used for the command line
-                                version of deesse
-    :param dirname:         (string) name of the directory in which the input
-                                ASCII files are stored (and from which the
-                                command line version of deesse would be
-                                launched)
+    The files used for command line version of deesseX (from the directory named
+    `dirname`) are read and the corresponding deesseX input in python is
+    returned.
 
-    :param deesseX_input:   (DeesseXInput class) deesseX input - python
+    Parameters
+    ----------
+    filename : str
+        name of the main input txt (ASCII) file (without path) used for the
+        command line version of deesseX
+    dirname : str, default: '.'
+        name of the directory in which the main input txt (ASCII) file is stored
+        (and from which the command line version of deesseX would be launched)
+
+    Returns
+    -------
+    deesseX_input :class:`DeesseXInput`
+        deesseX input in python
     """
-
     fname = 'importDeesseXInput'
 
     # Check directory

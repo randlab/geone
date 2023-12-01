@@ -20,33 +20,171 @@ import scipy
 # ============================================================================
 class Img(object):
     """
-    Defines an image as a 3D grid with variable(s) / attribute(s):
-        nx, ny, nz: (int) number of grid cells along each axis
-        sx, sy, sz: (float) cell size along each axis
-        ox, oy, oz: (float) origin of the grid (bottom-lower-left corner)
-        nv:         (int) number of variable(s) / attribute(s)
-        val:        ((nv,nz,ny,nx) array) attribute(s) / variable(s) values
-        varname:    (list of string (or string)) variable names
-        name:       (string) name of the image
-    """
+    Class defining an image as a regular 3D-grid with variables attached to cells.
 
+    Attributes
+    ----------
+    nx, ny, nz : ints, default: 1, 1, 1
+        number of grid cells along each axis
+    sx, sy, sz : floats, default: 1.0, 1.0, 1.0
+        cell size along each axis
+    ox, oy, oz : floats, default: 0.0, 0.0, 0.0
+        origin of the grid (bottom-lower-left corner)
+    nv : int, default: 0
+        number of variable(s) / attribute(s)
+    val : 4D array of float of shape (`nv`, `nz`, `ny`, `nx`)
+        attribute(s) / variable(s) values:
+            - val[iv, iz, iy, ix]: value of the variable iv attached to the
+            grid cell of index iz, iy, ix along axis iz, iy, ix respectively
+    varname : list of str, of length `nv`
+        variable names:
+            - varname[iv]: name of the variable iv
+    name : str
+        name of the image
+
+    Methods
+    -------
+    set_default_varname()
+        Sets default variable names for each variable.
+    set_varname(varname=None, ind=-1)
+        Sets name for a given variable.
+    set_dimension(nx, ny, nz, newval=np.nan)
+        Sets dimension of the grid, i.e. number of cells along each axis.
+    set_spacing(sx, sy, sz)
+        Sets spacing, i.e. cell size along each axis.
+    set_origin(ox, oy, oz)
+        Sets grid origin (bottom-lower-left corner).
+    set_grid(nx, ny, nz, sx, sy, sz, ox, oy, oz, newval=np.nan)
+        Sets grid geometry (dimension, cell size, and origin).
+    resize()
+        Resizes the image (including "variable" direction).
+    insert_var(val=np.nan, varname=None, ind=0)
+        Inserts one or several variable(s) at a given index.
+    append_var(val=np.nan, varname=None)
+        Appends (i.e. inserts at the end) one or several variable(s).
+    remove_var(ind=None, indlist=None)
+        Removes variable(s) of given index(es).
+    remove_allvar()
+        Removes all variables.
+    set_var(val=np.nan, varname=None, ind=-1)
+        Sets values and name of one variable (of given index).
+    extract_var(ind=None, indlist=None)
+        Extracts variable(s) (of given index(es)).
+    get_unique_one_var(ind=0, ignore_missing_value=True)
+        Gets unique values of one variable (of given index).
+    get_prop_one_var(ind=0, density=True, ignore_missing_value=True)
+        Gets proportions (density or count) of unique values of one variable (of given index).
+    get_unique(ignore_missing_value=True)
+        Gets unique values over all the variables
+    get_prop(density=True, ignore_missing_value=True)
+        Gets proportions (density or count) of unique values for each variable.
+    flipx()
+        Flips variable values according to x axis.
+    flipy()
+        Flips variable values according to y axis.
+    flipz()
+        Flips variable values according to z axis.
+    flipv()
+        Flips variable values according to v (variable) axis.
+    permxy()
+        Permutes / swaps x and y axes.
+    permxz()
+        Permutes / swaps x and z axes.
+    permyz()
+        Permutes / swaps y and z axes.
+    swap_xy()
+        Swaps x and y axes.
+    swap_xz()
+        Swaps x and z axes.
+    swap_yz()
+        Swaps y and z axes.
+    transpose_xyz_to_xzy()
+        Applies transposition: sends original x, y, z axes to x, z, y axes.
+    transpose_xyz_to_yxz()
+        Applies transposition: sends original x, y, z axes to y, x, z axes.
+    transpose_xyz_to_yzx()
+        Applies transposition: sends original x, y, z axes to y, z, x axes.
+    transpose_xyz_to_zxy()
+        Applies transposition: sends original x, y, z axes to z, x, y axes.
+    transpose_xyz_to_zyx()
+        Applies transposition: sends original x, y, z axes to z, y, x axes.
+    nxyzv()
+        Returns the size of the array `val`, i.e. number of variables times number of grid cells.
+    nxyz()
+        Returns the number of grid cells.
+    nxy()
+        Returns the number of grid cells in a xy-section.
+    nxz()
+        Returns the number of grid cells in a xz-section.
+    nyz()
+        Returns the number of grid cells in a yz-section.
+    xmin()
+        Returns min coordinate of the grid along x axis.
+    ymin()
+        Returns min coordinate of the grid along y axis.
+    zmin()
+        Returns min coordinate of the grid along z axis.
+    xmax()
+        Returns max coordinate of the grid along x axis.
+    ymax()
+        Returns max coordinate of the grid along y axis.
+    zmax()
+        Returns max coordinate of the grid along z axis.
+    x()
+        Returns 1D array of "unique" x coordinates of the grid cell centers.
+    y()
+        Returns 1D array of "unique" y coordinates of the grid cell centers.
+    z()
+        Returns 1D array of "unique" z coordinates of the grid cell centers.
+    xx()
+        Returns 3D array of x coordinates of the grid cell centers.
+    yy()
+        Returns 3D array of y coordinates of the grid cell centers.
+    zz()
+        Returns 3D array of z coordinates of the grid cell centers.
+    ix()
+        Returns 1D array of "unique" index of grid cell along x axis.
+    iy()
+        Returns 1D array of "unique" index of grid cell along y axis.
+    iz()
+        Returns 1D array of "unique" index of grid cell along z axis.
+    ixx()
+        Returns 3D array of index along x axis of the grid cells.
+    iyy()
+        Returns 3D array of index along y axis of the grid cells.
+    izz()
+        Returns 3D array of index along z axis of the grid cells.
+    vmin()
+        Returns 1D array of min value of each variable, ignoring `numpy.nan` entries.
+    vmax()
+        Returns 1D array of max value of each variable, ignoring `numpy.nan` entries.
+    """
     def __init__(self,
                  nx=1,   ny=1,   nz=1,
                  sx=1.0, sy=1.0, sz=1.0,
                  ox=0.0, oy=0.0, oz=0.0,
                  nv=0, val=np.nan, varname=None,
-                 name=""):
+                 name=''):
         """
-        Init function for the class:
+        Inits an instance of the class.
 
-        :param val: (int/float or tuple/list/ndarray) value(s) of the new
-                        variable:
-                        if type is int/float: constant variable
-                        if tuple/list/ndarray: must contain nv*nx*ny*nz values,
-                            which are put in the image (after reshape if
-                            needed)
+        Parameters
+        ----------
+        nx, ny, nz : ints, default: 1, 1, 1
+            number of grid cells along each axis
+        sx, sy, sz : floats, default: 1.0, 1.0, 1.0
+            cell size along each axis
+        ox, oy, oz : floats, default: 0.0, 0.0, 0.0
+            origin of the grid (bottom-lower-left corner)
+        nv : int, default: 0
+            number of variable(s) / attribute(s)
+        val : float or array-like of size `nv*nz*ny*nx`
+            attribute(s) / variable(s) values
+        varname : list of str, of length `nv`
+            variable names:
+        name : str, default: ''
+            name of the image
         """
-
         fname = 'Img'
 
         self.nx = int(nx)
@@ -102,7 +240,7 @@ class Img(object):
     # ------------------------------------------------------------------------
     def set_default_varname(self):
         """
-        Sets default variable names: varname = ('V0', 'V1',...).
+        Sets default variable names: varname = ('V0', 'V1', ...).
         """
         self.varname = ["V{:d}".format(i) for i in range(self.nv)]
     # ------------------------------------------------------------------------
@@ -110,16 +248,26 @@ class Img(object):
     # ------------------------------------------------------------------------
     def set_varname(self, varname=None, ind=-1):
         """
-        Sets name of the variable of the given index (if varname is None:
-        'V' appended by the variable index is used as varame).
+        Sets name of the variable of the given index.
+
+        Parameters
+        ----------
+        varname : str, optional
+            name to be set, by default "V" followed by the variable index is
+            used.
+        ind : int, default: -1
+            index of the variable for which the name is given (negative integer
+            for indexing from the end)
         """
+        fname = 'set_varname'
+
         if ind < 0:
             ii = self.nv + ind
         else:
             ii = ind
 
         if ii < 0 or ii >= self.nv:
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         if varname is None:
@@ -130,15 +278,18 @@ class Img(object):
     # ------------------------------------------------------------------------
     def set_dimension(self, nx, ny, nz, newval=np.nan):
         """
-        Sets dimensions and update shape of values array (by possible
-        truncation or extension).
+        Sets dimension of the grid, i.e. number of cells along each axis.
 
-        :param nx, ny, nz:  (int) dimensions (number of cells) in x, y, z
-                                direction
-        :param newval:      (float) new value to insert if the array of values
-                                has to be extended
+        Sets grid dimension and updates the array of variables values (by
+        truncation or extension if needed).
+
+        Parameters
+        ----------
+        nx, ny, nz : ints
+            number of grid cells along each axis
+        newval : float, default: `numpy.nan`
+            new value to be inserted in the array `.val` (if needed)
         """
-
         # Truncate val array (along reduced dimensions)
         self.val = self.val[:, 0:nz, 0:ny, 0:nx]
 
@@ -158,7 +309,12 @@ class Img(object):
     # ------------------------------------------------------------------------
     def set_spacing(self, sx, sy, sz):
         """
-        Sets cell size (sx, sy, sz).
+        Sets spacing, i.e. cell size along each axis.
+
+        Parameters
+        ----------
+        sx, sy, sz : floats
+            cell size along each axis
         """
         self.sx = float(sx)
         self.sy = float(sy)
@@ -168,7 +324,12 @@ class Img(object):
     # ------------------------------------------------------------------------
     def set_origin(self, ox, oy, oz):
         """
-        Sets grid origin (ox, oy, oz).
+        Sets grid origin (bottom-lower-left corner).
+
+        Parameters
+        ----------
+        ox, oy, oz : floats
+            origin of the grid (bottom-lower-left corner)
         """
         self.ox = float(ox)
         self.oy = float(oy)
@@ -178,7 +339,18 @@ class Img(object):
     # ------------------------------------------------------------------------
     def set_grid(self, nx, ny, nz, sx, sy, sz, ox, oy, oz, newval=np.nan):
         """
-        Sets grid (dimension, cell size, and origin).
+        Sets grid geometry (dimension, cell size, and origin).
+
+        Parameters
+        ----------
+        nx, ny, nz : ints
+            number of grid cells along each axis
+        sx, sy, sz : floats
+            cell size along each axis
+        ox, oy, oz : floats
+            origin of the grid (bottom-lower-left corner)
+        newval : float, default: `numpy.nan`
+            new value to be inserted in the array `.val` (if needed)
         """
         self.set_dimension(nx, ny, nz, newval)
         self.set_spacing(sx, sy, sz)
@@ -191,23 +363,44 @@ class Img(object):
                iy0=0, iy1=None,
                iz0=0, iz1=None,
                iv0=0, iv1=None,
-               newval=np.nan,
-               newvarname=""):
+               newval=np.nan, newvarname=""):
         """
-        Resizes the image.
-        According to the x(, y, z) direction, the slice from ix0 to ix1-1
-        (iy0 to iy1-1, iz0 to iz1-1) is considered (if None, ix1(, iy1, iz1)
-        is set to nx(, ny, nz)), deplacing the origin from ox(, oy, oz)
-        to ox+ix0*sx(, oy+iy0*sy, oz+iz0*sz), and inserting value newval at
-        possible new locations:
+        Resizes the image (including "variable" direction).
 
-        :param ix0, ix1:    (int or None) indices for x direction ix0 < ix1
-        :param iy0, iy1:    (int or None) indices for y direction iy0 < iy1
-        :param iz0, iz1:    (int or None) indices for z direction iz0 < iz1
-        :param iv0, iv1:    (int or None) indices for v direction iv0 < iv1
-        :param newval:      (float) new value to insert at possible new location
-        :param newvarname:  (string) prefix for new variable name(s)
+        Keeps slices from `ix0` (included) to `ix1` (excluded) (with step of 1)
+        along x direction, and similarly for y, z and v (variable) direction.
+        The origin (`.ox`, `.oy`, `.oz`) is updated accordingly. New value `newval`
+        is inserted at possible new locations and new variable name `newvarname`
+        (followed by an index) is used for possible new variable(s).
+
+        Parameters
+        ----------
+        ix0 : int, default: 0
+            index of first slice along x direction
+        ix1 : int, optional
+            1+index of last slice along x direction (`ix0` < `ix1`), by default
+            number of cells in x direction (`.nx`) is used
+        iy0 : int, default: 0
+            index of first slice along y direction
+        iy1 : int, optional
+            1+index of last slice along y direction (`iy0` < `iy1`), by default
+            number of cells in y direction (`.ny`) is used
+        iz0 : int, default: 0
+            index of first slice along z direction
+        iz1 : int, optional
+            1+index of last slice along z direction (`iz0` < `iz1`), by default
+            number of cells in z direction (`.nz`) is used
+        iz0 : int, default: 0
+            index of first slice along z direction
+        iz1 : int, optional
+            1+index of last slice along z direction (`iz0` < `iz1`), by default
+            number of cells in z direction (`.nz`) is used
+        newval : float, default: `numpy.nan`
+            new value to be inserted in the array `.val` (if needed)
+        newvarname : str, default: ''
+            prefix for new variable (if needed)
         """
+        fname = 'resize'
 
         if ix1 is None:
             ix1 = self.nx
@@ -222,19 +415,19 @@ class Img(object):
             iv1 = self.nv
 
         if ix0 >= ix1:
-            print("Nothing is done! (invalid indices along x)")
+            print(f'ERROR ({fname}): invalid index(es) along x')
             return None
 
         if iy0 >= iy1:
-            print("Nothing is done! (invalid indices along y)")
+            print(f'ERROR ({fname}): invalid index(es) along y')
             return None
 
         if iz0 >= iz1:
-            print("Nothing is done! (invalid indices along z)")
+            print(f'ERROR ({fname}): invalid index(es) along z')
             return None
 
         if iv0 >= iv1:
-            print("Nothing is done! (invalid indices along v)")
+            print(f'ERROR ({fname}): invalid index(es) along v')
             return None
 
         initShape = self.val.shape
@@ -267,10 +460,11 @@ class Img(object):
                        ['newvarname' + '{}'.format(n0[0]+i) for i in range(n1[0])]
 
         # Update nx, ny, nz, nv
-        self.nx = self.val.shape[3]
-        self.ny = self.val.shape[2]
-        self.nz = self.val.shape[1]
-        self.nv = self.val.shape[0]
+        self.nv, self.nz, self.ny, self.nx = self.val.shape
+        # self.nx = self.val.shape[3]
+        # self.ny = self.val.shape[2]
+        # self.nz = self.val.shape[1]
+        # self.nv = self.val.shape[0]
 
         # Update ox, oy, oz
         self.ox = self.ox + ix0 * self.sx
@@ -283,20 +477,21 @@ class Img(object):
         """
         Inserts one or several variable(s) at a given index.
 
-        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
-                            variable:
-                            if type is int/float: one constant variable is
-                                inserted
-                            if tuple/list/ndarray: its size must be a multiple
-                                of self.nx*self.ny*self.nz
-        :param varname: (string, list or 1-d array of strings or None)
-                            name(s) of the new variable(s), if not given (None),
-                            default variable names are set ("V<num>", where
-                            <num> starts from the number of variables before
-                            inserting)
-        :param ind:     (int) index where the new variable(s) is (are) inserted
+        Parameters
+        ----------
+        val : float or array-like, default: `numpy.nan`
+            value(s) of the new variable(s); the size of the array must be
+                - a multiple of the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
+                - or 1 (a float is considered of size 1); in this case the value
+                is duplicated once over all grid cells
+        varname : str or 1D array-like of strs, optional
+            name(s) of the new variable(s); by default variable names are set
+            to "V<num>", where <num> starts from the number of variables before
+            the insertion)
+        ind : int, default: 0
+            index where the new variable(s) is (are) inserted (negative integer
+            for indexing from the end)
         """
-
         fname = 'insert_var'
 
         # Check / set ind
@@ -306,7 +501,7 @@ class Img(object):
             ii = ind
 
         if ii < 0 or ii > self.nv:
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         # Check val, set valarr (array of values)
@@ -347,50 +542,53 @@ class Img(object):
     # ------------------------------------------------------------------------
     def append_var(self, val=np.nan, varname=None):
         """
-        Appends one or several variable(s).
+        Appends (i.e. inserts at the end) one or several variable(s).
 
-        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
-                            variable:
-                            if type is int/float: one constant variable is
-                                inserted
-                            if tuple/list/ndarray: its size must be a multiple
-                                of self.nx*self.ny*self.nz
-        :param varname: (string, list or 1-d array of strings or None)
-                            name(s) of the new variable(s), if not given (None),
-                            default variable names are set ("V<num>", where
-                            <num> starts from the number of variables before
-                            appending)
+        Equivalent to `insert_var` with keyword argument `ind=-1`.
+
+        Parameters
+        ----------
+        val : float or array-like, default: `numpy.nan`
+            value(s) of the new variable(s); the size of the array must be
+                - a multiple of the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
+                - or 1 (a float is considered of size 1); in this case the value
+                is duplicated once over all grid cells
+        varname : str or 1D array-like of strs, optional
+            name(s) of the new variable(s); by default variable names are set
+            to "V<num>", where <num> starts from the number of variables before
+            the insertion)
         """
-
         self.insert_var(val=val, varname=varname, ind=self.nv)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
     def remove_var(self, ind=None, indlist=None):
         """
-        Removes variable(s) (of given index-es).
+        Removes variable(s) of given index(es).
 
-        :param ind:     (int or list of ints) index or list of index-es of the
-                            variable(s) to be removed
-
-        :param indlist: used for ind if ind is not given (None)
-                            (obsolete, kept for compatibility with older
-                                versions)
+        Parameters
+        ----------
+        ind : int or 1D array-like of ints
+            index(es) of the variable(s) to be removed
+        indlist : int or 1D array-like of ints
+            deprecated (used in place of `ind` if `ind=None`)
         """
+        fname = 'remove_var'
 
         if ind is None:
             ind = indList
             if ind is None:
-                print("Nothing is done! (no index given)")
+                # print(f'WARNING ({fname}): no index given')
                 return None
 
         ind = np.atleast_1d(ind).reshape(-1)
         if ind.size == 0:
+            # print(f'WARNING ({fname}): no index given')
             return None
 
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         ind = np.setdiff1d(np.arange(self.nv), ind)
@@ -418,16 +616,21 @@ class Img(object):
     # ------------------------------------------------------------------------
     def set_var(self, val=np.nan, varname=None, ind=-1):
         """
-        Sets one variable (of given index).
+        Sets values and name of one variable (of given index).
 
-        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
-                            variable:
-                            if type is int/float: constant variable
-                            if tuple/list/ndarray: must contain nx*ny*nz values
-        :param varname: (string or None) name of the variable
-        :param ind:     (int) index where the variable to be set
+        Parameters
+        ----------
+        val : float or array-like, default: `numpy.nan`
+            value(s) of variable to be set; the size of the array must be
+                - the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
+                - or 1 (a float is considered of size 1); in this case the value
+                is duplicated once over all grid cells
+        varname : str, optional
+            name of the variable to be set
+        ind : int, default: -1
+            index of the variable to be set (negative integer for indexing from
+            the end)
         """
-
         fname = 'set_var'
 
         if ind < 0:
@@ -436,7 +639,7 @@ class Img(object):
             ii = ind
 
         if ii < 0 or ii >= self.nv:
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
@@ -457,21 +660,24 @@ class Img(object):
     # ------------------------------------------------------------------------
     def extract_var(self, ind=None, indlist=None):
         """
-        Extracts variable(s) (of given index-es).
-        (May be used for reordering / duplicating variables.)
+        Extracts variable(s) (of given index(es)).
 
-        :param ind:     (int or list of ints) index or list of index-es of the
-                            variable(s) to be extracted (kept)
+        May be used for reordering / duplicating variables.
 
-        :param indlist: used for ind if ind is not given (None)
-                            (obsolete, kept for compatibility with older
-                                versions)
+        Parameters
+        ----------
+        ind : int or 1D array-like of ints
+            index(es) of the variable(s) to be extracted (kept),
+            note: use `ind=[]` to remove all variables
+        indlist : int or 1D array-like of ints
+            deprecated (used in place of `ind` if `ind=None`)
         """
+        fname = 'extract_var'
 
         if ind is None:
             ind = indList
             if ind is None:
-                print("Nothing is done! (no index given)")
+                print(f'ERROR ({fname}): no index given')
                 return None
 
         ind = np.atleast_1d(ind).reshape(-1)
@@ -481,7 +687,7 @@ class Img(object):
 
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         # Update val array
@@ -499,14 +705,20 @@ class Img(object):
         """
         Gets unique values of one variable (of given index).
 
-        :param ind: (int) index of the variable
-        :param ignore_missing_value:
-                    (bool) if True: missing value (nan), if present, are ignored;
-                        if False: missing value (nan), if present, is retrieved in
-                        output
+        Parameters
+        ----------
+        ind : int, default: 0
+            index of the variable for which the unique values are retrieved
+        ignore_missing_value : bool
+            - if True: missing values (`numpy.nan`) are ignored (if present)
+            - if False: value `numpy.nan` is retrieved in output if present
 
-        :return:    (1-dimensional array) unique values of the variable
+        Returns
+        -------
+        unique_val : 1D array
+            unique values of the variable
         """
+        fname = 'get_unique_one_var'
 
         if ind < 0:
             ii = self.nv + ind
@@ -514,7 +726,7 @@ class Img(object):
             ii = ind
 
         if ii < 0 or ii >= self.nv:
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         uval = np.unique(self.val[ii])
@@ -528,22 +740,27 @@ class Img(object):
     # ------------------------------------------------------------------------
     def get_prop_one_var(self, ind=0, density=True, ignore_missing_value=True):
         """
-        Gets proportions (density or count) of unique values of one
-        variable (of given index).
+        Gets proportions (density or count) of unique values of one variable (of given index).
 
-        :param ind:     (int) index of the variable
-        :param density: (bool) computes densities if True and counts otherwise
-        :param ignore_missing_value:
-                        (bool) if True: missing value (nan), if present, are
-                            ignored; if False: missing value (nan), if present,
-                            is taken into account
+        Parameters
+        ----------
+        ind : int, default: 0
+            index of the variable for which the proportions are retrieved
+        density : bool
+            - if True: density (proportions) is retrieved
+            - if False: counts (number of occurrences) are retrieved
+        ignore_missing_value : bool
+            - if True: missing values (`numpy.nan`) are ignored (if present)
+            - if False: value `numpy.nan` is retrieved in output if present
 
-        :return out:    (2-tuple of 1-dimensional array)
-                            out[0]: (1-dimensional array) unique values of
-                                    the variable
-                            out[1]: (1-dimensional array) densities or counts of
-                                    the unique values
+        Returns
+        -------
+        unique_val: 1D array
+            unique values of the variable
+        prop: 1D array
+            density (proportions) or counts of the unique values of the variable
         """
+        fname = 'get_prop_one_var'
 
         if ind < 0:
             ii = self.nv + ind
@@ -551,7 +768,7 @@ class Img(object):
             ii = ind
 
         if ii < 0 or ii >= self.nv:
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         uv, cv = np.unique(self.val[ii], return_counts=True)
@@ -564,22 +781,25 @@ class Img(object):
         if density:
             cv = cv / np.sum(cv)
 
-        return (uv, cv)
+        return uv, cv
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
     def get_unique(self, ignore_missing_value=True):
         """
-        Gets unique values among all variables.
+        Gets unique values over all the variables.
 
-        :param ignore_missing_value:
-                    (bool) if True: missing value (nan), if present, are ignored;
-                        if False: missing value (nan), if present, is retrieved in
-                        output
+        Parameters
+        ----------
+        ignore_missing_value : bool
+            - if True: missing values (`numpy.nan`) are ignored (if present)
+            - if False: value `numpy.nan` is retrieved in output if present
 
-        :return:    (1-dimensional array) unique values found in any variable
+        Returns
+        -------
+        unique_val : 1D array
+            unique values over all the variables
         """
-
         uval = np.unique(self.val)
 
         if ignore_missing_value:
@@ -593,21 +813,25 @@ class Img(object):
         """
         Gets proportions (density or count) of unique values for each variable.
 
-        :param density: (bool) computes densities if True and counts otherwise
-        :param ignore_missing_value:
-                        (bool) if True: missing value (nan), if present, are
-                            ignored; if False: missing value (nan), if present,
-                            is taken into account
+        Parameters
+        ----------
+        density : bool
+            - if True: density (proportions) is retrieved
+            - if False: counts (number of occurrences) are retrieved
+        ignore_missing_value : bool
+            - if True: missing values (`numpy.nan`) are ignored (if present)
+            - if False: value `numpy.nan` is retrieved in output if present
 
-        :return out:    (list (of length 2) of 1-dimensional array)
-                            out[0]: (1-dimensional array) unique values found in
-                                any variable
-                            out[1]: ((self.nv, len(out[0])) array) densities or
-                                counts of the unique values:
-                                out[i, j]: density or count of the j-th unique
-                                    value for the i-th variable
+        Returns
+        -------
+        unique_val: 1D array
+            unique values of the variable
+        prop: 2D array
+            density (proportions) or counts of the values `unique_val` for
+            each variable:
+                - prop[i, j]: proportion or count of value `unique_val[j]` for
+                the variable `i`
         """
-
         uv_all = self.get_unique(ignore_missing_value)
         n = len(uv_all)
         cv_all = np.zeros((self.nv, n))
@@ -628,13 +852,13 @@ class Img(object):
                 else:
                     cv_all[i, uv_all==v] = cv[j]
 
-        return (uv_all, cv_all)
+        return uv_all, cv_all
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
     def flipx(self):
         """
-        Flips variable values according to x direction.
+        Flips variable values according to x axis.
         """
         self.val = self.val[:,:,:,::-1]
     # ------------------------------------------------------------------------
@@ -642,7 +866,7 @@ class Img(object):
     # ------------------------------------------------------------------------
     def flipy(self):
         """
-        Flips variable values according to y direction.
+        Flips variable values according to y axis.
         """
         self.val = self.val[:,:,::-1,:]
     # ------------------------------------------------------------------------
@@ -650,7 +874,7 @@ class Img(object):
     # ------------------------------------------------------------------------
     def flipz(self):
         """
-        Flips variable values according to z direction.
+        Flips variable values according to z axis.
         """
         self.val = self.val[:,::-1,:,:]
     # ------------------------------------------------------------------------
@@ -658,7 +882,7 @@ class Img(object):
     # ------------------------------------------------------------------------
     def flipv(self):
         """
-        Flips variable values according to v direction.
+        Flips variable values according to v (variable) axis.
         """
         self.val = self.val[::-1,:,:,:]
         self.varname = self.varname[::-1]
@@ -667,8 +891,9 @@ class Img(object):
     # ------------------------------------------------------------------------
     def permxy(self):
         """
-        Permutes / swaps x and y directions.
-        (Obsolete, use swap_xy)
+        Permutes / swaps x and y axes.
+
+        (Deprecated, use `swap_xy()`.)
         """
         self.swap_xy()
     # ------------------------------------------------------------------------
@@ -676,17 +901,19 @@ class Img(object):
     # ------------------------------------------------------------------------
     def permxz(self):
         """
-        Permutes / swaps x and z directions.
-        (Obsolete, use swap_xz)
+        Permutes / swaps x and z axes.
+
+        (Deprecated, use `swap_xz()`.)
         """
         self.swap_xz()
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def permzy(self):
+    def permyz(self):
         """
-        Permutes / swaps y and z directions.
-        (Obsolete, use swap_yz)
+        Permutes / swaps y and z axes.
+
+        (Deprecated, use `swap_yz()`.)
         """
         self.swap_yz()
     # ------------------------------------------------------------------------
@@ -727,8 +954,9 @@ class Img(object):
     # ------------------------------------------------------------------------
     def transpose_xyz_to_xzy(self):
         """
-        Apply transposition, send original x, y, z axes to x, z, y axes.
-        Equivalent to swap_yz.
+        Applies transposition: sends original x, y, z axes to x, z, y axes.
+
+        Equivalent to `swap_yz()`.
         """
         self.val = self.val.transpose((0, 2, 1, 3))
         self.nx, self.ny, self.nz = self.nx, self.nz, self.ny
@@ -739,8 +967,9 @@ class Img(object):
     # ------------------------------------------------------------------------
     def transpose_xyz_to_yxz(self):
         """
-        Apply transposition, send original x, y, z axes to y, x, z axes.
-        Equivalent to swap_xy.
+        Applies transposition: sends original x, y, z axes to y, x, z axes.
+
+        Equivalent to `swap_xy()`.
         """
         self.val = self.val.transpose((0, 1, 3, 2))
         self.nx, self.ny, self.nz = self.ny, self.nx, self.nz
@@ -751,7 +980,7 @@ class Img(object):
     # ------------------------------------------------------------------------
     def transpose_xyz_to_yzx(self):
         """
-        Apply transposition, send original x, y, z axes to y, z, x axes.
+        Applies transposition: sends original x, y, z axes to y, z, x axes.
         """
         self.val = self.val.transpose((0, 2, 3, 1))
         self.nx, self.ny, self.nz = self.nz, self.nx, self.ny
@@ -762,7 +991,7 @@ class Img(object):
     # ------------------------------------------------------------------------
     def transpose_xyz_to_zxy(self):
         """
-        Apply transposition, send original x, y, z axes to z, x, y axes.
+        Applies transposition: sends original x, y, z axes to z, x, y axes.
         """
         self.val = self.val.transpose((0, 3, 1, 2))
         self.nx, self.ny, self.nz = self.ny, self.nz, self.nx
@@ -773,8 +1002,9 @@ class Img(object):
     # ------------------------------------------------------------------------
     def transpose_xyz_to_zyx(self):
         """
-        Apply transposition, send original x, y, z axes to z, y, x axes.
-        Equivalent to swap_xz.
+        Applies transposition: sends original x, y, z axes to z, y, x axes.
+
+        Equivalent to `swap_xz()`.
         """
         self.val = self.val.transpose((0, 3, 2, 1))
         self.nx, self.ny, self.nz = self.nz, self.ny, self.nx
@@ -783,61 +1013,104 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     def nxyzv(self):
+        """
+        Returns the size of the array `.val`, i.e. number of variables times number of grid cells.
+        """
         return self.nx * self.ny * self.nz * self.nv
 
     def nxyz(self):
+        """
+        Returns the number of grid cells.
+        """
         return self.nx * self.ny * self.nz
 
     def nxy(self):
+        """
+        Returns the number of grid cells in a xy-section.
+        """
         return self.nx * self.ny
 
     def nxz(self):
+        """
+        Returns the number of grid cells in a xz-section.
+        """
         return self.nx * self.nz
 
     def nyz(self):
+        """
+        Returns the number of grid cells in a yz-section.
+        """
         return self.ny * self.nz
 
     def xmin(self):
+        """
+        Returns min coordinate of the grid along x axis.
+        """
         return self.ox
 
     def ymin(self):
+        """
+        Returns min coordinate of the grid along y axis.
+        """
         return self.oy
 
     def zmin(self):
+        """
+        Returns min coordinate of the grid along z axis.
+        """
         return self.oz
 
     def xmax(self):
+        """
+        Returns max coordinate of the grid along x axis.
+        """
         return self.ox + self.nx * self.sx
 
     def ymax(self):
+        """
+        Returns max coordinate of the grid along y axis.
+        """
         return self.oy + self.ny * self.sy
 
     def zmax(self):
+        """
+        Returns max coordinate of the grid along z axis.
+        """
         return self.oz + self.nz * self.sz
 
     def x(self):
         """
-        Returns 1-dimensional array of x coordinates (array of shape (self.nx,)).
+        Returns 1D array of "unique" x coordinates of the grid cell centers.
+
+        The returned array is of shape (`.nx`, ).
         """
         return self.ox + 0.5 * self.sx + self.sx * np.arange(self.nx)
 
     def y(self):
         """
-        Returns 1-dimensional array of y coordinates (array of shape (self.ny,)).
+        Returns 1D array of "unique" y coordinates of the grid cell centers.
+
+        The returned array is of shape (`.ny`, ).
         """
         return self.oy + 0.5 * self.sy + self.sy * np.arange(self.ny)
 
     def z(self):
         """
-        Returns 1-dimensional array of z coordinates (array of shape (self.nz,)).
+        Returns 1D array of "unique" z coordinates of the grid cell centers.
+
+        The returned array is of shape (`.nz`, ).
         """
         return self.oz + 0.5 * self.sz + self.sz * np.arange(self.nz)
 
     def xx(self):
         """
-        Returns mesh of x coordinates:
-            3-dimensional array of shape (self.nz, self.ny, self.nx)
-            with the x coordinates of each grid cell.
+        Returns 3D array of x coordinates of the grid cell centers.
+
+        Returns
+        -------
+        out : 3D array of shape (`.nz`, `.ny`, `.nx`)
+            out[iz, iy, ix]: x coordinate of the grid cell center of index
+                iz, iy, ix along axis iz, iy, ix respectively
         """
         return np.tile(self.ox + 0.5 * self.sx + self.sx * np.arange(self.nx), self.ny*self.nz).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -846,9 +1119,13 @@ class Img(object):
 
     def yy(self):
         """
-        Returns mesh of y coordinates:
-            3-dimensional array of shape (self.nz, self.ny, self.nx)
-            with the y coordinates of each grid cell.
+        Returns 3D array of y coordinates of the grid cell centers.
+
+        Returns
+        -------
+        out : 3D array of shape (`.nz`, `.ny`, `.nx`)
+            out[iz, iy, ix]: y coordinate of the grid cell center of index
+                iz, iy, ix along axis iz, iy, ix respectively
         """
         return np.tile(np.repeat(self.oy + 0.5 * self.sy + self.sy * np.arange(self.ny), self.nx), self.nz).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -857,9 +1134,13 @@ class Img(object):
 
     def zz(self):
         """
-        Returns mesh of z coordinates:
-            3-dimensional array of shape (self.nz, self.ny, self.nx)
-            with the z coordinates of each grid cell.
+        Returns 3D array of z coordinates of the grid cell centers.
+
+        Returns
+        -------
+        out : 3D array of shape (`.nz`, `.ny`, `.nx`)
+            out[iz, iy, ix]: z coordinate of the grid cell center of index
+                iz, iy, ix along axis iz, iy, ix respectively
         """
         return np.repeat(self.oz + 0.5 * self.sz + self.sz * np.arange(self.nz), self.nx*self.ny).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -868,27 +1149,37 @@ class Img(object):
 
     def ix(self):
         """
-        Returns 1-dimensional array of x index (array of shape (self.nx,)).
+        Returns 1D array of "unique" index of grid cell along x axis.
+
+        The returned array is of shape (`.nx`, ).
         """
         return np.arange(self.nx)
 
     def iy(self):
         """
-        Returns 1-dimensional array of y index (array of shape (self.ny,)).
+        Returns 1D array of "unique" index of grid cell along y axis.
+
+        The returned array is of shape (`.ny`, ).
         """
         return np.arange(self.ny)
 
     def iz(self):
         """
-        Returns 1-dimensional array of z index (array of shape (self.nz,)).
+        Returns 1D array of "unique" index of grid cell along z axis.
+
+        The returned array is of shape (`.nz`, ).
         """
         return np.arange(self.nz)
 
     def ixx(self):
         """
-        Returns mesh of x indexes:
-            3-dimensional array of shape (self.nz, self.ny, self.nx)
-            with the x indexes of each grid cell.
+        Returns 3D array of index along x axis of the grid cells.
+
+        Returns
+        -------
+        out : 3D array of shape (`.nz`, `.ny`, `.nx`)
+            out[iz, iy, ix]: index along x axis of the grid cell of index
+                iz, iy, ix along axis iz, iy, ix respectively
         """
         return np.tile(np.arange(self.nx), self.ny*self.nz).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -897,9 +1188,13 @@ class Img(object):
 
     def iyy(self):
         """
-        Returns mesh of y indexes:
-            3-dimensional array of shape (self.nz, self.ny, self.nx)
-            with the y indexes of each grid cell.
+        Returns 3D array of index along y axis of the grid cells.
+
+        Returns
+        -------
+        out : 3D array of shape (`.nz`, `.ny`, `.nx`)
+            out[iz, iy, ix]: index along y axis of the grid cell of index
+                iz, iy, ix along axis iz, iy, ix respectively
         """
         return np.tile(np.repeat(np.arange(self.ny), self.nx), self.nz).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -908,9 +1203,13 @@ class Img(object):
 
     def izz(self):
         """
-        Returns mesh of z indexes:
-            3-dimensional array of shape (self.nz, self.ny, self.nx)
-            with the z indexes of each grid cell.
+        Returns 3D array of index along z axis of the grid cells.
+
+        Returns
+        -------
+        out : 3D array of shape (`.nz`, `.ny`, `.nx`)
+            out[iz, iy, ix]: index along z axis of the grid cell of index
+                iz, iy, ix along axis iz, iy, ix respectively
         """
         return np.repeat(np.arange(self.nz), self.nx*self.ny).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -918,21 +1217,44 @@ class Img(object):
         # return zz
 
     def vmin(self):
+        """
+        Returns 1D array of min value of each variable, ignoring `numpy.nan` entries.
+
+        The returned array is of shape (`.nv`, ).
+        """
         return np.nanmin(self.val.reshape(self.nv,self.nxyz()),axis=1)
 
     def vmax(self):
+        """
+        Returns 1D array of max value of each variable, ignoring `numpy.nan` entries.
+
+        The returned array is of shape (`.nv`, ).
+        """
         return np.nanmax(self.val.reshape(self.nv,self.nxyz()),axis=1)
 # ============================================================================
 
 # ============================================================================
 class PointSet(object):
     """
-    Defines a point set:
-        npt:     (int) size of the point set (number of points)
-        nv:      (int) number of variables (including x, y, z coordinates)
-        val:     ((nv,npt) array) attribute(s) / variable(s) values
-        varname: (list of string (or string)) variable names
-        name:    (string) name of the point set
+    Class defining a point set.
+
+    Attributes
+    ----------
+    npt : int, default: 0
+        number of points
+    nv : int, default: 0
+        number of variables including x, y, z coordinates
+    val : 2D array of float of shape (`nv`, `npt`)
+        variable values:
+            - val[i, j]: value of the i-th variable for the j-th point
+    varname : list of str, of length `nv`
+        variable names:
+            - varname[i]: name of the i-th variable
+    name : str
+        name of the point set
+
+    Methods
+    -------
     """
 
     def __init__(self,
@@ -940,14 +1262,22 @@ class PointSet(object):
                  nv=0, val=np.nan, varname=None,
                  name=""):
         """
-        Inits function for the class:
+        Inits an instance of the class.
 
-        :param val: (int/float or tuple/list/ndarray) value(s) of the new
-                        variable:
-                        if type is int/float: constant variable
-                        if tuple/list/ndarray: must contain npt values
+        Parameters
+        ----------
+        npt : int, default: 0
+            number of points
+        nv : int, default: 0
+            number of variable(s) / attribute(s)
+        val : float or array-like of size `nv*npt`
+            attribute(s) / variable(s) values
+        varname : list of str, of length `nv`
+            variable names:
+            - varname[iv]: name of the variable iv
+        name : str, default: ''
+            name of the point set
         """
-
         fname = 'PointSet'
 
         self.npt = int(npt)
@@ -1005,9 +1335,8 @@ class PointSet(object):
     # ------------------------------------------------------------------------
     def set_default_varname(self):
         """
-        Sets default variable names: 'X', 'Y', 'Z', 'V0', 'V1', ...
+        Sets default variable names: ('X', 'Y', 'Z', 'V0', 'V1', ...).
         """
-
         self.varname = []
 
         if self.nv > 0:
@@ -1027,9 +1356,18 @@ class PointSet(object):
     # ------------------------------------------------------------------------
     def set_varname(self, varname=None, ind=-1):
         """
-        Sets name of the variable of the given index (if varname is None:
-        'V' appended by the variable index is used as varname).
+        Sets name of the variable of the given index.
+
+        Parameters
+        ----------
+        varname : str, optional
+            name to be set, by default "V" followed by the variable index is
+            used.
+        ind : int, default: -1
+            index of the variable for which the name is given (negative integer
+            for indexing from the end)
         """
+        fname = 'set_varname'
 
         if ind < 0:
             ii = self.nv + ind
@@ -1037,7 +1375,7 @@ class PointSet(object):
             ii = ind
 
         if ii < 0 or ii >= self.nv:
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         if varname is None:
@@ -1050,20 +1388,21 @@ class PointSet(object):
         """
         Inserts one or several variable(s) at a given index.
 
-        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
-                            variable:
-                            if type is int/float: one constant variable is
-                                inserted
-                            if tuple/list/ndarray: its size must be a multiple
-                                of self.npt
-        :param varname: (string, or tuple/list/1-d array of strings or None)
-                            name(s) of the new variable(s), if not given (None),
-                            default variable names are set ("V<num>", where
-                            <num> starts from the number of variables before
-                            inserting)
-        :param ind:     (int) index where the new variable(s) is (are) inserted
+        Parameters
+        ----------
+        val : float or array-like, default: `numpy.nan`
+            value(s) of the new variable(s); the size of the array must be
+                - a multiple of the number of points (i.e. `.npt`)
+                - or 1 (a float is considered of size 1); in this case the value
+                is duplicated once over all points
+        varname : str or 1D array-like of strs, optional
+            name(s) of the new variable(s); by default variable names are set
+            to "V<num>", where <num> starts from the number of variables before
+            the insertion)
+        ind : int, default: 0
+            index where the new variable(s) is (are) inserted (negative integer
+            for indexing from the end)
         """
-
         fname = 'insert_var'
 
         # Check / set ind
@@ -1073,7 +1412,7 @@ class PointSet(object):
             ii = ind
 
         if ii < 0 or ii > self.nv:
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         # Check val, set valarr (array of values)
@@ -1114,50 +1453,53 @@ class PointSet(object):
     # ------------------------------------------------------------------------
     def append_var(self, val=np.nan, varname=None):
         """
-        Appends one or several variable(s).
+        Appends (i.e. inserts at the end) one or several variable(s).
 
-        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
-                            variable:
-                            if type is int/float: one constant variable is
-                                inserted
-                            if tuple/list/ndarray: its size must be a multiple
-                                of self.nx*self.ny*self.nz
-        :param varname: (string, or tuple/list/1-d array of strings or None)
-                            name(s) of the new variable(s), if not given (None),
-                            default variable names are set ("V<num>", where
-                            <num> starts from the number of variables before
-                            appending)
+        Equivalent to `insert_var` with keyword argument `ind=-1`.
+
+        Parameters
+        ----------
+        val : float or array-like, default: `numpy.nan`
+            value(s) of the new variable(s); the size of the array must be
+                - a multiple of the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
+                - or 1 (a float is considered of size 1); in this case the value
+                is duplicated once over all grid cells
+        varname : str or 1D array-like of strs, optional
+            name(s) of the new variable(s); by default variable names are set
+            to "V<num>", where <num> starts from the number of variables before
+            the insertion)
         """
-
         self.insert_var(val=val, varname=varname, ind=self.nv)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
     def remove_var(self, ind=None, indlist=None):
         """
-        Removes variable(s) (of given index-es).
+        Removes variable(s) of given index(es).
 
-        :param ind:     (int or list of ints) index or list of index-es of the
-                            variable(s) to be removed
-
-        :param indlist: used for ind if ind is not given (None)
-                            (obsolete, kept for compatibility with older
-                                versions)
+        Parameters
+        ----------
+        ind : int or 1D array-like of ints
+            index(es) of the variable(s) to be removed
+        indlist : int or 1D array-like of ints
+            deprecated (used in place of `ind` if `ind=None`)
         """
+        fname = 'remove_var'
 
         if ind is None:
             ind = indList
             if ind is None:
-                print("Nothing is done! (no index given)")
+                # print(f'WARNING ({fname}): no index given')
                 return None
 
         ind = np.atleast_1d(ind).reshape(-1)
         if ind.size == 0:
+            # print(f'WARNING ({fname}): no index given')
             return None
 
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         ind = np.setdiff1d(np.arange(self.nv), ind)
@@ -1184,16 +1526,21 @@ class PointSet(object):
     # ------------------------------------------------------------------------
     def set_var(self, val=np.nan, varname=None, ind=-1):
         """
-        Sets one variable (of given index).
+        Sets values and name of one variable (of given index).
 
-        :param val:     (int/float or tuple/list/ndarray) value(s) of the new
-                            variable:
-                            if type is int/float: constant variable
-                            if tuple/list/ndarray: must contain npt values
-        :param varname: (string or None) name of the new variable
-        :param ind:     (int) index where the variable to be set
+        Parameters
+        ----------
+        val : float or array-like, default: `numpy.nan`
+            value(s) of variable to be set; the size of the array must be
+                - the number of points (i.e. `.npt`)
+                - or 1 (a float is considered of size 1); in this case the value
+                is duplicated once over all points
+        varname : str, optional
+            name of the variable to be set
+        ind : int, default: -1
+            index of the variable to be set (negative integer for indexing from
+            the end)
         """
-
         fname = 'set_var'
 
         if ind < 0:
@@ -1202,7 +1549,7 @@ class PointSet(object):
             ii = ind
 
         if ii < 0 or ii >= self.nv:
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
@@ -1223,21 +1570,24 @@ class PointSet(object):
     # ------------------------------------------------------------------------
     def extract_var(self, ind=None, indlist=None):
         """
-        Extracts variable(s) (of given index-es).
-        (May be used for reordering / duplicating variables.)
+        Extracts variable(s) (of given index(es)).
 
-        :param ind:     (int or list of ints) index or list of index-es of the
-                            variable(s) to be extracted (kept)
+        May be used for reordering / duplicating variables.
 
-        :param indlist: used for ind if ind is not given (None)
-                            (obsolete, kept for compatibility with older
-                                versions)
+        Parameters
+        ----------
+        ind : int or 1D array-like of ints
+            index(es) of the variable(s) to be extracted (kept),
+            note: use `ind=[]` to remove all variables
+        indlist : int or 1D array-like of ints
+            deprecated (used in place of `ind` if `ind=None`)
         """
+        fname = 'extract_var'
 
         if ind is None:
             ind = indList
             if ind is None:
-                print("Nothing is done! (no index given)")
+                print(f'ERROR ({fname}): no index given')
                 return None
 
         ind = np.atleast_1d(ind).reshape(-1)
@@ -1247,7 +1597,7 @@ class PointSet(object):
 
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         # Update val array
@@ -1265,12 +1615,15 @@ class PointSet(object):
         """
         Removes point(s) (of given index-es).
 
-        :param ind:     (int or list of ints) index or list of index-es of the
-                            point(s) to be removed
+        Parameters
+        ----------
+        ind : int or 1D array-like of ints
+            index(es) of the point(s) to be removed
         """
+        fname = 'remove_point'
 
         if ind is None:
-            print("Nothing is done! (no index given)")
+            # print(f'WARNING ({fname}): no index given')
             return None
 
         ind = np.atleast_1d(ind).reshape(-1)
@@ -1279,7 +1632,7 @@ class PointSet(object):
 
         ind[ind<0] = self.npt + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.npt)):
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         ind = np.setdiff1d(np.arange(self.npt), ind)
@@ -1292,7 +1645,6 @@ class PointSet(object):
         """
         Removes all points.
         """
-
         # Update val array
         self.val = np.zeros((self.nv, 0))
 
@@ -1303,9 +1655,8 @@ class PointSet(object):
     # ------------------------------------------------------------------------
     def remove_uninformed_point(self):
         """
-        Removes point(s) where all variables are undefined (nan).
+        Removes point(s) where all variables are undefined (`numpy.nan`).
         """
-
         # Get index of variables that are not coordinates
         ind = np.where([not (self.varname[i] in ('x', 'X', 'y', 'Y', 'z', 'Z')) for i in range(self.nv)])
 
@@ -1321,12 +1672,18 @@ class PointSet(object):
         """
         Extracts point(s) (of given index-es).
 
-        :param ind:     (int or list of ints) index or list of index-es of the
-                            point(s) to be extracted (kept)
+        May be used for reordering / duplicating points.
+
+        Parameters
+        ----------
+        ind : int or 1D array-like of ints
+            index(es) of the point(s) to be extracted (kept),
+            note: use `ind=[]` to remove all points
         """
+        fname = 'extract_point'
 
         if ind is None:
-            print("Nothing is done! (no index given)")
+            print(f'ERROR ({fname}): no index given')
             return None
 
         ind = np.atleast_1d(ind).reshape(-1)
@@ -1336,7 +1693,7 @@ class PointSet(object):
 
         ind[ind<0] = self.npt + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.npt)):
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         # Update val array
@@ -1351,14 +1708,20 @@ class PointSet(object):
         """
         Gets unique values of one variable (of given index).
 
-        :param ind: (int) index of the variable
-        :param ignore_missing_value:
-                    (bool) if True: missing value (nan), if present, are ignored;
-                        if False: missing value (nan), if present, is retrieved in
-                        output
+        Parameters
+        ----------
+        ind : int, default: 0
+            index of the variable for which the unique values are retrieved
+        ignore_missing_value : bool
+            - if True: missing values (`numpy.nan`) are ignored (if present)
+            - if False: value `numpy.nan` is retrieved in output if present
 
-        :return:    (1-dimensional array) unique values of the variable
+        Returns
+        -------
+        unique_val : 1D array
+            unique values of the variable
         """
+        fname = 'get_unique_one_var'
 
         if ind < 0:
             ii = self.nv + ind
@@ -1366,7 +1729,7 @@ class PointSet(object):
             ii = ind
 
         if ii < 0 or ii >= self.nv:
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         uval = np.unique(self.val[ii])
@@ -1380,22 +1743,27 @@ class PointSet(object):
     # ------------------------------------------------------------------------
     def get_prop_one_var(self, ind=0, density=True, ignore_missing_value=True):
         """
-        Gets proportions (density or count) of unique values of one
-        variable (of given index).
+        Gets proportions (density or count) of unique values of one variable (of given index).
 
-        :param ind:     (int) index of the variable
-        :param density: (bool) computes densities if True and counts otherwise
-        :param ignore_missing_value:
-                        (bool) if True: missing value (nan), if present, are
-                            ignored; if False: missing value (nan), if present,
-                            is taken into account
+        Parameters
+        ----------
+        ind : int, default: 0
+            index of the variable for which the proportions are retrieved
+        density : bool
+            - if True: density (proportions) is retrieved
+            - if False: counts (number of occurrences) are retrieved
+        ignore_missing_value : bool
+            - if True: missing values (`numpy.nan`) are ignored (if present)
+            - if False: value `numpy.nan` is retrieved in output if present
 
-        :return out:    (2-tuple of 1-dimensional array)
-                            out[0]: (1-dimensional array) unique values of
-                                    the variable
-                            out[1]: (1-dimensional array) densities or counts of
-                                    the unique values
+        Returns
+        -------
+        unique_val: 1D array
+            unique values of the variable
+        prop: 1D array
+            density (proportions) or counts of the unique values of the variable
         """
+        fname = 'get_prop_one_var'
 
         if ind < 0:
             ii = self.nv + ind
@@ -1403,7 +1771,7 @@ class PointSet(object):
             ii = ind
 
         if ii < 0 or ii >= self.nv:
-            print("Nothing is done! (invalid index)")
+            print(f'ERROR ({fname}): invalid index')
             return None
 
         uv, cv = np.unique(self.val[ii], return_counts=True)
@@ -1416,99 +1784,151 @@ class PointSet(object):
         if density:
             cv = cv / np.sum(cv)
 
-        return (uv, cv)
+        return uv, cv
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
     def to_dict(self):
         """
-        Returns PointSet as a dictionary.
+        Returns the point set as a dictionary.
         """
         return {name: values for name, values in zip(self.varname, self.val)}
     # ------------------------------------------------------------------------
 
     def x(self):
+        """
+        Returns 1D array of x coordinate of the points (assuming stored in variable index 0).
+
+        The returned array is `.var[0]`.
+        """
         return self.val[0]
 
     def y(self):
+        """
+        Returns 1D array of y coordinate of the points (assuming stored in variable index 1).
+
+        The returned array is `.var[1]`.
+        """
         return self.val[1]
 
     def z(self):
+        """
+        Returns 1D array of z coordinate of the points (assuming stored in variable index 2).
+
+        The returned array is `.var[2]`.
+        """
         return self.val[2]
 
     def xmin(self):
+        """
+        Returns min x coordinate of the points (assuming stored in variable index 0).
+        """
         return np.min(self.val[0])
 
     def ymin(self):
+        """
+        Returns min y coordinate of the points (assuming stored in variable index 1).
+        """
         return np.min(self.val[1])
 
     def zmin(self):
+        """
+        Returns min z coordinate of the points (assuming stored in variable index 2).
+        """
         return np.min(self.val[2])
 
     def xmax(self):
+        """
+        Returns max x coordinate of the points (assuming stored in variable index 0).
+        """
         return np.max(self.val[0])
 
     def ymax(self):
+        """
+        Returns max y coordinate of the points (assuming stored in variable index 1).
+        """
         return np.max(self.val[1])
 
     def zmax(self):
+        """
+        Returns max z coordinate of the points (assuming stored in variable index 2).
+        """
         return np.max(self.val[2])
 # ============================================================================
 
 # ============================================================================
 class Img_interp_func(object):
     """
-    Defines an interpolator from one variable defined in a geone image,
-    based on `scipy.ndimage.map_coordinates`(see documentation for
-    parameters `order`, `mode`, `cval` below).
+    Class defining an interpolator (function) of one variable in an image.
 
+    The class is callable, an interpolator (function) with one argument, a
+    2D array, each line defining the coordinates of a point where the
+    interpolation is done; the number of columns (coordinates) is equal to the
+    number of "no slice" axes (see parameters `ix`, `iy`, `iz` below), each
+    column being the coordinate in the corresponding axis direction.
+
+    Attributes
+    ----------
+    im : :class:`Img`
+        image (3D grid with attached variable(s))
+    ind : int, default: 0
+        index of the variable to be interpolated
+    ix : int or None (default)
+        - if not given (`None`), no slice, all values in the array of the
+        variable values along the x axis are considered, and coordinate along x
+        axis will be required for points passed to the interpolator
+        - if given (not None): slice index along x axis, only the given slice
+        corresponding to x axis in the array of the variable values is considered,
+        and coordinate along x axis will not be considered for points passed to
+        the interpolator
+    iy : int or None (default)
+        same as `ix`, but for y axis
+    iz : int or None (default)
+        same as `ix`, but for z axis
+    angle_var: bool, default: False
+        - if True: variable to be interpolated are considered as angles, and the
+        interpolation is done by first interpolating the cosine and the sine of
+        the angle values and then by retrieving the corresponding angle (by
+        using the function `numpy.arctan2`)
+        - if False: values are interpolated directly
+    angle_deg: bool, default: True
+        used if `angle_var=True`:
+        - if True: the variable values are angles in degrees
+        - if False: the variable values are angles in radians
+    order : int, default 1
+        order for the interpolator within the domain of the image grid
+        (1: linear, 3: cubic, 5: quintic)
+    mode : str, default 'nearest'
+        determines the behaviour of the interpolator beyond the domain of the
+        image grid
+    cval : float, default `numpy.nan`
+        value used for evaluation beyond the domain of the image grid, used if
+        `mode=constant`
+
+    Notes
+    -----
     See web page
         docs.scipy.org/doc/scipy/tutorial/interpolate/ND_regular_grid.html
     under "Uniformly space data", introducing a similar class originating
     from the Johanness Buchner's 'regulargrid' package:
         github.com/JohannesBuchner/regulargrid/
 
-    Parameters:
-    im:         (geone.img.Img) geone image
-    ind:        (int) variable index (default: 0)
-    ix, iy, iz: (int or None): for ix (similar for iy, iz):
-                    if None: no slice, all values in the array of the
-                        variable values along the x-axis are considered,
-                        and coordinate along x-axis will be a variable
-                        for the interpolator
-                    if not None: slice index along x-axis,
-                        only the given slice corresponding to x-axis
-                        in the array of the variable values is considered,
-                        and coordinate along x-axis will not be a variable
-                        for the interpolator
-    order:      (int: 1, 3, or 5) order for the interpolator within the
-                    domain of the image grid
-                    (1: linear, 3: cubic, 5:quintic)
-    mode:       (str) determines the behaviour of the interpolator beyond
-                    the domain of the image grid
-    cval:       (float) value used for evaluation beyond the domain of the
-                    image grid, used if `mode=constant`
-
-    Returns an interpolator (function) whose argument is a 2d-array, each
-    line defining the coordinates of a point where the interpolation is
-    done; the number of columns (coordinates) is equal to the number of
-    "no slice" axes (see parameters `ix`, `iy`, `iz` above), each column
-    being to the coordinate in the corresponding axis direction
-
-    Example:
+    Examples
+    --------
     >>> # Define an image
     >>> nx, ny, nz = 4, 5, 6
     >>> sx, sy, sz = 1.0, 1.0, 1.0
     >>> ox, oy, oz = 0.0, 0.0, 0.0
-    >>> im = Img(nx=nx, ny=ny, nz=nz,
-    >>>          sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
+    >>> im = Img(nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
     >>>          nv=1, val=np.arange(nx*ny*nz))
+    >>>
     >>> # Define an interpolator
     >>> interp = Img_interp_func(im)
+    >>>
     >>> # Evaluate the interpolator on some points
     >>> points = np.array([[2.2, 3.4, 1.2], [2.7, 4.1, 5.2]])
     >>> v = interp(points)
-
+    >>>
     >>> interp2 = scipy.interpolate.RegularGridInterpolator(
     >>>     (im.x(), im.y(), im.z()), im.val[0].transpose(2, 1, 0),
     >>>     method='linear', bounds_error=False, fill_value=np.nan)
@@ -1518,8 +1938,51 @@ class Img_interp_func(object):
     def __init__(self,
                  im,
                  ind=0, ix=None, iy=None, iz=None,
+                 angle_var=False, angle_deg=True,
                  order=1, mode='nearest', cval=np.nan):
+        """
+        Inits an instance of the class (interpolator function).
 
+        Parameters
+        ----------
+        im : :class:`Img`
+            image (3D grid with attached variable(s))
+        ind : int, default: 0
+            index of the variable to be interpolated
+        ix : int or None (default)
+            - if not given (`None`), no slice, all values in the array of the
+            variable values along the x axis are considered, and coordinate along x
+            axis will be required for points passed to the interpolator
+            - if given (not None): slice index along x axis, only the given slice
+            corresponding to x axis in the array of the variable values is considered,
+            and coordinate along x axis will not be considered for points passed to
+            the interpolator
+        iy : int or None (default)
+            same as `ix`, but for y axis
+        iz : int or None (default)
+            same as `ix`, but for z axis
+        angle_var: bool, default: False
+            - if True: variable to be interpolated are considered as angles, and the
+            interpolation is done by first interpolating the cosine and the sine of
+            the angle values and then by retrieving the corresponding angle (by
+            using the function `numpy.arctan2`)
+            - if False: values are interpolated directly
+        angle_deg: bool, default: True
+            used if `angle_var=True`:
+            - if True: the variable values are angles in degrees
+            - if False: the variable values are angles in radians
+        order : int, default 1
+            order for the interpolator within the domain of the image grid
+            (1: linear, 3: cubic, 5: quintic)
+        mode : str, default 'nearest'
+            determines the behaviour of the interpolator beyond the domain of the
+            image grid
+        cval : float, default `numpy.nan`
+            value used for evaluation beyond the domain of the image grid, used if
+            `mode=constant`
+
+        Callable, consisting of an interpolator (see doc of the class).
+        """
         fname = 'Img_interp_func'
 
         # Check image
@@ -1610,6 +2073,11 @@ class Img_interp_func(object):
                     print(f'ERROR ({fname}): none of the axis correpsonds to "no slice"')
                     return None
 
+        self.angle_var = angle_var
+        self.angle_deg = angle_deg
+        if angle_var and angle_deg:
+            # Transform values (angles) in radians
+            values = np.pi/180.0*values
         self.values = values
         self.spacing = spacing
         self.min_coords = min_coords
@@ -1617,20 +2085,51 @@ class Img_interp_func(object):
         self.mode = mode
         self.cval = cval
 
+    # def __call__(self, points):
+    #     """
+    #     Returns the evaluation of the interpolation at the given points.
+    #
+    #     Parameters
+    #     ----------
+    #     points : 2D array (or 1D array-like)
+    #         each row is a point where the interpolation is done, the columns
+    #         correspond to the coordinates along the "no sliced" axes (see doc of
+    #         the class); notes, with d is the number of "no sliced" axes
+    #         (dimension):
+    #         * 1D array-like of size d is accepted for the evaluation at one point
+    #         * if d=1: 1D array-like of size m is accepted for the evaluation at
+    #         m points
+    #     """
+    #     points = np.atleast_2d(points)
+    #
+    #     if self.values.ndim == 1:
+    #         points = points.reshape(-1, 1)
+    #
+    #     # Convert points coordinates to grid (pixel) coordinates
+    #     grid_coords = (points - self.min_coords)/self.spacing
+    #
+    #     # Do interpolation
+    #     return scipy.ndimage.map_coordinates(self.values, grid_coords.T, order=self.order, mode=self.mode, cval=self.cval)
+
     def __call__(self, points):
         """
-        Defines the evaluation of the interpolation at the given
-        points.
+        Interpolates a variable (defined on an image grid) at given points.
 
-        :param points:  (2d-array of shape (n, d)) each row is
-                            a point where the interpolation is done,
-                            the d columns corresponds to the d
-                            coordinates along the "no sliced" axes
-                        notes:
-                        * list of length d or 1d-array of shape (d, ) is
-                            accepted for the evaluation at one point
-                        * if d=1: list of length m or 1d-array of shape (m, )
-                            is accepted for the evaluation at m points
+        Parameters
+        ----------
+        points : 2D array (or 1D array-like)
+            each row is a point where the interpolation is done, the columns
+            correspond to the coordinates along the "no sliced" axes (see doc of
+            the class); notes, with d is the number of "no sliced" axes
+            (dimension):
+            * 1D array-like of size d is accepted for the evaluation at one point
+            * if d=1: 1D array-like of size m is accepted for the evaluation at
+            m points
+
+        Returns
+        -------
+        y : 1D array
+            evaluation of the variable at `points`
         """
         points = np.atleast_2d(points)
 
@@ -1641,26 +2140,40 @@ class Img_interp_func(object):
         grid_coords = (points - self.min_coords)/self.spacing
 
         # Do interpolation
-        return scipy.ndimage.map_coordinates(self.values, grid_coords.T, order=self.order, mode=self.mode, cval=self.cval)
+        if self.angle_var:
+            # Interpolation of cosine and sine of the values (already in radians)
+            cos = scipy.ndimage.map_coordinates(np.cos(self.values), grid_coords.T, order=self.order, mode=self.mode, cval=self.cval)
+            sin = scipy.ndimage.map_coordinates(np.sin(self.values), grid_coords.T, order=self.order, mode=self.mode, cval=self.cval)
+            y = np.arctan2(sin, cos)
+            if self.angle_deg:
+                # Transform the result in degree
+                y = 180.0/np.pi*y
+            return y
+        else:
+            return scipy.ndimage.map_coordinates(self.values, grid_coords.T, order=self.order, mode=self.mode, cval=self.cval)
 # ============================================================================
 
 # ----------------------------------------------------------------------------
 def copyImg(im, varInd=None, varIndList=None):
     """
-    Copies an image (Img class), with all variables or a subset of variables.
+    Copies an image, with all or a subset of variables.
 
-    :param im:          (Img class) input image
-    :param varInd:      (sequence of ints or int or None) index-es of
-                            the variables to be copied, use varInd=[] to copy
-                            only the grid geometry
-                            (default None: all variables are copied)"
-    :param varIndList:  used for varInd if varInd is not given (None)
-                            (obsolete, kept for compatibility with older
-                            versions)
+    Parameters
+    ----------
+    im : :class:`Img`
+        input image (3D grid with attached variables)
+    varInd : int or 1D array-like of ints, or None (default)
+        index(es) of the variables to be copied, use `varInd=[]` to copy only
+        the grid geometry; by default (`None`): all variables are copied"
+    varIndList : int or 1D array-like of ints, or None (default)
+        deprecated (used in place of `varInd` if `varInd=None`)
 
-    :return:   (Img class) a copy of the input image (not a reference to)
+    Returns
+    -------
+    im_out : :class:`Img`
+        a copy of the input image (not a reference to) with the specified
+        variable(s).
     """
-
     fname = 'copyImg'
 
     if varInd is None:
@@ -1670,54 +2183,59 @@ def copyImg(im, varInd=None, varIndList=None):
         varInd = np.atleast_1d(varInd).reshape(-1)
         if varInd.size == 0:
             # empty list of variable
-            imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
-                        sx=im.sx, sy=im.sy, sz=im.sz,
-                        ox=im.ox, oy=im.oy, oz=im.oz,
-                        nv=0, name=im.name)
+            im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                         sx=im.sx, sy=im.sy, sz=im.sz,
+                         ox=im.ox, oy=im.oy, oz=im.oz,
+                         nv=0, name=im.name)
         else:
             # Check if each index is valid
             if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
                 print(f'ERROR ({fname}): invalid index-es')
                 return None
-            imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
-                        sx=im.sx, sy=im.sy, sz=im.sz,
-                        ox=im.ox, oy=im.oy, oz=im.oz,
-                        nv=len(varInd), val=im.val[varInd], varname=[im.varname[i] for i in varInd],
-                        name=im.name)
-            # imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
-            #             sx=im.sx, sy=im.sy, sz=im.sz,
-            #             ox=im.ox, oy=im.oy, oz=im.oz,
-            #             nv=len(varInd),
-            #             name=im.name)
+            im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                         sx=im.sx, sy=im.sy, sz=im.sz,
+                         ox=im.ox, oy=im.oy, oz=im.oz,
+                         nv=len(varInd), val=im.val[varInd], varname=[im.varname[i] for i in varInd],
+                         name=im.name)
+            # im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+            #              sx=im.sx, sy=im.sy, sz=im.sz,
+            #              ox=im.ox, oy=im.oy, oz=im.oz,
+            #              nv=len(varInd),
+            #              name=im.name)
             # for i, iv in enumerate(varInd):
-            #     imOut.set_var(val=im.val[iv,...], varname=im.varname[iv], ind=i)
+            #     im_out.set_var(val=im.val[iv,...], varname=im.varname[iv], ind=i)
     else:
         # Copy all variables
-        imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
-                    sx=im.sx, sy=im.sy, sz=im.sz,
-                    ox=im.ox, oy=im.oy, oz=im.oz,
-                    nv=im.nv, val=np.copy(im.val), varname=list(np.copy(np.asarray(im.varname))),
-                    name=im.name)
+        im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                     sx=im.sx, sy=im.sy, sz=im.sz,
+                     ox=im.ox, oy=im.oy, oz=im.oz,
+                     nv=im.nv, val=np.copy(im.val), varname=list(np.copy(np.asarray(im.varname))),
+                     name=im.name)
 
-    return imOut
+    return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 def copyPointSet(ps, varInd=None, varIndList=None):
     """
-    Copies point set, with all variables or a subset of variables.
+    Copies a point set, with all or a subset of variables.
 
-    :param ps:          (PointSet class) input point set
-    :param varInd:      (sequence of ints or int or None) index-es of the
-                            variables to be copied (default None: all variables)"
-    :param varIndList:  used for varInd if varInd is not given (None)
-                            (obsolete, kept for compatibility with older
-                            versions)
+    Parameters
+    ----------
+    ps : :class:`PointSet`
+        input point set
+    varInd : int or 1D array-like of ints, or None (default)
+        index(es) of the variables to be copied, use `varInd=[]` to copy only
+        the grid geometry; by default (`None`): all variables are copied"
+    varIndList : int or 1D array-like of ints, or None (default)
+        deprecated (used in place of `varInd` if `varInd=None`)
 
-    :return:    (PointSet class) a copy of the input point set (not a reference
-                    to)
+    Returns
+    -------
+    ps_out : :class:`PointSeet`
+        a copy of the input point set (not a reference to) with the specified
+        variable(s).
     """
-
     fname = 'copyPointSet'
 
     if varInd is None:
@@ -1729,32 +2247,48 @@ def copyPointSet(ps, varInd=None, varIndList=None):
         if np.sum([iv in range(ps.nv) for iv in varInd]) != len(varInd):
             print(f'ERROR ({fname}): invalid index-es')
             return None
-        psOut = PointSet(npt=ps.npt,
-                         nv=len(varInd), val=ps.val[varInd], varname=[ps.varname[i] for i in varInd],
-                         name=ps.name)
+        ps_out = PointSet(npt=ps.npt,
+                          nv=len(varInd), val=ps.val[varInd], varname=[ps.varname[i] for i in varInd],
+                          name=ps.name)
     else:
         # Copy all variables
-        psOut = PointSet(npt=ps.npt,
-                         nv=ps.nv, val=np.copy(ps.val), varname=list(np.copy(np.asarray(ps.varname))),
-                         name=ps.name)
+        ps_out = PointSet(npt=ps.npt,
+                          nv=ps.nv, val=np.copy(ps.val), varname=list(np.copy(np.asarray(ps.varname))),
+                          name=ps.name)
 
-    return psOut
+    return ps_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
     """
-    Convert real point coordinates to index grid.
+    Converts float point coordinates to index grid.
 
-    :param x, y, z:     (float, or 1-d array of floats) coordinates of point(s)
-    :param sx, sy, sz:  (float) cell size along each axis
-    :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
+    Parameters
+    ----------
+    x : float or 1D array-like
+        x coordinate of point(s) (`x`, `y`, `z` of same size)
+    y : float or 1D array-like
+        y coordinate of point(s) (`x`, `y`, `z` of same size)
+    z : float or 1D array-like
+        z coordinate of point(s) (`x`, `y`, `z` of same size)
+    sx, sy, sz : float, default: 1.0
+        cell size along each axis
+    ox, oy, oz : float, default: 0.0
+        origin of the grid (bottom-lower-left corner)
 
-    :return (ix, iy, iz):
-                        (3-tuple of floats or 1-d of floats) grid node index
-                            in x-, y-, z-axis direction respectively for each
-                            point given in input
-                            Warning: no check if the node(s) is within the grid
+    Returns
+    -------
+    ix : float or 1D array
+        grid node index along x axis for each input points
+    iy : float or 1D array
+        grid node index along y axis for each input points
+    iz : float or 1D array
+        grid node index along z axis for each input points
+
+    Notes
+    -----
+    Warning: no check is done if the input point(s) is (are) within the grid.
     """
     # Get node index (nearest node)
     c = np.array((np.atleast_1d(x), np.atleast_1d(y), np.atleast_1d(z))).T
@@ -1782,14 +2316,23 @@ def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
 # ----------------------------------------------------------------------------
 def gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz):
     """
-    Convert a grid index (3 indices) into a single grid index.
+    Converts grid index(es) into single grid cell index(es).
 
-    :param ix, iy, iz:  (int) grid index in x-, y-, z-axis direction
-    :param nx, ny, nz:  (int) number of grid cells along each axis
+    Parameters
+    ----------
+    ix : float or 1D array
+        grid cell index(s) along x axis (`ix`, `iy`, `iz` of same size)
+    iy : float or 1D array
+        grid cell index(s) along y axis (`ix`, `iy`, `iz` of same size)
+    iz : float or 1D array
+        grid cell index(s) along z axis (`ix`, `iy`, `iz` of same size)
+    nx, ny, nz : int
+        number of grid cells along each axis
 
-    :return i:  (int) single grid index
-                    Note: ix, iy, iz can be ndarray of same shape, then i is a
-                    ndarray of that shape
+    Returns
+    -------
+    i : int or 1D array
+        single grid cell index (`ix + nx*iy + nx*ny*iz`) of input indexes
     """
     return ix + nx * (iy + ny * iz)
 # ----------------------------------------------------------------------------
@@ -1797,15 +2340,23 @@ def gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz):
 # ----------------------------------------------------------------------------
 def singleGridIndexToGridIndex(i, nx, ny, nz):
     """
-    Convert a single into a grid index (3 indices).
+    Converts single grid cell index(es) into grid cell index(es) along each axis.
 
-    :param i:           (int) single grid index
-    :param nx, ny, nz:  (int) number of grid cells along each axis
+    Parameters
+    ----------
+    i : int or 1D array
+        single grid index
+    nx, ny, nz : ints
+        number of grid cells along each axis
 
-    :return (ix, iy, iz):
-                        (3-tuple) grid index in x-, y-, z-axis direction
-                            Note: i can be a ndarray, then ix, iy, iz in output
-                            are ndarray (of same shape)
+    Returns
+    -------
+    ix : float or 1D array
+        grid cell index(s) along x axis of input single grid index(es)
+    iy : float or 1D array
+        grid cell index(s) along y axis of input single grid index(es)
+    iz : float or 1D array
+        grid cell index(s) along z axis of input single grid index(es)
     """
     nxy = nx*ny
     iz = i//nxy
@@ -1819,21 +2370,24 @@ def singleGridIndexToGridIndex(i, nx, ny, nz):
 # ----------------------------------------------------------------------------
 def imageToPointSet(im, remove_uninformed_cell=True):
     """
-    Returns a point set corresponding to the input image.
+    Converts an image into a point set.
 
-    Note that any image cell with no value (i.e. all variables are missing (nan))
-    is not considered in the output point set.
+    Parameters
+    ----------
+    im : :class:`Img`
+        input image (3D grid with attached variables)
+    remove_uninformed_cell : bool, default: True
+        - if True: image grid cells with no value, i.e. with all variable values
+        missing (`numpy.nan`), are not considered in the output point set
+        - if False: every image grid cell are considered in the output point set
 
-    :param im:  (Img class) input image
-    :param remove_uninformed_cell:
-                (bool) if True, any image cell with no value (i.e. all variables
-                    are missing (nan)) is not considered in the output point set;
-                    if False, every image cell are considered in the output point
-                    set
-
-    :return ps: (PointSet class) point set corresponding to the input image
+    Returns
+    -------
+    ps : :class:`PointSet`
+        point set corresponding to the input image, the 3 first variables are the
+        x, y, z coordinates of the grid cell centers, the next variable are the
+        variables from the input image
     """
-
     if remove_uninformed_cell:
         ind_known = ~np.all(np.isnan(im.val), axis=0)
         ps_val = np.vstack((
@@ -1857,36 +2411,53 @@ def aggregateDataPointsWrtGrid(x, y, z, v,
                                sx=1.0, sy=1.0, sz=1.0,
                                ox=0.0, oy=0.0, oz=0.0,
                                op='mean', **kwargs):
-    r"""
-    Remove points out of the grid (defined with given parameters) and aggregate
-    data points falling in a same grid cell by taking the mean coordinates and
-    applying the operation `op` for the value of each variable.
+    """
+    Aggregates points in same cells of a given grid geometry.
 
-    :param x, y, z:     (1-d array of floats) coordinates of point(s)
-    :param v:           (1-d array of floats, or 2-d array of floats)
-                            values attached to point(s), each row of v (if 2d
-                            array) corresponds to a same variable
-    :param nx, ny, nz:  (int) number of grid cells along each axis
-    :param sx, sy, sz:  (float) cell size along each axis
-    :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
-    :param op:          (string) statistic operator, can be:
-                            'max': max
-                            'mean': mean
-                            'min': min
-                            'std': standard deviation
-                            'var': variance
-                            'quantile': quantile
-                                this operator requires the keyword argument
-                                q=<sequence of quantile to compute>
-                            'most_freq': most frequent value (smallest ones if
-                                more than one values with the maximal frequence)
-    :param kwargs:      additional key word arguments passed to np.<op> function,
-                            typically: ddof=1 if op is 'std' or 'var'
+    The points out of the grid (defined with given parameters) are removed and
+    the points falling in a same grid cell are aggregated by taking the mean
+    coordinates and by applying the operation `op` for the value of each variable.
 
-    :return (x, y, z, v):
-                        (4-tuple): points with aggregated information
-                            x, y, z: 1-d arrays of floats
-                            v: 1- or 2-d arrays of floats
+    Parameters
+    ----------
+    x : float or 1D array-like
+        x coordinate of point(s) (`x`, `y`, `z` of same size)
+    y : float or 1D array-like
+        y coordinate of point(s) (`x`, `y`, `z` of same size)
+    z : float or 1D array-like
+        z coordinate of point(s) (`x`, `y`, `z` of same size)
+    v : float or 1D array-like or 2D array-like
+        values attached to point(s), each row (if 2D array) corresponds to a
+        same variable
+    nx, ny, nz : ints
+        number of grid cells along each axis
+    sx, sy, sz : floats, default: 1.0, 1.0, 1.0
+        cell size along each axis
+    ox, oy, oz : floats, default: 0.0, 0.0, 0.0
+        origin of the grid (bottom-lower-left corner)
+    op : str {'min', 'max', 'mean', 'std', 'var', 'quantile', 'most_freq',
+            'random'}, default: 'mean'
+        statistic operator; the function `numpy.<op>` is used except
+            - if `op='most_freq'`: most frequent value (smallest ones if more
+            than one value with the maximal frequence)
+            - if `op='random'`: value from a random point
+        note: `op='quantile'` requires the parameter
+        `q=<sequence of quantile to compute>` that should be passed via `kwargs`
+    kwargs : dict
+        keyword arguments passed to `numpy.<op>` function, e.g.
+        `ddof=1` if `op='std'` or`op='var'`
+
+    Returns
+    -------
+    x_out : float or 1D array
+        x coordinate of aggregated point(s)
+    y_out : float or 1D array
+        y coordinate of aggregated point(s)
+    z_out : float or 1D array
+        z coordinate of aggregated point(s)
+    v_out : float or 1D array or 2D array
+        values attached to aggregated point(s), each row (if 2D array)
+        corresponds to a same variable
     """
     v_ndim = v.ndim
 
@@ -1946,6 +2517,9 @@ def aggregateDataPointsWrtGrid(x, y, z, v,
             def func(arr):
                 arr_unique, arr_count = np.unique(arr, return_counts=True)
                 return arr_unique[np.argmax(arr_count)]
+        elif op == 'random':
+            def func(arr):
+                return arr[np.random.randint(arr.size)]
         else:
             print(f"ERROR ({fname}): unkown operation '{op}', nothing done!")
             return None
@@ -1979,78 +2553,83 @@ def imageFromPoints(points, values=None, varname=None,
                     indicator_var=False, count_var=False,
                     op='mean', **kwargs):
     """
-    Returns an image whose the grid geometry is set by the given parameters or
-    computed from the given points (coordinates), and with variable(s) defined as
-    aggregated points values according to the operation `op` (points falling in
-    the same grid cells are aggregated). In addition an indicator variable with
-    value 1 at cells cointaining at least one points (0 elsewhere) and a count
-    variable indicating the number of points in the cells, can be computed.
+    Returns an image from points with attached variables.
 
-    The output image grid geometry is defined according to what is given in
-    input; for x-axis direction (similar for y, z):
-        - `ox` (origin), `nx` (dimension, number of cells)
-            and `sx` (resolution, cell size)
+    The grid geometry of the output image is set by the given parameters or
+    computed from the given point coordinates. The variables attached to grid
+    cells are aggregated point values according to the operation `op` (points
+    falling in the same grid cells are aggregated). In addition an "indicator"
+    variable with value 1 at cells cointaining at least one point (0 elsewhere)
+    and a "count" variable indicating the number of point(s) in the cells, can
+    also be retrieved.
+
+    The output image grid geometry is defined as follows for the x axis (similar
+    for y and z axes):
+        - `ox` (origin), `nx` (number of cells) and `sx` (resolution, cell size)
         - or only `nx`: `ox` and `sx` automatically computed
         - or only `sx`: `ox` and `nx` automatically computed
     In the two last cases, the parameters `xmin_ext`, `xmax_ext`, are used and
-    the approximate limit of the grid in x-axis direction is set to x0, x1,
-    where
-        x0: minimal of x coordinate of the points minus `xmin_ext`
-        x1: maximal of x coordinate of the points plus `xmax_ext`
-    Note that points in 1D or 2D are accepted, if the points are in 1D,
-    the default values
-        `ny`=`nz`=1, `sy`=`sz`=1.0, `oy`=`oz`=-0.5 are used
+    the approximate limit of the grid along x axis is set to x0, x1, where
+        - x0: min x coordinate of the points minus `xmin_ext`
+        - x1: max x coordinate of the points plus `xmax_ext`
+    Note that points in 1D or 2D are accepted, if the points are in 1D, the
+    default values
+        `ny=nz=1`, `sy=sz=1.0`, `oy=oz=-0.5` are used
     and if the points are in 2D, the default values
-        `nz`=1, `sz`=1.0, `oz`=-0.5 are used
+        `nz=1`, `sz=1.0`, `oz=-0.5` are used
 
-    :param points:  (2d-array of floats of shape (n, d)) each row is a point
-                        given in dimension d (1, 2, or 3)
-                        note: list of 1d-array of shape (d, ) is also accepted;
-    :param values:  (None or 1-d array of floats, or 2-d array of floats)
-                        values attached to point(s), each row of v (if 2d
-                        array) corresponds to a same variable
-    :param varname: (None or string or list of strings) variable name
-                        (one name per row of `values`, default names are
-                        used if not given)
-    :param nx, ny, nz:
-                (int or None) number of grid cells along each axis
-    :param sx, sy, sz:
-                (float or None) cell size along each axis
-    :param ox, oy, oz:
-                (float or None) origin of the grid (bottom-lower-left corner)
+    Parameters
+    ----------
+    points : 2D array-like of shape (n, d), or 1D array-like of shape (d, )
+        each row contains the float coordinates of one point in dimension d
+        (1, 2, or 3); note: if 1D array-like, one point at all is given
+    values : 1D or 2D array-like, optional
+        values attached to point(s), each row of v (if 2D array) corresponds
+        to a same variable
+    varname : 1D array of str, or str, optional
+        variable name(s) (one name per row of `values`), by default: names of
+        class `Img` are used
+    nx, ny, nz : ints
+        number of grid cells along each axis (optional, see above for possible
+        inputs)
+    sx, sy, sz : floats
+        cell size along each axis (optional, see above for possible inputs)
+    ox, oy, oz : floats
+        origin of the grid (bottom-lower-left corner) (optional, see above for
+        possible inputs)
+    xmin_ext : float, default: 0.0
+        extension beyond the min x coordinate of the points (see above)
+    xmax_ext : float, default: 0.0
+        extension beyond the max x coordinate of the points (see above)
+    ymin_ext : float, default: 0.0
+        extension beyond the min y coordinate of the points (see above)
+    ymax_ext : float, default: 0.0
+        extension beyond the max y coordinate of the points (see above)
+    zmin_ext : float, default: 0.0
+        extension beyond the min z coordinate of the points (see above)
+    zmax_ext : float, default: 0.0
+        extension beyond the max z coordinate of the points (see above)
+    indicator_var : bool, default: False
+        indicating if the "indicator" variable is added (prepended) (see above)
+    count_var : bool, default: False
+        indicating if the "count" variable is added (prepended) (see above)
+    op : str {'min', 'max', 'mean', 'std', 'var', 'quantile', 'most_freq',
+            'random'}, default: 'mean'
+        statistic operator; the function `numpy.<op>` is used except
+            - if `op='most_freq'`: most frequent value (smallest ones if more
+            than one value with the maximal frequence)
+            - if `op='random'`: value from a random point
+        note: `op='quantile'` requires the parameter
+        `q=<sequence of quantile to compute>` that should be passed via `kwargs`
+    kwargs : dict
+        keyword arguments passed to `numpy.<op>` function, e.g.
+        `ddof=1` if `op='std'` or`op='var'`
 
-    :param xmin_ext:(float) extension from the minimal x coordinate
-    :param xmax_ext:(float) extension from the maximal x coordinate
-    :param ymin_ext:(float) extension from the minimal y coordinate
-    :param ymax_ext:(float) extension from the maximal y coordinate
-    :param zmin_ext:(float) extension from the minimal z coordinate
-    :param zmax_ext:(float) extension from the maximal z coordinate
-
-    :param indicator_var:
-        (bool) indicating if the "indicator_var" variable is added (prepended)
-            (see above)
-    :param count_var:
-        (bool) indicating if the "count" variable is added (prepended)
-            (see above)
-
-    :param op:          (string) statistic operator used for the aggregation
-                            of point values, can be:
-                                'max': max
-                                'mean': mean
-                                'min': min
-                                'std': standard deviation
-                                'var': variance
-                                'quantile': quantile
-                                    this operator requires the keyword argument
-                                    q=<sequence of quantile to compute>
-                                'most_freq': most frequent value (smallest ones if
-                                    more than one values with the maximal frequence)
-    :param kwargs:      additional key word arguments passed to np.<op> function,
-                            typically: ddof=1 if op is 'std' or 'var'
-
-    :return im: (Img class) output image (see above)
+    Returns
+    -------
+    im : :class:`Img`
+        output image (see above)
     """
-
     fname = 'imageFromPoints'
 
     points = np.atleast_2d(points)
@@ -2203,6 +2782,9 @@ def imageFromPoints(points, values=None, varname=None,
                 def func(arr):
                     arr_unique, arr_count = np.unique(arr, return_counts=True)
                     return arr_unique[np.argmax(arr_count)]
+            elif op == 'random':
+                def func(arr):
+                    return arr[np.random.randint(arr.size)]
             else:
                 print(f"ERROR ({fname}): unkown operation '{op}', nothing done!")
                 return None
@@ -2226,51 +2808,20 @@ def pointSetToImage(ps,
                     zmin_ext=0.0, zmax_ext=0.0,
                     op='mean', **kwargs):
     """
-    Returns an image whose the grid geometry is set by the given parameters or
-    computed from the given point set (point coordinates), and with variable(s)
-    defined as aggregated values of the point set according to the operation `op`
-    (points falling in the same grid cells are aggregated). See function
-    `imageFromPoints`.
+    Converts a point set into an image.
 
-    :param ps:  (PointSet class) input point set, with x, y, z-coordinates as
-                    first three variable
-    :param nx, ny, nz:
-                (int or None) number of grid cells along each axis
-    :param sx, sy, sz:
-                (float or None) cell size along each axis
-    :param ox, oy, oz:
-                (float or None) origin of the grid (bottom-lower-left corner)
+    The first three variable of the point set must correspond to x, y, z
+    float coordinates (location of points). Then, it is equivalent to
+        `imageFromPoints(points, values, varname, ...,
+                         indicator_var=False, count_var=False, ...)`,
+    with
+        `points = ps.val[0:3].T`,
+        `values=ps.val[3:].T`,
+        `varname=ps.varname[3:]`,
+    where the fisrt parameter, `ps` is an instance of the class `PointSet`.
 
-    :param xmin_ext:(float) extension from the minimal x coordinate
-    :param xmax_ext:(float) extension from the maximal x coordinate
-    :param ymin_ext:(float) extension from the minimal y coordinate
-    :param ymax_ext:(float) extension from the maximal y coordinate
-    :param zmin_ext:(float) extension from the minimal z coordinate
-    :param zmax_ext:(float) extension from the maximal z coordinate
-
-    :param indicator_var:
-        (bool) indicating if the "indicator" variable is added (prepended)
-            (see above)
-    :param count_var:
-        (bool) indicating if the "count" variable is added (prepended)
-            (see above)
-
-    :param op:          (string) statistic operator used for the aggregation
-                            of point values, can be:
-                                'max': max
-                                'mean': mean
-                                'min': min
-                                'std': standard deviation
-                                'var': variance
-                                'quantile': quantile
-                                    this operator requires the keyword argument
-                                    q=<sequence of quantile to compute>
-    :param kwargs:      additional key word arguments passed to np.<op> function,
-                            typically: ddof=1 if op is 'std' or 'var'
-
-    :return im: (Img class) output image (see above)
+    See function `imageFromPoints`.
     """
-
     fname = 'pointSetToImage'
 
     if ps.nv < 3:
@@ -2281,16 +2832,15 @@ def pointSetToImage(ps,
         print(f'ERROR ({fname}): invalid variable: 3 first ones must be x, y, z coordinates')
         return None
 
-    points = np.array((ps.x(), ps.y(), ps.z())).T
-
-    im = imageFromPoints(points, values=ps.val[3:], varname=ps.varname[3:],
+    # points = np.array((ps.x(), ps.y(), ps.z())).T
+    im = imageFromPoints(ps.val[:3].T, values=ps.val[3:], varname=ps.varname[3:],
                          nx=nx, ny=ny, nz=nz,
                          sx=sx, sy=sy, sz=sz,
                          ox=ox, oy=oy, oz=oz,
                          xmin_ext=xmin_ext, xmax_ext=xmax_ext,
                          ymin_ext=ymin_ext, ymax_ext=ymax_ext,
                          zmin_ext=zmin_ext, zmax_ext=zmax_ext,
-                         indicator_var=indicator_var, count_var=count_var,
+                         indicator_var=False, count_var=False,
                          op=op, **kwargs)
 
     return im
@@ -2299,9 +2849,20 @@ def pointSetToImage(ps,
 # ----------------------------------------------------------------------------
 def isImageDimensionEqual(im1, im2):
     """
-    Checks if grid dimensions of two images are equal.
-    """
+    Checks if the grid dimensions of two images are equal.
 
+    Parameters
+    ----------
+    im1, im2 : :class:`Img`
+        images
+
+    Returns
+    -------
+    bool
+        - True if number of grid cells along each axis are equal for the two
+        images
+        - False otherwise
+    """
     return im1.nx == im2.nx and im1.ny == im2.ny and im1.nz == im2.nz
 # ----------------------------------------------------------------------------
 
@@ -2309,8 +2870,19 @@ def isImageDimensionEqual(im1, im2):
 def isImageEqual(im1, im2):
     """
     Checks if two images are equal (dimension, spacing, origin, variables).
-    """
 
+    Parameters
+    ----------
+    im1, im2 : :class:`Img`
+        images
+
+    Returns
+    -------
+    bool
+        - True if the images are equal (same grid, same variable values,
+        variable names not checked)
+        - False otherwise
+    """
     b = isImageDimensionEqual(im1, im2)
     if b:
         b = im1.sx == im2.sx and im1.sy == im2.sy and im1.sz == im2.sz
@@ -2328,9 +2900,20 @@ def isImageEqual(im1, im2):
 # ----------------------------------------------------------------------------
 def isPointSetEqual(ps1, ps2):
     """
-    Checks if two point sets are equal (npt, nv, variable values).
-    """
+    Checks if two point sets are equal (nb of points, nb of variables, variable values).
 
+    Parameters
+    ----------
+    ps1, ps2 : :class:`PointSet`
+        point sets
+
+    Returns
+    -------
+    bool
+        - True if the point sets are equal (same number of points, same number
+        of variables, same variable values, variable names not checked)
+        - False otherwise
+    """
     b = ps1.npt == ps2.npt and ps1.nv == ps2.nv
     if b:
         ind_isnan1 = np.isnan(ps1.val)
@@ -2344,34 +2927,33 @@ def isPointSetEqual(ps1, ps2):
 # ----------------------------------------------------------------------------
 def indicatorImage(im, ind=0, categ=None, return_categ=False):
     """
-    Retrieve the image with the indicator variable of each category in the list
-    of categories 'categ', from the variable of index 'ind' in the input image
-    'im'.
+    Retrieves the image of the indicator of each given category for the given variable.
 
-    :param im:      (Img class) input image
-    :param ind:     (int) index of the variable in the input image for which
-                        the indicator variable(s) are computed
-    :param categ:   (sequence of values or float (or int) or None)
-                        list of category values: one indicator variable per value
-                        in that list is computed for the variable of index 'ind'
-                        in the input image; if None (default), categ is set to
-                        the list of all distinct values (in increasing order)
-                        taken by the variable of index 'ind' in the input image
-    :param return_categ:
-                    (bool) indicates if the list of category values for which
-                        the indicator variable is computed (corresponding to
-                        `categ`, is returned
+    Parameters
+    ----------
+    im : :class:`Img`
+        input image
+    ind : int, default: 0
+        index of the variable for which the indicator of categories are retrieved
+        (negative integer for indexing from the end)
+    categ : 1D array-like, optional
+        list of category values for which the indicator are retrieved;
+        if not specified (`None`): the list of all distinct values (in increasing
+        order) taken by the variable of index `ind` in the input image is
+        considered
+    return_categ : bool
+        indicates if the list of category values for which the indicator is
+        retrieved (corresponding to `categ`) is returned or not
 
-    :return:    im_out[, categ] (depending on `return_categ` parameter)
-                    im_out:
-                        (Img class) output image with indicator variable(s)
-                            (as many variable(s) as number of category values
-                            given by 'categ')
-                    categ:  (1d-array) category values for which the indicator
-                                variable is computed
-                                (returned if `return_categ`=True)
+    Returns
+    -------
+    im_out : :class:`Img`
+        output image with indicator variable(s) (as many variable(s) as number
+        of category values given by `categ`)
+    categ : 1D array, optional
+        category values for which the indicator variable is retrieved;
+        returned if `return_categ=True`
     """
-
     fname = 'indicatorImage'
 
     # Check (set) ind
@@ -2410,94 +2992,94 @@ def indicatorImage(im, ind=0, categ=None, return_categ=False):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def gatherImages(imlist, varInd=None, keep_varname=False, rem_var_from_source=False, treat_image_one_by_one=False):
+def gatherImages(im_list, varInd=None, keep_varname=False, rem_var_from_source=False, treat_image_one_by_one=False):
     """
-    Gathers images.
+    Gathers images into one image.
 
-    :param imlist:  (list) images to be gathered, they should have the same grid
-                        dimensions
-    :param varInd:  (sequence of ints or int or None) index-es of the variables
-                        of each image from imlist to be retrieved
-                        - if None (default): all variables of each image from
-                            'imlist' are stored in the output image
-                        - else: only the variables of index in varInd of each
-                            image from imlist is stored in the output image
-    :param keep_varname:
-                    (bool) if True, name of the variables are kept from the
-                       source, else (False), default variable names are set
+    Parameters
+    ----------
+    im_list : 1D array-like of instances of :class:`Img`
+        images to be gathered, they should have the same grid dimensions (number
+        of cell along each axis)
+    varInd : 1D array-like or int, optional
+        index(es) of the variables of each image from `im_list` to be retrieved
+        (stored in the output image); by default (`None`): all variables are
+        retrieved
+    keep_varname : bool, default: False
+        - if True: name of the variables are kept from the source images in
+        `im_list`
+        - if False: default variable names are set
+    rem_var_from_source : bool, default: False
+        indicates if gathered variables are removed from the source images in
+        `im_list` (this allows to save memory)
+    treat_image_one_by_one : bool, default: False
+        used only if `rem_var_from_source=True` (otherwise,
+        `treat_image_one_by_one` is ignored (as it was set to False), because
+        there is no need to deal with images one by one;
+        - if True: images in `im_list` are treated one by one, i.e. the variables
+        to be gathered in each image are inserted in the output image and removed
+        from the source (slower, may save memory)
+        - if False: all images in `im_list` are treated at once, i.e. variables
+        to be gathered from all images are inserted in the output image at once
+        (faster)
 
-    :param rem_var_from_source:
-                    (bool) if True, gathered variables are removed from the
-                        source (list of input images) (this allows to save
-                        memory)
-
-    :param treat_image_one_by_one:
-                    (bool) note: if rem_var_from_source is set to False, then
-                        treat_image_one_by_one is ignored (as it was set to
-                        False): there is no need to deal with images one by one
-                        - treat_image_one_by_one=True: images of the input list
-                            are treated one by one, i.e. the variables to be
-                            gathered of each image are inserted in the output
-                            image and removed from the source (slower, may save
-                            memory)
-                        - treat_image_one_by_one=False: all images of the input
-                            list are treated at once, i.e. variables to be
-                            gathered of all images are inserted in the output
-                            image at once (faster)
-
-    :return im: (Img class) output image containing variables to be gathered of
-                    images in imlist
+    Returns
+    -------
+    im_out : :class:`Img`
+        output image containing variables to be gathered from all images in
+        `im_list`; the order of variables is set as follows: variables of
+        index(es) in `varInd` (unique index and in increasing order) of the image
+        `im_list[0]`, then those of image `im_list[1]`, etc.
     """
-
     fname = 'gatherImages'
 
-    if len(imlist) == 0:
+    if len(im_list) == 0:
         return None
 
-    for i in range(1,len(imlist)):
-        if not isImageDimensionEqual(imlist[0], imlist[i]):
+    for i in range(1,len(im_list)):
+        if not isImageDimensionEqual(im_list[0], im_list[i]):
             print(f'ERROR ({fname}): grid dimensions differ, nothing done!')
             return None
 
     if varInd is not None:
         varInd = np.atleast_1d(varInd).reshape(-1)
-        if np.sum([iv in range(im.nv) for im in imlist for iv in varInd]) != len(imlist)*len(varInd):
+        if np.sum([iv in range(im.nv) for im in im_list for iv in varInd]) != len(im_list)*len(varInd):
             print(f'ERROR ({fname}): invalid index-es')
             return None
 
     varname = None # default
     if keep_varname:
         if varInd is not None:
-            varname = [im.varname[iv] for im in imlist for iv in varInd]
+            varname = [im.varname[iv] for im in im_list for iv in varInd]
         else:
-            varname = [im.varname[iv] for im in imlist for iv in range(im.nv)]
+            varname = [im.varname[iv] for im in im_list for iv in range(im.nv)]
 
     if rem_var_from_source:
         # remove variable from source
         if treat_image_one_by_one:
             # treat images one by one
-            val = np.empty(shape=(0, imlist[0].nz, imlist[0].ny, imlist[0].nx))
+            val = np.empty(shape=(0, im_list[0].nz, im_list[0].ny, im_list[0].nx))
             if varInd is not None:
                 ind = np.sort(np.unique(varInd))[::-1] # unique index in decreasing order (for removing variable...)
-                for im in imlist:
+                for im in im_list:
                     val = np.concatenate((val, im.val[varInd]), 0)
                     for iv in ind:
                         im.remove_var(iv)
             else:
-                for im in imlist:
+                for im in im_list:
                     val = np.concatenate((val, im.val), 0)
                     im.remove_allvar()
         else:
             # treat all images at once
             if varInd is not None:
-                val = np.concatenate([im.val[varInd] for im in imlist], 0)
+                val = np.concatenate([im.val[varInd] for im in im_list], 0)
                 ind = np.sort(np.unique(varInd))[::-1] # unique index in decreasing order (for removing variable...)
-                for im in imlist:
+                for im in im_list:
                     for iv in ind:
                         im.remove_var(iv)
             else:
-                val = np.concatenate([im.val for im in imlist], 0)
-                for im in imlist:
+                val = np.concatenate([im.val for im in im_list], 0)
+                for im in im_list:
                     im.remove_allvar()
     else:
         # not remove variable from source
@@ -2506,42 +3088,43 @@ def gatherImages(imlist, varInd=None, keep_varname=False, rem_var_from_source=Fa
         #
         # treat all images at once
         if varInd is not None:
-            val = np.concatenate([im.val[varInd] for im in imlist], 0)
+            val = np.concatenate([im.val[varInd] for im in im_list], 0)
         else:
-            val = np.concatenate([im.val for im in imlist], 0)
+            val = np.concatenate([im.val for im in im_list], 0)
 
-    im = Img(
-            nx=imlist[0].nx, ny=imlist[0].ny, nz=imlist[0].nz,
-            sx=imlist[0].sx, sy=imlist[0].sy, sz=imlist[0].sz,
-            ox=imlist[0].ox, oy=imlist[0].oy, oz=imlist[0].oz,
+    im_out = Img(
+            nx=im_list[0].nx, ny=im_list[0].ny, nz=im_list[0].nz,
+            sx=im_list[0].sx, sy=im_list[0].sy, sz=im_list[0].sz,
+            ox=im_list[0].ox, oy=im_list[0].oy, oz=im_list[0].oz,
             nv=val.shape[0], val=val, varname=varname)
 
-    return im
+    return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 def imageContStat(im, op='mean', **kwargs):
     """
-    Computes "pixel-wise" statistics over every variable of an image.
+    Computes "pixel-wise" statistics over all variables in an image.
 
-    :param im:      (Img class) input image
-    :param op:      (string) statistic operator, can be:
-                        'max': max
-                        'mean': mean
-                        'min': min
-                        'std': standard deviation
-                        'var': variance
-                        'quantile': quantile
-                                    this operator requires the keyword argument
-                                    q=<sequence of quantile to compute>
-    :param kwargs:  additional key word arguments passed to np.<op> function,
-                        typically: ddof=1 if op is 'std' or 'var'
+    Parameters
+    ----------
+    im : :class:`Img`
+        input image
+    op : str {'min', 'max', 'mean', 'std', 'var', 'quantile'}, default: 'mean'
+        statistic operator; the function `numpy.<op>`;
+        note: `op='quantile'` requires the parameter
+        `q=<sequence of quantile to compute>` that should be passed via `kwargs`
+    kwargs : dict
+        keyword arguments passed to `numpy.<op>` function, e.g.
+        `ddof=1` if `op='std'` or`op='var'`
 
-    :return:    (Img class) image with same grid as the input image and one
-                    variable being the pixel-wise statistics according to 'op'
-                    over every variable of the input image
+    Returns
+    -------
+    im_out : :class:`Img`
+        image with same grid as the input image and one variable, the pixel-wise
+        statistics according to operation `op` over all variables in the input
+        image
     """
-
     fname = 'imageContStat'
 
     # Prepare operation
@@ -2570,46 +3153,46 @@ def imageContStat(im, op='mean', **kwargs):
         print(f"ERROR ({fname}): unkown operation '{op}', nothing done!")
         return None
 
-    imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
-                sx=im.sx, sy=im.sy, sz=im.sz,
-                ox=im.ox, oy=im.oy, oz=im.oz,
-                nv=0, val=0.0)
+    im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                 sx=im.sx, sy=im.sy, sz=im.sz,
+                 ox=im.ox, oy=im.oy, oz=im.oz,
+                 nv=0, val=0.0)
 
     vv = func(im.val.reshape(im.nv,-1), axis=0, **kwargs)
     vv = vv.reshape(-1, im.nxyz())
     for v, name in zip(vv, varname):
-        imOut.append_var(v, varname=name)
+        im_out.append_var(v, varname=name)
 
-    return imOut
+    return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageListContStat(im_list, op='mean', ind=0, **kwargs):
+def imageListContStat(im_list, ind=0, op='mean', **kwargs):
     """
-    Computes "pixel-wise" statistics over one variable of a list of images.
+    Computes "pixel-wise" statistics for one variable over all images in a list.
 
-    :param im_list: (list or 1d-array of Img (class)) list of input images
-                        defined on the same grid and having the same variables
-                        (e.g. realizations)
-    :param op:      (string) statistic operator, can be:
-                        'max': max
-                        'mean': mean
-                        'min': min
-                        'std': standard deviation
-                        'var': variance
-                        'quantile': quantile
-                                    this operator requires the keyword argument
-                                    q=<sequence of quantile to compute>
-    :param ind:     (int) index of the variable in the input images for which
-                        the statistics are computed
-    :param kwargs:  additional key word arguments passed to np.<op> function,
-                        typically: ddof=1 if op is 'std' or 'var'
+    Parameters
+    ----------
+    im_list : 1D array-like of instances of :class:`Img`
+        list of input images, they should have the same grid dimensions (number
+        of cell along each axis)
+    ind : int, default: 0
+        index of the variable in each image from `im_list` to be considered
+    op : str {'min', 'max', 'mean', 'std', 'var', 'quantile'}, default: 'mean'
+        statistic operator; the function `numpy.<op>`;
+        note: `op='quantile'` requires the parameter
+        `q=<sequence of quantile to compute>` that should be passed via `kwargs`
+    kwargs : dict
+        keyword arguments passed to `numpy.<op>` function, e.g.
+        `ddof=1` if `op='std'` or`op='var'`
 
-    :return:    (Img class) image with same grid as the input images and one
-                    variable being the pixel-wise statistics according to 'op'
-                    over the variable of index 'ind' of the input images
+    Returns
+    -------
+    im_out : :class:`Img`
+        image with same grid as the input images and one variable, the pixel-wise
+        statistics according to operation `op` over the variable of index `ind`
+        in all images in `im_list`
     """
-
     fname = 'imageListContStat'
 
     # Check input images
@@ -2660,35 +3243,38 @@ def imageListContStat(im_list, op='mean', ind=0, **kwargs):
         print(f"ERROR ({fname}): unkown operation '{op}', nothing done!")
         return None
 
-    imOut = Img(nx=im0.nx, ny=im0.ny, nz=im0.nz,
-                sx=im0.sx, sy=im0.sy, sz=im0.sz,
-                ox=im0.ox, oy=im0.oy, oz=im0.oz,
-                nv=0, val=0.0)
+    im_out = Img(nx=im0.nx, ny=im0.ny, nz=im0.nz,
+                 sx=im0.sx, sy=im0.sy, sz=im0.sz,
+                 ox=im0.ox, oy=im0.oy, oz=im0.oz,
+                 nv=0, val=0.0)
 
     vv = func(np.asarray([im.val[ind] for im in im_list]).reshape(len(im_list),-1), axis=0, **kwargs)
     vv = vv.reshape(-1, im.nxyz())
     for v, name in zip(vv, varname):
-        imOut.append_var(v, varname=name)
+        im_out.append_var(v, varname=name)
 
-    return imOut
+    return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 def imageCategProp(im, categ):
     """
-    Computes "pixel-wise" proportions of given categories over every
-    variable of an image.
+    Computes "pixel-wise" proportions of given categories over all variables in an image.
 
-    :param im:      (Img class) input image
-    :param categ:   (sequence) list of value(s) for which the proportions
-                        are computed
+    Parameters
+    ----------
+    im : :class:`Img`
+        input image
+    categ : 1D array-like
+        list of category values for which the proportions are calculated
 
-    :return:    (Img class) image with same grid as the input image and as many
-                    variable(s) as given by 'categ', being the pixel-wise
-                    proportions of each category in 'categ', over every variable
-                    of the input image
+    Returns
+    -------
+    im_out : :class:`Img`
+        image with same grid as the input image and one variable per category
+        value in `categ`: the pixel-wise proportions, over all variables
+        in the input image
     """
-
     # Array of categories
     categ_arr = np.array(categ, dtype=float).reshape(-1)
 
@@ -2708,23 +3294,25 @@ def imageCategProp(im, categ):
 # ----------------------------------------------------------------------------
 def imageListCategProp(im_list, categ, ind=0):
     """
-    Computes "pixel-wise" proportions of given categories over one variable of a
-    list of images.
+    Computes "pixel-wise" proportions of given categories for one variable over all images in a list.
 
-    :param im_list: (list or 1d-array of Img (class)) list of input images
-                        defined on the same grid and having the same variables
-                        (e.g. realizations)
-    :param categ:   (sequence) list of value(s) for which the proportions
-                        are computed
-    :param ind:     (int) index of the variable in the input images for which
-                        the statistics are computed
+    Parameters
+    ----------
+    im_list : 1D array-like of instances of :class:`Img`
+        list of input images, they should have the same grid dimensions (number
+        of cell along each axis)
+    categ : 1D array-like
+        list of category values for which the proportions are calculated
+    ind : int, default: 0
+        index of the variable in each image from `im_list` to be considered
 
-    :return:    (Img class) image with same grid as the input images and as many
-                    variable(s) as given by 'categ', being the pixel-wise
-                    proportions of each category in 'categ', over the variable
-                    of index 'ind' of the input images
+    Returns
+    -------
+    im_out : :class:`Img`
+        image with same grid as the input image and one variable per category
+        value in `categ`: the pixel-wise proportions, over the variable of index
+        `ind` in all images in `im_list`
     """
-
     fname = 'imageListCategProp'
 
     # Check input images
@@ -2752,43 +3340,47 @@ def imageListCategProp(im_list, categ, ind=0):
     # Array of categories
     categ_arr = np.array(categ, dtype=float).reshape(-1)
 
-    imOut = Img(nx=im0.nx, ny=im0.ny, nz=im0.nz,
-                sx=im0.sx, sy=im0.sy, sz=im0.sz,
-                ox=im0.ox, oy=im0.oy, oz=im0.oz,
-                nv=0, val=0.0)
+    im_out = Img(nx=im0.nx, ny=im0.ny, nz=im0.nz,
+                 sx=im0.sx, sy=im0.sy, sz=im0.sz,
+                 ox=im0.ox, oy=im0.oy, oz=im0.oz,
+                 nv=0, val=0.0)
 
     v = np.asarray([im.val[ind] for im in im_list]).reshape(len(im_list),-1)
     for i, code in enumerate(categ_arr):
         x = 1.0*(v == code)
         np.putmask(x, np.isnan(v), np.nan)
-        imOut.append_var(np.mean(x, axis=0), varname=f'prop{i}')
+        im_out.append_var(np.mean(x, axis=0), varname=f'prop{i}')
 
-    return imOut
+    return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 def imageEntropy(im, varInd=None, varIndList=None):
     """
-    Computes "pixel-wise" entropy from proportions given as variables in an
-    image, i.e. the i-th variable of the input image represents the proportion
-    of the i-th category.
+    Computes "pixel-wise" entropy from proportions given as variables in an image.
 
-    :param im:          (Img class) input image
-    :param varInd:      (sequence of ints or None) index-es of the variables
-                            to take into account (default None: all variables),
-                            (length of varInd should be at least 2)
-    :param varIndList:  used for varInd if varInd is not given (None)
-                            (obsolete, kept for compatibility with older
-                            versions)
+    For each grid cell of (single) index i, the entropy is defined as
+        Ent[i] = - sum_{v} v[i] * log_n(v[i])
+    where v loops on each considered variable, and n is the number of considered
+    variables, assuming that the variables are proportions that sum to 1.0 in each
+    grid cell, i.e. sum_{v} v[i] should be equal to 1.0.
 
-    :return:    (Img class) an image with one variable containing the entropy
-                    for the variable given in input, at pixel i, it is defined
-                    as:
-                        Ent(i) = - sum_{v} p_v(i) * log_n(p(v(i)))
-                    where v loops on each variable and n is the number of
-                    variables. Note that sum_{v} p(v(i)) should be equal to 1
+    Parameters
+    ----------
+    im : :class:`Img`
+        input image
+    varInd : 1D array-like, optional
+        indexes of the variables of the input image to be taken into account,
+        by default (`None`): all variables are considered
+    varIndList : int or 1D array-like of ints, or None (default)
+        deprecated (used in place of `varInd` if `varInd=None`)
+
+    Returns
+    -------
+    im_out : :class:`Img`
+        image with same grid as the input image and one variable, the pixel-wise
+        entropy (see above)
     """
-
     fname = 'imageEntropy'
 
     if varInd is None:
@@ -2807,11 +3399,11 @@ def imageEntropy(im, varInd=None, varIndList=None):
         print(f'ERROR ({fname}): at least 2 indexes should be given')
         return None
 
-    imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
-                sx=im.sx, sy=im.sy, sz=im.sz,
-                ox=im.ox, oy=im.oy, oz=im.oz,
-                nv=1, val=np.nan,
-                name=im.name)
+    im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                 sx=im.sx, sy=im.sy, sz=im.sz,
+                 ox=im.ox, oy=im.oy, oz=im.oz,
+                 nv=1, val=np.nan,
+                 name=im.name)
 
     t = 1. / np.log(len(varInd))
 
@@ -2833,50 +3425,53 @@ def imageEntropy(im, varInd=None, varIndList=None):
                 if ok and abs(s-1.0) > 1.e-5:
                     ok = False
                 if ok:
-                    imOut.val[0][iz][iy][ix] = t*e
+                    im_out.val[0][iz][iy][ix] = t*e
 
-    return imOut
+    return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 def imageCategFromImageOfProp(im, mode='most_probable', target_prop=None, varInd=None, categ=None):
     """
-    Computes a categorical image from proportions given as variables in an
-    image, i.e. the i-th variable of the input image represents the proportion
-    of the i-th category.
+    Retrieves a categorical image from proportions given as variables in an image.
 
-    :param im:          (Img class) input image not
-    :param mode:        (str) defines what is computed for the variable in
-                            the output image:
-                            - 'most_probable': most probable category (index)
-                            - 'target_prop': category (index) such that the
-                                proportions over the image grid match as much
-                                as possible the proportions given by the
-                                parameter `target_prop`
-    :param target_prop: (sequence or None) target proportion for each category
-                            index, used if `mode`='target_prop':
-                            if None, the target proportions are set according
-                            to the proportions of the input image, i.e.
-                                target_prop[i] = mean(im.val[varInd[i]])
-                            (see below)
+    For each grid cell, the output category is defined according to the values of
+    the considered variables from the input image interpreted as proportions, and
+    according to the specified mode: target proportions over all grid cells, or
+    most probable (frequent) category in each grid cell.
 
-    :param varInd:      (sequence of ints or None) index-es of the variables
-                            to take into account in the input image, corresponding
-                            ot category indexes (default None: all variables, i.e.
-                            varInd is the sequence [0, 1,..., im.nv-1]),
-                            (length of varInd should be at least 2)
+    Parameters
+    ----------
+    im : :class:`Img`
+        input image
+    mode : str {'most_probable', 'target_prop'}, default: 'most_probable'
+        defines how is computed the output variable:
+        - 'most_probable': most probable category (index) in each grid cell
+        - 'target_prop': category (index) such that the proportions over all
+        image grid cells match as much as possible the proportions given by
+        `target_prop`
+    target_prop : 1D array-like, optional
+        target proportions of categories (indexes), used if `mode='target_prop'`,
+        by default (`None`): the target proportions are set according to the
+        proportions in the input image, i.e.
+            `target_prop[i] = mean(im.val[varInd[i]])`
+        where `varInd` are the indexes of the considered variables in `im `
+    varInd : 1D array-like, optional
+        indexes of the variables of the input image to be taken into account,
+        by default (`None`): all variables are considered
+    categ : 1D array-like, optional
+        category values to be assigned in place of the category indexes in the
+        output image, i.e. output index i (corresponding to variable `varInd[i]`
+        in the input image) is replaced by `categ[i]` (note that the length of
+        `categ` must be the same as the length of `varInd`); by default (`None`):
+        `categ[i]=i` is used
 
-    :param categ:       (sequence or None) list of category values to be assigned
-                            in place of the category indexes in the output image,
-                            i.e. output index i (corresponding to variable `varInd[i]`
-                            in the input image) is replaced by categ[i];
-                            note: the length of the sequence must be the same as
-                            the length of `varInd`; (if None, categ[i] = i, is used)
-
-    :return:    (Img class) an image with one variable containing the category
-                    index (or value) according to the used mode
+    Returns
+    -------
+    im_out : :class:`Img`
+        image with one variable, a category index (or value) according to the
+        used mode
     """
-
     fname = 'imageCategFromImageOfProp'
 
     if varInd is not None:
@@ -2949,13 +3544,13 @@ def imageCategFromImageOfProp(im, mode='most_probable', target_prop=None, varInd
         v = np.asarray([categ_arr[i] for i in id.ravel()]).reshape(id.shape)
         np.putmask(v, np.any(np.isnan(val), axis=0), np.nan)
 
-    imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
-                sx=im.sx, sy=im.sy, sz=im.sz,
-                ox=im.ox, oy=im.oy, oz=im.oz,
-                nv=1, val=v,
-                name=mode)
+    im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                 sx=im.sx, sy=im.sy, sz=im.sz,
+                 ox=im.ox, oy=im.oy, oz=im.oz,
+                 nv=1, val=v,
+                 name=mode)
 
-    return imOut
+    return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -2965,37 +3560,48 @@ def interpolateImage(im, categVar=None,
                      ox=None, oy=None, oz=None,
                      **kwargs):
     """
-    Interpolates (each variable of) an image on a given grid, and returns
-    the result on an output image. This allows for example to refine an image.
+    Interpolates (each variable of) an image on a given grid, and returns an output image.
 
-    :param im:      (Img class) input image
-    :param categVar:(sequence or None) sequence of `im.nv` boolean
-                        - categVar[i] = True: the variable i is treated as a
-                            categorical variable
-                        - categVar[i] = False: the variable i is treated as a
-                            continuous variable
-    :param nx, ny, nz:
-    :param sx, sy, sz:
-    :param ox, oy, oz:
-                    parameters defining the output grid image:
-                        nx, ny, nz: (int) number of grid cells along each axis
-                        sx, sy, sz: (float) cell size along each axis,
-                        ox ,oy, oz: (float) origin of the grid (bottom-lower-left corner)
-                    if ox is None:
-                        ox = im.ox is used (same for oy, oz)
-                    if nx is None and sx is not None:
-                        nx = int(np.round(im.nx*im.sx/sx)) is used (same for ny, nz)
-                    if nx is not None and sx is None:
-                        sx = im.nx*im.sx/nx is used (same for sy, sz)
-                    if nx is None and sx is None:
-                        nx = im.nx and sx = im.sx are used (same for sy, sz)
-    :param kwargs:  keyword arguments passed to the interpolator (class Img_interp_func),
-                        e.g. keys 'order', 'mode', 'cval'
+    The output image grid geometry is defined as follows for the x axis (similar
+    for y and z axes):
+        - if `ox` is None:
+            `ox = im.ox` is used
+        - if `nx` is None and `sx` is not None:
+            `nx = int(np.round(im.nx*im.sx/sx))` is used
+        - if `nx` is not None and `sx` is None:
+            `sx = im.nx*im.sx/nx` is used
+        - if `nx` is None and `sx` is None:
+            `nx = im.nx` and `sx = im.sx` are used
+    Note: this function allows for example to refine an image.
 
-    :return:    (Img class) output image with all variables of the input image
-                    interpolated on the specified grid
+    Parameters
+    ----------
+    im : :class:`Img`
+        input image
+    categVar : 1D array-like of bools, optional
+        sequence of `im.nv`:
+        - categVar[i]=True : the variable i is treated as a categorical variable
+        - categVar[i]=False: the variable i is treated as a continuous variable
+        by default (`None`): all variables are treated as continuous variable
+    nx, ny, nz : ints
+        number of grid cells along each axis in the ouput image (optional, see
+        above for possible inputs)
+    sx, sy, sz : floats
+        cell size along each axis in the output image (optional, see above for
+        possible inputs)
+    ox, oy, oz : floats
+        origin of the grid of the ouptut image (bottom-lower-left corner)
+        (optional, see above for possible inputs)
+    kwargs : dict
+        keyword arguments passed to the interpolator (:class:`Img_interp_func`),
+        e.g. keys items 'order', 'mode', 'cval'
+
+    Returns
+    -------
+    im_out : :class:`Img`
+        image with all variables of the input image, interpolated on the
+        specified grid
     """
-
     fname = 'interpolateImage'
 
     # Variable type
@@ -3082,42 +3688,55 @@ def interpolateImage(im, categVar=None,
 # ----------------------------------------------------------------------------
 def imageCategFromImageOfProp(im, mode='most_probable', target_prop=None, varInd=None, categ=None):
     """
-    Computes a categorical image from proportions given as variables in an
-    image, i.e. the i-th variable of the input image represents the proportion
-    of the i-th category.
+    Computes a categorical image from image of proportions.
 
-    :param im:          (Img class) input image not
-    :param mode:        (str) defines what is computed for the variable in
-                            the output image:
-                            - 'most_probable': most probable category (index)
-                            - 'target_prop': category (index) such that the
-                                proportions over the image grid match as much
-                                as possible the proportions given by the
-                                parameter `target_prop`
-    :param target_prop: (sequence or None) target proportion for each category
-                            index, used if `mode`='target_prop':
-                            if None, the target proportions are set according
-                            to the proportions of the input image, i.e.
-                                target_prop[i] = mean(im.val[varInd[i]])
-                            (see below)
+    The input image has at least two variables, with the considered variables
+    (indexes `varInd`) are interpreted as proportions of categories. The
+    `varInd[i]`-th variable is the proportion of the i-th category, and the sum
+    of all considered variables in a same cell should be equal to 1.
+    The output (returned) image has one categorical variable, with index of a
+    category (or a corresponding category value given by `categ`) as value, and
+    is computed according to the specified `mode`: either the most probable
+    category (index) (`mode='most_probable'`) or category (index), such that
+    the proportion over the entire image grid matches (as well as possible)
+    given target proportions (`mode='target_prop'`); in this, the filling of the
+    output image starts with the category (index) of the smallest target
+    proportion.
 
-    :param varInd:      (sequence of ints or None) index-es of the variables
-                            to take into account in the input image, corresponding
-                            ot category indexes (default None: all variables, i.e.
-                            varInd is the sequence [0, 1,..., im.nv-1]),
-                            (length of varInd should be at least 2)
+    Parameters
+    ----------
+    im : :class:`Img`
+        input image with variables interpreted as proportions, the sum of all
+        considered variable (see `varInd` below) in a same grid cell should be
+        equal to 1
+    mode : str, {'most_probable' (default), 'target_prop'}
+        defines the mode of computation:
+        - 'most_probable': most probable category is retrieved in each cell
+        - 'target_prop': category (index) such that the propotions over the
+        entire image grid matches match as well as possible the proportions given
+        by the parameter `target_prop`
+    target_prop : 1D array-like, optional
+        sequence of same length as length of `varInd`, target proportion for
+        each category, used if `mode='target_prop'`:
+        - if not given (`None`), the target proportions are set according to the
+        proportions of the input image, i.e.
+            `target_prop[i] = mean(im.val[varInd[i]])`
+    varInd : 1D array-like, optional
+        indexes of the variables of the input image to be taken into account (of
+        length at least 2); by default (`None`): all variables are considered
+        (`varInd = numpy.arange(im.nv)`)
+    categ : 1D array-like, optional
+        sequence of same length as length of `varInd`, category values to be
+        assigned in place of the category index in the output image, i.e. output
+        index i (corresponding to variable `varInd[i]` in the input image) is
+        replaced by categ[i]; by default (`None`): `categ[i] = i` is used
 
-    :param categ:       (sequence or None) list of category values to be assigned
-                            in place of the category indexes in the output image,
-                            i.e. output index i (corresponding to variable `varInd[i]`
-                            in the input image) is replaced by categ[i];
-                            note: the length of the sequence must be the same as
-                            the length of `varInd`; (if None, categ[i] = i, is used)
-
-    :return:    (Img class) an image with one variable containing the category
-                    index (or value) according to the used mode
+    Returns
+    -------
+    im_out : :class:`Img`
+        image with one (categorical) variable, category (index) according to
+        the used mode (see above)
     """
-
     fname = 'imageCategFromImageOfProp'
 
     if varInd is not None:
@@ -3190,31 +3809,37 @@ def imageCategFromImageOfProp(im, mode='most_probable', target_prop=None, varInd
         v = np.asarray([categ_arr[i] for i in id.ravel()]).reshape(id.shape)
         np.putmask(v, np.any(np.isnan(val), axis=0), np.nan)
 
-    imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
-                sx=im.sx, sy=im.sy, sz=im.sz,
-                ox=im.ox, oy=im.oy, oz=im.oz,
-                nv=1, val=v,
-                name=mode)
+    im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
+                 sx=im.sx, sy=im.sy, sz=im.sz,
+                 ox=im.ox, oy=im.oy, oz=im.oz,
+                 nv=1, val=v,
+                 name=mode)
 
-    return imOut
+    return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 def sampleFromPointSet(ps, size, mask_val=None, seed=None):
     """
-    Sample random points from PointSet object and return a point set.
+    Samples random points from PointSet object and return a point set.
 
-    :param ps:      (PointSet class) point set to sample from
-    :param size:    (int) number of points to be sampled
-    :param mask_val:(array-like) array of floats or ints or bools,
-                        of size point_set.npt, indicating for each
-                        point if it can be sampled (value not equal
-                        to 0) or not (otherwise)
-    :param seed:    (int) optional random seed
+    Parameters
+    ----------
+    ps : :class:`PointSet`
+        point set to sample from
+    size : int
+        number of points to be sampled
+    mask_val : 1D array-like, optional
+        sequence of length `ps.npt`, indicating for each point if it can be
+        sampled (value not equal to 0) or not (otherwise)
+    seed : int, optional
+        seed for initializing random number generator
 
-    :return:    (PointSet class) a point set containing the sample points
+    Returns
+    -------
+    ps_out : :class:`PointSet`
+        point set containing the sample points
     """
-
     fname = 'sampleFromPointSet'
 
     if seed is not None:
@@ -3247,21 +3872,30 @@ def sampleFromPointSet(ps, size, mask_val=None, seed=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def sampleFromImage(im, size, seed=None, mask_val=None):
+def sampleFromImage(im, size, mask_val=None, seed=None):
     """
     Samples random points from Img object and returns a point set.
 
-    :param im:      (Img class) image to sample from
-    :param size:    (int) number of points to be sampled
-    :param mask_val:(array-like) array of floats or ints or bools,
-                        of size im.nxyz(), indicating for each
-                        cell if it can be sampled (value not equal to 0)
-                        or not (otherwise)
-    :param seed:    (int) optional random seed
+    Coordinates of the sample points correspond to the center of the grid cell
+    centers.
 
-    :return:    (PointSet class) a point set containing the sample points
+    Parameters
+    ----------
+    im : :class:`Img`
+        image to sample from
+    size : int
+        number of points to be sampled
+    mask_val : 1D array-like, optional
+        sequence of length `im.nxyz()`, indicating for each grid cell if it can
+        be sampled (value not equal to 0) or not (otherwise)
+    seed : int, optional
+        seed for initializing random number generator
+
+    Returns
+    -------
+    ps_out : :class:`PointSet`
+        point set containing the sample points
     """
-
     fname = 'sampleFromImage'
 
     if seed is not None:
@@ -3304,15 +3938,23 @@ def extractRandomPointFromImage(im, npt, seed=None):
     Extracts random points from an image (at center of grid cells) and return
     the corresponding point set.
 
-    :param im:  (Img class) input image
-    :param npt: (int) number of points to extract (if greater than the number of
-                    image grid cells, 'npt' is set to this latter)
-    :seed:      (int) seed number for initializing the random number generator
-                    (if not None)
+    Deprecated, use function `sampleFromImage`.
 
-    :return:    (PointSet class) a point set containing the sample points
+    Parameters
+    ----------
+    im : :class:`Img`
+        image to sample from
+    npt : int
+        number of points to be sampled (if greater than the number of image grid
+        cells, every cell is sampled)
+    seed : int, optional
+        seed for initializing random number generator
+
+    Returns
+    -------
+    ps_out : :class:`PointSet`
+        point set containing the sample points
     """
-
     fname = 'extractRandomPointFromImage'
 
     if npt <= 0:
@@ -3359,44 +4001,46 @@ def extractRandomPointFromImage(im, npt, seed=None):
 # ----------------------------------------------------------------------------
 def readVarsTxt(fname, missing_value=None, delimiter=' ', comments='#', usecols=None):
     """
-    Reads variables from a txt file in the following format.
+    Reads variables (data table) from a txt file.
 
-    --- file (ascii) ---
-    # commented line ...
-    # [...]
-    varname[0] varname[1] ... varname[nv-1]
-    v[0, 0]    v[0, 1]    ... v[0, nv-1]
-    v[1, 0]    v[1, 1]    ... v[1, nv-1]
-    ...
-    v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
-    --- file (ascii) ---
-
-    where varname[j] (string) is a the name of the variable of index j, and
-    v[i, j] (float) is the value of the variable of index j, for the entry of
+    The file is in the following format:
+        --- file (ascii) ---
+        varname[0] varname[1] ... varname[nv-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
+        --- file (ascii) ---
+    where `varname[j]` (str) is a the name of the variable of index j, and
+    `v[i, j]` (float) is the value of the variable of index j, for the entry of
     index i, i.e. one entry per line.
 
-    :param fname:           (string or file handle) name of the file
-    :param missing_value:   (float or None) value that will be replaced by nan
-    :param delimiter:       (string) delimiter used to separate names and values
-                                in each line
-                                Note: "empty field" after splitting is ignored,
-                                then if white space is used as delimiter
-                                (default), one or multiple white spaces can be
-                                used as the same delimiter
-    :param comments:        (string or None) lines starting with that string are
-                                treated as comments
-    :param usecols:         (tuple or int or None) columns index (first column
-                                is index 0) to be read, if None (default) all
-                                columns are read
+    Parameters
+    ----------
+    fname : str or file handle
+        name of the file or file handle
+    missing_value : float, optional
+        value that will be replaced by `numpy.nan`
+    delimiter : str, default: ' '
+        delimiter used to separate names and values in each line;
+        note: "empty field" after splitting is ignored, then if white space is
+        used as delimiter (default), one or multiple white spaces can be used as
+        the same delimiter
+    comments : str, default:'#'
+        lines starting with that string are treated as comments
+    usecols : 1D array-like or int, optional
+        column index(es) to be read (first column corresponds to index 0);
+        by default, all columns are read
 
-    :return (varname, val): (2-tuple)
-                                varname: (list of string) list of variable names,
-                                varname[i] being the name of the variable of
-                                index i
-                                val: (2d array) values of the variables, with
-                                val[:,i] the values of variable of index i
+    Returns
+    -------
+    varname : list
+        list of variable names, `varname[i]` is the name of the variable of
+        index i
+    val : 2D array
+        values of the variables, with `val[:,i]` the values of variable of
+        index i
     """
-
     funcname = 'readVarsTxt'
 
     # Check comments identifier
@@ -3450,43 +4094,52 @@ def readVarsTxt(fname, missing_value=None, delimiter=' ', comments='#', usecols=
 # ----------------------------------------------------------------------------
 def writeVarsTxt(fname, varname, val, missing_value=None, delimiter=' ', usecols=None, fmt="%.10g"):
     """
-    Write variables in a txt file in the following format.
+    Writes variables (data table) in a txt file.
 
-    --- file (ascii) ---
-    varname[0] varname[1] ... varname[nv-1]
-    v[0, 0]    v[0, 1]    ... v[0, nv-1]
-    v[1, 0]    v[1, 1]    ... v[1, nv-1]
-    ...
-    v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
-    --- file (ascii) ---
-
-    where varname[j] (string) is a the name of the variable of index j, and
-    v[i, j] (float) is the value of the variable of index j, for the entry of
+    The file is in the following format:
+        --- file (ascii) ---
+        varname[0] varname[1] ... varname[nv-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
+        --- file (ascii) ---
+    where `varname[j]` (str) is a the name of the variable of index j, and
+    `v[i, j]` (float) is the value of the variable of index j, for the entry of
     index i, i.e. one entry per line.
 
-    :param fname:           (string or file handle) name of the file
-    :param varname:         (list of string) variable names
-    :param val:             (2d array) values of the variables, 2d array with
-                                len(varname) columns, with
-                                val[:,i] the values of variable of index i
-    :param missing_value:   (float or None) nan values will be replaced
-                                by missing_value before writing
-    :param delimiter:       (string) delimiter used to separate names and values
-                                in each line
-    :param usecols:         (tuple or int or None) columns index (first column
-                                is index 0) to be written, if None (default) all
-                                columns are written
-    :param fmt:             (string) single format for variable values, of the
-                                form: '%[flag]width[.precision]specifier'
+    Parameters
+    ----------
+    fname : str or file handle
+        name of the file or file handle
+    varname : 1D array-like of strs
+        sequence of variable names, `varname[i]` is the name of the variable of
+        index i
+    val : 2D array
+        values of the variables, with `val[:,i]` the values of variable of
+        index i
+    missing_value : float, optional
+        `numpy.nan` value will be replaced by `missing_value` before writing
+    delimiter : str, default: ' '
+        delimiter used to separate names and values in each line
+    usecols : 1D array-like or int, optional
+        column index(es) to be read (first column corresponds to index 0);
+        by default, all columns are read
+    fmt : str, default: '%.10g'
+        format for single variable value, `fmt` is a string of the form:
+            '%[flag]width[.precision]specifier'
 
-    :return None:
+    Notes
+    -----
+    For more details about format (`fmt` parameter), see
+        docs.python.org/3/library/string.html#format-specification-mini-language
     """
-
     funcname = 'writeVarsTxt'
 
-    if not isinstance(varname, list):
-        print(f'ERROR ({funcname}): varname invalid, should be a list')
-        return None
+    varname = np.asarray(varname).reshape(-1)
+    # if not isinstance(varname, list):
+    #     print(f'ERROR ({funcname}): varname invalid, should be a list')
+    #     return None
 
     if val.ndim != 2 or val.shape[1] != len(varname):
         print(f'ERROR ({funcname}): val is incompatible with varname')
@@ -3538,117 +4191,120 @@ def readGridInfoFromHeaderTxt(
         key_sorting=['sorting'],
         get_sorting=False):
     """
-    Reads grid geometry information, and sorting mode of filling (if asked for),
-    from the header in a file.
+    Reads grid geometry information, and sorting mode of filling, from the header in a file.
 
     The grid geometry , i.e.
         (nx, ny, nz), grid size, number of cells along each direction,
         (sx, sy, sz), grid cell size along each direction,
         (ox, oy, oz), grid origin, coordinates of the bottom-lower-left corner
-    is retrieved from the header (lines starting with the header_str identifier
+    is retrieved from the header (lines starting with the `header_str` identifier
     in the beginning of the file). Default values are used if not specified.
 
     The sorting mode (for filling the grid with the variables) is also retrieved
-    if demanded. If not specified, the default mode is sorting='+X+Y+Z', which
+    if asked for. If not specified, the default mode is `sorting='+X+Y+Z'`, which
     means that the grid is filled with
         x index increases, then y index increases, then z index increases
-    The string sorting should have 6 characters (see exception below):
+    The string `sorting` should have 6 characters (see exception below):
         '[+|-][X|Y|Z][+|-][X|Y|Z][+|-][X|Y|Z]'
     where 'X', 'Y', 'Z' appears exactly once, and has the following meaning: the
-    grid is filled with
-        sorting[1] index decreases if sorting[0]='-', increases if sorting[0]='+'
+    grid is filled with first
+        `sorting[1]` index decreases if `sorting[0]='-'`, increases if `sorting[0]='+'`
     then
-        sorting[3] index decreases if sorting[2]='-', increases if sorting[2]='+'
+        `sorting[3]` index decreases if `sorting[2]='-'`, increases if `sorting[2]='+'`
     then
-        sorting[5] index decreases if sorting[4]='-', increases if sorting[4]='+'
-    As an exception, if nz=1, the string sorting can have 4 characters:
+        `sorting[5]` index decreases if `sorting[4]='-'`, increases if `sorting[4]='+'`
+    As an exception, if `nz=1`, the string sorting can have 4 characters:
         '[+|-][X|Y][+|-][X|Y]'
-    it is then interpreted as above by appending '+Z'.
-    Note: sorting string is case insensitive.
-    Note: the validity of the string sorting is not checked in this function.
+    and it is then interpreted as above by appending '+Z'.
+    Note that
+        - the string `sorting` is case insensitive,
+        - the validity of the string `sorting` is not checked in this function.
 
     Example of file:
-
-    --- file (ascii) ---
-    # [...]
-    # # GRID - NUMBER OF CELLS
-    # NX <int>
-    # NY <int>
-    # NZ <int>
-    # # GRID - CELL SIZE
-    # SX <float>
-    # SY <float>
-    # SZ <float>
-    # # GRID - ORIGIN (bottom-lower-left corner)
-    # OX <float>
-    # OY <float>
-    # OZ <float>
-    # # GRID - FILLING
-    # SORTING +X+Y+Z
-    # [...]
-    varname[0] varname[1] ... varname[nv-1]
-    v[0, 0]    v[0, 1]    ... v[0, nv-1]
-    v[1, 0]    v[1, 1]    ... v[1, nv-1]
-    ...
-    v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
-    --- file (ascii) ---
-
+        --- file (ascii) ---
+        # [...]
+        # # GRID - NUMBER OF CELLS
+        # NX <int>
+        # NY <int>
+        # NZ <int>
+        # # GRID - CELL SIZE
+        # SX <float>
+        # SY <float>
+        # SZ <float>
+        # # GRID - ORIGIN (bottom-lower-left corner)
+        # OX <float>
+        # OY <float>
+        # OZ <float>
+        # # GRID - FILLING
+        # SORTING +X+Y+Z
+        # [...]
+        varname[0] varname[1] ... varname[nv-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
+        --- file (ascii) ---
     where varname[j] (string) is a the name of the variable of index j, and
     v[i, j] (float) is the value of the variable of index j, for the entry of
     index i, i.e. one entry per line.
 
-    Only the lines starting with the string header_str ('#' by default) in the
-    beginning of the file are read, but at maximum max_lines lines (if None, not
-    limited).
+    Only the lines starting with the string `header_str` ('#' by default) in the
+    beginning of the file are read, but at maximum `max_lines` lines (if None,
+    not limited).
 
-    :param filename:        (string) name of the file
-    :param nx, ny, nz:      (int) default number of grid cells along each axis
-    :param sx, sy, sz:      (float) default cell size along each axis
-    :param ox, oy, oz:      (float) default origin of the grid
-                                (bottom-lower-left corner)
-    :param sorting:         (string) default, describes the way to fill the
-                                grid
-    :param header_str:      (string or None) only lines starting with that string
-                                in the beginning of the file are treated (no
-                                restriction if None)
-    :param max_lines:       (int or None) maximum of lines read (unlimited if
-                                None);
-                                note: if header_str=None and max_lines=None,
-                                the whole file will be read
-    :param key_nx:          (list of string) possible key words
-                                            (case insensitive) for entry nx
-    :param key_ny:          (list of string) possible key words
-                                            (case insensitive) for entry ny
-    :param key_nz:          (list of string) possible key words
-                                            (case insensitive) for entry nz
-    :param key_sx:          (list of string) possible key words
-                                            (case insensitive) for entry sx
-    :param key_sy:          (list of string) possible key words
-                                            (case insensitive) for entry sy
-    :param key_sz:          (list of string) possible key words
-                                            (case insensitive) for entry sz
-    :param key_ox:          (list of string) possible key words
-                                            (case insensitive) for entry ox
-    :param key_oy:          (list of string) possible key words
-                                            (case insensitive) for entry oy
-    :param key_oz:          (list of string) possible key words
-                                            (case insensitive) for entry oz
-    :param key_sorting:     (list of string) possible key words
-                                            (case insensitive) for entry sorting
-    :param get_sorting:     (bool) indicates if sorting mode is retrieved (True)
-                                or not (False)
+    Parameters
+    ----------
+    filename : str
+        name of the file
+    nx, ny, nz : ints, default: 1, 1, 1
+        number of grid cells along each axis used as default
+    sx, sy, sz : floats, default: 1.0, 1.0, 1.0
+        cell size along each axis used as default
+    ox, oy, oz : floats, default: 0.0, 0.0, 0.0
+        origin of the grid (bottom-lower-left corner) used as default
+    sorting : str, default: '+X+Y+Z'
+        describes the way to fill the grid (see above)
+    header_str : str, default: '#'
+        only lines starting with `header_str` in the beginning of the file are
+        treated, use `header_str=None` for no line identifier
+    max_lines : int, optional
+        maximum number of lines read (by default: unlimited); note: if
+        `header_str=None` and `max_lines=None`, the whole file will be read
+    key_nx : 1D array-like of strs, or str
+        possible key words (case insensitive) for entry `nx`
+    key_ny : 1D array-like of strs, or str
+        possible key words (case insensitive) for entry `ny`
+    key_nz : 1D array-like of strs, or str
+        possible key words (case insensitive) for entry `nz`
+    key_sx : 1D array-like of strs, or str
+        possible key words (case insensitive) for entry `sx`
+    key_sy : 1D array-like of strs, or str
+        possible key words (case insensitive) for entry `sy`
+    key_sz : 1D array-like of strs, or str
+        possible key words (case insensitive) for entry `sz`
+    key_ox : 1D array-like of strs, or str
+        possible key words (case insensitive) for entry `ox`
+    key_oy : 1D array-like of strs, or str
+        possible key words (case insensitive) for entry `oy`
+    key_oz : 1D array-like of strs, or str
+        possible key words (case insensitive) for entry `oz`
+    key_sorting : 1D array-like of strs, or str
+        possible key words (case insensitive) for entry `sorting`
+    get_sorting : bool
+        indicates if sorting mode is retrieved (True) or not (False)
 
-    :return ((nx, ny, nz), (sx, sy, sz), (ox, oy, oz)[, sorting]):
+    Returns
+    -------
+    ((nx, ny, nz), (sx, sy, sz), (ox, oy, oz)[, sorting]) :
         grid geometry, where
             (nx, ny, nz)    (3-tuple of ints) number of cells along each axis,
             (sx, sy, sz)    (3-tuple of floats) cell size along each axis
             (ox, oy, oz)    (3-tuple of floats) coordinates of the origin
                                 (bottom-lower-left corner)
-        and (if get_sorting=True):
-            sorting         (string) string of length 6 describing the sorting
+        and (if `get_sorting=True`):
+            sorting         (str) string of length 6 describing the sorting
                                 mode of filling
     """
-
     fname = 'readGridInfoFromHeaderTxt'
 
     # Check if the file exists
@@ -3841,94 +4497,98 @@ def readImageTxt(
         comments='#',
         usecols=None):
     """
-    Reads an image from a txt file, including grid geometry information, and
-    sorting mode of filling.
+    Reads an image from a txt file, including grid geometry, and sorting mode of filling.
 
-    The grid geometry , i.e.
+    The image grid geometry , i.e.
         (nx, ny, nz), grid size, number of cells along each direction,
         (sx, sy, sz), grid cell size along each direction,
         (ox, oy, oz), grid origin, coordinates of the bottom-lower-left corner
-    is retrieved from the header (lines starting with the comments identifier in
-    the beginning of the file). Default values are used if not specified.
+    is retrieved from the header (lines starting with the `comments` identifier
+    in the beginning of the file). Default values given by the parameters are
+    used if information is not written in the file.
 
     The number n of values (see below) for each variable should be equal to
-    nx*ny*nz. The grid is filled according to the specified sorting mode.
-    If not specified, the default mode is sorting='+X+Y+Z', which means that the
-    grid is filled with
+    nx*ny*nz. The grid is filled according to the specified `sorting` mode.
+    By default `sorting='+X+Y+Z'`, which means that the grid is filled with
         x index increases, then y index increases, then z index increases
-    The string sorting must have 6 characters (see exception below):
+    The string `sorting` must have 6 characters (see exception below):
         '[+|-][X|Y|Z][+|-][X|Y|Z][+|-][X|Y|Z]'
     where 'X', 'Y', 'Z' appears exactly once, and has the following meaning: the
-    grid is filled with
-        sorting[1] index decreases if sorting[0]='-', increases if sorting[0]='+'
+    grid is filled with first
+        `sorting[1]` index decreases if `sorting[0]='-'`, increases if `sorting[0]='+'`
     then
-        sorting[3] index decreases if sorting[2]='-', increases if sorting[2]='+'
+        `sorting[3]` index decreases if `sorting[2]='-'`, increases if `sorting[2]='+'`
     then
-        sorting[5] index decreases if sorting[4]='-', increases if sorting[4]='+'
+        `sorting[5]` index decreases if `sorting[4]='-'`, increases if `sorting[4]='+'`
     As an exception, if nz=1, the string sorting can have 4 characters:
         '[+|-][X|Y][+|-][X|Y]'
-    it is then interpreted as above by appending '+Z'.
-    Note: sorting string is case insensitive.
+    and it is then interpreted as above by appending '+Z'.
+    Note that the string `sorting` is case insensitive.
 
-    Geometry grid information and sorting mode of filling is retrieved from the
-    header of the file, i.e. the commented lines in the beginning of the file
-    (see also function readGridInfoFromHeaderTxt).
+    Grid geometry and sorting mode of filling is retrieved from the header of
+    the file (if present), i.e. the commented lines in the beginning of the file
+    (see also function `readGridInfoFromHeaderTxt`).
 
     Example of file:
-
-    --- file (ascii) ---
-    # [...]
-    # # GRID - NUMBER OF CELLS
-    # NX <int>
-    # NY <int>
-    # NZ <int>
-    # # GRID - CELL SIZE
-    # SX <float>
-    # SY <float>
-    # SZ <float>
-    # # GRID - ORIGIN (bottom-lower-left corner)
-    # OX <float>
-    # OY <float>
-    # OZ <float>
-    # # GRID - FILLING
-    # SORTING +X+Y+Z
-    # [...]
-    varname[0] varname[1] ... varname[nv-1]
-    v[0, 0]    v[0, 1]    ... v[0, nv-1]
-    v[1, 0]    v[1, 1]    ... v[1, nv-1]
-    ...
-    v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
-    --- file (ascii) ---
-
+        --- file (ascii) ---
+        # [...]
+        # # GRID - NUMBER OF CELLS
+        # NX <int>
+        # NY <int>
+        # NZ <int>
+        # # GRID - CELL SIZE
+        # SX <float>
+        # SY <float>
+        # SZ <float>
+        # # GRID - ORIGIN (bottom-lower-left corner)
+        # OX <float>
+        # OY <float>
+        # OZ <float>
+        # # GRID - FILLING
+        # SORTING +X+Y+Z
+        # [...]
+        varname[0] varname[1] ... varname[nv-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
+        --- file (ascii) ---
     where varname[j] (string) is a the name of the variable of index j, and
     v[i, j] (float) is the value of the variable of index j, for the entry of
     index i, i.e. one entry per line.
 
-    :param filename:        (string) name of the file
-    :param nx, ny, nz:      (int) default number of grid cells along each axis
-    :param sx, sy, sz:      (float) default cell size along each axis
-    :param ox, oy, oz:      (float) default origin of the grid
-                                (bottom-lower-left corner)
-    :param sorting:         (string) default, describes the way to fill the
-                                grid
-    :param missing_value:   (float or None) value that will be replaced by nan
-                                grid (see above)
-    :param delimiter:       (string) delimiter used to separate names and values
-                                in each line
-                                Note: "empty field" after splitting is ignored,
-                                then if white space is used as delimiter
-                                (default), one or multiple white spaces can be
-                                used as the same delimiter
-    :param comments:        (string) lines starting with that string composed
-                                the header of the file from which the grid
-                                geometry is read
-    :param usecols:         (tuple or int or None) columns index (first column
-                                is index 0) to be read, if None (default) all
-                                columns are read
+    Parameters
+    ----------
+    filename : str
+        name of the file
+    nx, ny, nz : ints, default: 1, 1, 1
+        number of grid cells along each axis used as default
+    sx, sy, sz : floats, default: 1.0, 1.0, 1.0
+        cell size along each axis used as default
+    ox, oy, oz : floats, default: 0.0, 0.0, 0.0
+        origin of the grid (bottom-lower-left corner) used as default
+    sorting : str, default: '+X+Y+Z'
+        describes the way to fill the grid (see above)
+    missing_value : float, optional
+        value that will be replaced by `numpy.nan`
+    delimiter : str, default: ' '
+        delimiter used to separate names and values in each line;
+        note: "empty field" after splitting is ignored, then if white space is
+        used as delimiter (default), one or multiple white spaces can be used as
+        the same delimiter
+    comments : str, default:'#'
+        lines starting with that string are treated as comments, such lines in
+        the beginning of the file constitute the header of the file from which
+        the grid geometry and sorting mode (if written) are read
+    usecols : 1D array-like or int, optional
+        column index(es) to be read (first column corresponds to index 0);
+        by default, all columns are read
 
-    :return im: (Img class) image containing the variables that have been read
+    Returns
+    -------
+    im : :class:`Img`
+        image (read from the file)
     """
-
     fname = 'readImageTxt'
 
     # Check if the file exists
@@ -4029,78 +4689,84 @@ def writeImageTxt(
         usevars=None,
         fmt="%.10g"):
     """
-    Writes an image in a txt file, including grid geometry information, and
-    sorting mode of filling.
+    Writes an image in a txt file, including grid geometry, and sorting mode of filling.
 
-    The grid geometry information and the sorting mode of filling is written
-    in the beginning of the file with lines starting with the string comments.
+    The grid geometry and the sorting mode of filling is written in the beginning
+    of the file with lines starting with the string `comments`.
 
-    If not specified, the default mode is sorting='+X+Y+Z', which means that the
+    By default, `sorting='+X+Y+Z'` is used, which means that the
     grid is filled (with values as they are written) with
         x index increases, then y index increases, then z index increases
-    The string sorting must have 6 characters (see exception below):
+    The string `sorting` must have 6 characters (see exception below):
         '[+|-][X|Y|Z][+|-][X|Y|Z][+|-][X|Y|Z]'
     where 'X', 'Y', 'Z' appears exactly once, and has the following meaning: the
-    grid is filled with
-        sorting[1] index decreases if sorting[0]='-', increases if sorting[0]='+'
+    grid is filled with first
+        `sorting[1]` index decreases if `sorting[0]='-'`, increases if `sorting[0]='+'`
     then
-        sorting[3] index decreases if sorting[2]='-', increases if sorting[2]='+'
+        `sorting[3]` index decreases if `sorting[2]='-'`, increases if `sorting[2]='+'`
     then
-        sorting[5] index decreases if sorting[4]='-', increases if sorting[4]='+'
+        `sorting[5]` index decreases if `sorting[4]='-'`, increases if `sorting[4]='+'`
     As an exception, if nz=1, the string sorting can have 4 characters:
         '[+|-][X|Y][+|-][X|Y]'
-    it is then interpreted as above by appending '+Z'.
-    Note: sorting string is case insensitive.
+    and it is then interpreted as above by appending '+Z'.
+    Note that the string `sorting` is case insensitive.
 
-    Example of file:
-
-    --- file (ascii) ---
-    # [...]
-    # # GRID - NUMBER OF CELLS
-    # NX <int>
-    # NY <int>
-    # NZ <int>
-    # # GRID - CELL SIZE
-    # SX <float>
-    # SY <float>
-    # SZ <float>
-    # # GRID - ORIGIN (bottom-lower-left corner)
-    # OX <float>
-    # OY <float>
-    # OZ <float>
-    # # GRID - FILLING
-    # SORTING +X+Y+Z
-    # [...]
-    varname[0] varname[1] ... varname[nv-1]
-    v[0, 0]    v[0, 1]    ... v[0, nv-1]
-    v[1, 0]    v[1, 1]    ... v[1, nv-1]
-    ...
-    v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
-    --- file (ascii) ---
-
+    Example of written file:
+        --- file (ascii) ---
+        # [...]
+        # # GRID - NUMBER OF CELLS
+        # NX <int>
+        # NY <int>
+        # NZ <int>
+        # # GRID - CELL SIZE
+        # SX <float>
+        # SY <float>
+        # SZ <float>
+        # # GRID - ORIGIN (bottom-lower-left corner)
+        # OX <float>
+        # OY <float>
+        # OZ <float>
+        # # GRID - FILLING
+        # SORTING +X+Y+Z
+        # [...]
+        varname[0] varname[1] ... varname[nv-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
+        --- file (ascii) ---
     where varname[j] (string) is a the name of the variable of index j, and
     v[i, j] (float) is the value of the variable of index j, for the entry of
     index i, i.e. one entry per line.
 
-    :param filename:        (string) name of the file
-    :param im               (Img class) image to be written
-    :param sorting:         (string) describes the sorting mode (see above)
-    :param missing_value:   (float or None) nan values will be replaced
-                                by missing_value before writing
-    :param delimiter:       (string) delimiter used to separate names and values
-                                in each line
-    :param comments:        (string) that string is used in the beginning of each
-                                line in the header (for writing grid geometry
-                                information and sorting mode)
-    :param endofline:       (string) string for end of line
-    :param usevars:         (tuple or int or None) variable index(-es) to be
-                                written
-    :param fmt:             (string) single format for variable values, of the
-                                form: '%[flag]width[.precision]specifier'
+    Parameters
+    ----------
+    filename : str
+        name of the file
+    im : :class:`Img`
+        image to be written
+    sorting : str, default: '+X+Y+Z'
+        describes the way to fill the grid (see above)
+    missing_value : float, optional
+        `numpy.nan` value will be replaced by `missing_value` before writing
+    delimiter : str, default: ' '
+        delimiter used to separate names and values in each line
+    comments : str, default:'#'
+        string is used in the beginning of each line in the header, where grid
+        geometry and sorting mode is written
+    endofline : str, default: '\n'
+        end of line character
+    usevars: 1D array-like or int, optional
+        variable index(es) to be written; by default, all variables are written
+    fmt : str, default: '%.10g'
+        format for single variable value, `fmt` is a string of the form:
+            '%[flag]width[.precision]specifier'
 
-    :return None:
+    Notes
+    -----
+    For more details about format (`fmt` parameter), see
+        docs.python.org/3/library/string.html#format-specification-mini-language
     """
-
     fname = 'writeImageTxt'
 
     # Check comments identifier
@@ -4205,58 +4871,59 @@ def readPointSetTxt(
     """
     Reads a point set from a txt file.
 
-    If the flag 'set_xyz_as_first_vars' is set to True, the x, y, z coordinates
-    of the points are set as variables with index 0, 1, 2, in the output point
-    set. The coordinates are identified by the names 'x', 'y', 'z' (case
-    insensitive); if a coordinate is not present in the file, it is added as a
-    variable in the output point set and set to the default value specified by
-    'x_def', 'y_def', 'z_def' (for x, y, z) for all points. Moreover, the x, y, z
-    coordinates are set as variables of index 0, 1, 2 respectively, by reordering
-    the variables if needed.
+    If the flag `set_xyz_as_first_vars=True`, the x, y, z coordinates of the
+    points are set as variables with index 0, 1, 2, in the output point set
+    (by reordering the variables if needed). The coordinates are identified by
+    the names 'x', 'y', 'z' (case insensitive); if a coordinate is not present in
+    the file, it is added as a variable in the output point set and set to the
+    default value specified by `x_def`, `y_def`, `z_def` (for x, y, z) for all
+    points.
 
-    Example of file.
-
-    --- file (ascii) ---
-    # commented line ...
-    # [...]
-    varname[0] varname[1] ... varname[nv-1]
-    v[0, 0]    v[0, 1]    ... v[0, nv-1]
-    v[1, 0]    v[1, 1]    ... v[1, nv-1]
-    ...
-    v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
-    --- file (ascii) ---
-
+    Example of file:
+        --- file (ascii) ---
+        # commented line ...
+        # [...]
+        varname[0] varname[1] ... varname[nv-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
+        --- file (ascii) ---
     where varname[j] (string) is a the name of the variable of index j, and
     v[i, j] (float) is the value of the variable of index j, for the entry of
     index i, i.e. one entry per line.
 
-    :param filename:        (string) name of the file
-    :param missing_value:   (float or None) value that will be replaced by nan
-    :param delimiter:       (string) delimiter used to separate names and values
-                                in each line
-                                Note: "empty field" after splitting is ignored,
-                                then if white space is used as delimiter
-                                (default), one or multiple white spaces can be
-                                used as the same delimiter
-    :param comments:        (string or None) lines starting with that string are
-                                treated as comments
-    :param usecols:         (tuple or int or None) columns index (first column
-                                is index 0) to be read, if None (default) all
-                                columns are read
-    :param set_xyz_as_first_vars:
-                            (bool) If True: the x, y, z coordinates are set as
-                                variables of index 0, 1, 2 in the ouput point set
-                                (adding them and reodering if needed, see above);
-                                If False: the variables of the point set will be
-                                exactly the columns of the file
-    :param x_def, y_def, z_def:
-                            (float) default values for x, y, z coordinates, used
-                                if a coordinate is added as variable
-                                (set_xyz_as_first_vars=True)
+    Parameters
+    ----------
+    filename : str
+        name of the file
+    missing_value : float, optional
+        value that will be replaced by `numpy.nan`
+    delimiter : str, default: ' '
+        delimiter used to separate names and values in each line;
+        note: "empty field" after splitting is ignored, then if white space is
+        used as delimiter (default), one or multiple white spaces can be used as
+        the same delimiter
+    comments : str, default:'#'
+        lines starting with that string are treated as comments
+    usecols : 1D array-like or int, optional
+        column index(es) to be read (first column corresponds to index 0);
+        by default, all columns are read
+    set_xyz_as_first_vars : bool
+        - if True: the x, y, z coordinates are set as variables of index 0, 1, 2
+        in the ouput point set (adding them and reodering if needed, see above)
+        - if False: the variables of the point set will be the variables of the
+        columns read
+    x_def, y_def, z_def : floats, default: 0.0, 0.0, 0.0
+        default values for x, y, z coordinates, used if a coordinate is added
+        as variable and not read from the file (used if
+        `set_xyz_as_first_vars=True`)
 
-    :return ps: (PointSet class) point set
+    Returns
+    -------
+    ps : :class:`PointSet`
+        point set (read from the file)
     """
-
     fname = 'readPointSetTxt'
 
     # Check if the file exists
@@ -4354,42 +5021,49 @@ def writePointSetTxt(
     """
     Writes a point set in a txt file.
 
-    Example of file.
-
-    --- file (ascii) ---
-    #
-    # # POINT SET - NUMBER OF POINTS AND NUMBER OF VARIABLES
-    # NPT <int>
-    # NV <int>
-    #
-    varname[0] varname[1] ... varname[nv-1]
-    v[0, 0]    v[0, 1]    ... v[0, nv-1]
-    v[1, 0]    v[1, 1]    ... v[1, nv-1]
-    ...
-    v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
-    --- file (ascii) ---
-
+    Example of file:
+        --- file (ascii) ---
+        #
+        # # POINT SET - NUMBER OF POINTS AND NUMBER OF VARIABLES
+        # NPT <int>
+        # NV <int>
+        #
+        varname[0] varname[1] ... varname[nv-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
+        --- file (ascii) ---
     where varname[j] (string) is a the name of the variable of index j, and
     v[i, j] (float) is the value of the variable of index j, for the entry of
     index i, i.e. one entry per line.
 
-    :param filename:        (string) name of the file
-    :param ps:              (PointSet class) point set to be written
-    :param missing_value:   (float or None) nan values will be replaced
-                                by missing_value before writing
-    :param delimiter:       (string) delimiter used to separate names and values
-                                in each line
-    :param comments:        (string) that string is used in the beginning of each
-                                line in the header (for writing some info)
-    :param endofline:       (string) string for end of line
-    :param usevars:         (tuple or int or None) variable index(-es) to be
-                                written
-    :param fmt:             (string) single format for variable values, of the
-                                form: '%[flag]width[.precision]specifier'
+    Parameters
+    ----------
+    filename : str
+        name of the file
+    ps : :class:`PointSet`
+        point set to be written
+    missing_value : float, optional
+        `numpy.nan` value will be replaced by `missing_value` before writing
+    delimiter : str, default: ' '
+        delimiter used to separate names and values in each line
+    comments : str, default:'#'
+        string is used in the beginning of each line in the header, where point
+        set information is written
+    endofline : str, default: '\n'
+        end of line character
+    usevars: 1D array-like or int, optional
+        variable index(es) to be written; by default, all variables are written
+    fmt : str, default: '%.10g'
+        format for single variable value, `fmt` is a string of the form:
+            '%[flag]width[.precision]specifier'
 
-    :return None:
+    Notes
+    -----
+    For more details about format (`fmt` parameter), see
+        docs.python.org/3/library/string.html#format-specification-mini-language
     """
-
     fname = 'writePointSetTxt'
 
     # Check comments identifier
@@ -4428,80 +5102,79 @@ def writePointSetTxt(
 # ----------------------------------------------------------------------------
 def readImage2Drgb(filename, categ=False, nancol=None, keep_channels=True, rgb_weight=(0.299, 0.587, 0.114), flip_vertical=True):
     """
-    Reads an image from a file using matplotlib.pyplot.imread, and fill a
-    corresponding Img class instance. The image must be in 2D, with a RGB  or
-    RGBA code for every pixel, the file format can be png, ppm, jpeg, etc. (e.g.
-    created by Gimp).
+    Reads an "RGB" image from a file.
+
+    This function uses `matplotlib.pyplot.imread` to read the file, and fill a
+    corresponding instance of :class:`Img`. The file represents a 2D image, with
+    a RGB or RGBA code for every pixel, the file format can be png, ppm, jpeg,
+    etc. (e.g. created by Gimp).
     Note that every channel (RGB) is renormalized in [0, 1] by dividing by 255
     if needed.
     Treatement of colors (RGB or RGBA):
-        - nancol is a color (RGB or RGBA) that is considered as "missing value",
-            i.e. nan in the output image (Img class),
-        - keep_channels: if True, every channel is retrieved (3 channels if RGB
-            or 4 channels if RGBA); otherwise (False), the channels RGB (alpha
-            channel, if present, is ignored) are linearly combined using the
-            weights 'rgb_weight', to get color codes defined as one value in
-            [0, 1].
+    - `nancol` is a color (RGB or RGBA) that is considered as "missing value",
+        i.e. `numpy.nan` in the output image,
+    - `keep_channels`:
+        - if True: every channel is retrieved (3 channels for RGB or 4 channels
+        for RGBA)
+        - if False: the channels RGB (alpha channel, if present, is ignored) are
+        linearly combined using the weights `rgb_weight`, to get color codes
+        defined as one value in [0, 1].
     Type of image:
-        - continuous (categ=False): the output image (Img class) has one
-            variable if keep_channels is False, and 3 or 4 variables (resp. for
-            colors as RGB or RGBA codes in input image) if keep_channels is True
-        - categorical (categ=True): the list of distinct colors in the input
-            image is retrieved (list col) and indexed (from 0); the output image
-            (Img class) has one variable defined as the index of the color (in
-            the list col); the list col is also retrieved in output (every
-            entry is a unique value (keep_channels=Fase) or a sequence of length
-            3 or 4 (keep_channels=True); the output image can be drawn (plotted)
-            directly by using:
-                - geone.imgplot.drawImage2D(im, categ=True, categCol=col),
-                    if keep_channels is True
-                - geone.imgplot.drawImage2D(im, categ=True,
-                                            categCol=[cmap(c) for c in col]),
-                    where cmap is a color map function defined on the interval
-                    [0, 1], if keep_channels is False
+    - continuous (`categ=False`): the output image has one variable if
+        `keep_channels=False`, and 3 or 4 variables (resp. for colors as RGB or
+        RGBA codes) if `keep_channels=True`
+    - categorical (categ=True): the list of distinct colors is retrieved (`col`)
+        and indexed (from 0); the ouptut image has one variable defined as the
+        index of the color (in the list `col`); the list `col` is also retrieved
+        in output, every entry is a unique value (`keep_channels=Fase`) or a
+        sequence of length 3 or 4 (`keep_channels=True`). Note that the output
+        image can be displayed (plotted) directly by using:
+        - `geone.imgplot.drawImage2D(im, categ=True, categCol=col)`,
+            if `keep_channels=True`
+        - `geone.imgplot.drawImage2D(im, categ=True, categCol=[cmap(c) for c in col])`,
+            where cmap is a color map function defined on the interval [0, 1],
+            if `keep_channels=False`
 
-    :param filename:        (string) name of the file
-    :param categ:           (bool) indicating the type of output image:
-                                - if True: "categorical" output image with one
-                                    variable interpreted as an index
-                                - if False: "continuous" output image
-    :param nancol:          (3-tuple or None): RGB color code (alpha channel,
-                                if present, is ignored) (or string), color
-                                interpreted as missing value (nan) in output
-                                image
-    :param keep_channels:   (bool) for RGB or RGBA images:
-                                - if True: keep every channel
-                                - if False: first three channels (RGB) are
-                                    linearly combined using the weight
-                                    'rgb_weight', to define one variable (alpha
-                                    channel, if present, is ignored)
-    :param rgb_weight:      (3-tuple) weights for R, G, B channels used to
-                                combine channels (used if keep_channels=False);
-                                notes:
-                                - by default: from Pillow image convert mode “L”
-                                - other weights could be e.g.
-                                    (0.2125, 0.7154, 0.0721)
-    :param flip_vertical:   (bool) if True, the image is flipped vertically
-                                after reading (this is useful because the
-                                "origin" of the input image is considered at the
-                                top left, whereas it is at bottom left in the
-                                output image)
+    Parameters
+    ----------
+    filename : str
+        name of the file
+    categ : bool, default: False
+        indicattes the type of output image:
+        - if True: "categorical" output image with one variable interpreted as
+        an index (see above)
+        - if False: "continuous" output image
+    nancol : color, optional
+        color (RGB color code (alpha channel, if present, is ignored) or str)
+        interpreted as missing value (`numpy.nan`) in output image
+    keep_channels : bool, default: True
+        for RGB or RGBA images:
+        - if True: every channel are retrieved
+        - if False: first three channels (RGB) are linearly combined using the
+        weight `rgb_weight`, to define one variable (alpha channel, if present,
+        is ignored)
+    rgb_weight : 1D array-like of 3 floats
+        weights for R, G, B channels used to combine channels (if
+        `keep_channels=False`);
+        notes:
+        - by default: values set from `Pillow`, image convert mode “L”
+        - other weights can be e.g. (0.2125, 0.7154, 0.0721)
+    flip_vertical : bool, default: True
+        indicates if the image is flipped vartically after reading (this is useful
+        because the "origin" of the input image is considered at the top left
+        (using `matplotlib.pyplot.imread`), whereas it is at bottom left in the
+        output image)
 
-    :return out:    depends on 'categ':
-                        - if categ is False:
-                            out = im
-                        - if categ is True:
-                            out = (im, col)
-                        with:
-                            im :    (Img class) output image (see "Type of
-                                        image" above)
-                            col:    (sequence) of colors, each component is a
-                                        unique value (in [0,1]) or a 3-tuple
-                                        (RGB code) or a 4-tuple (RGBA code); the
-                                        output image has one variable which is
-                                        the index of the color
+    Returns
+    -------
+    im : :class:`Img`
+        output image (see "Type of image" above)
+    col : list, optional
+        list of colors, each component is a unique value (in [0,1]) or a 3-tuple
+        (RGB code) or a 4-tuple (RGBA code); the output image has one variable
+        which is the index of the color;
+        returned if `categ=True`
     """
-
     fname = 'readImage2Drgb'
 
     # Check if the file exists
@@ -4581,45 +5254,47 @@ def readImage2Drgb(filename, categ=False, nancol=None, keep_channels=True, rgb_w
 # ----------------------------------------------------------------------------
 def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0), flip_vertical=True):
     """
-    Writes (saves) an image from an Img class instance in a file (using
-    matplotlib.pyplot.imsave), in format png, ppm, jpeg, etc. The input image
-    (Img class) should be in 2D with one variable, 3 variables (channels RGB) or
-    4 variables (channels RGBA).
+    Writes (saves) an "RGB" image in a file.
+
+    This function uses `matplotlib.pyplot.imsave`, to write a file in format:
+    png, ppm, jpeg, etc. The input image `im` (:class:`Img`) must be in 2D (i.e.
+    `im.nz=1`) with one variable, 3 variables (channels RGB) or 4 variables
+    (channels RGBA).
     Treatement of colors (RGB or RGBA):
-        - if the input image (Img class) has one variable, then:
-            - if a list col of RGB (or RGBA) colors is given: the image variable
-                must represent (integer) index in [0, len(col)-1]), then the
-                colors from the list are used for every pixel according to the
-                index (variable value) at each pixel
-            - if col is None (not given), the color are set from the variable by
-                using colormap cmap (defined on [0,1]);
-        - if the input image (Img class) has 3 or 4 variables, then they are
-            considered as RGB or RGBA color codes
-        - nancol is the color (RGB or RGBA) used for missing value in input
-            image (Img class)
+    - if the input image has one variable, then:
+        - if a list `col` of colors (RGB, RGBA, or str) is given: the image
+        variable must be an index (integer) in  {0, ..., len(col)-1}, then the
+        colors from the list are used according to the index (variable value) at
+        each pixel
+        - if `col=None` (not given, default), the colors are set from the
+        variable by using colormap `cmap`, the variable values should be floats
+        in the interval [0,1]
+    - if the input image has 3 or 4 variables, they are interpreted as RGB
+        or RGBA color codes
+    - `nancol` is the color used for missing value (`numpy.nan`) in input image
 
-    :param filename:        (string) name of the file
-    :param im:              (Img class) image to be saved in file (input image)
-    :param col:             (list or None) list of colors RGB (3-tuple) or
-                                RGBA code (4-tuple), for each category of the
-                                image: only for image with one variable with
-                                integer values in [0, len(col)-1]
-    :param cmap:            colormap (can be a string: in this case the color
-                                map matplotlib.pyplot.get_cmap(cmap) is used),
-                                only for image with one variable when col is
-                                None
-    :param nancol:          (3-tuple or 4-tuple) RGB or RGBA color code (or
-                                string) used for missing value (nan) in input
-                                image
-    :param flip_vertical:   (bool) if True, the image is flipped vertically
-                                before writing (this is useful because the
-                                "origin" of the input image is considered at the
-                                bottom left, whereas it is at top left in file
-                                png, etc.)
-
-    :return None:
+    Parameters
+    ----------
+    filename : str
+        name of the file
+    im : :class:`Img`
+        input image
+    col : 1D array-like of object representing color, optional
+        sequence of colors (3-tuple for RGB code, 4-tuple for RGBA code, str)
+        used for each category (index) of the input image, used only if the input
+        image has one variable (with value in {0, 1, ..., len(col)-1})
+    cmap : colormap
+        color map (can be a string, in this case the color map
+        `matplotlib.pyplot.get_cmap(cmap)` is used, only for image with one
+        variable when `col=None`
+    nancol : color, default: (1.0, 0.0, 0.0)
+        color (3-tuple for RGB code, 4-tuple for RGBA code, str) used for missing
+        value (`numpy.nan`) in the input image
+    flip_vertical : bool, default: True
+        indicates if the image is flipped vartically before writing (this is
+        useful because the "origin" of the input image is considered at the
+        bottom left, whereas it is at top left in file png, etc.)
     """
-
     fname = 'writeImage2Drgb'
 
     # Check image parameters
@@ -4711,27 +5386,48 @@ def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0),
 # ----------------------------------------------------------------------------
 def readImageGslib(filename, missing_value=None):
     """
-    Reads an image from a file (gslib format).
+    Reads an image from a file in "gslib" format.
 
-    --- file (ascii) ---
-    Nx Ny Nz [Sx Sy Sz [Ox Oy Oz]]
-    nvar
-    name_of_variable_1
-    ...
-    name_of_variable_nvar
-    V1(0)    ... Vnvar(0)
-    ...
-    V1(n-1) ... Vnvar(n-1)
-    --- file (ascii) ---
+    It is recommended to use `readImageTxt` / `writeImageTxt` instead.
 
-    where Vi(j) denotes the value of index j for the i-th variable.
+    File is assumed to be in the following format:
+        --- file (ascii) ---
+        Nx Ny Nz [Sx Sy Sz [Ox Oy Oz]]
+        nv
+        varname[0]
+        ...
+        varname[nv-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[Nx*Ny*Nz-1, 0]  v[n-1, 1]  ... v[Nx*Ny*Nz-1-1, nv-1]
+        V1(0)    ... Vnvar(0)
+        ...
+        V1(n-1) ... Vnvar(n-1)
+        --- file (ascii) ---
+    where
+    - Nx, Ny, Nz are the number of grid cell along x, y, z axes
+    - Sx, Sy, Sz are the cell size along x, y, z axes (default 1.0)
+    - Ox, Oy, Oz are the coordinates of the (bottom-lower-left corner)
+    (default (0.0, 0.0, 0.0))
+    - varname[j] (string) is a the name of the variable of index j, and
+    v[i, j] (float) is the value of the variable of index j, for the entry of
+    index i, i.e. one entry per line; the grid is filled (with values as they
+    are written) with
+        x index increases, then y index increases, then z index increases
 
-    :param filename:        (string) name of the file
-    :param missing_value:   (float or None) value that will be replaced by nan
+    Parameters
+    ----------
+    filename : str
+        name of the file
+    missing_value : float, optional
+        value that will be replaced by `numpy.nan`
 
-    :return im: (Img class) image containing the variables that have been read
+    Returns
+    -------
+    im : :class:`Img`
+        image (read from the file)
     """
-
     fname = 'readImageGslib'
 
     # Check if the file exists
@@ -4783,29 +5479,52 @@ def readImageGslib(filename, missing_value=None):
 # ----------------------------------------------------------------------------
 def writeImageGslib(im, filename, missing_value=None, fmt="%.10g"):
     """
-    Writes an image in a file (gslib format).
+    Writes an image in a file in "gslib" format.
 
-    --- file (ascii) ---
-    Nx Ny Nz [Sx Sy Sz [Ox Oy Oz]]
-    nvar
-    name_of_variable_1
-    ...
-    name_of_variable_nvar
-    V1(0)    ... Vnvar(0)
-    ...
-    V1(n-1) ... Vnvar(n-1)
-    --- file (ascii) ---
+    It is recommended to use `readImageTxt` / `writeImageTxt` instead.
 
-    where Vi(j) denotes the value of index j for the i-th variable.
+    File is written in the following format:
+        --- file (ascii) ---
+        Nx Ny Nz [Sx Sy Sz [Ox Oy Oz]]
+        nv
+        varname[0]
+        ...
+        varname[nv-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[Nx*Ny*Nz-1, 0]  v[n-1, 1]  ... v[Nx*Ny*Nz-1-1, nv-1]
+        V1(0)    ... Vnvar(0)
+        ...
+        V1(n-1) ... Vnvar(n-1)
+        --- file (ascii) ---
+    where
+    - Nx, Ny, Nz are the number of grid cell along x, y, z axes
+    - Sx, Sy, Sz are the cell size along x, y, z axes (default 1.0)
+    - Ox, Oy, Oz are the coordinates of the (bottom-lower-left corner)
+    (default (0.0, 0.0, 0.0))
+    - varname[j] (string) is a the name of the variable of index j, and
+    v[i, j] (float) is the value of the variable of index j, for the entry of
+    index i, i.e. one entry per line; the grid is filled (with values as they
+    are written) with
+        x index increases, then y index increases, then z index increases
 
-    :param im:              (Img class) image to be written
-    :param filename:        (string) name of the file
-    :param missing_value:   (float or None) nan values will be replaced
-                                by missing_value before writing
-    :param fmt:             (string) single format for variable values, of the
-                                form: '%[flag]width[.precision]specifier'
+    Parameters
+    ----------
+    im : :class:`Img`
+        image to be written
+    filename : str
+        name of the file
+    missing_value : float, optional
+        `numpy.nan` value will be replaced by `missing_value` before writing
+    fmt : str, default: '%.10g'
+        format for single variable value, `fmt` is a string of the form:
+            '%[flag]width[.precision]specifier'
 
-    :return None:
+    Notes
+    -----
+    For more details about format (`fmt` parameter), see
+        docs.python.org/3/library/string.html#format-specification-mini-language
     """
 
     # Write 1st line in string shead
@@ -4836,14 +5555,22 @@ def writeImageGslib(im, filename, missing_value=None, fmt="%.10g"):
 # ----------------------------------------------------------------------------
 def readImageVtk(filename, missing_value=None):
     """
-    Reads an image from a file (vtk format).
+    Reads an image from a file in "vtk" format.
 
-    :param filename:        (string) name of the file
-    :param missing_value:   (float or None) value that will be replaced by nan
+    It is recommended to use `readImageTxt` / `writeImageTxt` instead.
 
-    :return im: (Img class) image containing the variables that have been read
+    Parameters
+    ----------
+    filename : str
+        name of the file
+    missing_value : float, optional
+        value that will be replaced by `numpy.nan`
+
+    Returns
+    -------
+    im : :class:`Img`
+        image (read from the file)
     """
-
     fname = 'readImageVtk'
 
     # Check if the file exists
@@ -4886,22 +5613,33 @@ def readImageVtk(filename, missing_value=None):
 def writeImageVtk(im, filename, missing_value=None, fmt="%.10g",
                   data_type='float', version=3.4, name=None):
     """
-    Writes an image in a file (vtk format).
+    Writes an image in a file in "vtk" format.
 
-    :param im:              (Img class) image to be written
-    :param filename:        (string) name of the file
-    :param missing_value:   (float or None) nan values will be replaced
-                                by missing_value before writing
-    :param fmt:             (string) single format for variable values, of the
-                                form: '%[flag]width[.precision]specifier'
-    :param data_type:       (string) data type (can be 'float', 'int', ...)
-    :param version:         (float) version number (for data file)
-    :param name:            (string or None) name to be written at line 2
-                                if None, im.name is used
+    It is recommended to use `readImageTxt` / `writeImageTxt` instead.
 
-    :return None:
+    Parameters
+    ----------
+    im : :class:`Img`
+        image to be written
+    filename : str
+        name of the file
+    missing_value : float, optional
+        `numpy.nan` value will be replaced by `missing_value` before writing
+    fmt : str, default: '%.10g'
+        format for single variable value, `fmt` is a string of the form:
+            '%[flag]width[.precision]specifier'
+    data_type : str, default: 'float'
+        data type (of the image variables)
+    version : str, default: '3.4'
+        version number (written in vtk data file)
+    name : str, optional
+        name to be written at line 2; by default (`None`): `im.name` is used
+
+    Notes
+    -----
+    For more details about format (`fmt` parameter), see
+        docs.python.org/3/library/string.html#format-specification-mini-language
     """
-
     if name is None:
         name = im.name
 
@@ -4939,28 +5677,41 @@ def writeImageVtk(im, filename, missing_value=None, fmt="%.10g",
 # ----------------------------------------------------------------------------
 def readPointSetGslib(filename, missing_value=None):
     """
-    Reads a point set from a file (gslib format):
+    Reads a point set from a file in "gslib" format.
 
-    --- file (ascii) ---
-    npoint
-    nvar+3
-    name_for_x_coordinate
-    name_for_y_coordinate
-    name_for_z_coordinate
-    name_of_variable_1
-    ...
-    name_of_variable_nvar
-    x(1)      y(1)      z(1)      Z1(1)      ... Znvar(1)
-    ...
-    x(npoint) y(npoint) z(npoint) Z1(npoint) ... Znvar(npoint)
-    --- file (ascii) ---
+    It is recommended to use `readPointSetTxt` / `writePointSetTxt` instead.
 
-    :param filename:        (string) name of the file
-    :param missing_value:   (float or None) value that will be replaced by nan
+    File is assumed to be in the following format:
+        --- file (ascii) ---
+        NPT
+        NV
+        varname[0]
+        ...
+        varname[NV-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
+        --- file (ascii) ---
+    where
+    - NPT is the number of points
+    - NV is the number of variable, including points coordinates (location)
+    - varname[j] (string) is a the name of the variable of index j, and v[i, j]
+    (float) is the value of the variable of index j, for the entry of index i,
+    i.e. one entry per line.
 
-    :return ps: (PointSet class) point set
+    Parameters
+    ----------
+    filename : str
+        name of the file
+    missing_value : float, optional
+        value that will be replaced by `numpy.nan`
+
+    Returns
+    -------
+    ps : :class:`PointSet`
+        point set (read from the file)
     """
-
     fname = 'readPointSetGslib'
 
     # Check if the file exists
@@ -5001,18 +5752,46 @@ def readPointSetGslib(filename, missing_value=None):
 # ----------------------------------------------------------------------------
 def writePointSetGslib(ps, filename, missing_value=None, fmt="%.10g"):
     """
-    Writes a point set in a file (gslib format).
+    Writes a point set in a file in "gslib" format.
 
-    :param ps:              (PointSet class) point set to be written
-    :param filename:        (string) name of the file
-    :param missing_value:   (float or None) nan values will be replaced
-                                by missing_value before writing
-    :param fmt:             (string) single format for variable values, of the
-                                form: '%[flag]width[.precision]specifier'
+    It is recommended to use `readPointSetTxt` / `writePointSetTxt` instead.
 
-    :return None:
+    File is written in the following format:
+        --- file (ascii) ---
+        NPT
+        NV
+        varname[0]
+        ...
+        varname[NV-1]
+        v[0, 0]    v[0, 1]    ... v[0, nv-1]
+        v[1, 0]    v[1, 1]    ... v[1, nv-1]
+        ...
+        v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
+        --- file (ascii) ---
+    where
+    - NPT is the number of points
+    - NV is the number of variable, including points coordinates (location)
+    - varname[j] (string) is a the name of the variable of index j, and v[i, j]
+    (float) is the value of the variable of index j, for the entry of index i,
+    i.e. one entry per line.
+
+    Parameters
+    ----------
+    ps : :class:`PointSet`
+        point set to be written
+    filename : str
+        name of the file
+    missing_value : float, optional
+        `numpy.nan` value will be replaced by `missing_value` before writing
+    fmt : str, default: '%.10g'
+        format for single variable value, `fmt` is a string of the form:
+            '%[flag]width[.precision]specifier'
+
+    Notes
+    -----
+    For more details about format (`fmt` parameter), see
+        docs.python.org/3/library/string.html#format-specification-mini-language
     """
-
     # Write 1st line in string shead
     shead = "{}\n".format(ps.npt)
 
@@ -5040,186 +5819,4 @@ def writePointSetGslib(ps, filename, missing_value=None, fmt="%.10g"):
 
 if __name__ == "__main__":
     print("Module 'geone.img' example:")
-    print("   run the module 'geone.imgplot'...")
-
-
-# === OLD BELOW ===
-# # ----------------------------------------------------------------------------
-# def pointSetToImage(ps,
-#                     nx=None, ny=None, nz=None,
-#                     sx=None, sy=None, sz=None,
-#                     ox=None, oy=None, oz=None,
-#                     nx_max=10000, ny_max=10000, nz_max=10000, nxyz_max=10000000,
-#                     sx_min=1.e-6, sy_min=1.e-6, sz_min=1.e-6,
-#                     job=0):
-#     """
-#     Returns an image corresponding to the input point set.
-#     The output image grid geometry is defined according to the input parameters
-#     (nx, ny, nz, sx, sy, sz, ox, oy, oz). Parameters not given (None) are
-#     automatically computed such that, if possible, the grid covers all points of
-#     the input point set, with cell size such that only one point is in a same
-#     cell.
-#
-#     Note: the last point is selected if more than one point fall in a same cell.
-#
-#     :param ps:  (PointSet class) input point set, with x, y, z-coordinates as
-#                     first three variable
-#     :param nx, ny, nz:
-#                 (int or None) number of grid cells along each axis
-#     :param sx, sy, sz:
-#                 (float or None) cell size along each axis
-#     :param ox, oy, oz:
-#                 (float or None) origin of the grid (bottom-lower-left corner)
-#     :param nx_max, ny_max, nz_max:
-#                 (int) maximal values for nx, ny, nz
-#     :param nxyz_max:
-#                 (int) maximal value for the product nx*ny*nz
-#     :param sx_min, sy_min, sz_min:
-#                 (float) minimal values for sx, sy, sz
-#     :param job: (int) defines some behaviour:
-#                     - if 0: an error occurs if one data is located outside of
-#                         the image grid, otherwise all data are integrated in the
-#                         image
-#                     - if 1: data located outside of the image grid are ignored
-#                         (no error occurs), and all data located within the image
-#                         grid are integrated in the image
-#
-#     :return im: (Img class) image corresponding to the input point set and grid
-#                     parameters
-#     """
-#
-#     fname = 'pointSetToImage'
-#
-#     if ps.nv < 3:
-#         print(f'ERROR ({fname}): invalid number of variable (should be > 3)')
-#         return None
-#
-#     if ps.varname[0].lower() != 'x' or ps.varname[1].lower() != 'y' or ps.varname[2].lower() != 'z':
-#         print(f'ERROR ({fname}): invalid variable: 3 first ones must be x, y, z coordinates')
-#         return None
-#
-#     if (nx is None or ny is None or nz is None \
-#     or sx is None or sy is None or sz is None \
-#     or ox is None or oy is None or oz is None) \
-#     and ps.npt == 0:
-#         print(f'ERROR ({fname}): number of point is 0, unable to compute grid geometry')
-#         return None
-#
-#     # Compute cell size (if not given)
-#     if sx is None:
-#         t = np.unique(ps.x())
-#         if t.size > 1:
-#             sx = max(np.min(np.diff(t)), sx_min)
-#         else:
-#             sx = 1.0
-#     if sy is None:
-#         t = np.unique(ps.y())
-#         if t.size > 1:
-#             sy = max(np.min(np.diff(t)), sy_min)
-#         else:
-#             sy = 1.0
-#     if sz is None:
-#         t = np.unique(ps.z())
-#         if t.size > 1:
-#             sz = max(np.min(np.diff(t)), sz_min)
-#         else:
-#             sz = 1.0
-#
-#     # Compute origin (if not given)
-#     if ox is None:
-#         ox = ps.x().min() - 0.5*sx
-#     if oy is None:
-#         oy = ps.y().min() - 0.5*sy
-#     if oz is None:
-#         oz = ps.z().min() - 0.5*sz
-#
-#     # Compute dimension, i.e. number of cells (if not given)
-#     if nx is None:
-#         nx = min(int(np.ceil((ps.x().max() - ox)/sx)), nx_max)
-#     if ny is None:
-#         ny = min(int(np.ceil((ps.y().max() - oy)/sy)), ny_max)
-#     if nz is None:
-#         nz = min(int(np.ceil((ps.z().max() - oz)/sz)), nz_max)
-#
-#     # Initialize image
-#     im = Img(nx=nx, ny=ny, nz=nz,
-#              sx=sx, sy=sy, sz=sz,
-#              ox=ox, oy=oy, oz=oz,
-#              nv=ps.nv-3, val=np.nan,
-#              varname=[ps.varname[3+i] for i in range(ps.nv-3)])
-#
-#     # Get index of point in the image
-#     xmin, xmax = im.xmin(), im.xmax()
-#     ymin, ymax = im.ymin(), im.ymax()
-#     zmin, zmax = im.zmin(), im.zmax()
-#     ix = np.array(np.floor((ps.val[0]-xmin)/sx),dtype=int)
-#     iy = np.array(np.floor((ps.val[1]-ymin)/sy),dtype=int)
-#     iz = np.array(np.floor((ps.val[2]-zmin)/sz),dtype=int)
-#     # ix = [np.floor((x-xmin)/sx + 0.5) for x in ps.val[0]]
-#     # iy = [np.floor((y-ymin)/sy + 0.5) for y in ps.val[1]]
-#     # iz = [np.floor((z-zmin)/sz + 0.5) for z in ps.val[2]]
-#     for i in range(ps.npt):
-#         if ix[i] == nx:
-#             if (ps.val[0,i]-xmin)/sx - nx < 1.e-10:
-#                 ix[i] = nx-1
-#
-#         if iy[i] == ny:
-#             if (ps.val[1,i]-ymin)/sy - ny < 1.e-10:
-#                 iy[i] = ny-1
-#
-#         if iz[i] == nz:
-#             if (ps.val[2,i]-zmin)/sz - nz < 1.e-10:
-#                 iz[i] = nz-1
-#
-#     # Check which index is out of the image grid
-#     iout = np.any(np.array((ix < 0, ix >= nx, iy < 0, iy >= ny, iz < 0, iz >= nz)), axis=0)
-#
-#     if not job and np.sum(iout) > 0:
-#         print(f'ERROR ({fname}): point out of the image grid!')
-#         return None
-#
-#     # Set values in the image (last point is selected if more than one in a cell)
-#     for i in range(ps.npt): # ps.npt is equal to iout.size
-#         if not iout[i]:
-#             # if not np.isnan(im.val[0, iz[i], iy[i], ix[i]]:
-#             #     print(f'WARNING ({fname}): more than one point in the same cell!')
-#             im.val[:,iz[i], iy[i], ix[i]] = ps.val[3:ps.nv,i]
-#
-#     if np.sum(~np.isnan(im.val[0])) != ps.npt:
-#         print(f'WARNING ({fname}): more than one point in the same cell!')
-#
-#     return im
-# # ----------------------------------------------------------------------------
-
-# # ----------------------------------------------------------------------------
-# def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
-#     """
-#     Convert real point coordinates to index grid:
-#
-#     :param x, y, z:     (float) coordinates of a point
-#     :param sx, sy, sz:  (float) cell size along each axis
-#     :param ox, oy, oz:  (float) origin of the grid (bottom-lower-left corner)
-#
-#     :return: ix, iy, iz:
-#                         (3-tuple) grid node index
-#                             in x-, y-, z-axis direction respectively
-#                             Warning: no check if the node is within the grid
-#     """
-#     jx = (x-ox)/sx
-#     jy = (y-oy)/sy
-#     jz = (z-oz)/sz
-#
-#     ix = int(jx)
-#     iy = int(jy)
-#     iz = int(jz)
-#
-#     # round to lower index if between two grid node
-#     if ix == jx and ix > 0:
-#         ix = ix - 1
-#     if iy == jy and iy > 0:
-#         iy = iy - 1
-#     if iz == jz and iz > 0:
-#         iz = iz - 1
-#
-#     return ix, iy, iz
-# # ----------------------------------------------------------------------------
+    print("   See jupyter notebook for examples...")

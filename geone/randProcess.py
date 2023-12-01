@@ -15,38 +15,38 @@ import scipy.stats as stats
 # ----------------------------------------------------------------------------
 def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
     """
-    Generates random points in [xmin, xmax[ (can be multi-dimensional) following
-    a Poisson point process.
+    Generates random points following a Poisson point process.
 
-    :param mu:      (float or ndarray or func) intensity of the Poisson process,
-                        i.e. the mean number of points per unitary volume:
-                        - if mu is a float:
-                            homogeneous Poisson point process
-                        - if mu is an ndarray:
-                            (non-homogeneous Poisson point process)
-                            mu[i_n, ..., i_0] is the intensity on the box
-                            [xmin[j]+i_j*(xmax[j]-xmin[j])/mu.shape[n-j]],
-                            j=0,...,n
-                        - if mu is a function:
-                            (non-homogeneous Poisson point process)
-                            mu(x): returns the intensity at `x`,
-                            with `x` array_like, the last axis of `x` denoting
-                            the components
-    :param xmin:    (float or 1d-array of floats of shape(m,)) lower bound of
-                        each coordinate
-    :param xmax:    (float or 1d-array of floats of shape(m,)) upper bound of
-                        each coordinate
-    :param ninterval:
-                    (None, int or 1d-array of ints of shape(m,))
-                        used only if `mu` is a function, `ninterval` contains
-                        the number of interval(s) in which the domain
-                        [xmin, xmax[ is subdivided along each axis
-    :return pts:    (2d-array of shape(npts, m)) each row is a random point in
-                        the domain, the number of points following a Poisson law
-                        of the given intensity (`mu`) and m the dimension of the
-                        domain
+    Random points are in `[xmin, xmax[` (can be multi-dimensional).
+
+    Parameters
+    ----------
+    mu : function (callable), or ndarray of floats, or float
+        intensity of the Poisson process, i.e. the mean number of points per
+        unitary volume:
+        - if a function: (non-homogeneous Poisson point process)
+            `mu(x)` returns the intensity at `x`, with `x` array_like, the last
+            axis of `x` denoting the components
+        - if a ndarray: (non-homogeneous Poisson point process)
+            `mu[i_n, ..., i_0]` is the intensity on the box
+            `[xmin[j]+i_j*(xmax[j]-xmin[j])/mu.shape[n-j]]`, j = 0,..., n
+        - if a float: homogeneous Poisson point process
+    xmin : float, or array-like of floats of shape(m,)
+        lower bound of each coordinate
+    xmax : float, or array-like of floats of shape(m,)
+        upper bound of each coordinate
+    ninterval : int, or array-like of ints of shape (m,), optional
+        used only if `mu` is a function (callable);
+        `ninterval` contains the number of interval(s) in which the domain
+        `[xmin, xmax[` is subdivided along each axis
+
+    Returns
+    -------
+    pts : 2D array of shape (npts, m)
+        each row is a random point in the domain `[xmin, xmax[`, the number of
+        points (`npts`) follows a Poisson law of the given intensity (`mu`) and
+        m is the dimension of the domain
     """
-
     fname = 'poissonPointProcess'
 
     xmin = np.atleast_1d(xmin)
@@ -129,59 +129,68 @@ def chentsov1D(n_mean,
                nreal=1):
     """
     Generates a Chentsov's simulation in 1D.
-    The domain of simulation is [xmin, xmax], with nx cells along x-axis, each
-    cell having a length of dx, the left side is the origin:
-        - along x-axis:
-            nx = dimension
-            dx = spacing
-            xmin = origin
-            xmax = origin + nx*dx
+
+    The domain of simulation is `[xmin, xmax]`, with `nx` cells along x axis,
+    each cell having a length of `dx`, the left side is the origin:
+        - along x axis:
+            `nx = dimension`
+            `dx = spacing`
+            `xmin = origin`
+            `xmax = origin + nx*dx`
+
     The simulation consists in
-        1. Drawing random hyper-plane (i.e. points in 1D) in the space
-            [p_min, p_max] following a Poisson point process with intensity
-                mu = n_mean / vol([p_min, p_max]);
-            the points are given in the parametrized form: p;
-            then, for each point p, and with direction_origin = x0
-            (the center of the simulation domain by default), the hyper-plane
-            (point)
-                {x : x-x0 = p} (i.e. the point x0 + p)
-            is considered;
-        2. Each hyper-plane (point x0+p) splits the space (R) in two parts
-            (two half lines); the value = +1 is set to one part (chosen
-            randomly) and the value -1 is set to the other part. Denoting V_i
-            the value over the space (R) associated to the i-th hyper-plane
-            (point), the value assigned to a grid cell of center x is set to
-                Z(x) = 0.5 * sum_{i} (V_i(x) - V_i(x0))
-            It corresponds to the number of hyper-planes (points) cut by the
-            segment [x0, x].
+    1. Drawing random hyper-plane (i.e. points in 1D) in the space
+        [p_min, p_max] following a Poisson point process with intensity
+            mu = n_mean / vol([p_min, p_max]);
+        the points are given in the parametrized form: p;
+        then, for each point p, and with direction_origin = x0
+        (the center of the simulation domain by default), the hyper-plane
+        (point)
+            {x : x-x0 = p} (i.e. the point x0 + p)
+        is considered;
+    2. Each hyper-plane (point x0+p) splits the space (R) in two parts
+        (two half lines); the value = +1 is set to one part (chosen
+        randomly) and the value -1 is set to the other part. Denoting V_i
+        the value over the space (R) associated to the i-th hyper-plane
+        (point), the value assigned to a grid cell of center x is set to
+            Z(x) = 0.5 * sum_{i} (V_i(x) - V_i(x0))
+        It corresponds to the number of hyper-planes (points) cut by the
+        segment [x0, x].
 
-    :param n_mean:      (float) mean number of hyper-plane drawn (via Poisson
-                            process)
-    :param dimension:   (int) nx, number of cells in the 1D simulation domain
-    :param spacing:     (float) dx, spacing between two adjacent cells in the 1D
-                            simulation domain
-    :param origin:      (float) ox, origin of the 1D simulation domain
-    :param direction_origin:
-                        (float or None) origin from which the "points" are drawn
-                            in the Poisson process (see above); by default (None),
-                            the center of the 1D simulation domain is used
-    :param p_min:       (float) minimal value for p (see above)
-                            if p_min is None, p_min is set automatically to
-                                - half of the length of the 1D simulation domain
-    :param p_max:       (float) maximal value for p (see above)
-                            if p_max is None, p_max is set automatically to
-                                + half of the length of the 1D simulation domain
-    :param nreal:       (int) number of realizations
+    Parameters
+    ----------
+    n_mean : float
+        mean number of hyper-plane drawn (via Poisson process)
+    dimension : int
+        `dimension=nx`, number of cells in the 1D simulation grid
+    spacing : float, default: 1.0
+        `spacing=dx`, cell size
+    origin : float, default: 0.0
+        `origin=ox`, origin of the 1D simulation grid (left border)
+    direction_origin : float, optional
+        origin from which the "points" are drawn in the Poisson process
+        (see above);
+        by default (`None`): the center of the 1D simulation domain is used
+    p_min : float, optional
+        minimal value for p (see above);
+        by default (`None`): `p_min` is set automatically to "minus half of the
+        length of the 1D simulation domain"
+    p_max : float, optional
+        maximal value for p (see above);
+        by default (`None`): `p_max` is set automatically to "plus half of the
+        length of the 1D simulation domain
+    nreal : int, default: 1
+        number of realization(s)
 
-    :return sim, n:     sim:    (2-dimensional array of dim nreal x nx) nreal
-                                    simulation of Z (see above), sim[i] is the
-                                    i-th realization
-                        n:      (1-dimensional array of dim nreal) numbers of
-                                    hyper-planes (points) drawn, n[i] is the the
-                                    number of hyper-planes for the i-th
-                                    realization
+    Returns
+    -------
+    sim : 2D array of floats of shape (nreal, nx)
+        simulations of Z (see above);
+        `sim[i, j]`: value of the i-th realisation at grid cell of index j
+    n : 1D array of shape (nreal,)
+        numbers of hyper-planes (points) drawn, `n[i]` is the number of
+        hyper-planes for the i-th realization
     """
-
     fname = 'chentsov1D'
 
     # Number of realization(s)
@@ -245,81 +254,89 @@ def chentsov2D(n_mean,
                nreal=1):
     """
     Generates a Chentsov's simulation in 2D.
-    The domain of simulation is [xmin, xmax] x [ymin x ymax], with nx and ny
-    cells along x-axis and y-axis respectively, each cell being a box of size
-    dx x dy, the bottom left corner is the origin:
-        - along x-axis:
-            nx = dimension[0]
-            dx = spacing[0]
-            xmin = origin[0]
-            xmax = origin[0] + nx*dx
-        - along y-axis:
-            ny = dimension[1]
-            dy = spacing[1]
-            ymin = origin[1]
-            ymax = origin[1] + ny*dy
+
+    The domain of simulation is
+        `[xmin, xmax]` x `[ymin x ymax]`,
+    with `nx` and `ny` cells along x axis and y axis respectively, each cell
+    being a box of size `dx` x `dy`, the lower-left corner is the origin:
+        - along x axis:
+            `nx = dimension[0]`
+            `dx = spacing[0]`
+            `xmin = origin[0]`
+            `xmax = origin[0] + nx*dx`
+        - along y axis:
+            `ny = dimension[1]`
+            `dy = spacing[1]`
+            `ymin = origin[1]`
+            `ymax = origin[1] + ny*dy`
+
     The simulation consists in
-        1. Drawing random hyper-plane (i.e. lines in 2D):
-            considering the space S x [p_min, p_max], where S is a part of
-            the circle of radius 1 in the plane (by default: half circle),
-            parametrized via
-                phi -> (cos(phi), sin(phi)), with phi in [phi_min, phi_max],
-            some points are drawn randomly in S x [p_min, p_max] following a
-            Poisson point process with intensity
-                mu = n_mean / vol(S x [p_min, p_max]);
-            the points are given in the parametrized form: (phi, p);
-            then, for each point (phi, p), and with direction_origin = (x0, y0)
-            (the center of the simulation domain by default), the hyper-plane
-            (line)
-                {(x, y) : dot([x-x0, y-y0], [cos(phi), sin(phi)]) = p}
-            (i.e. point (x, y) s.t. the orthogonal projection of (x-x0, y-y0)
-            onto the direction (cos(phi), sin(phi)) is equal to p) is considered;
-        2. Each hyper-plane (line) splits the space (R^2) in two parts (two half
-            planes); the value = +1 is set to one part (chosen randomly) and the
-            value -1 is set to the other part. Denoting V_i the value over the
-            space (R^2) associated to the i-th hyper-plane (line), the value
-            assigned to a grid cell of center (x, y) is set to
-                Z(x, y) = 0.5 * sum_{i} (V_i(x, y) - V_i(x0, y0))
-            It corresponds to the number of hyper-planes cut by the segment
-            [(x0, y0), (x, y)].
+    1. Drawing random hyper-plane (i.e. lines in 2D):
+        considering the space S x [p_min, p_max], where S is a part of
+        the circle of radius 1 in the plane (by default: half circle),
+        parametrized via
+            phi -> (cos(phi), sin(phi)), with phi in [phi_min, phi_max],
+        some points are drawn randomly in S x [p_min, p_max] following a
+        Poisson point process with intensity
+            mu = n_mean / vol(S x [p_min, p_max]);
+        the points are given in the parametrized form: (phi, p);
+        then, for each point (phi, p), and with direction_origin = (x0, y0)
+        (the center of the simulation domain by default), the hyper-plane
+        (line)
+            {(x, y) : dot([x-x0, y-y0], [cos(phi), sin(phi)]) = p}
+        (i.e. point (x, y) s.t. the orthogonal projection of (x-x0, y-y0)
+        onto the direction (cos(phi), sin(phi)) is equal to p) is considered;
+    2. Each hyper-plane (line) splits the space (R^2) in two parts (two half
+        planes); the value = +1 is set to one part (chosen randomly) and the
+        value -1 is set to the other part. Denoting V_i the value over the
+        space (R^2) associated to the i-th hyper-plane (line), the value
+        assigned to a grid cell of center (x, y) is set to
+            Z(x, y) = 0.5 * sum_{i} (V_i(x, y) - V_i(x0, y0))
+        It corresponds to the number of hyper-planes cut by the segment
+        [(x0, y0), (x, y)].
 
-    :param n_mean:      (float) mean number of hyper-plane drawn (via Poisson
-                            process)
-    :param dimension:   (sequence of 2 ints) [nx, ny], number of cells in the 2D
-                            simulation domain in x-, y-axis direction
-    :param spacing:     (sequence of 2 floats) [dx, dy], spacing between
-                            two adjacent cells in the 2D simulation domain in
-                            x-, y-axis direction
-    :param origin:      (sequence of 2 floats) [ox, oy], origin of the 2D
-                            simulation domain
-    :param direction_origin:
-                        (sequence of 2 floats or None) origin from which the
-                            directions are drawn in the Poisson process (see
-                            above); by default (None), the center of the 2D
-                            simulation domain is used
-    :param phi_min:     (float) minimal angle for the parametrization of S (part
-                            of circle) defining the direction (see above)
-    :param phi_max:     (float) maximal angle for the parametrization of S (part
-                            of circle) defining the direction (see above)
-    :param p_min:       (float) minimal value for orthogonal projection (see
-                            above); if p_min is None, p_min is set automatically
-                            to
-                                - half of the diagonal of the 2D simulation domain
-    :param p_max:       (float) maximal value for orthogonal projection (see
-                            above); if p_max is None, p_max is set automatically
-                            to
-                                + half of the diagonal of the 2D simulation domain
-    :param nreal:       (int) number of realizations
-    :return sim, n:
-                        sim:    (3-dimensional array of dim nreal x ny x nx)
-                                    nreal simulation of Z (see above), sim[i] is
-                                    the i-th realization
-                        n:      (1-dimensional array of dim nreal) numbers of
-                                    hyper-planes (lines) drawn, n[i] is the the
-                                    number of hyper-planes for the i-th
-                                    realization
+    Parameters
+    ----------
+    n_mean : float
+        mean number of hyper-plane drawn (via Poisson process)
+    dimension : 2-tuple of ints
+        `dimension=(nx, ny)`, number of cells in the 2D simulation grid along
+        each axis
+    spacing : 2-tuple of floats, default: (1.0, 1.0)
+        `spacing=(dx, dy)`, cell size along each axis
+    origin : 2-tuple of floats, default: (0.0, 0.0)
+        `origin=(ox, oy)`, origin of the 2D simulation grid (lower-left corner)
+    direction_origin : sequence of 2 floats, optional
+        origin from which the directions are drawn in the Poisson process
+        (see above);
+        by default (`None`): the center of the 2D simulation domain is used
+    phi_min : float, default: 0.0
+        minimal angle for the parametrization of S (part of circle) defining
+        the direction (see above)
+    phi_max : float, default: `numpy.pi`
+        maximal angle for the parametrization of S (part of circle) defining
+        the direction (see above)
+    p_min : float, optional
+        minimal value for orthogonal projection (see above);
+        by default (`None`): `p_min` is set automatically to "minus half of the
+        diagonal of the 2D simulation domain"
+    p_max : float, optional
+        maximal value for orthogonal projection (see above);
+        by default (`None`): `p_min` is set automatically to "plus half of the
+        diagonal of the 2D simulation domain"
+    nreal : int, default: 1
+        number of realization(s)
+
+    Returns
+    -------
+    sim : 3D array of floats of shape (nreal, ny, nx)
+        simulations of Z (see above);
+        `sim[i, iy, ix]`: value of the i-th realisation at grid cell of index ix
+        (resp. iy) along x (resp. y) axis
+    n : 1D array of shape (nreal,)
+        numbers of hyper-planes (lines) drawn, `n[i]` is the number of
+        hyper-planes for the i-th realization
     """
-
     fname = 'chentsov2D'
 
     # Number of realization(s)
@@ -407,97 +424,108 @@ def chentsov3D(n_mean,
                nreal=1):
     """
     Generates a Chentsov's simulation in 3D.
-    The domain of simulation is [xmin, xmax] x [ymin x ymax] x [zmin x zmax],
-    with nx, ny, nz cells along x-axis, y-axis, z-axis respectively, each cell
-    being a box of size dx x dy x dy, the bottom left down corner is the origin:
-        - along x-axis:
-            nx = dimension[0]
-            dx = spacing[0]
-            xmin = origin[0]
-            xmax = origin[0] + nx*dx
-        - along y-axis:
-            ny = dimension[1]
-            dy = spacing[1]
-            ymin = origin[1]
-            ymax = origin[1] + ny*dy
-        - along z-axis:
-            nz = dimension[0]
-            dz = spacing[0]
-            zmin = origin[0]
-            zmax = origin[0] + nz*dz
+
+    The domain of simulation is
+        `[xmin, xmax]` x `[ymin x ymax]` x `[zmin x zmax]`,
+    with `nx`, `ny`, `nz` cells along x axis, y axis, z axis respectively, each
+    cell being a box of size `dx` x `dy` x `dy`, the bottom-lower-left corner is
+    the origin:
+        - along x axis:
+            `nx = dimension[0]`
+            `dx = spacing[0]`
+            `xmin = origin[0]`
+            `xmax = origin[0] + nx*dx`
+        - along y axis:
+            `ny = dimension[1]`
+            `dy = spacing[1]`
+            `ymin = origin[1]`
+            `ymax = origin[1] + ny*dy`
+        - along z axis:
+            `nz = dimension[0]`
+            `dz = spacing[0]`
+            `zmin = origin[0]`
+            `zmax = origin[0] + nz*dz`
+
     The simulation consists in
-        1. Drawing random hyper-plane (i.e. planes in 3D):
-            considering the space S x [p_min, p_max], where S is a part of
-            the sphere of radius 1 in the 3D space (by default: half sphere),
-            parametrized via
-                (phi, theta) -> (cos(phi)cos(theta), sin(phi)cos(theta), sin(theta)),
-                    with phi in [phi_min, phi_max], theta in [theta_min, theta_max]
-            some points are drawn randomly in S x [p_min, p_max] following a
-            Poisson point process with intensity
-                mu = n_mean / vol(S x [p_min, p_max]);
-            the points are given in the parametrized form: (phi, theta, p);
-            then, for each point (phi, theta, p), and with
-            direction_origin = (x0, y0, z0) (the center of the simulation domain
-            by default), the hyper-plane (plane)
-                {(x, y, z) : dot([x-x0, y-y0, z-z0], [cos(phi)cos(theta), sin(phi)cos(theta), sin(theta)]) = p}
-            (i.e. point (x, y, z) s.t. the orthogonal projection of
-            (x-x0, y-y0, z-z0) onto the direction
-            (cos(phi)cos(theta), sin(phi)cos(theta), sin(theta)) is equal to p)
-            is considered;
-        2. Each hyper-plane (plane) splits the space (R^3) in two parts;
-            the value = +1 is set to one part (chosen randomly) and the value -1
-            is set to the other part. Denoting V_i the value over the space (R^3)
-            associated to the i-th hyper-plane (plane), the value assigned to a
-            grid cell of center (x, y) is set to
-                Z(x, y) = 0.5 * sum_{i} (V_i(x, y) - V_i(x0, y0))
-            It corresponds to the number of hyper-planes (planes) cut by the
-            segment [(x0, y0, z0), (x, y, z)].
+    1. Drawing random hyper-plane (i.e. planes in 3D):
+        considering the space S x [p_min, p_max], where S is a part of
+        the sphere of radius 1 in the 3D space (by default: half sphere),
+        parametrized via
+            (phi, theta) -> (cos(phi)cos(theta), sin(phi)cos(theta), sin(theta)),
+                with phi in [phi_min, phi_max], theta in [theta_min, theta_max]
+        some points are drawn randomly in S x [p_min, p_max] following a
+        Poisson point process with intensity
+            mu = n_mean / vol(S x [p_min, p_max]);
+        the points are given in the parametrized form: (phi, theta, p);
+        then, for each point (phi, theta, p), and with
+        direction_origin = (x0, y0, z0) (the center of the simulation domain
+        by default), the hyper-plane (plane)
+            {(x, y, z) : dot([x-x0, y-y0, z-z0], [cos(phi)cos(theta), sin(phi)cos(theta), sin(theta)]) = p}
+        (i.e. point (x, y, z) s.t. the orthogonal projection of
+        (x-x0, y-y0, z-z0) onto the direction
+        (cos(phi)cos(theta), sin(phi)cos(theta), sin(theta)) is equal to p)
+        is considered;
+    2. Each hyper-plane (plane) splits the space (R^3) in two parts;
+        the value = +1 is set to one part (chosen randomly) and the value -1
+        is set to the other part. Denoting V_i the value over the space (R^3)
+        associated to the i-th hyper-plane (plane), the value assigned to a
+        grid cell of center (x, y) is set to
+            Z(x, y) = 0.5 * sum_{i} (V_i(x, y) - V_i(x0, y0))
+        It corresponds to the number of hyper-planes (planes) cut by the
+        segment [(x0, y0, z0), (x, y, z)].
 
-    :param n:           (float) mean number of hyper-plane drawn (via Poisson
-                            process)
-    :param dimension:   (sequence of 3 ints) [nx, ny, nz], number of cells in
-                            the 3D simulation domain in x-, y-, z-axis direction
-    :param spacing:     (sequence of 3 floats) [dx, dy, dz], spacing between
-                            two adjacent cells in the 3D simulation domain in
-                            x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) [ox, oy, oz], origin of the 3D
-                            simulation domain
-    :param direction_origin:
-                        (sequence of 3 floats or None) origin from which the
-                            directions are drawn in the Poisson process (see
-                            above); by default (None), the center of the 3D
-                            simulation domain is used
-    :param phi_min:     (float) minimal angle for the parametrization of S (part
-                            of sphere) defining the direction (see above)
-    :param phi_max:     (float) maximal angle for the parametrization of S (part
-                            of sphere) defining the direction (see above)
-    :param theta_min:   (float) minimal angle for the parametrization of S (part
-                            of sphere) defining the direction (see above)
-    :param theta_max:   (float) maximal angle for the parametrization of S (part
-                            of sphere) defining the direction (see above)
-    :param p_min:       (float) minimal value for orthogonal projection (see
-                            above); if p_min is None, p_min is set automatically
-                            to
-                                - half of the diagonal of the 2D simulation domain
-    :param p_max:       (float) maximal value for orthogonal projection (see
-                            above); if p_max is None, p_max is set automatically
-                            to
-                                + half of the diagonal of the 2D simulation domain
-    :param ninterval_theta:
-                        (int) number of sub-intervals in which the interval
-                            [theta_min, theta_max] is subdivided for applying the
-                            Poisson process
-    :param nreal:       (int) number of realizations
-    :return sim, n:
-                        sim:    (4-dimensional array of dim nreal x nz x ny x nx)
-                                    nreal simulation of Z (see above), sim[i] is
-                                    the i-th realization
-                        n:      (1-dimensional array of dim nreal) numbers of
-                                    hyper-planes (planes) drawn, n[i] is the
-                                    number of hyper-planes for the i-th
-                                    realization
+    Parameters
+    ----------
+    n_mean : float
+        mean number of hyper-plane drawn (via Poisson process)
+    dimension : 3-tuple of ints
+        `dimension=(nx, ny, nz)`, number of cells in the 3D simulation grid along
+        each axis
+    spacing : 3-tuple of floats, default: (1.0,1.0, 1.0)
+        `spacing=(dx, dy, dz)`, cell size along each axis
+    origin : 3-tuple of floats, default: (0.0, 0.0, 0.0)
+        `origin=(ox, oy, oz)`, origin of the 3D simulation grid (bottom-lower-left
+        corner)
+    direction_origin : sequence of 3 floats, optional
+        origin from which the directions are drawn in the Poisson process
+        (see above);
+        by default (`None`): the center of the 3D simulation domain is used
+    phi_min : float, default: 0.0
+        minimal angle for the parametrization of S (part of circle) defining
+        the direction (see above)
+    phi_max : float, default: `numpy.pi`
+        maximal angle for the parametrization of S (part of circle) defining
+        the direction (see above)
+    theta_min : float, default: 0.0
+        minimal angle for the parametrization of S (part of circle) defining
+        the direction (see above)
+    theta_max : float, default: `0.5*numpy.pi`
+        maximal angle for the parametrization of S (part of circle) defining
+        the direction (see above)
+    p_min : float, optional
+        minimal value for orthogonal projection (see above);
+        by default (`None`): `p_min` is set automatically to "minus half of the
+        diagonal of the 3D simulation domain"
+    p_max : float, optional
+        maximal value for orthogonal projection (see above);
+        by default (`None`): `p_min` is set automatically to "plus half of the
+        diagonal of the 3D simulation domain"
+    ninterval_theta : int, default: 100
+        number of sub-intervals in which the interval `[theta_min, theta_max]`
+        is subdivided for applying the Poisson process
+    nreal : int, default: 1
+        number of realization(s)
+
+    Returns
+    -------
+    sim : 4D array of floats of shape (nreal, nz, ny, nx)
+        simulations of Z (see above);
+        `sim[i, iz, iy, ix]`: value of the i-th realisation at grid cell of
+        index ix (resp. iy, iz) along x (resp. y, z) axis
+    n : 1D array of shape (nreal,)
+        numbers of hyper-planes (planes) drawn, `n[i]` is the number of
+        hyper-planes for the i-th realization
     """
-
     fname = 'chentsov3D'
 
     # Number of realization(s)

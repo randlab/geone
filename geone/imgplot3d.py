@@ -6,8 +6,8 @@ Python module:  'imgplot3d.py'
 author:         Julien Straubhaar
 date:           feb-2020
 
-Definition of functions for plotting images (geone.Img class) in 3d based on
-pyvista.
+Definition of functions for plotting images (:class:`geone.img.Img`) in 3D,
+ based on `pyvista`.
 """
 
 # from geone import customcolors as ccol
@@ -46,7 +46,7 @@ def drawImage3D_surface (
         show_axes=True,
         text=None,
         scalar_bar_annotations=None,
-        scalar_bar_annotations_max=30,
+        scalar_bar_annotations_max=20,
         scalar_bar_kwargs=None,
         outline_kwargs=None,
         bounds_kwargs=None,
@@ -57,181 +57,157 @@ def drawImage3D_surface (
         cpos=None,
         **kwargs):
     """
-    Draws a 3D image as surface(s) (using pyvista):
+    Displays a 3D image as surface(s) (based on `pyvista`).
 
-    :param im:      (img.Img class) image (3D)
+    Parameters
+    ----------
+    im : :class:`geone.img.Img`
+        image (3D)
+    plotter : :class:`pyvista.Plotter`, optional
+        - if given (not `None`), add element to the plotter, a further call to
+        `plotter.show()` will be required to show the plot
+        - if not given (`None`, default): a plotter is created and the plot
+        is shown
+    ix0 : int, default: 0
+        index of first slice along x direction, considered for plotting
+    ix1 : int, optional
+        1+index of last slice along x direction (`ix0` < `ix1`), considered for
+        plotting; by default: number of cells in x direction (`ix1=im.nx`) is
+        used
+    iy0 : int, default: 0
+        index of first slice along y direction, considered for plotting
+    iy1 : int, optional
+        1+index of last slice along y direction (`iy0` < `iy1`), considered for
+        plotting; by default: number of cells in x direction (`iy1=im.ny`) is
+        used
+    iz0 : int, default: 0
+        index of first slice along z direction, considered for plotting
+    iz1 : int, optional
+        1+index of last slice along z direction (`iz0` < `iz1`), considered for
+        plotting; by default: number of cells in z direction (`iz1=im.nz`) is
+        used
+    iv : int, default: 0
+        index of the variable to be displayed
+    cmap : colormap
+        color map (can be a string, in this case the color map
+        `matplotlib.pyplot.get_cmap(cmap)`)
+    cmin : float, optional
+        used only if `categ=False`:
+        minimal value to be displayed; by default: minimal value of the displayed
+        variable is used for `cmin`
+    cmax : float, optional
+        used only if `categ=False`:
+        maximal value to be displayed; by default: maximal value of the displayed
+        variable is used for `cmax`
+    alpha : float, optional
+        value of the "alpha" channel (for transparency); by default (`None`):
+        `alpha=1.0` is used (no transparency)
+    excludedVal : sequence of values, or single value, optional
+        values to be excluded from the plot;
+        note not used if `categ=True` and `categVal` is not `None`
+    categ : bool, default: False
+        indicates if the variable of the image to diplay has to be treated as a
+        categorical (discrete) variable (True), or continuous variable (False)
+    ncateg_max : int, default: 30
+        used only if `categ=True`:
+        maximal number of categories, if there are more category values and
+        `categVal=None`, nothing is plotted (`categ` should set to False)
+    categVal : sequence of values, or single value, optional
+        used only if `categ=True`:
+        explicit list of the category values to be displayed;
+        by default (`None`): the list of all unique values are automatically
+        retrieved
+    categCol: sequence of colors, optional
+        used only if `categ=True`:
+        sequence of colors, (given as 3-tuple (RGB code), 4-tuple (RGBA code) or
+        str), used for the category values that will be displayed:
+        - if `categVal` is not `None`: `categCol` must have the same length as
+        `categVal`
+        - if `categVal=None`:
+            - first colors of `categCol` are used if its length is greater than
+            or equal to the number of displayed category values,
+            - otherwise: the colors of `categCol` are used cyclically if
+            `categColCycle=True`, and the colors taken from the color map `cmap`
+            are used if `categColCycle=False`
+    categColCycle : bool, default: False
+        used only if `categ=True`:
+        indicates if the colors of `categCol` can be used cyclically or not
+        (when the number of displayed category values exceeds the length of
+        `categCol`)
+    categActive : 1D array-like of bools, optional
+        used only if `categ=True`:
+        sequence of same length as `categVal`:
+        - `categActive[i]=True`: `categVal[i]` is displayed
+        - `categActive[i]=False`: `categVal[i]` is not displayed
+        by default (`None`): all category values `categVal` are displayed
+    use_clip_plane : bool, default: False
+        if True: the function `pyvista.add_mesh_clip_plane` (allowing interactive
+        clipping) is used instead of `pyvista.add_mesh`
+    show_scalar_bar : bool, default: True
+        indicates if scalar bar (color bar) is displayed
+    show_outline : bool, default: True
+        indicates if outline (around the image) is displayed
+    show_bounds : bool, default: False
+        indicates if bounds are displayed (box with graduation)
+    show_axes : bool, default: True
+        indicates if axes are displayed
+    text : str, optional
+        text (title) to be displayed on the figure
+    scalar_bar_annotations : dict
+        annotation (ticks) on the scalar bar (color bar), used if
+        `show_scalar_bar=True`
+    scalar_bar_annotations_max : int, default: 20
+        maximal number of annotations (ticks) on the scalar bar (color bar)
+        when `categ=True` and `scalar_bar_annotations=None`
+    scalar_bar_kwargs : dict
+        keyword arguments passed to function `plotter.add_scalar_bar`
+        (can be useful for customization, used if `show_scalar_bar=True`)
+        note: in subplots (multi-sub-window), key 'title' should be distinct for
+        each subplot
+    outline_kwargs : dict
+        keyword arguments passed to function `plotter.add_mesh`
+        (can be useful for customization, used if `show_outline=True`)
+    bounds_kwargs : dict
+        keyword arguments passed to function `plotter.show_bounds`
+        (can be useful for customization, used if `show_bounds=True`)
+    axes_kwargs : dict
+        keyword arguments passed to function `plotter.add_axes`
+        (can be useful for customization, used if `show_axes=True`)
+    text_kwargs : dict
+        keyword arguments passed to function `plotter.add_text`
+        (can be useful for customization, used if `text` is not `None`)
+    background_color : color
+        background color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
+    foreground_color : color
+        foreground color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
+    cpos : sequence[sequence[float]], optional
+        camera position (unsused if `plotter=None`);
+        cpos = [camera_location, focus_point, viewup_vector], with
+        - camera_location: (tuple of length 3) camera location ("eye")
+        - focus_point    : (tuple of length 3) focus point
+        - viewup_vector  : (tuple of length 3) viewup vector (vector
+            attached to the "head" and pointed to the "sky"),
+        in principle: (focus_point - camera_location) is orthogonal to
+        viewup_vector
+    kwargs : dict
+        additional keyword arguments passed to `plotter.add_mesh[_clip_plane]`
+        when plotting the variable, such as
+        - opacity : float, or str
+            opacity for colors;
+            default: 'linear', (set 'linear_r' to invert opacity)
+        - show_edges : bool
+            indicates if edges of the grid are displayed
+        - edge_color : color
+            color (3-tuple (RGB code), 4-tuple (RGBA code) or str) for edges
+            (used if `show_edges=True`)
+        - line_width : float
+            line width for edges (used if `show_edges=True`)
+        - etc.
 
-    :param plotter: (pyvista plotter)
-                        if given: add element to the plotter, a further call
-                            to plotter.show() will be required to show the plot
-                        if None (default): a plotter is created and the plot
-                            is shown
-
-    :param ix0, ix1:(int or None) indices for x direction ix0 < ix1
-                        indices ix0:ix1 will be considered for plotting
-                        if ix1 is None (default): ix1 will be set to im.nx
-
-    :param iy0, iy1:(int or None) indices for y direction iy0 < iy1
-                        indices iy0:iy1 will be considered for plotting
-                        if iy1 is None (default): iy1 will be set to im.ny
-
-    :param iz0, iz1:(int or None) indices for z direction iz0 < iz1
-                        indices iz0:iz1 will be considered for plotting
-                        if iz1 is None (default): iz1 will be set to im.nz
-
-
-    :param iv:      (int) index of the variable to be drawn
-
-    :param cmap:    colormap (e.g. plt.get_cmap('viridis'), or equivalently,
-                        just the string 'viridis' (default))
-
-    :param cmin, cmax:
-                    (float) min and max values for the color bar
-                        -- used only if categ is False --
-                        automatically computed if None
-
-    :param alpha:   (float or None) values of alpha channel for transparency
-                        (if None, value 1.0 is used (no transparency))
-
-    :param excludedVal: (int/float or sequence or None) values to be
-                            excluded from the plot.
-                            Note: not used if categ is True and categVal is
-                            not None
-
-    :param categ:       (bool) indicates if the variable of the image to plot
-                            has to be treated as categorical (True) or as
-                            continuous (False)
-
-    :param ncateg_max:  (int) maximal number of categories
-                            -- used only if categ is True --
-                            if more category values and categVal is None,
-                            nothing is plotted (categ should set to False)
-
-    :param categVal:    (int/float or sequence or None)
-                            -- used only if categ is True --
-                            explicit list of the category values to be
-                            considered (if None, the list of all unique values
-                            are automatically computed)
-
-    :param categCol:    (sequence or None)
-                            -- used only if categ is True --
-                            colors (given by string or rgb-tuple) used for the
-                            category values that will be displayed:
-                                If categVal is not None: categCol must have
-                                    the same length as categVal,
-                                else: first entries of categCol are used if its
-                                    length is greater or equal to the number
-                                    of displayed category values, otherwise:
-                                    the entries of categCol are used cyclically
-                                    if categColCycle is True and otherwise,
-                                    colors taken from the colormap cmap are used
-
-    :param categColCycle:
-                        (bool)
-                            -- used only if categ is True --
-                            indicates if the entries of categCol can be used
-                            cyclically or not (when the number of displayed
-                            category values exceeds the length of categCol)
-
-    :param categActive:
-                    (sequence of bools or None)
-                        -- used only if categ is True --
-                        sequence of same length as categVal:
-                        - categActive[i] is True: categVal[i] is displayed
-                        - categActive[i] is False: categVal[i] is not displayed
-                        if None, all category values (in categVal) is displayed
-
-    :param use_clip_plane:
-                    (bool) set True to use 'pyvista.add_mesh_clip_plane'
-                        (allowing interactive clipping) instead of
-                        'pyvista.add_mesh' when plotting values of the image;
-                        warning: one clip plane per value (resp. interval)
-                        specified in filtering_value (resp. filtering_intervals)
-                        is generated
-
-    :param show_scalar_bar:
-                    (bool) indicates if scalar bar (color bar) is drawn
-
-    :param show_outline:
-                    (bool) indicates if outline (around the image) is drawn
-
-    :param show_bounds:
-                    (bool) indicates if bounds are drawn (box with graduation)
-
-    :param show_axes:
-                    (bool) indicates if axes are drawn
-
-    :param text:    (string or None) text to be written on the figure (title)
-
-    :param scalar_bar_annotations:
-                    (dict) annotation on the scalar bar (color bar)
-                        (used if show_scalar_bar is True)
-
-    :param scalar_bar_annotations_max:
-                    (int) maximal number of annotations on the scalar bar
-                        when categ is True and scalar_bar_annotations is None
-
-    :param scalar_bar_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_scalar_bar'
-                        (useful for customization,
-                        used if show_scalar_bar is True)
-                        Note: in subplots (multi-sub-window), key 'title' should
-                        be distinct for each subplot
-
-    :param outline_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_mesh'
-                        (useful for customization,
-                        used if show_outline is True)
-
-    :param bounds_kwargs:
-                    (dict) kwargs passed to function 'plotter.show_bounds'
-                        (useful for customization,
-                        used if show_bounds is True)
-
-    :param axes_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_axes'
-                        (useful for customization,
-                        used if show_axes is True)
-
-    :param text_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_text'
-                        (useful for customization,
-                        used if text is not None)
-
-    :param background_color:
-                    background color
-
-    :param foreground_color:
-                    foreground color
-
-    :param cpos:
-            (list of three 3-tuples, or None for default) camera position
-                (unsused if plotter is None)
-                cpos = [camera_location, focus_point, viewup_vector], with
-                camera_location: (tuple of length 3) camera location ("eye")
-                focus_point    : (tuple of length 3) focus point
-                viewup_vector  : (tuple of length 3) viewup vector (vector
-                    attached to the "head" and pointed to the "sky"),
-                    in principle: (focus_point - camera_location) is orthogonal
-                    to viewup_vector
-
-    :param kwargs:
-        additional keyword arguments passed to plotter.add_mesh[_clip_plane] when
-        plotting the variable, such as
-            - opacity:  (float or string) opacity for colors
-                            default: 'linear', (set 'linear_r' to invert opacity)
-            - show_edges:
-                        (bool) indicates if edges of the grid are drawn
-            - edge_color:
-                        (string or 3 item list) color for edges (used if
-                            show_edges is True)
-            - line_width:
-                        (float) line width for edges (used if show_edges is True)
-            - etc.
-
-    NOTE: 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
+    Notes
+    -----
+    - 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
     """
-
     fname = 'drawImage3D_surface'
 
     # Check iv
@@ -470,7 +446,6 @@ def drawImage3D_surface (
 def drawImage3D_slice (
         im,
         plotter=None,
-        rendering='volume',
         ix0=0, ix1=None,
         iy0=0, iy1=None,
         iz0=0, iz1=None,
@@ -506,190 +481,167 @@ def drawImage3D_slice (
         cpos=None,
         **kwargs):
     """
-    Draws a 3D image as slice(s) (using pyvista):
+    Displays a 3D image as slices(s) (based on `pyvista`).
 
-    :param im:      (img.Img class) image (3D)
+    Parameters
+    ----------
+    im : :class:`geone.img.Img`
+        image (3D)
+    plotter : :class:`pyvista.Plotter`, optional
+        - if given (not `None`), add element to the plotter, a further call to
+        `plotter.show()` will be required to show the plot
+        - if not given (`None`, default): a plotter is created and the plot
+        is shown
+    ix0 : int, default: 0
+        index of first slice along x direction, considered for plotting
+    ix1 : int, optional
+        1+index of last slice along x direction (`ix0` < `ix1`), considered for
+        plotting; by default: number of cells in x direction (`ix1=im.nx`) is
+        used
+    iy0 : int, default: 0
+        index of first slice along y direction, considered for plotting
+    iy1 : int, optional
+        1+index of last slice along y direction (`iy0` < `iy1`), considered for
+        plotting; by default: number of cells in x direction (`iy1=im.ny`) is
+        used
+    iz0 : int, default: 0
+        index of first slice along z direction, considered for plotting
+    iz1 : int, optional
+        1+index of last slice along z direction (`iz0` < `iz1`), considered for
+        plotting; by default: number of cells in z direction (`iz1=im.nz`) is
+        used
+    iv : int, default: 0
+        index of the variable to be displayed
+    slice_normal_x : sequence of values, or single value, optional
+        values of the (float) x coordinate where a slice normal to x axis is
+        displayed
+    slice_normal_y : sequence of values, or single value, optional
+        values of the (float) y coordinate where a slice normal to y axis is
+        displayed
+    slice_normal_z : sequence of values, or single value, optional
+        values of the (float) z coordinate where a slice normal to z axis is
+        displayed
+    slice_normal_normal_custom : (sequence of) sequence(s) of two 3-tuple, optional
+        definition of custom normal slice(s) to be displayed, a slice is
+        defined by a sequence two 3-tuple, ((vx, vy, vz), (px, py, pz)): slice
+        normal to the vector (vx, vy, vz) and going through the point (px, py, pz)
+    cmap : colormap
+        color map (can be a string, in this case the color map
+        `matplotlib.pyplot.get_cmap(cmap)`)
+    cmin : float, optional
+        used only if `categ=False`:
+        minimal value to be displayed; by default: minimal value of the displayed
+        variable is used for `cmin`
+    cmax : float, optional
+        used only if `categ=False`:
+        maximal value to be displayed; by default: maximal value of the displayed
+        variable is used for `cmax`
+    alpha : float, optional
+        value of the "alpha" channel (for transparency); by default (`None`):
+        `alpha=1.0` is used (no transparency)
+    excludedVal : sequence of values, or single value, optional
+        values to be excluded from the plot;
+        note not used if `categ=True` and `categVal` is not `None`
+    categ : bool, default: False
+        indicates if the variable of the image to diplay has to be treated as a
+        categorical (discrete) variable (True), or continuous variable (False)
+    ncateg_max : int, default: 30
+        used only if `categ=True`:
+        maximal number of categories, if there are more category values and
+        `categVal=None`, nothing is plotted (`categ` should set to False)
+    categVal : sequence of values, or single value, optional
+        used only if `categ=True`:
+        explicit list of the category values to be displayed;
+        by default (`None`): the list of all unique values are automatically
+        retrieved
+    categCol: sequence of colors, optional
+        used only if `categ=True`:
+        sequence of colors, (given as 3-tuple (RGB code), 4-tuple (RGBA code) or
+        str), used for the category values that will be displayed:
+        - if `categVal` is not `None`: `categCol` must have the same length as
+        `categVal`
+        - if `categVal=None`:
+            - first colors of `categCol` are used if its length is greater than
+            or equal to the number of displayed category values,
+            - otherwise: the colors of `categCol` are used cyclically if
+            `categColCycle=True`, and the colors taken from the color map `cmap`
+            are used if `categColCycle=False`
+    categColCycle : bool, default: False
+        used only if `categ=True`:
+        indicates if the colors of `categCol` can be used cyclically or not
+        (when the number of displayed category values exceeds the length of
+        `categCol`)
+    categActive : 1D array-like of bools, optional
+        used only if `categ=True`:
+        sequence of same length as `categVal`:
+        - `categActive[i]=True`: `categVal[i]` is displayed
+        - `categActive[i]=False`: `categVal[i]` is not displayed
+        by default (`None`): all category values `categVal` are displayed
+    show_scalar_bar : bool, default: True
+        indicates if scalar bar (color bar) is displayed
+    show_outline : bool, default: True
+        indicates if outline (around the image) is displayed
+    show_bounds : bool, default: False
+        indicates if bounds are displayed (box with graduation)
+    show_axes : bool, default: True
+        indicates if axes are displayed
+    text : str, optional
+        text (title) to be displayed on the figure
+    scalar_bar_annotations : dict
+        annotation (ticks) on the scalar bar (color bar), used if
+        `show_scalar_bar=True`
+    scalar_bar_annotations_max : int, default: 20
+        maximal number of annotations (ticks) on the scalar bar (color bar)
+        when `categ=True` and `scalar_bar_annotations=None`
+    scalar_bar_kwargs : dict
+        keyword arguments passed to function `plotter.add_scalar_bar`
+        (can be useful for customization, used if `show_scalar_bar=True`)
+        note: in subplots (multi-sub-window), key 'title' should be distinct for
+        each subplot
+    outline_kwargs : dict
+        keyword arguments passed to function `plotter.add_mesh`
+        (can be useful for customization, used if `show_outline=True`)
+    bounds_kwargs : dict
+        keyword arguments passed to function `plotter.show_bounds`
+        (can be useful for customization, used if `show_bounds=True`)
+    axes_kwargs : dict
+        keyword arguments passed to function `plotter.add_axes`
+        (can be useful for customization, used if `show_axes=True`)
+    text_kwargs : dict
+        keyword arguments passed to function `plotter.add_text`
+        (can be useful for customization, used if `text` is not `None`)
+    background_color : color
+        background color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
+    foreground_color : color
+        foreground color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
+    cpos : sequence[sequence[float]], optional
+        camera position (unsused if `plotter=None`);
+        cpos = [camera_location, focus_point, viewup_vector], with
+        - camera_location: (tuple of length 3) camera location ("eye")
+        - focus_point    : (tuple of length 3) focus point
+        - viewup_vector  : (tuple of length 3) viewup vector (vector
+            attached to the "head" and pointed to the "sky"),
+        in principle: (focus_point - camera_location) is orthogonal to
+        viewup_vector
+    kwargs : dict
+        additional keyword arguments passed to `plotter.add_mesh`
+        when plotting the variable, such as
+        - opacity : float, or str
+            opacity for colors;
+            default: 'linear', (set 'linear_r' to invert opacity)
+        - show_edges : bool
+            indicates if edges of the grid are displayed
+        - edge_color : color
+            color (3-tuple (RGB code), 4-tuple (RGBA code) or str) for edges
+            (used if `show_edges=True`)
+        - line_width : float
+            line width for edges (used if `show_edges=True`)
+        - etc.
 
-    :param plotter: (pyvista plotter)
-                        if given: add element to the plotter, a further call
-                            to plotter.show() will be required to show the plot
-                        if None (default): a plotter is created and the plot
-                            is shown
-
-    :param ix0, ix1:(int or None) indices for x direction ix0 < ix1
-                        indices ix0:ix1 will be considered for plotting
-                        if ix1 is None (default): ix1 will be set to im.nx
-
-    :param iy0, iy1:(int or None) indices for y direction iy0 < iy1
-                        indices iy0:iy1 will be considered for plotting
-                        if iy1 is None (default): iy1 will be set to im.ny
-
-    :param iz0, iz1:(int or None) indices for z direction iz0 < iz1
-                        indices iz0:iz1 will be considered for plotting
-                        if iz1 is None (default): iz1 will be set to im.nz
-
-    :param iv:      (int) index of the variable to be drawn
-
-    :param slice_normal_x:
-                    (int/float or sequence or None) values of the (real) x
-                        coordinate where a slice normal to x-axis is drawn
-
-    :param slice_normal_y:
-                    (int/float or sequence or None) values of the (real) y
-                        coordinate where a slice normal to y-axis is drawn
-
-    :param slice_normal_z:
-                    (int/float or sequence or None) values of the (real) z
-                        coordinate where a slice normal to z-axis is drawn
-
-    :param slice_normal_custom:
-                    ((sequence of) sequence containing 2 tuple of length 3 or
-                        None) slice_normal[i] = ((vx, vy, vz), (px, py, pz))
-                        means that a slice normal to the vector (vx, vy, vz) and
-                        going through the point (px, py, pz) is drawn
-
-    :param cmap:    colormap (e.g. plt.get_cmap('viridis'), or equivalently,
-                        just the string 'viridis' (default))
-
-    :param cmin, cmax:
-                    (float) min and max values for the color bar
-                        -- used only if categ is False --
-                        automatically computed if None
-
-    :param alpha:   (float or None) values of alpha channel for transparency
-                        (if None, value 1.0 is used (no transparency))
-
-    :param excludedVal: (int/float or sequence or None) values to be
-                            excluded from the plot.
-                            Note: not used if categ is True and categVal is
-                            not None
-
-    :param categ:       (bool) indicates if the variable of the image to plot
-                            has to be treated as categorical (True) or as
-                            continuous (False)
-
-    :param ncateg_max:  (int) maximal number of categories
-                            -- used only if categ is True --
-                            if more category values and categVal is None,
-                            nothing is plotted (categ should set to False)
-
-    :param categVal:    (int/float or sequence or None)
-                            -- used only if categ is True --
-                            explicit list of the category values to be
-                            considered (if None, the list of all unique values
-                            are automatically computed)
-
-    :param categCol:    (sequence or None)
-                            -- used only if categ is True --
-                            colors (given by string or rgb-tuple) used for the
-                            category values that will be displayed:
-                                If categVal is not None: categCol must have
-                                    the same length as categVal,
-                                else: first entries of categCol are used if its
-                                    length is greater or equal to the number
-                                    of displayed category values, otherwise:
-                                    the entries of categCol are used cyclically
-                                    if categColCycle is True and otherwise,
-                                    colors taken from the colormap cmap are used
-
-    :param categColCycle:
-                        (bool)
-                            -- used only if categ is True --
-                            indicates if the entries of categCol can be used
-                            cyclically or not (when the number of displayed
-                            category values exceeds the length of categCol)
-
-    :param categActive:
-                    (sequence of bools or None)
-                        -- used only if categ is True --
-                        sequence of same length as categVal:
-                        - categActive[i] is True: categVal[i] is displayed
-                        - categActive[i] is False: categVal[i] is not displayed
-                        if None, all category values (in categVal) is displayed
-
-    :param show_scalar_bar:
-                    (bool) indicates if scalar bar (color bar) is drawn
-
-    :param show_outline:
-                    (bool) indicates if outline (around the image) is drawn
-
-    :param show_bounds:
-                    (bool) indicates if bounds are drawn (box with graduation)
-
-    :param show_axes:
-                    (bool) indicates if axes are drawn
-
-    :param text:    (string or None) text to be written on the figure (title)
-
-    :param scalar_bar_annotations:
-                    (dict) annotation on the scalar bar (color bar)
-                        (used if show_scalar_bar is True)
-
-    :param scalar_bar_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_scalar_bar'
-                        (useful for customization,
-                        used if show_scalar_bar is True)
-                        Note: in subplots (multi-sub-window), key 'title' should
-                        be distinct for each subplot
-
-    :param outline_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_mesh'
-                        (useful for customization,
-                        used if show_outline is True)
-
-    :param bounds_kwargs:
-                    (dict) kwargs passed to function 'plotter.show_bounds'
-                        (useful for customization,
-                        used if show_bounds is True)
-
-    :param axes_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_axes'
-                        (useful for customization,
-                        used if show_axes is True)
-
-    :param text_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_text'
-                        (useful for customization,
-                        used if text is not None)
-
-    :param background_color:
-                    background color
-
-    :param foreground_color:
-                    foreground color
-
-    :param cpos:
-            (list of three 3-tuples, or None for default) camera position
-                (unsused if plotter is None)
-                cpos = [camera_location, focus_point, viewup_vector], with
-                camera_location: (tuple of length 3) camera location ("eye")
-                focus_point    : (tuple of length 3) focus point
-                viewup_vector  : (tuple of length 3) viewup vector (vector
-                    attached to the "head" and pointed to the "sky"),
-                    in principle: (focus_point - camera_location) is orthogonal
-                    to viewup_vector
-
-    :param kwargs:
-        additional keyword arguments passed to plotter.add_mesh when
-        plotting the variable, such as
-            - opacity:  (float or string) opacity for colors
-                            default: 'linear', (set 'linear_r' to invert opacity)
-            - nan_color:
-                        color for np.nan value
-            - nan_opacity:
-                        (float) opacity used for np.nan value
-            - show_edges:
-                        (bool) indicates if edges of the grid are drawn
-            - edge_color:
-                        (string or 3 item list) color for edges (used if
-                            show_edges is True)
-            - line_width:
-                        (float) line width for edges (used if show_edges is True)
-            - etc.
-
-    NOTE: 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
+    Notes
+    -----
+    - 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
     """
-
     fname = 'drawImage3D_slice'
 
     # Check iv
@@ -937,15 +889,9 @@ def drawImage3D_slice (
 def drawImage3D_empty_grid (
         im,
         plotter=None,
-        rendering='volume',
         ix0=0, ix1=None,
         iy0=0, iy1=None,
         iz0=0, iz1=None,
-        # iv=0,
-        # slice_normal_x=None,
-        # slice_normal_y=None,
-        # slice_normal_z=None,
-        # slice_normal_custom=None,
         cmap=ccol.cmap_def,
         cmin=None, cmax=None,
         alpha=None,
@@ -973,10 +919,11 @@ def drawImage3D_empty_grid (
         cpos=None,
         **kwargs):
     """
-    Draws an empty grid from a 3D image, see parameters in function
-    drawImage3D_slice. Tricks are done below.
-    """
+    Displays an empty grid from a 3D image.
 
+    Same parameters (if present) as in function `drawImage3D_slice` are used,
+    see this function. (Tricks are done below.)
+    """
     fname = 'drawImage3D_empty_grid'
 
     # Set indices to be plotted
@@ -1218,115 +1165,113 @@ def drawImage3D_volume (
         cpos=None,
         **kwargs):
     """
-    Draws a 3D image as volume (using pyvista):
+    Displays a 3D image as volume (based on `pyvista`).
 
-    :param im:      (img.Img class) image (3D)
+    Parameters
+    ----------
+    im : :class:`geone.img.Img`
+        image (3D)
+    plotter : :class:`pyvista.Plotter`, optional
+        - if given (not `None`), add element to the plotter, a further call to
+        `plotter.show()` will be required to show the plot
+        - if not given (`None`, default): a plotter is created and the plot
+        is shown
+    ix0 : int, default: 0
+        index of first slice along x direction, considered for plotting
+    ix1 : int, optional
+        1+index of last slice along x direction (`ix0` < `ix1`), considered for
+        plotting; by default: number of cells in x direction (`ix1=im.nx`) is
+        used
+    iy0 : int, default: 0
+        index of first slice along y direction, considered for plotting
+    iy1 : int, optional
+        1+index of last slice along y direction (`iy0` < `iy1`), considered for
+        plotting; by default: number of cells in x direction (`iy1=im.ny`) is
+        used
+    iz0 : int, default: 0
+        index of first slice along z direction, considered for plotting
+    iz1 : int, optional
+        1+index of last slice along z direction (`iz0` < `iz1`), considered for
+        plotting; by default: number of cells in z direction (`iz1=im.nz`) is
+        used
+    iv : int, default: 0
+        index of the variable to be displayed
+    cmap : colormap
+        color map (can be a string, in this case the color map
+        `matplotlib.pyplot.get_cmap(cmap)`)
+    cmin : float, optional
+        used only if `categ=False`:
+        minimal value to be displayed; by default: minimal value of the displayed
+        variable is used for `cmin`
+    cmax : float, optional
+        used only if `categ=False`:
+        maximal value to be displayed; by default: maximal value of the displayed
+        variable is used for `cmax`
+    set_out_values_to_nan : bool, default: True
+        indicates if values out of the range `[cmin, cmax]` is set to `numpy.nan`
+        before plotting
+    show_scalar_bar : bool, default: True
+        indicates if scalar bar (color bar) is displayed
+    show_outline : bool, default: True
+        indicates if outline (around the image) is displayed
+    show_bounds : bool, default: False
+        indicates if bounds are displayed (box with graduation)
+    show_axes : bool, default: True
+        indicates if axes are displayed
+    text : str, optional
+        text (title) to be displayed on the figure
+    scalar_bar_annotations : dict
+        annotation (ticks) on the scalar bar (color bar), used if
+        `show_scalar_bar=True`
+    scalar_bar_kwargs : dict
+        keyword arguments passed to function `plotter.add_scalar_bar`
+        (can be useful for customization, used if `show_scalar_bar=True`)
+        note: in subplots (multi-sub-window), key 'title' should be distinct for
+        each subplot
+    outline_kwargs : dict
+        keyword arguments passed to function `plotter.add_mesh`
+        (can be useful for customization, used if `show_outline=True`)
+    bounds_kwargs : dict
+        keyword arguments passed to function `plotter.show_bounds`
+        (can be useful for customization, used if `show_bounds=True`)
+    axes_kwargs : dict
+        keyword arguments passed to function `plotter.add_axes`
+        (can be useful for customization, used if `show_axes=True`)
+    text_kwargs : dict
+        keyword arguments passed to function `plotter.add_text`
+        (can be useful for customization, used if `text` is not `None`)
+    background_color : color
+        background color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
+    foreground_color : color
+        foreground color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
+    cpos : sequence[sequence[float]], optional
+        camera position (unsused if `plotter=None`);
+        cpos = [camera_location, focus_point, viewup_vector], with
+        - camera_location: (tuple of length 3) camera location ("eye")
+        - focus_point    : (tuple of length 3) focus point
+        - viewup_vector  : (tuple of length 3) viewup vector (vector
+            attached to the "head" and pointed to the "sky"),
+        in principle: (focus_point - camera_location) is orthogonal to
+        viewup_vector
+    kwargs : dict
+        additional keyword arguments passed to `plotter.add_volume`
+        when plotting the variable, such as
+        - opacity : float, or str
+            opacity for colors;
+            default: 'linear', (set 'linear_r' to invert opacity)
+        - show_edges : bool
+            indicates if edges of the grid are displayed
+        - edge_color : color
+            color (3-tuple (RGB code), 4-tuple (RGBA code) or str) for edges
+            (used if `show_edges=True`)
+        - line_width : float
+            line width for edges (used if `show_edges=True`)
+        - etc.
 
-    :param plotter: (pyvista plotter)
-                        if given: add element to the plotter, a further call
-                            to plotter.show() will be required to show the plot
-                        if None (default): a plotter is created and the plot
-                            is shown
-
-    :param ix0, ix1:(int or None) indices for x direction ix0 < ix1
-                        indices ix0:ix1 will be considered for plotting
-                        if ix1 is None (default): ix1 will be set to im.nx
-
-    :param iy0, iy1:(int or None) indices for y direction iy0 < iy1
-                        indices iy0:iy1 will be considered for plotting
-                        if iy1 is None (default): iy1 will be set to im.ny
-
-    :param iz0, iz1:(int or None) indices for z direction iz0 < iz1
-                        indices iz0:iz1 will be considered for plotting
-                        if iz1 is None (default): iz1 will be set to im.nz
-
-
-    :param iv:      (int) index of the variable to be drawn
-
-    :param cmap:    colormap (e.g. plt.get_cmap('viridis'), or equivalently,
-                        just the string 'viridis' (default))
-
-    :param cmin, cmax:
-                    (float) min and max values for the color bar
-                        automatically computed if None
-
-    :param set_out_values_to_nan:
-                    (bool) indicates if values out of the range [cmin, cmax]
-                        is set to np.nan before plotting
-
-    :param show_scalar_bar:
-                    (bool) indicates if scalar bar (color bar) is drawn
-
-    :param show_outline:
-                    (bool) indicates if outline (around the image) is drawn
-
-    :param show_bounds:
-                    (bool) indicates if bounds are drawn (box with graduation)
-
-    :param show_axes:
-                    (bool) indicates if axes are drawn
-
-    :param text:    (string or None) text to be written on the figure (title)
-
-    :param scalar_bar_annotations:
-                    (dict) annotation on the scalar bar (color bar)
-                        (used if show_scalar_bar is True)
-
-    :param scalar_bar_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_scalar_bar'
-                        (useful for customization,
-                        used if show_scalar_bar is True)
-                        Note: in subplots (multi-sub-window), key 'title' should
-                        be distinct for each subplot
-
-    :param outline_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_mesh'
-                        (useful for customization,
-                        used if show_outline is True)
-
-    :param bounds_kwargs:
-                    (dict) kwargs passed to function 'plotter.show_bounds'
-                        (useful for customization,
-                        used if show_bounds is True)
-
-    :param axes_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_axes'
-                        (useful for customization,
-                        used if show_axes is True)
-
-    :param text_kwargs:
-                    (dict) kwargs passed to function 'plotter.add_text'
-                        (useful for customization,
-                        used if text is not None)
-
-    :param background_color:
-                    background color
-
-    :param foreground_color:
-                    foreground color
-
-    :param cpos:
-            (list of three 3-tuples, or None for default) camera position
-                (unsused if plotter is None)
-                cpos = [camera_location, focus_point, viewup_vector], with
-                camera_location: (tuple of length 3) camera location ("eye")
-                focus_point    : (tuple of length 3) focus point
-                viewup_vector  : (tuple of length 3) viewup vector (vector
-                    attached to the "head" and pointed to the "sky"),
-                    in principle: (focus_point - camera_location) is orthogonal
-                    to viewup_vector
-
-    :param kwargs:
-        additional keyword arguments passed to plotter.add_volume
-        such as
-            - opacity: (float or string) opacity for colors (see doc of
-                            pyvista.add_volume), default: 'linear',
-                            (set 'linear_r' to invert opacity)
-            - etc.
-
-    NOTE: 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
+    Notes
+    -----
+    - 'scalar bar', and 'axes' may be not displayed in multiple-plot, bug ?
     """
-
     fname = 'drawImage3D_volume'
 
     # Check iv

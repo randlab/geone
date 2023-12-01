@@ -31,14 +31,25 @@ from geone import covModel as gcm
 # ----------------------------------------------------------------------------
 def extension_min(r, n, s=1.0):
     """
-    Compute extension of the dimension in a direction so that a GRF reproduces
-    the covariance model appropriately:
+    Computes minimal extension along one direction, for GRF simulations.
 
-    :param r:   (float) range (max) along the considered direction
-    :param n:   (int) dimension (number of cells) in the considered direction
-    :param s:   (float) cell size in the considered direction
+    The extension is computed such that a GRF reproduces the covariance model
+    appropriately.
 
-    :return:    (int) appropriate extension in number of cells
+    Parameters
+    ----------
+    r : float
+        range (max) along the considered direction
+    n : int
+        number of cells (dimension) in the considered direction
+    s : float, default: 1.0
+        cell size in the considered direction
+
+    Returns
+    -------
+    ext_min : int
+        minimal extension in number of cells along the considered direction
+        for appropriate GRF simulations
     """
     k = int(np.ceil(r/s))
     return max(k-n, 0) + k - 1
@@ -57,197 +68,186 @@ def grf1D(cov_model,
           verbose=2,
           printInfo=None):
     """
-    Generates gaussian random fields (GRF) in 1D via FFT.
+    Generates Gaussian Random Fields (GRF) in 1D via Fast Fourier Transform (FFT).
 
     The GRFs:
-        - are generated using the given covariance model / function,
-        - have specified mean (mean) and variance (var), which can be non
+        - are generated using the given covariance model / function (`cov_model`),
+        - have a specified mean (mean) and variance (var), which can be non
           stationary
-        - are conditioned to location x with value v
+        - are conditioned to location(s) `x` with value(s) `v`
 
-    Notes:
+    Considerations:
     1) For reproducing covariance model, the dimension of GRF should be large
-       enough; let K an integer such that K*spacing is greater or equal to the
-       correlation range, then
+    enough; let K an integer such that K*`spacing` is greater or equal to the
+    correlation range, then
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both
+        - two cells could not be correlated simultaneously regarding both
           distances between them (with respect to the periodic grid), i.e. one
           should have
-              dimension+extensionMin >= 2*K - 1,
-          To sum up, extensionMin should be chosen such that
-              dimension+extensionMin >= max(dimension, K) + K - 1
+              `dimension+extensionMin` >= 2*K - 1,
+          To sum up, `extensionMin` should be chosen such that
+              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
           i.e.
-              extensionMin >= max(K-1, 2*K-dimension-1)
-    2) For large conditional simulations with large data set:
-        - conditioningMethod should be set to 2 for using FFT in conditioning
-          step
-        - measureErrVar could be set to a small positive value to stabilize
-          the covariance matrix for conditioning locations (solving linear
-          system)
+              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
+    2) For large data set:
+        - `conditioningMethod` should be set to 2 for using FFT
+        - `measureErrVar` can be set to a small positive value to stabilize the
+          covariance matrix for conditioning locations (solving linear system)
 
-    :param cov_model:   covariance model, it can be:
-                            (function) covariance function f(h), where
-                                h: (1-dimensional array or float) are 1D-lag(s)
-                            (CovModel1D class) covariance model in 1D, see
-                                definition of the class in module geone.covModel
-    :param dimension:   (int) nx, number of cells
-    :param spacing:     (float) dx, spacing between two adjacent cells
-    :param origin:      (float) ox, origin of the 1D field
-                            - used for localizing the conditioning points
-    :param x:           (1-dimensional array or float or None) coordinate of
-                            data points (None for unconditional GRF)
-    :param v:           (1-dimensional array or float or None) value at
-                            data points (same type as x)
-    :param mean:        (None or callable (function) or float or ndarray) mean of
-                            the GRF:
-                            - None   : mean of hard data values (stationary),
-                                       (0 if no hard data)
-                            - callable (function):
-                                       function of one argument (xi) that returns
-                                       the mean at xi (in the grid)
-                            - float  : for stationary mean (set manually)
-                            - ndarray: for non stationary mean, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray)
-                            variance of the GRF:
-                            - None   : variance not modified
-                                       (only covariance function/model is used)
-                            - callable (function):
-                                       function of one argument (xi) that returns
-                                       the variance at xi (in the grid)
-                            - float  : for stationary variance (set manually)
-                            - ndarray: for non stationary variance, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param nreal:       (int) number of realizations
-    :param extensionMin:
-                        (int) minimal extension in nodes for embedding (see
-                            above); None for default, automatically computed:
-                            - based on the range of covariance model,
-                                if covariance model class is given as first
-                                argument,
-                            - set to nx-1 (dimension-1),
-                                if covariance function is given as first
-                                argument
-    :param rangeFactorForExtensionMin:
-                        (float) factor by which the range is multiplied before
-                            computing the default minimal extension, when
-                            covariance model class is given as first argument
-                            and extensionMin is None (not used otherwise)
-    :param crop:        (bool) indicates if the extended generated field will
-                            be cropped to original dimension; note that no
-                            cropping is not valid with conditioning or non
-                            stationary mean or variance
-    :param method:      (int) indicates which method is used to generate
-                            unconditional simulations; for each method the DFT
-                            "lam" of the circulant embedding of the covariance
-                            matrix is used, and periodic and stationary GRFs are
-                            generated; possible values:
-                                1: method A:
-                                   generate one GRF Z as follows:
-                                   - generate one real gaussian white noise W
-                                   - apply fft (or fft inverse) on W to get X
-                                   - multiply X by lam (term by term)
-                                   - apply fft inverse (or fft) to get Z
-                                2: method B:
-                                   generate one GRF Z as follows:
-                                   - generate directly X (of method A)
-                                   - multiply X by lam (term by term)
-                                   - apply fft inverse (or fft) to get Z
-                                3: method C:
-                                   generate two independent GRFs Z1, Z2 as
-                                   follows:
-                                   - generate two independant real gaussian white
-                                     noises W1, W2 and set W = W1 + i * W2
-                                   - apply fft (or fft inverse) on W to get X
-                                   - multiply X by lam (term by term)
-                                   - apply fft inverse (or fft) to get Z,
-                                     and set Z1 = Re(Z), Z2 = Im(Z)
-                                   note: if nreal is odd, the last field is
-                                         generated using method A
-    :param conditioningMethod:
-                        (int) indicates which method is used to update simulation
-                            for accounting conditioning data.
-                            Let
-                                A: index of conditioning nodes
-                                B: index of non-conditioning nodes
-                                Zobs: vector of values of the unconditional
-                                      simulation Z at conditioning nodes
-                            and
-                                    +         +
-                                    | rAA rAB |
-                                r = |         |
-                                    | rBA rBB |
-                                    +         +
-                            the covariance matrix, where index A (resp. B) refers
-                            to conditioning (resp. non-conditioning) index in the
-                            grid. Then, an unconditional simulation Z is updated
-                            into a conditional simulation ZCond as follows:
-                            Let
-                                ZCond[A] = Zobs
-                                ZCond[B] = Z[B] + rBA * rAA^(-1) * (Zobs - Z[A])
-                            (that is the update consists in adding the kriging
-                            estimates of the residues to the unconditional
-                            simulation); possible values for conditioningMethod:
-                                1: method CondtioningA:
-                                   the matrix M = rBA * rAA^(-1) is explicitly
-                                   computed (warning: could require large amount
-                                   of memory), then all the simulations are
-                                   updated by a sum and a multiplication by the
-                                   matrix M
-                                2: method ConditioningB:
-                                   for each simulation: the linear system
-                                        rAA * x = Zobs - Z[A]
-                                   is solved and then, the multiplication by rBA
-                                   is done via fft
-    :param measureErrVar:
-                        (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the
-                            distrubution N(0,measureErrVar*I); i.e.
-                            rAA + measureErrVar*I is considered instead of rAA
-                            for stabilizing the linear system for this matrix.
-                            (Ignored if x is None, i.e. unconditional simulations)
-    :param tolInvKappa: (float >0) used only for conditioning, the simulation is
-                            stopped if the inverse of the condition number of rAA
-                            is above tolInvKappa
-    :param verbose:     (int) indicates what is displayed during the run:
-                            - 0: no display
-                            - 1: only errors
-                            - 2: errors and warnings
-                            - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout
-                            (obsolete, kept for compatibility with older versions)
-                            - None (default): not used
-                            - False: verbose = 2 (overwritten)
-                            - True: verbose = 3 (overwritten)
+    Parameters
+    ----------
+    cov_model : :class:`geone.covModel.CovModel1D`, or function (callable)
+        covariance model in 1D or directly a function of covariance
+    dimension : int
+        `dimension=nx`, number of cells in the 1D simulation grid
+    spacing : float, default: 1.0
+        `spacing=dx`, cell size
+    origin : float, default: 0.0
+        `origin=ox`, origin of the 1D simulation grid (left border)
+    x : 1D array-like of floats, optional
+        data points locations (float coordinates); note: if one point, a float
+        is accepted
+    v : 1D array-like of floats, optional
+        data values at `x` (`v[i]` is the data value at `x[i]`), array of same
+        length as `x` (or float if one point)
+    mean : function (callable), or array-like of floats, or float, optional
+        kriging mean value:
+        - if a function: function of one argument (xi) that returns the mean at
+        location xi
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), mean values at grid cells (for
+        non-stationary mean)
+        - if a float: same mean value at every grid cell
+        - by default (`None`): the mean of data value (`v`) (0.0 if no data) is
+        considered at every grid cell
+    var : function (callable), or array-like of floats, or float, optional
+        kriging variance value:
+        - if a function: function of one argument (xi) that returns the variance
+        at location xi
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), variance values at grid cells (for
+        non-stationary variance)
+        - if a float: same variance value at every grid cell
+        - by default (`None`): not used (use of covariance model only)
+    nreal : int, default: 1
+        number of realization(s)
+    extensionMin : int, optional
+        minimal extension in cells (see consideration 1 above);
+        by default (`None`): minimal extension is automatically computed:
+        - based on the range of the covariance model, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D`)
+        - set to `nx-1`, if `cov_model` is given as a function (callable)
+    rangeFactorForExtensionMin : float, default: 1.0
+        factor by which the range of the covariance model is multiplied before
+        computing the default minimal extension, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D`) and if
+        `extensionMin=None` (not used otherwise)
+    crop : bool, default: True
+        indicates if the extended generated field (simulation) will be cropped to
+        original dimension; note that `crop=False` is not valid with conditioning
+        or non-stationary mean or non-stationary variance
+    method : int, default: 3
+        indicates which method is used to generate unconditional simulations;
+        for each method the Discrete Fourier Transform (DFT) "lam" of the
+        circulant embedding of the covariance matrix is used, and periodic and
+        stationary GRFs are generated;
+        possible values for `method`:
+        1 : method A: generate one GRF Z as follows:
+            - generate one real gaussian white noise W
+            - apply fft (or fft inverse) on W to get X
+            - multiply X by "lam" (term by term)
+            - apply fft inverse (or fft) to get Z
+        2 : method B: generate one GRF Z as follows:
+           - generate directly X (from method A)
+           - multiply X by lam (term by term)
+           - apply fft inverse (or fft) to get Z
+        3 (default) : method C: generate two independent GRFs Z1, Z2 as follows:
+           - generate two independant real gaussian white noises W1, W2 and set
+           W = W1 + i * W2
+           - apply fft (or fft inverse) on W to get X
+           - multiply X by "lam" (term by term)
+           - apply fft inverse (or fft) to get Z, and set Z1 = Re(Z), Z2 = Im(Z)
+           note: if `nreal` is odd, the last field is generated using method A
+    conditioningMethod : int, default: 2
+        indicates which method is used to update the simulations to account for
+        conditioning data; let
+            * A: index of conditioning cells
+            * B: index of non-conditioning cells
+            * Zobs: vector of values of the unconditional simulation Z at
+            conditioning cells
+        and
+                +         +
+                | rAA rAB |
+            r = |         |
+                | rBA rBB |
+                +         +
+        the covariance matrix, where index A (resp. B) refers to conditioning
+        (resp. non-conditioning) index in the grid; an unconditional simulation Z
+        is updated into a conditional simulation ZCond as follows; let
+            * ZCond[A] = Zobs
+            * ZCond[B] = Z[B] + rBA * rAA^(-1) * (Zobs - Z[A])
+        (i.e. the update consists in adding the kriging estimates of the residues
+        to an unconditional simulation);
+        possible values for `conditioningMethod`:
+        1 : method CondtioningA: the matrix M = rBA * rAA^(-1) is explicitly
+            computed (warning: could require large amount of memory), then all
+            the simulations are updated by a sum and a multiplication by the
+            matrix M
+        2 : method ConditioningB: for each simulation, the linear system
+            rAA * x = Zobs - Z[A] is solved and then, the multiplication by rBA
+            is done via fft;
+        note: parameter `conditioningMethod` is used only for conditional
+        simulation
+    measureErrVar : float, default: 0.0
+        measurement error variance; the error on conditioining data is assumed to
+        follow the distrubution N(0,`measureErrVar`*I); i.e.
+        rAA + `measureErrVar`*I is considered instead of rAA for stabilizing the
+        linear system for this matrix;
+        note: parameter `measureErrVar` is used only for conditional simulation
+    tolInvKappa : float, default: 1.e-10
+        the simulation is stopped if the inverse of the condition number of rAA
+        is above `tolInvKappa`
+        note: parameter `tolInvKappa` is used only for conditional simulation
+    verbose : int, default: 2
+        verbose mode, higher implies more printing (info):
+        - 0: no display
+        - 1: only errors
+        - 2: errors and warnings
+        - 3 (or >2): all information
+    printInfo : bool, optional
+        deprecated, use `verbose` instead;
+        - if `printInfo=False`, `verbose` is set to 2 (overwritten)
+        - if `printInfo=True`, `verbose` is set to 3 (overwritten)
+        - if `printInfo=None` (default): not used
 
-    :return grf:    (2-dimensional array of dim nreal x n) nreal GRFs
-                        with n = nx if crop = True, and n >= nx otherwise;
-                        grf[i] is the i-th realization
+    Returns
+    -------
+    grf : 2D array of shape (nreal, n1)
+        GRF realizations, with n1 = nx (= dimension) if `crop=True`, but
+        n1 >= nx if `crop=False`;
+        `grf[i, j]`: value of the i-th realisation at grid cell of index j
 
-    NOTES:
-        Discrete Fourier Transform (DFT) of a vector x of length N is given by
-            c = DFT(x) = F * x
-        where F is the N x N matrix with coefficients
-            F(j,k) = [exp(-i*2*pi*j*k/N)], 0 <= j,k <= N-1
-        We have
-            F^(-1) = 1/N * F^(*)
-        where ^(*) denotes the conjugate transpose
-        Let
-            Q = 1/N^(1/2) * F
-        Then Q is unitary, i.e. Q^(-1) = Q^(*)
-        Then, we have
-            DFT = F = N^(1/2) * Q
-            DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*)
-
-        Using numpy package in python3, we have
-            numpy.fft.fft() = DFT
-            numpy.fft.ifft() = DFT^(-1)
+    Notes
+    -----
+    Discrete Fourier Transform (DFT) of a vector x of length N is given by
+        c = DFT(x) = F * x
+    where F is the N x N matrix with coefficients
+        F(j,k) = [exp(-i*2*pi*j*k/N)], 0 <= j,k <= N-1.
+    We have
+        F^(-1) = 1/N * F^(*)
+    where ^(*) denotes the conjugate transpose.
+    Let
+        Q = 1/N^(1/2) * F.
+    Then Q is unitary, i.e. Q^(-1) = Q^(*).
+    Then, we have
+        DFT = F = N^(1/2) * Q,
+        DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*).
+    Using `numpy` package, we have
+        `numpy.fft.fft()` = DFT()
+        `numpy.fft.ifft()` = DFT^(-1)()
     """
-
     fname = 'grf1D'
 
     # Set verbose mode according to printInfo (if given)
@@ -348,12 +348,12 @@ def grf1D(cov_model,
 
         if mean is not None and mean.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non stationary mean')
+                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary mean')
             return None
 
         if var is not None and var.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non stationary variance')
+                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary variance')
             return None
 
     if extensionMin is None:
@@ -520,7 +520,7 @@ def grf1D(cov_model,
             # If a variance var is specified, then the matrix r should be updated
             # by the following operation:
             #    diag((var/cov_func(0))^1/2) * r * diag((var/cov_func(0))^1/2)
-            # Hence, if a non stationary variance is specified,
+            # Hence, if a non-stationary variance is specified,
             # the matrix rBA * rAA^(-1) should be consequently updated
             # by multiplying its columns by 1/varUpdate[indc] and its rows by varUpdate[indnc]
             if var is not None and var.size > 1:
@@ -717,7 +717,7 @@ def grf1D(cov_model,
 
                 # Compute residue
                 residu = v - grf[i,indc]
-                # ... update if non stationary variance is specified
+                # ... update if non-stationary variance is specified
                 if var is not None and var.size > 1:
                     residu = 1./varUpdate[indc] * residu
 
@@ -729,7 +729,7 @@ def grf1D(cov_model,
                 # ...note that Im(Z) = 0
                 Z = np.real(Z[indncEmb])
 
-                # ... update if non stationary covariance is specified
+                # ... update if non-stationary covariance is specified
                 if var is not None and var.size > 1:
                     Z = varUpdate[indnc] * Z
 
@@ -751,172 +751,154 @@ def krige1D(cov_model,
             verbose=2,
             printInfo=None):
     """
-    Computes kriging estimates and standard deviation in 1D via FFT.
+    Computes kriging estimates and standard deviations in 1D via FFT.
 
     It is a simple kriging
-        - of value v at location x,
-        - based on the covariance model / function,
-        - with a specified mean (mean) and variance (var), which can be non
+        - of value(s) `v` at location(s) `x`,
+        - based on the covariance model / function (`cov_model`),
+        - with a specified mean (`mean`) and variance (`var`), which can be non
           stationary
 
-    Notes:
+    Considerations:
     1) For reproducing covariance model, the dimension of GRF should be large
-       enough; let K an integer such that K*spacing is greater or equal to the
-       correlation range, then
+    enough; let K an integer such that K*`spacing` is greater or equal to the
+    correlation range, then
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both
+        - two cells could not be correlated simultaneously regarding both
           distances between them (with respect to the periodic grid), i.e. one
           should have
-              dimension+extensionMin >= 2*K - 1,
-          To sum up, extensionMin should be chosen such that
-              dimension+extensionMin >= max(dimension, K) + K - 1
+              `dimension+extensionMin` >= 2*K - 1,
+          To sum up, `extensionMin` should be chosen such that
+              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
           i.e.
-              extensionMin >= max(K-1, 2*K-dimension-1)
+              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
     2) For large data set:
-        - conditioningMethod should be set to 2 for using FFT
-        - measureErrVar could be set to a small positive value to stabilize
-          the covariance matrix (solving linear system)
+        - `conditioningMethod` should be set to 2 for using FFT
+        - `measureErrVar` can be set to a small positive value to stabilize the
+          covariance matrix for conditioning locations (solving linear system)
 
-    :param cov_model:   covariance model, it can be:
-                            (function) covariance function f(h), where
-                                h: (1-dimensional array or float) are 1D-lag(s)
-                            (CovModel1D class) covariance model in 1D, see
-                                definition of the class in module geone.covModel
-    :param dimension:   (int) nx, number of cells
-    :param spacing:     (float) dx, spacing between two adjacent cells
-    :param origin:      (float) ox, origin of the 1D field
-                            - used for localizing the conditioning points
-    :param x:           (1-dimensional array or float or None) coordinate of
-                            data points (None if no data)
-    :param v:           (1-dimensional array or float or None) value at
-                            data points (same type as x)
-    :param mean:        (None or callable (function) or float or ndarray) mean of
-                            the GRF:
-                            - None   : mean of hard data values (stationary),
-                                       (0 if no hard data)
-                            - callable (function):
-                                       function of one argument (xi) that returns
-                                       the mean at xi (in the grid)
-                            - float  : for stationary mean (set manually)
-                            - ndarray: for non stationary mean, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray)
-                            variance of the GRF:
-                            - None   : variance not modified
-                                       (only covariance function/model is used)
-                            - callable (function):
-                                       function of one argument (xi) that returns
-                                       the variance at xi (in the grid)
-                            - float  : for stationary variance (set manually)
-                            - ndarray: for non stationary variance, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param extensionMin:
-                        (int) minimal extension in nodes for embedding (see
-                            above); None for default, automatically computed:
-                            - based on the range of covariance model,
-                                if covariance model class is given as first
-                                argument,
-                            - set to nx-1 (dimension-1),
-                                if covariance function is given as first
-                                argument
-    :param rangeFactorForExtensionMin:
-                        (float) factor by which the range is multiplied before
-                            computing the default minimal extension, when
-                            covariance model class is given as first argument
-                            and extensionMin is None (not used otherwise)
-    :param conditioningMethod:
-                        (int) indicates which method is used to perform kriging.
-                            Let
-                                A: index of conditioning (data) nodes
-                                B: index of non-conditioning nodes
-                            and
-                                    +         +
-                                    | rAA rAB |
-                                r = |         |
-                                    | rBA rBB |
-                                    +         +
-                            the covariance matrix, where index A (resp. B) refers
-                            to conditioning (resp. non-conditioning) index in the
-                            grid. Then, thre kriging estimates and variance are
-                                krig[B]    = mean + rBA * rAA^(-1) * (v - mean)
-                                krigVar[B] = diag(rBB - rBA * rAA^(-1) * rAB)
-                            The computation is done in a way depending on the
-                            following possible values for conditioningMethod:
-                                1: method CondtioningA:
-                                   the matrices rBA, RAA^(-1) are explicitly
-                                   computed (warning: could require large amount
-                                   of memory), then all the simulations are
-                                   updated by a sum and a multiplication by the
-                                   matrix M
-                                2: method ConditioningB:
-                                   for kriging estimates:
-                                       the linear system
-                                         rAA * y = (v - mean)
-                                       is solved, and then
-                                         mean + rBA*y
-                                       is computed
-                                   for kriging variances:
-                                       for each column u[j] of rAB, the linear
-                                       system
-                                         rAA * y = u[j]
-                                       is solved, and then
-                                         rBB[j,j] - y^t*y
-                                       is computed
-    :param measureErrVar:
-                        (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the
-                            distrubution N(0,measureErrVar*I); i.e.
-                            rAA + measureErrVar*I is considered instead of rAA
-                            for stabilizing the linear system for this matrix.
-    :param tolInvKappa: (float >0) the function is stopped if the inverse of
-                            the condition number of rAA is above tolInvKappa
-    :param computeKrigSD:
-                        (bool) indicates if the standard deviation of kriging is
-                            computed
-    :param verbose:     (int) indicates what is displayed during the run:
-                            - 0: no display
-                            - 1: only errors
-                            - 2: errors and warnings
-                            - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout
-                            (obsolete, kept for compatibility with older versions)
-                            - None (default): not used
-                            - False: verbose = 2 (overwritten)
-                            - True: verbose = 3 (overwritten)
+    Parameters
+    ----------
+    cov_model : :class:`geone.covModel.CovModel1D`, or function (callable)
+        covariance model in 1D or directly a function of covariance
+    dimension : int
+        `dimension=nx`, number of cells in the 1D simulation grid
+    spacing : float, default: 1.0
+        `spacing=dx`, cell size
+    origin : float, default: 0.0
+        `origin=ox`, origin of the 1D simulation grid (left border)
+    x : 1D array-like of floats, optional
+        data points locations (float coordinates); note: if one point, a float
+        is accepted
+    v : 1D array-like of floats, optional
+        data values at `x` (`v[i]` is the data value at `x[i]`), array of same
+        length as `x` (or float if one point)
+    mean : function (callable), or array-like of floats, or float, optional
+        kriging mean value:
+        - if a function: function of one argument (xi) that returns the mean at
+        location xi
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), mean values at grid cells (for
+        non-stationary mean)
+        - if a float: same mean value at every grid cell
+        - by default (`None`): the mean of data value (`v`) (0.0 if no data) is
+        considered at every grid cell
+    var : function (callable), or array-like of floats, or float, optional
+        kriging variance value:
+        - if a function: function of one argument (xi) that returns the variance
+        at location xi
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), variance values at grid cells (for
+        non-stationary variance)
+        - if a float: same variance value at every grid cell
+        - by default (`None`): not used (use of covariance model only)
+    extensionMin : int, optional
+        minimal extension in cells (see consideration 1 above);
+        by default (`None`): minimal extension is automatically computed:
+        - based on the range of the covariance model, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D`)
+        - set to `nx-1`, if `cov_model` is given as a function (callable)
+    rangeFactorForExtensionMin : float, default: 1.0
+        factor by which the range of the covariance model is multiplied before
+        computing the default minimal extension, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D`) and if
+        `extensionMin=None` (not used otherwise)
+    conditioningMethod : int, default: 1
+        indicates which method is used to perform kriging; let
+            * A: index of conditioning cells
+            * B: index of non-conditioning cells
+        and
+                +         +
+                | rAA rAB |
+            r = |         |
+                | rBA rBB |
+                +         +
+        the covariance matrix, where index A (resp. B) refers to conditioning
+        (resp. non-conditioning) index in the grid; then, thre kriging estimates
+        and kriging variances are
+            krig[B]    = mean + rBA * rAA^(-1) * (v - mean)
+            krigVar[B] = diag(rBB - rBA * rAA^(-1) * rAB)
+        and the computation is done according to `conditioningMethod`:
+        1 : method CondtioningA: the matrices rBA, RAA^(-1) are explicitly
+            computed (warning: could require large amount of memory)
+        2 : method ConditioningB: for kriging estimates, the linear system
+            rAA * y = (v - mean) is solved, and then mean + rBA*y is computed;
+            for kriging variances, for each column u[j] of rAB, the linear
+            system rAA * y = u[j] is solved, and then rBB[j,j] - y^t*y is
+            computed
+    measureErrVar : float, default: 0.0
+        measurement error variance; the error on conditioining data is assumed to
+        follow the distrubution N(0,`measureErrVar`*I); i.e.
+        rAA + `measureErrVar`*I is considered instead of rAA for stabilizing the
+        linear system for this matrix;
+    tolInvKappa : float, default: 1.e-10
+        the computation is stopped if the inverse of the condition number of rAA
+        is above `tolInvKappa`
+    computeKrigSD : bool, default: True
+        indicates if the kriging standard deviations are computed
+    verbose : int, default: 2
+        verbose mode, higher implies more printing (info):
+        - 0: no display
+        - 1: only errors
+        - 2: errors and warnings
+        - 3 (or >2): all information
+    printInfo : bool, optional
+        deprecated, use `verbose` instead;
+        - if `printInfo=False`, `verbose` is set to 2 (overwritten)
+        - if `printInfo=True`, `verbose` is set to 3 (overwritten)
+        - if `printInfo=None` (default): not used
 
-    :return ret:    two possible cases:
-                        ret = (krig, krigSD) if computeKrigSD is equal to True
-                        ret = krig           if computeKrigSD is equal to False
-                    where
-                        krig:   (1-dimensional array of dim nx)
-                                    kriging estimates
-                        krigSD: (1-dimensional array of dim nx)
-                                    kriging standard deviation
+    Returns
+    -------
+    krig : 1D array of shape (nx,)
+        kriging estimates, with nx (= dimension);
+        `krig[j]`: value at grid cell of index j
+    krigSD : 1D array of shape (nx,), optional
+        kriging standard deviations, with nx (= dimension);
+        `krigSD[j]`: value at grid cell of index j;
+        returned if `computeKrigSD=True`
 
-    NOTES:
-        Discrete Fourier Transform (DFT) of a vector x of length N is given by
-            c = DFT(x) = F * x
-        where F is the N x N matrix with coefficients
-            F(j,k) = [exp(-i*2*pi*j*k/N)], 0 <= j,k <= N-1
-        We have
-            F^(-1) = 1/N * F^(*)
-        where ^(*) denotes the conjugate transpose
-        Let
-            Q = 1/N^(1/2) * F
-        Then Q is unitary, i.e. Q^(-1) = Q^(*)
-        Then, we have
-            DFT = F = N^(1/2) * Q
-            DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*)
-
-        Using numpy package in python3, we have
-            numpy.fft.fft() = DFT
-            numpy.fft.ifft() = DFT^(-1)
+    Notes
+    -----
+    Discrete Fourier Transform (DFT) of a vector x of length N is given by
+        c = DFT(x) = F * x
+    where F is the N x N matrix with coefficients
+        F(j,k) = [exp(-i*2*pi*j*k/N)], 0 <= j,k <= N-1.
+    We have
+        F^(-1) = 1/N * F^(*)
+    where ^(*) denotes the conjugate transpose.
+    Let
+        Q = 1/N^(1/2) * F.
+    Then Q is unitary, i.e. Q^(-1) = Q^(*).
+    Then, we have
+        DFT = F = N^(1/2) * Q,
+        DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*).
+    Using `numpy` package, we have
+        `numpy.fft.fft()` = DFT()
+        `numpy.fft.ifft()` = DFT^(-1)()
     """
-
     fname = 'krige1D'
 
     # Set verbose mode according to printInfo (if given)
@@ -1264,7 +1246,7 @@ def krige1D(cov_model,
 
             krigSD[indnc] = np.sqrt(np.maximum(diagEntry - krigSD[indnc], 0.))
 
-    # ... update if non stationary covariance is specified
+    # ... update if non-stationary covariance is specified
     if var is not None:
         if var.size > 1:
             krig = varUpdate * krig
@@ -1292,215 +1274,202 @@ def grf2D(cov_model,
           verbose=2,
           printInfo=None):
     """
-    Generates gaussian random fields (GRF) in 2D via FFT.
+    Generates Gaussian Random Fields (GRF) in 2D via Fast Fourier Transform (FFT).
 
     The GRFs:
-        - are generated using the given covariance model / function,
-        - have specified mean (mean) and variance (var), which can be non
+        - are generated using the given covariance model / function (`cov_model`),
+        - have a specified mean (mean) and variance (var), which can be non
           stationary
-        - are conditioned to location x with value v
+        - are conditioned to location(s) `x` with value(s) `v`
 
-    Notes:
+    Considerations
     1) For reproducing covariance model, the dimension of GRF should be large
-       enough; let K an integer such that K*spacing is greater or equal to the
-       correlation range, then
+    enough; let K an integer such that K*`spacing` is greater or equal to the
+    correlation range, then
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both
+        - two cells could not be correlated simultaneously regarding both
           distances between them (with respect to the periodic grid), i.e. one
           should have
-              dimension+extensionMin >= 2*K - 1,
-          To sum up, extensionMin should be chosen such that
-              dimension+extensionMin >= max(dimension, K) + K - 1
+              `dimension+extensionMin` >= 2*K - 1,
+          To sum up, `extensionMin` should be chosen such that
+              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
           i.e.
-              extensionMin >= max(K-1, 2*K-dimension-1)
-    2) For large conditional simulations with large data set:
-        - conditioningMethod should be set to 2 for using FFT in conditioning
-          step
-        - measureErrVar could be set to a small positive value to stabilize
-          the covariance matrix for conditioning locations (solving linear
-          system)
+              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
+    2) For large data set:
+        - `conditioningMethod` should be set to 2 for using FFT
+        - `measureErrVar` can be set to a small positive value to stabilize the
+          covariance matrix for conditioning locations (solving linear system)
 
-    :param cov_model:   covariance model, it can be:
-                            (function) covariance function f(h), where
-                                h: (2-dimensional array of dim n x 2, or
-                                    1-dimensional array of dim 2) are 2D-lag(s)
-                            (CovModel2D class) covariance model in 2D, see
-                                definition of the class in module geone.covModel
-                            (CovModel1D class) covariance model in 1D, see
-                                definition of the class in module geone.covModel,
-                                it is then transformed to an isotropic (omni-
-                                directional) covariance model in 2D
-    :param dimension:   (sequence of 2 ints) [nx, ny], number of cells
-                            in x-, y-axis direction
-    :param spacing:     (sequence of 2 floats) [dx, dy], spacing between
-                            two adjacent cells in x-, y-axis direction
-    :param origin:      (sequence of 2 floats) [ox, oy], origin of the 2D field
-                            - used for localizing the conditioning points
-    :param x:           (2-dimensional array of dim n x 2, or
-                            1-dimensional array of dim 2 or None) coordinate of
-                            data points (None for unconditional GRF)
-    :param v:           (1-dimensional array or float or None) value at
-                            data points (length n) (None for unconditional GRF)
-    :param mean:        (None or callable (function) or float or ndarray) mean of
-                            the GRF:
-                            - None   : mean of hard data values (stationary),
-                                       (0 if no hard data)
-                            - callable (function):
-                                       function of two arguments (xi, yi) that
-                                       returns the mean at (xi, yi) (in the grid)
-                            - float  : for stationary mean (set manually)
-                            - ndarray: for non stationary mean, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray)
-                            variance of the GRF:
-                            - None   : variance not modified
-                                       (only covariance function/model is used)
-                            - callable (function):
-                                       function of two arguments (xi, yi) that
-                                       returns the variance at (xi, yi) (in the
-                                       grid)
-                            - float  : for stationary variance (set manually)
-                            - ndarray: for non stationary variance, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param nreal:       (int) number of realizations
-    :param extensionMin:
-                        (sequence of 2 ints) minimal extension in nodes in
-                            x-, y-axis direction for embedding (see above);
-                            None for default, automatically computed:
-                            - based on the ranges of covariance model,
-                                if covariance model class is given as first
-                                argument,
-                            - set to [nx-1, ny-1] (where dimension=[nx, ny]),
-                                if covariance function is given as first
-                                argument
-    :param rangeFactorForExtensionMin:
-                        (float) factor by which the range is multiplied before
-                            computing the default minimal extension, when
-                            covariance model class is given as first argument
-                            and extensionMin is None (not used otherwise)
-    :param crop:        (bool) indicates if the extended generated field will
-                            be cropped to original dimension; note that no
-                            cropping is not valid with conditioning or non
-                            stationary mean or variance
-    :param method:      (int) indicates which method is used to generate
-                            unconditional simulations; for each method the DFT
-                            "lam" of the circulant embedding of the covariance
-                            matrix is used, and periodic and stationary GRFs are
-                            generated; possible values:
-                                1: method A:
-                                   generate one GRF Z as follows:
-                                   - generate one real gaussian white noise W
-                                   - apply fft (or fft inverse) on W to get X
-                                   - multiply X by lam (term by term)
-                                   - apply fft inverse (or fft) to get Z
-                                2: method B: NOT IMPLEMENTED!!!
-                                   generate one GRF Z as follows:
-                                   - generate directly X (of method A)
-                                   - multiply X by lam (term by term)
-                                   - apply fft inverse (or fft) to get Z
-                                3: method C:
-                                   generate two independent GRFs Z1, Z2 as
-                                   follows:
-                                   - generate two independant real gaussian white
-                                     noises W1, W2 and set W = W1 + i * W2
-                                   - apply fft (or fft inverse) on W to get X
-                                   - multiply X by lam (term by term)
-                                   - apply fft inverse (or fft) to get Z,
-                                     and set Z1 = Re(Z), Z2 = Im(Z)
-                                   note: if nreal is odd, the last field is
-                                         generated using method A
-    :param conditioningMethod:
-                        (int) indicates which method is used to update simulation
-                            for accounting conditioning data.
-                            Let
-                                A: index of conditioning nodes
-                                B: index of non-conditioning nodes
-                                Zobs: vector of values of the unconditional
-                                      simulation Z at conditioning nodes
-                            and
-                                    +         +
-                                    | rAA rAB |
-                                r = |         |
-                                    | rBA rBB |
-                                    +         +
-                            the covariance matrix, where index A (resp. B) refers
-                            to conditioning (resp. non-conditioning) index in the
-                            grid. Then, an unconditional simulation Z is updated
-                            into a conditional simulation ZCond as follows:
-                            Let
-                                ZCond[A] = Zobs
-                                ZCond[B] = Z[B] + rBA * rAA^(-1) * (Zobs - Z[A])
-                            (that is the update consists in adding the kriging
-                            estimates of the residues to the unconditional
-                            simulation); possible values for conditioningMethod:
-                                1: method CondtioningA:
-                                   the matrix M = rBA * rAA^(-1) is explicitly
-                                   computed (warning: could require large amount
-                                   of memory), then all the simulations are
-                                   updated by a sum and a multiplication by the
-                                   matrix M
-                                2: method ConditioningB:
-                                   for each simulation: the linear system
-                                        rAA * x = Zobs - Z[A]
-                                   is solved and then, the multiplication by rBA
-                                   is done via fft
-    :param measureErrVar:
-                        (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the
-                            distrubution N(0,measureErrVar*I); i.e.
-                            rAA + measureErrVar*I is considered instead of rAA
-                            for stabilizing the linear system for this matrix.
-                            (Ignored if x is None, i.e. unconditional simulations)
-    :param tolInvKappa: (float >0) used only for conditioning, the simulation is
-                            stopped if the inverse of the condition number of rAA
-                            is above tolInvKappa
-    :param verbose:     (int) indicates what is displayed during the run:
-                            - 0: no display
-                            - 1: only errors
-                            - 2: errors and warnings
-                            - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout
-                            (obsolete, kept for compatibility with older versions)
-                            - None (default): not used
-                            - False: verbose = 2 (overwritten)
-                            - True: verbose = 3 (overwritten)
-
-    :return grf:    (3-dimensional array of dim nreal x n2 x n1) nreal GRFs
-                        with n1 = nx, n2 = ny if crop = True,
-                        and n1 >= nx, n2 >= ny otherwise;
-                        grf[i] is the i-th realization
-
-    NOTES:
-        Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 is given by
-            c = DFT(x) = F * x
-        where F is the the (N1*N2) x (N1*N2) matrix with coefficients
-            F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2) )], j=(j1,j2), k=(k1,k2) in G,
+    Parameters
+    ----------
+    cov_model : :class:`geone.covModel.CovModel2D`, or :class:`geone.covModel.CovModel1D`, or function (callable)
+        covariance model in 2D, or covariance model in 1D interpreted as an omni-
+        directional covariance model, or directly a function of covariance (taking
+        2D lag vector(s) as argument)
+    dimension : 2-tuple of ints
+        `dimension=(nx, ny)`, number of cells in the 2D simulation grid along
+        each axis
+    spacing : 2-tuple of floats, default: (1.0, 1.0)
+        `spacing=(dx, dy)`, cell size along each axis
+    origin : 2-tuple of floats, default: (0.0, 0.0)
+        `origin=(ox, oy)`, origin of the 2D simulation grid (lower-left corner)
+    x : 2D array of floats of shape (n, 2), optional
+        data points locations, with n the number of data points, each row of `x`
+        is the float coordinates of one data point; note: if n=1, a 1D array of
+        shape (2,) is accepted
+    v : 1D array of floats of shape (n,), optional
+        data values at `x` (`v[i]` is the data value at `x[i]`)
+    mean : function (callable), or array-like of floats, or float, optional
+        kriging mean value:
+        - if a function: function of two arguments (xi, yi) that returns the mean
+        at location (xi, yi)
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), mean values at grid cells (for
+        non-stationary mean)
+        - if a float: same mean value at every grid cell
+        - by default (`None`): the mean of data value (`v`) (0.0 if no data) is
+        considered at every grid cell
+    var : function (callable), or array-like of floats, or float, optional
+        kriging variance value:
+        - if a function: function of two arguments (xi, yi) that returns the
+        variance at location (xi, yi)
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), variance values at grid cells (for
+        non-stationary variance)
+        - if a float: same variance value at every grid cell
+        - by default (`None`): not used (use of covariance model only)
+    nreal : int, default: 1
+        number of realization(s)
+    extensionMin : sequence of 2 ints, optional
+        minimal extension in cells along each axis (see consideration 1 above);
+        by default (`None`): minimal extension is automatically computed:
+        - based on the range of the covariance model, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D` (or
+        :class:`geone.CovModel.CovModel2D`)
+        - set to (`nx-1`, `ny-1`), if `cov_model` is given as a function
+        (callable)
+    rangeFactorForExtensionMin : float, default: 1.0
+        factor by which the ranges of the covariance model are multiplied before
+        computing the default minimal extension, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D` (or
+        :class:`geone.CovModel.CovModel2D`) and if `extensionMin=None`
+        (not used otherwise)
+    crop : bool, default: True
+        indicates if the extended generated field (simulation) will be cropped to
+        original dimension; note that `crop=False` is not valid with conditioning
+        or non-stationary mean or non-stationary variance
+    method : int, default: 3
+        indicates which method is used to generate unconditional simulations;
+        for each method the Discrete Fourier Transform (DFT) "lam" of the
+        circulant embedding of the covariance matrix is used, and periodic and
+        stationary GRFs are generated;
+        possible values for `method`:
+        1 : method A: generate one GRF Z as follows:
+            - generate one real gaussian white noise W
+            - apply fft (or fft inverse) on W to get X
+            - multiply X by "lam" (term by term)
+            - apply fft inverse (or fft) to get Z
+        2 : method B: generate one GRF Z as follows:
+           - generate directly X (from method A)
+           - multiply X by lam (term by term)
+           - apply fft inverse (or fft) to get Z
+        3 (default) : method C: generate two independent GRFs Z1, Z2 as follows:
+           - generate two independant real gaussian white noises W1, W2 and set
+           W = W1 + i * W2
+           - apply fft (or fft inverse) on W to get X
+           - multiply X by "lam" (term by term)
+           - apply fft inverse (or fft) to get Z, and set Z1 = Re(Z), Z2 = Im(Z)
+           note: if `nreal` is odd, the last field is generated using method A
+    conditioningMethod : int, default: 2
+        indicates which method is used to update the simulations to account for
+        conditioning data; let
+            * A: index of conditioning cells
+            * B: index of non-conditioning cells
+            * Zobs: vector of values of the unconditional simulation Z at
+            conditioning cells
         and
-            G = {n=(n1,n2), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1}
-        denotes the indices grid
-        and where we use the bijection
-            (n1,n2) in G -> n1 + n2 * N1 in {0,...,N1*N2-1},
-        between the multiple-indices and the single indices
+                +         +
+                | rAA rAB |
+            r = |         |
+                | rBA rBB |
+                +         +
+        the covariance matrix, where index A (resp. B) refers to conditioning
+        (resp. non-conditioning) index in the grid; an unconditional simulation Z
+        is updated into a conditional simulation ZCond as follows; let
+            * ZCond[A] = Zobs
+            * ZCond[B] = Z[B] + rBA * rAA^(-1) * (Zobs - Z[A])
+        (i.e. the update consists in adding the kriging estimates of the residues
+        to an unconditional simulation);
+        possible values for `conditioningMethod`:
+        1 : method CondtioningA: the matrix M = rBA * rAA^(-1) is explicitly
+            computed (warning: could require large amount of memory), then all
+            the simulations are updated by a sum and a multiplication by the
+            matrix M
+        2 : method ConditioningB: for each simulation, the linear system
+            rAA * x = Zobs - Z[A] is solved and then, the multiplication by rBA
+            is done via fft;
+        note: parameter `conditioningMethod` is used only for conditional
+        simulation
+    measureErrVar : float, default: 0.0
+        measurement error variance; the error on conditioining data is assumed to
+        follow the distrubution N(0,`measureErrVar`*I); i.e.
+        rAA + `measureErrVar`*I is considered instead of rAA for stabilizing the
+        linear system for this matrix;
+        note: parameter `measureErrVar` is used only for conditional simulation
+    tolInvKappa : float, default: 1.e-10
+        the simulation is stopped if the inverse of the condition number of rAA
+        is above `tolInvKappa`
+        note: parameter `tolInvKappa` is used only for conditional simulation
+    verbose : int, default: 2
+        verbose mode, higher implies more printing (info):
+        - 0: no display
+        - 1: only errors
+        - 2: errors and warnings
+        - 3 (or >2): all information
+    printInfo : bool, optional
+        deprecated, use `verbose` instead;
+        - if `printInfo=False`, `verbose` is set to 2 (overwritten)
+        - if `printInfo=True`, `verbose` is set to 3 (overwritten)
+        - if `printInfo=None` (default): not used
 
-        With N = N1*N2, we have
-            F^(-1) = 1/N * F^(*)
-        where ^(*) denotes the conjugate transpose
-        Let
-            Q = 1/N^(1/2) * F
-        Then Q is unitary, i.e. Q^(-1) = Q^(*)
-        Then, we have
-            DFT = F = N^(1/2) * Q
-            DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*)
+    Returns
+    -------
+    grf : 3D array of shape (nreal, n2, n1)
+        GRF realizations, with
+            * n1 = nx (= dimension[0]), n2 = ny (= dimension[1]), if `crop=True`,
+            * but n1 >= nx, n2 >= ny if `crop=False`;
+        `grf[i, iy, ix]`: value of the i-th realisation at grid cell of index
+        ix (resp. iy) along x (resp. y) axis
 
-        Using numpy package in python3, we have
-            numpy.fft.fft2() = DFT
-            numpy.fft.ifft2() = DFT^(-1)
+    Notes
+    -----
+    Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 is given by
+        c = DFT(x) = F * x
+    where F is the the (N1*N2) x (N1*N2) matrix with coefficients
+        F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2) )], j=(j1,j2), k=(k1,k2) in G,
+    and
+        G = {n=(n1,n2), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1}
+    denotes the indices grid
+    and where we use the bijection
+        (n1,n2) in G -> n1 + n2 * N1 in {0,...,N1*N2-1},
+    between the multiple-indices and the single indices
+
+    With N = N1*N2, we have
+        F^(-1) = 1/N * F^(*)
+    where ^(*) denotes the conjugate transpose
+    Let
+        Q = 1/N^(1/2) * F.
+    Then Q is unitary, i.e. Q^(-1) = Q^(*).
+    Then, we have
+        DFT = F = N^(1/2) * Q,
+        DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*).
+
+    Using numpy package in python3, we have
+        numpy.fft.fft2() = DFT()
+        numpy.fft.ifft2() = DFT^(-1)()
     """
-
     fname = 'grf2D'
 
     # Set verbose mode according to printInfo (if given)
@@ -1625,12 +1594,12 @@ def grf2D(cov_model,
 
         if mean is not None and mean.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non stationary mean')
+                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary mean')
             return None
 
         if var is not None and var.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non stationary variance')
+                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary variance')
             return None
 
     if extensionMin is None:
@@ -1817,7 +1786,7 @@ def grf2D(cov_model,
             # If a variance var is specified, then the matrix r should be updated
             # by the following operation:
             #    diag((var/cov_func(0))^1/2) * r * diag((var/cov_func(0))^1/2)
-            # Hence, if a non stationary variance is specified,
+            # Hence, if a non-stationary variance is specified,
             # the matrix rBA * rAA^(-1) should be consequently updated
             # by multiplying its columns by 1/varUpdate[indc] and its rows by varUpdate[indnc]
             if var is not None and var.size > 1:
@@ -1985,7 +1954,7 @@ def grf2D(cov_model,
 
                 # Compute residue
                 residu = v - grf[i,indc]
-                # ... update if non stationary variance is specified
+                # ... update if non-stationary variance is specified
                 if var is not None and var.size > 1:
                     residu = 1./varUpdate.reshape(-1)[indc] * residu
 
@@ -1997,7 +1966,7 @@ def grf2D(cov_model,
                 # ...note that Im(Z) = 0
                 Z = np.real(Z.reshape(-1)[indncEmb])
 
-                # ... update if non stationary covariance is specified
+                # ... update if non-stationary covariance is specified
                 if var is not None and var.size > 1:
                     Z = varUpdate.reshape(-1)[indnc] * Z
 
@@ -2022,189 +1991,169 @@ def krige2D(cov_model,
             verbose=2,
             printInfo=None):
     """
-    Computes kriging estimates and standard deviation in 2D via FFT.
+    Computes kriging estimates and standard deviations in 2D via FFT.
 
     It is a simple kriging
-        - of value v at location x,
-        - based on the covariance model / function,
-        - with a specified mean (mean) and variance (var), which can be non
+        - of value(s) `v` at location(s) `x`,
+        - based on the covariance model / function (`cov_model`),
+        - with a specified mean (`mean`) and variance (`var`), which can be non
           stationary
 
-    Notes:
+    Considerations
     1) For reproducing covariance model, the dimension of GRF should be large
-       enough; let K an integer such that K*spacing is greater or equal to the
-       correlation range, then
+    enough; let K an integer such that K*`spacing` is greater or equal to the
+    correlation range, then
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both
+        - two cells could not be correlated simultaneously regarding both
           distances between them (with respect to the periodic grid), i.e. one
           should have
-              dimension+extensionMin >= 2*K - 1,
-          To sum up, extensionMin should be chosen such that
-              dimension+extensionMin >= max(dimension, K) + K - 1
+              `dimension+extensionMin` >= 2*K - 1,
+          To sum up, `extensionMin` should be chosen such that
+              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
           i.e.
-              extensionMin >= max(K-1, 2*K-dimension-1)
+              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
     2) For large data set:
-        - conditioningMethod should be set to 2 for using FFT
-        - measureErrVar could be set to a small positive value to stabilize
-          the covariance matrix (solving linear system)
+        - `conditioningMethod` should be set to 2 for using FFT
+        - `measureErrVar` can be set to a small positive value to stabilize the
+          covariance matrix for conditioning locations (solving linear system)
 
-    :param cov_model:   covariance model, it can be:
-                            (function) covariance function f(h), where
-                                h: (2-dimensional array of dim n x 2, or
-                                    1-dimensional array of dim 2) are 2D-lag(s)
-                            (CovModel2D class) covariance model in 2D, see
-                                definition of the class in module geone.covModel
-                            (CovModel1D class) covariance model in 1D, see
-                                definition of the class in module geone.covModel,
-                                it is then transformed to an isotropic (omni-
-                                directional) covariance model in 2D
-    :param dimension:   (sequence of 2 ints) [nx, ny], number of cells
-                            in x-, y-axis direction
-    :param spacing:     (sequence of 2 floats) [dx, dy], spacing between
-                            two adjacent cells in x-, y-axis direction
-    :param origin:      (sequence of 2 floats) [ox, oy], origin of the 2D field
-                            - used for localizing the conditioning points
-    :param x:           (2-dimensional array of dim n x 2, or
-                            1-dimensional array of dim 2 or None) coordinate of
-                            data points (None if no data)
-    :param v:           (1-dimensional array or float or None) value at
-                            data points (length n) (None if no data)
-    :param mean:        (None or callable (function) or float or ndarray) mean of
-                            the GRF:
-                            - None   : mean of hard data values (stationary),
-                                       (0 if no hard data)
-                            - callable (function):
-                                       function of two arguments (xi, yi) that
-                                       returns the mean at (xi, yi) (in the grid)
-                            - float  : for stationary mean (set manually)
-                            - ndarray: for non stationary mean, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray)
-                            variance of the GRF:
-                            - None   : variance not modified
-                                       (only covariance function/model is used)
-                            - callable (function):
-                                       function of two arguments (xi, yi) that
-                                       returns the variance at (xi, yi) (in the
-                                       grid)
-                            - float  : for stationary variance (set manually)
-                            - ndarray: for non stationary variance, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param extensionMin:
-                        (sequence of 2 ints) minimal extension in nodes in
-                            x-, y-axis direction for embedding (see above);
-                            None for default, automatically computed:
-                            - based on the ranges of covariance model,
-                                if covariance model class is given as first
-                                argument,
-                            - set to [nx-1, ny-1] (where dimension=[nx, ny]),
-                                if covariance function is given as first
-                                argument
-    :param rangeFactorForExtensionMin:
-                        (float) factor by which the range is multiplied before
-                            computing the default minimal extension, when
-                            covariance model class is given as first argument
-                            and extensionMin is None (not used otherwise)
-    :param conditioningMethod:
-                        (int) indicates which method is used to perform kriging.
-                            Let
-                                A: index of conditioning (data) nodes
-                                B: index of non-conditioning nodes
-                            and
-                                    +         +
-                                    | rAA rAB |
-                                r = |         |
-                                    | rBA rBB |
-                                    +         +
-                            the covariance matrix, where index A (resp. B) refers
-                            to conditioning (resp. non-conditioning) index in the
-                            grid. Then, thre kriging estimates and variance are
-                                krig[B]    = mean + rBA * rAA^(-1) * (v - mean)
-                                krigVar[B] = diag(rBB - rBA * rAA^(-1) * rAB)
-                            The computation is done in a way depending on the
-                            following possible values for conditioningMethod:
-                                1: method CondtioningA:
-                                   the matrices rBA, RAA^(-1) are explicitly
-                                   computed (warning: could require large amount
-                                   of memory), then all the simulations are
-                                   updated by a sum and a multiplication by the
-                                   matrix M
-                                2: method ConditioningB:
-                                   for kriging estimates:
-                                       the linear system
-                                         rAA * y = (v - mean)
-                                       is solved, and then
-                                         mean + rBA*y
-                                       is computed
-                                   for kriging variances:
-                                       for each column u[j] of rAB, the linear
-                                       system
-                                         rAA * y = u[j]
-                                       is solved, and then
-                                         rBB[j,j] - y^t*y
-                                       is computed
-    :param measureErrVar:
-                        (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the
-                            distrubution N(0,measureErrVar*I); i.e.
-                            rAA + measureErrVar*I is considered instead of rAA
-                            for stabilizing the linear system for this matrix.
-    :param tolInvKappa: (float >0) the function is stopped if the inverse of
-                            the condition number of rAA is above tolInvKappa
-    :param computeKrigSD:
-                        (bool) indicates if the standard deviation of kriging is
-                            computed
-    :param verbose:     (int) indicates what is displayed during the run:
-                            - 0: no display
-                            - 1: only errors
-                            - 2: errors and warnings
-                            - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout
-                            (obsolete, kept for compatibility with older versions)
-                            - None (default): not used
-                            - False: verbose = 2 (overwritten)
-                            - True: verbose = 3 (overwritten)
-
-    :return ret:    two possible cases:
-                        ret = (krig, krigSD) if computeKrigSD is equal to True
-                        ret = krig           if computeKrigSD is equal to False
-                    where
-                        krig:   (2-dimensional array of dim ny x nx)
-                                    kriging estimates
-                        krigSD: (2-dimensional array of dim ny x nx)
-                                    kriging standard deviation
-
-    NOTES:
-        Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 is given by
-            c = DFT(x) = F * x
-        where F is the the (N1*N2) x (N1*N2) matrix with coefficients
-            F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2) )], j=(j1,j2), k=(k1,k2) in G,
+    Parameters
+    ----------
+    cov_model : :class:`geone.covModel.CovModel2D`, or :class:`geone.covModel.CovModel1D`, or function (callable)
+        covariance model in 2D, or covariance model in 1D interpreted as an omni-
+        directional covariance model, or directly a function of covariance (taking
+        2D lag vector(s) as argument)
+    dimension : 2-tuple of ints
+        `dimension=(nx, ny)`, number of cells in the 2D simulation grid along
+        each axis
+    spacing : 2-tuple of floats, default: (1.0, 1.0)
+        `spacing=(dx, dy)`, cell size along each axis
+    origin : 2-tuple of floats, default: (0.0, 0.0)
+        `origin=(ox, oy)`, origin of the 2D simulation grid (lower-left corner)
+    x : 2D array of floats of shape (n, 2), optional
+        data points locations, with n the number of data points, each row of `x`
+        is the float coordinates of one data point; note: if n=1, a 1D array of
+        shape (2,) is accepted
+    v : 1D array of floats of shape (n,), optional
+        data values at `x` (`v[i]` is the data value at `x[i]`)
+    mean : function (callable), or array-like of floats, or float, optional
+        kriging mean value:
+        - if a function: function of two arguments (xi, yi) that returns the mean
+        at location (xi, yi)
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), mean values at grid cells (for
+        non-stationary mean)
+        - if a float: same mean value at every grid cell
+        - by default (`None`): the mean of data value (`v`) (0.0 if no data) is
+        considered at every grid cell
+    var : function (callable), or array-like of floats, or float, optional
+        kriging variance value:
+        - if a function: function of two arguments (xi, yi) that returns the
+        variance at location (xi, yi)
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), variance values at grid cells (for
+        non-stationary variance)
+        - if a float: same variance value at every grid cell
+        - by default (`None`): not used (use of covariance model only)
+    extensionMin : sequence of 2 ints, optional
+        minimal extension in cells along each axis (see consideration 1 above);
+        by default (`None`): minimal extension is automatically computed:
+        - based on the range of the covariance model, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D` (or
+        :class:`geone.CovModel.CovModel2D`)
+        - set to (`nx-1`, `ny-1`), if `cov_model` is given as a function
+        (callable)
+    rangeFactorForExtensionMin : float, default: 1.0
+        factor by which the ranges of the covariance model are multiplied before
+        computing the default minimal extension, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D` (or
+        :class:`geone.CovModel.CovModel2D`) and if `extensionMin=None`
+        (not used otherwise)
+    conditioningMethod : int, default: 1
+        indicates which method is used to perform kriging; let
+            * A: index of conditioning cells
+            * B: index of non-conditioning cells
         and
-            G = {n=(n1,n2), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1}
-        denotes the indices grid
-        and where we use the bijection
-            (n1,n2) in G -> n1 + n2 * N1 in {0,...,N1*N2-1},
-        between the multiple-indices and the single indices
+                +         +
+                | rAA rAB |
+            r = |         |
+                | rBA rBB |
+                +         +
+        the covariance matrix, where index A (resp. B) refers to conditioning
+        (resp. non-conditioning) index in the grid; then, thre kriging estimates
+        and kriging variances are
+            krig[B]    = mean + rBA * rAA^(-1) * (v - mean)
+            krigVar[B] = diag(rBB - rBA * rAA^(-1) * rAB)
+        and the computation is done according to `conditioningMethod`:
+        1 : method CondtioningA: the matrices rBA, RAA^(-1) are explicitly
+            computed (warning: could require large amount of memory)
+        2 : method ConditioningB: for kriging estimates, the linear system
+            rAA * y = (v - mean) is solved, and then mean + rBA*y is computed;
+            for kriging variances, for each column u[j] of rAB, the linear
+            system rAA * y = u[j] is solved, and then rBB[j,j] - y^t*y is
+            computed
+    measureErrVar : float, default: 0.0
+        measurement error variance; the error on conditioining data is assumed to
+        follow the distrubution N(0,`measureErrVar`*I); i.e.
+        rAA + `measureErrVar`*I is considered instead of rAA for stabilizing the
+        linear system for this matrix;
+    tolInvKappa : float, default: 1.e-10
+        the computation is stopped if the inverse of the condition number of rAA
+        is above `tolInvKappa`
+    computeKrigSD : bool, default: True
+        indicates if the kriging standard deviations are computed
+    verbose : int, default: 2
+        verbose mode, higher implies more printing (info):
+        - 0: no display
+        - 1: only errors
+        - 2: errors and warnings
+        - 3 (or >2): all information
+    printInfo : bool, optional
+        deprecated, use `verbose` instead;
+        - if `printInfo=False`, `verbose` is set to 2 (overwritten)
+        - if `printInfo=True`, `verbose` is set to 3 (overwritten)
+        - if `printInfo=None` (default): not used
 
-        With N = N1*N2, we have
-            F^(-1) = 1/N * F^(*)
-        where ^(*) denotes the conjugate transpose
-        Let
-            Q = 1/N^(1/2) * F
-        Then Q is unitary, i.e. Q^(-1) = Q^(*)
-        Then, we have
-            DFT = F = N^(1/2) * Q
-            DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*)
+    Returns
+    -------
+    krig : 2D array of shape (ny, nx)
+        kriging estimates, with (nx, ny) (= dimension);
+        `krig[iy, ix]`: value at grid cell of index ix (resp. iy) along x (resp. y)
+        axis
+    krigSD : 2D array of shape (ny, nx), optional
+        kriging standard deviations, with (nx, ny) (= dimension);
+        `krigSD[iy, ix]`: value at grid cell of index ix (resp. iy) along x (resp. y)
+        axis; returned if `computeKrigSD=True`
 
-        Using numpy package in python3, we have
-            numpy.fft.fft2() = DFT
-            numpy.fft.ifft2() = DFT^(-1)
+    Notes
+    -----
+    Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 is given by
+        c = DFT(x) = F * x
+    where F is the the (N1*N2) x (N1*N2) matrix with coefficients
+        F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2) )], j=(j1,j2), k=(k1,k2) in G,
+    and
+        G = {n=(n1,n2), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1}
+    denotes the indices grid
+    and where we use the bijection
+        (n1,n2) in G -> n1 + n2 * N1 in {0,...,N1*N2-1},
+    between the multiple-indices and the single indices
+
+    With N = N1*N2, we have
+        F^(-1) = 1/N * F^(*)
+    where ^(*) denotes the conjugate transpose
+    Let
+        Q = 1/N^(1/2) * F.
+    Then Q is unitary, i.e. Q^(-1) = Q^(*).
+    Then, we have
+        DFT = F = N^(1/2) * Q,
+        DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*).
+
+    Using numpy package in python3, we have
+        numpy.fft.fft2() = DFT()
+        numpy.fft.ifft2() = DFT^(-1)()
     """
-
     fname = 'krige2D'
 
     # Set verbose mode according to printInfo (if given)
@@ -2595,7 +2544,7 @@ def krige2D(cov_model,
 
         del(ix, iy, kx, ky)
 
-    # ... update if non stationary covariance is specified
+    # ... update if non-stationary covariance is specified
     if var is not None:
         if var.size > 1:
             krig = varUpdate.reshape(-1) * krig
@@ -2627,217 +2576,207 @@ def grf3D(cov_model,
           verbose=2,
           printInfo=None):
     """
-    Generates gaussian random fields (GRF) in 3D via FFT.
+    Generates Gaussian Random Fields (GRF) in 3D via Fast Fourier Transform (FFT).
 
     The GRFs:
-        - are generated using the given covariance model / function,
-        - have specified mean (mean) and variance (var), which can be non
+        - are generated using the given covariance model / function (`cov_model`),
+        - have a specified mean (mean) and variance (var), which can be non
           stationary
-        - are conditioned to location x with value v
+        - are conditioned to location(s) `x` with value(s) `v`
 
-    Notes:
+    Considerations
     1) For reproducing covariance model, the dimension of GRF should be large
-       enough; let K an integer such that K*spacing is greater or equal to the
-       correlation range, then
+    enough; let K an integer such that K*`spacing` is greater or equal to the
+    correlation range, then
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both
+        - two cells could not be correlated simultaneously regarding both
           distances between them (with respect to the periodic grid), i.e. one
           should have
-              dimension+extensionMin >= 2*K - 1,
-          To sum up, extensionMin should be chosen such that
-              dimension+extensionMin >= max(dimension, K) + K - 1
+              `dimension+extensionMin` >= 2*K - 1,
+          To sum up, `extensionMin` should be chosen such that
+              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
           i.e.
-              extensionMin >= max(K-1, 2*K-dimension-1)
-    2) For large conditional simulations with large data set:
-        - conditioningMethod should be set to 2 for using FFT in conditioning
-          step
-        - measureErrVar could be set to a small positive value to stabilize
-          the covariance matrix for conditioning locations (solving linear
-          system)
+              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
+    2) For large data set:
+        - `conditioningMethod` should be set to 2 for using FFT
+        - `measureErrVar` can be set to a small positive value to stabilize the
+          covariance matrix for conditioning locations (solving linear system)
 
-    :param cov_model:   covariance model, it can be:
-                            (function) covariance function f(h), where
-                                h: (2-dimensional array of dim n x 3, or
-                                    1-dimensional array of dim 3) are 3D-lag(s)
-                            (CovModel3D class) covariance model in 3D, see
-                                definition of the class in module geone.covModel
-                            (CovModel1D class) covariance model in 1D, see
-                                definition of the class in module geone.covModel,
-                                it is then transformed to an isotropic (omni-
-                                directional) covariance model in 3D
-    :param dimension:   (sequence of 3 ints) [nx, ny, nz], number of cells
-                            in x-, y-, z-axis direction
-    :param spacing:     (sequence of 3 floats) [dx, dy, dz], spacing between
-                            two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) [ox, oy, oz], origin of the 2D
-                            field - used for localizing the conditioning points
-    :param x:           (2-dimensional array of dim n x 3, or
-                            1-dimensional array of dim 3 or None) coordinate of
-                            data points (None for unconditional GRF)
-    :param v:           (1-dimensional array or float or None) value at
-                            data points (length n) (None for unconditional GRF)
-    :param mean:        (None or callable (function) or float or ndarray) mean of
-                            the GRF:
-                            - None   : mean of hard data values (stationary),
-                                       (0 if no hard data)
-                            - callable (function):
-                                       function of three arguments (xi, yi, zi)
-                                       that returns the mean at (xi, yi, zi) (in
-                                       the grid)
-                            - float  : for stationary mean (set manually)
-                            - ndarray: for non stationary mean, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray)
-                            variance of the GRF:
-                            - None   : variance not modified
-                                       (only covariance function/model is used)
-                            - callable (function):
-                                       function of three arguments (xi, yi, zi)
-                                       that returns the variance at (xi, yi, zi)
-                                       (in the grid)
-                            - float  : for stationary variance (set manually)
-                            - ndarray: for non stationary variance, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param nreal:       (int) number of realizations
-    :param extensionMin:(sequence of 3 ints) minimal extension in nodes in
-                            in x-, y-, z-axis direction for embedding (see above);
-                            None for default, automatically computed:
-                            - based on the ranges of covariance model,
-                                if covariance model class is given as first
-                                argument,
-                            - set to [nx-1, ny-1, nz-1] (where
-                                dimension=[nx, ny, nz]), if covariance function
-                                is given as first argument
-    :param rangeFactorForExtensionMin:
-                        (float) factor by which the range is multiplied before
-                            computing the default minimal extension, when
-                            covariance model class is given as first argument
-                            and extensionMin is None (not used otherwise)
-    :param crop:        (bool) indicates if the extended generated field will
-                            be cropped to original dimension; note that no
-                            cropping is not valid with conditioning or non
-                            stationary mean or variance
-    :param method:      (int) indicates which method is used to generate
-                            unconditional simulations; for each method the DFT
-                            "lam" of the circulant embedding of the covariance
-                            matrix is used, and periodic and stationary GRFs are
-                            generated; possible values:
-                                1: method A:
-                                   generate one GRF Z as follows:
-                                   - generate one real gaussian white noise W
-                                   - apply fft (or fft inverse) on W to get X
-                                   - multiply X by lam (term by term)
-                                   - apply fft inverse (or fft) to get Z
-                                2: method B: NOT IMPLEMENTED!!!
-                                   generate one GRF Z as follows:
-                                   - generate directly X (of method A)
-                                   - multiply X by lam (term by term)
-                                   - apply fft inverse (or fft) to get Z
-                                3: method C:
-                                   generate two independent GRFs Z1, Z2 as
-                                   follows:
-                                   - generate two independant real gaussian white
-                                     noises W1, W2 and set W = W1 + i * W2
-                                   - apply fft (or fft inverse) on W to get X
-                                   - multiply X by lam (term by term)
-                                   - apply fft inverse (or fft) to get Z,
-                                     and set Z1 = Re(Z), Z2 = Im(Z)
-                                   note: if nreal is odd, the last field is
-                                         generated using method A
-    :param conditioningMethod:
-                        (int) indicates which method is used to update simulation
-                            for accounting conditioning data.
-                            Let
-                                A: index of conditioning nodes
-                                B: index of non-conditioning nodes
-                                Zobs: vector of values of the unconditional
-                                      simulation Z at conditioning nodes
-                            and
-                                    +         +
-                                    | rAA rAB |
-                                r = |         |
-                                    | rBA rBB |
-                                    +         +
-                            the covariance matrix, where index A (resp. B) refers
-                            to conditioning (resp. non-conditioning) index in the
-                            grid. Then, an unconditional simulation Z is updated
-                            into a conditional simulation ZCond as follows:
-                            Let
-                                ZCond[A] = Zobs
-                                ZCond[B] = Z[B] + rBA * rAA^(-1) * (Zobs - Z[A])
-                            (that is the update consists in adding the kriging
-                            estimates of the residues to the unconditional
-                            simulation); possible values for conditioningMethod:
-                                1: method CondtioningA:
-                                   the matrix M = rBA * rAA^(-1) is explicitly
-                                   computed (warning: could require large amount
-                                   of memory), then all the simulations are
-                                   updated by a sum and a multiplication by the
-                                   matrix M
-                                2: method ConditioningB:
-                                   for each simulation: the linear system
-                                        rAA * x = Zobs - Z[A]
-                                   is solved and then, the multiplication by rBA
-                                   is done via fft
-    :param measureErrVar:
-                        (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the
-                            distrubution N(0,measureErrVar*I); i.e.
-                            rAA + measureErrVar*I is considered instead of rAA
-                            for stabilizing the linear system for this matrix.
-                            (Ignored if x is None, i.e. unconditional simulations)
-    :param tolInvKappa: (float >0) used only for conditioning, the simulation is
-                            stopped if the inverse of the condition number of rAA
-                            is above tolInvKappa
-    :param verbose:     (int) indicates what is displayed during the run:
-                            - 0: no display
-                            - 1: only errors
-                            - 2: errors and warnings
-                            - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout
-                            (obsolete, kept for compatibility with older versions)
-                            - None (default): not used
-                            - False: verbose = 2 (overwritten)
-                            - True: verbose = 3 (overwritten)
-
-    :return grf:    (4-dimensional array of dim nreal x n3 x n2 x n1) nreal GRFs
-                        with n1 = nx, n2 = ny, n3 = nz if crop = True,
-                        and n1 >= nx, n2 >= ny, n3 >= nz otherwise;
-                        grf[i] is the i-th realization
-
-    NOTES:
-        Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 x N3 is
-        given by
-            c = DFT(x) = F * x
-        where F is the the (N1*N2*N3) x (N1*N2*N3) matrix with coefficients
-            F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2*N3) )],
-                j=(j1,j2,j3), k=(k1,k2,k3) in G,
+    Parameters
+    ----------
+    cov_model : :class:`geone.covModel.CovModel3D`, or :class:`geone.covModel.CovModel1D`, or function (callable)
+        covariance model in 3D, or covariance model in 1D interpreted as an omni-
+        directional covariance model, or directly a function of covariance (taking
+        3D lag vector(s) as argument)
+    dimension : 3-tuple of ints
+        `dimension=(nx, ny, nz)`, number of cells in the 3D simulation grid along
+        each axis
+    spacing : 3-tuple of floats, default: (1.0,1.0, 1.0)
+        `spacing=(dx, dy, dz)`, cell size along each axis
+    origin : 3-tuple of floats, default: (0.0, 0.0, 0.0)
+        `origin=(ox, oy, oz)`, origin of the 3D simulation grid (bottom-lower-left
+        corner)
+    x : 2D array of floats of shape (n, 3), optional
+        data points locations, with n the number of data points, each row of `x`
+        is the float coordinates of one data point; note: if n=1, a 1D array of
+        shape (3,) is accepted
+    v : 1D array of floats of shape (n,), optional
+        data values at `x` (`v[i]` is the data value at `x[i]`)
+    mean : function (callable), or array-like of floats, or float, optional
+        kriging mean value:
+        - if a function: function of three arguments (xi, yi, zi) that returns
+        the mean at location (xi, yi, zi)
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), mean values at grid cells (for
+        non-stationary mean)
+        - if a float: same mean value at every grid cell
+        - by default (`None`): the mean of data value (`v`) (0.0 if no data) is
+        considered at every grid cell
+    var : function (callable), or array-like of floats, or float, optional
+        kriging variance value:
+        - if a function: function of three arguments (xi, yi, yi) that returns
+        the variance at location (xi, yi, zi)
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), variance values at grid cells (for
+        non-stationary variance)
+        - if a float: same variance value at every grid cell
+        - by default (`None`): not used (use of covariance model only)
+    nreal : int, default: 1
+        number of realization(s)
+    extensionMin : sequence of 3 ints, optional
+        minimal extension in cells along each axis (see consideration 1 above);
+        by default (`None`): minimal extension is automatically computed:
+        - based on the range of the covariance model, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D` (or
+        :class:`geone.CovModel.CovModel3D`)
+        - set to (`nx-1`, `ny-1`, `nz-1`), if `cov_model` is given as a function
+        (callable)
+    rangeFactorForExtensionMin : float, default: 1.0
+        factor by which the ranges of the covariance model are multiplied before
+        computing the default minimal extension, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D` (or
+        :class:`geone.CovModel.CovModel2D`) and if `extensionMin=None`
+        (not used otherwise)
+    crop : bool, default: True
+        indicates if the extended generated field (simulation) will be cropped to
+        original dimension; note that `crop=False` is not valid with conditioning
+        or non-stationary mean or non-stationary variance
+    method : int, default: 3
+        indicates which method is used to generate unconditional simulations;
+        for each method the Discrete Fourier Transform (DFT) "lam" of the
+        circulant embedding of the covariance matrix is used, and periodic and
+        stationary GRFs are generated;
+        possible values for `method`:
+        1 : method A: generate one GRF Z as follows:
+            - generate one real gaussian white noise W
+            - apply fft (or fft inverse) on W to get X
+            - multiply X by "lam" (term by term)
+            - apply fft inverse (or fft) to get Z
+        2 : method B: generate one GRF Z as follows:
+           - generate directly X (from method A)
+           - multiply X by lam (term by term)
+           - apply fft inverse (or fft) to get Z
+           note: this method is not implemented!
+        3 (default) : method C: generate two independent GRFs Z1, Z2 as follows:
+           - generate two independant real gaussian white noises W1, W2 and set
+           W = W1 + i * W2
+           - apply fft (or fft inverse) on W to get X
+           - multiply X by "lam" (term by term)
+           - apply fft inverse (or fft) to get Z, and set Z1 = Re(Z), Z2 = Im(Z)
+           note: if `nreal` is odd, the last field is generated using method A
+    conditioningMethod : int, default: 2
+        indicates which method is used to update the simulations to account for
+        conditioning data; let
+            * A: index of conditioning cells
+            * B: index of non-conditioning cells
+            * Zobs: vector of values of the unconditional simulation Z at
+            conditioning cells
         and
-            G = {n=(n1,n2,n3), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1, 0 <= n3 <= N3-1}
-        denotes the indices grid
-        and where we use the bijection
-            (n1,n2,n3) in G -> n1 + n2 * N1 + n3 * N1 * N2 in {0,...,N1*N2*N3-1},
-        between the multiple-indices and the single indices
+                +         +
+                | rAA rAB |
+            r = |         |
+                | rBA rBB |
+                +         +
+        the covariance matrix, where index A (resp. B) refers to conditioning
+        (resp. non-conditioning) index in the grid; an unconditional simulation Z
+        is updated into a conditional simulation ZCond as follows; let
+            * ZCond[A] = Zobs
+            * ZCond[B] = Z[B] + rBA * rAA^(-1) * (Zobs - Z[A])
+        (i.e. the update consists in adding the kriging estimates of the residues
+        to an unconditional simulation);
+        possible values for `conditioningMethod`:
+        1 : method CondtioningA: the matrix M = rBA * rAA^(-1) is explicitly
+            computed (warning: could require large amount of memory), then all
+            the simulations are updated by a sum and a multiplication by the
+            matrix M
+        2 : method ConditioningB: for each simulation, the linear system
+            rAA * x = Zobs - Z[A] is solved and then, the multiplication by rBA
+            is done via fft;
+        note: parameter `conditioningMethod` is used only for conditional
+        simulation
+    measureErrVar : float, default: 0.0
+        measurement error variance; the error on conditioining data is assumed to
+        follow the distrubution N(0,`measureErrVar`*I); i.e.
+        rAA + `measureErrVar`*I is considered instead of rAA for stabilizing the
+        linear system for this matrix;
+        note: parameter `measureErrVar` is used only for conditional simulation
+    tolInvKappa : float, default: 1.e-10
+        the simulation is stopped if the inverse of the condition number of rAA
+        is above `tolInvKappa`
+        note: parameter `tolInvKappa` is used only for conditional simulation
+    verbose : int, default: 2
+        verbose mode, higher implies more printing (info):
+        - 0: no display
+        - 1: only errors
+        - 2: errors and warnings
+        - 3 (or >2): all information
+    printInfo : bool, optional
+        deprecated, use `verbose` instead;
+        - if `printInfo=False`, `verbose` is set to 2 (overwritten)
+        - if `printInfo=True`, `verbose` is set to 3 (overwritten)
+        - if `printInfo=None` (default): not used
 
-        With N = N1*N2*N3, we have
-            F^(-1) = 1/N * F^(*)
-        where ^(*) denotes the conjugate transpose
-        Let
-            Q = 1/N^(1/2) * F
-        Then Q is unitary, i.e. Q^(-1) = Q^(*)
-        Then, we have
-            DFT = F = N^(1/2) * Q
-            DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*)
+    Returns
+    -------
+    grf : 4D array of shape (nreal, n3, n2, n1)
+        GRF realizations, with
+            * n1 = nx (= dimension[0]), n2 = ny (= dimension[1]),
+            n3 = nz (= dimension[2]), if `crop=True`,
+            * but n1 >= nx, n2 >= ny, n3 >= nz if `crop=False`;
+        `grf[i, iz, iy, ix]`: value of the i-th realisation at grid cell of index
+        ix (resp. iy, iz) along x (resp. y, z) axis
 
-        Using numpy package in python3, we have
-            numpy.fft.fftn() = DFT
-            numpy.fft.ifftn() = DFT^(-1)
+    Notes
+    -----
+    Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 x N3 is
+    given by
+        c = DFT(x) = F * x
+    where F is the the (N1*N2*N3) x (N1*N2*N3) matrix with coefficients
+        F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2*N3) )],
+            j=(j1,j2,j3), k=(k1,k2,k3) in G,
+    and
+        G = {n=(n1,n2,n3), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1, 0 <= n3 <= N3-1}
+    denotes the indices grid
+    and where we use the bijection
+        (n1,n2,n3) in G -> n1 + n2 * N1 + n3 * N1 * N2 in {0,...,N1*N2*N3-1},
+    between the multiple-indices and the single indices.
+
+    With N = N1*N2*N3, we have
+        F^(-1) = 1/N * F^(*)
+    where ^(*) denotes the conjugate transpose.
+    Let
+        Q = 1/N^(1/2) * F.
+    Then Q is unitary, i.e. Q^(-1) = Q^(*).
+    Then, we have
+        DFT = F = N^(1/2) * Q,
+        DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*).
+
+    Using numpy package in python3, we have
+        numpy.fft.fftn() = DFT()
+        numpy.fft.ifftn() = DFT^(-1)()
     """
-
     fname = 'grf3D'
 
     # Set verbose mode according to printInfo (if given)
@@ -2965,12 +2904,12 @@ def grf3D(cov_model,
 
         if mean is not None and mean.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non stationary mean')
+                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary mean')
             return None
 
         if var is not None and var.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non stationary variance')
+                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary variance')
             return None
 
     if extensionMin is None:
@@ -3173,7 +3112,7 @@ def grf3D(cov_model,
             # If a variance var is specified, then the matrix r should be updated
             # by the following operation:
             #    diag((var/cov_func(0))^1/2) * r * diag((var/cov_func(0))^1/2)
-            # Hence, if a non stationary variance is specified,
+            # Hence, if a non-stationary variance is specified,
             # the matrix rBA * rAA^(-1) should be consequently updated
             # by multiplying its columns by 1/varUpdate[indc] and its rows by varUpdate[indnc]
             if var is not None and var.size > 1:
@@ -3341,7 +3280,7 @@ def grf3D(cov_model,
 
                 # Compute residue
                 residu = v - grf[i,indc]
-                # ... update if non stationary variance is specified
+                # ... update if non-stationary variance is specified
                 if var is not None and var.size > 1:
                     residu = 1./varUpdate.reshape(-1)[indc] * residu
 
@@ -3353,7 +3292,7 @@ def grf3D(cov_model,
                 # ...note that Im(Z) = 0
                 Z = np.real(Z.reshape(-1)[indncEmb])
 
-                # ... update if non stationary covariance is specified
+                # ... update if non-stationary covariance is specified
                 if var is not None and var.size > 1:
                     Z = varUpdate.reshape(-1)[indnc] * Z
 
@@ -3378,191 +3317,172 @@ def krige3D(cov_model,
             verbose=2,
             printInfo=None):
     """
-    Computes kriging estimates and standard deviation in 3D via FFT.
+    Computes kriging estimates and standard deviations in 3D via FFT.
 
     It is a simple kriging
-        - of value v at location x,
-        - based on the covariance model / function,
-        - with a specified mean (mean) and variance (var), which can be non
+        - of value(s) `v` at location(s) `x`,
+        - based on the covariance model / function (`cov_model`),
+        - with a specified mean (`mean`) and variance (`var`), which can be non
           stationary
 
-    Notes:
+    Considerations
     1) For reproducing covariance model, the dimension of GRF should be large
-       enough; let K an integer such that K*spacing is greater or equal to the
-       correlation range, then
+    enough; let K an integer such that K*`spacing` is greater or equal to the
+    correlation range, then
         - correlation accross opposite border should be removed by extending
           the domain sufficiently, i.e.
               extensionMin >= K - 1
-        - two nodes could not be correlated simultaneously regarding both
+        - two cells could not be correlated simultaneously regarding both
           distances between them (with respect to the periodic grid), i.e. one
           should have
-              dimension+extensionMin >= 2*K - 1,
-          To sum up, extensionMin should be chosen such that
-              dimension+extensionMin >= max(dimension, K) + K - 1
+              `dimension+extensionMin` >= 2*K - 1,
+          To sum up, `extensionMin` should be chosen such that
+              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
           i.e.
-              extensionMin >= max(K-1, 2*K-dimension-1)
+              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
     2) For large data set:
-        - conditioningMethod should be set to 2 for using FFT
-        - measureErrVar could be set to a small positive value to stabilize
-          the covariance matrix (solving linear system)
+        - `conditioningMethod` should be set to 2 for using FFT
+        - `measureErrVar` can be set to a small positive value to stabilize the
+          covariance matrix for conditioning locations (solving linear system)
 
-    :param cov_model:   covariance model, it can be:
-                            (function) covariance function f(h), where
-                                h: (2-dimensional array of dim n x 3, or
-                                    1-dimensional array of dim 3) are 3D-lag(s)
-                            (CovModel3D class) covariance model in 3D, see
-                                definition of the class in module geone.covModel
-                            (CovModel1D class) covariance model in 1D, see
-                                definition of the class in module geone.covModel,
-                                it is then transformed to an isotropic (omni-
-                                directional) covariance model in 3D
-    :param dimension:   (sequence of 3 ints) [nx, ny, nz], number of cells
-                            in x-, y-, z-axis direction
-    :param spacing:     (sequence of 3 floats) [dx, dy, dz], spacing between
-                            two adjacent cells in x-, y-, z-axis direction
-    :param origin:      (sequence of 3 floats) [ox, oy, oz], origin of the 2D
-                            field - used for localizing the conditioning points
-    :param x:           (2-dimensional array of dim n x 3, or
-                            1-dimensional array of dim 3 or None) coordinate of
-                            data points (None for unconditional GRF)
-    :param v:           (1-dimensional array or float or None) value at
-                            data points (length n) (None for unconditional GRF)
-    :param mean:        (None or callable (function) or float or ndarray) mean of
-                            the GRF:
-                            - None   : mean of hard data values (stationary),
-                                       (0 if no hard data)
-                            - callable (function):
-                                       function of three arguments (xi, yi, zi)
-                                       that returns the mean at (xi, yi, zi) (in
-                                       the grid)
-                            - float  : for stationary mean (set manually)
-                            - ndarray: for non stationary mean, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param var:         (None or callable (function) or float or ndarray)
-                            variance of the GRF:
-                            - None   : variance not modified
-                                       (only covariance function/model is used)
-                            - callable (function):
-                                       function of three arguments (xi, yi, zi)
-                                       that returns the variance at (xi, yi, zi)
-                                       (in the grid)
-                            - float  : for stationary variance (set manually)
-                            - ndarray: for non stationary variance, must contain
-                                       as many entries as number of grid cells
-                                       (reshaped if needed)
-    :param extensionMin:(sequence of 3 ints) minimal extension in nodes in
-                            in x-, y-, z-axis direction for embedding (see above);
-                            None for default, automatically computed:
-                            - based on the ranges of covariance model,
-                                if covariance model class is given as first
-                                argument,
-                            - set to [nx-1, ny-1, nz-1] (where
-                                dimension=[nx, ny, nz]), if covariance function
-                                is given as first argument
-    :param rangeFactorForExtensionMin:
-                        (float) factor by which the range is multiplied before
-                            computing the default minimal extension, when
-                            covariance model class is given as first argument
-                            and extensionMin is None (not used otherwise)
-    :param conditioningMethod:
-                        (int) indicates which method is used to perform kriging.
-                            Let
-                                A: index of conditioning (data) nodes
-                                B: index of non-conditioning nodes
-                            and
-                                    +         +
-                                    | rAA rAB |
-                                r = |         |
-                                    | rBA rBB |
-                                    +         +
-                            the covariance matrix, where index A (resp. B) refers
-                            to conditioning (resp. non-conditioning) index in the
-                            grid. Then, thre kriging estimates and variance are
-                                krig[B]    = mean + rBA * rAA^(-1) * (v - mean)
-                                krigVar[B] = diag(rBB - rBA * rAA^(-1) * rAB)
-                            The computation is done in a way depending on the
-                            following possible values for conditioningMethod:
-                                1: method CondtioningA:
-                                   the matrices rBA, RAA^(-1) are explicitly
-                                   computed (warning: could require large amount
-                                   of memory), then all the simulations are
-                                   updated by a sum and a multiplication by the
-                                   matrix M
-                                2: method ConditioningB:
-                                   for kriging estimates:
-                                       the linear system
-                                         rAA * y = (v - mean)
-                                       is solved, and then
-                                         mean + rBA*y
-                                       is computed
-                                   for kriging variances:
-                                       for each column u[j] of rAB, the linear
-                                       system
-                                         rAA * y = u[j]
-                                       is solved, and then
-                                         rBB[j,j] - y^t*y
-                                       is computed
-    :param measureErrVar:
-                        (float >=0) measurement error variance; we assume that
-                            the error on conditioining data follows the
-                            distrubution N(0,measureErrVar*I); i.e.
-                            rAA + measureErrVar*I is considered instead of rAA
-                            for stabilizing the linear system for this matrix.
-    :param tolInvKappa: (float >0) the function is stopped if the inverse of
-                            the condition number of rAA is above tolInvKappa
-    :param computeKrigSD:
-                        (bool) indicates if the standard deviation of kriging is
-                            computed
-    :param verbose:     (int) indicates what is displayed during the run:
-                            - 0: no display
-                            - 1: only errors
-                            - 2: errors and warnings
-                            - 3 (or >2): all information
-    :param printInfo:   (bool) indicates if some info is printed in stdout
-                            (obsolete, kept for compatibility with older versions)
-                            - None (default): not used
-                            - False: verbose = 2 (overwritten)
-                            - True: verbose = 3 (overwritten)
-
-    :return ret:    two possible cases:
-                        ret = (krig, krigSD) if computeKrigSD is equal to True
-                        ret = krig           if computeKrigSD is equal to False
-                    where
-                        krig:   (3-dimensional array of dim nz x ny x nx)
-                                    kriging estimates
-                        krigSD: (3-dimensional array of dim nz x ny x nx)
-                                    kriging standard deviation
-
-    NOTES:
-        Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 x N3 is
-        given by
-            c = DFT(x) = F * x
-        where F is the the (N1*N2*N3) x (N1*N2*N3) matrix with coefficients
-            F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2*N3) )],
-                j=(j1,j2,j3), k=(k1,k2,k3) in G,
+    Parameters
+    ----------
+    cov_model : :class:`geone.covModel.CovModel3D`, or :class:`geone.covModel.CovModel1D`, or function (callable)
+        covariance model in 3D, or covariance model in 1D interpreted as an omni-
+        directional covariance model, or directly a function of covariance (taking
+        3D lag vector(s) as argument)
+    dimension : 3-tuple of ints
+        `dimension=(nx, ny, nz)`, number of cells in the 3D simulation grid along
+        each axis
+    spacing : 3-tuple of floats, default: (1.0,1.0, 1.0)
+        `spacing=(dx, dy, dz)`, cell size along each axis
+    origin : 3-tuple of floats, default: (0.0, 0.0, 0.0)
+        `origin=(ox, oy, oz)`, origin of the 3D simulation grid (bottom-lower-left
+        corner)
+    x : 2D array of floats of shape (n, 3), optional
+        data points locations, with n the number of data points, each row of `x`
+        is the float coordinates of one data point; note: if n=1, a 1D array of
+        shape (3,) is accepted
+    v : 1D array of floats of shape (n,), optional
+        data values at `x` (`v[i]` is the data value at `x[i]`)
+    mean : function (callable), or array-like of floats, or float, optional
+        kriging mean value:
+        - if a function: function of three arguments (xi, yi, zi) that returns
+        the mean at location (xi, yi, zi)
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), mean values at grid cells (for
+        non-stationary mean)
+        - if a float: same mean value at every grid cell
+        - by default (`None`): the mean of data value (`v`) (0.0 if no data) is
+        considered at every grid cell
+    var : function (callable), or array-like of floats, or float, optional
+        kriging variance value:
+        - if a function: function of three arguments (xi, yi, yi) that returns
+        the variance at location (xi, yi, zi)
+        - if array-like: its size must be equal to the number of grid cells
+        (the array is reshaped if needed), variance values at grid cells (for
+        non-stationary variance)
+        - if a float: same variance value at every grid cell
+        - by default (`None`): not used (use of covariance model only)
+    extensionMin : sequence of 3 ints, optional
+        minimal extension in cells along each axis (see consideration 1 above);
+        by default (`None`): minimal extension is automatically computed:
+        - based on the range of the covariance model, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D` (or
+        :class:`geone.CovModel.CovModel3D`)
+        - set to (`nx-1`, `ny-1`, `nz-1`), if `cov_model` is given as a function
+        (callable)
+    rangeFactorForExtensionMin : float, default: 1.0
+        factor by which the ranges of the covariance model are multiplied before
+        computing the default minimal extension, if `cov_model` is given as
+        an instance of :class:`geone.CovModel.CovModel1D` (or
+        :class:`geone.CovModel.CovModel2D`) and if `extensionMin=None`
+        (not used otherwise)
+    conditioningMethod : int, default: 1
+        indicates which method is used to perform kriging; let
+            * A: index of conditioning cells
+            * B: index of non-conditioning cells
         and
-            G = {n=(n1,n2,n3), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1, 0 <= n3 <= N3-1}
-        denotes the indices grid
-        and where we use the bijection
-            (n1,n2,n3) in G -> n1 + n2 * N1 + n3 * N1 * N2 in {0,...,N1*N2*N3-1},
-        between the multiple-indices and the single indices
+                +         +
+                | rAA rAB |
+            r = |         |
+                | rBA rBB |
+                +         +
+        the covariance matrix, where index A (resp. B) refers to conditioning
+        (resp. non-conditioning) index in the grid; then, thre kriging estimates
+        and kriging variances are
+            krig[B]    = mean + rBA * rAA^(-1) * (v - mean)
+            krigVar[B] = diag(rBB - rBA * rAA^(-1) * rAB)
+        and the computation is done according to `conditioningMethod`:
+        1 : method CondtioningA: the matrices rBA, RAA^(-1) are explicitly
+            computed (warning: could require large amount of memory)
+        2 : method ConditioningB: for kriging estimates, the linear system
+            rAA * y = (v - mean) is solved, and then mean + rBA*y is computed;
+            for kriging variances, for each column u[j] of rAB, the linear
+            system rAA * y = u[j] is solved, and then rBB[j,j] - y^t*y is
+            computed
+    measureErrVar : float, default: 0.0
+        measurement error variance; the error on conditioining data is assumed to
+        follow the distrubution N(0,`measureErrVar`*I); i.e.
+        rAA + `measureErrVar`*I is considered instead of rAA for stabilizing the
+        linear system for this matrix;
+    tolInvKappa : float, default: 1.e-10
+        the computation is stopped if the inverse of the condition number of rAA
+        is above `tolInvKappa`
+    computeKrigSD : bool, default: True
+        indicates if the kriging standard deviations are computed
+    verbose : int, default: 2
+        verbose mode, higher implies more printing (info):
+        - 0: no display
+        - 1: only errors
+        - 2: errors and warnings
+        - 3 (or >2): all information
+    printInfo : bool, optional
+        deprecated, use `verbose` instead;
+        - if `printInfo=False`, `verbose` is set to 2 (overwritten)
+        - if `printInfo=True`, `verbose` is set to 3 (overwritten)
+        - if `printInfo=None` (default): not used
 
-        With N = N1*N2*N3, we have
-            F^(-1) = 1/N * F^(*)
-        where ^(*) denotes the conjugate transpose
-        Let
-            Q = 1/N^(1/2) * F
-        Then Q is unitary, i.e. Q^(-1) = Q^(*)
-        Then, we have
-            DFT = F = N^(1/2) * Q
-            DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*)
+    Returns
+    -------
+    krig : 3D array of shape (nz, ny, nx)
+        kriging estimates, with (nx, ny, nz) (= dimension);
+        `krig[iz, iy, ix]`: value at grid cell of index ix (resp. iy, iz) along x
+        (resp. y, z) axis
+    krigSD : 3D array of shape (nz, ny, nx), optional
+        kriging standard deviations, with (nx, ny, nz) (= dimension);
+        `krigSD[iz, iy, ix]`: value at grid cell of index ix (resp. iy, iz) along x
+        (resp. y, z) axis; returned if `computeKrigSD=True`
 
-        Using numpy package in python3, we have
-            numpy.fft.fftn() = DFT
-            numpy.fft.ifftn() = DFT^(-1)
+    Notes
+    -----
+    Discrete Fourier Transform (DFT) of an array x of dim N1 x N2 x N3 is
+    given by
+        c = DFT(x) = F * x
+    where F is the the (N1*N2*N3) x (N1*N2*N3) matrix with coefficients
+        F(j,k) = [exp( -i*2*pi*(j^t*k)/(N1*N2*N3) )],
+            j=(j1,j2,j3), k=(k1,k2,k3) in G,
+    and
+        G = {n=(n1,n2,n3), 0 <= n1 <= N1-1, 0 <= n2 <= N2-1, 0 <= n3 <= N3-1}
+    denotes the indices grid
+    and where we use the bijection
+        (n1,n2,n3) in G -> n1 + n2 * N1 + n3 * N1 * N2 in {0,...,N1*N2*N3-1},
+    between the multiple-indices and the single indices.
+
+    With N = N1*N2*N3, we have
+        F^(-1) = 1/N * F^(*)
+    where ^(*) denotes the conjugate transpose.
+    Let
+        Q = 1/N^(1/2) * F.
+    Then Q is unitary, i.e. Q^(-1) = Q^(*).
+    Then, we have
+        DFT = F = N^(1/2) * Q,
+        DFT^(-1) = 1/N * F^(*) = 1/N^(1/2) * Q^(*).
+
+    Using numpy package in python3, we have
+        numpy.fft.fftn() = DFT()
+        numpy.fft.ifftn() = DFT^(-1)()
     """
-
     fname = 'krige3D'
 
     # Set verbose mode according to printInfo (if given)
@@ -3972,7 +3892,7 @@ def krige3D(cov_model,
 
         del(ix, iy, iz, kx, ky, kz)
 
-    # ... update if non stationary covariance is specified
+    # ... update if non-stationary covariance is specified
     if var is not None:
         if var.size > 1:
             krig = varUpdate.reshape(-1) * krig

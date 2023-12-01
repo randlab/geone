@@ -23,91 +23,90 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
                                    full_output=True,
                                    verbose=4):
     """
-    Simulation of a pluri-Gaussian Z, unconditional, defined as
+    Generates unconditional pluri-Gaussian simulations.
+
+    The simulated variable Z at a point x is defined as
         Z(x) = flag_value(T1(x), T2(x))
     where
-        T1, T2 are two multi-Gaussian random fields (latent fields)
-        flag_value is a function of two variables defining the final value
+        - T1, T2 are two multi-Gaussian random fields (latent fields)
+        - `flag_value` is a function of two variables defining the final value
         (given as a "flag")
-    Z and T1, T2 are field in 1D, 2D or 3D.
+    Z and T1, T2 are fields in 1D, 2D or 3D.
 
-    :param cov_model_T1, cov_model_T2:
-                        (CovModel1D or CovModel2D or CovModel3D class or None)
-                            covariance model for T1, T2 in 1D or 2D or 3D (same
-                            dimension for T1 and T2), see definition of the class
-                            in module geone.covModel
-                            if None: 'algo_T1' ('algo_T2') must be
-                            'deterministic', and the field given by
-                            param_T1['mean'] (param_T2['mean']) is considered
-    :param flag_value:  (func) function of two variables:
-                            flag_value(x, y): return the "flag value" at x, y
-                            (x, y: array like)
-    :param dimension:   number of cells along each axis,
-                        for simulation in
-                            - 1D: (int, or sequence of 1 int): nx
-                            - 2D: (sequence of 2 ints): (nx, ny)
-                            - 3D: (sequence of 3 ints): (nx, ny, nz)
-    :param spacing:     spacing between two adjacent cells along each axis,
-                        for simulation in
-                            - 1D: (float, or sequence of 1 float): sx
-                            - 2D: (sequence of 2 floats): (sx, sy)
-                            - 3D: (sequence of 3 floats): (sx, sy, sz)
-                            (if None, set to 1.0 along each axis)
-    :param origin:      origin of the simulation grid (corner of first grid
-                        cell), for simulation in
-                            - 1D: (float, or sequence of 1 float): ox
-                            - 2D: (sequence of 2 floats): (ox, oy)
-                            - 3D: (sequence of 3 floats): (ox, oy, oz)
-                            (if None, set to 0.0 along each axis)
-    :param algo_T1, algo_T2:
-                        (str) defines the algorithm used for generating
-                            multi-Gaussian field T1, T2:
-                            - 'fft' or 'FFT' (default): based on circulant
-                                embedding and FFT, function called for <d>D
-                                (d = 1, 2, or 3): 'geone.grf.grf<d>D'
-                            - 'classic' or 'CLASSIC': classic algorithm, based
-                                on the resolution of kriging system considered
-                                points in a search ellipsoid,
-                                function called for <d>D (d = 1, 2, or 3):
-                                'geone.geoscalassicinterface.simulate<d>D'
-                            - 'deterministic': use a deterministic field
-    :param params_T1, params_T2:
-                        (dict) keyword arguments (additional parameters) to be
-                            passed to the function corresponding to what is
-                            specified by the argument 'algo_T1', 'algo_T2' (see
-                            the corresponding function for its keyword arguments),
-                            in particular the key 'mean' can be specified (set
-                            to value 0 if None)
-                            if 'algo_T1', 'algo_T2' is 'deterministic', a
-                            deterministic field is used (given by the key 'mean'
-                            in 'params_T1', 'params_T2')
-    :param nreal:       (int) number of realizations
-    :param full_output: (bool) controls what is retrieved as output (see below)
-    :param verbose:     (int) verbose mode, integer >=0, higher implies more
-                            display
+    Parameters
+    ----------
+    cov_model_T1, cov_model_T2 : (two) :class:`geone.CovModel.CovModel<d>D`
+        covariance model for T1 and T2 resp., in 1D or 2D or 3D; (same space
+        dimension for T1 and T2):
+        note:
+        - if `algo_T1='deterministic'`, `cov_model_T1` can be `None` (unused)
+        - if `algo_T2='deterministic'`, `cov_model_T2` can be `None` (unused)
+    flag_value : function (callable)
+        function of tow arguments (xi, yi) that returns the "flag_value" at
+        location (xi, yi)
+    dimension : [sequence of] int(s)
+        number of cells along each axis, for simulation in:
+            - 1D: `dimension=nx`
+            - 2D: `dimension=(nx, ny)`
+            - 3D: `dimension=(nx, ny, nz)`
+    spacing : [sequence of] float(s), optional
+        cell size along each axis, for simulation in:
+            - 1D: `spacing=sx`
+            - 2D: `spacing=(sx, sy)`
+            - 3D: `spacing=(sx, sy, sz)`
+        by default (`None`): 1.0 along each axis
+    origin : [sequence of] float(s), optional
+        origin of the grid ("corner of the first cell"), for simulation in:
+            - 1D: `origin=ox`
+            - 2D: `origin=(ox, oy)`
+            - 3D: `origin=(ox, oy, oz)`
+        by default (`None`): 0.0 along each axis
+    algo_T1, algo_T2 : strs {'fft', 'classic', 'deterministic'},
+            default: 'fft', 'fft'
+        defines the algorithm used for T1 and T2 resp.:
+        - 'fft': algorithm based on circulant embedding and FFT, function
+        called for <d>D (d = 1, 2, or 3): 'geone.grf.grf<d>D'
+        - 'classic': "classic" algorithm, based on the resolution of
+        kriging system considered points in a search ellipsoid, function called
+        for <d>D (d = 1, 2, or 3):
+        'geone.geoscalassicinterface.simulate<d>D'
+        - 'deterministic': use a deterministic field, given by
+        `param_T1['mean']` (`param_T2['mean']` resp.)
+    params_T1, param_T2 : dicts
+        keyword arguments (additional parameters) to be passed to the function
+        that is called (according to `algo_T1` (resp. `algo_T2`) and space
+        dimension) for simulation of T1 (resp. T2)
+    nreal : int, default: 1
+        number of realization(s)
+    full_output : bool, default: True
+        - if True: simulation(s) of Z, T1, and T2 are retrieved in output
+        - if False: simulation(s) of Z only is retrieved in output
+    verbose : int, default: 2
+        verbose mode, higher implies more printing (info)
 
-    :return:    if full_output is True:
-                    (Z, T1, T2)
-                else:
-                    Z
-                where
-                Z:  (nd-array) array of shape:
-                    - for 1D: (nreal, nx), where nx = dimension
-                    - for 2D: (nreal, ny, nx), where nx, ny = dimension
-                    - for 3D: (nreal, nz, ny, nx), where nx, ny, nz = dimension
-                    Z[k] is the k-th realization
-                T1: (nd-array) array of shape:
-                    - for 1D: (nreal, nx), where nx = dimension
-                    - for 2D: (nreal, ny, nx), where nx, ny = dimension
-                    - for 3D: (nreal, nz, ny, nx), where nx, ny, nz = dimension
-                    T1[k] is the k-th realization
-                T2: (nd-array) array of shape:
-                    - for 1D: (nreal, nx), where nx = dimension
-                    - for 2D: (nreal, ny, nx), where nx, ny = dimension
-                    - for 3D: (nreal, nz, ny, nx), where nx, ny, nz = dimension
-                    T2[k] is the k-th realization
+    Returns
+    -------
+    Z : ndarray
+        array of shape
+            - for 1D: (nreal, nx)
+            - for 2D: (nreal, ny, nx)
+            - for 3D: (nreal, nz, ny, nx)
+        Z[k] is the k-th realization of Z
+    T1 : ndarray, optional
+        array of shape
+            - for 1D: (nreal, nx)
+            - for 2D: (nreal, ny, nx)
+            - for 3D: (nreal, nz, ny, nx)
+        T1[k] is the k-th realization of T1;
+        returned if `full_output=True`
+    T2 : ndarray, optional
+        array of shape
+            - for 1D: (nreal, nx)
+            - for 2D: (nreal, ny, nx)
+            - for 3D: (nreal, nz, ny, nx)
+        T2[k] is the k-th realization of T2;
+        returned if `full_output=True`
     """
-
     fname = 'pluriGaussianSim_unconditional'
 
     if full_output:
@@ -283,146 +282,144 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
                      full_output=True,
                      verbose=4):
     """
-    Simulation of a pluri-Gaussian Z defined as
+    Generates (conditional) pluri-Gaussian simulations.
+
+    The simulated variable Z at a point x is defined as
         Z(x) = flag_value(T1(x), T2(x))
     where
-        T1, T2 are two multi-Gaussian random fields (latent fields)
-        flag_value is a function of two variables defining the final value
+        - T1, T2 are two multi-Gaussian random fields (latent fields)
+        - `flag_value` is a function of two variables defining the final value
         (given as a "flag")
-    Z and T1, T2 are field in 1D, 2D or 3D.
+    Z and T1, T2 are fields in 1D, 2D or 3D.
 
-    :param cov_model_T1, cov_model_T2:
-                        (CovModel1D or CovModel2D or CovModel3D class or None)
-                            covariance model for T1, T2 in 1D or 2D or 3D (same
-                            dimension for T1 and T2), see definition of the class
-                            in module geone.covModel
-                            if None: 'algo_T1' ('algo_T2') must be
-                            'deterministic', and the field given by
-                            param_T1['mean'] (param_T2['mean']) is considered
-    :param flag_value:  (func) function of two variables:
-                            flag_value(x, y): return the "flag value" at x, y
-                            (x, y: array like)
-    :param dimension:   number of cells along each axis,
-                        for simulation in
-                            - 1D: (int, or sequence of 1 int): nx
-                            - 2D: (sequence of 2 ints): (nx, ny)
-                            - 3D: (sequence of 3 ints): (nx, ny, nz)
-    :param spacing:     spacing between two adjacent cells along each axis,
-                        for simulation in
-                            - 1D: (float, or sequence of 1 float): sx
-                            - 2D: (sequence of 2 floats): (sx, sy)
-                            - 3D: (sequence of 3 floats): (sx, sy, sz)
-                            (if None, set to 1.0 along each axis)
-    :param origin:      origin of the simulation grid (corner of first grid
-                        cell), for simulation in
-                            - 1D: (float, or sequence of 1 float): ox
-                            - 2D: (sequence of 2 floats): (ox, oy)
-                            - 3D: (sequence of 3 floats): (ox, oy, oz)
-                            (if None, set to 0.0 along each axis)
-    :param x:           coordinate of data points,
-                        for simulation in
-                            - 1D: (1-dimensional array or float)
-                            - 2D: (2-dimensional array of dim n x 2, or
-                                   1-dimensional array of dim 2)
-                            - 3D: (2-dimensional array of dim n x 3, or
-                                   1-dimensional array of dim 3)
-                            (None if no data)
-    :param v:           value at data points,
-                        for simulation in
-                            - 1D: (1-dimensional array or float)
-                            - 2D: (1-dimensional array of length n)
-                            - 3D: (1-dimensional array of length n)
-                            (None if no data)
-    :param algo_T1, algo_T2:
-                        (str) defines the algorithm used for generating
-                            multi-Gaussian field T1, T2:
-                            - 'fft' or 'FFT' (default): based on circulant
-                                embedding and FFT, function called for <d>D
-                                (d = 1, 2, or 3): 'geone.grf.grf<d>D'
-                            - 'classic' or 'CLASSIC': classic algorithm, based
-                                on the resolution of kriging system considered
-                                points in a search ellipsoid,
-                                function called for <d>D (d = 1, 2, or 3):
-                                'geone.geoscalassicinterface.simulate<d>D'
-                            - 'deterministic': use a deterministic field
-    :param params_T1, params_T2:
-                        (dict) keyword arguments (additional parameters) to be
-                            passed to the function corresponding to what is
-                            specified by the argument 'algo_T1', 'algo_T2' (see
-                            the corresponding function for its keyword arguments),
-                            in particular the key 'mean' can be specified (set
-                            to value 0 if None)
-                            if 'algo_T1', 'algo_T2' is 'deterministic', a
-                            deterministic field is used (given by the key 'mean'
-                            in 'params_T1', 'params_T2')
-    :param accept_init: (float) initial acceptation probability
-                            (see 'mh_iter_min', 'mh_iter_max' below)
-    :param accept_pow:  (float) power for computing acceptation probability
-                             (see 'mh_iter_min', 'mh_iter_max' below)
-    :param mh_iter_min, mh_iter_max:
-        (int) number of iterations (min and max) for Metropolis-Hasting algorithm
-            (conditional case only) when updating T1 and T2 at conditioning
-            location at iteration 'nit' (in 0, ..., mh_iter_max-1):
-            if nit < mh_iter_min: for any k:
-                - simulate new candidate at x[k]: (T1(x[k,0]), T2(x[k,1]))
-                - if flag_value(T1(x[k,0]), T2(x[k,1])) == v[k] (conditioning ok):
-                    accept the new candidate
-                - else (conditioning not ok):
-                    accept the new candidate with probability
-                    p = accept_init * (1 - 1/mh_iter_min)**accept_pow
-            if nit >= mh_iter_min:
-                - if conditioning ok at every x[k]: stop, exit the loop,
-                - else: for any k:
-                    - if conditioning ok at x[k]: skip
-                    - else:
-                        simulate new candidate at x[k]: (T1(x[k,0]), T2(x[k,1]))
-                        - if flag_value(T1(x[k,0]), T2(x[k,1])) == v[k] (cond. ok):
-                            accept the new candidate
-                        - else:
-                            reject the new candidate
-    :param ntry_max:    (int) number of tries per realization before giving up if
-                            something goes wrong
-    :param retrieve_real_anyway:
-                        (bool) if after ntry_max tries any conditioning data is
-                            not honoured, then the realization is:
-                            - retrieved if retrieve_real_anyway is True
-                            - not retrieved (missing realization) if
-                                retrieve_real_anyway is False
-    :param nreal:       (int) number of realizations
-    :param full_output: (bool) controls what is retrieved as output (see below)
-    :param verbose:     (int) verbose mode, integer >=0, higher implies more
-                            display
+    Parameters
+    ----------
+    cov_model_T1, cov_model_T2 : (two) :class:`geone.CovModel.CovModel<d>D`
+        covariance model for T1 and T2 resp., in 1D or 2D or 3D; (same space
+        dimension for T1 and T2):
+        note:
+        - if `algo_T1='deterministic'`, `cov_model_T1` can be `None` (unused)
+        - if `algo_T2='deterministic'`, `cov_model_T2` can be `None` (unused)
+    flag_value : function (callable)
+        function of tow arguments (xi, yi) that returns the "flag_value" at
+        location (xi, yi)
+    dimension : [sequence of] int(s)
+        number of cells along each axis, for simulation in:
+            - 1D: `dimension=nx`
+            - 2D: `dimension=(nx, ny)`
+            - 3D: `dimension=(nx, ny, nz)`
+    spacing : [sequence of] float(s), optional
+        cell size along each axis, for simulation in:
+            - 1D: `spacing=sx`
+            - 2D: `spacing=(sx, sy)`
+            - 3D: `spacing=(sx, sy, sz)`
+        by default (`None`): 1.0 along each axis
+    origin : [sequence of] float(s), optional
+        origin of the grid ("corner of the first cell"), for simulation in:
+            - 1D: `origin=ox`
+            - 2D: `origin=(ox, oy)`
+            - 3D: `origin=(ox, oy, oz)`
+        by default (`None`): 0.0 along each axis
+    x : array-like of floats, optional
+        data points locations (float coordinates), for simulation in:
+            - 1D: 1D array-like of floats
+            - 2D: 2D array-like of floats of shape (n, 2)
+            - 3D: 2D array-like of floats of shape (n, 3)
+        note: if one point (n=1), a float in 1D, a 1D array of shape (2, ) in 2D,
+        a 1D array of shape (3,) in 3D, is accepted
+    v : 1D array-like of floats, optional
+        data values at `x` (`v[i]` is the data value at `x[i]`)
+    algo_T1, algo_T2 : strs {'fft', 'classic', 'deterministic'},
+            default: 'fft', 'fft'
+        defines the algorithm used for T1 and T2 resp.:
+        - 'fft': algorithm based on circulant embedding and FFT, function
+        called for <d>D (d = 1, 2, or 3): 'geone.grf.grf<d>D'
+        - 'classic': "classic" algorithm, based on the resolution of
+        kriging system considered points in a search ellipsoid, function called
+        for <d>D (d = 1, 2, or 3):
+        'geone.geoscalassicinterface.simulate<d>D'
+        - 'deterministic': use a deterministic field, given by
+        `param_T1['mean']` (`param_T2['mean']` resp.)
+    params_T1, param_T2 : dicts
+        keyword arguments (additional parameters) to be passed to the function
+        that is called (according to `algo_T1` (resp. `algo_T2`) and space
+        dimension) for simulation of T1 (resp. T2)
+    accept_init : float, default: 0.25
+        initial acceptation probability
+        (see parameters `mh_iter_min`, `mh_iter_max`)
+    accept_pow : float, default: 2.0
+        power for computing acceptation probability
+        (see parameters `mh_iter_min`, `mh_iter_max`)
+    mh_iter_min, mh_iter_max : ints, default: 100, 200
+        number of iterations (min and max) for Metropolis-Hasting algorithm
+        (for conditional simulation) when updating T1 and T2 at conditioning
+        locations at iteration `nit` (in 0, ..., `mh_iter_max-1`):
+        * if `nit < mh_iter_min`: for any k:
+            - simulate new candidate at `x[k]`: `(T1(x[k]), T2(x[k]))`
+            - if `flag_value(T1(x[k]), T2(x[k])=v[k]` (conditioning ok):
+                accept the new candidate
+            - else (conditioning not ok):
+                accept the new candidate with probability
+                    p = `accept_init * (1 - 1/mh_iter_min)**accept_pow`
+        * if nit >= mh_iter_min:
+            - if conditioning ok at every `x[k]`: stop and exit the loop,
+            - else: for any k:
+                - if conditioning ok at `x[k]`: skip
+                - else:
+                    - simulate new candidate at `x[k]`: `(T1(x[k]), T2(x[k]))`
+                    - if `flag_value(T1(x[k]), T2(x[k])=v[k]` (conditioning ok):
+                        accept the new candidate
+                    - else (conditioning not ok):
+                        reject the new candidate
+    ntry_max : int, default: 1
+        number of trial(s) per realization before giving up if something goes
+        wrong
+    retrieve_real_anyway : bool, default: False
+        if after `ntry_max` trial(s) a conditioning data is not honoured, then
+        the realization is:
+        - retrieved, if `retrieve_real_anyway=True`
+        - not retrieved (missing realization), if `retrieve_real_anyway=False`
+    nreal : int, default: 1
+        number of realization(s)
+    full_output : bool, default: True
+        - if True: simulation(s) of Z, T1, T2, and `n_cond_ok` (see Returns) are
+        retrieved in output
+        - if False: simulation(s) of Z only is retrieved in output
+    verbose : int, default: 2
+        verbose mode, higher implies more printing (info)
 
-    :return:    if full_output is True:
-                    (Z, T1, T2, n_cond_ok)
-                else:
-                    Z
-                where
-                Z:  (nd-array) array of shape:
-                    - for 1D: (nreal, nx), where nx = dimension
-                    - for 2D: (nreal, ny, nx), where nx, ny = dimension
-                    - for 3D: (nreal, nz, ny, nx), where nx, ny, nz = dimension
-                    Z[k] is the k-th realization
-                T1: (nd-array) array of shape:
-                    - for 1D: (nreal, nx), where nx = dimension
-                    - for 2D: (nreal, ny, nx), where nx, ny = dimension
-                    - for 3D: (nreal, nz, ny, nx), where nx, ny, nz = dimension
-                    T1[k] is the k-th realization
-                T2: (nd-array) array of shape:
-                    - for 1D: (nreal, nx), where nx = dimension
-                    - for 2D: (nreal, ny, nx), where nx, ny = dimension
-                    - for 3D: (nreal, nz, ny, nx), where nx, ny, nz = dimension
-                    T2[k] is the k-th realization
-                n_cond_ok:
-                    (list of length nreal)
-                    n_cond_ok[k]: 1d-array containing number of conditioning
-                        location honoured at each iteration of the
-                        Metropolis-Hasting algorithm for the k-th realization,
-                        in particular len(n_cond_ok[k]) is the number of
-                        iteration done, n_cond_ok[k][-1] is the number of
-                        conditioning location honoured at the end
+    Returns
+    -------
+    Z : ndarray
+        array of shape
+            - for 1D: (nreal, nx)
+            - for 2D: (nreal, ny, nx)
+            - for 3D: (nreal, nz, ny, nx)
+        Z[k] is the k-th realization of Z
+    T1 : ndarray, optional
+        array of shape
+            - for 1D: (nreal, nx)
+            - for 2D: (nreal, ny, nx)
+            - for 3D: (nreal, nz, ny, nx)
+        T1[k] is the k-th realization of T1;
+        returned if `full_output=True`
+    T2 : ndarray, optional
+        array of shape
+            - for 1D: (nreal, nx)
+            - for 2D: (nreal, ny, nx)
+            - for 3D: (nreal, nz, ny, nx)
+        T2[k] is the k-th realization of T2;
+        returned if `full_output=True`
+    n_cond_ok : list of 1D array
+        list of length `nreal`:
+        - n_cond_ok[k]: 1D array of ints
+            number of conditioning locations honoured at each iteration of the
+            Metropolis-Hasting algorithm for the k-th realization, in particular
+            `len(n_cond_ok[k])` is the number of iteration done,
+            `n_cond_ok[k][-1]` is the number of conditioning locations honoured
+            at the end
+        returned if `full_output=True`
     """
-
     fname = 'pluriGaussianSim'
 
     if full_output:

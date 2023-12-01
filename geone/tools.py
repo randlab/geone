@@ -41,10 +41,10 @@ def add_path_by_drawing(path_list, close=False, show_instructions=True, last_poi
         list of paths, that will be updated by appending the path interactively
         drawn in the current axis (one can start with `path_list = []`)
     close : bool, default: False
-        if True, when a path is terminated, the first points of the path is
+        if True: when a path is terminated, the first points of the path is
         replicated at the end of the path to form a close line / path
     show_instructions : bool, default: True
-        - if True, instructions are printed in the standard output
+        if True: instructions are printed in the standard output
     last_point_marker : "matplotlib marker", default: 'o'
         marker used for highlighting the last clicked point
     last_point_color : "matplotlib color", default: 'red'
@@ -54,10 +54,10 @@ def add_path_by_drawing(path_list, close=False, show_instructions=True, last_poi
 
     Notes
     -----
-    * The function returns nothing. The first argument, `path_list` is updated,
-    with the path(s) drawn interactively, for example `path_list[-1]` is the
-    last path, a 2D array, where `path_list[-1][i]` is the i-th point (1D array
-    of two floats).
+    * The function does not return anything. The first argument, `path_list` is
+    updated, with the path(s) drawn interactively, for example `path_list[-1]`
+    is the last path, a 2D array, where `path_list[-1][i]` is the i-th point
+    (1D array of two floats) of that path.
     * An interactive maplotlib backend must be used, so that this function works
     propoerly.
     """
@@ -169,11 +169,11 @@ def is_in_polygon(x, vertices, wrap=None, **kwargs):
         one, if `wrap=True` (see below)), so that the vertices form a close line
         (clockwise or counterclockwise)
     wrap : bool, optional
-        - if True, last and first vertices has to be linked to form a close line,
-        - if False, last and first vertices should be the same ones (i.e. the
+        - if True: last and first vertices has to be linked to form a close line
+        - if False: last and first vertices should be the same ones (i.e. the
         vertices form a close line)
-        By default (None), `wrap` is automatically computed
-    kwargs:
+        By default (`None`): `wrap` is automatically computed
+    kwargs :
         keyword arguments passed to function `numpy.isclose`
 
     Returns
@@ -334,12 +334,12 @@ def rasterize_polygon_2d(vertices,
         linking two successive vertices (as well as the last one with the first
         one, if `wrap=True` (see below)), so that the vertices form a close line
         (clockwise or counterclockwise)
-    nx, ny : int
+    nx, ny : ints
         number of grid cells along each axis (optional, see above for possible
         inputs)
-    sx, sy : float
+    sx, sy : floats
         cell size along each axis (optional, see above for possible inputs)
-    ox, oy : float
+    ox, oy : floats
         origin of the grid (bottom-lower-left corner) (optional, see above for
         possible inputs)
     xmin_ext : float, default: 0.0
@@ -351,10 +351,10 @@ def rasterize_polygon_2d(vertices,
     ymax_ext : float, default: 0.0
         extension beyond the max y coordinate of the vertices (see above)
     wrap : bool, optional
-        - if True, last and first vertices has to be linked to form a close line,
-        - if False, last and first vertices should be the same ones (i.e. the
+        - if True: last and first vertices has to be linked to form a close line
+        - if False: last and first vertices should be the same ones (i.e. the
         vertices form a close line)
-        By default (None), `wrap` is automatically computed
+        By default (`None`): `wrap` is automatically computed
     kwargs:
         keyword arguments passed to function `is_in_polygon`
 
@@ -456,39 +456,44 @@ def curv_coord_2d_from_center_line(
             - this image can be computed using the function
             `geone.geosclassicinterface.imgDistanceImage`
     cl_u : 1D array-like of length n, optional
-        distance along the center line (automatically computed if not given (None)),
-        used for determining u1 coordinate
+        distance along the center line (automatically computed if not given
+        (`None`)), used for determining u1 coordinate
     gradx, grady : 2D array-like, optional
         gradient of the distance to the centerline, array of shape
-        `(im_cl_dist.ny, im_cl_dist.nx)` (automatically computed if not given (None)):
+        `(im_cl_dist.ny, im_cl_dist.nx)` (automatically computed if not given
+        (`None`));
         `gradx[iy, ix], grady[iy, ix]`: gradient in grid cell of index `iy`, `ix`
         along x and y axes respectively
     dg : float, optional
-        step (length) used for descending the gradient map, by default (None), `dg` is
-        set to the minimal distance between two successive points in `cl_position`, (i.e.
-        minimal difference between two succesive values in `cl_u`)
+        step (length) used for descending the gradient map; by default (`None`):
+        `dg` is set to the minimal distance between two successive points in
+        `cl_position`, (i.e. minimal difference between two succesive values in
+        `cl_u`)
     gradtol : float, default: 1.e-5
-        tolerance for the gradient magnitude (if the magintude of the gradient is below
-        `gradtol`, it is considered as zero vector)
+        tolerance for the gradient magnitude (if the magintude of the gradient
+        is below `gradtol`, it is considered as zero vector)
     path_len_max : int, default: 10000
-        maximal length of the path from the initial point(s) (`x`) to the center line
+        maximal length of the path from the initial point(s) (`x`) to the center
+        line
     return_path : bool, default: False
-        indicates if the path(s) from the initial point(s) (`x`) to the point(s) I of
-        the centerline (descending the gradient of the distance map) is (are) retrieved
+        indicates if the path(s) from the initial point(s) (`x`) to the point(s)
+        I of the centerline (descending the gradient of the distance map) is
+        (are) retrieved
 
     Returns
     -------
     u : 2D array or 1D array (same shape as `x`)
         coordinates in curvilinear system of the input point(s) `x` (see above)
-    x_path : list of 2D arrays (or 2D array)
-        path(s) from the initial point(s) to the point(s) I of the centerline (descending
-        the gradient of the distance map):
+    x_path : list of 2D arrays (or 2D array), optional
+        path(s) from the initial point(s) to the point(s) I of the centerline
+        (descending the gradient of the distance map):
             - `x_path[i]`: 2D array of floats with 2 columns
-                `xpath[i][j]` is the coordinates (in standard system) of the j-th point
-                of the path from `x[i]` to the center line
-        note: if `x` is reduced to one point and given as 1D array-like, then `x_path` is
-        a 2D array of floats with 2 columns containing the path from `x` to the center line;
-        `x_path` is returned if `returned_path=True`
+                `xpath[i][j]` is the coordinates (in standard system) of the
+                j-th point of the path from `x[i]` to the center line
+        note: if `x` is reduced to one point and given as 1D array-like, then
+        `x_path` is a 2D array of floats with 2 columns containing the path from
+        `x` to the center line;
+        returned if `returned_path=True`
     """
     if cl_u is None:
         cl_u = np.insert(np.cumsum(np.sqrt(((cl_position[1:,:] - cl_position[:-1,:])**2).sum(axis=1))), 0, 0.0)

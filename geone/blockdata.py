@@ -15,44 +15,38 @@ import os
 # ============================================================================
 class BlockData(object):
     """
-    Defines block data (for one variable):
-        blockDataUsage:
-                    (int) indicates the usage of block data:
-                        - 0: no block data
-                        - 1: block data: block mean value
+    Class defining block data for one variable (for deesse).
 
-        nblock:     (int) number of block(s) (unused if blockDataUsage == 0)
-
-        nodeIndex:  (list of nblock 2-dimensional array of ints with 3 columns)
-                        node index in each block, nodeIndex[i] is a (n_i, 3)
-                        array a containing the node index in the simulation grid
-                        along each coordinate for the i-th block, n_i beeing
-                        the number of nodes in that block
-                        (unused if blockDataUsage == 0)
-
-        value:      (1-dimensional array of floats of size nblock)
-                        target value for each block
-                        (unused if blockDataUsage == 0)
-
-        tolerance:  (1-dimensional array of floats of size nblock)
-                        tolerance for each block
-                        (unused if blockDataUsage == 0)
-
-        activatePropMin:
-                    (1-dimensional array of floats of size nblock)
-                        minimal proportion of informed nodes in the block,
-                        under which the block data constraint is deactivated,
-                        for each block
-                        (unused if blockDataUsage == 0)
-
-        activatePropMax:
-                    (1-dimensional array of floats of size nblock)
-                        maximal proportion of informed nodes in the block,
-                        above which the block data constraint is deactivated,
-                        for each block
-                        (unused if blockDataUsage == 0)
+    Attributes
+    ----------
+    blockDataUsage : int, default: 0
+        defines the usage of block data:
+            - 0: no block data
+            - 1: block data: block mean value
+    nblock : int, default: 0
+        number of block(s);
+        used if `blockDataUsage=1`
+    nodeIndex : sequence of 2D array-like of ints with 3 columns, optional
+        node index in each block:
+            - `nodeIndex[i][j]`: sequence of 3 floats
+                node index in the simulation grid along x, y, z axis
+                of the j-th node of the i-th block
+        used if `blockDataUsage=1`
+    value : sequence of floats of length `nblock`, optional
+        target value for each block;
+        used if `blockDataUsage=1`
+    tolerance : sequence of floats of length `nblock`, optional
+        tolerance for each block;
+        used if `blockDataUsage=1`
+    activatePropMin : sequence of floats of length `nblock`, optional
+        minimal proportion of informed nodes in the block, under which the block
+        data constraint is deactivated, for each block;
+        used if `blockDataUsage=1`
+    activatePropMax : sequence of floats of length `nblock`, optional
+        maximal proportion of informed nodes in the block, above which the block
+        data constraint is deactivated, for each block;
+        used if `blockDataUsage=1`
     """
-
     def __init__(self,
                  blockDataUsage=0,
                  nblock=0,
@@ -61,6 +55,28 @@ class BlockData(object):
                  tolerance=None,
                  activatePropMin=None,
                  activatePropMax=None):
+        """
+        Inits an instance of the class.
+
+        Parameters
+        ----------
+        blockDataUsage : int, default: 0
+            defines the usage of block data
+        nblock : int, default: 0
+            number of block(s)
+        nodeIndex : sequence of 2D array-like of ints with 3 columns, optional
+            node index in each block
+        value : sequence of floats of length `nblock`, optional
+            target value for each block
+        tolerance : sequence of floats of length `nblock`, optional
+            tolerance for each block
+        activatePropMin : sequence of floats of length `nblock`, optional
+            minimal proportion of informed nodes in the block, under which the block
+            data constraint is deactivated, for each block
+        activatePropMax : sequence of floats of length `nblock`, optional
+            maximal proportion of informed nodes in the block, above which the block
+            data constraint is deactivated, for each block
+        """
         self.blockDataUsage = blockDataUsage
         self.nblock = nblock
         self.nodeIndex = nodeIndex
@@ -114,13 +130,18 @@ class BlockData(object):
 # ----------------------------------------------------------------------------
 def readBlockData(filename):
     """
-    Reads block data from a file (ASCII):
+    Reads block data from a txt file.
 
-    :param filename:        (string) name of the file
+    Parameters
+    ----------
+    filename : str
+        name of the file
 
-    :return:                (BlockData class) block data
+    Returns
+    -------
+    bd : :class:`BlockData`
+        block data
     """
-
     fname = 'readBlockData'
 
     # Check if the file exists
@@ -163,11 +184,17 @@ def readBlockData(filename):
 # ----------------------------------------------------------------------------
 def writeBlockData(bd, filename, fmt='.5g'):
     """
-    Writes block data in a file (ASCII):
+    Writes block data in a txt file.
 
-    :param filename:    (string) name of the file
-    :param fmt:         (string) format for value, toleance and activate
-                            proportions
+    Parameters
+    ----------
+    bd : :class:`BlockData`
+        block data
+    filename : str
+        name of the file
+    fmt : str, default: '.5g'
+        format string for target value, tolerance and active proportion (min
+        and max) in the block data
     """
 
     if bd.blockDataUsage == 0:

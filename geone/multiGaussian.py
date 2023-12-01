@@ -26,124 +26,105 @@ def multiGaussianRun(
         algo='fft',
         output_mode='img',
         retrieve_warnings=False,
-        verbose=1,
+        verbose=2,
         use_multiprocessing=False,
         **kwargs):
     """
-    Runs multi-Gaussian simulation or estimation (according to the argument
-    'mode', see below) in 1D, 2D or 3D, using other function (according to
-    the argument 'algo', see below).
+    Runs multi-Gaussian simulation or estimation.
 
-    :param cov_model:   (CovModel1D or CovModel2D or CovModel3D class)
-                            covariance model in 1D or 2D or 3D, see definition of
-                            the class in module geone.covModel
-    :param dimension:   number of cells along each axis,
-                        for simulation in
-                            - 1D: (int, or sequence of 1 int): nx
-                            - 2D: (sequence of 2 ints): (nx, ny)
-                            - 3D: (sequence of 3 ints): (nx, ny, nz)
-    :param spacing:     spacing between two adjacent cells along each axis,
-                        for simulation in
-                            - 1D: (float, or sequence of 1 float): sx
-                            - 2D: (sequence of 2 floats): (sx, sy)
-                            - 3D: (sequence of 3 floats): (sx, sy, sz)
-                            (if None, set to 1.0 along each axis)
-    :param origin:      origin of the simulation grid (corner of first grid
-                        cell), for simulation in
-                            - 1D: (float, or sequence of 1 float): ox
-                            - 2D: (sequence of 2 floats): (ox, oy)
-                            - 3D: (sequence of 3 floats): (ox, oy, oz)
-                            (if None, set to 0.0 along each axis)
-    :param x:           coordinate of data points,
-                        for simulation in
-                            - 1D: (1-dimensional array or float)
-                            - 2D: (2-dimensional array of dim n x 2, or
-                                   1-dimensional array of dim 2)
-                            - 3D: (2-dimensional array of dim n x 3, or
-                                   1-dimensional array of dim 3)
-                            (None if no data)
-    :param v:           value at data points,
-                        for simulation in
-                            - 1D: (1-dimensional array or float)
-                            - 2D: (1-dimensional array of length n)
-                            - 3D: (1-dimensional array of length n)
-                            (None if no data)
-    :param mode:        (str) mode of computation, can be 'estimation' or
-                            'simulation' (default):
-                            - 'simulation': generates multi-Gaussian simulations
-                            - 'estimation': computes multi-Gaussian estimation
-    :param algo:        (str) defines the algorithm used:
-                            - 'fft' or 'FFT' (default): based on circulant
-                                embedding and FFT, function called for <d>D
-                                (d = 1, 2, or 3):
-                                - 'geone.grf.grf<d>D' if 'mode' = 'simulation'
-                                - 'geone.grf.krige<d>D' if 'mode' = 'estimation'
-                            - 'classic' or 'CLASSIC': classic algorithm, based on
-                                the resolution of kriging system considered points
-                                in a search ellipsoid, function called for <d>D
-                                (d = 1, 2, or 3):
-                                - 'geone.geoscalassicinterface.simulate<d>D'
-                                    if 'mode' = 'simulation'
-                                - 'geone.geoscalassicinterface.estimate<d>D'
-                                    if 'mode' = 'estimation'
-    :param output_mode: (str) indicates the output mode, can be 'array' or 'img'
-                            (default), see 'return' below
-    :param retrieve_warnings:
-                        (bool) indicates if the possible warnings are retrieved
-                            in output see 'return' below
+    Wrapper of other functions, the space dimension (1, 2, or 3) is detected,
+    and the method is selected according to the parameters `mode` and `algo`.
+    Moreover, the type of output can be specified (parameter `output_mode`).
 
-    :param verbose:     (int) verbose mode, integer >=0, higher implies more
-                            display
+    Parameters
+    ----------
+    cov_model : :class:`geone.CovModel.CovModel<d>D`
+        covariance model in 1D or 2D or 3D
+    dimension : [sequence of] int(s)
+        number of cells along each axis, for simulation in:
+            - 1D: `dimension=nx`
+            - 2D: `dimension=(nx, ny)`
+            - 3D: `dimension=(nx, ny, nz)`
+    spacing : [sequence of] float(s), optional
+        cell size along each axis, for simulation in:
+            - 1D: `spacing=sx`
+            - 2D: `spacing=(sx, sy)`
+            - 3D: `spacing=(sx, sy, sz)`
+        by default (`None`): 1.0 along each axis
+    origin : [sequence of] float(s), optional
+        origin of the grid ("corner of the first cell"), for simulation in:
+            - 1D: `origin=ox`
+            - 2D: `origin=(ox, oy)`
+            - 3D: `origin=(ox, oy, oz)`
+        by default (`None`): 0.0 along each axis
+    x : array-like of floats, optional
+        data points locations (float coordinates), for simulation in:
+            - 1D: 1D array-like of floats
+            - 2D: 2D array-like of floats of shape (n, 2)
+            - 3D: 2D array-like of floats of shape (n, 3)
+        note: if one point (n=1), a float in 1D, a 1D array of shape (2, ) in 2D,
+        a 1D array of shape (3,) in 3D, is accepted
+    v : 1D array-like of floats, optional
+        data values at `x` (`v[i]` is the data value at `x[i]`)
+    mode : str {'simulation', 'estimation'}, default: 'simulation'
+        mode of computation:
+        - `mode='simulation'`: generates multi-Gaussian simulations
+        - `mode='estimation'`: computes multi-Gaussian estimation (and st. dev.)
+    algo : str {'fft', 'classic'}, default: 'fft'
+        defines the algorithm used:
+        - `algo='fft'`: algorithm based on circulant embedding and FFT, function
+        called for <d>D (d = 1, 2, or 3):
+            - 'geone.grf.grf<d>D',   `if mode='simulation'`
+            - 'geone.grf.krige<d>D', `if mode='estimation'`
+        - `algo='classic'`: "classic" algorithm, based on the resolution of
+        kriging system considered points in a search ellipsoid, function called
+        for <d>D (d = 1, 2, or 3):
+            - 'geone.geoscalassicinterface.simulate<d>D', `if mode='simulation'`
+            - 'geone.geoscalassicinterface.estimate<d>D', `if mode='estimation'`
+    output_mode : str {'array', 'img'}, default: 'img'
+        defines the type of output returned (see below)
+    retrieve_warnings : bool, default: False
+        indicates if the warnings encountered during the run are retrieved in
+        output (True) or not (False) (see below)
+    verbose : int, default: 1
+        verbose mode, higher implies more printing (info)
+    use_multiprocessing : bool, default: False
+        indicates if multiprocessing is used, i.e. if the computation are done
+        in parallel processes: if `use_multiprocessing=True`, and
+        `mode='simulation'` and `algo='classic'`, the function
+        `geone.geoscalassicinterface.simulate<d>D_mp` is used instead of
+        `geone.geoscalassicinterface.simulate<d>D`; in other cases
+        (`mode='estimation'` or `algo='fft'`), `use_multiprocessing` is ignored
+    kwargs : dict
+        keyword arguments (additional parameters) to be passed to the function
+        that is called (according to `algo` and space dimension)
 
-    :param use_multiprocessing:
-                        (bool) indicates if multiprocessing is used:
-                            - multiprocessing can be used only with
-                                 mode = 'simulation' and algo = 'classic'
-                              in any other case use_multiprocessing is ignored
-                            - with mode = 'simulation' and algo = 'classic', if
-                              use_multiprocessing is True, then simulations are
-                              generated through multiple processes, i.e. function
-                                 geone.geoscalassicinterface.simulate<d>D_mp
-                              is used instead of
-                                 geone.geoscalassicinterface.simulate<d>D
-
-    :param kwargs:      (dict) keyword arguments (additional parameters) to be
-                            passed to the function corresponding to what is
-                            specified by the argument 'algo' (see the
-                            corresponding function for its keyword arguments)
-
-    :return:    depends on 'output_mode' and 'retrieve_warnings',
-                    - if retrieve_warnings is False: return output
-                    - if retrieve_warnings is True: return (output, warnings)
-                where:
-                output:
-                - if output_mode = 'array':
-                    (nd-array) array of shape:
-                    - for 1D:
-                    (1, nx) for mode = 'estimation' with krig. estimate only
-                    (2, nx) for mode = 'estimation' with krig. estimate and std
-                    (nreal, nx) for mode = 'simulation' (nreal realization(s))
-                    - for 2D:
-                    (1, ny, nx) for mode = 'estimation' with krig. est. only
-                    (2, ny, nx) for mode = 'estimation' with krig. est. and std
-                    (nreal, ny, nx) for mode = 'simulation' (nreal real.)
-                    - for 3D:
-                    (1, nz, ny, nx) for mode = 'estimation' with krig. est. only
-                    (2, nz, ny, nx) for mode = 'estimation' with krig. est.
-                                                                        and std
-                    (nreal, nz, ny, nx) for mode = 'simulation' (nreal real.)
-                - if output_mode = 'img':
-                    (Img (class)) image, with output.nv variables:
-                    - output.nv = 1, for mode = 'estimation' with krig. est. only
-                    - output.nv = 2, for mode = 'estimation' with krig. est.
-                                                                        and std
-                    - output.nv = nreal, for mode = 'simulation' (nreal real.))
-                warnings:
-                    (list of strings) list of distinct warnings encountered
-                        (can be empty) (get no warnings if 'algo' = 'fft' or
-                        'FFT')
+    Returns
+    -------
+    output : ndarray or :class:`geone.img.Img`
+        - if `output_mode='array'`: output is a ndarray of shape
+            * for 1D:
+            (1, nx) if `mode='estimation'` with kriging estimate only
+            (2, nx) if `mode='estimation'` with kriging estimate and st. dev.
+            (nreal, nx) if `mode='simulation'
+            * for 2D:
+            (1, ny, nx) if `mode='estimation'` with kriging estimate only
+            (2, ny, nx) if `mode='estimation'` with kriging estimate and st. dev.
+            (nreal, ny, nx) if `mode='simulation'
+            * for 3D:
+            (1, nz, ny, nx) if `mode='estimation'` with krig. est. only
+            (2, nz, ny, nx) if `mode='estimation'` with krig. est. and st. dev.
+            (nreal, nz, ny, nx) if `mode='simulation'
+        - if `output_mode='img'`: output is an instance of :class:`geone.img.Img`
+            an image with `output.nv` variables:
+            - `output.nv=1` if `mode='estimation'` with kriging estimate only
+            - `output.nv=2` if `mode='estimation'` with krig. est. and st. dev.
+            - `output.nv=nreal` if `mode='simulation'`
+    warnings : list of strs, optional
+        list of distinct warnings encountered (can be empty) during the run
+        (no warning (empty list) if `algo='fft'`);
+        returned if `retrieve_warnings=True`
     """
-
     fname = 'multiGaussianRun'
     if retrieve_warnings:
         out = None, None

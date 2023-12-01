@@ -18,10 +18,12 @@ from mpl_toolkits import axes_grid1
 # ----------------------------------------------------------------------------
 def add_colorbar(im, aspect=20, pad_fraction=1.0, **kwargs):
     """
-    Add a vertical color bar to an image plot.
-    (from: http://nbviewer.jupyter.org/github/mgeier/python-audio/blob/master/plotting/matplotlib-colorbar.ipynb)
-    """
+    Adds a vertical color bar to an image plot.
 
+    Notes
+    -----
+    Code from http://nbviewer.jupyter.org/github/mgeier/python-audio/blob/master/plotting/matplotlib-colorbar.ipynb
+    """
     divider = axes_grid1.make_axes_locatable(im.axes)
     width = axes_grid1.axes_size.AxesY(im.axes, aspect=1./aspect)
     pad = axes_grid1.axes_size.Fraction(pad_fraction, width)
@@ -41,26 +43,39 @@ def custom_cmap(cseq,
                 alpha=None,
                 cmap_name='custom_cmap'):
     """
-    Defines a custom colormap given colors at transition values:
+    Defines a custom color map given colors at transition values.
 
-    :param cseq:    (list) colors given by string or rgb-tuples
-    :param vseq:    (list) increasing values of same length as cseq, values
-                        corresponding to the color of cseq in the colormap,
-                        default: None: equally spaced values are used
-    :param ncol:    (int) number of colors for the colormap
-    :param cunder:  (string or rgb-tuple or rgba-tuple) color for 'under' values
-    :param cover:   (string or rgb-tuple or rgba-tuple) color for 'over' values
-    :param cbad:    (string or rgb-tuple or rgba-tuple) color for 'bad' values
-    :param alpha:   (float or list of floats or None) values of alpha channel for
-                        transparency, for each color in cseq (if a single float
-                        is given, the same value is used for each color, if None
-                        the single value 1.0 is used (no transparency))
-    :param cmap_name:
-                    (string) colormap name
+    Parameters
+    ----------
+    cseq : 1D array-like
+        sequence of colors, each color is given by a
+        3-tuple (RGB code), 4-tuple (RGBA code) or string
+    vseq : 1D array-like of floats, optional
+        sequence of increasing values of same length as `cseq`, values that
+        correspond to the colors given in `cseq` in the output color map;
+        by default (`None`): equally spaced values (from 0 to 1) are used
+    ncol : int, default: 256
+        number of colors for the color map
+    cunder : object defining a color (e.g. 3-tuple, str), optional
+        color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
+        "under" values
+    cover : object defining a color (e.g. 3-tuple, str), optional
+        color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
+        "over" values
+    cbad : object defining a color (e.g. 3-tuple, str), optional
+        color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
+        "bad" values
+    alpha : 1D array-like of floats, or float, optional
+        values of the "alpha" channel (for transparency), for each color in
+        `cseq` (if a `alpha` is a float, the same value is used for every color)
+    cmap_name : str, default: 'custom_cmap'
+        name of the output color map
 
-    :return: (LinearSegmentedColormap) colormap
+    Returns
+    -------
+    colormap : `matplotlib.colors.LinearSegmentedColormap`
+        color map
     """
-
     fname = 'custom_cmap'
 
     # Set alpha sequence
@@ -207,13 +222,14 @@ cmapB2W = custom_cmap(['black', 'white'], cunder=(0.0, 0.0, 1.0, 0.5), cover=(1.
 
 # "Extended" existing colormap from matplotlib, by adding specific colors for under values, over values and bad values
 # # Example for cmap 'terrain'
-cmap_terrain_ext = custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0, 1, 256)], ncol=256, cunder='pink', cover='orange', cbad='red')
-# or:
-xcmap_terrain_ext = plt.get_cmap('terrain')
-xcmap_terrain_ext.set_under('pink')
-xcmap_terrain_ext.set_over('orange')
-xcmap_terrain_ext.set_bad('red')
+# cmap_terrain_ext = custom_cmap([plt.get_cmap('terrain')(x) for x in np.linspace(0, 1, 256)], ncol=256, cunder='pink', cover='orange', cbad='red')
+# # or:
+# cmap_terrain_ext = plt.get_cmap('terrain')
+# cmap_terrain_ext.set_under('pink')
+# cmap_terrain_ext.set_over('orange')
+# cmap_terrain_ext.set_bad('red')
 # ----------------------------------------------------------------------------
+#
 # # Notes:
 # # =====
 # # To show available colormaps in matplotlib:

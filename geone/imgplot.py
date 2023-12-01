@@ -6,7 +6,7 @@ Python module:  'imgplot.py'
 author:         Julien Straubhaar
 date:           dec-2017
 
-Definition of functions for plotting images (geone.Img class).
+Definition of functions for plotting images (:class:`geone.img.Img`).
 """
 
 from geone import img
@@ -46,161 +46,173 @@ def drawImage2D(
         clabel=None, cticks=None, cticklabels=None, cticklabels_max_decimal=None,
         colorbar_extend='neither',
         colorbar_aspect=20, colorbar_pad_fraction=1.0,
-        showColorbar=True,
-        removeColorbar=False,
-        showColorbarOnly=0,
-        #animated=False,
+        showColorbar=True, removeColorbar=False, showColorbarOnly=0,
         **kwargs):
+    # animated : bool, default: False
+    #     keyword argument passed to `matplotlib.pyplot.imshow` for animation...
     """
-    Draws an 2D image (can be a slice of a 3D image):
+    Displays a 2D image (or a slice of a 3D image).
 
-    :param im:  (img.Img class) image
-    :param ix:  (int or None) index along x-axis of the yz-slice to be drawn
-    :param iy:  (int or None) index along y-axis of the xz-slice to be drawn
-    :param iz:  (int or None) index along z-axis of the xy-slice to be drawn
-                    only one of the parameters ix, iy, iz should be specified,
-                    or none of them (in this case, iz is set to 0)
-    :param iv:  (int or None) index of the variable to be drawn,
-                    if None (default):
-                         - if im.nv > 0: iv is set to 0, i.e. variable of index
-                            0 will be plotted
-                         - otherwise (im.nv=0): an "empty grid is plotted, i.e.
-                            a fake variable with nan over the entire grid is
-                            considered
-    :param plot_empty_grid:
-                (bool) if True, an "empty grid is plotted, i.e. a fake variable
-                    with nan over the entire grid is considered ('iv' is ignored)
-
-    :param cmap:    colormap (can be a string: in this case the color map
-                        matplotlib.pyplot.get_cmap(cmap) is used)
-
-    :param alpha:   (float or None) values of alpha channel for transparency
-                        (if None, value 1.0 is used (no transparency))
-
-    :param excludedVal: (int/float or sequence or None) values to be
-                            excluded from the plot.
-                            Note: not used if categ is True and categVal is
-                            not None
-    :param categ:       (bool) indicates if the variable of the image to plot
-                            has to be treated as categorical (True) or as
-                            continuous (False)
-    :param categVal:    (int/float or sequence or None)
-                            -- used only if categ is True --
-                            explicit list of the category values to be
-                            displayed (if None, the list of all unique values
-                            are automatically computed)
-    :param categCol:    (sequence or None)
-                            -- used only if categ is True --
-                            colors (given by string or rgb-tuple) used for the
-                            category values that will be displayed:
-                                If categVal is not None: categCol must have
-                                    the same length as categVal,
-                                else: first entries of categCol are used if its
-                                    length is greater or equal to the number
-                                    of displayed category values, otherwise:
-                                    the entries of categCol are used cyclically
-                                    if categColCycle is True and otherwise,
-                                    colors taken from the colormap cmap are used
-    :param categColCycle:
-                        (bool)
-                            -- used only if categ is True --
-                            indicates if the entries of categCol can be used
-                            cyclically or not (when the number of displayed
-                            category values exceeds the length of categCol)
-    :param categColbad:  color for bad categorical value
-                            -- used only if categ is True --
-
-    :param vmin, vmax:      (float) min and max values to be plotted
-                                -- used only if categ is False --
-    :param contourf:        (bool) indicates if plot with plt.contourf, i.e.
-                                contour map with filled area between levels,
-                                instead of standard plot (plt.imshow)
-    :param contour:         (bool) indicates if contour levels are added to the
-                                plot (plt.contour)
-                            (dict) keyword arguments passed to plt.contour
-    :param contour_clabel:  (bool) indicates if labels are added to contour
-                                (ignored if 'contour' is False)
-    :param levels:          (int or array-like or None) keyword argument 'levels'
-                                passed to plt.contourf (used if 'contourf' is
-                                True) and/or plt.contour (used if 'contour' is
-                                True), can be: None (default), number of levels,
-                                or sequence of level values
-    :param contourf_kwargs: (dict) keyword arguments passed to plt.contourf
-                                (the argument 'levels' (see above) is used as
-                                keyword argument for plt.contourf, i.e. it
-                                prevails over the key 'levels' in
-                                'contourf_kwargs' (if given))
-    :param contour_kwargs:  (dict) keyword arguments passed to plt.contour
-                                (the argument 'levels' (see above) is used as
-                                keyword argument for plt.contourf, i.e. it
-                                prevails over the key 'levels' in
-                                'contourf_kwargs' (if given))
-    :param contour_clabel_kwargs:
-                            (dict) keyword arguments passed to plt.clabel
-                                relying on the contour plot
-    :param interpolation:   (string) 'interpolation' parameters to be passed
-                                to plt.imshow()
-    :param aspect:          (string or scalar) 'aspect' parameters to be passed
-                                to plt.imshow()
-    :param frame:           (bool) indicates if a frame is drawn around the
-                                image
-    :param xaxis, yaxis:    (bool) indicates if x-axis (resp. y-axis) is
-                                visible
-    :param title:       (string or None) title of the figure
-    :param xlabel, ylabel, clabel:
-                        (string or None) label for x-axis, y-axis, colorbar
-                            respectively
-    :param xticks, yticks, cticks:
-                        (sequence or None) sequence where to place ticks along
-                            x-axis, y-axis, colorbar respectively,
-                            None by default
-    :param xticklabels, yticklabels, cticklabels:
-                        (sequence or None) sequence of labels for ticks along
-                            x-axis, y-axis, colorbar respectively,
-                            None by default
-    :param xticklabels_max_decimal, yticklabels_decimal, cticklabels_max_decimal:
-                        (int or None) maximal number of decimals (fractional part)
-                            for ticks labels along x-axis, y-axis, colorbar
-                            respectively,
-                            (not used if xticklabels, yticklabels, cticklabels
-                            are respectively given)
-                            None by default
-    :param colorbar_extend: (string)
-                                -- used only if categ is False --
-                                keyword argument 'extend' to be passed
-                                to plt.colorbar() /
-                                geone.customcolors.add_colorbar(), can be:
-                                    'neither' | 'both' | 'min' | 'max'
-    :param colorbar_aspect: (float or int) keyword argument 'aspect' to be
-                                passed to geone.customcolors.add_colorbar(),
-    :param colorbar_pad_fraction:
-                            (float or int) keyword argument 'pad_fraction' to
-                                be passed to
-                                geone.customcolors.add_colorbar(),
-                                (not used if showColorbar is False)
-    :param showColorbar:    (bool) indicates if the colorbar (vertical) is drawn
-    :param removeColorbar:  (bool) if True (and if showColorbar is True), then
-                                the colorbar is removed (not used if showColorbar
-                                is False)
-                                (Note: it can be useful to draw and then remove
-                                the colorbar for size of the plotted image...)
-    :param showColorbarOnly:(int) indicates if only the colorbar (vertical) is
-                                drawn; possible values:
-                                - 0    : not applied
-                                - not 0: only the colorbar is shown (even if
-                                         showColorbar is False or if
-                                         removeColorbar is True):
-                                         - 1: the plotted image is "cleared"
-                                         - 2: an image of same color as the
-                                              background is drawn onto the
-                                              plotted image
-    # :param animated:        (bool) passed to imshow for for matplotlib animation...
-    #                             default: False
-
-    :param kwargs: additional keyword arguments:
-        Each keyword argument with the key "xxx_<name>" will be passed as
-        keyword argument with the key "<name>" to a function related to "xxx".
-        Possibilities for "xxx_" and related function
+    Parameters
+    ----------
+    im : :class:`geone.img.Img`
+        image
+    ix : int, optional
+        grid index along x axis of the yz-slice to be displayed;
+        by default (`None`): no slice along x axis
+    iy : int, optional
+        grid index along y axis of the xz-slice to be displayed;
+        by default (`None`): no slice along y axis
+    iz : int, optional
+        grid index along z axis of the xy-slice to be displayed;
+        by default (`None`): no slice along z axis, but
+        if `ix=None`, `iy=None`, `iz=None`, then `iz=0` is used
+    iv : int, optional
+        index of the variable to be displayed;
+        by default (`None`): the variable of index 0 (`iv=0` is used) if
+        the image has at leas one variable (`im.nv > 0`), otherwise, an "empty"
+        grid is displayed (a "fake" variable with `numpy.nan` (missing value)
+        over the entire grid is considered)
+    plot_empty_grid : bool, default: False
+        if True: an "empty" grid is displayed (a "fake" variable with `numpy.nan`
+        (missing value) over the entire grid is considered), and `iv` is ignored
+    cmap : colormap
+        color map (can be a string, in this case the color map
+        `matplotlib.pyplot.get_cmap(cmap)`)
+    alpha : float, optional
+        value of the "alpha" channel (for transparency); by default (`None`):
+        `alpha=1.0` is used (no transparency)
+    excludedVal : sequence of values, or single value, optional
+        values to be excluded from the plot;
+        note not used if `categ=True` and `categVal` is not `None`
+    categ : bool, default: False
+        indicates if the variable of the image to diplay has to be treated as a
+        categorical (discrete) variable (True), or continuous variable (False)
+    categVal : sequence of values, or single value, optional
+        used only if `categ=True`:
+        explicit list of the category values to be displayed;
+        by default (`None`): the list of all unique values are automatically
+        retrieved
+    categCol: sequence of colors, optional
+        used only if `categ=True`:
+        sequence of colors, (given as 3-tuple (RGB code), 4-tuple (RGBA code) or
+        str), used for the category values that will be displayed:
+        - if `categVal` is not `None`: `categCol` must have the same length as
+        `categVal`
+        - if `categVal=None`:
+            - first colors of `categCol` are used if its length is greater than
+            or equal to the number of displayed category values,
+            - otherwise: the colors of `categCol` are used cyclically if
+            `categColCycle=True`, and the colors taken from the color map `cmap`
+            are used if `categColCycle=False`
+    categColCycle : bool, default: False
+        used only if `categ=True`:
+        indicates if the colors of `categCol` can be used cyclically or not
+        (when the number of displayed category values exceeds the length of
+        `categCol`)
+    categColbad : color
+        used only if `categ=True`:
+        color (3-tuple (RGB code), 4-tuple (RGBA code) or str) used for bad
+        categorical value
+    vmin : float, optional
+        used only if `categ=False`:
+        minimal value to be displayed; by default: minimal value of the displayed
+        variable is used for `vmin`
+    vmax : float, optional
+        used only if `categ=False`:
+        maximal value to be displayed; by default: maximal value of the displayed
+        variable is used for `vmax`
+    contourf : bool, default: False
+        indicates if `matplotlib.pyplot.contourf` is used, i.e. contour map with
+        filled area between levels, instead of standard plot
+        (`matplotlib.pyplot.imshow`)
+    contour : bool, default: False
+        indicates if contour levels are added to the plot (using
+        `matplotlib.pyplot.contour`)
+    contour_clabel : bool, default: False
+        indicates if labels are added to contour (if `contour=True`)
+    levels : array-like, or int, optional
+        keyword argument 'levels' passed to `matplotlib.pyplot.contourf` (if
+        `contourf=True`) and/or `matplotlib.pyplot.contour` (if `contour=True`)
+    contourf_kwargs : dict
+        keyword arguments passed to `matplotlib.pyplot.contourf` (if
+        `contourf=True`); note: the parameters `levels` (see above) is used as
+        keyword argument, i.e. it prevails over the key 'levels' in
+        `contourf_kwargs` (if given)
+    contour_kwargs : dict
+        keyword arguments passed to `matplotlib.pyplot.contour` (if
+        `contour=True`); note: the parameters `levels` (see above) is used as
+        keyword argument, i.e. it prevails over the key 'levels' in
+        `contour_kwargs` (if given)
+    contour_clabel_kwargs : dict
+        keyword arguments passed to `matplotlib.pyplot.clabel` (if
+        `contour_clabel=True`)
+    interpolation : str, default: 'none'
+        keyword argument 'interpolation' to be passed `matplotlib.pyplot.imshow`
+    aspect : str, or scalar, default: 'equal'
+        keyword argument 'aspect' to be passed `matplotlib.pyplot.imshow`
+    frame : bool, default: True
+        indicates if a frame is drawn around the image
+    xaxis : bool, default: True
+        indicates if x axis is visible
+    yaxis : bool, default: True
+        indicates if y axis is visible
+    title : str, optional
+        title of the figure
+    xlabel : str, optional
+        label for x axis
+    ylabel : str, optional
+        label for y axis
+    clabel : str, optional
+        label for color bar
+    xticks : sequence of values, optional
+        values where to place ticks along x axis
+    yticks : sequence of values, optional
+        values where to place ticks along y axis
+    cticks : sequence of values, optional
+        values where to place ticks along the color bar
+    xticklabels : sequence of strs, optional,
+        sequence of strings for ticks along x axis
+    yticklabels : sequence of strs, optional,
+        sequence of strings for ticks along y axis
+    cticklabels : sequence of strs, optional,
+        sequence of strings for ticks along the color bar
+    xticklabels_max_decimal : int, optional
+        maximal number of decimals (fractional part) for tick labels along x axis
+    yticklabels_max_decimal : int, optional
+        maximal number of decimals (fractional part) for tick labels along y axis
+    cticklabels_max_decimal : int, optional
+        maximal number of decimals (fractional part) for tick labels along the
+        color bar
+    colorbar_extend : str {'neither', 'both', 'min', 'max'}, default: 'neither'
+        used only if `categ=False`:
+        keyword argument 'extend' to be passed to `matplotlib.pyplot.colorbar`
+        (or `geone.customcolors.add_colorbar`)
+    colorbar_aspect : float or int, default: 20
+        keyword argument 'aspect' to be passed to
+        `geone.customcolors.add_colorbar`
+    colorbar_pad_fraction : float or int, default: 1.0
+        keyword argument 'pad_fraction' to be passed to
+        `geone.customcolors.add_colorbar`
+    showColorbar : bool, default: True
+        indicates if the color bar (vertical) is shown
+    removeColorbar : bool, default: False
+        if True (and if `showColorbar=True`), then the colorbar is removed;
+        note: it can be useful to draw and then remove the color bar for size of
+        the plotted image...)
+    showColorbarOnly : int, default: 0
+        mode defining how the color bar (vertical) is shown:
+        - `showColorbarOnly=0`: not used / not applied
+        - `showColorbarOnly>0`: only the color bar is shown (even if
+        `showColorbar=False` or if `removeColorbar=True`):
+            - `showColorbarOnly=1`: the plotted image is "cleared"
+            - `showColorbarOnly=2`: an image of same color as the background is
+            drawn onto the plotted image
+    kwargs : dict
+        additional keyword arguments : each keyword argument with the key
+        "xxx_<name>" will be passed as keyword argument with the key "<name>" to
+        a function related to "xxx";
+        possibilities for "xxx_" and related function:
             - "title_"         fun: ax.set_title()
             - "xlabel_"        fun: ax.set_xlabel()
             - "xticks_"        fun: ax.set_xticks()
@@ -211,22 +223,22 @@ def drawImage2D(
             - "clabel_"        fun: cbar.set_label()
             - "cticks_"        fun: cbar.set_ticks()
             - "cticklabels_"   fun: cbar.ax.set_yticklabels()
-        Examples:
+        examples:
             - title_fontsize, <x|y|c>label_fontsize
             - title_fontweight, <x|y|c>label_fontweight
-                Possible values: numeric value in 0-1000 or one
-                of ‘ultralight’, ‘light’, ‘normal’, ‘regular’,
-                ‘book’, ‘medium’, ‘roman’, ‘semibold’,
-                ‘demibold’, ‘demi’, ‘bold’, ‘heavy’,
-                ‘extra bold’, ‘black’
-        Notes:
-            - default value for font size is matplotlib.rcParams['font.size']
-            - default value for font weight is matplotlib.rcParams['font.weight']
+                possible values: numeric value in 0-1000 or one of the following:
+                'ultralight', 'light', 'normal', 'regular', 'book', 'medium',
+                'roman', 'semibold', 'demibold', 'demi', 'bold', 'heavy',
+                'extra bold', 'black'
+        notes:
+            - default value for font size is `matplotlib.rcParams['font.size']`
+            - default value for font weight is `matplotlib.rcParams['font.weight']`
 
-    :return:    imout: "list of matplotlib object"
-                #   (ax, cbar) axis and colorbar of the plot
+    Returns
+    -------
+    imout : list of `matplotlib` object
+        list of plotted objects
     """
-
     fname = 'drawImage2D'
 
     # Initialization for output
@@ -235,7 +247,6 @@ def drawImage2D(
 
     if plot_empty_grid:
         iv = None
-        showColorbar = False
     else:
         # Check / set iv
         if iv is None:
@@ -624,20 +635,24 @@ def get_colors_from_values(
         vmin=None, vmax=None,
         cmin=None, cmax=None):
     """
-    Get the colors for given values, according to color settings (as in function
-    drawImage2D).
+    Gets the colors for given values, according to color settings as used in function `drawImage2D`.
 
-    :param val:     (float or array of floats) values
-    :param cmap, alpha, excludedVal, categ, categVal, categCol, categColCycle,
-        categColbad, vmin, vmax:
-                    settings as in function drawIamge2D.
-    :param cmin, cmax: alternative keyword for vmin, vmax (for compatibility with
-                    color settings in the functions of the module imgplot3d)
+    Parameters
+    ----------
+    val : array-like of floats, or float
+        values for which the colors have to be retrieved
+    cmap, alpha, excludedVal, categ, categVal, categCol, categColCycle,
+    categColbad, vmin, vmax :
+        same parameters as in function `drawImage2D` (see this function)
+    cmin, cmax : floats, optional
+        alternative keyword for vmin, vmax (for compatibility with color settings
+        in the functions of the module `geone.imgplot3d`)
 
-    :return col:    (array) color for each values in val according to given
-                        settings
+    Returns
+    -------
+    col : 1D array of colors
+        (array) color for each value in `val` according to the given settings
     """
-
     fname = 'get_colors_from_values'
 
     # Check vmin, cmin and vmax, cmax
@@ -771,13 +786,17 @@ def get_colors_from_values(
 # ----------------------------------------------------------------------------
 def drawImage2Drgb(im, nancol=(1.0, 0.0, 0.0)):
     """
-    Draw a 2D image with 3 or 4 variables interpreted as RGB or RGBA code.
+    Displays a 2D image with 3 or 4 variables interpreted as RGB or RGBA code.
 
-    :param im:      (img.Img class) image with 3 or 4 variables
-    :param nancol:  (3-tuple or 4-tuple) RGB or RGBA color code (or string)
-                        used for missing value (nan) in input image
+    Parameters
+    ----------
+    im : :class:`geone.img.Img`
+        input image, with `im.nv=3` or `im.nv=4` variables interpreted as RGB or
+        RBGA code (normalized in [0, 1])
+    nancol : color, default: (1.0, 0.0, 0.0)
+        color (3-tuple for RGB code, 4-tuple for RGBA code, str) used for missing
+        value (`numpy.nan`) in the input image
     """
-
     fname = 'drawImage2Drgb'
 
     # Check image parameters
@@ -805,12 +824,17 @@ def drawImage2Drgb(im, nancol=(1.0, 0.0, 0.0)):
 # ----------------------------------------------------------------------------
 def drawGeobodyMap2D(im, iv=0):
     """
-    Draws a geobody map 2D, with adapted color bar.
+    Displays a geobody 2D map, with adapted color bar.
 
-    :param im:  (img.Img class) image with variables being geobody label
-                    (value 0: not in considered medium, value n > 0: n-th geobody
-                    (connected component))
-    :param iv:  (int) index of the variable to be drawn
+    Parameters
+    ----------
+    im : :class:`geone.img.Img`
+        input image, with variable of index `iv` interpreted as geobody labels,
+        i.e.:
+        - value 0: cell not in the considered medium,
+        - value n > 0: cell in the n-th geobody (connected component)
+    iv : int, default: 0
+        index of the variable to be displayed
     """
     categ = True
     ngeo = int(im.val[iv].max())
@@ -845,11 +869,21 @@ def writeImage2Dppm(im, filename,
                     vmin=None, vmax=None,
                     interpolation='none'):
     """
-    Writes an image from 'im' in ppm format in the file 'filename',
-    using colors as in function drawImage2D (other arguments are defined as in
-    this function).
-    """
+    Writes an image in a file in ppm format.
 
+    The colors according the to given settings, as defined in the function
+    `drawImage2D` are used.
+
+    Parameters
+    ----------
+    im : :class:`geone.img.Img`
+        input image
+    filename : str
+        name of the file
+    ix, iy, iz, iv, cmap, excludedVal, categ, categVal, categCol, vmin, vmax,
+    interpolation :
+        same parameters as in function `drawImage2D` (see this function)
+    """
     fname = 'writeImage2Dppm'
 
     # Check iv
