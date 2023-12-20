@@ -21,16 +21,16 @@ class BlockData(object):
     ----------
     blockDataUsage : int, default: 0
         defines the usage of block data:
-            - 0: no block data
-            - 1: block data: block mean value
+        - 0: no block data
+        - 1: block data: block mean value
     nblock : int, default: 0
         number of block(s);
         used if `blockDataUsage=1`
     nodeIndex : sequence of 2D array-like of ints with 3 columns, optional
         node index in each block:
-            - `nodeIndex[i][j]`: sequence of 3 floats
-                node index in the simulation grid along x, y, z axis
-                of the j-th node of the i-th block
+        - `nodeIndex[i][j]`: sequence of 3 floats
+        node index in the simulation grid along x, y, z axis
+        of the j-th node of the i-th block;
         used if `blockDataUsage=1`
     value : sequence of floats of length `nblock`, optional
         target value for each block;

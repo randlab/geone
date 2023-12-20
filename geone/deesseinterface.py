@@ -32,37 +32,37 @@ class SearchNeighborhoodParameters(object):
                     'manual'}, default: 'large_default'
         radius mode, defining how the search radii `rx`, `ry`, `rz` are set:
         - 'large_default':
-            large radii set according to the size of the SG and the TI(s), and
-            the use of homothethy and/or rotation for the simulation
-            (automatically computed)
+        large radii set according to the size of the SG and the TI(s), and
+        the use of homothethy and/or rotation for the simulation
+        (automatically computed)
         - 'ti_range_default':
-            search radii set according to the TI(s) variogram ranges, one of
-            the 5 next modes 'ti_range_*' will be used according to the use of
-            homothethy and/or rotation for the simulation
-            (automatically computed)
+        search radii set according to the TI(s) variogram ranges, one of
+        the 5 next modes 'ti_range_*' will be used according to the use of
+        homothethy and/or rotation for the simulation
+        (automatically computed)
         - 'ti_range':
-            search radii set according to the TI(s) variogram ranges,
-            independently in each direction
-            (automatically computed)
+        search radii set according to the TI(s) variogram ranges,
+        independently in each direction
+        (automatically computed)
         - 'ti_range_xy':
-            search radii set according to the TI(s) variogram ranges,
-            `rx` = `ry` independently from `rz`
-            (automatically computed)
+        search radii set according to the TI(s) variogram ranges,
+        `rx` = `ry` independently from `rz`
+        (automatically computed)
         - 'ti_range_xz':
-            search radii set according to the TI(s) variogram ranges,
-            `rx` = `rz` independently from `ry`
-            (automatically computed)
+        search radii set according to the TI(s) variogram ranges,
+        `rx` = `rz` independently from `ry`
+        (automatically computed)
         - 'ti_range_yz':
-            search radii set according to the TI(s) variogram ranges,
-            `ry` = `rz` independently from `rx`
-            (automatically computed)
+        search radii set according to the TI(s) variogram ranges,
+        `ry` = `rz` independently from `rx`
+        (automatically computed)
         - 'ti_range_xyz':
-            search radii set according to the TI(s) variogram ranges,
-            `rx` = `ry` = `rz`
-            (automatically computed)
+        search radii set according to the TI(s) variogram ranges,
+        `rx` = `ry` = `rz`
+        (automatically computed)
         - 'manual':
-            search radii `rx`, `ry`, `rz`, in number of cells, are
-            explicitly given
+        search radii `rx`, `ry`, `rz`, in number of cells, are
+        explicitly given
 
     rx, ry, rz : floats, default: 0.0, 0.0, 0.0
         radii, in number of cells, in each direction
@@ -72,24 +72,24 @@ class SearchNeighborhoodParameters(object):
                     'radius_yz', 'radius_xyz', 'manual'}, default: 'one'
         anisotropy ratio mode, defining how the anisotropy - i.e. inverse
         unit distance `ax`, `ay`, `az` along x, y, z axis - is set:
-            - 'one': `ax` = `ay` = `az` = 1
-            - 'radius': `ax` = `rx`, `ay` = `ry`, `az` = `rz`
-            - 'radius_xy': `ax` = `ay = `max(rx, ry)`, `az` = `rz`
-            - 'radius_xz': `ax` = `az = `max(rx, rz)`, `ay` = `ry`
-            - 'radius_yz': `ay` = `az = `max(ry, rz)`, `ax` = `rx`
-            - 'radius_xyz': `ax` = `ay` = `az` = `max(rx, ry, rz)`
-            - 'manual': `ax`, `ay`, `az` explicitly given
+        - 'one': `ax` = `ay` = `az` = 1
+        - 'radius': `ax` = `rx`, `ay` = `ry`, `az` = `rz`
+        - 'radius_xy': `ax` = `ay = `max(rx, ry)`, `az` = `rz`
+        - 'radius_xz': `ax` = `az = `max(rx, rz)`, `ay` = `ry`
+        - 'radius_yz': `ay` = `az = `max(ry, rz)`, `ax` = `rx`
+        - 'radius_xyz': `ax` = `ay` = `az` = `max(rx, ry, rz)`
+        - 'manual': `ax`, `ay`, `az` explicitly given;
         notes:
         - if `anisotropyRatioMode='one'`:
-            isotropic distance - maximal distance for search neighborhood nodes
-            will be equal to the maximum of the search radii
+        isotropic distance - maximal distance for search neighborhood nodes
+        will be equal to the maximum of the search radii
         - if `anisotropyRatioMode='radius'`:
-            anisotropic distance - nodes at distance one on the border of the
-            search neighborhood, maximal distance for search neighborhood nodes
-            will be 1
+        anisotropic distance - nodes at distance one on the border of the
+        search neighborhood, maximal distance for search neighborhood nodes
+        will be 1
         - if `anisotropyRatioMode='radius_*'`:
-            anisotropic distance - maximal distance for search neighborhood nodes
-            will be 1
+        anisotropic distance - maximal distance for search neighborhood nodes
+        will be 1
 
     ax, ay, az : floats, default: 0.0, 0.0, 0.0
         anisotropy (inverse unit distance) in each direction
@@ -166,59 +166,59 @@ class SoftProbability(object):
     ----------
     probabilityConstraintUsage : int, default: 0
         defines the usage of probability constraints:
-            - 0: no probability constraint
-            - 1: global probability constraints
-            - 2: local probability constraints using support
-            - 3: local probability constraints based on rejection
+        - 0: no probability constraint
+        - 1: global probability constraints
+        - 2: local probability constraints using support
+        - 3: local probability constraints based on rejection
     nclass : int, default: 0
         number of classes of values;
         used if `probabilityConstraintUsage>0`
     classInterval : list of 2D array-like of floats with two columns, optional
         definition of the classes of values by intervals:
-            - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
-                i-th class as the union of intervals as
-                `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
+        - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
+        i-th class as the union of intervals as
+        `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`;
         used if `probabilityConstraintUsage>0`
     globalPdf : 1D array-like of floats of shape (nclass, ), optional
         global probability for each class;
         used if `probabilityConstraintUsage=1`
     localPdf : 4D array-like of floats of shape (nclass, nz, ny, nx), optional
         probability for each class:
-            - `localPdf[i]` is the "map defined on the simulation grid (SG)" of
-            of dimension nx x ny x nz (number of cell along each axis);
+        - `localPdf[i]` is the "map defined on the simulation grid (SG)" of
+        of dimension nx x ny x nz (number of cell along each axis);
         used if `probabilityConstraintUsage` in [2, 3]
     localPdfSupportRadius : float, default: 12.0
         support radius for local pdf;
         used if `probabilityConstraintUsage=2`
     localCurrentPdfComputation : int, default: 0
         defines the method used for computing the local current pdf:
-            - 0: "COMPLETE" mode: all the informed nodes in the search
-                neighborhood, and within the support are taken into account
-            - 1: "APPROXIMATE" mode: only the neighboring nodes (used for the
-                search in the TI) within the support are taken into account
+        - 0: "COMPLETE" mode: all the informed nodes in the search
+        neighborhood, and within the support are taken into account
+        - 1: "APPROXIMATE" mode: only the neighboring nodes (used for the
+        search in the TI) within the support are taken into account;
         used if `probabilityConstraintUsage=2`
     comparingPdfMethod : int, default: 5
         defines the method used for comparing pdf's:
-            - 0: MAE (Mean Absolute Error)
-            - 1: RMSE (Root Mean Squared Error)
-            - 2: KLD (Kullback Leibler Divergence)
-            - 3: JSD (Jensen-Shannon Divergence)
-            - 4: MLikRsym (Mean Likelihood Ratio (over each class indicator,
-                symmetric target interval))
-            - 5: MLikRopt (Mean Likelihood Ratio (over each class indicator,
-                optimal target interval))
+        - 0: MAE (Mean Absolute Error)
+        - 1: RMSE (Root Mean Squared Error)
+        - 2: KLD (Kullback Leibler Divergence)
+        - 3: JSD (Jensen-Shannon Divergence)
+        - 4: MLikRsym (Mean Likelihood Ratio (over each class indicator,
+        symmetric target interval))
+        - 5: MLikRopt (Mean Likelihood Ratio (over each class indicator,
+        optimal target interval));
         used if `probabilityConstraintUsage` in [1, 2]
     rejectionMode : int, default: 0
         defines the mode of rejection (during the scan of the TI):
-            - 0: rejection is done first (before checking pattern (and other
-                constraint)) according to acceptation probabilities proportional
-                to p[i]/q[i] (for class i), where
-                    - q is the marginal pdf of the scanned TI
-                    - p is the given local pdf at the simulated node
-            - 1: rejection is done last (after checking pattern (and other
-                constraint)) according to acceptation probabilities proportional
-                to p[i] (for class i), where
-                    - p is the given local pdf at the simulated node
+        - 0: rejection is done first (before checking pattern (and other
+        constraint)) according to acceptation probabilities proportional
+        to p[i]/q[i] (for class i), where
+            - q is the marginal pdf of the scanned TI
+            - p is the given local pdf at the simulated node
+        - 1: rejection is done last (after checking pattern (and other
+        constraint)) according to acceptation probabilities proportional
+        to p[i] (for class i), where
+            - p is the given local pdf at the simulated node;
         used if `probabilityConstraintUsage=3`
     deactivationDistance : float, default: 4.0
         deactivation distance (the probability constraint is deactivated if
@@ -229,8 +229,8 @@ class SoftProbability(object):
         used if `probabilityConstraintUsage>0`
     probabilityConstraintThresholdType : int, default: 0
         defines the type of (acceptance) threhsold for pdfs' comparison:
-            - 0: constant threshold
-            - 1: dynamic threshold
+        - 0: constant threshold
+        - 1: dynamic threshold;
         used if `probabilityConstraintUsage` in [1, 2]
     constantThreshold : float, default: 1.e-3
         (acceptance) threshold value for pdfs' comparison;
@@ -302,7 +302,7 @@ class SoftProbability(object):
             try:
                 self.globalPdf = np.asarray(globalPdf, dtype=float).reshape(nclass)
             except:
-                print(f'ERROR ({fname}): field "globalPdf"...')
+                print(f'ERROR ({fname}): parameter `globalPdf`...')
                 return None
 
         if localPdf is None:
@@ -406,36 +406,36 @@ class Connectivity(object):
     ----------
     connectivityConstraintUsage : int, default: 0
         defines the usage of connectivity constraints:
-            - 0: no connectivity constraint
-            - 1: set connecting paths before the simulation by successively
-                binding the nodes to be connected in a random order
-            - 2: set connecting paths before the simulation by successively
-                binding the nodes to be connected beginning with the pair of
-                nodes with the smallest distance and then the remaining nodes
-                in increasing order according to their distance to the set of
-                nodes already connected; the distance between two nodes is
-                defined as the length (in number of nodes) of the minimal path
-                binding the two nodes in an homogeneous connected medium
-                according to the type of connectivity (`connectivityType`)
-            - 3: check connectivity pattern during the simulation
+        - 0: no connectivity constraint
+        - 1: set connecting paths before the simulation by successively
+        binding the nodes to be connected in a random order
+        - 2: set connecting paths before the simulation by successively
+        binding the nodes to be connected beginning with the pair of
+        nodes with the smallest distance and then the remaining nodes
+        in increasing order according to their distance to the set of
+        nodes already connected; the distance between two nodes is
+        defined as the length (in number of nodes) of the minimal path
+        binding the two nodes in an homogeneous connected medium
+        according to the type of connectivity (`connectivityType`)
+        - 3: check connectivity pattern during the simulation
     connectivityType : str {'connect_face', 'connect_face_edge',
                     'connect_face_edge_corner'}, default: 'connect_face'
         connectivity type:
-            - 'connect_face':
-                6-neighbors connection (by face)
-            - 'connect_face_edge':
-                18-neighbors connection (by face or edge)
-            - 'connect_face_edge_corner':
-                26-neighbors connection (by face, edge or corner)
+        - 'connect_face':
+        6-neighbors connection (by face)
+        - 'connect_face_edge':
+        18-neighbors connection (by face or edge)
+        - 'connect_face_edge_corner':
+        26-neighbors connection (by face, edge or corner);
         used if `connectivityConstraintUsage>0`
     nclass : int, default: 0
         number of classes of values;
         used if `connectivityConstraintUsage>0`
     classInterval : list of 2D array-like of floats with two columns, optional
         definition of the classes of values by intervals:
-            - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
-                i-th class as the union of intervals as
-                `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
+        - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
+        i-th class as the union of intervals as
+        `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`;
         used if `connectivityConstraintUsage>0`
     varname : str, default: ''
         variable name for connected component label (should be in a conditioning
@@ -444,7 +444,7 @@ class Connectivity(object):
         - if True: the (first) TI is used as reference for connectivity
         - if False: the reference image for connectivity is given by
         `refConnectivityImage` (possible only if `connectivityConstraintUsage=1`
-        or `connectivityConstraintUsage=2`)
+        or `connectivityConstraintUsage=2`);
         used if `connectivityConstraintUsage>0`
     refConnectivityImage : :class:`geone.img.Img`, optional
         reference image for connectivity;
@@ -523,7 +523,7 @@ class Connectivity(object):
         self.tiAsRefFlag = tiAsRefFlag
 
         if not tiAsRefFlag and refConnectivityImage is None:
-            print(f'ERROR ({fname}): field "refConnectivityImage"...')
+            print(f'ERROR ({fname}): parameter `refConnectivityImage`...')
             return None
 
         self.refConnectivityImage = refConnectivityImage
@@ -584,8 +584,8 @@ class PyramidGeneralParameters(object):
         number of pyramid level(s) (in addition to original simulation grid),
         integer greater than or equal to zero; if positive, pyramid is used and
         pyramid levels are indexed from fine to coarse resolution:
-            - index 0            : original simulation grid
-            - index npyramidLevel: coarsest level
+        - index 0            : original simulation grid
+        - index npyramidLevel: coarsest level
     kx : sequence of ints of length `npyramidLevel`, optional
         reduction step along x-direction for each level:
         - kx[.] = 0: nothing is done, same dimension after reduction
@@ -611,44 +611,44 @@ class PyramidGeneralParameters(object):
                                 default: 'hierarchical_using_expansion'
         simulation mode for pyramids:
         - 'hierarchical':
-            (a) spreading conditioning data through the pyramid by simulation at
-            each level, from fine to coarse resolution, conditioned to the level
-            one rank finer
-            (b) simulation at the coarsest level, then simulation of each level,
-            from coarse to fine resolution, conditioned to the level one rank
-            coarser
+        (a) spreading conditioning data through the pyramid by simulation at
+        each level, from fine to coarse resolution, conditioned to the level
+        one rank finer
+        (b) simulation at the coarsest level, then simulation of each level,
+        from coarse to fine resolution, conditioned to the level one rank
+        coarser
         - 'hierarchical_using_expansion':
-            (a) spreading conditioning data through the pyramid by simulation at
-            each level, from fine to coarse resolution, conditioned to the level
-            one rank finer
-            (b) simulation at the coarsest level, then simulation of each level,
-            from coarse to fine resolution, conditioned to the gaussian expansion
-            of the level one rank coarser
+        (a) spreading conditioning data through the pyramid by simulation at
+        each level, from fine to coarse resolution, conditioned to the level
+        one rank finer
+        (b) simulation at the coarsest level, then simulation of each level,
+        from coarse to fine resolution, conditioned to the gaussian expansion
+        of the level one rank coarser
         - 'all_level_one_by_one':
-            co-simulation of all levels, simulation done at one level at a time
+        co-simulation of all levels, simulation done at one level at a time
     factorNneighboringNode : 1D array-like (of doubles), optional
         factors for adpating the maximal number of neighboring nodes:
         - if `pyramidSimulationMode='hierarchical'` or
                 `pyramidSimulationMode='hierarchical_using_expansion'`:
-            array of size `4 * npyramidLevel + 1` with entries:
-                faCond[0], faSim[0], fbCond[0], fbSim[0],
-                ...,
-                faCond[n-1], faSim[n-1], fbCond[n-1], fbSim[n-1],
-                fbSim[n]:
-            i.e. (4*n+1) positive numbers where n = `npyramidLevel`, with the
-            following meaning; the maximal number of neighboring nodes (according
-            to each variable) is multiplied by
-                (a) faCond[j] and faSim[j] for the conditioning level (level j)
-                and the simulated level (level j+1) resp. during step (a) above
-                (b) fbCond[j] and fbSim[j] for the conditioning level (level j+1)
-                (expanded if `pyramidSimulationMode='hierarchical_using_expansion'`)
-                and the simulated level (level j) resp. during step (b) above
+        array of size `4 * npyramidLevel + 1` with entries:
+            faCond[0], faSim[0], fbCond[0], fbSim[0],
+            ...,
+            faCond[n-1], faSim[n-1], fbCond[n-1], fbSim[n-1],
+            fbSim[n]:
+        i.e. (4*n+1) positive numbers where n = `npyramidLevel`, with the
+        following meaning; the maximal number of neighboring nodes (according
+        to each variable) is multiplied by
+            (a) faCond[j] and faSim[j] for the conditioning level (level j)
+            and the simulated level (level j+1) resp. during step (a) above
+            (b) fbCond[j] and fbSim[j] for the conditioning level (level j+1)
+            (expanded if `pyramidSimulationMode='hierarchical_using_expansion'`)
+            and the simulated level (level j) resp. during step (b) above
         - if `pyramidSimulationMode=all_level_one_by_one'`:
-            array of size `npyramidLevel + 1` with entries:
-               f[0],..., f[npyramidLevel-1], f[npyramidLevel]
-            i.e. `npyramidLevel + 1` positive numbers, with the following
-            meaning; the maximal number of neighboring nodes (according to each
-            variable) is multiplied by f[j] for the j-th pyramid level
+        array of size `npyramidLevel + 1` with entries:
+           f[0],..., f[npyramidLevel-1], f[npyramidLevel]
+        i.e. `npyramidLevel + 1` positive numbers, with the following
+        meaning; the maximal number of neighboring nodes (according to each
+        variable) is multiplied by f[j] for the j-th pyramid level
     factorDistanceThreshold : 1D array-like of floats, optional
         factors for adpating the distance (acceptance) threshold (similar to
         `factorNneighboringNode`)
@@ -698,7 +698,7 @@ class PyramidGeneralParameters(object):
 
         # pyramidSimulationMode
         if pyramidSimulationMode not in ('hierarchical', 'hierarchical_using_expansion', 'all_level_one_by_one'):
-            print(f'ERROR ({fname}): unknown pyramidSimulationMode')
+            print(f'ERROR ({fname}): unknown `pyramidSimulationMode`')
             return None
 
         self.pyramidSimulationMode = pyramidSimulationMode
@@ -711,7 +711,7 @@ class PyramidGeneralParameters(object):
                 try:
                     self.kx = np.asarray(kx, dtype='int').reshape(npyramidLevel)
                 except:
-                    print(f'ERROR ({fname}): field "kx"...')
+                    print(f'ERROR ({fname}): parameter `kx`...')
                     return None
 
             if ky is None:
@@ -720,7 +720,7 @@ class PyramidGeneralParameters(object):
                 try:
                     self.ky = np.asarray(ky, dtype='int').reshape(npyramidLevel)
                 except:
-                    print(f'ERROR ({fname}): field "ky"...')
+                    print(f'ERROR ({fname}): parameter `ky`...')
                     return None
 
             if kz is None:
@@ -729,7 +729,7 @@ class PyramidGeneralParameters(object):
                 try:
                     self.kz = np.asarray(kz, dtype='int').reshape(npyramidLevel)
                 except:
-                    print(f'ERROR ({fname}): field "kz"...')
+                    print(f'ERROR ({fname}): parameter `kz`...')
                     return None
 
             # factorNneighboringNode, factorDistanceThreshold
@@ -746,7 +746,7 @@ class PyramidGeneralParameters(object):
                     try:
                         self.factorNneighboringNode = np.asarray(factorNneighboringNode, dtype=float).reshape(n)
                     except:
-                        print(f'ERROR ({fname}): field "factorNneighboringNode"...')
+                        print(f'ERROR ({fname}): parameter `factorNneighboringNode`...')
                         return None
 
                 if factorDistanceThreshold is None:
@@ -756,7 +756,7 @@ class PyramidGeneralParameters(object):
                     try:
                         self.factorDistanceThreshold = np.asarray(factorDistanceThreshold, dtype=float).reshape(n)
                     except:
-                        print(f'ERROR ({fname}): field "factorDistanceThreshold"...')
+                        print(f'ERROR ({fname}): parameter `factorDistanceThreshold`...')
                         return None
 
             else: # pyramidSimulationMode == 'all_level_one_by_one'
@@ -768,7 +768,7 @@ class PyramidGeneralParameters(object):
                     try:
                         self.factorNneighboringNode = np.asarray(factorNneighboringNode, dtype=float).reshape(n)
                     except:
-                        print(f'ERROR ({fname}): field "factorNneighboringNode"...')
+                        print(f'ERROR ({fname}): parameter `factorNneighboringNode`...')
                         return None
 
                 if factorDistanceThreshold is None:
@@ -778,7 +778,7 @@ class PyramidGeneralParameters(object):
                     try:
                         self.factorDistanceThreshold = np.asarray(factorDistanceThreshold, dtype=float).reshape(n)
                     except:
-                        print(f'ERROR ({fname}): field "factorDistanceThreshold"...')
+                        print(f'ERROR ({fname}): parameter `factorDistanceThreshold`...')
                         return None
 
             # factorMaxScanFraction
@@ -794,7 +794,7 @@ class PyramidGeneralParameters(object):
                 try:
                     self.factorMaxScanFraction = np.asarray(factorMaxScanFraction, dtype=float).reshape(n)
                 except:
-                    print(f'ERROR ({fname}): field "factorMaxScanFraction"...')
+                    print(f'ERROR ({fname}): parameter `factorMaxScanFraction`...')
                     return None
 
         else: # npyramidLevel <= 0
@@ -837,47 +837,47 @@ class PyramidParameters(object):
                     default: 'none'
         type of pyramid:
         - 'none':
-            no pyramid simulation
+        no pyramid simulation
         - 'continuous':
-            pyramid applied to continuous variable (direct)
+        pyramid applied to continuous variable (direct)
         - 'categorical_auto':
-            pyramid for categorical variable, pyramid for indicator variable of
-            each category except one (one pyramid per indicator variable)
+        pyramid for categorical variable, pyramid for indicator variable of
+        each category except one (one pyramid per indicator variable)
         - 'categorical_custom':
-            pyramid for categorical variable, pyramid for indicator variable of
-            each class of values given explicitly (one pyramid per indicator
-            variable)
+        pyramid for categorical variable, pyramid for indicator variable of
+        each class of values given explicitly (one pyramid per indicator
+        variable)
         - 'categorical_to_continuous':
-            pyramid for categorical variable, the variable is transformed to a
-            continuous variable (according to connection between adjacent nodes,
-            the new values are ordered such that close values correspond to the
-            most connected categories), then one pyramid for the transformed
-            variable is used
+        pyramid for categorical variable, the variable is transformed to a
+        continuous variable (according to connection between adjacent nodes,
+        the new values are ordered such that close values correspond to the
+        most connected categories), then one pyramid for the transformed
+        variable is used
     nclass : int, default: 0
         number of classes of values;
         used if `pyramidType='categorical_custom'`
     classInterval : list of 2D array-like of floats with two columns, optional
         definition of the classes of values by intervals:
-            - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
-                i-th class as the union of intervals as
-                `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
+        - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
+        i-th class as the union of intervals as
+        `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`;
         used if `pyramidType='categorical_custom'`
     outputLevelFlag : sequence of bools of length `nlevel`, optional
         indicates which level is saved in output:
-            - `outputLevelFlag[j]`:
-                - False: level of index (j+1) will not be saved in output
-                - True: level of index (j+1) will be saved in output
-                    (only the pyramid for the original variables flagged
-                    for output in the field `outputVarFlag` of the parent
-                    class `DeesseInput` will be saved)
+        - `outputLevelFlag[j]`:
+            - False: level of index (j+1) will not be saved in output
+            - True: level of index (j+1) will be saved in output
+            (only the pyramid for the original variables flagged
+            for output in the field `outputVarFlag` of the parent
+            class `DeesseInput` will be saved);
         notes:
         * the name of the output variables are set to
-            <vname>_ind<i>_lev<k>_real<n>
+        <vname>_ind<i>_lev<k>_real<n>
         where
             - <vname> is the name of the "original" variable,
             - <i> is a pyramid index for that variable which starts at 0 (more
-                than one index can be required if the pyramid type is set to
-                'categorical_auto' or 'categorical_custom'),
+            than one index can be required if the pyramid type is set to
+            'categorical_auto' or 'categorical_custom'),
             - <k> is the level index,
             - <n> is the realization index (starting from 0)
         * the values of the output variables are the normalized values (as used
@@ -912,7 +912,7 @@ class PyramidParameters(object):
         self.nlevel = nlevel
 
         if pyramidType not in ('none', 'continuous', 'categorical_auto', 'categorical_custom', 'categorical_to_continuous'):
-            print(f'ERROR ({fname}): unknown pyramidType')
+            print(f'ERROR ({fname}): unknown `pyramidType`')
             return None
 
         self.pyramidType = pyramidType
@@ -926,7 +926,7 @@ class PyramidParameters(object):
             try:
                 self.outputLevelFlag = np.asarray(outputLevelFlag, dtype='bool').reshape(nlevel)
             except:
-                print(f'ERROR ({fname}): field "outputLevelFlag"...')
+                print(f'ERROR ({fname}): parameter `outputLevelFlag`...')
                 return None
 
     # ------------------------------------------------------------------------
@@ -1002,8 +1002,8 @@ class DeesseInput(object):
     pdfTI : array-like of floats, optional
         array of shape (nTI, nz, ny, nx) (reshaped if needed), probability for
         TI selection:
-            - `pdfTI[i]` is the "map defined on the SG" of the probability to
-            select the i-th TI
+        - `pdfTI[i]` is the "map defined on the SG" of the probability to
+        select the i-th TI;
         used if more than one TI are used (`nTI>1`)
     dataImage : sequence of :class:`geone.img.Img`, optional
         list of data image(s); image(s) used as conditioning data, each data
@@ -1020,27 +1020,27 @@ class DeesseInput(object):
         grid cells (the array is reshaped if needed)
     homothetyUsage : int, default: 0
         defines the usage of homothety:
-            - 0: no homothety
-            - 1: homothety without tolerance
-            - 2: homothety with tolerance
+        - 0: no homothety
+        - 1: homothety without tolerance
+        - 2: homothety with tolerance
     homothetyXLocal : bool, default: False
         indicates if homothety according to X axis is local (True) or global
         (False);
         used if `homothetyUsage>0`
     homothetyXRatio : array-like of floats, or float, optional
         homothety ratio according to X axis:
-            -if `homothetyUsage=1`:
-                - if `homothetyXLocal=True`:
-                    3D array of shape (nz, ny, nx): values in the SG
-                - else:
-                    float: value
-            -if `homothetyUsage=2`:
-                - if `homothetyXLocal=True`:
-                    4D array of shape (2, nz, ny, nx):
-                        min values (`homothetyXRatio[0]`) and
-                        max values (`homothetyXRatio[1]`) in the SG
-                - else:
-                    sequence of 2 floats: min value and max value
+        -if `homothetyUsage=1`:
+            - if `homothetyXLocal=True`:
+            3D array of shape (nz, ny, nx): values in the SG
+            - else:
+            float: value
+        -if `homothetyUsage=2`:
+            - if `homothetyXLocal=True`:
+            4D array of shape (2, nz, ny, nx):
+                min values (`homothetyXRatio[0]`) and
+                max values (`homothetyXRatio[1]`) in the SG
+            - else:
+            sequence of 2 floats: min value and max value;
         used if `homothetyUsage>0`
     homothetyYLocal, homothetyYRatio :
         as homothetyXLocal and homothetyXRatio, but for the Y axis
@@ -1048,26 +1048,26 @@ class DeesseInput(object):
         as homothetyXLocal and homothetyXRatio, but for the Z axis
     rotationUsage : int, default: 0
         defines the usage of rotation:
-            - 0: no rotation
-            - 1: rotation without tolerance
-            - 2: rotation with tolerance
+        - 0: no rotation
+        - 1: rotation without tolerance
+        - 2: rotation with tolerance
     rotationAzimuthLocal : bool, default: False
         indicates if azimuth angle is local (True) or global (False);
         used if `rotationUsage>0`
     rotationAzimuth : array-like of floats, or float, optional
         azimuth angle in degrees:
-            -if `rotationUsage=1`:
-                - if `rotationAzimuth=True`:
-                    3D array of shape (nz, ny, nx): values in the SG
-                - else:
-                    float: value
-            -if `rotationUsage=2`:
-                - if `rotationAzimuth=True`:
-                    4D array of shape (2, nz, ny, nx):
-                        min values (`rotationAzimuth[0]`) and
-                        max values (`rotationAzimuth[1]`) in the SG
-                - else:
-                    sequence of 2 floats: min value and max value
+        -if `rotationUsage=1`:
+            - if `rotationAzimuth=True`:
+            3D array of shape (nz, ny, nx): values in the SG
+            - else:
+            float: value
+        -if `rotationUsage=2`:
+            - if `rotationAzimuth=True`:
+            4D array of shape (2, nz, ny, nx):
+                min values (`rotationAzimuth[0]`) and
+                max values (`rotationAzimuth[1]`) in the SG
+            - else:
+            sequence of 2 floats: min value and max value;
         used if `rotationUsage>0`
     rotationDipLocal, rotationDip :
         as rotationAzimuthLocal and rotationAzimuth, but for the dip angle
@@ -1078,17 +1078,17 @@ class DeesseInput(object):
         applied for each variable separetely:
         - for variable with distance type set to 0 (see below):
             * expMax >= 0:
-                if a conditioning data value is not in the set of TI values,
-                an error occurs
+            if a conditioning data value is not in the set of TI values,
+            an error occurs
             * expMax < 0:
-                if a conditioning data value is not in the set of TI values,
-                a warning is displayed (no error occurs)
+            if a conditioning data value is not in the set of TI values,
+            a warning is displayed (no error occurs)
         - for variable with distance type not set to 0 (see below):
-            if relative distance flag is set to 1 (see below), nothing is done,
-            else:
+        if relative distance flag is set to 1 (see below), nothing is done,
+        else:
             * expMax >= 0:
-                maximal accepted expansion of the range of the TI values for
-                covering the conditioning data values:
+            maximal accepted expansion of the range of the TI values for
+            covering the conditioning data values:
                 - if conditioning data values are within the range of the TI
                 values: nothing is done
                 - if a conditioning data value is out of the range of the TI
@@ -1103,9 +1103,9 @@ class DeesseInput(object):
                 [new_ti_min, new_ti_max], and a warning is displayed (no error
                 occurs); otherwise, an error occurs.
             * expMax < 0:
-                if a conditioning data value is out of the range of the TI
-                values, a warning is displayed (no error occurs), the TI values
-                are not modified
+            if a conditioning data value is out of the range of the TI
+            values, a warning is displayed (no error occurs), the TI values
+            are not modified
     normalizingType : str {'linear', 'uniform', 'normal'}, default: 'linear'
         normalizing type for continuous variable(s) (with distance type not
         equal to 0)
@@ -1147,11 +1147,11 @@ class DeesseInput(object):
         (sequence of length `nv`)
     distanceType : [sequence of] int(s) or str(s), optional
         type of distance (between pattern) for each variable,
-            - 0 or 'categorical' : non-matching nodes (default if None)
-            - 1 or 'continuous'  : L-1 distance
-            - 2 : L-2 distance
-            - 3 : L-p distance, requires the parameter p (positive float)
-            - 4 : L-infinity
+        - 0 or 'categorical' : non-matching nodes (default if None)
+        - 1 or 'continuous'  : L-1 distance
+        - 2 : L-2 distance
+        - 3 : L-p distance, requires the parameter p (positive float)
+        - 4 : L-infinity
         (sequence of length `nv`)
     powerLpDistance : [sequence of] double(s), optional
         p parameter for L-p distance, for each variable (used for variable using
@@ -1166,32 +1166,32 @@ class DeesseInput(object):
         (sequence of length `nv`)
     simType : str {'sim_one_by_one', 'sim_variable_vector'}, default: 'sim_one_by_one'
         simulation type:
-            - 'sim_one_by_one': successive simulation of one variable
-            at one node in the simulation grid (4D path)
-            - 'sim_variable_vector': successive simulation of all variable(s)
-            at one node in the simulation grid (3D path)
+        - 'sim_one_by_one': successive simulation of one variable
+        at one node in the simulation grid (4D path)
+        - 'sim_variable_vector': successive simulation of all variable(s)
+        at one node in the simulation grid (3D path)
     simPathType : str {'random',
                     'random_hd_distance_pdf', 'random_hd_distance_sort',
                     'random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort',
                     'unilateral'}, default: 'random'
         simulation path type:
-            - 'random': random path
-            - 'random_hd_distance_pdf': random path set according to
-                distance to conditioning nodes based on pdf,
-                requires parameter `simPathStrength`
-            - 'random_hd_distance_sort': random path set according to
-                distance to conditioning nodes based on sort (with a
-                random noise contribution),
-                requires parameter `simPathStrength`
-            - 'random_hd_distance_sum_pdf': random path set according to
-                sum of distance to conditioning nodes based on pdf,
-                requires parameters `simPathPower` and `simPathStrength`
-            - 'random_hd_distance_sum_sort': random path set according to
-                sum of distance to conditioning nodes based on sort (with
-                a random noise contribution),
-                required fields 'simPathPower' and 'simPathStrength'
-            - 'unilateral': unilateral path or stratified random path,
-                requires parameter `simPathUnilateralOrder`
+        - 'random': random path
+        - 'random_hd_distance_pdf': random path set according to
+        distance to conditioning nodes based on pdf,
+        requires parameter `simPathStrength`
+        - 'random_hd_distance_sort': random path set according to
+        distance to conditioning nodes based on sort (with a
+        random noise contribution),
+        requires parameter `simPathStrength`
+        - 'random_hd_distance_sum_pdf': random path set according to
+        sum of distance to conditioning nodes based on pdf,
+        requires parameters `simPathPower` and `simPathStrength`
+        - 'random_hd_distance_sum_sort': random path set according to
+        sum of distance to conditioning nodes based on sort (with
+        a random noise contribution),
+        required fields 'simPathPower' and 'simPathStrength'
+        - 'unilateral': unilateral path or stratified random path,
+        requires parameter `simPathUnilateralOrder`
     simPathStrength : double, optional
         strength in [0,1] attached to distance, if `simPathType` in
         ('random_hd_distance_pdf', 'random_hd_distance_sort',
@@ -1202,14 +1202,14 @@ class DeesseInput(object):
         ('random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort')
     simPathUnilateralOrder : sequence of ints, optional
         used if `simPathType='unilateral'`:
-            - if `simType='sim_one_by_one'`: `simPathUnilateralOrder` is of
-                length 4, example: [0, -2, 1, 0] means that the path will visit
-                all nodes: randomly in xv-sections, with increasing z-coordinate,
-                and then decreasing y-coordinate
-            - if `simType='sim_variable_vector'`: `simPathUnilateralOrder` is of
-                length 3, example: [-1, 0, 2] means that the path will visit
-                all nodes: randomly in y-sections, with decreasing x-coordinate,
-                and then increasing z-coordinate
+        - if `simType='sim_one_by_one'`: `simPathUnilateralOrder` is of
+        length 4, example: [0, -2, 1, 0] means that the path will visit
+        all nodes: randomly in xv-sections, with increasing z-coordinate,
+        and then decreasing y-coordinate
+        - if `simType='sim_variable_vector'`: `simPathUnilateralOrder` is of
+        length 3, example: [-1, 0, 2] means that the path will visit
+        all nodes: randomly in y-sections, with decreasing x-coordinate,
+        and then increasing z-coordinate
     distanceThreshold : [sequence of] float(s), optional
         distance (acceptance) for each variable
         (sequence of length `nv`)
@@ -1233,33 +1233,33 @@ class DeesseInput(object):
     pyramidDataImage : sequence of :class:`geone.img.Img`, optional
         list of data image(s); image(s) used as conditioning data in pyramid
         (in additional levels); for each image:
-            - the variables are identified by their name:
-                the name should be set to <vname>_ind<j>_lev<k>, where
-                <vname> is the name of the "original" variable,
-                <j> is the pyramid index for that variable, and
-                <k> is the level index in {1, ...}
-                (<j> and <k> are written on 3 digits with leading zeros)
-            - the conditioning data values are the (already) normalized
-                values (as used during the simulation in every level)
-            - the grid dimensions (support) of the level in which the data
-                are given are used: the image grid must be compatible
+        - the variables are identified by their name:
+        the name should be set to <vname>_ind<j>_lev<k>, where
+            - <vname> is the name of the "original" variable,
+            - <j> is the pyramid index for that variable, and
+            - <k> is the level index in {1, ...}
+            (<j> and <k> are written on 3 digits with leading zeros)
+        - the conditioning data values are the (already) normalized
+        values (as used during the simulation in every level)
+        - the grid dimensions (support) of the level in which the data
+        are given are used: the image grid must be compatible;
         note: conditioning data integrated in pyramid may erased (replaced)
         data already set or computed from conditioning data at the level one
         rank finer
     pyramidDataPointSet : sequence of :class:`geone.img.PointSet`, optional
         list of data point set(s); point set(s) used as conditioning data in
         pyramid (in additional levels); for each point set:
-            - the variables are identified by their name:
-                the name should be set to <vname>_ind<j>_lev<k>, where
-                <vname> is the name of the "original" variable,
-                <j> is the pyramid index for that variable, and
-                <k> is the level index in {1, ...}
-                (<j> and <k> are written on 3 digits with leading zeros)
-            - the conditioning data values are the (already) normalized
-                values (as used during the simulation in every level)
-            - the grid dimensions (support) of the level in which the data
-                are given are used: locations (coordinates) of the points
-                must be given accordingly
+        - the variables are identified by their name:
+        the name should be set to <vname>_ind<j>_lev<k>, where
+            - <vname> is the name of the "original" variable,
+            - <j> is the pyramid index for that variable, and
+            - <k> is the level index in {1, ...}
+            (<j> and <k> are written on 3 digits with leading zeros)
+        - the conditioning data values are the (already) normalized
+        values (as used during the simulation in every level)
+        - the grid dimensions (support) of the level in which the data
+        are given are used: locations (coordinates) of the points
+        must be given accordingly;
         note: conditioning data integrated in pyramid may erased (replaced)
         data already set or computed from conditioning data at the level one
         rank finer
@@ -1299,9 +1299,9 @@ class DeesseInput(object):
     -----
     In output simulated images (obtained by running DeeSse), the names of the
     output variables are set to <vname>_real<n>, where
-        - <vname> is the name of the variable,
-        - <n> is the realization index (starting from 0)
-        [<n> is written on 5 digits, with leading zeros]
+    - <vname> is the name of the variable,
+    - <n> is the realization index (starting from 0)
+    [<n> is written on 5 digits, with leading zeros]
     """
     def __init__(self,
                  simName='deesse_py',
@@ -1390,7 +1390,7 @@ class DeesseInput(object):
             try:
                 self.varname = list(np.asarray(varname).reshape(nv))
             except:
-                print(f'ERROR ({fname}): field "varname"...')
+                print(f'ERROR ({fname}): parameter `varname`...')
                 return None
 
         # dimension
@@ -1403,7 +1403,7 @@ class DeesseInput(object):
             try:
                 self.outputVarFlag = np.asarray(outputVarFlag, dtype='bool').reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "outputVarFlag"...')
+                print(f'ERROR ({fname}): parameter `outputVarFlag`...')
                 return None
 
         # output maps
@@ -1428,7 +1428,7 @@ class DeesseInput(object):
 
         # TI, simGridAsTiFlag, nTI
         if TI is None and simGridAsTiFlag is None:
-            print(f'ERROR ({fname}): invalid "TI / simGridAsTiFlag" (both None)...')
+            print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag` (both None)...')
             return None
 
         if TI is not None:
@@ -1444,16 +1444,16 @@ class DeesseInput(object):
             self.simGridAsTiFlag = np.array([False for i in range(len(self.TI))], dtype='bool') # set dtype='bool' in case of len(self.TI)=0
 
         if len(self.TI) != len(self.simGridAsTiFlag):
-            print(f'ERROR ({fname}): invalid "TI / simGridAsTiFlag" (not same length)...')
+            print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag` (not same length)...')
             return None
 
         for f, t in zip(self.simGridAsTiFlag, self.TI):
             if (not f and t is None) or (f and t is not None):
-                print(f'ERROR ({fname}): invalid "TI / simGridAsTiFlag"...')
+                print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag`...')
                 return None
 
         if nTI is not None and nTI != len(self.TI):
-            print(f'ERROR ({fname}): invalid "nTI"...')
+            print(f'ERROR ({fname}): invalid `nTI`...')
             return None
 
         nTI = len(self.TI)
@@ -1470,7 +1470,7 @@ class DeesseInput(object):
                 try:
                     self.pdfTI = np.asarray(pdfTI, dtype=float).reshape(nTI, nz, ny, nx)
                 except:
-                    print(f'ERROR ({fname}): field "pdfTI"...')
+                    print(f'ERROR ({fname}): parameter `pdfTI`...')
                     return None
 
         # conditioning data image
@@ -1492,7 +1492,7 @@ class DeesseInput(object):
             try:
                 self.mask = np.asarray(mask).reshape(nz, ny, nx)
             except:
-                print(f'ERROR ({fname}): field "mask"...')
+                print(f'ERROR ({fname}): parameter `mask`...')
                 return None
 
         # homothety
@@ -1504,7 +1504,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyXRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
                         return None
             else:
                 if homothetyXRatio is None:
@@ -1513,7 +1513,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyXRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
                         return None
 
             if homothetyYLocal:
@@ -1523,7 +1523,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyYRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
                         return None
             else:
                 if homothetyYRatio is None:
@@ -1532,7 +1532,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyYRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
                         return None
 
             if homothetyZLocal:
@@ -1542,7 +1542,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyZRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
                         return None
             else:
                 if homothetyZRatio is None:
@@ -1551,7 +1551,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyZRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
                         return None
 
         elif homothetyUsage == 2:
@@ -1562,7 +1562,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyXRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
                         return None
             else:
                 if homothetyXRatio is None:
@@ -1571,7 +1571,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyXRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
                         return None
 
             if homothetyYLocal:
@@ -1581,7 +1581,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyYRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
                         return None
             else:
                 if homothetyYRatio is None:
@@ -1590,7 +1590,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyYRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
                         return None
 
             if homothetyZLocal:
@@ -1600,7 +1600,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyZRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
                         return None
             else:
                 if homothetyZRatio is None:
@@ -1609,7 +1609,7 @@ class DeesseInput(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyZRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
                         return None
 
         elif homothetyUsage == 0:
@@ -1618,7 +1618,7 @@ class DeesseInput(object):
             self.homothetyZRatio = None
 
         else:
-            print(f'ERROR ({fname}): invalid homothetyUsage')
+            print(f'ERROR ({fname}): invalid `homothetyUsage`')
             return None
 
         self.homothetyUsage = homothetyUsage
@@ -1635,7 +1635,7 @@ class DeesseInput(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationAzimuth"...')
+                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
                         return None
             else:
                 if rotationAzimuth is None:
@@ -1644,7 +1644,7 @@ class DeesseInput(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "rotationAzimuth"...')
+                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
                         return None
 
             if rotationDipLocal:
@@ -1654,7 +1654,7 @@ class DeesseInput(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationDip"...')
+                        print(f'ERROR ({fname}): parameter `rotationDip`...')
                         return None
             else:
                 if rotationDip is None:
@@ -1663,7 +1663,7 @@ class DeesseInput(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "rotationDip"...')
+                        print(f'ERROR ({fname}): parameter `rotationDip`...')
                         return None
 
             if rotationPlungeLocal:
@@ -1673,7 +1673,7 @@ class DeesseInput(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationPlunge"...')
+                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
                         return None
             else:
                 if rotationPlunge is None:
@@ -1682,7 +1682,7 @@ class DeesseInput(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "rotationPlunge"...')
+                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
                         return None
 
         elif rotationUsage == 2:
@@ -1693,7 +1693,7 @@ class DeesseInput(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationAzimuth"...')
+                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
                         return None
             else:
                 if rotationAzimuth is None:
@@ -1702,7 +1702,7 @@ class DeesseInput(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "rotationAzimuth"...')
+                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
                         return None
 
             if rotationDipLocal:
@@ -1712,7 +1712,7 @@ class DeesseInput(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationDip"...')
+                        print(f'ERROR ({fname}): parameter `rotationDip`...')
                         return None
             else:
                 if rotationDip is None:
@@ -1721,7 +1721,7 @@ class DeesseInput(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "rotationDip"...')
+                        print(f'ERROR ({fname}): parameter `rotationDip`...')
                         return None
 
             if rotationPlungeLocal:
@@ -1731,7 +1731,7 @@ class DeesseInput(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationPlunge"...')
+                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
                         return None
             else:
                 if rotationPlunge is None:
@@ -1740,7 +1740,7 @@ class DeesseInput(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "rotationPlunge"...')
+                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
                         return None
 
         elif rotationUsage == 0:
@@ -1749,7 +1749,7 @@ class DeesseInput(object):
             self.rotationPlunge = None
 
         else:
-            print(f'ERROR ({fname}): invalid rotationUsage')
+            print(f'ERROR ({fname}): invalid `rotationUsage`')
             return None
 
         self.rotationUsage = rotationUsage
@@ -1774,7 +1774,7 @@ class DeesseInput(object):
             try:
                 self.searchNeighborhoodParameters = np.asarray(searchNeighborhoodParameters).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "searchNeighborhoodParameters"...')
+                print(f'ERROR ({fname}): parameter `searchNeighborhoodParameters`...')
                 return None
 
         if nneighboringNode is None:
@@ -1791,7 +1791,7 @@ class DeesseInput(object):
             try:
                 self.nneighboringNode = np.asarray(nneighboringNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "nneighboringNode"...')
+                print(f'ERROR ({fname}): parameter `nneighboringNode`...')
                 return None
 
         if maxPropInequalityNode is None:
@@ -1800,7 +1800,7 @@ class DeesseInput(object):
             try:
                 self.maxPropInequalityNode = np.asarray(maxPropInequalityNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "maxPropInequalityNode"...')
+                print(f'ERROR ({fname}): parameter `maxPropInequalityNode`...')
                 return None
 
         if neighboringNodeDensity is None:
@@ -1809,7 +1809,7 @@ class DeesseInput(object):
             try:
                 self.neighboringNodeDensity = np.asarray(neighboringNodeDensity, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "neighboringNodeDensity"...')
+                print(f'ERROR ({fname}): parameter `neighboringNodeDensity`...')
                 return None
 
         # rescaling
@@ -1819,7 +1819,7 @@ class DeesseInput(object):
             try:
                 self.rescalingMode = list(np.asarray(rescalingMode).reshape(nv))
             except:
-                print(f'ERROR ({fname}): field "rescalingMode"...')
+                print(f'ERROR ({fname}): parameter `rescalingMode`...')
                 return None
 
         if rescalingTargetMin is None:
@@ -1828,7 +1828,7 @@ class DeesseInput(object):
             try:
                 self.rescalingTargetMin = np.asarray(rescalingTargetMin, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "rescalingTargetMin"...')
+                print(f'ERROR ({fname}): parameter `rescalingTargetMin`...')
                 return None
 
         if rescalingTargetMax is None:
@@ -1837,7 +1837,7 @@ class DeesseInput(object):
             try:
                 self.rescalingTargetMax = np.asarray(rescalingTargetMax, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "rescalingTargetMax"...')
+                print(f'ERROR ({fname}): parameter `rescalingTargetMax`...')
                 return None
 
         if rescalingTargetMean is None:
@@ -1846,7 +1846,7 @@ class DeesseInput(object):
             try:
                 self.rescalingTargetMean = np.asarray(rescalingTargetMean, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "rescalingTargetMean"...')
+                print(f'ERROR ({fname}): parameter `rescalingTargetMean`...')
                 return None
 
         if rescalingTargetLength is None:
@@ -1855,7 +1855,7 @@ class DeesseInput(object):
             try:
                 self.rescalingTargetLength = np.asarray(rescalingTargetLength, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "rescalingTargetLength"...')
+                print(f'ERROR ({fname}): parameter `rescalingTargetLength`...')
                 return None
 
         # distance, ...
@@ -1865,7 +1865,7 @@ class DeesseInput(object):
             try:
                 self.relativeDistanceFlag = np.asarray(relativeDistanceFlag, dtype='bool').reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "relativeDistanceFlag"...')
+                print(f'ERROR ({fname}): parameter `relativeDistanceFlag`...')
                 return None
 
         if powerLpDistance is None:
@@ -1874,7 +1874,7 @@ class DeesseInput(object):
             try:
                 self.powerLpDistance = np.asarray(powerLpDistance, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "powerLpDistance"...')
+                print(f'ERROR ({fname}): parameter `powerLpDistance`...')
                 return None
 
         self.powerLpDistanceInv = 1./self.powerLpDistance
@@ -1894,11 +1894,11 @@ class DeesseInput(object):
                         elif self.distanceType[i] == 'continuous':
                             self.distanceType[i] = 1
                         else:
-                            print(f'ERROR ({fname}): field "distanceType"...')
+                            print(f'ERROR ({fname}): parameter `distanceType`...')
                             return None
                 self.distanceType = np.asarray(self.distanceType).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "distanceType"...')
+                print(f'ERROR ({fname}): parameter `distanceType`...')
                 return None
 
         # conditioning weight
@@ -1908,7 +1908,7 @@ class DeesseInput(object):
             try:
                 self.conditioningWeightFactor = np.asarray(conditioningWeightFactor, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "conditioningWeightFactor"...')
+                print(f'ERROR ({fname}): parameter `conditioningWeightFactor`...')
                 return None
 
         # simulation type and simulation path type
@@ -1948,7 +1948,7 @@ class DeesseInput(object):
                 try:
                     self.simPathUnilateralOrder = np.asarray(simPathUnilateralOrder).reshape(length)
                 except:
-                    print(f'ERROR ({fname}): field "simPathUnilateralOrder"...')
+                    print(f'ERROR ({fname}): parameter `simPathUnilateralOrder`...')
                     return None
         else:
             self.simPathUnilateralOrder = None
@@ -1960,7 +1960,7 @@ class DeesseInput(object):
             try:
                 self.distanceThreshold = np.asarray(distanceThreshold, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "distanceThreshold"...')
+                print(f'ERROR ({fname}): parameter `distanceThreshold`...')
                 return None
 
         # soft probability
@@ -1970,7 +1970,7 @@ class DeesseInput(object):
             try:
                 self.softProbability = np.asarray(softProbability).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "softProbability"...')
+                print(f'ERROR ({fname}): parameter `softProbability`...')
                 return None
 
         # connectivity
@@ -1980,7 +1980,7 @@ class DeesseInput(object):
             try:
                 self.connectivity = np.asarray(connectivity).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "connectivity"...')
+                print(f'ERROR ({fname}): parameter `connectivity`...')
                 return None
 
         # block data
@@ -1990,7 +1990,7 @@ class DeesseInput(object):
             try:
                 self.blockData = np.asarray(blockData).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "blockData"...')
+                print(f'ERROR ({fname}): parameter `blockData`...')
                 return None
 
         # maximal scan fraction
@@ -2005,7 +2005,7 @@ class DeesseInput(object):
             try:
                 self.maxScanFraction = np.asarray(maxScanFraction).reshape(nTI)
             except:
-                print(f'ERROR ({fname}): field "maxScanFraction"...')
+                print(f'ERROR ({fname}): parameter `maxScanFraction`...')
                 return None
 
         # pyramids
@@ -2020,7 +2020,7 @@ class DeesseInput(object):
             try:
                 self.pyramidParameters = np.asarray(pyramidParameters).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "pyramidParameters"...')
+                print(f'ERROR ({fname}): parameter `pyramidParameters`...')
                 return None
 
         if pyramidDataImage is None:
@@ -2048,7 +2048,7 @@ class DeesseInput(object):
             try:
                 self.postProcessingNneighboringNode = np.asarray(postProcessingNneighboringNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "postProcessingNneighboringNode"...')
+                print(f'ERROR ({fname}): parameter `postProcessingNneighboringNode`...')
                 return None
 
         if postProcessingNeighboringNodeDensity is None:
@@ -2062,7 +2062,7 @@ class DeesseInput(object):
             try:
                 self.postProcessingNeighboringNodeDensity = np.asarray(postProcessingNeighboringNodeDensity, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "postProcessingNeighboringNodeDensity"...')
+                print(f'ERROR ({fname}): parameter `postProcessingNeighboringNodeDensity`...')
                 return None
 
         if postProcessingDistanceThreshold is None:
@@ -2082,7 +2082,7 @@ class DeesseInput(object):
             try:
                 self.postProcessingDistanceThreshold = np.asarray(postProcessingDistanceThreshold, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "postProcessingDistanceThreshold"...')
+                print(f'ERROR ({fname}): parameter `postProcessingDistanceThreshold`...')
                 return None
 
         if postProcessingMaxScanFraction is None:
@@ -2092,7 +2092,7 @@ class DeesseInput(object):
             try:
                 self.postProcessingMaxScanFraction = np.asarray(postProcessingMaxScanFraction, dtype=float).reshape(nTI)
             except:
-                print(f'ERROR ({fname}): field "postProcessingMaxScanFraction"...')
+                print(f'ERROR ({fname}): parameter `postProcessingMaxScanFraction`...')
                 return None
 
         self.postProcessingTolerance = postProcessingTolerance
@@ -2310,9 +2310,9 @@ def classInterval2classOfValues(classInterval):
     ----------
     classInterval : list of 2D array-like of floats with two columns
         definition of the classes of values by intervals:
-            - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
-                i-th class as the union of intervals as
-                `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
+        - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
+        i-th class as the union of intervals as
+        `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
 
     Returns
     -------
@@ -2354,9 +2354,9 @@ def classOfValues2classInterval(classOfValues):
     -------
     classInterval : list of 2D array-like of floats with two columns
         definition of the classes of values by intervals:
-            - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
-                i-th class as the union of intervals as
-                `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
+        - `classInterval[i]` : array `a` of shape (n_i, 2), defining the
+        i-th class as the union of intervals as
+        `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
     """
     nclass = classOfValues.nclass
 
@@ -5541,7 +5541,7 @@ def imgPyramidImage(
                           over 3 nodes)
             k[x|y|z] = 2: classical gaussian pyramid
             k[x|y|z] > 2: generalized gaussian pyramid
-        By defaut (`None`): the reduction step will be set to 2 in directions
+        by defaut (`None`): the reduction step will be set to 2 in directions
         where the input image grid has more than one cell, and to 0 in other
         directions
     w0x, w0y, w0z : floats, optional
@@ -5580,7 +5580,7 @@ def imgPyramidImage(
 
     # --- Check
     if operation not in ('reduce', 'expand'):
-        print(f"ERROR ({fname}): unknown 'operation'")
+        print(f"ERROR ({fname}): unknown `operation`")
         return None
 
     # --- Prepare parameters
@@ -5650,7 +5650,7 @@ def imgPyramidImage(
     elif operation == 'expand':
         err = deesse.MPDSOMPImagePyramidExpand(input_image_c, output_image_c, kx, ky, kz, w0x, w0y, w0z, minWeight, nth)
     else:
-        print(f"ERROR ({fname}): 'operation' not valid")
+        print(f"ERROR ({fname}): `operation` not valid")
         return None
 
     # --- Retrieve output image "in python"
@@ -5880,59 +5880,59 @@ class DeesseXInputSectionPath(object):
         simulated sections:
         - 'section_path_random': random section path
         - 'section_path_pow_2': indexes (of cells locating the section)
-            in the orthogonal direction of the sections, are chosen as
-            decreasing power of 2 (dealing alternately with each section
-            orientation in the order given by `sectionMode`)
+        in the orthogonal direction of the sections, are chosen as
+        decreasing power of 2 (dealing alternately with each section
+        orientation in the order given by `sectionMode`)
         - 'section_path_subdiv': succession of sections is defined as:
-            (a) for each section orientation (in the order given by
-                `sectionMode`), the section corresponding to the most left
-                border (containing the origin) of the simulation grid is
-                selected
-            (b) let minspaceX, minspaceY, minspaceZ (see parameters
-                below), the minimal space (or step) in number of cells
-                along x, y, z axis resp. between two successive sections
-                of the same type and orthogonal to x, y, z axis resp.:
-                (i) for each section orientation (in the order given by
-                    `sectionMode`): the section(s) corresponding to the
-                    most right border (face or edge located at one largest
-                    index in the corresponding direction) of the
-                    simulation grid is selected, provided that the space
-                    (step) with the previous section (selected in (a))
-                    satisfies the minimal space in the relevant direction
-                (ii) for each section orientation (in the order given by
-                    `sectionMode`): the sections between the borders are
-                    selected, such that they are regularly spaced along
-                    any direction (with a difference of at most one cell)
-                    and such that the minimal space is satisfied (i.e.
-                    the number of cell from one section to the next one
-                    is at least equal to corresponding parameter
-                    minspaceX, minspaceY or minspaceZ)
-                (iii) for each section orientation (in the order given by
-                    `sectionMode`): if in step (i) the right border was not
-                    selected (due to a space less than the minimal space
-                    paremeter(s)), then it is selected here
-                note that at the end of step (b), there are at least two
-                sections of same type along any axis direction (having
-                more than one cell in the entire simulation grid)
-            (c) next, the middle sections (along each direction) between
-                each pair of consecutive sections already selected are
-                selected, until the entire simulation grid is filled,
-                following one of the two methods (see parameter
-                `balancedFillingFlag`):
-                - if `balancedFillingFlag=False`:
-                    considering alternately each section orientation, in
-                    the order given by `sectionMode`,
-                - if `balancedFillingFlag=True`:
-                    choosing the axis direction (x, y, or z) for which
-                    the space (in number of cells) between two
-                    consecutive sections already selected is the largest,
-                    then selecting the section orientation(s) (among
-                    those given by `sectionMode`) orthogonal to that
-                    direction, and considering the middle sections with
-                    respect to that direction
-            - 'section_path_manual': succession of sections explicitly
-                given (see parameters `nsection`, `sectionType` and
-                `sectionLoc`)
+        (a) for each section orientation (in the order given by
+        `sectionMode`), the section corresponding to the most left
+        border (containing the origin) of the simulation grid is
+        selected
+        (b) let minspaceX, minspaceY, minspaceZ (see parameters
+        below), the minimal space (or step) in number of cells
+        along x, y, z axis resp. between two successive sections
+        of the same type and orthogonal to x, y, z axis resp.:
+            (i) for each section orientation (in the order given by
+            `sectionMode`): the section(s) corresponding to the
+            most right border (face or edge located at one largest
+            index in the corresponding direction) of the
+            simulation grid is selected, provided that the space
+            (step) with the previous section (selected in (a))
+            satisfies the minimal space in the relevant direction
+            (ii) for each section orientation (in the order given by
+            `sectionMode`): the sections between the borders are
+            selected, such that they are regularly spaced along
+            any direction (with a difference of at most one cell)
+            and such that the minimal space is satisfied (i.e.
+            the number of cell from one section to the next one
+            is at least equal to corresponding parameter
+            minspaceX, minspaceY or minspaceZ)
+            (iii) for each section orientation (in the order given by
+            `sectionMode`): if in step (i) the right border was not
+            selected (due to a space less than the minimal space
+            paremeter(s)), then it is selected here;
+        note that at the end of step (b), there are at least two
+        sections of same type along any axis direction (having
+        more than one cell in the entire simulation grid)
+        (c) next, the middle sections (along each direction) between
+        each pair of consecutive sections already selected are
+        selected, until the entire simulation grid is filled,
+        following one of the two methods (see parameter
+        `balancedFillingFlag`):
+            - if `balancedFillingFlag=False`:
+            considering alternately each section orientation, in
+            the order given by `sectionMode`,
+            - if `balancedFillingFlag=True`:
+            choosing the axis direction (x, y, or z) for which
+            the space (in number of cells) between two
+            consecutive sections already selected is the largest,
+            then selecting the section orientation(s) (among
+            those given by `sectionMode`) orthogonal to that
+            direction, and considering the middle sections with
+            respect to that direction
+        - 'section_path_manual': succession of sections explicitly
+        given (see parameters `nsection`, `sectionType` and
+        `sectionLoc`)
     minSpaceX : float, optional
         used iff `sectionPathMode='section_path_subdiv'`,
         minimal space in number of cells along x direction, in step (b) above;
@@ -5940,9 +5940,9 @@ class DeesseXInputSectionPath(object):
         - if `minSpaceX > 0`: use as it in step (b)
         - if `minSpaceX = 0`: ignore (skip) step (b,ii) for x direction
         - if `minSpaceX < 0`: this parameter is automatically computed,
-            and defined as the "range" in the x direction computed
-            from the training image(s) used in section(s) including
-            the x direction
+        and defined as the "range" in the x direction computed
+        from the training image(s) used in section(s) including
+        the x direction
     minSpaceY : float, optional
         same as `minSpaceX`, but in y direction
     minSpaceZ : float, optional
@@ -5971,25 +5971,25 @@ class DeesseXInputSectionPath(object):
         - `sectionLoc[i]`: location of the i-th simulated section,
         for 0 <= i < `nsection`, with:
             - if sectionType[i] = 0 (xy), then
-                sectionLoc[i]=k in {0, ..., nz-1},
-                k is the index location along x axis
+            sectionLoc[i]=k in {0, ..., nz-1},
+            k is the index location along x axis
             - if sectionType[i] = 1 (xz), then
-                sectionLoc[i]=k in {0, ..., ny-1},
-                k is the index location along y axis
+            sectionLoc[i]=k in {0, ..., ny-1},
+            k is the index location along y axis
             - if sectionType[i] = 2 (yz), then
-                sectionLoc[i]=k in {0, ..., nx-1},
-                k is the index location along z axis
+            sectionLoc[i]=k in {0, ..., nx-1},
+            k is the index location along z axis
             - if sectionType[i] = 3 (z), then
-                sectionLoc[i]=k in {0, ..., nx*ny-1},
-                (k%nx, k//nx) is the two index locations in xy section
+            sectionLoc[i]=k in {0, ..., nx*ny-1},
+            (k%nx, k//nx) is the two index locations in xy section
             - if sectionType[i] = 4 (y), then
-                sectionLoc[i]=k in {0, ..., nx*nz-1},
-                (k%nx, k//nx) is the two index locations in xz section
+            sectionLoc[i]=k in {0, ..., nx*nz-1},
+            (k%nx, k//nx) is the two index locations in xz section
             - if sectionType[i] = 5 (x), then
-                sectionLoc[i]=k in {0, ..., ny*nz-1},
-                (k%ny, k//ny) is the two index locations in yz section
-            and with nx, ny, nz the number of nodes in the entire
-            simulation grid along x, y, z axis respectively
+            sectionLoc[i]=k in {0, ..., ny*nz-1},
+            (k%ny, k//ny) is the two index locations in yz section
+        and with nx, ny, nz the number of nodes in the entire
+        simulation grid along x, y, z axis respectively
     """
     def __init__(self,
                  sectionMode='section_xz_yz',
@@ -6041,7 +6041,7 @@ class DeesseXInputSectionPath(object):
         )
 
         if sectionMode not in sectionMode_avail:
-            print(f'ERROR ({fname}): unknown sectionMode')
+            print(f'ERROR ({fname}): unknown `sectionMode`')
             return None
 
         self.sectionMode = sectionMode
@@ -6054,7 +6054,7 @@ class DeesseXInputSectionPath(object):
             'section_path_manual'
         )
         if sectionPathMode not in sectionPathMode_avail:
-            print(f'ERROR ({fname}): unknown sectionPathMode')
+            print(f'ERROR ({fname}): unknown `sectionPathMode`')
             return None
 
         self.sectionPathMode = sectionPathMode
@@ -6091,12 +6091,12 @@ class DeesseXInputSectionPath(object):
                 try:
                     self.sectionType = np.asarray(sectionType, dtype='int').reshape(nsection)
                 except:
-                    print(f'ERROR ({fname}): field "sectionType"...')
+                    print(f'ERROR ({fname}): parameter `sectionType`...')
                     return None
                 try:
                     self.sectionLoc = np.asarray(sectionLoc, dtype='int').reshape(nsection)
                 except:
-                    print(f'ERROR ({fname}): field "sectionLoc"...')
+                    print(f'ERROR ({fname}): parameter `sectionLoc`...')
                     return None
             else:
                 self.sectionType = None
@@ -6148,12 +6148,12 @@ class DeesseXInputSection(object):
         (as defined in the "parent" DeesseXInput class)
     sectionType : str or int, optional
         type of section, possible values:
-            - 'xy' or 'XY' or 0: 2D section parallel to the plane xy
-            - 'xz' or 'XZ' or 1: 2D section parallel to the plane xz
-            - 'yz' or 'YZ' or 2: 2D section parallel to the plane yz
-            - 'z' or 'Z' or 3:   1D section parallel to the axis z
-            - 'y' or 'Y' or 4:   1D section parallel to the axis y
-            - 'x' or 'X' or 5:   1D section parallel to the axis x
+        - 'xy' or 'XY' or 0: 2D section parallel to the plane xy
+        - 'xz' or 'XZ' or 1: 2D section parallel to the plane xz
+        - 'yz' or 'YZ' or 2: 2D section parallel to the plane yz
+        - 'z' or 'Z' or 3:   1D section parallel to the axis z
+        - 'y' or 'Y' or 4:   1D section parallel to the axis y
+        - 'x' or 'X' or 5:   1D section parallel to the axis x
     nTI : int, optional
         as in :class:`DeesseInput`
     TI : [sequence of] :class:`geone.img.Img`
@@ -6298,11 +6298,11 @@ class DeesseXInputSection(object):
                         elif self.distanceType[i] == 'continuous':
                             self.distanceType[i] = 1
                         else:
-                            print(f'ERROR ({fname}): field "distanceType"...')
+                            print(f'ERROR ({fname}): parameter `distanceType`...')
                             return None
                 self.distanceType = np.asarray(self.distanceType).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "distanceType"...')
+                print(f'ERROR ({fname}): parameter `distanceType`...')
                 return None
 
         # dimension
@@ -6310,7 +6310,7 @@ class DeesseXInputSection(object):
 
         # section type
         if sectionType is None:
-            print(f'ERROR ({fname}): field "sectionType"...')
+            print(f'ERROR ({fname}): parameter `sectionType`...')
             return None
 
         if isinstance(sectionType, str):
@@ -6327,19 +6327,19 @@ class DeesseXInputSection(object):
             elif sectionType == 'x' or sectionType == 'X':
                 self.sectionType = 5
             else:
-                print(f'ERROR ({fname}): field "sectionType"...')
+                print(f'ERROR ({fname}): parameter `sectionType`...')
                 return None
 
         elif isinstance(sectionType, int):
             self.sectionType = sectionType
 
         else:
-            print(f'ERROR ({fname}): field "sectionType"...')
+            print(f'ERROR ({fname}): parameter `sectionType`...')
             return None
 
         # TI, simGridAsTiFlag, nTI
         if TI is None and simGridAsTiFlag is None:
-            print(f'ERROR ({fname}): invalid "TI / simGridAsTiFlag" (both None)...')
+            print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag` (both None)...')
             return None
 
         if TI is not None:
@@ -6355,16 +6355,16 @@ class DeesseXInputSection(object):
             self.simGridAsTiFlag = np.array([False for i in range(len(self.TI))], dtype='bool') # set dtype='bool' in case of len(self.TI)=0
 
         if len(self.TI) != len(self.simGridAsTiFlag):
-            print(f'ERROR ({fname}): invalid "TI / simGridAsTiFlag" (not same length)...')
+            print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag` (not same length)...')
             return None
 
         for f, t in zip(self.simGridAsTiFlag, self.TI):
             if (not f and t is None) or (f and t is not None):
-                print(f'ERROR ({fname}): invalid "TI / simGridAsTiFlag"...')
+                print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag`...')
                 return None
 
         if nTI is not None and nTI != len(self.TI):
-            print(f'ERROR ({fname}): invalid "nTI"...')
+            print(f'ERROR ({fname}): invalid `nTI`...')
             return None
 
         nTI = len(self.TI)
@@ -6381,7 +6381,7 @@ class DeesseXInputSection(object):
                 try:
                     self.pdfTI = np.asarray(pdfTI, dtype=float).reshape(nTI, nz, ny, nx)
                 except:
-                    print(f'ERROR ({fname}): field "pdfTI"...')
+                    print(f'ERROR ({fname}): parameter `pdfTI`...')
                     return None
 
         # homothety
@@ -6393,7 +6393,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyXRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
                         return None
             else:
                 if homothetyXRatio is None:
@@ -6402,7 +6402,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyXRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
                         return None
 
             if homothetyYLocal:
@@ -6412,7 +6412,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyYRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
                         return None
             else:
                 if homothetyYRatio is None:
@@ -6421,7 +6421,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyYRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
                         return None
 
             if homothetyZLocal:
@@ -6431,7 +6431,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyZRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
                         return None
             else:
                 if homothetyZRatio is None:
@@ -6440,7 +6440,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyZRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
                         return None
 
         elif homothetyUsage == 2:
@@ -6451,7 +6451,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyXRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
                         return None
             else:
                 if homothetyXRatio is None:
@@ -6460,7 +6460,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyXRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
                         return None
 
             if homothetyYLocal:
@@ -6470,7 +6470,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyYRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
                         return None
             else:
                 if homothetyYRatio is None:
@@ -6479,7 +6479,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyYRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
                         return None
 
             if homothetyZLocal:
@@ -6489,7 +6489,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyZRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
                         return None
             else:
                 if homothetyZRatio is None:
@@ -6498,7 +6498,7 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "homothetyZRatio"...')
+                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
                         return None
 
         elif homothetyUsage == 0:
@@ -6507,7 +6507,7 @@ class DeesseXInputSection(object):
             self.homothetyZRatio = None
 
         else:
-            print(f'ERROR ({fname}): invalid homothetyUsage')
+            print(f'ERROR ({fname}): invalid `homothetyUsage`')
             return None
 
         self.homothetyUsage = homothetyUsage
@@ -6524,7 +6524,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationAzimuth"...')
+                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
                         return None
             else:
                 if rotationAzimuth is None:
@@ -6533,7 +6533,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "rotationAzimuth"...')
+                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
                         return None
 
             if rotationDipLocal:
@@ -6543,7 +6543,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationDip"...')
+                        print(f'ERROR ({fname}): parameter `rotationDip`...')
                         return None
             else:
                 if rotationDip is None:
@@ -6552,7 +6552,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "rotationDip"...')
+                        print(f'ERROR ({fname}): parameter `rotationDip`...')
                         return None
 
             if rotationPlungeLocal:
@@ -6562,7 +6562,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationPlunge"...')
+                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
                         return None
             else:
                 if rotationPlunge is None:
@@ -6571,7 +6571,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): field "rotationPlunge"...')
+                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
                         return None
 
         elif rotationUsage == 2:
@@ -6582,7 +6582,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationAzimuth"...')
+                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
                         return None
             else:
                 if rotationAzimuth is None:
@@ -6591,7 +6591,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "rotationAzimuth"...')
+                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
                         return None
 
             if rotationDipLocal:
@@ -6601,7 +6601,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationDip"...')
+                        print(f'ERROR ({fname}): parameter `rotationDip`...')
                         return None
             else:
                 if rotationDip is None:
@@ -6610,7 +6610,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "rotationDip"...')
+                        print(f'ERROR ({fname}): parameter `rotationDip`...')
                         return None
 
             if rotationPlungeLocal:
@@ -6620,7 +6620,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): field "rotationPlunge"...')
+                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
                         return None
             else:
                 if rotationPlunge is None:
@@ -6629,7 +6629,7 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): field "rotationPlunge"...')
+                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
                         return None
 
         elif rotationUsage == 0:
@@ -6638,7 +6638,7 @@ class DeesseXInputSection(object):
             self.rotationPlunge = None
 
         else:
-            print(f'ERROR ({fname}): invalid rotationUsage')
+            print(f'ERROR ({fname}): invalid `rotationUsage`')
             return None
 
         self.rotationUsage = rotationUsage
@@ -6653,7 +6653,7 @@ class DeesseXInputSection(object):
             try:
                 self.searchNeighborhoodParameters = np.asarray(searchNeighborhoodParameters).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "searchNeighborhoodParameters"...')
+                print(f'ERROR ({fname}): parameter `searchNeighborhoodParameters`...')
                 return None
 
         if nneighboringNode is None:
@@ -6670,7 +6670,7 @@ class DeesseXInputSection(object):
             try:
                 self.nneighboringNode = np.asarray(nneighboringNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "nneighboringNode"...')
+                print(f'ERROR ({fname}): parameter `nneighboringNode`...')
                 return None
 
         if maxPropInequalityNode is None:
@@ -6679,7 +6679,7 @@ class DeesseXInputSection(object):
             try:
                 self.maxPropInequalityNode = np.asarray(maxPropInequalityNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "maxPropInequalityNode"...')
+                print(f'ERROR ({fname}): parameter `maxPropInequalityNode`...')
                 return None
 
         if neighboringNodeDensity is None:
@@ -6688,12 +6688,12 @@ class DeesseXInputSection(object):
             try:
                 self.neighboringNodeDensity = np.asarray(neighboringNodeDensity, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "neighboringNodeDensity"...')
+                print(f'ERROR ({fname}): parameter `neighboringNodeDensity`...')
                 return None
 
         # simulation type and simulation path type
         if simType not in ('sim_one_by_one', 'sim_variable_vector'):
-            print(f'ERROR ({fname}): field "simType"...')
+            print(f'ERROR ({fname}): parameter `simType`"...')
             return None
 
         self.simType = simType
@@ -6703,7 +6703,7 @@ class DeesseXInputSection(object):
                 'random_hd_distance_pdf', 'random_hd_distance_sort',
                 'random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort',
                 'unilateral'):
-            print(f'ERROR ({fname}): field "simPathType"...')
+            print(f'ERROR ({fname}): parameter `simPathType`...')
             return None
 
         self.simPathType = simPathType
@@ -6728,7 +6728,7 @@ class DeesseXInputSection(object):
                 try:
                     self.simPathUnilateralOrder = np.asarray(simPathUnilateralOrder).reshape(length)
                 except:
-                    print(f'ERROR ({fname}): field "simPathUnilateralOrder"...')
+                    print(f'ERROR ({fname}): parameter `simPathUnilateralOrder`...')
                     return None
         else:
             self.simPathUnilateralOrder = None
@@ -6740,7 +6740,7 @@ class DeesseXInputSection(object):
             try:
                 self.distanceThreshold = np.asarray(distanceThreshold, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "distanceThreshold"...')
+                print(f'ERROR ({fname}): parameter `distanceThreshold`...')
                 return None
 
         # soft probability
@@ -6750,7 +6750,7 @@ class DeesseXInputSection(object):
             try:
                 self.softProbability = np.asarray(softProbability).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "softProbability"...')
+                print(f'ERROR ({fname}): parameter `softProbability`...')
                 return None
 
         # maximal scan fraction
@@ -6765,7 +6765,7 @@ class DeesseXInputSection(object):
             try:
                 self.maxScanFraction = np.asarray(maxScanFraction).reshape(nTI)
             except:
-                print(f'ERROR ({fname}): field "maxScanFraction"...')
+                print(f'ERROR ({fname}): parameter `maxScanFraction`...')
                 return None
 
         # pyramids
@@ -6780,7 +6780,7 @@ class DeesseXInputSection(object):
             try:
                 self.pyramidParameters = np.asarray(pyramidParameters).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "pyramidParameters"...')
+                print(f'ERROR ({fname}): parameter `pyramidParameters`...')
                 return None
 
         # tolerance and post-processing
@@ -6798,7 +6798,7 @@ class DeesseXInputSection(object):
             try:
                 self.postProcessingNneighboringNode = np.asarray(postProcessingNneighboringNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "postProcessingNneighboringNode"...')
+                print(f'ERROR ({fname}): parameter `postProcessingNneighboringNode`...')
                 return None
 
         if postProcessingNeighboringNodeDensity is None:
@@ -6812,7 +6812,7 @@ class DeesseXInputSection(object):
             try:
                 self.postProcessingNeighboringNodeDensity = np.asarray(postProcessingNeighboringNodeDensity, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "postProcessingNeighboringNodeDensity"...')
+                print(f'ERROR ({fname}): parameter `postProcessingNeighboringNodeDensity`...')
                 return None
 
         if postProcessingDistanceThreshold is None:
@@ -6832,7 +6832,7 @@ class DeesseXInputSection(object):
             try:
                 self.postProcessingDistanceThreshold = np.asarray(postProcessingDistanceThreshold, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "postProcessingDistanceThreshold"...')
+                print(f'ERROR ({fname}): parameter `postProcessingDistanceThreshold`...')
                 return None
 
         if postProcessingMaxScanFraction is None:
@@ -6842,7 +6842,7 @@ class DeesseXInputSection(object):
             try:
                 self.postProcessingMaxScanFraction = np.asarray(postProcessingMaxScanFraction, dtype=float).reshape(nTI)
             except:
-                print(f'ERROR ({fname}): field "postProcessingMaxScanFraction"...')
+                print(f'ERROR ({fname}): parameter `postProcessingMaxScanFraction`...')
                 return None
 
         self.postProcessingTolerance = postProcessingTolerance
@@ -6944,9 +6944,9 @@ class DeesseXInput(object):
     -----
     In output simulated images (obtained by running deesseX), the names of the
     output variables are set to <vname>_real<n>, where
-        - <vname> is the name of the variable,
-        - <n> is the realization index (starting from 0)
-        [<n> is written on 5 digits, with leading zeros]
+    - <vname> is the name of the variable,
+    - <n> is the realization index (starting from 0)
+    [<n> is written on 5 digits, with leading zeros]
     """
     def __init__(self,
                  simName='deesseX_py',
@@ -7003,7 +7003,7 @@ class DeesseXInput(object):
             try:
                 self.varname = list(np.asarray(varname).reshape(nv))
             except:
-                print(f'ERROR ({fname}): field "varname"...')
+                print(f'ERROR ({fname}): parameter `varname`...')
                 return None
 
         # outputVarFlag
@@ -7013,7 +7013,7 @@ class DeesseXInput(object):
             try:
                 self.outputVarFlag = np.asarray(outputVarFlag, dtype='bool').reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "outputVarFlag"...')
+                print(f'ERROR ({fname}): parameter `outputVarFlag`...')
                 return None
 
         # output maps
@@ -7049,7 +7049,7 @@ class DeesseXInput(object):
             try:
                 self.mask = np.asarray(mask).reshape(nz, ny, nx)
             except:
-                print(f'ERROR ({fname}): field "mask"...')
+                print(f'ERROR ({fname}): parameter `mask`...')
                 return None
 
         # expMax
@@ -7069,7 +7069,7 @@ class DeesseXInput(object):
             try:
                 self.rescalingMode = list(np.asarray(rescalingMode).reshape(nv))
             except:
-                print(f'ERROR ({fname}): field "rescalingMode"...')
+                print(f'ERROR ({fname}): parameter `rescalingMode`...')
                 return None
 
         if rescalingTargetMin is None:
@@ -7078,7 +7078,7 @@ class DeesseXInput(object):
             try:
                 self.rescalingTargetMin = np.asarray(rescalingTargetMin, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "rescalingTargetMin"...')
+                print(f'ERROR ({fname}): parameter `rescalingTargetMin`...')
                 return None
 
         if rescalingTargetMax is None:
@@ -7087,7 +7087,7 @@ class DeesseXInput(object):
             try:
                 self.rescalingTargetMax = np.asarray(rescalingTargetMax, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "rescalingTargetMax"...')
+                print(f'ERROR ({fname}): parameter `rescalingTargetMax`...')
                 return None
 
         if rescalingTargetMean is None:
@@ -7096,7 +7096,7 @@ class DeesseXInput(object):
             try:
                 self.rescalingTargetMean = np.asarray(rescalingTargetMean, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "rescalingTargetMean"...')
+                print(f'ERROR ({fname}): parameter `rescalingTargetMean`...')
                 return None
 
         if rescalingTargetLength is None:
@@ -7105,7 +7105,7 @@ class DeesseXInput(object):
             try:
                 self.rescalingTargetLength = np.asarray(rescalingTargetLength, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "rescalingTargetLength"...')
+                print(f'ERROR ({fname}): parameter `rescalingTargetLength`...')
                 return None
 
         # distance, ...
@@ -7115,7 +7115,7 @@ class DeesseXInput(object):
             try:
                 self.relativeDistanceFlag = np.asarray(relativeDistanceFlag, dtype='bool').reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "relativeDistanceFlag"...')
+                print(f'ERROR ({fname}): parameter `relativeDistanceFlag`...')
                 return None
 
         if powerLpDistance is None:
@@ -7124,7 +7124,7 @@ class DeesseXInput(object):
             try:
                 self.powerLpDistance = np.asarray(powerLpDistance, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "powerLpDistance"...')
+                print(f'ERROR ({fname}): parameter `powerLpDistance`...')
                 return None
 
         self.powerLpDistanceInv = 1./self.powerLpDistance
@@ -7144,11 +7144,11 @@ class DeesseXInput(object):
                         elif self.distanceType[i] == 'continuous':
                             self.distanceType[i] = 1
                         else:
-                            print(f'ERROR ({fname}): field "distanceType"...')
+                            print(f'ERROR ({fname}): parameter `distanceType`...')
                             return None
                 self.distanceType = np.asarray(self.distanceType).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "distanceType"...')
+                print(f'ERROR ({fname}): parameter `distanceType`...')
                 return None
 
         # conditioning weight
@@ -7158,19 +7158,19 @@ class DeesseXInput(object):
             try:
                 self.conditioningWeightFactor = np.asarray(conditioningWeightFactor, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): field "conditioningWeightFactor"...')
+                print(f'ERROR ({fname}): parameter `conditioningWeightFactor`...')
                 return None
 
         # sectionPath_parameters
         if sectionPath_parameters is None:
-            print(f'ERROR ({fname}): field "sectionPath_parameters" (must be specified)...')
+            print(f'ERROR ({fname}): parameter `sectionPath_parameters` (must be specified)...')
             return None
 
         self.sectionPath_parameters = sectionPath_parameters
 
         # section_parameters
         if section_parameters is None:
-            print(f'ERROR ({fname}): field "section_parameters" (must be specified)...')
+            print(f'ERROR ({fname}): parameter `section_parameters` (must be specified)...')
             return None
 
         self.section_parameters = np.asarray(section_parameters).reshape(-1)
@@ -8486,7 +8486,7 @@ def deesseX_input_py2C(deesseX_input):
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
             return None
         if not np.all(deesseX_input.distanceType == sect_param.distanceType):
-            print(f"ERROR ({fname}): 'distanceType' (one) section parameters invalid")
+            print(f"ERROR ({fname}): distanceType (one) section parameters invalid")
             # Free memory on C side
             deesse.MPDSFreeXSimInput(mpds_xsiminput)
             #deesse.MPDSFree(mpds_xsiminput)

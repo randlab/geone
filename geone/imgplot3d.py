@@ -135,10 +135,9 @@ def drawImage3D_surface (
         (when the number of displayed category values exceeds the length of
         `categCol`)
     categActive : 1D array-like of bools, optional
-        used only if `categ=True`:
-        sequence of same length as `categVal`:
+        used only if `categ=True`, sequence of same length as `categVal`:
         - `categActive[i]=True`: `categVal[i]` is displayed
-        - `categActive[i]=False`: `categVal[i]` is not displayed
+        - `categActive[i]=False`: `categVal[i]` is not displayed;
         by default (`None`): all category values `categVal` are displayed
     use_clip_plane : bool, default: False
         if True: the function `pyvista.add_mesh_clip_plane` (allowing interactive
@@ -153,27 +152,27 @@ def drawImage3D_surface (
         indicates if axes are displayed
     text : str, optional
         text (title) to be displayed on the figure
-    scalar_bar_annotations : dict
+    scalar_bar_annotations : dict, optional
         annotation (ticks) on the scalar bar (color bar), used if
         `show_scalar_bar=True`
     scalar_bar_annotations_max : int, default: 20
         maximal number of annotations (ticks) on the scalar bar (color bar)
         when `categ=True` and `scalar_bar_annotations=None`
-    scalar_bar_kwargs : dict
+    scalar_bar_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_scalar_bar`
         (can be useful for customization, used if `show_scalar_bar=True`)
         note: in subplots (multi-sub-window), key 'title' should be distinct for
         each subplot
-    outline_kwargs : dict
+    outline_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_mesh`
         (can be useful for customization, used if `show_outline=True`)
-    bounds_kwargs : dict
+    bounds_kwargs : dict, optional
         keyword arguments passed to function `plotter.show_bounds`
         (can be useful for customization, used if `show_bounds=True`)
-    axes_kwargs : dict
+    axes_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_axes`
         (can be useful for customization, used if `show_axes=True`)
-    text_kwargs : dict
+    text_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_text`
         (can be useful for customization, used if `text` is not `None`)
     background_color : color
@@ -186,8 +185,8 @@ def drawImage3D_surface (
         - camera_location: (tuple of length 3) camera location ("eye")
         - focus_point    : (tuple of length 3) focus point
         - viewup_vector  : (tuple of length 3) viewup vector (vector
-            attached to the "head" and pointed to the "sky"),
-        in principle: (focus_point - camera_location) is orthogonal to
+        attached to the "head" and pointed to the "sky");
+        note: in principle, (focus_point - camera_location) is orthogonal to
         viewup_vector
     kwargs : dict
         additional keyword arguments passed to `plotter.add_mesh[_clip_plane]`
@@ -215,7 +214,7 @@ def drawImage3D_surface (
         iv = im.nv + iv
 
     if iv < 0 or iv >= im.nv:
-        print(f'ERROR ({fname}): invalid iv index!')
+        print(f'ERROR ({fname}): invalid `iv` index!')
         return None
 
     # Set indices to be plotted
@@ -245,7 +244,7 @@ def drawImage3D_surface (
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid cmap string!')
+            print(f'ERROR ({fname}): invalid `cmap` string!')
             return None
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
@@ -276,7 +275,7 @@ def drawImage3D_surface (
         if categCol is not None\
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): 'categCol' must be a list or a tuple (if not None)!")
+            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
             return None
 
         # Get array 'dval' of displayed values (at least for color bar)
@@ -284,12 +283,12 @@ def drawImage3D_surface (
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): 'categVal' contains duplicated entries!")
+                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
                 return None
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of 'categVal' and 'categCol' differs!")
+                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
                 return None
 
         else:
@@ -310,7 +309,7 @@ def drawImage3D_surface (
 
         if categActive is not None:
             if len(categActive) != len(dval):
-                print(f"ERROR ({fname}): length of 'categActive' not valid (should be the same as length of categVal)")
+                print(f"ERROR ({fname}): length of `categActive` not valid (should be the same as length of `categVal`)")
                 return None
         else:
             categActive = np.ones(len(dval), dtype='bool')
@@ -575,7 +574,7 @@ def drawImage3D_slice (
         used only if `categ=True`:
         sequence of same length as `categVal`:
         - `categActive[i]=True`: `categVal[i]` is displayed
-        - `categActive[i]=False`: `categVal[i]` is not displayed
+        - `categActive[i]=False`: `categVal[i]` is not displayed;
         by default (`None`): all category values `categVal` are displayed
     show_scalar_bar : bool, default: True
         indicates if scalar bar (color bar) is displayed
@@ -587,27 +586,27 @@ def drawImage3D_slice (
         indicates if axes are displayed
     text : str, optional
         text (title) to be displayed on the figure
-    scalar_bar_annotations : dict
+    scalar_bar_annotations : dict, optional
         annotation (ticks) on the scalar bar (color bar), used if
         `show_scalar_bar=True`
     scalar_bar_annotations_max : int, default: 20
         maximal number of annotations (ticks) on the scalar bar (color bar)
         when `categ=True` and `scalar_bar_annotations=None`
-    scalar_bar_kwargs : dict
+    scalar_bar_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_scalar_bar`
         (can be useful for customization, used if `show_scalar_bar=True`)
         note: in subplots (multi-sub-window), key 'title' should be distinct for
         each subplot
-    outline_kwargs : dict
+    outline_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_mesh`
         (can be useful for customization, used if `show_outline=True`)
-    bounds_kwargs : dict
+    bounds_kwargs : dict, optional
         keyword arguments passed to function `plotter.show_bounds`
         (can be useful for customization, used if `show_bounds=True`)
-    axes_kwargs : dict
+    axes_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_axes`
         (can be useful for customization, used if `show_axes=True`)
-    text_kwargs : dict
+    text_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_text`
         (can be useful for customization, used if `text` is not `None`)
     background_color : color
@@ -620,8 +619,8 @@ def drawImage3D_slice (
         - camera_location: (tuple of length 3) camera location ("eye")
         - focus_point    : (tuple of length 3) focus point
         - viewup_vector  : (tuple of length 3) viewup vector (vector
-            attached to the "head" and pointed to the "sky"),
-        in principle: (focus_point - camera_location) is orthogonal to
+        attached to the "head" and pointed to the "sky");
+        note: in principle, (focus_point - camera_location) is orthogonal to
         viewup_vector
     kwargs : dict
         additional keyword arguments passed to `plotter.add_mesh`
@@ -649,7 +648,7 @@ def drawImage3D_slice (
         iv = im.nv + iv
 
     if iv < 0 or iv >= im.nv:
-        print(f'ERROR ({fname}): invalid iv index!')
+        print(f'ERROR ({fname}): invalid `iv` index!')
         return None
 
     # Set indices to be plotted
@@ -679,7 +678,7 @@ def drawImage3D_slice (
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid cmap string!')
+            print(f'ERROR ({fname}): invalid `cmap` string!')
             return None
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
@@ -710,7 +709,7 @@ def drawImage3D_slice (
         if categCol is not None\
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): 'categCol' must be a list or a tuple (if not None)!")
+            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
             return None
 
         # Get array 'dval' of displayed values (at least for color bar)
@@ -718,12 +717,12 @@ def drawImage3D_slice (
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): 'categVal' contains duplicated entries!")
+                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
                 return None
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of 'categVal' and 'categCol' differs!")
+                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
                 return None
 
         else:
@@ -744,7 +743,7 @@ def drawImage3D_slice (
 
         if categActive is not None:
             if len(categActive) != len(dval):
-                print(f"ERROR ({fname}): length of 'categActive' not valid (should be the same as length of categVal)")
+                print(f"ERROR ({fname}): length of `categActive` not valid (should be the same as length of `categVal`)")
                 return None
         else:
             categActive = np.ones(len(dval), dtype='bool')
@@ -953,7 +952,7 @@ def drawImage3D_empty_grid (
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid cmap string!')
+            print(f'ERROR ({fname}): invalid `cmap` string!')
             return None
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
@@ -984,7 +983,7 @@ def drawImage3D_empty_grid (
         if categCol is not None\
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): 'categCol' must be a list or a tuple (if not None)!")
+            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
             return None
 
         # Get array 'dval' of displayed values (at least for color bar)
@@ -992,12 +991,12 @@ def drawImage3D_empty_grid (
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): 'categVal' contains duplicated entries!")
+                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
                 return None
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of 'categVal' and 'categCol' differs!")
+                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
                 return None
 
         else:
@@ -1018,7 +1017,7 @@ def drawImage3D_empty_grid (
 
         if categActive is not None:
             if len(categActive) != len(dval):
-                print(f"ERROR ({fname}): length of 'categActive' not valid (should be the same as length of categVal)")
+                print(f"ERROR ({fname}): length of `categActive` not valid (should be the same as length of `categVal`)")
                 return None
         else:
             categActive = np.ones(len(dval), dtype='bool')
@@ -1220,24 +1219,24 @@ def drawImage3D_volume (
         indicates if axes are displayed
     text : str, optional
         text (title) to be displayed on the figure
-    scalar_bar_annotations : dict
+    scalar_bar_annotations : dict, optional
         annotation (ticks) on the scalar bar (color bar), used if
         `show_scalar_bar=True`
-    scalar_bar_kwargs : dict
+    scalar_bar_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_scalar_bar`
         (can be useful for customization, used if `show_scalar_bar=True`)
         note: in subplots (multi-sub-window), key 'title' should be distinct for
         each subplot
-    outline_kwargs : dict
+    outline_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_mesh`
         (can be useful for customization, used if `show_outline=True`)
-    bounds_kwargs : dict
+    bounds_kwargs : dict, optional
         keyword arguments passed to function `plotter.show_bounds`
         (can be useful for customization, used if `show_bounds=True`)
-    axes_kwargs : dict
+    axes_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_axes`
         (can be useful for customization, used if `show_axes=True`)
-    text_kwargs : dict
+    text_kwargs : dict, optional
         keyword arguments passed to function `plotter.add_text`
         (can be useful for customization, used if `text` is not `None`)
     background_color : color
@@ -1250,8 +1249,8 @@ def drawImage3D_volume (
         - camera_location: (tuple of length 3) camera location ("eye")
         - focus_point    : (tuple of length 3) focus point
         - viewup_vector  : (tuple of length 3) viewup vector (vector
-            attached to the "head" and pointed to the "sky"),
-        in principle: (focus_point - camera_location) is orthogonal to
+        attached to the "head" and pointed to the "sky");
+        note: in principle, (focus_point - camera_location) is orthogonal to
         viewup_vector
     kwargs : dict
         additional keyword arguments passed to `plotter.add_volume`
@@ -1279,7 +1278,7 @@ def drawImage3D_volume (
         iv = im.nv + iv
 
     if iv < 0 or iv >= im.nv:
-        print(f'ERROR ({fname}): invalid iv index!')
+        print(f'ERROR ({fname}): invalid `iv` index!')
         return None
 
     # Set indices to be plotted
@@ -1309,7 +1308,7 @@ def drawImage3D_volume (
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid cmap string!')
+            print(f'ERROR ({fname}): invalid `cmap` string!')
             return None
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)

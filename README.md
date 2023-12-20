@@ -89,12 +89,12 @@ Multiple-point statistics - X-simulation using the DEESSEX wrapper:
 - `ex_grf_3d.ipynb`: example for the generation of 3D fields
 
 #### Examples - Simulation and estimation with kriging in a grid (GeosClassic wrapper)
-- `ex_geosclassic_1d.ipynb`:example in 1D for two-point statistics simulation and estimation
-- `ex_geosclassic_1d_non_stat_cov.ipynb`:example in 1D with non-stationary covariance model
-- `ex_geosclassic_2d.ipynb`:example in 2D for two-point statistics simulation and estimation
-- `ex_geosclassic_2d_non_stat_cov.ipynb`:example in 2D with non-stationary covariance model
-- `ex_geosclassic_3d.ipynb`:example in 3D for two-point statistics simulation and estimation
-- `ex_geosclassic_3d_non_stat_cov.ipynb`:example in 3D with non-stationary covariance model
+- `ex_geosclassic_1d_1.ipynb`:example in 1D for two-point statistics simulation and estimation
+- `ex_geosclassic_1d_2_non_stat_cov.ipynb`:example in 1D with non-stationary covariance model
+- `ex_geosclassic_2d_1.ipynb`:example in 2D for two-point statistics simulation and estimation
+- `ex_geosclassic_2d_2_non_stat_cov.ipynb`:example in 2D with non-stationary covariance model
+- `ex_geosclassic_3d_1.ipynb`:example in 3D for two-point statistics simulation and estimation
+- `ex_geosclassic_3d_2_non_stat_cov.ipynb`:example in 3D with non-stationary covariance model
 - `ex_geosclassic_indicator_1d.ipynb`:example in 1D for two-point statistics simulation and estimation of indicator variables
 - `ex_geosclassic_indicator_2d.ipynb`:example in 2D for two-point statistics simulation and estimation of indicator variables
 - `ex_geosclassic_indicator_3d.ipynb`:example in 3D for two-point statistics simulation and estimation of indicator variables

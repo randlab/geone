@@ -34,7 +34,7 @@ def drawImage2D(
         contour=False,
         contour_clabel=False,
         levels=None,
-        contourf_kwargs={},
+        contourf_kwargs=None,
         contour_kwargs={'linestyles':'solid', 'colors':'gray'},
         contour_clabel_kwargs={'inline':1},
         interpolation='none',
@@ -134,7 +134,7 @@ def drawImage2D(
     levels : array-like, or int, optional
         keyword argument 'levels' passed to `matplotlib.pyplot.contourf` (if
         `contourf=True`) and/or `matplotlib.pyplot.contour` (if `contour=True`)
-    contourf_kwargs : dict
+    contourf_kwargs : dict, optional
         keyword arguments passed to `matplotlib.pyplot.contourf` (if
         `contourf=True`); note: the parameters `levels` (see above) is used as
         keyword argument, i.e. it prevails over the key 'levels' in
@@ -257,7 +257,7 @@ def drawImage2D(
                 iv = im.nv + iv
 
             if iv < 0 or iv >= im.nv:
-                print(f'ERROR ({fname}): invalid iv index!')
+                print(f'ERROR ({fname}): invalid `iv` index!')
                 return imout
                 #return (ax, cbar)
 
@@ -274,7 +274,7 @@ def drawImage2D(
                 ix = im.nx + ix
 
             if ix < 0 or ix >= im.nx:
-                print(f'ERROR ({fname}): invalid ix index!')
+                print(f'ERROR ({fname}): invalid `ix` index!')
                 return imout
                 #return (ax, cbar)
 
@@ -285,7 +285,7 @@ def drawImage2D(
                 iy = im.ny + iy
 
             if iy < 0 or iy >= im.ny:
-                print(f'ERROR ({fname}): invalid iy index!')
+                print(f'ERROR ({fname}): invalid `iy` index!')
                 return imout
                 #return (ax, cbar)
 
@@ -296,7 +296,7 @@ def drawImage2D(
                 iz = im.nz + iz
 
             if iz < 0 or iz >= im.nz:
-                print(f'ERROR ({fname}): invalid iz index!')
+                print(f'ERROR ({fname}): invalid `iz` index!')
                 return imout
                 #return (ax, cbar)
 
@@ -353,7 +353,7 @@ def drawImage2D(
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid cmap string!')
+            print(f'ERROR ({fname}): invalid `cmap` string!')
             return imout
             #return (ax, cbar)
 
@@ -362,7 +362,7 @@ def drawImage2D(
         if categCol is not None\
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): 'categCol' must be a list or a tuple (if not None)!")
+            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
             return imout
             #return (ax, cbar)
 
@@ -371,13 +371,13 @@ def drawImage2D(
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): 'categVal' contains duplicated entries!")
+                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
                 return imout
                 #return (ax, cbar)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of 'categVal' and 'categCol' differs!")
+                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
                 return imout
                 #return (ax, cbar)
 
@@ -511,7 +511,9 @@ def drawImage2D(
     if contourf:
         # imshow is still used above to account for 'aspect'
         # Set key word argument 'levels' from the argument 'levels'
-        contourf_kwargs['levels']=levels
+        if contourf_kwargs is None:
+            contourf_kwargs = {}
+        contourf_kwargs['levels'] = levels
         im_contf = ax.contourf(zz, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax,
                               origin='lower', extent=[min0, max0, min1, max1],
                               **contourf_kwargs)
@@ -657,11 +659,11 @@ def get_colors_from_values(
 
     # Check vmin, cmin and vmax, cmax
     if vmin is not None and cmin is not None:
-        print(f'ERROR ({fname}): use vmin or cmin (not both)')
+        print(f'ERROR ({fname}): use `vmin` or `cmin` (not both)')
         return None
 
     if vmax is not None and cmax is not None:
-        print(f'ERROR ({fname}): use vmax or cmax (not both)')
+        print(f'ERROR ({fname}): use `vmax` or `cmax` (not both)')
         return None
 
     if vmin is None:
@@ -679,7 +681,7 @@ def get_colors_from_values(
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid cmap string!')
+            print(f'ERROR ({fname}): invalid `cmap` string!')
             return None
             # return imout
             # #return (ax, cbar)
@@ -689,7 +691,7 @@ def get_colors_from_values(
         if categCol is not None\
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): 'categCol' must be a list or a tuple (if not None)!")
+            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
             return None
             # return imout
             # #return (ax, cbar)
@@ -699,14 +701,14 @@ def get_colors_from_values(
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): 'categVal' contains duplicated entries!")
+                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
                 return None
                 # return imout
                 # #return (ax, cbar)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of 'categVal' and 'categCol' differs!")
+                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
                 return None
                 # return imout
                 # #return (ax, cbar)
@@ -801,11 +803,11 @@ def drawImage2Drgb(im, nancol=(1.0, 0.0, 0.0)):
 
     # Check image parameters
     if im.nz != 1:
-        print(f"ERROR ({fname}): 'im.nz' must be 1")
+        print(f"ERROR ({fname}): `im.nz` must be 1")
         return None
 
     if im.nv != 3 and im.nv != 4:
-        print(f"ERROR ({fname}): 'im.nv' must be 3 or 4")
+        print(f"ERROR ({fname}): `im.nv` must be 3 or 4")
         return None
 
     vv = im.val.reshape(im.nv, -1).T
@@ -891,7 +893,7 @@ def writeImage2Dppm(im, filename,
         iv = im.nv + iv
 
     if iv < 0 or iv >= im.nv:
-        print(f'ERROR ({fname}): invalid iv index!')
+        print(f'ERROR ({fname}): invalid `iv` index!')
         return None
 
     # Check slice direction and indices
@@ -907,7 +909,7 @@ def writeImage2Dppm(im, filename,
                 ix = im.nx + ix
 
             if ix < 0 or ix >= im.nx:
-                print(f'ERROR ({fname}): invalid ix index!')
+                print(f'ERROR ({fname}): invalid `ix` index!')
                 return None
 
             sliceDir = 'x'
@@ -917,7 +919,7 @@ def writeImage2Dppm(im, filename,
                 iy = im.ny + iy
 
             if iy < 0 or iy >= im.ny:
-                print(f'ERROR ({fname}): invalid iy index!')
+                print(f'ERROR ({fname}): invalid `iy` index!')
                 return None
 
             sliceDir = 'y'
@@ -927,7 +929,7 @@ def writeImage2Dppm(im, filename,
                 iz = im.nz + iz
 
             if iz < 0 or iz >= im.nz:
-                print(f'ERROR ({fname}): invalid iz index!')
+                print(f'ERROR ({fname}): invalid `iz` index!')
                 return None
 
             sliceDir = 'z'
@@ -973,7 +975,7 @@ def writeImage2Dppm(im, filename,
         if categCol is not None\
                 and type(categCol) is not list\
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): 'categCol' must be a list or a tuple (if not None)!")
+            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
             return None
 
         # Get array 'dval' of displayed values
@@ -981,12 +983,12 @@ def writeImage2Dppm(im, filename,
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): 'categVal' contains duplicated entries!")
+                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
                 return None
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of 'categVal' and 'categCol' differs!")
+                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
                 return None
 
         else:

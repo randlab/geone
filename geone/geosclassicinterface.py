@@ -217,28 +217,28 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModelElem_py : 2-tuple
         elementary covariance model 1D in python, `covModelElem_py`=(t, d),
         with:
-            t : str
-                type of elementary covariance model, can be
-                    'nugget'         (see function `geone.covModel.cov_nug`)
-                    'spherical'      (see function `geone.covModel.cov_sph`)
-                    'exponential'    (see function `geone.covModel.cov_exp`)
-                    'gaussian'       (see function `geone.covModel.cov_gau`)
-                    'linear'         (see function `geone.covModel.cov_lin`)
-                    'cubic'          (see function `geone.covModel.cov_cub`)
-                    'sinus_cardinal' (see function `geone.covModel.cov_sinc`)
-                    'gamma'          (see function `geone.covModel.cov_gamma`)
-                    'power'          (see function `geone.covModel.cov_pow`)
-                    'exponential_generalized' (see function `geone.covModel.cov_exp_gen`)
-                    'matern'         (see function `geone.covModel.cov_matern`)
-            d : dict
-                dictionary of required parameters to be passed to the elementary
-                model `t` (value can be a "single value" or an array that matches
-                the dimension of the simulation grid (for non-stationary
-                covariance model)
+        - t : str
+            type of elementary covariance model, can be
+            - 'nugget'         (see function `geone.covModel.cov_nug`)
+            - 'spherical'      (see function `geone.covModel.cov_sph`)
+            - 'exponential'    (see function `geone.covModel.cov_exp`)
+            - 'gaussian'       (see function `geone.covModel.cov_gau`)
+            - 'linear'         (see function `geone.covModel.cov_lin`)
+            - 'cubic'          (see function `geone.covModel.cov_cub`)
+            - 'sinus_cardinal' (see function `geone.covModel.cov_sinc`)
+            - 'gamma'          (see function `geone.covModel.cov_gamma`)
+            - 'power'          (see function `geone.covModel.cov_pow`)
+            - 'exponential_generalized' (see function `geone.covModel.cov_exp_gen`)
+            - 'matern'         (see function `geone.covModel.cov_matern`)
+        - d : dict
+            dictionary of required parameters to be passed to the elementary
+            model `t` (value can be a "single value" or an array that matches
+            the dimension of the simulation grid (for non-stationary
+            covariance model)
         e.g.
-            (t, d) = ('spherical', {'w':2.0, 'r':1.5})
-            (t, d) = ('power', {'w':2.0, 'r':1.5, 's':1.7})
-            (t, d) = ('matern', {'w':2.0, 'r':1.5, 'nu':1.5})
+        - (t, d) = ('spherical', {'w':2.0, 'r':1.5})
+        - (t, d) = ('power', {'w':2.0, 'r':1.5, 's':1.7})
+        - (t, d) = ('matern', {'w':2.0, 'r':1.5, 'nu':1.5})
     nx, ny, nz : int
         number of grid cells along each axis
     sx, sy, sz : float
@@ -375,28 +375,28 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModelElem_py : 2-tuple
         elementary covariance model 2D in python, `covModelElem_py`=(t, d),
         with:
-            t : str
-                type of elementary covariance model, can be
-                    'nugget'         (see function `geone.covModel.cov_nug`)
-                    'spherical'      (see function `geone.covModel.cov_sph`)
-                    'exponential'    (see function `geone.covModel.cov_exp`)
-                    'gaussian'       (see function `geone.covModel.cov_gau`)
-                    'linear'         (see function `geone.covModel.cov_lin`)
-                    'cubic'          (see function `geone.covModel.cov_cub`)
-                    'sinus_cardinal' (see function `geone.covModel.cov_sinc`)
-                    'gamma'          (see function `geone.covModel.cov_gamma`)
-                    'power'          (see function `geone.covModel.cov_pow`)
-                    'exponential_generalized' (see function `geone.covModel.cov_exp_gen`)
-                    'matern'         (see function `geone.covModel.cov_matern`)
-            d : dict
-                dictionary of required parameters to be passed to the elementary
-                model `t` (value can be a "single value" or an array that matches
-                the dimension of the simulation grid (for non-stationary
-                covariance model)
+        - t : str
+            type of elementary covariance model, can be
+            - 'nugget'         (see function `geone.covModel.cov_nug`)
+            - 'spherical'      (see function `geone.covModel.cov_sph`)
+            - 'exponential'    (see function `geone.covModel.cov_exp`)
+            - 'gaussian'       (see function `geone.covModel.cov_gau`)
+            - 'linear'         (see function `geone.covModel.cov_lin`)
+            - 'cubic'          (see function `geone.covModel.cov_cub`)
+            - 'sinus_cardinal' (see function `geone.covModel.cov_sinc`)
+            - 'gamma'          (see function `geone.covModel.cov_gamma`)
+            - 'power'          (see function `geone.covModel.cov_pow`)
+            - 'exponential_generalized' (see function `geone.covModel.cov_exp_gen`)
+            - 'matern'         (see function `geone.covModel.cov_matern`)
+        - d : dict
+            dictionary of required parameters to be passed to the elementary
+            model `t` (value can be a "single value" or an array that matches
+            the dimension of the simulation grid (for non-stationary
+            covariance model)
         e.g.
-            (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5]})
-            (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5], 's':1.7})
-            (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5], 'nu':1.5})
+        - (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5]})
+        - (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5], 's':1.7})
+        - (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5], 'nu':1.5})
     nx, ny, nz : int
         number of grid cells along each axis
     sx, sy, sz : float
@@ -547,28 +547,28 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModelElem_py : 2-tuple
         elementary covariance model 3D in python, `covModelElem_py`=(t, d),
         with:
-            t : str
-                type of elementary covariance model, can be
-                    'nugget'         (see function `geone.covModel.cov_nug`)
-                    'spherical'      (see function `geone.covModel.cov_sph`)
-                    'exponential'    (see function `geone.covModel.cov_exp`)
-                    'gaussian'       (see function `geone.covModel.cov_gau`)
-                    'linear'         (see function `geone.covModel.cov_lin`)
-                    'cubic'          (see function `geone.covModel.cov_cub`)
-                    'sinus_cardinal' (see function `geone.covModel.cov_sinc`)
-                    'gamma'          (see function `geone.covModel.cov_gamma`)
-                    'power'          (see function `geone.covModel.cov_pow`)
-                    'exponential_generalized' (see function `geone.covModel.cov_exp_gen`)
-                    'matern'         (see function `geone.covModel.cov_matern`)
-            d : dict
-                dictionary of required parameters to be passed to the elementary
-                model `t` (value can be a "single value" or an array that matches
-                the dimension of the simulation grid (for non-stationary
-                covariance model)
+        - t : str
+            type of elementary covariance model, can be
+            - 'nugget'         (see function `geone.covModel.cov_nug`)
+            - 'spherical'      (see function `geone.covModel.cov_sph`)
+            - 'exponential'    (see function `geone.covModel.cov_exp`)
+            - 'gaussian'       (see function `geone.covModel.cov_gau`)
+            - 'linear'         (see function `geone.covModel.cov_lin`)
+            - 'cubic'          (see function `geone.covModel.cov_cub`)
+            - 'sinus_cardinal' (see function `geone.covModel.cov_sinc`)
+            - 'gamma'          (see function `geone.covModel.cov_gamma`)
+            - 'power'          (see function `geone.covModel.cov_pow`)
+            - 'exponential_generalized' (see function `geone.covModel.cov_exp_gen`)
+            - 'matern'         (see function `geone.covModel.cov_matern`)
+        - d : dict
+            dictionary of required parameters to be passed to the elementary
+            model `t` (value can be a "single value" or an array that matches
+            the dimension of the simulation grid (for non-stationary
+            covariance model)
         e.g.
-            (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5, 3.0]})
-            (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5, 3.0], 's':1.7})
-            (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5, 3.0], 'nu':1.5})
+        - (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5, 3.0]})
+        - (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5, 3.0], 's':1.7})
+        - (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5, 3.0], 'nu':1.5})
     nx, ny, nz : int
         number of grid cells along each axis
     sx, sy, sz : float
@@ -1186,7 +1186,7 @@ def fill_mpds_geosClassicInput(
                  nv=1, val=mean)
         mpds_geosClassicInput.meanImage = img_py2C(im)
     else:
-        # print(f"ERROR ({fname}): can not integrate 'mean' (not compatible with simulation grid)")
+        # print(f"ERROR ({fname}): can not integrate `mean` (not compatible with simulation grid)")
         return mpds_geosClassicInput, False
 
     # mpds_geosClassicInput.varianceUsage, mpds_geosClassicInput.varianceValue, mpds_geosClassicInput.varianceImage
@@ -1203,7 +1203,7 @@ def fill_mpds_geosClassicInput(
                  nv=1, val=var)
         mpds_geosClassicInput.varianceImage = img_py2C(im)
     else:
-        # print(f"ERROR ({fname}): can not integrate 'var' (not compatible with simulation grid)")
+        # print(f"ERROR ({fname}): can not integrate `var` (not compatible with simulation grid)")
         return mpds_geosClassicInput, False
 
     # mpds_geosClassicInput.nGibbsSamplerPathMin
@@ -1214,7 +1214,7 @@ def fill_mpds_geosClassicInput(
 
     # mpds_geosClassicInput.seed
     if seed is None:
-        seed = np.random.randint(1,1000000)
+        seed = np.random.randint(1, 1000000)
     mpds_geosClassicInput.seed = int(seed)
 
     # mpds_geosClassicInput.seedIncrement
@@ -1236,6 +1236,12 @@ def simulate1D(
         x=None, v=None,
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
+        aggregate_data_op=None,
+        aggregate_data_op_kwargs=None,
+        aggregate_data_ineqMin_op='max',
+        aggregate_data_ineqMin_op_kwargs=None,
+        aggregate_data_ineqMax_op='min',
+        aggregate_data_ineqMax_op_kwargs=None,
         mask=None,
         add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
@@ -1306,6 +1312,67 @@ def simulate1D(
         inequality data values, upper bounds, at `xIneqMax` (`vIneqMax[i]` is the
         data value at `xIneqMax[i]`), array of same length as `xIneqMax`  (or
         float if one point)
+    aggregate_data_op : str {'sgs', 'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='sgs'`: function `geone.covModel.sgs` is used
+        with the covariance model `cov_model` given in arguments, as well as
+        the parameter `nneighborMax` given in arguments unless it is given
+        in `aggregate_data_op_kwargs`
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments, as well as
+        the parameters `use_unique_neighborhood`, `nneighborMax` given in
+        arguments unless they are given in `aggregate_data_op_kwargs`
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        note: if `aggregate_data_op='sgs'` or `aggregate_data_op='random'`, the
+        aggregation is done for each realization (simulation), i.e. each simulation
+        on the grid starts with a new set of values in conditioning grid cells;
+        by default: if covariance model has stationary ranges and weight (sill),
+        `aggregate_data_op='sgs'` is used, otherwise `aggregate_data_op='mean'`
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.sgs`,
+        `geone.covModel.krige`, or `numpy.<aggregate_data_op>`, according to
+        the parameter `aggregate_data_op`
+    aggregate_data_ineqMin_op : str {'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, default: 'max'
+        operation used to aggregate inequality (min, lower boudns) data points
+        falling in the same grid cells:
+        - if `aggregate_data_ineqMin_op='most_freq'`: most frequent value is
+        selected (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_ineqMin_op='random'`: value from a random point is
+        selected
+        - otherwise: the function `numpy.<aggregate_data_ineqMin_op>` is used with
+        the additional parameters given by `aggregate_data_ineqMin_op_kwargs`,
+        note that, e.g. `aggregate_data_ineqMin_op='quantile'` requires the
+        additional parameter `q=<quantile_to_compute>`;
+        note: in any case, the aggregation is done once, i.e. same inequality
+        values are used for each simulation on the grid
+    aggregate_data_ineqMin_op_kwargs : dict, optional
+        keyword arguments to be passed to `numpy.<aggregate_data_ineqMin_op>`,
+        according to the parameter `aggregate_data_ineqMin_op`
+    aggregate_data_ineqMax_op : str {'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, default: 'min'
+        operation used to aggregate inequality (min, lower boudns) data points
+        falling in the same grid cells:
+        - if `aggregate_data_ineqMax_op='most_freq'`: most frequent value is
+        selected (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_ineqMax_op='random'`: value from a random point is
+        selected
+        - otherwise: the function `numpy.<aggregate_data_ineqMax_op>` is used with
+        the additional parameters given by `aggregate_data_ineqMax_op_kwargs`,
+        note that, e.g. `aggregate_data_ineqMax_op='quantile'` requires the
+        additional parameter `q=<quantile_to_compute>`;
+        note: in any case, the aggregation is done once, i.e. same inequality
+        values are used for each simulation on the grid
+    aggregate_data_ineqMax_op_kwargs : dict, optional
+        keyword arguments to be passed to `numpy.<aggregate_data_ineqMax_op>`,
+        according to the parameter `aggregate_data_ineqMax_op`
     mask : array-like, optional
         mask value at grid cells (value 1 for simulated cells, value 0 for not
         simulated cells); the size of the array must be equal to the number of
@@ -1328,7 +1395,7 @@ def simulate1D(
         over the grid is considered
     nneighborMax : int, default: 12
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
@@ -1399,10 +1466,18 @@ def simulate1D(
     varname = 'V0'
 
     # --- Check and prepare parameters
+    # nreal
+    nreal = int(nreal) # cast to int if needed
+
+    if nreal <= 0:
+        if verbose >= 2:
+            print(f'{fname}: nreal <= 0: nothing to do!')
+        return None
+
     # cov_model
     if not isinstance(cov_model, gcm.CovModel1D):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return None
 
     for el in cov_model.elem:
@@ -1410,22 +1485,38 @@ def simulate1D(
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model': weight ('w') not compatible with simulation grid")
+                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             r  = el[1]['r']
             if np.size(r) != 1 and np.size(r) != nxyz:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'cov_model': range ('r') not compatible with simulation grid")
+                    print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
                 return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'cov_model': parameter ('s') not compatible with simulation grid")
+                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
                 return None
+
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+            aggregate_data_op = 'mean'
+        else:
+            aggregate_data_op = 'sgs'
+
+    if aggregate_data_op_kwargs is None:
+        aggregate_data_op_kwargs = {}
+
+    if aggregate_data_ineqMin_op_kwargs is None:
+        aggregate_data_ineqMin_op_kwargs = {}
+
+    if aggregate_data_ineqMax_op_kwargs is None:
+        aggregate_data_ineqMax_op_kwargs = {}
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
@@ -1434,7 +1525,7 @@ def simulate1D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
@@ -1442,89 +1533,19 @@ def simulate1D(
         computationMode = 2
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
-
-    # data points: x, v, xIneqMin, vIneqMin, xIneqMax, vIneqMax
-    dataPointSet = []
-
-    # data point set from x, v
-    if x is not None:
-        x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(v) != x.shape[0]:
-            if verbose > 0:
-                print("(ERROR (SIMULATE1D): length of 'v' is not valid")
-            return None
-        xc = x
-        yc = np.ones_like(xc) * oy + 0.5 * sy
-        zc = np.ones_like(xc) * oz + 0.5 * sz
-        dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
-            )
-
-    # data point set from xIneqMin, vIneqMin
-    if xIneqMin is not None:
-        xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(vIneqMin) != xIneqMin.shape[0]:
-            if verbose > 0:
-                print("(ERROR (SIMULATE1D): length of 'vIneqMin' is not valid")
-            return None
-        xc = xIneqMin
-        yc = np.ones_like(xc) * oy + 0.5 * sy
-        zc = np.ones_like(xc) * oz + 0.5 * sz
-        dataPointSet.append(
-            PointSet(npt=vIneqMin.shape[0], nv=4, val=np.array((xc, yc, zc, vIneqMin)), varname=['X', 'Y', 'Z', '{}_min'.format(varname)])
-            )
-
-    # data point set from xIneqMax, vIneqMax
-    if xIneqMax is not None:
-        xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(vIneqMax) != xIneqMax.shape[0]:
-            if verbose > 0:
-                print("(ERROR (SIMULATE1D): length of 'vIneqMax' is not valid")
-            return None
-        xc = xIneqMax
-        yc = np.ones_like(xc) * oy + 0.5 * sy
-        zc = np.ones_like(xc) * oz + 0.5 * sz
-        dataPointSet.append(
-            PointSet(npt=vIneqMax.shape[0], nv=4, val=np.array((xc, yc, zc, vIneqMax)), varname=['X', 'Y', 'Z', '{}_max'.format(varname)])
-            )
-
-    # Check parameters - mask
-    if mask is not None:
-        try:
-            mask = np.asarray(mask).reshape(nz, ny, nx)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
-            return None
-
-    if mask is not None and add_data_point_to_mask:
-        # Make a copy of the original mask, to remove value in added mask cell at the end
-        mask_original = np.copy(mask)
-        # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
-            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
 
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchRadiusRelative' too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+            print(f"ERROR ({fname}): `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
         return None
 
     # Check parameters - nneighborMax
     if nneighborMax != -1 and nneighborMax <= 0:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+            print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
         return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -1540,104 +1561,358 @@ def simulate1D(
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                 return None
         elif searchNeighborhoodSortMode == 1:
             if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                 return None
 
+    # Preparation of data points
+    if x is not None:
+        x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
+        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(v) != x.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `v` is not valid")
+            return None
+
+    if xIneqMin is not None:
+        xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
+        vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(vIneqMin) != xIneqMin.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `vIneqMin` is not valid")
+            return None
+
+    if xIneqMax is not None:
+        xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
+        vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(vIneqMax) != xIneqMax.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `vIneqMax` is not valid")
+            return None
+
     # Check parameters - mean
+    mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
         #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'mean' not allowed with ordinary kriging")
+        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
         #     return None
         if callable(mean):
+            if x is not None:
+                mean_x = mean(x[:, 0])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             mean = mean(xi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return None
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nxyz:
+                # mean = mean.reshape(nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=mean), iy=0, iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
     # Check parameters - var
+    var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
             if verbose > 0:
-                print(f"ERROR ({fname}): specifying 'var' not allowed with ordinary kriging")
+                print(f"ERROR ({fname}): specifying `var` not allowed with ordinary kriging")
             return None
         if callable(var):
+            if x is not None:
+                var_x = var(x[:, 0])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             var = var(xi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nxyz):
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nxyz:
+                # var = var.reshape(nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=var), iy=0, iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
+
+    # Prepare seed
+    if seed is None:
+        seed = np.random.randint(1, 1000000)
+    seed = int(seed)
+
+    # data points: x, v, xIneqMin, vIneqMin, xIneqMax, vIneqMax
+    dataPointSet = []
+
+    # data point set from x, v
+    aggregate_data_by_simul = False
+    if x is not None:
+        if aggregate_data_op == 'krige' or aggregate_data_op == 'sgs':
+            if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+                if verbose > 0:
+                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
+                return None
+            cov_model_agg = cov_model
+            # Get grid cell with at least one data point:
+            # x_agg: 2D array, each row contains the coordinates of the center of such cell
+            im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                         nx=nx, sx=sx, ox=ox,
+                                         indicator_var=True, count_var=False)
+            ind_agg = np.where(im_tmp.val[0])
+            if len(ind_agg[0]) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
+            ind_agg = ind_agg[2:] # remove index along z and y axes
+            del(im_tmp)
+            # Compute
+            # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
+            # - or nreal simulation(s) (v_agg) at x_agg
+            if mean is not None and mean.size > 1:
+                mean_x_agg = mean[*ind_agg]
+            else:
+                mean_x_agg = mean
+            if var is not None and var.size > 1:
+                var_x_agg = var[*ind_agg]
+            else:
+                var_x_agg = var
+            # Set parameters `nneighborMax` from the arguments if not given in `aggregate_data_op_kwargs`
+            if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
+                aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
+            if aggregate_data_op == 'krige':
+                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                            mean_x=mean_x, mean_xu=mean_x_agg,
+                                            var_x=var_x, var_xu=var_x_agg,
+                                            verbose=0, **aggregate_data_op_kwargs)
+            else:
+                aggregate_data_by_simul = True
+                v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
+                                mean_x=mean_x, mean_xu=mean_x_agg,
+                                var_x=var_x, var_xu=var_x_agg,
+                                nreal=nreal, seed=seed,
+                                verbose=0, **aggregate_data_op_kwargs)
+            xx_agg = x_agg[:, 0]
+            yy_agg = np.ones_like(xx_agg) * oy + 0.5 * sy
+            zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
+        elif aggregate_data_op == 'random':
+            aggregate_data_by_simul = True
+            # Aggregate data on grid cell by taking random point
+            xx = x[:, 0]
+            yy = np.ones_like(xx) * oy + 0.5 * sy
+            zz = np.ones_like(xx) * oz + 0.5 * sz
+            # first realization of v_agg
+            xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, return_inverse=True,
+                                                    **aggregate_data_op_kwargs)
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            # next realizations of v_agg
+            v_agg = np.vstack((v_agg, np.zeros((nreal-1, v_agg.size))))
+            for i in range(1, nreal):
+                v_agg[i] = [v[np.random.choice(np.where(i_inv==j)[0])] for j in range(len(xx_agg))]
+        else:
+            # Aggregate data on grid cell by using the given operation
+            xx = x[:, 0]
+            yy = np.ones_like(xx) * oy + 0.5 * sy
+            zz = np.ones_like(xx) * oz + 0.5 * sz
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+                return None
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+
+        if xIneqMin is not None or xIneqMax is not None:
+            # Get single grid index for data points
+            ix, iy, iz = img.pointToGridIndex(xx_agg, yy_agg, zz_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+        if not aggregate_data_by_simul:
+            dataPointSet.append(
+                PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
+                )
+        else:
+            # Integrate data points from sgs index 0
+            dataPointSet.append(
+                PointSet(npt=v_agg.shape[1], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg[0])), varname=['X', 'Y', 'Z', varname])
+                )
+
+    # data point set from xIneqMin, vIneqMin
+    if xIneqMin is not None:
+        # Aggregate data on grid cell by using the given operation
+        xx = xIneqMin[:, 0]
+        yy = np.ones_like(xx) * oy + 0.5 * sy
+        zz = np.ones_like(xx) * oz + 0.5 * sz
+        try:
+            xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, vIneqMin,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op=aggregate_data_ineqMin_op, **aggregate_data_ineqMin_op_kwargs)
+        except:
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
+                print(f"ERROR ({fname}): inequality data (min) aggregation (`aggregate_data_op='{aggregate_data_ineqMin_op}'`) failed")
+            return None
+        if x is not None:
+            # Get single grid index for inequality (min) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMin = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index with points from `x` and `xIneqMin`
+            ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMin, assume_unique=True, return_indices=True)
+
+            if ig_inter.size:
+                if verbose > 1:
+                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (min)" and "equality" data: inequlity data has been removed')
+                    if not aggregate_data_by_simul:
+                        ninconsistent = (v_agg[ig1] < v_ineqMin_agg[ig2]).sum()
+                        if ninconsistent:
+                            print(f'WARNING ({fname}): {ninconsistent} "inequality (min)" found')
+                # Remove redundant points from inequality data set
+                xx_ineqMin_agg = np.delete(xx_ineqMin_agg, ig2)
+                yy_ineqMin_agg = np.delete(yy_ineqMin_agg, ig2)
+                zz_ineqMin_agg = np.delete(zz_ineqMin_agg, ig2)
+                v_ineqMin_agg = np.delete(v_ineqMin_agg, ig2)
+
+        if v_ineqMin_agg.shape[0]:
+            dataPointSet.append(
+                PointSet(npt=v_ineqMin_agg.shape[0], nv=4, val=np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg)), varname=['X', 'Y', 'Z', '{}_min'.format(varname)])
+                )
+        else:
+            if verbose > 1:
+                print(f"WARNING ({fname}): no inequality (min) data point in grid")
+            xIneqMin = None
+
+    # data point set from xIneqMax, vIneqMax
+    if xIneqMax is not None:
+        # Aggregate data on grid cell by using the given operation
+        xx = xIneqMax[:, 0]
+        yy = np.ones_like(xx) * oy + 0.5 * sy
+        zz = np.ones_like(xx) * oz + 0.5 * sz
+        try:
+            xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, vIneqMax,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op=aggregate_data_ineqMax_op, **aggregate_data_ineqMax_op_kwargs)
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): inequality data (max) aggregation (`aggregate_data_op='{aggregate_data_ineqMax_op}'`) failed")
+            return None
+        if x is not None:
+            # Get single grid index for inequality (max) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMax = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index with points from `x` and `xIneqMax`
+            ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMax, assume_unique=True, return_indices=True)
+
+            if ig_inter.size:
+                if verbose > 1:
+                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (max)" and "equality" data: inequlity data has been removed')
+                    if not aggregate_data_by_simul:
+                        ninconsistent = (v_agg[ig1] > v_ineqMax_agg[ig2]).sum()
+                        if ninconsistent:
+                            print(f'WARNING ({fname}): {ninconsistent} "inequality (max)" found')
+                # Remove redundant points from inequality data set
+                xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
+                yy_ineqMax_agg = np.delete(yy_ineqMax_agg, ig2)
+                zz_ineqMax_agg = np.delete(zz_ineqMax_agg, ig2)
+                v_ineqMax_agg = np.delete(v_ineqMax_agg, ig2)
+
+        if xIneqMin is not None:
+            # Get single grid index for inequality (min) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMin = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index for inequality (max) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMax = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index with points from `xIneqMin` and `xIneqMax`
+            ig_inter, ig1, ig2 = np.intersect1d(ig_ineqMin, ig_ineqMax, assume_unique=True, return_indices=True)
+
+            if ig_inter.size:
+                ii = np.where(v_ineqMin_agg[ig1] > v_ineqMax_agg[ig2])[0]
+                if len(ii):
+                    if verbose > 0:
+                        print(f'ERROR ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data')
+                    return None
+                    # if verbose > 1:
+                    #     print(f'WARNING ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data: inequlity max data has been removed')
+                    # ig2 = ig2[ii]
+                    # # Remove inconsistent inequality max
+                    # xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
+                    # yy_ineqMax_agg = np.delete(yy_ineqMax_agg, ig2)
+                    # zz_ineqMax_agg = np.delete(zz_ineqMax_agg, ig2)
+                    # v_ineqMax_agg = np.delete(v_ineqMax_agg, ig2)
+
+        if v_ineqMax_agg.shape[0]:
+            dataPointSet.append(
+                PointSet(npt=v_ineqMax_agg.shape[0], nv=4, val=np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg)), varname=['X', 'Y', 'Z', '{}_max'.format(varname)])
+                )
+        else:
+            if verbose > 1:
+                print(f"WARNING ({fname}): no inequality (max) data point in grid")
+            xIneqMax = None
+
+    # Check parameters - mask
+    if mask is not None:
+        try:
+            mask = np.asarray(mask).reshape(nz, ny, nx)
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
 
-    # Check parameters - nreal
-    nreal = int(nreal) # cast to int if needed
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if xIneqMin is not None:
+            pts = np.vstack((pts, np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg)).T))
+        if xIneqMax is not None:
+            pts = np.vstack((pts, np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del(im_tmp)
+        del(pts)
 
-    if nreal <= 0:
-        if verbose >= 2:
-            print('SIMULATE1D: nreal <= 0: nothing to do!')
-        return None
-
-    # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-        space_dim,
-        cov_model,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        outputReportFile,
-        computationMode,
-        None,
-        dataPointSet,
-        mask,
-        mean,
-        var,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        nGibbsSamplerPathMin,
-        nGibbsSamplerPathMax,
-        seed,
-        nreal)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
-
-    # --- Prepare mpds_geosClassicIOutput structure (C)
-    # Allocate mpds_geosClassicOutput
-    mpds_geosClassicOutput = geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT()
-
-    # Init mpds_geosClassicOutput
-    geosclassic.MPDSGeosClassicInitGeosClassicOutput(mpds_geosClassicOutput)
-
-    # --- Set progress monitor
-    mpds_progressMonitor = geosclassic.malloc_MPDS_PROGRESSMONITOR()
-    geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
-
-    # Set function to update progress monitor:
-    # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
-    # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
-    # should be used, but the following function can also be used:
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
-    if verbose < 3:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+    # Prepare seed (for simulation in grid)
+    seed = seed + 986 # same increment (whatever the number or realization done in sgs above)
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -1645,37 +1920,217 @@ def simulate1D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
-        sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
+    if not aggregate_data_by_simul:
+        # --- Fill mpds_geosClassicInput structure (C)
+        mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
+            space_dim,
+            cov_model,
+            nx, ny, nz,
+            sx, sy, sz,
+            ox, oy, oz,
+            varname,
+            outputReportFile,
+            computationMode,
+            None,
+            dataPointSet,
+            mask,
+            mean,
+            var,
+            searchRadiusRelative,
+            nneighborMax,
+            searchNeighborhoodSortMode,
+            nGibbsSamplerPathMin,
+            nGibbsSamplerPathMax,
+            seed,
+            nreal)
 
-    # --- Launch "GeosClassicSim" (launch C code)
-    # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
+        if not flag:
+            if verbose > 0:
+                print(f'ERROR ({fname}): can not fill input structure!')
+            return None
 
-    # Free memory on C side: mpds_geosClassicInput
-    geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-    #geosclassic.MPDSFree(mpds_geosClassicInput)
-    geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+        # --- Prepare mpds_geosClassicIOutput structure (C)
+        # Allocate mpds_geosClassicOutput
+        mpds_geosClassicOutput = geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT()
 
-    if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
+        # Init mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicInitGeosClassicOutput(mpds_geosClassicOutput)
+
+        # --- Set progress monitor
+        mpds_progressMonitor = geosclassic.malloc_MPDS_PROGRESSMONITOR()
+        geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
+
+        # Set function to update progress monitor:
+        # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
+        # the function
+        #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+        # should be used, but the following function can also be used:
+        #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
+        #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+        if verbose < 3:
+            mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        else:
+            mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+
+        # # --- Set number of threads
+        # if nthreads <= 0:
+        #     nth = max(os.cpu_count() + nthreads, 1)
+        # else:
+        #     nth = nthreads
+
+        if verbose >= 2:
+            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            sys.stdout.flush()
+            sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
+
+        # --- Launch "GeosClassicSim" (launch C code)
+        # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
+        err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
+
+        # Free memory on C side: mpds_geosClassicInput
+        geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+        #geosclassic.MPDSFree(mpds_geosClassicInput)
+        geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+
+        if err:
+            if verbose > 0:
+                err_message = geosclassic.mpds_get_error_message(-err)
+                err_message = err_message.replace('\n', '')
+                print(err_message)
+            geosclassic_output = None
+        else:
+            geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        #geosclassic.MPDSFree(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+
+        # Free memory on C side: mpds_progressMonitor
+        #geosclassic.MPDSFree(mpds_progressMonitor)
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
     else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Equality data values will change for each realization
+        if verbose >= 2:
+            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            sys.stdout.flush()
+            sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
-    # Free memory on C side: mpds_geosClassicOutput
-    geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
-    geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Initialization of image and warnings for storing results
+        image = Img(nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz, nv=nreal, val=np.nan)
+        nwarning = 0
+        warnings = []
+        outputReportFile_ir = None # default
+        for ir in range(nreal):
+            if ir > 0:
+                # Set equality data values for realization index ir
+                dataPointSet[0].val[3] = v_agg[ir]
 
-    # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
-    geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+            if outputReportFile is not None:
+                outputReportFile_ir = outputReportFile + f'.{ir}'
+
+            # --- Fill mpds_geosClassicInput structure (C)
+            mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
+                space_dim,
+                cov_model,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                outputReportFile_ir,
+                computationMode,
+                None,
+                dataPointSet,
+                mask,
+                mean,
+                var,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                nGibbsSamplerPathMin,
+                nGibbsSamplerPathMax,
+                seed+ir, # seed for realization index ir
+                1) # one real
+
+            if not flag:
+                if verbose > 0:
+                    print(f'ERROR ({fname}): can not fill input structure!')
+                return None
+
+            # --- Prepare mpds_geosClassicIOutput structure (C)
+            # Allocate mpds_geosClassicOutput
+            mpds_geosClassicOutput = geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT()
+
+            # Init mpds_geosClassicOutput
+            geosclassic.MPDSGeosClassicInitGeosClassicOutput(mpds_geosClassicOutput)
+
+            # --- Set progress monitor
+            mpds_progressMonitor = geosclassic.malloc_MPDS_PROGRESSMONITOR()
+            geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
+
+            # Set function to update progress monitor:
+            # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
+            # the function
+            #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+            # should be used, but the following function can also be used:
+            #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
+            #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+            mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+            # if verbose < 3:
+            #     mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+            # else:
+            #     mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+            #
+            # if verbose >= 2:
+            #     print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            #     sys.stdout.flush()
+            #     sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
+
+            # --- Launch "GeosClassicSim" (launch C code)
+            # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
+            err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
+
+            # Free memory on C side: mpds_geosClassicInput
+            geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+            #geosclassic.MPDSFree(mpds_geosClassicInput)
+            geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+
+            if err:
+                if verbose > 0:
+                    err_message = geosclassic.mpds_get_error_message(-err)
+                    err_message = err_message.replace('\n', '')
+                    print(err_message)
+                geosclassic_output = None
+            else:
+                geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+
+            # Free memory on C side: mpds_geosClassicOutput
+            geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+            #geosclassic.MPDSFree(mpds_geosClassicOutput)
+            geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+
+            # Free memory on C side: mpds_progressMonitor
+            #geosclassic.MPDSFree(mpds_progressMonitor)
+            geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
+            if geosclassic_output is not None:
+                image.val[ir] = geosclassic_output['image'].val[0]
+                nwarning = nwarning + geosclassic_output['nwarning']
+                warnings.extend(geosclassic_output['warnings'])
+
+            del(geosclassic_output)
+
+        # Remove duplicated warnings
+        warnings = list(np.unique(warnings))
+
+        # Rename variables
+        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+        for j in range(image.nv):
+            image.varname[j] = image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
+
+        # Set geosclassic_output
+        geosclassic_output = {'image':image, 'nwarning':nwarning, 'warnings':warnings}
 
     if mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
@@ -1703,6 +2158,12 @@ def simulate1D_mp(
         x=None, v=None,
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
+        aggregate_data_op=None,
+        aggregate_data_op_kwargs=None,
+        aggregate_data_ineqMin_op='max',
+        aggregate_data_ineqMin_op_kwargs=None,
+        aggregate_data_ineqMax_op='min',
+        aggregate_data_ineqMax_op_kwargs=None,
         mask=None,
         add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
@@ -1791,9 +2252,9 @@ def simulate1D_mp(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
-    # mpds_geosClassicInput.seed
+    # Prepare seed
     if seed is None:
-        seed = np.random.randint(1,1000000)
+        seed = np.random.randint(1, 1000000)
     seed = int(seed)
 
     outputReportFile_p = None
@@ -1822,6 +2283,12 @@ def simulate1D_mp(
                 x, v,
                 xIneqMin, vIneqMin,
                 xIneqMax, vIneqMax,
+                aggregate_data_op,
+                aggregate_data_op_kwargs,
+                aggregate_data_ineqMin_op,
+                aggregate_data_ineqMin_op_kwargs,
+                aggregate_data_ineqMax_op,
+                aggregate_data_ineqMax_op_kwargs,
                 mask,
                 add_data_point_to_mask,
                 searchRadiusRelative,
@@ -1846,29 +2313,25 @@ def simulate1D_mp(
     if np.any([out is None for out in geosclassic_output_proc]):
         return None
 
-    image = None
-    nwarning, warnings = None, None
-
     # Gather results from every process
     # image
-    image = np.hstack([out['image'] for out in geosclassic_output_proc])
-    # ... remove None entries
-    image = image[[x is not None for x in image]]
-    # .. set to None if every entry is None
-    if np.all([x is None for x in image]):
+    image = []
+    for out in geosclassic_output_proc:
+        if out['image'] is not None:
+            image.append(out['image'])
+            del(out['image'])
+    if len(image) == 0:
         image = None
+    # Gather images and adjust variable names
+    all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
+    ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+    for j in range(all_image.nv):
+        all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     # nwarning
     nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
     # warnings
     warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Gather images and adjust variable names
-    if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
-        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
-        for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -1894,6 +2357,12 @@ def simulate2D(
         x=None, v=None,
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
+        aggregate_data_op=None,
+        aggregate_data_op_kwargs=None,
+        aggregate_data_ineqMin_op='max',
+        aggregate_data_ineqMin_op_kwargs=None,
+        aggregate_data_ineqMax_op='min',
+        aggregate_data_ineqMax_op_kwargs=None,
         mask=None,
         add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
@@ -1967,6 +2436,67 @@ def simulate2D(
     vIneqMax : 1D array of floats of shape (nIneqMax,), optional
         inequality data values, upper bounds, at `xIneqMax` (`vIneqMax[i]` is the
         data value at `xIneqMax[i]`)
+    aggregate_data_op : str {'sgs', 'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='sgs'`: function `geone.covModel.sgs` is used
+        with the covariance model `cov_model` given in arguments, as well as
+        the parameter `nneighborMax` given in arguments unless it is given
+        in `aggregate_data_op_kwargs`
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments, as well as
+        the parameters `use_unique_neighborhood`, `nneighborMax` given in
+        arguments unless they are given in `aggregate_data_op_kwargs`
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        note: if `aggregate_data_op='sgs'` or `aggregate_data_op='random'`, the
+        aggregation is done for each realization (simulation), i.e. each simulation
+        on the grid starts with a new set of values in conditioning grid cells;
+        by default: if covariance model has stationary ranges and weight (sill),
+        `aggregate_data_op='sgs'` is used, otherwise `aggregate_data_op='mean'`
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.sgs`,
+        `geone.covModel.krige`, or `numpy.<aggregate_data_op>`, according to
+        the parameter `aggregate_data_op`
+    aggregate_data_ineqMin_op : str {'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, default: 'max'
+        operation used to aggregate inequality (min, lower boudns) data points
+        falling in the same grid cells:
+        - if `aggregate_data_ineqMin_op='most_freq'`: most frequent value is
+        selected (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_ineqMin_op='random'`: value from a random point is
+        selected
+        - otherwise: the function `numpy.<aggregate_data_ineqMin_op>` is used with
+        the additional parameters given by `aggregate_data_ineqMin_op_kwargs`,
+        note that, e.g. `aggregate_data_ineqMin_op='quantile'` requires the
+        additional parameter `q=<quantile_to_compute>`;
+        note: in any case, the aggregation is done once, i.e. same inequality
+        values are used for each simulation on the grid
+    aggregate_data_ineqMin_op_kwargs : dict, optional
+        keyword arguments to be passed to `numpy.<aggregate_data_ineqMin_op>`,
+        according to the parameter `aggregate_data_ineqMin_op`
+    aggregate_data_ineqMax_op : str {'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, default: 'min'
+        operation used to aggregate inequality (min, lower boudns) data points
+        falling in the same grid cells:
+        - if `aggregate_data_ineqMax_op='most_freq'`: most frequent value is
+        selected (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_ineqMax_op='random'`: value from a random point is
+        selected
+        - otherwise: the function `numpy.<aggregate_data_ineqMax_op>` is used with
+        the additional parameters given by `aggregate_data_ineqMax_op_kwargs`,
+        note that, e.g. `aggregate_data_ineqMax_op='quantile'` requires the
+        additional parameter `q=<quantile_to_compute>`;
+        note: in any case, the aggregation is done once, i.e. same inequality
+        values are used for each simulation on the grid
+    aggregate_data_ineqMax_op_kwargs : dict, optional
+        keyword arguments to be passed to `numpy.<aggregate_data_ineqMax_op>`,
+        according to the parameter `aggregate_data_ineqMax_op`
     mask : array-like, optional
         mask value at grid cells (value 1 for simulated cells, value 0 for not
         simulated cells); the size of the array must be equal to the number of
@@ -1989,7 +2519,7 @@ def simulate2D(
         over the grid is considered
     nneighborMax : int, default: 12
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
@@ -2060,6 +2590,14 @@ def simulate2D(
     varname = 'V0'
 
     # --- Check and prepare parameters
+    # nreal
+    nreal = int(nreal) # cast to int if needed
+
+    if nreal <= 0:
+        if verbose >= 2:
+            print(f'{fname}: nreal <= 0: nothing to do!')
+        return None
+
     # cov_model
     if isinstance(cov_model, gcm.CovModel1D):
         cov_model = gcm.covModel1D_to_covModel2D(cov_model) # convert model 1D in 2D
@@ -2067,7 +2605,7 @@ def simulate2D(
 
     if not isinstance(cov_model, gcm.CovModel2D):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return None
 
     for el in cov_model.elem:
@@ -2075,29 +2613,45 @@ def simulate2D(
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model': weight ('w') not compatible with simulation grid")
+                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
                     if verbose > 0:
-                        print(f"ERROR ({fname}): 'cov_model': range ('r') not compatible with simulation grid")
+                        print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
                     return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'cov_model': parameter ('s') not compatible with simulation grid")
+                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
                 return None
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model': angle (alpha) not compatible with simulation grid")
+            print(f"ERROR ({fname}): `cov_model`: angle (alpha) not compatible with simulation grid")
         return None
+
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+            aggregate_data_op = 'mean'
+        else:
+            aggregate_data_op = 'sgs'
+
+    if aggregate_data_op_kwargs is None:
+        aggregate_data_op_kwargs = {}
+
+    if aggregate_data_ineqMin_op_kwargs is None:
+        aggregate_data_ineqMin_op_kwargs = {}
+
+    if aggregate_data_ineqMax_op_kwargs is None:
+        aggregate_data_ineqMax_op_kwargs = {}
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
@@ -2106,7 +2660,7 @@ def simulate2D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
@@ -2114,89 +2668,19 @@ def simulate2D(
         computationMode = 2
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
-
-    # data points: x, v, xIneqMin, vIneqMin, xIneqMax, vIneqMax
-    dataPointSet = []
-
-    # data point set from x, v
-    if x is not None:
-        x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
-        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(v) != x.shape[0]:
-            if verbose > 0:
-                print("(ERROR (SIMULATE2D): length of 'v' is not valid")
-            return None
-        xc = x[:,0]
-        yc = x[:,1]
-        zc = np.ones_like(xc) * oz + 0.5 * sz
-        dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
-            )
-
-    # data point set from xIneqMin, vIneqMin
-    if xIneqMin is not None:
-        xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
-        vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(vIneqMin) != xIneqMin.shape[0]:
-            if verbose > 0:
-                print("(ERROR (SIMULATE2D): length of 'vIneqMin' is not valid")
-            return None
-        xc = xIneqMin[:,0]
-        yc = xIneqMin[:,1]
-        zc = np.ones_like(xc) * oz + 0.5 * sz
-        dataPointSet.append(
-            PointSet(npt=vIneqMin.shape[0], nv=4, val=np.array((xc, yc, zc, vIneqMin)), varname=['X', 'Y', 'Z', '{}_min'.format(varname)])
-            )
-
-    # data point set from xIneqMax, vIneqMax
-    if xIneqMax is not None:
-        xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
-        vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(vIneqMax) != xIneqMax.shape[0]:
-            if verbose > 0:
-                print("(ERROR (SIMULATE2D): length of 'vIneqMax' is not valid")
-            return None
-        xc = xIneqMax[:,0]
-        yc = xIneqMax[:,1]
-        zc = np.ones_like(xc) * oz + 0.5 * sz
-        dataPointSet.append(
-            PointSet(npt=vIneqMax.shape[0], nv=4, val=np.array((xc, yc, zc, vIneqMax)), varname=['X', 'Y', 'Z', '{}_max'.format(varname)])
-            )
-
-    # Check parameters - mask
-    if mask is not None:
-        try:
-            mask = np.asarray(mask).reshape(nz, ny, nx)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
-            return None
-
-    if mask is not None and add_data_point_to_mask:
-        # Make a copy of the original mask, to remove value in added mask cell at the end
-        mask_original = np.copy(mask)
-        # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
-            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
 
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchRadiusRelative' too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+            print(f"ERROR ({fname}): `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
         return None
 
     # Check parameters - nneighborMax
     if nneighborMax != -1 and nneighborMax <= 0:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+            print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
         return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -2212,108 +2696,367 @@ def simulate2D(
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                 return None
         elif searchNeighborhoodSortMode == 1:
             if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                 return None
 
+    # Preparation of data points
+    if x is not None:
+        x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
+        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(v) != x.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `v` is not valid")
+            return None
+
+    if xIneqMin is not None:
+        xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
+        vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(vIneqMin) != xIneqMin.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `vIneqMin` is not valid")
+            return None
+
+    if xIneqMax is not None:
+        xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
+        vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(vIneqMax) != xIneqMax.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `vIneqMax` is not valid")
+            return None
+
     # Check parameters - mean
+    mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
         #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'mean' not allowed with ordinary kriging")
+        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
         #     return None
         if callable(mean):
+            if x is not None:
+                mean_x = mean(x[:, 0], x[:, 1])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            xxi, yyi = np.meshgrid(xi, yi)
+            yyi, xxi = np.meshgrid(yi, xi, indexing='ij')
             mean = mean(xxi, yyi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return None
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nxyz:
+                mean = mean.reshape(ny, nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=mean), iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
     # Check parameters - var
+    var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
             if verbose > 0:
-                print(f"ERROR ({fname}): specifying 'var' not allowed with ordinary kriging")
+                print(f"ERROR ({fname}): specifying `var` not allowed with ordinary kriging")
             return None
         if callable(var):
+            if x is not None:
+                var_x = var(x[:, 0], x[:, 1])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            xxi, yyi = np.meshgrid(xi, yi)
+            yyi, xxi = np.meshgrid(yi, xi, indexing='ij')
             var = var(xxi, yyi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nxyz):
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nxyz:
+                var = var.reshape(ny, nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=var), iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
+
+    # Prepare seed
+    if seed is None:
+        seed = np.random.randint(1, 1000000)
+    seed = int(seed)
+
+    # data points: x, v, xIneqMin, vIneqMin, xIneqMax, vIneqMax
+    dataPointSet = []
+
+    # data point set from x, v
+    aggregate_data_by_simul = False
+    if x is not None:
+        if aggregate_data_op == 'krige' or aggregate_data_op == 'sgs':
+            if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+                if verbose > 0:
+                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
+                return None
+            if cov_model.is_orientation_stationary():
+                cov_model_agg = cov_model
+            else:
+                cov_model_agg = gcm.copyCovModel(cov_model)
+                cov_model_agg.set_alpha(0.0)
+            # Get grid cell with at least one data point:
+            # x_agg: 2D array, each row contains the coordinates of the center of such cell
+            im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                         nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
+                                         indicator_var=True, count_var=False)
+            ind_agg = np.where(im_tmp.val[0])
+            if len(ind_agg[0]) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
+            ind_agg = ind_agg[1:] # remove index along z axis
+            del(im_tmp)
+            # Compute
+            # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
+            # - or nreal simulation(s) (v_agg) at x_agg
+            if mean is not None and mean.size > 1:
+                mean_x_agg = mean[*ind_agg]
+            else:
+                mean_x_agg = mean
+            if var is not None and var.size > 1:
+                var_x_agg = var[*ind_agg]
+            else:
+                var_x_agg = var
+            if isinstance(cov_model.alpha, np.ndarray) and cov_model.alpha.size == nxyz:
+                alpha_x_agg = cov_model.alpha.reshape(ny, nx)[*ind_agg]
+            else:
+                alpha_x_agg = cov_model.alpha
+            # Set parameters `nneighborMax` from the arguments if not given in `aggregate_data_op_kwargs`
+            if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
+                aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
+            if aggregate_data_op == 'krige':
+                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                            mean_x=mean_x, mean_xu=mean_x_agg,
+                                            var_x=var_x, var_xu=var_x_agg,
+                                            alpha_xu=alpha_x_agg,
+                                            verbose=0, **aggregate_data_op_kwargs)
+            else:
+                aggregate_data_by_simul = True
+                v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
+                                mean_x=mean_x, mean_xu=mean_x_agg,
+                                var_x=var_x, var_xu=var_x_agg,
+                                alpha_xu=alpha_x_agg,
+                                nreal=nreal, seed=seed,
+                                verbose=0, **aggregate_data_op_kwargs)
+            xx_agg, yy_agg = x_agg.T
+            zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
+        elif aggregate_data_op == 'random':
+            aggregate_data_by_simul = True
+            # Aggregate data on grid cell by taking random point
+            xx, yy = x.T
+            zz = np.ones_like(xx) * oz + 0.5 * sz
+            # first realization of v_agg
+            xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, return_inverse=True,
+                                                    **aggregate_data_op_kwargs)
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            # next realizations of v_agg
+            v_agg = np.vstack((v_agg, np.zeros((nreal-1, v_agg.size))))
+            for i in range(1, nreal):
+                v_agg[i] = [v[np.random.choice(np.where(i_inv==j)[0])] for j in range(len(xx_agg))]
+        else:
+            # Aggregate data on grid cell by using the given operation
+            xx, yy = x.T
+            zz = np.ones_like(xx) * oz + 0.5 * sz
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+                return None
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+
+        if xIneqMin is not None or xIneqMax is not None:
+            # Get single grid index for data points
+            ix, iy, iz = img.pointToGridIndex(xx_agg, yy_agg, zz_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+        if not aggregate_data_by_simul:
+            dataPointSet.append(
+                PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
+                )
+        else:
+            # Integrate data points from sgs index 0
+            dataPointSet.append(
+                PointSet(npt=v_agg.shape[1], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg[0])), varname=['X', 'Y', 'Z', varname])
+                )
+
+    # data point set from xIneqMin, vIneqMin
+    if xIneqMin is not None:
+        # Aggregate data on grid cell by using the given operation
+        xx, yy = xIneqMin.T
+        zz = np.ones_like(xx) * oz + 0.5 * sz
+        try:
+            xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, vIneqMin,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op=aggregate_data_ineqMin_op, **aggregate_data_ineqMin_op_kwargs)
+        except:
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
+                print(f"ERROR ({fname}): inequality data (min) aggregation (`aggregate_data_op='{aggregate_data_ineqMin_op}'`) failed")
+            return None
+        if x is not None:
+            # Get single grid index for inequality (min) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMin = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index with points from `x` and `xIneqMin`
+            ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMin, assume_unique=True, return_indices=True)
+
+            if ig_inter.size:
+                if verbose > 1:
+                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (min)" and "equality" data: inequlity data has been removed')
+                    if not aggregate_data_by_simul:
+                        ninconsistent = (v_agg[ig1] < v_ineqMin_agg[ig2]).sum()
+                        if ninconsistent:
+                            print(f'WARNING ({fname}): {ninconsistent} "inequality (min)" found')
+                # Remove redundant points from inequality data set
+                xx_ineqMin_agg = np.delete(xx_ineqMin_agg, ig2)
+                yy_ineqMin_agg = np.delete(yy_ineqMin_agg, ig2)
+                zz_ineqMin_agg = np.delete(zz_ineqMin_agg, ig2)
+                v_ineqMin_agg = np.delete(v_ineqMin_agg, ig2)
+
+        if v_ineqMin_agg.shape[0]:
+            dataPointSet.append(
+                PointSet(npt=v_ineqMin_agg.shape[0], nv=4, val=np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg)), varname=['X', 'Y', 'Z', '{}_min'.format(varname)])
+                )
+        else:
+            if verbose > 1:
+                print(f"WARNING ({fname}): no inequality (min) data point in grid")
+            xIneqMin = None
+
+    # data point set from xIneqMax, vIneqMax
+    if xIneqMax is not None:
+        # Aggregate data on grid cell by using the given operation
+        xx, yy = xIneqMax.T
+        zz = np.ones_like(xx) * oz + 0.5 * sz
+        try:
+            xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, vIneqMax,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op=aggregate_data_ineqMax_op, **aggregate_data_ineqMax_op_kwargs)
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): inequality data (max) aggregation (`aggregate_data_op='{aggregate_data_ineqMax_op}'`) failed")
+            return None
+        if x is not None:
+            # Get single grid index for inequality (max) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMax = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index with points from `x` and `xIneqMax`
+            ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMax, assume_unique=True, return_indices=True)
+
+            if ig_inter.size:
+                if verbose > 1:
+                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (max)" and "equality" data: inequlity data has been removed')
+                    if not aggregate_data_by_simul:
+                        ninconsistent = (v_agg[ig1] > v_ineqMax_agg[ig2]).sum()
+                        if ninconsistent:
+                            print(f'WARNING ({fname}): {ninconsistent} "inequality (max)" found')
+                # Remove redundant points from inequality data set
+                xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
+                yy_ineqMax_agg = np.delete(yy_ineqMax_agg, ig2)
+                zz_ineqMax_agg = np.delete(zz_ineqMax_agg, ig2)
+                v_ineqMax_agg = np.delete(v_ineqMax_agg, ig2)
+
+        if xIneqMin is not None:
+            # Get single grid index for inequality (min) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMin = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index for inequality (max) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMax = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index with points from `xIneqMin` and `xIneqMax`
+            ig_inter, ig1, ig2 = np.intersect1d(ig_ineqMin, ig_ineqMax, assume_unique=True, return_indices=True)
+
+            if ig_inter.size:
+                ii = np.where(v_ineqMin_agg[ig1] > v_ineqMax_agg[ig2])[0]
+                if len(ii):
+                    if verbose > 0:
+                        print(f'ERROR ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data')
+                    return None
+                    # if verbose > 1:
+                    #     print(f'WARNING ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data: inequlity max data has been removed')
+                    # ig2 = ig2[ii]
+                    # # Remove inconsistent inequality max
+                    # xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
+                    # yy_ineqMax_agg = np.delete(yy_ineqMax_agg, ig2)
+                    # zz_ineqMax_agg = np.delete(zz_ineqMax_agg, ig2)
+                    # v_ineqMax_agg = np.delete(v_ineqMax_agg, ig2)
+
+        if v_ineqMax_agg.shape[0]:
+            dataPointSet.append(
+                PointSet(npt=v_ineqMax_agg.shape[0], nv=4, val=np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg)), varname=['X', 'Y', 'Z', '{}_max'.format(varname)])
+                )
+        else:
+            if verbose > 1:
+                print(f"WARNING ({fname}): no inequality (max) data point in grid")
+            xIneqMax = None
+
+    # Check parameters - mask
+    if mask is not None:
+        try:
+            mask = np.asarray(mask).reshape(nz, ny, nx)
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
 
-    # Check parameters - nreal
-    nreal = int(nreal) # cast to int if needed
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if xIneqMin is not None:
+            pts = np.vstack((pts, np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg)).T))
+        if xIneqMax is not None:
+            pts = np.vstack((pts, np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del(im_tmp)
+        del(pts)
 
-    if nreal <= 0:
-        if verbose >= 2:
-            print('SIMULATE2D: nreal <= 0: nothing to do!')
-        return None
-
-    # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-        space_dim,
-        cov_model,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        outputReportFile,
-        computationMode,
-        None,
-        dataPointSet,
-        mask,
-        mean,
-        var,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        nGibbsSamplerPathMin,
-        nGibbsSamplerPathMax,
-        seed,
-        nreal)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
-
-    # --- Prepare mpds_geosClassicIOutput structure (C)
-    # Allocate mpds_geosClassicOutput
-    mpds_geosClassicOutput = geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT()
-
-    # Init mpds_geosClassicOutput
-    geosclassic.MPDSGeosClassicInitGeosClassicOutput(mpds_geosClassicOutput)
-
-    # --- Set progress monitor
-    mpds_progressMonitor = geosclassic.malloc_MPDS_PROGRESSMONITOR()
-    geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
-
-    # Set function to update progress monitor:
-    # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
-    # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
-    # should be used, but the following function can also be used:
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
-    if verbose < 3:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+    # Prepare seed (for simulation in grid)
+    seed = seed + 986 # same increment (whatever the number or realization done in sgs above)
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -2321,37 +3064,217 @@ def simulate2D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
-        sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
+    if not aggregate_data_by_simul:
+        # --- Fill mpds_geosClassicInput structure (C)
+        mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
+            space_dim,
+            cov_model,
+            nx, ny, nz,
+            sx, sy, sz,
+            ox, oy, oz,
+            varname,
+            outputReportFile,
+            computationMode,
+            None,
+            dataPointSet,
+            mask,
+            mean,
+            var,
+            searchRadiusRelative,
+            nneighborMax,
+            searchNeighborhoodSortMode,
+            nGibbsSamplerPathMin,
+            nGibbsSamplerPathMax,
+            seed,
+            nreal)
 
-    # --- Launch "GeosClassicSim" (launch C code)
-    # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
+        if not flag:
+            if verbose > 0:
+                print(f'ERROR ({fname}): can not fill input structure!')
+            return None
 
-    # Free memory on C side: mpds_geosClassicInput
-    geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-    #geosclassic.MPDSFree(mpds_geosClassicInput)
-    geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+        # --- Prepare mpds_geosClassicIOutput structure (C)
+        # Allocate mpds_geosClassicOutput
+        mpds_geosClassicOutput = geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT()
 
-    if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
+        # Init mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicInitGeosClassicOutput(mpds_geosClassicOutput)
+
+        # --- Set progress monitor
+        mpds_progressMonitor = geosclassic.malloc_MPDS_PROGRESSMONITOR()
+        geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
+
+        # Set function to update progress monitor:
+        # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
+        # the function
+        #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+        # should be used, but the following function can also be used:
+        #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
+        #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+        if verbose < 3:
+            mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        else:
+            mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+
+        # # --- Set number of threads
+        # if nthreads <= 0:
+        #     nth = max(os.cpu_count() + nthreads, 1)
+        # else:
+        #     nth = nthreads
+
+        if verbose >= 2:
+            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            sys.stdout.flush()
+            sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
+
+        # --- Launch "GeosClassicSim" (launch C code)
+        # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
+        err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
+
+        # Free memory on C side: mpds_geosClassicInput
+        geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+        #geosclassic.MPDSFree(mpds_geosClassicInput)
+        geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+
+        if err:
+            if verbose > 0:
+                err_message = geosclassic.mpds_get_error_message(-err)
+                err_message = err_message.replace('\n', '')
+                print(err_message)
+            geosclassic_output = None
+        else:
+            geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        #geosclassic.MPDSFree(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+
+        # Free memory on C side: mpds_progressMonitor
+        #geosclassic.MPDSFree(mpds_progressMonitor)
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
     else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Equality data values will change for each realization
+        if verbose >= 2:
+            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            sys.stdout.flush()
+            sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
-    # Free memory on C side: mpds_geosClassicOutput
-    geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
-    geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Initialization of image and warnings for storing results
+        image = Img(nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz, nv=nreal, val=np.nan)
+        nwarning = 0
+        warnings = []
+        outputReportFile_ir = None # default
+        for ir in range(nreal):
+            if ir > 0:
+                # Set equality data values for realization index ir
+                dataPointSet[0].val[3] = v_agg[ir]
 
-    # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
-    geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+            if outputReportFile is not None:
+                outputReportFile_ir = outputReportFile + f'.{ir}'
+
+            # --- Fill mpds_geosClassicInput structure (C)
+            mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
+                space_dim,
+                cov_model,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                outputReportFile_ir,
+                computationMode,
+                None,
+                dataPointSet,
+                mask,
+                mean,
+                var,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                nGibbsSamplerPathMin,
+                nGibbsSamplerPathMax,
+                seed+ir, # seed for realization index ir
+                1) # one real
+
+            if not flag:
+                if verbose > 0:
+                    print(f'ERROR ({fname}): can not fill input structure!')
+                return None
+
+            # --- Prepare mpds_geosClassicIOutput structure (C)
+            # Allocate mpds_geosClassicOutput
+            mpds_geosClassicOutput = geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT()
+
+            # Init mpds_geosClassicOutput
+            geosclassic.MPDSGeosClassicInitGeosClassicOutput(mpds_geosClassicOutput)
+
+            # --- Set progress monitor
+            mpds_progressMonitor = geosclassic.malloc_MPDS_PROGRESSMONITOR()
+            geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
+
+            # Set function to update progress monitor:
+            # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
+            # the function
+            #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+            # should be used, but the following function can also be used:
+            #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
+            #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+            mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+            # if verbose < 3:
+            #     mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+            # else:
+            #     mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+            #
+            # if verbose >= 2:
+            #     print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            #     sys.stdout.flush()
+            #     sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
+
+            # --- Launch "GeosClassicSim" (launch C code)
+            # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
+            err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
+
+            # Free memory on C side: mpds_geosClassicInput
+            geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+            #geosclassic.MPDSFree(mpds_geosClassicInput)
+            geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+
+            if err:
+                if verbose > 0:
+                    err_message = geosclassic.mpds_get_error_message(-err)
+                    err_message = err_message.replace('\n', '')
+                    print(err_message)
+                geosclassic_output = None
+            else:
+                geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+
+            # Free memory on C side: mpds_geosClassicOutput
+            geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+            #geosclassic.MPDSFree(mpds_geosClassicOutput)
+            geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+
+            # Free memory on C side: mpds_progressMonitor
+            #geosclassic.MPDSFree(mpds_progressMonitor)
+            geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
+            if geosclassic_output is not None:
+                image.val[ir] = geosclassic_output['image'].val[0]
+                nwarning = nwarning + geosclassic_output['nwarning']
+                warnings.extend(geosclassic_output['warnings'])
+
+            del(geosclassic_output)
+
+        # Remove duplicated warnings
+        warnings = list(np.unique(warnings))
+
+        # Rename variables
+        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+        for j in range(image.nv):
+            image.varname[j] = image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
+
+        # Set geosclassic_output
+        geosclassic_output = {'image':image, 'nwarning':nwarning, 'warnings':warnings}
 
     if mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
@@ -2379,6 +3302,12 @@ def simulate2D_mp(
         x=None, v=None,
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
+        aggregate_data_op=None,
+        aggregate_data_op_kwargs=None,
+        aggregate_data_ineqMin_op='max',
+        aggregate_data_ineqMin_op_kwargs=None,
+        aggregate_data_ineqMax_op='min',
+        aggregate_data_ineqMax_op_kwargs=None,
         mask=None,
         add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
@@ -2468,9 +3397,9 @@ def simulate2D_mp(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
-    # mpds_geosClassicInput.seed
+    # Prepare seed
     if seed is None:
-        seed = np.random.randint(1,1000000)
+        seed = np.random.randint(1, 1000000)
     seed = int(seed)
 
     outputReportFile_p = None
@@ -2499,6 +3428,12 @@ def simulate2D_mp(
                 x, v,
                 xIneqMin, vIneqMin,
                 xIneqMax, vIneqMax,
+                aggregate_data_op,
+                aggregate_data_op_kwargs,
+                aggregate_data_ineqMin_op,
+                aggregate_data_ineqMin_op_kwargs,
+                aggregate_data_ineqMax_op,
+                aggregate_data_ineqMax_op_kwargs,
                 mask,
                 add_data_point_to_mask,
                 searchRadiusRelative,
@@ -2523,29 +3458,25 @@ def simulate2D_mp(
     if np.any([out is None for out in geosclassic_output_proc]):
         return None
 
-    image = None
-    nwarning, warnings = None, None
-
     # Gather results from every process
     # image
-    image = np.hstack([out['image'] for out in geosclassic_output_proc])
-    # ... remove None entries
-    image = image[[x is not None for x in image]]
-    # .. set to None if every entry is None
-    if np.all([x is None for x in image]):
+    image = []
+    for out in geosclassic_output_proc:
+        if out['image'] is not None:
+            image.append(out['image'])
+            del(out['image'])
+    if len(image) == 0:
         image = None
+    # Gather images and adjust variable names
+    all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
+    ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+    for j in range(all_image.nv):
+        all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     # nwarning
     nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
     # warnings
     warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Gather images and adjust variable names
-    if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
-        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
-        for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -2571,6 +3502,12 @@ def simulate3D(
         x=None, v=None,
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
+        aggregate_data_op=None,
+        aggregate_data_op_kwargs=None,
+        aggregate_data_ineqMin_op='max',
+        aggregate_data_ineqMin_op_kwargs=None,
+        aggregate_data_ineqMax_op='min',
+        aggregate_data_ineqMax_op_kwargs=None,
         mask=None,
         add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
@@ -2645,6 +3582,67 @@ def simulate3D(
     vIneqMax : 1D array of floats of shape (nIneqMax,), optional
         inequality data values, upper bounds, at `xIneqMax` (`vIneqMax[i]` is the
         data value at `xIneqMax[i]`)
+    aggregate_data_op : str {'sgs', 'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='sgs'`: function `geone.covModel.sgs` is used
+        with the covariance model `cov_model` given in arguments, as well as
+        the parameter `nneighborMax` given in arguments unless it is given
+        in `aggregate_data_op_kwargs`
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments, as well as
+        the parameters `use_unique_neighborhood`, `nneighborMax` given in
+        arguments unless they are given in `aggregate_data_op_kwargs`
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        note: if `aggregate_data_op='sgs'` or `aggregate_data_op='random'`, the
+        aggregation is done for each realization (simulation), i.e. each simulation
+        on the grid starts with a new set of values in conditioning grid cells;
+        by default: if covariance model has stationary ranges and weight (sill),
+        `aggregate_data_op='sgs'` is used, otherwise `aggregate_data_op='mean'`
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.sgs`,
+        `geone.covModel.krige`, or `numpy.<aggregate_data_op>`, according to
+        the parameter `aggregate_data_op`
+    aggregate_data_ineqMin_op : str {'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, default: 'max'
+        operation used to aggregate inequality (min, lower boudns) data points
+        falling in the same grid cells:
+        - if `aggregate_data_ineqMin_op='most_freq'`: most frequent value is
+        selected (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_ineqMin_op='random'`: value from a random point is
+        selected
+        - otherwise: the function `numpy.<aggregate_data_ineqMin_op>` is used with
+        the additional parameters given by `aggregate_data_ineqMin_op_kwargs`,
+        note that, e.g. `aggregate_data_ineqMin_op='quantile'` requires the
+        additional parameter `q=<quantile_to_compute>`;
+        note: in any case, the aggregation is done once, i.e. same inequality
+        values are used for each simulation on the grid
+    aggregate_data_ineqMin_op_kwargs : dict, optional
+        keyword arguments to be passed to `numpy.<aggregate_data_ineqMin_op>`,
+        according to the parameter `aggregate_data_ineqMin_op`
+    aggregate_data_ineqMax_op : str {'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, default: 'min'
+        operation used to aggregate inequality (min, lower boudns) data points
+        falling in the same grid cells:
+        - if `aggregate_data_ineqMax_op='most_freq'`: most frequent value is
+        selected (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_ineqMax_op='random'`: value from a random point is
+        selected
+        - otherwise: the function `numpy.<aggregate_data_ineqMax_op>` is used with
+        the additional parameters given by `aggregate_data_ineqMax_op_kwargs`,
+        note that, e.g. `aggregate_data_ineqMax_op='quantile'` requires the
+        additional parameter `q=<quantile_to_compute>`;
+        note: in any case, the aggregation is done once, i.e. same inequality
+        values are used for each simulation on the grid
+    aggregate_data_ineqMax_op_kwargs : dict, optional
+        keyword arguments to be passed to `numpy.<aggregate_data_ineqMax_op>`,
+        according to the parameter `aggregate_data_ineqMax_op`
     mask : array-like, optional
         mask value at grid cells (value 1 for simulated cells, value 0 for not
         simulated cells); the size of the array must be equal to the number of
@@ -2667,7 +3665,7 @@ def simulate3D(
         over the grid is considered
     nneighborMax : int, default: 12
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
@@ -2738,6 +3736,14 @@ def simulate3D(
     varname = 'V0'
 
     # --- Check and prepare parameters
+    # nreal
+    nreal = int(nreal) # cast to int if needed
+
+    if nreal <= 0:
+        if verbose >= 2:
+            print(f'{fname}: nreal <= 0: nothing to do!')
+        return None
+
     # cov_model
     if isinstance(cov_model, gcm.CovModel1D):
         cov_model = gcm.covModel1D_to_covModel3D(cov_model) # convert model 1D in 3D
@@ -2745,7 +3751,7 @@ def simulate3D(
 
     if not isinstance(cov_model, gcm.CovModel3D):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return None
 
     for el in cov_model.elem:
@@ -2753,43 +3759,59 @@ def simulate3D(
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model': weight ('w') not compatible with simulation grid")
+                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
                     if verbose > 0:
-                        print(f"ERROR ({fname}): 'cov_model': range ('r') not compatible with simulation grid")
+                        print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
                     return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'cov_model': parameter ('s') not compatible with simulation grid")
+                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
                 return None
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model': angle (alpha) not compatible with simulation grid")
+            print(f"ERROR ({fname}): `cov_model`: angle (alpha) not compatible with simulation grid")
         return None
 
     # beta
     angle = cov_model.beta
     if np.size(angle) != 1 and np.size(angle) != nxyz:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model': angle (beta) not compatible with simulation grid")
+            print(f"ERROR ({fname}): `cov_model`: angle (beta) not compatible with simulation grid")
         return None
 
     # gamma
     angle = cov_model.gamma
     if np.size(angle) != 1 and np.size(angle) != nxyz:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model': angle (gamma) not compatible with simulation grid")
+            print(f"ERROR ({fname}): `cov_model`: angle (gamma) not compatible with simulation grid")
         return None
+
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+            aggregate_data_op = 'mean'
+        else:
+            aggregate_data_op = 'sgs'
+
+    if aggregate_data_op_kwargs is None:
+        aggregate_data_op_kwargs = {}
+
+    if aggregate_data_ineqMin_op_kwargs is None:
+        aggregate_data_ineqMin_op_kwargs = {}
+
+    if aggregate_data_ineqMax_op_kwargs is None:
+        aggregate_data_ineqMax_op_kwargs = {}
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
@@ -2798,7 +3820,7 @@ def simulate3D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
@@ -2806,89 +3828,19 @@ def simulate3D(
         computationMode = 2
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
-
-    # data points: x, v, xIneqMin, vIneqMin, xIneqMax, vIneqMax
-    dataPointSet = []
-
-    # data point set from x, v
-    if x is not None:
-        x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
-        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(v) != x.shape[0]:
-            if verbose > 0:
-                print("(ERROR (SIMULATE3D): length of 'v' is not valid")
-            return None
-        xc = x[:,0]
-        yc = x[:,1]
-        zc = x[:,2]
-        dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
-            )
-
-    # data point set from xIneqMin, vIneqMin
-    if xIneqMin is not None:
-        xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
-        vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(vIneqMin) != xIneqMin.shape[0]:
-            if verbose > 0:
-                print("(ERROR (SIMULATE3D): length of 'vIneqMin' is not valid")
-            return None
-        xc = xIneqMin[:,0]
-        yc = xIneqMin[:,1]
-        zc = xIneqMin[:,2]
-        dataPointSet.append(
-            PointSet(npt=vIneqMin.shape[0], nv=4, val=np.array((xc, yc, zc, vIneqMin)), varname=['X', 'Y', 'Z', '{}_min'.format(varname)])
-            )
-
-    # data point set from xIneqMax, vIneqMax
-    if xIneqMax is not None:
-        xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
-        vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(vIneqMax) != xIneqMax.shape[0]:
-            if verbose > 0:
-                print("(ERROR (SIMULATE3D): length of 'vIneqMax' is not valid")
-            return None
-        xc = xIneqMax[:,0]
-        yc = xIneqMax[:,1]
-        zc = xIneqMax[:,2]
-        dataPointSet.append(
-            PointSet(npt=vIneqMax.shape[0], nv=4, val=np.array((xc, yc, zc, vIneqMax)), varname=['X', 'Y', 'Z', '{}_max'.format(varname)])
-            )
-
-    # Check parameters - mask
-    if mask is not None:
-        try:
-            mask = np.asarray(mask).reshape(nz, ny, nx)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
-            return None
-
-    if mask is not None and add_data_point_to_mask:
-        # Make a copy of the original mask, to remove value in added mask cell at the end
-        mask_original = np.copy(mask)
-        # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
-            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
 
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchRadiusRelative' too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+            print(f"ERROR ({fname}): `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
         return None
 
     # Check parameters - nneighborMax
     if nneighborMax != -1 and nneighborMax <= 0:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+            print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
         return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -2904,21 +3856,49 @@ def simulate3D(
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                 return None
         elif searchNeighborhoodSortMode == 1:
             if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                 return None
 
+    # Preparation of data points
+    if x is not None:
+        x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
+        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(v) != x.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `v` is not valid")
+            return None
+
+    if xIneqMin is not None:
+        xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
+        vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(vIneqMin) != xIneqMin.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `vIneqMin` is not valid")
+            return None
+
+    if xIneqMax is not None:
+        xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
+        vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(vIneqMax) != xIneqMax.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `vIneqMax` is not valid")
+            return None
+
     # Check parameters - mean
+    mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
         #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'mean' not allowed with ordinary kriging")
+        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
         #     return None
         if callable(mean):
+            if x is not None:
+                mean_x = mean(x[:, 0], x[:, 1], x[:, 2])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
             zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
@@ -2926,18 +3906,28 @@ def simulate3D(
             mean = mean(xxi, yyi, zzi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return None
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nxyz:
+                mean = mean.reshape(nz, ny, nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=mean))(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
     # Check parameters - var
+    var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
             if verbose > 0:
-                print(f"ERROR ({fname}): specifying 'var' not allowed with ordinary kriging")
+                print(f"ERROR ({fname}): specifying `var` not allowed with ordinary kriging")
             return None
         if callable(var):
+            if x is not None:
+                var_x = var(x[:, 0], x[:, 1], x[:, 2])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
             zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
@@ -2945,69 +3935,294 @@ def simulate3D(
             var = var(xxi, yyi, zzi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nxyz):
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nxyz:
+                var = var.reshape(nz, ny, nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=var))(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
+
+    # Prepare seed
+    if seed is None:
+        seed = np.random.randint(1, 1000000)
+    seed = int(seed)
+
+    # data points: x, v, xIneqMin, vIneqMin, xIneqMax, vIneqMax
+    dataPointSet = []
+
+    # data point set from x, v
+    aggregate_data_by_simul = False
+    if x is not None:
+        if aggregate_data_op == 'krige' or aggregate_data_op == 'sgs':
+            if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+                if verbose > 0:
+                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
+                return None
+            if cov_model.is_orientation_stationary():
+                cov_model_agg = cov_model
+            else:
+                cov_model_agg = gcm.copyCovModel(cov_model)
+                cov_model_agg.set_alpha(0.0)
+                cov_model_agg.set_beta(0.0)
+                cov_model_agg.set_gamma(0.0)
+            # Get grid cell with at least one data point:
+            # x_agg: 2D array, each row contains the coordinates of the center of such cell
+            im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                         nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
+                                         indicator_var=True, count_var=False)
+            ind_agg = np.where(im_tmp.val[0])
+            if len(ind_agg[0]) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
+            del(im_tmp)
+            # Compute
+            # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
+            # - or nreal simulation(s) (v_agg) at x_agg
+            if mean is not None and mean.size > 1:
+                mean_x_agg = mean[*ind_agg]
+            else:
+                mean_x_agg = mean
+            if var is not None and var.size > 1:
+                var_x_agg = var[*ind_agg]
+            else:
+                var_x_agg = var
+            if isinstance(cov_model.alpha, np.ndarray) and cov_model.alpha.size == nxyz:
+                alpha_x_agg = cov_model.alpha[*ind_agg]
+            else:
+                alpha_x_agg = cov_model.alpha
+            if isinstance(cov_model.beta, np.ndarray) and cov_model.beta.size == nxyz:
+                beta_x_agg = cov_model.beta[*ind_agg]
+            else:
+                beta_x_agg = cov_model.beta
+            if isinstance(cov_model.gamma, np.ndarray) and cov_model.gamma.size == nxyz:
+                gamma_x_agg = cov_model.gamma[*ind_agg]
+            else:
+                gamma_x_agg = cov_model.gamma
+            # Set parameters `nneighborMax` from the arguments if not given in `aggregate_data_op_kwargs`
+            if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
+                aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
+            if aggregate_data_op == 'krige':
+                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                             mean_x=mean_x, mean_xu=mean_x_agg,
+                                             var_x=var_x, var_xu=var_x_agg,
+                                             alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
+                                             verbose=0, **aggregate_data_op_kwargs)
+            else:
+                aggregate_data_by_simul = True
+                v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
+                                mean_x=mean_x, mean_xu=mean_x_agg,
+                                var_x=var_x, var_xu=var_x_agg,
+                                alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
+                                nreal=nreal, seed=seed,
+                                verbose=0, **aggregate_data_op_kwargs)
+            xx_agg, yy_agg, zz_agg = x_agg.T
+        elif aggregate_data_op == 'random':
+            aggregate_data_by_simul = True
+            # Aggregate data on grid cell by taking random point
+            xx, yy, zz = x.T
+            # first realization of v_agg
+            xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, return_inverse=True,
+                                                    **aggregate_data_op_kwargs)
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            # next realizations of v_agg
+            v_agg = np.vstack((v_agg, np.zeros((nreal-1, v_agg.size))))
+            for i in range(1, nreal):
+                v_agg[i] = [v[np.random.choice(np.where(i_inv==j)[0])] for j in range(len(xx_agg))]
+        else:
+            # Aggregate data on grid cell by using the given operation
+            xx, yy, zz = x.T
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+                return None
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+
+        if xIneqMin is not None or xIneqMax is not None:
+            # Get single grid index for data points
+            ix, iy, iz = img.pointToGridIndex(xx_agg, yy_agg, zz_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+        if not aggregate_data_by_simul:
+            dataPointSet.append(
+                PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
+                )
+        else:
+            # Integrate data points from sgs index 0
+            dataPointSet.append(
+                PointSet(npt=v_agg.shape[1], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg[0])), varname=['X', 'Y', 'Z', varname])
+                )
+
+    # data point set from xIneqMin, vIneqMin
+    if xIneqMin is not None:
+        # Aggregate data on grid cell by using the given operation
+        xx, yy, zz = xIneqMin.T
+        try:
+            xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, vIneqMin,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op=aggregate_data_ineqMin_op, **aggregate_data_ineqMin_op_kwargs)
+        except:
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
+                print(f"ERROR ({fname}): inequality data (min) aggregation (`aggregate_data_op='{aggregate_data_ineqMin_op}'`) failed")
+            return None
+        if x is not None:
+            # Get single grid index for inequality (min) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMin = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index with points from `x` and `xIneqMin`
+            ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMin, assume_unique=True, return_indices=True)
+
+            if ig_inter.size:
+                if verbose > 1:
+                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (min)" and "equality" data: inequlity data has been removed')
+                    if not aggregate_data_by_simul:
+                        ninconsistent = (v_agg[ig1] < v_ineqMin_agg[ig2]).sum()
+                        if ninconsistent:
+                            print(f'WARNING ({fname}): {ninconsistent} "inequality (min)" found')
+                # Remove redundant points from inequality data set
+                xx_ineqMin_agg = np.delete(xx_ineqMin_agg, ig2)
+                yy_ineqMin_agg = np.delete(yy_ineqMin_agg, ig2)
+                zz_ineqMin_agg = np.delete(zz_ineqMin_agg, ig2)
+                v_ineqMin_agg = np.delete(v_ineqMin_agg, ig2)
+
+        if v_ineqMin_agg.shape[0]:
+            dataPointSet.append(
+                PointSet(npt=v_ineqMin_agg.shape[0], nv=4, val=np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg)), varname=['X', 'Y', 'Z', '{}_min'.format(varname)])
+                )
+        else:
+            if verbose > 1:
+                print(f"WARNING ({fname}): no inequality (min) data point in grid")
+            xIneqMin = None
+
+    # data point set from xIneqMax, vIneqMax
+    if xIneqMax is not None:
+        # Aggregate data on grid cell by using the given operation
+        xx, yy, zz = xIneqMax.T
+        try:
+            xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, vIneqMax,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op=aggregate_data_ineqMax_op, **aggregate_data_ineqMax_op_kwargs)
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): inequality data (max) aggregation (`aggregate_data_op='{aggregate_data_ineqMax_op}'`) failed")
+            return None
+        if x is not None:
+            # Get single grid index for inequality (max) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMax = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index with points from `x` and `xIneqMax`
+            ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMax, assume_unique=True, return_indices=True)
+
+            if ig_inter.size:
+                if verbose > 1:
+                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (max)" and "equality" data: inequlity data has been removed')
+                    if not aggregate_data_by_simul:
+                        ninconsistent = (v_agg[ig1] > v_ineqMax_agg[ig2]).sum()
+                        if ninconsistent:
+                            print(f'WARNING ({fname}): {ninconsistent} "inequality (max)" found')
+                # Remove redundant points from inequality data set
+                xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
+                yy_ineqMax_agg = np.delete(yy_ineqMax_agg, ig2)
+                zz_ineqMax_agg = np.delete(zz_ineqMax_agg, ig2)
+                v_ineqMax_agg = np.delete(v_ineqMax_agg, ig2)
+
+        if xIneqMin is not None:
+            # Get single grid index for inequality (min) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMin = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index for inequality (max) data points
+            ix, iy, iz = img.pointToGridIndex(xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg,
+                                              sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
+            ig_ineqMax = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
+
+            # Get single grid index with points from `xIneqMin` and `xIneqMax`
+            ig_inter, ig1, ig2 = np.intersect1d(ig_ineqMin, ig_ineqMax, assume_unique=True, return_indices=True)
+
+            if ig_inter.size:
+                ii = np.where(v_ineqMin_agg[ig1] > v_ineqMax_agg[ig2])[0]
+                if len(ii):
+                    if verbose > 0:
+                        print(f'ERROR ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data')
+                    return None
+                    # if verbose > 1:
+                    #     print(f'WARNING ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data: inequlity max data has been removed')
+                    # ig2 = ig2[ii]
+                    # # Remove inconsistent inequality max
+                    # xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
+                    # yy_ineqMax_agg = np.delete(yy_ineqMax_agg, ig2)
+                    # zz_ineqMax_agg = np.delete(zz_ineqMax_agg, ig2)
+                    # v_ineqMax_agg = np.delete(v_ineqMax_agg, ig2)
+
+        if v_ineqMax_agg.shape[0]:
+            dataPointSet.append(
+                PointSet(npt=v_ineqMax_agg.shape[0], nv=4, val=np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg)), varname=['X', 'Y', 'Z', '{}_max'.format(varname)])
+                )
+        else:
+            if verbose > 1:
+                print(f"WARNING ({fname}): no inequality (max) data point in grid")
+            xIneqMax = None
+
+    # Check parameters - mask
+    if mask is not None:
+        try:
+            mask = np.asarray(mask).reshape(nz, ny, nx)
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
 
-    # Check parameters - nreal
-    nreal = int(nreal) # cast to int if needed
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if xIneqMin is not None:
+            pts = np.vstack((pts, np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg)).T))
+        if xIneqMax is not None:
+            pts = np.vstack((pts, np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del(im_tmp)
+        del(pts)
 
-    if nreal <= 0:
-        if verbose >= 2:
-            print('SIMULATE3D: nreal <= 0: nothing to do!')
-        return None
-
-    # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-        space_dim,
-        cov_model,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        outputReportFile,
-        computationMode,
-        None,
-        dataPointSet,
-        mask,
-        mean,
-        var,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        nGibbsSamplerPathMin,
-        nGibbsSamplerPathMax,
-        seed,
-        nreal)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
-
-    # --- Prepare mpds_geosClassicIOutput structure (C)
-    # Allocate mpds_geosClassicOutput
-    mpds_geosClassicOutput = geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT()
-
-    # Init mpds_geosClassicOutput
-    geosclassic.MPDSGeosClassicInitGeosClassicOutput(mpds_geosClassicOutput)
-
-    # --- Set progress monitor
-    mpds_progressMonitor = geosclassic.malloc_MPDS_PROGRESSMONITOR()
-    geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
-
-    # Set function to update progress monitor:
-    # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
-    # the function
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
-    # should be used, but the following function can also be used:
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
-    #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
-    if verbose < 3:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
-    else:
-        mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+    # Prepare seed (for simulation in grid)
+    seed = seed + 986 # same increment (whatever the number or realization done in sgs above)
 
     # --- Set number of threads
     if nthreads <= 0:
@@ -3015,37 +4230,217 @@ def simulate3D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
-        sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
+    if not aggregate_data_by_simul:
+        # --- Fill mpds_geosClassicInput structure (C)
+        mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
+            space_dim,
+            cov_model,
+            nx, ny, nz,
+            sx, sy, sz,
+            ox, oy, oz,
+            varname,
+            outputReportFile,
+            computationMode,
+            None,
+            dataPointSet,
+            mask,
+            mean,
+            var,
+            searchRadiusRelative,
+            nneighborMax,
+            searchNeighborhoodSortMode,
+            nGibbsSamplerPathMin,
+            nGibbsSamplerPathMax,
+            seed,
+            nreal)
 
-    # --- Launch "GeosClassicSim" (launch C code)
-    # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
+        if not flag:
+            if verbose > 0:
+                print(f'ERROR ({fname}): can not fill input structure!')
+            return None
 
-    # Free memory on C side: mpds_geosClassicInput
-    geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-    #geosclassic.MPDSFree(mpds_geosClassicInput)
-    geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+        # --- Prepare mpds_geosClassicIOutput structure (C)
+        # Allocate mpds_geosClassicOutput
+        mpds_geosClassicOutput = geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT()
 
-    if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
+        # Init mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicInitGeosClassicOutput(mpds_geosClassicOutput)
+
+        # --- Set progress monitor
+        mpds_progressMonitor = geosclassic.malloc_MPDS_PROGRESSMONITOR()
+        geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
+
+        # Set function to update progress monitor:
+        # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
+        # the function
+        #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+        # should be used, but the following function can also be used:
+        #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
+        #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+        if verbose < 3:
+            mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+        else:
+            mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+
+        # # --- Set number of threads
+        # if nthreads <= 0:
+        #     nth = max(os.cpu_count() + nthreads, 1)
+        # else:
+        #     nth = nthreads
+
+        if verbose >= 2:
+            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            sys.stdout.flush()
+            sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
+
+        # --- Launch "GeosClassicSim" (launch C code)
+        # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
+        err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
+
+        # Free memory on C side: mpds_geosClassicInput
+        geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+        #geosclassic.MPDSFree(mpds_geosClassicInput)
+        geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+
+        if err:
+            if verbose > 0:
+                err_message = geosclassic.mpds_get_error_message(-err)
+                err_message = err_message.replace('\n', '')
+                print(err_message)
+            geosclassic_output = None
+        else:
+            geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        #geosclassic.MPDSFree(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+
+        # Free memory on C side: mpds_progressMonitor
+        #geosclassic.MPDSFree(mpds_progressMonitor)
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
     else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Equality data values will change for each realization
+        if verbose >= 2:
+            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            sys.stdout.flush()
+            sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
-    # Free memory on C side: mpds_geosClassicOutput
-    geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
-    geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Initialization of image and warnings for storing results
+        image = Img(nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz, nv=nreal, val=np.nan)
+        nwarning = 0
+        warnings = []
+        outputReportFile_ir = None # default
+        for ir in range(nreal):
+            if ir > 0:
+                # Set equality data values for realization index ir
+                dataPointSet[0].val[3] = v_agg[ir]
 
-    # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
-    geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+            if outputReportFile is not None:
+                outputReportFile_ir = outputReportFile + f'.{ir}'
+
+            # --- Fill mpds_geosClassicInput structure (C)
+            mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
+                space_dim,
+                cov_model,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                outputReportFile_ir,
+                computationMode,
+                None,
+                dataPointSet,
+                mask,
+                mean,
+                var,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                nGibbsSamplerPathMin,
+                nGibbsSamplerPathMax,
+                seed+ir, # seed for realization index ir
+                1) # one real
+
+            if not flag:
+                if verbose > 0:
+                    print(f'ERROR ({fname}): can not fill input structure!')
+                return None
+
+            # --- Prepare mpds_geosClassicIOutput structure (C)
+            # Allocate mpds_geosClassicOutput
+            mpds_geosClassicOutput = geosclassic.malloc_MPDS_GEOSCLASSICOUTPUT()
+
+            # Init mpds_geosClassicOutput
+            geosclassic.MPDSGeosClassicInitGeosClassicOutput(mpds_geosClassicOutput)
+
+            # --- Set progress monitor
+            mpds_progressMonitor = geosclassic.malloc_MPDS_PROGRESSMONITOR()
+            geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
+
+            # Set function to update progress monitor:
+            # according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of py module
+            # the function
+            #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+            # should be used, but the following function can also be used:
+            #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr: no output
+            #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor1_ptr: warning only
+            mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+            # if verbose < 3:
+            #     mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor0_ptr
+            # else:
+            #     mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
+            #
+            # if verbose >= 2:
+            #     print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            #     sys.stdout.flush()
+            #     sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
+
+            # --- Launch "GeosClassicSim" (launch C code)
+            # err = geosclassic.MPDSGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor )
+            err = geosclassic.MPDSOMPGeosClassicSim(mpds_geosClassicInput, mpds_geosClassicOutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
+
+            # Free memory on C side: mpds_geosClassicInput
+            geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+            #geosclassic.MPDSFree(mpds_geosClassicInput)
+            geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+
+            if err:
+                if verbose > 0:
+                    err_message = geosclassic.mpds_get_error_message(-err)
+                    err_message = err_message.replace('\n', '')
+                    print(err_message)
+                geosclassic_output = None
+            else:
+                geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+
+            # Free memory on C side: mpds_geosClassicOutput
+            geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+            #geosclassic.MPDSFree(mpds_geosClassicOutput)
+            geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+
+            # Free memory on C side: mpds_progressMonitor
+            #geosclassic.MPDSFree(mpds_progressMonitor)
+            geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
+            if geosclassic_output is not None:
+                image.val[ir] = geosclassic_output['image'].val[0]
+                nwarning = nwarning + geosclassic_output['nwarning']
+                warnings.extend(geosclassic_output['warnings'])
+
+            del(geosclassic_output)
+
+        # Remove duplicated warnings
+        warnings = list(np.unique(warnings))
+
+        # Rename variables
+        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+        for j in range(image.nv):
+            image.varname[j] = image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
+
+        # Set geosclassic_output
+        geosclassic_output = {'image':image, 'nwarning':nwarning, 'warnings':warnings}
 
     if mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
@@ -3073,6 +4468,12 @@ def simulate3D_mp(
         x=None, v=None,
         xIneqMin=None, vIneqMin=None,
         xIneqMax=None, vIneqMax=None,
+        aggregate_data_op=None,
+        aggregate_data_op_kwargs=None,
+        aggregate_data_ineqMin_op='max',
+        aggregate_data_ineqMin_op_kwargs=None,
+        aggregate_data_ineqMax_op='min',
+        aggregate_data_ineqMax_op_kwargs=None,
         mask=None,
         add_data_point_to_mask=True,
         searchRadiusRelative=1.0,
@@ -3162,9 +4563,9 @@ def simulate3D_mp(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
-    # mpds_geosClassicInput.seed
+    # Prepare seed
     if seed is None:
-        seed = np.random.randint(1,1000000)
+        seed = np.random.randint(1, 1000000)
     seed = int(seed)
 
     outputReportFile_p = None
@@ -3193,6 +4594,12 @@ def simulate3D_mp(
                 x, v,
                 xIneqMin, vIneqMin,
                 xIneqMax, vIneqMax,
+                aggregate_data_op,
+                aggregate_data_op_kwargs,
+                aggregate_data_ineqMin_op,
+                aggregate_data_ineqMin_op_kwargs,
+                aggregate_data_ineqMax_op,
+                aggregate_data_ineqMax_op_kwargs,
                 mask,
                 add_data_point_to_mask,
                 searchRadiusRelative,
@@ -3217,29 +4624,25 @@ def simulate3D_mp(
     if np.any([out is None for out in geosclassic_output_proc]):
         return None
 
-    image = None
-    nwarning, warnings = None, None
-
     # Gather results from every process
     # image
-    image = np.hstack([out['image'] for out in geosclassic_output_proc])
-    # ... remove None entries
-    image = image[[x is not None for x in image]]
-    # .. set to None if every entry is None
-    if np.all([x is None for x in image]):
+    image = []
+    for out in geosclassic_output_proc:
+        if out['image'] is not None:
+            image.append(out['image'])
+            del(out['image'])
+    if len(image) == 0:
         image = None
+    # Gather images and adjust variable names
+    all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
+    ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+    for j in range(all_image.nv):
+        all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     # nwarning
     nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
     # warnings
     warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Gather images and adjust variable names
-    if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
-        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
-        for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -3262,6 +4665,8 @@ def estimate1D(
         method='simple_kriging',
         mean=None, var=None,
         x=None, v=None,
+        aggregate_data_op=None,
+        aggregate_data_op_kwargs=None,
         mask=None,
         add_data_point_to_mask=True,
         use_unique_neighborhood=False,
@@ -3314,6 +4719,26 @@ def estimate1D(
     v : 1D array-like of floats, optional
         data values at `x` (`v[i]` is the data value at `x[i]`), array of same
         length as `x` (or float if one point)
+    aggregate_data_op : str {'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments, as well as
+        the parameters `use_unique_neighborhood`, `nneighborMax` given in
+        arguments unless they are given in `aggregate_data_op_kwargs`
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        by default: if covariance model has stationary ranges and weight (sill),
+        `aggregate_data_op='krige'` is used, otherwise `aggregate_data_op='mean'`
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.krige` or
+        `numpy.<aggregate_data_op>`, according to the parameter
+        `aggregate_data_op`
     mask : array-like, optional
         mask value at grid cells (value 1 for simulated cells, value 0 for not
         simulated cells); the size of the array must be equal to the number of
@@ -3345,7 +4770,7 @@ def estimate1D(
         over the grid is considered
     nneighborMax : int, default: 12
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
@@ -3411,7 +4836,7 @@ def estimate1D(
     # cov_model
     if not isinstance(cov_model, gcm.CovModel1D):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return None
 
     for el in cov_model.elem:
@@ -3419,22 +4844,32 @@ def estimate1D(
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model': weight ('w') not compatible with simulation grid")
+                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             r  = el[1]['r']
             if np.size(r) != 1 and np.size(r) != nxyz:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'cov_model': range ('r') not compatible with simulation grid")
+                    print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
                 return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'cov_model': parameter ('s') not compatible with simulation grid")
+                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
                 return None
+
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+            aggregate_data_op = 'mean'
+        else:
+            aggregate_data_op = 'krige'
+
+    if aggregate_data_op_kwargs is None:
+        aggregate_data_op_kwargs = {}
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
@@ -3443,7 +4878,7 @@ def estimate1D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
@@ -3451,48 +4886,8 @@ def estimate1D(
         computationMode = 0
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
-
-    # data points: x, v
-    dataPointSet = []
-
-    # data point set from x, v
-    if x is not None:
-        x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(v) != x.shape[0]:
-            if verbose > 0:
-                print("(ERROR (ESTIMATE1D): length of 'v' is not valid")
-            return None
-        xc = x
-        yc = np.ones_like(xc) * oy + 0.5 * sy
-        zc = np.ones_like(xc) * oz + 0.5 * sz
-        dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
-            )
-
-    # Check parameters - mask
-    if mask is not None:
-        try:
-            mask = np.asarray(mask).reshape(nz, ny, nx)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
-            return None
-
-    if mask is not None and add_data_point_to_mask:
-        # Make a copy of the original mask, to remove value in added mask cell at the end
-        mask_original = np.copy(mask)
-        # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
-            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
     #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
@@ -3511,7 +4906,7 @@ def estimate1D(
        # Check parameters - nneighborMax
        if nneighborMax != -1 and nneighborMax <= 0:
            if verbose > 0:
-               print(f"ERROR ({fname}): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+               print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
            return None
 
        # Check parameters - searchNeighborhoodSortMode
@@ -3527,45 +4922,169 @@ def estimate1D(
            if searchNeighborhoodSortMode == 2:
                if not cov_model.is_stationary():
                    if verbose > 0:
-                       print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                    return None
            elif searchNeighborhoodSortMode == 1:
                if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
                    if verbose > 0:
-                       print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                    return None
 
+    # Preparation of data points
+    if x is not None:
+        x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
+        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(v) != x.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `v` is not valid")
+            return None
+
     # Check parameters - mean
+    mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
         #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'mean' not allowed with ordinary kriging")
+        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
         #     return None
         if callable(mean):
+            if x is not None:
+                mean_x = mean(x[:, 0])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             mean = mean(xi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return None
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nxyz:
+                # mean = mean.reshape(nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=mean), iy=0, iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
     # Check parameters - var
+    var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
             if verbose > 0:
                 print(f"ERROR ({fname}): specifying 'var' not allowed with ordinary kriging")
             return None
         if callable(var):
+            if x is not None:
+                var_x = var(x[:, 0])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             var = var(xi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nxyz):
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nxyz:
+                # var = var.reshape(nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=var), iy=0, iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
+
+    # data points: x, v
+    dataPointSet = []
+
+    # data point set from x, v
+    if x is not None:
+        if aggregate_data_op == 'krige':
+            if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+                if verbose > 0:
+                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
+                return None
+            cov_model_agg = cov_model
+            # Get grid cell with at least one data point:
+            # x_agg: 2D array, each row contains the coordinates of the center of such cell
+            im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                         nx=nx, sx=sx, ox=ox,
+                                         indicator_var=True, count_var=False)
+            ind_agg = np.where(im_tmp.val[0])
+            if len(ind_agg[0]) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
+            ind_agg = ind_agg[2:] # remove index along z and y axes
+            del(im_tmp)
+            # Compute kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg
+            if mean is not None and mean.size > 1:
+                mean_x_agg = mean[*ind_agg]
+            else:
+                mean_x_agg = mean
+            if var is not None and var.size > 1:
+                var_x_agg = var[*ind_agg]
+            else:
+                var_x_agg = var
+            # Set parameters `use_unique_neighborhood` and `nneighborMax`
+            # from the arguments if not given in `aggregate_data_op_kwargs`
+            if 'use_unique_neighborhood' not in aggregate_data_op_kwargs.keys():
+                aggregate_data_op_kwargs['use_unique_neighborhood'] = use_unique_neighborhood
+            if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
+                aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
+            v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                         mean_x=mean_x, mean_xu=mean_x_agg,
+                                         var_x=var_x, var_xu=var_x_agg,
+                                         verbose=0, **aggregate_data_op_kwargs)
+            xx_agg = x_agg[:, 0]
+            yy_agg = np.ones_like(xx_agg) * oy + 0.5 * sy
+            zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
+        else:
+            # Aggregate data on grid cell by using the given operation
+            xx = x[:, 0]
+            yy = np.ones_like(xx) * oy + 0.5 * sy
+            zz = np.ones_like(xx) * oz + 0.5 * sz
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+                return None
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+
+        dataPointSet.append(
+            PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
+            )
+
+    # Check parameters - mask
+    if mask is not None:
+        try:
+            mask = np.asarray(mask).reshape(nz, ny, nx)
+        except:
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
+
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del(im_tmp)
+        del(pts)
 
     # --- Fill mpds_geosClassicInput structure (C)
     mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
@@ -3656,6 +5175,10 @@ def estimate1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if x is not None and aggregate_data_op == 'krige':
+        # Set kriging standard deviation at grid cell containing a data
+        geosclassic_output['image'].val[1, 0, 0, *ind_agg] = v_agg_std
+
     if mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
@@ -3679,6 +5202,8 @@ def estimate2D(
         method='simple_kriging',
         mean=None, var=None,
         x=None, v=None,
+        aggregate_data_op=None,
+        aggregate_data_op_kwargs=None,
         mask=None,
         add_data_point_to_mask=True,
         use_unique_neighborhood=False,
@@ -3732,6 +5257,26 @@ def estimate2D(
         shape (2,) is accepted
     v : 1D array of floats of shape (n,), optional
         data values at `x` (`v[i]` is the data value at `x[i]`)
+    aggregate_data_op : str {'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments, as well as
+        the parameters `use_unique_neighborhood`, `nneighborMax` given in
+        arguments unless they are given in `aggregate_data_op_kwargs`
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        by default: if covariance model has stationary ranges and weight (sill),
+        `aggregate_data_op='krige'` is used, otherwise `aggregate_data_op='mean'`
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.krige` or
+        `numpy.<aggregate_data_op>`, according to the parameter
+        `aggregate_data_op`
     mask : array-like, optional
         mask value at grid cells (value 1 for simulated cells, value 0 for not
         simulated cells); the size of the array must be equal to the number of
@@ -3763,7 +5308,7 @@ def estimate2D(
         over the grid is considered
     nneighborMax : int, default: 12
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
@@ -3833,7 +5378,7 @@ def estimate2D(
 
     if not isinstance(cov_model, gcm.CovModel2D):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return None
 
     for el in cov_model.elem:
@@ -3841,29 +5386,39 @@ def estimate2D(
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model': weight ('w') not compatible with simulation grid")
+                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
                     if verbose > 0:
-                        print(f"ERROR ({fname}): 'cov_model': range ('r') not compatible with simulation grid")
+                        print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
                     return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'cov_model': parameter ('s') not compatible with simulation grid")
+                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
                 return None
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model': angle (alpha) not compatible with simulation grid")
+            print(f"ERROR ({fname}): `cov_model`: angle (alpha) not compatible with simulation grid")
         return None
+
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+            aggregate_data_op = 'mean'
+        else:
+            aggregate_data_op = 'krige'
+
+    if aggregate_data_op_kwargs is None:
+        aggregate_data_op_kwargs = {}
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
@@ -3872,7 +5427,7 @@ def estimate2D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
@@ -3880,48 +5435,8 @@ def estimate2D(
         computationMode = 0
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
-
-    # data points: x, v
-    dataPointSet = []
-
-    # data point set from x, v
-    if x is not None:
-        x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
-        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(v) != x.shape[0]:
-            if verbose > 0:
-                print("(ERROR (ESTIMATE2D): length of 'v' is not valid")
-            return None
-        xc = x[:,0]
-        yc = x[:,1]
-        zc = np.ones_like(xc) * oz + 0.5 * sz
-        dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
-            )
-
-    # Check parameters - mask
-    if mask is not None:
-        try:
-            mask = np.asarray(mask).reshape(nz, ny, nx)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
-            return None
-
-    if mask is not None and add_data_point_to_mask:
-        # Make a copy of the original mask, to remove value in added mask cell at the end
-        mask_original = np.copy(mask)
-        # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
-            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
     #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
@@ -3934,13 +5449,13 @@ def estimate2D(
        # Check parameters - searchRadiusRelative
        if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
            if verbose > 0:
-               print(f"ERROR ({fname}): 'searchRadiusRelative' too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+               print(f"ERROR ({fname}): `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
            return None
 
        # Check parameters - nneighborMax
        if nneighborMax != -1 and nneighborMax <= 0:
            if verbose > 0:
-               print(f"ERROR ({fname}): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+               print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
            return None
 
        # Check parameters - searchNeighborhoodSortMode
@@ -3956,49 +5471,180 @@ def estimate2D(
            if searchNeighborhoodSortMode == 2:
                if not cov_model.is_stationary():
                    if verbose > 0:
-                       print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                    return None
            elif searchNeighborhoodSortMode == 1:
                if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
                    if verbose > 0:
-                       print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                    return None
 
+    # Preparation of data points
+    if x is not None:
+        x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
+        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(v) != x.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `v` is not valid")
+            return None
+
     # Check parameters - mean
+    mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
         #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'mean' not allowed with ordinary kriging")
+        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
         #     return None
         if callable(mean):
+            if x is not None:
+                mean_x = mean(x[:, 0], x[:, 1])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            xxi, yyi = np.meshgrid(xi, yi)
+            yyi, xxi = np.meshgrid(yi, xi, indexing='ij')
             mean = mean(xxi, yyi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return None
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nxyz:
+                mean = mean.reshape(ny, nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=mean), iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
     # Check parameters - var
+    var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
             if verbose > 0:
-                print(f"ERROR ({fname}): specifying 'var' not allowed with ordinary kriging")
+                print(f"ERROR ({fname}): specifying `var` not allowed with ordinary kriging")
             return None
         if callable(var):
+            if x is not None:
+                var_x = var(x[:, 0], x[:, 1])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            xxi, yyi = np.meshgrid(xi, yi)
+            yyi, xxi = np.meshgrid(yi, xi, indexing='ij')
             var = var(xxi, yyi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nxyz):
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nxyz:
+                var = var.reshape(ny, nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=var), iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
+
+    # data points: x, v
+    dataPointSet = []
+
+    # data point set from x, v
+    if x is not None:
+        if aggregate_data_op == 'krige':
+            if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+                if verbose > 0:
+                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
+                return None
+            if cov_model.is_orientation_stationary():
+                cov_model_agg = cov_model
+            else:
+                cov_model_agg = gcm.copyCovModel(cov_model)
+                cov_model_agg.set_alpha(0.0)
+            # Get grid cell with at least one data point:
+            # x_agg: 2D array, each row contains the coordinates of the center of such cell
+            im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                         nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
+                                         indicator_var=True, count_var=False)
+            ind_agg = np.where(im_tmp.val[0])
+            if len(ind_agg[0]) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
+            ind_agg = ind_agg[1:] # remove index along z axis
+            del(im_tmp)
+            # Compute kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg
+            if mean is not None and mean.size > 1:
+                mean_x_agg = mean[*ind_agg]
+            else:
+                mean_x_agg = mean
+            if var is not None and var.size > 1:
+                var_x_agg = var[*ind_agg]
+            else:
+                var_x_agg = var
+            if isinstance(cov_model.alpha, np.ndarray) and cov_model.alpha.size == nxyz:
+                alpha_x_agg = cov_model.alpha.reshape(ny, nx)[*ind_agg]
+            else:
+                alpha_x_agg = cov_model.alpha
+            # Set parameters `use_unique_neighborhood` and `nneighborMax`
+            # from the arguments if not given in `aggregate_data_op_kwargs`
+            if 'use_unique_neighborhood' not in aggregate_data_op_kwargs.keys():
+                aggregate_data_op_kwargs['use_unique_neighborhood'] = use_unique_neighborhood
+            if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
+                aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
+            v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                         mean_x=mean_x, mean_xu=mean_x_agg,
+                                         var_x=var_x, var_xu=var_x_agg,
+                                         alpha_xu=alpha_x_agg,
+                                         verbose=0, **aggregate_data_op_kwargs)
+            xx_agg, yy_agg = x_agg.T
+            zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
+        else:
+            # Aggregate data on grid cell by using the given operation
+            xx, yy = x.T
+            zz = np.ones_like(xx) * oz + 0.5 * sz
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+                return None
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+
+        dataPointSet.append(
+            PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
+            )
+
+    # Check parameters - mask
+    if mask is not None:
+        try:
+            mask = np.asarray(mask).reshape(nz, ny, nx)
+        except:
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
+
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del(im_tmp)
+        del(pts)
 
     # --- Fill mpds_geosClassicInput structure (C)
     mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
@@ -4089,6 +5735,10 @@ def estimate2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
+    if x is not None and aggregate_data_op == 'krige':
+        # Set kriging standard deviation at grid cell containing a data
+        geosclassic_output['image'].val[1, 0, *ind_agg] = v_agg_std
+
     if mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
@@ -4112,6 +5762,8 @@ def estimate3D(
         method='simple_kriging',
         mean=None, var=None,
         x=None, v=None,
+        aggregate_data_op=None,
+        aggregate_data_op_kwargs=None,
         mask=None,
         add_data_point_to_mask=True,
         use_unique_neighborhood=False,
@@ -4166,6 +5818,26 @@ def estimate3D(
         shape (3,) is accepted
     v : 1D array of floats of shape (n,), optional
         data values at `x` (`v[i]` is the data value at `x[i]`)
+    aggregate_data_op : str {'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments, as well as
+        the parameters `use_unique_neighborhood`, `nneighborMax` given in
+        arguments unless they are given in `aggregate_data_op_kwargs`
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        by default: if covariance model has stationary ranges and weight (sill),
+        `aggregate_data_op='krige'` is used, otherwise `aggregate_data_op='mean'`
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.krige` or
+        `numpy.<aggregate_data_op>`, according to the parameter
+        `aggregate_data_op`
     mask : array-like, optional
         mask value at grid cells (value 1 for simulated cells, value 0 for not
         simulated cells); the size of the array must be equal to the number of
@@ -4197,7 +5869,7 @@ def estimate3D(
         over the grid is considered
     nneighborMax : int, default: 12
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
@@ -4267,7 +5939,7 @@ def estimate3D(
 
     if not isinstance(cov_model, gcm.CovModel3D):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return None
 
     for el in cov_model.elem:
@@ -4275,43 +5947,53 @@ def estimate3D(
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model': weight ('w') not compatible with simulation grid")
+                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
             return None
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
                     if verbose > 0:
-                        print(f"ERROR ({fname}): 'cov_model': range ('r') not compatible with simulation grid")
+                        print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
                     return None
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): 'cov_model': parameter ('s') not compatible with simulation grid")
+                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
                 return None
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model': angle (alpha) not compatible with simulation grid")
+            print(f"ERROR ({fname}): `cov_model`: angle (alpha) not compatible with simulation grid")
         return None
 
     # beta
     angle = cov_model.beta
     if np.size(angle) != 1 and np.size(angle) != nxyz:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model': angle (beta) not compatible with simulation grid")
+            print(f"ERROR ({fname}): `cov_model`: angle (beta) not compatible with simulation grid")
         return None
 
     # gamma
     angle = cov_model.gamma
     if np.size(angle) != 1 and np.size(angle) != nxyz:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model': angle (gamma) not compatible with simulation grid")
+            print(f"ERROR ({fname}): `cov_model`: angle (gamma) not compatible with simulation grid")
         return None
+
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+            aggregate_data_op = 'mean'
+        else:
+            aggregate_data_op = 'krige'
+
+    if aggregate_data_op_kwargs is None:
+        aggregate_data_op_kwargs = {}
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
@@ -4320,7 +6002,7 @@ def estimate3D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
@@ -4328,48 +6010,8 @@ def estimate3D(
         computationMode = 0
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
-
-    # data points: x, v
-    dataPointSet = []
-
-    # data point set from x, v
-    if x is not None:
-        x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
-        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if len(v) != x.shape[0]:
-            if verbose > 0:
-                print("(ERROR (ESTIMATE3D): length of 'v' is not valid")
-            return None
-        xc = x[:,0]
-        yc = x[:,1]
-        zc = x[:,2]
-        dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
-            )
-
-    # Check parameters - mask
-    if mask is not None:
-        try:
-            mask = np.asarray(mask).reshape(nz, ny, nx)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
-            return None
-
-    if mask is not None and add_data_point_to_mask:
-        # Make a copy of the original mask, to remove value in added mask cell at the end
-        mask_original = np.copy(mask)
-        # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
-            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
     #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
@@ -4382,13 +6024,13 @@ def estimate3D(
        # Check parameters - searchRadiusRelative
        if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
            if verbose > 0:
-               print(f"ERROR ({fname}): 'searchRadiusRelative' too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+               print(f"ERROR ({fname}): `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
            return None
 
        # Check parameters - nneighborMax
        if nneighborMax != -1 and nneighborMax <= 0:
            if verbose > 0:
-               print(f"ERROR ({fname}): 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+               print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
            return None
 
        # Check parameters - searchNeighborhoodSortMode
@@ -4404,21 +6046,33 @@ def estimate3D(
            if searchNeighborhoodSortMode == 2:
                if not cov_model.is_stationary():
                    if verbose > 0:
-                       print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=2' not allowed with non-stationary covariance model")
+                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                    return None
            elif searchNeighborhoodSortMode == 1:
                if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
                    if verbose > 0:
-                       print(f"ERROR ({fname}): 'searchNeighborhoodSortMode=1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                    return None
 
+    # Preparation of data points
+    if x is not None:
+        x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
+        v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if len(v) != x.shape[0]:
+            if verbose > 0:
+                print(f"(ERROR ({fname}): length of `v` is not valid")
+            return None
+
     # Check parameters - mean
+    mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
         #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'mean' not allowed with ordinary kriging")
+        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
         #     return None
         if callable(mean):
+            if x is not None:
+                mean_x = mean(x[:, 0], x[:, 1], x[:, 2])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
             zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
@@ -4426,18 +6080,28 @@ def estimate3D(
             mean = mean(xxi, yyi, zzi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return None
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nxyz:
+                mean = mean.reshape(nz, ny, nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=mean))(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
     # Check parameters - var
+    var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
             if verbose > 0:
-                print(f"ERROR ({fname}): specifying 'var' not allowed with ordinary kriging")
+                print(f"ERROR ({fname}): specifying `var` not allowed with ordinary kriging")
             return None
         if callable(var):
+            if x is not None:
+                var_x = var(x[:, 0], x[:, 1], x[:, 2])
             xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
             zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
@@ -4445,10 +6109,126 @@ def estimate3D(
             var = var(xxi, yyi, zzi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nxyz):
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nxyz:
+                var = var.reshape(nz, ny, nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=var))(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
+
+    # data points: x, v
+    dataPointSet = []
+
+    # data point set from x, v
+    if x is not None:
+        if aggregate_data_op == 'krige':
+            if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
+                if verbose > 0:
+                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
+                return None
+            if cov_model.is_orientation_stationary():
+                cov_model_agg = cov_model
+            else:
+                cov_model_agg = gcm.copyCovModel(cov_model)
+                cov_model_agg.set_alpha(0.0)
+                cov_model_agg.set_beta(0.0)
+                cov_model_agg.set_gamma(0.0)
+            # Get grid cell with at least one data point:
+            # x_agg: 2D array, each row contains the coordinates of the center of such cell
+            im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                         nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
+                                         indicator_var=True, count_var=False)
+            ind_agg = np.where(im_tmp.val[0])
+            if len(ind_agg[0]) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
+            del(im_tmp)
+            # Compute kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg
+            if mean is not None and mean.size > 1:
+                mean_x_agg = mean[*ind_agg]
+            else:
+                mean_x_agg = mean
+            if var is not None and var.size > 1:
+                var_x_agg = var[*ind_agg]
+            else:
+                var_x_agg = var
+            if isinstance(cov_model.alpha, np.ndarray) and cov_model.alpha.size == nxyz:
+                alpha_x_agg = cov_model.alpha[*ind_agg]
+            else:
+                alpha_x_agg = cov_model.alpha
+            if isinstance(cov_model.beta, np.ndarray) and cov_model.beta.size == nxyz:
+                beta_x_agg = cov_model.beta[*ind_agg]
+            else:
+                beta_x_agg = cov_model.beta
+            if isinstance(cov_model.gamma, np.ndarray) and cov_model.gamma.size == nxyz:
+                gamma_x_agg = cov_model.gamma[*ind_agg]
+            else:
+                gamma_x_agg = cov_model.gamma
+            # Set parameters `use_unique_neighborhood` and `nneighborMax`
+            # from the arguments if not given in `aggregate_data_op_kwargs`
+            if 'use_unique_neighborhood' not in aggregate_data_op_kwargs.keys():
+                aggregate_data_op_kwargs['use_unique_neighborhood'] = use_unique_neighborhood
+            if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
+                aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
+            v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                         mean_x=mean_x, mean_xu=mean_x_agg,
+                                         var_x=var_x, var_xu=var_x_agg,
+                                         alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
+                                         verbose=0, **aggregate_data_op_kwargs)
+            xx_agg, yy_agg, zz_agg = x_agg.T
+        else:
+            # Aggregate data on grid cell by using the given operation
+            xx, yy, zz = x.T
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+                return None
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+
+        dataPointSet.append(
+            PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
+            )
+
+    # Check parameters - mask
+    if mask is not None:
+        try:
+            mask = np.asarray(mask).reshape(nz, ny, nx)
+        except:
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
+
+    if mask is not None and add_data_point_to_mask:
+        # Make a copy of the original mask, to remove value in added mask cell at the end
+        mask_original = np.copy(mask)
+        # Add cell to mask if needed
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
+            mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
+            del(im_tmp)
+        del(pts)
 
     # --- Fill mpds_geosClassicInput structure (C)
     mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
@@ -4538,6 +6318,10 @@ def estimate3D(
     # Free memory on C side: mpds_progressMonitor
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+
+    if x is not None and aggregate_data_op == 'krige':
+        # Set kriging standard deviation at grid cell containing a data
+        geosclassic_output['image'].val[1, *ind_agg] = v_agg_std
 
     if mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
@@ -4785,12 +6569,12 @@ def fill_mpds_geosClassicIndicatorInput(
                  nv=ncategory, val=probability)
         mpds_geosClassicIndicatorInput.probabilityImage = img_py2C(im)
     else:
-        print(f"ERROR ({fname}): can not integrate 'probability' (not compatible with simulation grid)")
+        print(f"ERROR ({fname}): can not integrate `probability` (not compatible with simulation grid)")
         return mpds_geosClassicIndicatorInput, False
 
     # mpds_geosClassicIndicatorInput.seed
     if seed is None:
-        seed = np.random.randint(1,1000000)
+        seed = np.random.randint(1, 1000000)
     mpds_geosClassicIndicatorInput.seed = int(seed)
 
     # mpds_geosClassicIndicatorInput.seedIncrement
@@ -4854,18 +6638,18 @@ def simulateIndicator1D(
         number of realizations
     probability : array-like of floats, optional
         probability for each category:
-            - sequence of same length as `category_values`:
-            probability[i]: probability (proportion, kriging mean value for the
-            indicator variable) for category `category_values[i]`, used for
-            every grid cell
-            - array-like of size ncategory * ngrid_cells, where ncategory is the
-            length of `category_values` and ngrid_cells is the number of grid
-            cells (the array is reshaped if needed): first ngrid_cells values are
-            the probabilities (proportions, kriging mean values for the indicator
-            variable) for the first category at grid cells, etc.
-            (for non-stationary probailities / proportions)
-            - by default (`None`): proportion of each category computed from the
-            data values (`v`) are used for every grid cell
+        - sequence of same length as `category_values`:
+        probability[i]: probability (proportion, kriging mean value for the
+        indicator variable) for category `category_values[i]`, used for
+        every grid cell
+        - array-like of size ncategory * ngrid_cells, where ncategory is the
+        length of `category_values` and ngrid_cells is the number of grid
+        cells (the array is reshaped if needed): first ngrid_cells values are
+        the probabilities (proportions, kriging mean values for the indicator
+        variable) for the first category at grid cells, etc.
+        (for non-stationary probailities / proportions);
+        by default (`None`): proportion of each category computed from the
+        data values (`v`) are used for every grid cell
         note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
     x : 1D array-like of floats, optional
@@ -4900,7 +6684,7 @@ def simulateIndicator1D(
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
@@ -4971,13 +6755,13 @@ def simulateIndicator1D(
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is not valid")
+            print(f"ERROR ({fname}): `category_values` is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is empty")
+            print(f"ERROR ({fname}): `category_values` is empty")
         return None
 
     # cov_model_for_category
@@ -4988,11 +6772,11 @@ def simulateIndicator1D(
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' of invalid length")
+            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel1D) for c in cm_for_cat]):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' should contains CovModel1D objects")
+            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel1D objects")
         return None
 
     for cov_model in cm_for_cat:
@@ -5025,7 +6809,7 @@ def simulateIndicator1D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
@@ -5033,25 +6817,40 @@ def simulateIndicator1D(
         computationMode = 2
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
 
     # data points: x, v
     dataPointSet = []
 
-    # data point set from x, v
     if x is not None:
-        x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("(ERROR (SIMULATE_INDICATOR1D): length of 'v' is not valid")
+                print(f"(ERROR ({fname}): length of `v` is not valid")
             return None
-        xc = x
-        yc = np.ones_like(xc) * oy + 0.5 * sy
-        zc = np.ones_like(xc) * oz + 0.5 * sz
+
+        # Aggregate data on grid by taking the most frequent value in grid cell
+        xx = x[:, 0]
+        yy = np.ones_like(xx) * oy + 0.5 * sy
+        zz = np.ones_like(xx) * oz + 0.5 * sz
+        try:
+            xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, v,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op='most_freq')
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
+            return None
+        if len(xx_agg) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
+
         dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
+            PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
             )
 
     # Check parameters - mask
@@ -5060,21 +6859,25 @@ def simulateIndicator1D(
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
         mask_original = np.copy(mask)
         # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
             mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
+            del(im_tmp)
+        del(pts)
 
     # Check parameters - searchRadiusRelative
     searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
@@ -5082,13 +6885,13 @@ def simulateIndicator1D(
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchRadiusRelative' of invalid length")
+            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
         return None
 
     for srr in searchRadiusRelative:
         if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
             if verbose > 0:
-                print(f"ERROR ({fname}): a 'searchRadiusRelative' is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+                print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
             return None
 
     # Check parameters - nneighborMax
@@ -5097,13 +6900,13 @@ def simulateIndicator1D(
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'nneighborMax' of invalid length")
+            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
         return None
 
     for nn in nneighborMax:
         if nn != -1 and nn <= 0:
             if verbose > 0:
-                print(f"ERROR ({fname}): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+                print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
             return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -5112,7 +6915,7 @@ def simulateIndicator1D(
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode' of invalid length")
+            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
         return None
 
     for i in range(ncategory):
@@ -5128,12 +6931,12 @@ def simulateIndicator1D(
             if searchNeighborhoodSortMode[i] == 2:
                 if not cm_for_cat[i].is_stationary():
                     if verbose > 0:
-                        print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                     return None
             elif searchNeighborhoodSortMode[i] == 1:
                 if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                     if verbose > 0:
-                        print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                     return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -5147,7 +6950,7 @@ def simulateIndicator1D(
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'probability' is not valid")
+                print(f"ERROR ({fname}): size of `probability` is not valid")
             return None
 
     # Check parameters - nreal
@@ -5156,7 +6959,7 @@ def simulateIndicator1D(
     if nreal <= 0:
         if verbose >= 1:
             if verbose > 0:
-                print('SIMULATE_INDICATOR1D: nreal <= 0: nothing to do!')
+                print(f'{fname}: nreal <= 0: nothing to do!')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -5360,9 +7163,9 @@ def simulateIndicator1D_mp(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
-    # mpds_geosClassicInput.seed
+    # Prepare seed
     if seed is None:
-        seed = np.random.randint(1,1000000)
+        seed = np.random.randint(1, 1000000)
     seed = int(seed)
 
     outputReportFile_p = None
@@ -5412,29 +7215,25 @@ def simulateIndicator1D_mp(
     if np.any([out is None for out in geosclassic_output_proc]):
         return None
 
-    image = None
-    nwarning, warnings = None, None
-
     # Gather results from every process
     # image
-    image = np.hstack([out['image'] for out in geosclassic_output_proc])
-    # ... remove None entries
-    image = image[[x is not None for x in image]]
-    # .. set to None if every entry is None
-    if np.all([x is None for x in image]):
+    image = []
+    for out in geosclassic_output_proc:
+        if out['image'] is not None:
+            image.append(out['image'])
+            del(out['image'])
+    if len(image) == 0:
         image = None
+    # Gather images and adjust variable names
+    all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
+    ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+    for j in range(all_image.nv):
+        all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     # nwarning
     nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
     # warnings
     warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Gather images and adjust variable names
-    if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
-        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
-        for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -5503,18 +7302,18 @@ def simulateIndicator2D(
         number of realizations
     probability : array-like of floats, optional
         probability for each category:
-            - sequence of same length as `category_values`:
-            probability[i]: probability (proportion, kriging mean value for the
-            indicator variable) for category `category_values[i]`, used for
-            every grid cell
-            - array-like of size ncategory * ngrid_cells, where ncategory is the
-            length of `category_values` and ngrid_cells is the number of grid
-            cells (the array is reshaped if needed): first ngrid_cells values are
-            the probabilities (proportions, kriging mean values for the indicator
-            variable) for the first category at grid cells, etc.
-            (for non-stationary probailities / proportions)
-            - by default (`None`): proportion of each category computed from the
-            data values (`v`) are used for every grid cell
+        - sequence of same length as `category_values`:
+        probability[i]: probability (proportion, kriging mean value for the
+        indicator variable) for category `category_values[i]`, used for
+        every grid cell
+        - array-like of size ncategory * ngrid_cells, where ncategory is the
+        length of `category_values` and ngrid_cells is the number of grid
+        cells (the array is reshaped if needed): first ngrid_cells values are
+        the probabilities (proportions, kriging mean values for the indicator
+        variable) for the first category at grid cells, etc.
+        (for non-stationary probailities / proportions);
+        by default (`None`): proportion of each category computed from the
+        data values (`v`) are used for every grid cell
         note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
     x : 2D array of floats of shape (n, 2), optional
@@ -5549,7 +7348,7 @@ def simulateIndicator2D(
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
@@ -5620,13 +7419,13 @@ def simulateIndicator2D(
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is not valid")
+            print(f"ERROR ({fname}): `category_values` is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is empty")
+            print(f"ERROR ({fname}): `category_values` is empty")
         return None
 
     # cov_model_for_category
@@ -5647,11 +7446,11 @@ def simulateIndicator2D(
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' of invalid length")
+            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel2D) for c in cm_for_cat]):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' should contains CovModel2D objects")
+            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel2D objects")
         return None
 
     for cov_model in cm_for_cat:
@@ -5691,7 +7490,7 @@ def simulateIndicator2D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
@@ -5699,25 +7498,39 @@ def simulateIndicator2D(
         computationMode = 2
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
 
     # data points: x, v
     dataPointSet = []
 
-    # data point set from x, v
     if x is not None:
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("(ERROR (SIMULATE_INDICATOR2D): length of 'v' is not valid")
+                print(f"(ERROR ({fname}): length of `v` is not valid")
             return None
-        xc = x[:,0]
-        yc = x[:,1]
-        zc = np.ones_like(xc) * oz + 0.5 * sz
+
+        # Aggregate data on grid by taking the most frequent value in grid cell
+        xx, yy = x.T
+        zz = np.ones_like(xx) * oz + 0.5 * sz
+        try:
+            xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, v,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op='most_freq')
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
+            return None
+        if len(xx_agg) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
+
         dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
+            PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
             )
 
     # Check parameters - mask
@@ -5726,21 +7539,25 @@ def simulateIndicator2D(
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
         mask_original = np.copy(mask)
         # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
             mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
+            del(im_tmp)
+        del(pts)
 
     # Check parameters - searchRadiusRelative
     searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
@@ -5748,13 +7565,13 @@ def simulateIndicator2D(
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchRadiusRelative' of invalid length")
+            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
         return None
 
     for srr in searchRadiusRelative:
         if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
             if verbose > 0:
-                print(f"ERROR ({fname}): a 'searchRadiusRelative' is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+                print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
             return None
 
     # Check parameters - nneighborMax
@@ -5763,13 +7580,13 @@ def simulateIndicator2D(
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'nneighborMax' of invalid length")
+            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
         return None
 
     for nn in nneighborMax:
         if nn != -1 and nn <= 0:
             if verbose > 0:
-                print(f"ERROR ({fname}): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+                print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
             return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -5778,7 +7595,7 @@ def simulateIndicator2D(
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode' of invalid length")
+            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
         return None
 
     for i in range(ncategory):
@@ -5794,12 +7611,12 @@ def simulateIndicator2D(
             if searchNeighborhoodSortMode[i] == 2:
                 if not cm_for_cat[i].is_stationary():
                     if verbose > 0:
-                        print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                     return None
             elif searchNeighborhoodSortMode[i] == 1:
                 if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                     if verbose > 0:
-                        print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                     return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -5813,7 +7630,7 @@ def simulateIndicator2D(
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'probability' is not valid")
+                print(f"ERROR ({fname}): size of `probability` is not valid")
             return None
 
     # Check parameters - nreal
@@ -5821,7 +7638,7 @@ def simulateIndicator2D(
 
     if nreal <= 0:
         if verbose >= 2:
-            print('SIMULATE_INDICATOR2D: nreal <= 0: nothing to do!')
+            print(f'{fname}: nreal <= 0: nothing to do!')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -6025,9 +7842,9 @@ def simulateIndicator2D_mp(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
-    # mpds_geosClassicInput.seed
+    # Prepare seed
     if seed is None:
-        seed = np.random.randint(1,1000000)
+        seed = np.random.randint(1, 1000000)
     seed = int(seed)
 
     outputReportFile_p = None
@@ -6077,29 +7894,25 @@ def simulateIndicator2D_mp(
     if np.any([out is None for out in geosclassic_output_proc]):
         return None
 
-    image = None
-    nwarning, warnings = None, None
-
     # Gather results from every process
     # image
-    image = np.hstack([out['image'] for out in geosclassic_output_proc])
-    # ... remove None entries
-    image = image[[x is not None for x in image]]
-    # .. set to None if every entry is None
-    if np.all([x is None for x in image]):
+    image = []
+    for out in geosclassic_output_proc:
+        if out['image'] is not None:
+            image.append(out['image'])
+            del(out['image'])
+    if len(image) == 0:
         image = None
+    # Gather images and adjust variable names
+    all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
+    ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+    for j in range(all_image.nv):
+        all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     # nwarning
     nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
     # warnings
     warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Gather images and adjust variable names
-    if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
-        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
-        for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -6169,18 +7982,18 @@ def simulateIndicator3D(
         number of realizations
     probability : array-like of floats, optional
         probability for each category:
-            - sequence of same length as `category_values`:
-            probability[i]: probability (proportion, kriging mean value for the
-            indicator variable) for category `category_values[i]`, used for
-            every grid cell
-            - array-like of size ncategory * ngrid_cells, where ncategory is the
-            length of `category_values` and ngrid_cells is the number of grid
-            cells (the array is reshaped if needed): first ngrid_cells values are
-            the probabilities (proportions, kriging mean values for the indicator
-            variable) for the first category at grid cells, etc.
-            (for non-stationary probailities / proportions)
-            - by default (`None`): proportion of each category computed from the
-            data values (`v`) are used for every grid cell
+        - sequence of same length as `category_values`:
+        probability[i]: probability (proportion, kriging mean value for the
+        indicator variable) for category `category_values[i]`, used for
+        every grid cell
+        - array-like of size ncategory * ngrid_cells, where ncategory is the
+        length of `category_values` and ngrid_cells is the number of grid
+        cells (the array is reshaped if needed): first ngrid_cells values are
+        the probabilities (proportions, kriging mean values for the indicator
+        variable) for the first category at grid cells, etc.
+        (for non-stationary probailities / proportions);
+        by default (`None`): proportion of each category computed from the
+        data values (`v`) are used for every grid cell
         note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
     x : 2D array of floats of shape (n, 3), optional
@@ -6215,7 +8028,7 @@ def simulateIndicator3D(
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
@@ -6286,13 +8099,13 @@ def simulateIndicator3D(
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is not valid")
+            print(f"ERROR ({fname}): `category_values` is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is empty")
+            print(f"ERROR ({fname}): `category_values` is empty")
         return None
 
     # cov_model_for_category
@@ -6313,11 +8126,11 @@ def simulateIndicator3D(
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' of invalid length")
+            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel3D) for c in cm_for_cat]):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' should contains CovModel3D objects")
+            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel3D objects")
         return None
 
     for cov_model in cm_for_cat:
@@ -6371,7 +8184,7 @@ def simulateIndicator3D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 3
@@ -6379,25 +8192,38 @@ def simulateIndicator3D(
         computationMode = 2
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
 
     # data points: x, v
     dataPointSet = []
 
-    # data point set from x, v
     if x is not None:
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("(ERROR (SIMULATE_INDICATOR3D): length of 'v' is not valid")
+                print(f"(ERROR ({fname}): length of `v` is not valid")
             return None
-        xc = x[:,0]
-        yc = x[:,1]
-        zc = x[:,2]
+
+        # Aggregate data on grid by taking the most frequent value in grid cell
+        xx, yy, zz = x.T
+        try:
+            xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, v,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op='most_freq')
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
+            return None
+        if len(xx_agg) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
+
         dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
+            PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
             )
 
     # Check parameters - mask
@@ -6406,21 +8232,25 @@ def simulateIndicator3D(
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
         mask_original = np.copy(mask)
         # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
             mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
+            del(im_tmp)
+        del(pts)
 
     # Check parameters - searchRadiusRelative
     searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
@@ -6428,13 +8258,13 @@ def simulateIndicator3D(
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchRadiusRelative' of invalid length")
+            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
         return None
 
     for srr in searchRadiusRelative:
         if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
             if verbose > 0:
-                print(f"ERROR ({fname}): a 'searchRadiusRelative' is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+                print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
             return None
 
     # Check parameters - nneighborMax
@@ -6443,13 +8273,13 @@ def simulateIndicator3D(
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'nneighborMax' of invalid length")
+            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
         return None
 
     for nn in nneighborMax:
         if nn != -1 and nn <= 0:
             if verbose > 0:
-                print(f"ERROR ({fname}): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+                print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
             return None
 
     # Check parameters - searchNeighborhoodSortMode
@@ -6458,7 +8288,7 @@ def simulateIndicator3D(
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode' of invalid length")
+            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
         return None
 
     for i in range(ncategory):
@@ -6474,12 +8304,12 @@ def simulateIndicator3D(
             if searchNeighborhoodSortMode[i] == 2:
                 if not cm_for_cat[i].is_stationary():
                     if verbose > 0:
-                        print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                     return None
             elif searchNeighborhoodSortMode[i] == 1:
                 if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                     if verbose > 0:
-                        print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                     return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -6493,7 +8323,7 @@ def simulateIndicator3D(
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'probability' is not valid")
+                print(f"ERROR ({fname}): size of `probability` is not valid")
             return None
 
     # Check parameters - nreal
@@ -6501,7 +8331,7 @@ def simulateIndicator3D(
 
     if nreal <= 0:
         if verbose >= 2:
-            print('SIMULATE_INDICATOR3D: nreal <= 0: nothing to do!')
+            print(f'{fname}: nreal <= 0: nothing to do!')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -6705,9 +8535,9 @@ def simulateIndicator3D_mp(
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
-    # mpds_geosClassicInput.seed
+    # Prepare seed
     if seed is None:
-        seed = np.random.randint(1,1000000)
+        seed = np.random.randint(1, 1000000)
     seed = int(seed)
 
     outputReportFile_p = None
@@ -6757,29 +8587,25 @@ def simulateIndicator3D_mp(
     if np.any([out is None for out in geosclassic_output_proc]):
         return None
 
-    image = None
-    nwarning, warnings = None, None
-
     # Gather results from every process
     # image
-    image = np.hstack([out['image'] for out in geosclassic_output_proc])
-    # ... remove None entries
-    image = image[[x is not None for x in image]]
-    # .. set to None if every entry is None
-    if np.all([x is None for x in image]):
+    image = []
+    for out in geosclassic_output_proc:
+        if out['image'] is not None:
+            image.append(out['image'])
+            del(out['image'])
+    if len(image) == 0:
         image = None
+    # Gather images and adjust variable names
+    all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
+    ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
+    for j in range(all_image.nv):
+        all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     # nwarning
     nwarning = np.sum([out['nwarning'] for out in geosclassic_output_proc])
     # warnings
     warnings = list(np.unique(np.hstack([out['warnings'] for out in geosclassic_output_proc])))
-
-    # Gather images and adjust variable names
-    if image is not None:
-        all_image = img.gatherImages(image, keep_varname=True, rem_var_from_source=True, treat_image_one_by_one=treat_image_one_by_one)
-        ndigit = geosclassic.MPDS_GEOS_CLASSIC_NB_DIGIT_FOR_REALIZATION_NUMBER
-        for j in range(all_image.nv):
-            all_image.varname[j] = all_image.varname[j][:-ndigit] + f'{j:0{ndigit}d}'
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
@@ -6845,18 +8671,18 @@ def estimateIndicator1D(
         type of kriging
     probability : array-like of floats, optional
         probability for each category:
-            - sequence of same length as `category_values`:
-            probability[i]: probability (proportion, kriging mean value for the
-            indicator variable) for category `category_values[i]`, used for
-            every grid cell
-            - array-like of size ncategory * ngrid_cells, where ncategory is the
-            length of `category_values` and ngrid_cells is the number of grid
-            cells (the array is reshaped if needed): first ngrid_cells values are
-            the probabilities (proportions, kriging mean values for the indicator
-            variable) for the first category at grid cells, etc.
-            (for non-stationary probailities / proportions)
-            - by default (`None`): proportion of each category computed from the
-            data values (`v`) are used for every grid cell
+        - sequence of same length as `category_values`:
+        probability[i]: probability (proportion, kriging mean value for the
+        indicator variable) for category `category_values[i]`, used for
+        every grid cell
+        - array-like of size ncategory * ngrid_cells, where ncategory is the
+        length of `category_values` and ngrid_cells is the number of grid
+        cells (the array is reshaped if needed): first ngrid_cells values are
+        the probabilities (proportions, kriging mean values for the indicator
+        variable) for the first category at grid cells, etc.
+        (for non-stationary probailities / proportions);
+        by default (`None`): proportion of each category computed from the
+        data values (`v`) are used for every grid cell
         note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
     x : 1D array-like of floats, optional
@@ -6900,7 +8726,7 @@ def estimateIndicator1D(
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
@@ -6970,13 +8796,13 @@ def estimateIndicator1D(
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is not valid")
+            print(f"ERROR ({fname}): `category_values` is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is empty")
+            print(f"ERROR ({fname}): `category_values` is empty")
         return None
 
     # cov_model_for_category
@@ -6987,11 +8813,11 @@ def estimateIndicator1D(
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' of invalid length")
+            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel1D) for c in cm_for_cat]):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' should contains CovModel1D objects")
+            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel1D objects")
         return None
 
     for cov_model in cm_for_cat:
@@ -7024,7 +8850,7 @@ def estimateIndicator1D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
@@ -7032,25 +8858,40 @@ def estimateIndicator1D(
         computationMode = 0
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
 
     # data points: x, v
     dataPointSet = []
 
-    # data point set from x, v
     if x is not None:
-        x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("(ERROR (ESTIMATE_INDICATOR1D): length of 'v' is not valid")
+                print(f"(ERROR ({fname}): length of `v` is not valid")
             return None
-        xc = x
-        yc = np.ones_like(xc) * oy + 0.5 * sy
-        zc = np.ones_like(xc) * oz + 0.5 * sz
+
+        # Aggregate data on grid by taking the most frequent value in grid cell
+        xx = x[:, 0]
+        yy = np.ones_like(xx) * oy + 0.5 * sy
+        zz = np.ones_like(xx) * oz + 0.5 * sz
+        try:
+            xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, v,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op='most_freq')
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
+            return None
+        if len(xx_agg) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
+
         dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
+            PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
             )
 
     # Check parameters - mask
@@ -7059,21 +8900,25 @@ def estimateIndicator1D(
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
         mask_original = np.copy(mask)
         # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
             mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
+            del(im_tmp)
+        del(pts)
 
     # Check parameters - use_unique_neighborhood (length)
     use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
@@ -7081,7 +8926,7 @@ def estimateIndicator1D(
         use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
     elif len(use_unique_neighborhood) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'use_unique_neighborhood' of invalid length")
+            print(f"ERROR ({fname}): `use_unique_neighborhood` of invalid length")
         return None
 
     # Check parameters - searchRadiusRelative (length)
@@ -7090,7 +8935,7 @@ def estimateIndicator1D(
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchRadiusRelative' of invalid length")
+            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
         return None
 
     # Check parameters - nneighborMax (length)
@@ -7099,7 +8944,7 @@ def estimateIndicator1D(
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'nneighborMax' of invalid length")
+            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
         return None
 
     # Check parameters - searchNeighborhoodSortMode (length)
@@ -7108,7 +8953,7 @@ def estimateIndicator1D(
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode' of invalid length")
+            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
         return None
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
@@ -7123,12 +8968,12 @@ def estimateIndicator1D(
         else:
             if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): a 'searchRadiusRelative' is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+                    print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
                 return None
 
             if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+                    print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
                 return None
 
             if searchNeighborhoodSortMode[i] is None:
@@ -7143,12 +8988,12 @@ def estimateIndicator1D(
                 if searchNeighborhoodSortMode[i] == 2:
                     if not cm_for_cat[i].is_stationary():
                         if verbose > 0:
-                            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                         return None
                 elif searchNeighborhoodSortMode[i] == 1:
                     if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                         if verbose > 0:
-                            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                         return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -7162,7 +9007,7 @@ def estimateIndicator1D(
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'probability' is not valid")
+                print(f"ERROR ({fname}): size of `probability` is not valid")
             return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -7320,18 +9165,18 @@ def estimateIndicator2D(
         type of kriging
     probability : array-like of floats, optional
         probability for each category:
-            - sequence of same length as `category_values`:
-            probability[i]: probability (proportion, kriging mean value for the
-            indicator variable) for category `category_values[i]`, used for
-            every grid cell
-            - array-like of size ncategory * ngrid_cells, where ncategory is the
-            length of `category_values` and ngrid_cells is the number of grid
-            cells (the array is reshaped if needed): first ngrid_cells values are
-            the probabilities (proportions, kriging mean values for the indicator
-            variable) for the first category at grid cells, etc.
-            (for non-stationary probailities / proportions)
-            - by default (`None`): proportion of each category computed from the
-            data values (`v`) are used for every grid cell
+        - sequence of same length as `category_values`:
+        probability[i]: probability (proportion, kriging mean value for the
+        indicator variable) for category `category_values[i]`, used for
+        every grid cell
+        - array-like of size ncategory * ngrid_cells, where ncategory is the
+        length of `category_values` and ngrid_cells is the number of grid
+        cells (the array is reshaped if needed): first ngrid_cells values are
+        the probabilities (proportions, kriging mean values for the indicator
+        variable) for the first category at grid cells, etc.
+        (for non-stationary probailities / proportions)
+        by default (`None`): proportion of each category computed from the
+        data values (`v`) are used for every grid cell;
         note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
     x : 2D array of floats of shape (n, 2), optional
@@ -7375,7 +9220,7 @@ def estimateIndicator2D(
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
@@ -7445,13 +9290,13 @@ def estimateIndicator2D(
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is not valid")
+            print(f"ERROR ({fname}): `category_values` is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is empty")
+            print(f"ERROR ({fname}): `category_values` is empty")
         return None
 
     # cov_model_for_category
@@ -7469,11 +9314,11 @@ def estimateIndicator2D(
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' of invalid length")
+            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel2D) for c in cm_for_cat]):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' should contains CovModel2D objects")
+            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel2D objects")
         return None
 
     for cov_model in cm_for_cat:
@@ -7513,7 +9358,7 @@ def estimateIndicator2D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
@@ -7521,25 +9366,39 @@ def estimateIndicator2D(
         computationMode = 0
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
 
     # data points: x, v
     dataPointSet = []
 
-    # data point set from x, v
     if x is not None:
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("(ERROR (ESTIMATE_INDICATOR2D): length of 'v' is not valid")
+                print(f"(ERROR ({fname}): length of `v` is not valid")
             return None
-        xc = x[:,0]
-        yc = x[:,1]
-        zc = np.ones_like(xc) * oz + 0.5 * sz
+
+        # Aggregate data on grid by taking the most frequent value in grid cell
+        xx, yy = x.T
+        zz = np.ones_like(xx) * oz + 0.5 * sz
+        try:
+            xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, v,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op='most_freq')
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
+            return None
+        if len(xx_agg) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
+
         dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
+            PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
             )
 
     # Check parameters - mask
@@ -7548,21 +9407,25 @@ def estimateIndicator2D(
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
         mask_original = np.copy(mask)
         # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
             mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
+            del(im_tmp)
+        del(pts)
 
     # Check parameters - use_unique_neighborhood (length)
     use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
@@ -7570,7 +9433,7 @@ def estimateIndicator2D(
         use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
     elif len(use_unique_neighborhood) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'use_unique_neighborhood' of invalid length")
+            print(f"ERROR ({fname}): `use_unique_neighborhood` of invalid length")
         return None
 
     # Check parameters - searchRadiusRelative (length)
@@ -7579,7 +9442,7 @@ def estimateIndicator2D(
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchRadiusRelative' of invalid length")
+            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
         return None
 
     # Check parameters - nneighborMax (length)
@@ -7588,7 +9451,7 @@ def estimateIndicator2D(
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'nneighborMax' of invalid length")
+            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
         return None
 
     # Check parameters - searchNeighborhoodSortMode (length)
@@ -7597,7 +9460,7 @@ def estimateIndicator2D(
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode' of invalid length")
+            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
         return None
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
@@ -7612,12 +9475,12 @@ def estimateIndicator2D(
         else:
             if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): a 'searchRadiusRelative' is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+                    print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
                 return None
 
             if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+                    print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
                 return None
 
             if searchNeighborhoodSortMode[i] is None:
@@ -7632,12 +9495,12 @@ def estimateIndicator2D(
                 if searchNeighborhoodSortMode[i] == 2:
                     if not cm_for_cat[i].is_stationary():
                         if verbose > 0:
-                            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                         return None
                 elif searchNeighborhoodSortMode[i] == 1:
                     if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                         if verbose > 0:
-                            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                         return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -7646,12 +9509,12 @@ def estimateIndicator2D(
     if probability is not None:
         # if method == 'ordinary_kriging':
         #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'probability' not allowed with ordinary kriging")
+        #         print(f"ERROR ({fname}): specifying `probability` not allowed with ordinary kriging")
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'probability' is not valid")
+                print(f"ERROR ({fname}): size of `probability` is not valid")
             return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -7810,18 +9673,18 @@ def estimateIndicator3D(
         type of kriging
     probability : array-like of floats, optional
         probability for each category:
-            - sequence of same length as `category_values`:
-            probability[i]: probability (proportion, kriging mean value for the
-            indicator variable) for category `category_values[i]`, used for
-            every grid cell
-            - array-like of size ncategory * ngrid_cells, where ncategory is the
-            length of `category_values` and ngrid_cells is the number of grid
-            cells (the array is reshaped if needed): first ngrid_cells values are
-            the probabilities (proportions, kriging mean values for the indicator
-            variable) for the first category at grid cells, etc.
-            (for non-stationary probailities / proportions)
-            - by default (`None`): proportion of each category computed from the
-            data values (`v`) are used for every grid cell
+        - sequence of same length as `category_values`:
+        probability[i]: probability (proportion, kriging mean value for the
+        indicator variable) for category `category_values[i]`, used for
+        every grid cell
+        - array-like of size ncategory * ngrid_cells, where ncategory is the
+        length of `category_values` and ngrid_cells is the number of grid
+        cells (the array is reshaped if needed): first ngrid_cells values are
+        the probabilities (proportions, kriging mean values for the indicator
+        variable) for the first category at grid cells, etc.
+        (for non-stationary probailities / proportions);
+        by default (`None`): proportion of each category computed from the
+        data values (`v`) are used for every grid cell
         note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
     x : 2D array of floats of shape (n, 3), optional
@@ -7865,7 +9728,7 @@ def estimateIndicator3D(
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
         maximum number of cells retrieved from the search ellipsoid (when
-        estimating/simulating a cell), `nneighborMax-1` for unlimited
+        estimating/simulating a cell), `nneighborMax=-1` for unlimited
     searchNeighborhoodSortMode : int, optional
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
@@ -7935,13 +9798,13 @@ def estimateIndicator3D(
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is not valid")
+            print(f"ERROR ({fname}): `category_values` is not valid")
         return None
 
     ncategory = len(category_values)
     if ncategory <= 0:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'category_values' is empty")
+            print(f"ERROR ({fname}): `category_values` is empty")
         return None
 
     # cov_model_for_category
@@ -7959,11 +9822,11 @@ def estimateIndicator3D(
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' of invalid length")
+            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
         return None
     if not np.all([isinstance(c, gcm.CovModel3D) for c in cm_for_cat]):
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model_for_category' should contains CovModel3D objects")
+            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel3D objects")
         return None
 
     for cov_model in cm_for_cat:
@@ -8017,7 +9880,7 @@ def estimateIndicator3D(
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
     # if method not in ('simple_kriging', 'ordinary_kriging'):
     #     if verbose > 0:
-    #         print(f"ERROR ({fname}): 'method' is not valid")
+    #         print(f"ERROR ({fname}): `method` is not valid")
     #     return None
     if method == 'simple_kriging':
         computationMode = 1
@@ -8025,25 +9888,38 @@ def estimateIndicator3D(
         computationMode = 0
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'method' is not valid")
+            print(f"ERROR ({fname}): `method` is not valid")
         return None
 
     # data points: x, v
     dataPointSet = []
 
-    # data point set from x, v
     if x is not None:
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print("(ERROR (SIMUL_3D): length of 'v' is not valid")
+                print(f"(ERROR ({fname}): length of `v` is not valid")
             return None
-        xc = x[:,0]
-        yc = x[:,1]
-        zc = x[:,2]
+
+        # Aggregate data on grid by taking the most frequent value in grid cell
+        xx, yy, zz = x.T
+        try:
+            xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, v,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op='most_freq')
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
+            return None
+        if len(xx_agg) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
+
         dataPointSet.append(
-            PointSet(npt=v.shape[0], nv=4, val=np.array((xc, yc, zc, v)), varname=['X', 'Y', 'Z', varname])
+            PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
             )
 
     # Check parameters - mask
@@ -8052,21 +9928,25 @@ def estimateIndicator3D(
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'mask' is not valid")
+                print(f"ERROR ({fname}): `mask` is not valid")
             return None
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
         mask_original = np.copy(mask)
         # Add cell to mask if needed
-        for ps in dataPointSet:
-            im_tmp = img.imageFromPoints(ps.val[:3].T,
-                    nx=nx, ny=ny, nz=nz,
-                    sx=sx, sy=sy, sz=sz,
-                    ox=ox, oy=oy, oz=oz,
-                    indicator_var=True)
+        pts = np.zeros((0,3))
+        if x is not None:
+            pts = np.vstack((pts, np.array((xx_agg, yy_agg, zz_agg)).T))
+        if pts.shape[0]:
+            im_tmp = img.imageFromPoints(pts,
+                        nx=nx, ny=ny, nz=nz,
+                        sx=sx, sy=sy, sz=sz,
+                        ox=ox, oy=oy, oz=oz,
+                        indicator_var=True)
             mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
-            del (im_tmp)
+            del(im_tmp)
+        del(pts)
 
     # Check parameters - use_unique_neighborhood (length)
     use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
@@ -8074,7 +9954,7 @@ def estimateIndicator3D(
         use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
     elif len(use_unique_neighborhood) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'use_unique_neighborhood' of invalid length")
+            print(f"ERROR ({fname}): `use_unique_neighborhood` of invalid length")
         return None
 
     # Check parameters - searchRadiusRelative (length)
@@ -8083,7 +9963,7 @@ def estimateIndicator3D(
         searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
     elif len(searchRadiusRelative) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchRadiusRelative' of invalid length")
+            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
         return None
 
     # Check parameters - nneighborMax (length)
@@ -8092,7 +9972,7 @@ def estimateIndicator3D(
         nneighborMax = np.repeat(nneighborMax, ncategory)
     elif len(nneighborMax) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'nneighborMax' of invalid length")
+            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
         return None
 
     # Check parameters - searchNeighborhoodSortMode (length)
@@ -8101,7 +9981,7 @@ def estimateIndicator3D(
         searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
     elif len(searchNeighborhoodSortMode) != ncategory:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode' of invalid length")
+            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
         return None
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
@@ -8116,12 +9996,12 @@ def estimateIndicator3D(
         else:
             if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): a 'searchRadiusRelative' is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
+                    print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
                 return None
 
             if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
                 if verbose > 0:
-                    print(f"ERROR ({fname}): any 'nneighborMax' should be greater than 0 or equal to -1 (unlimited)")
+                    print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
                 return None
 
             if searchNeighborhoodSortMode[i] is None:
@@ -8136,12 +10016,12 @@ def estimateIndicator3D(
                 if searchNeighborhoodSortMode[i] == 2:
                     if not cm_for_cat[i].is_stationary():
                         if verbose > 0:
-                            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 2' not allowed with non-stationary covariance model")
+                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                         return None
                 elif searchNeighborhoodSortMode[i] == 1:
                     if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
                         if verbose > 0:
-                            print(f"ERROR ({fname}): 'searchNeighborhoodSortMode set to 1' not allowed with non-stationary range or non-stationary orientation in covariance model")
+                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
                         return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
@@ -8150,12 +10030,12 @@ def estimateIndicator3D(
     if probability is not None:
         # if method == 'ordinary_kriging':
         #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'probability' not allowed with ordinary kriging")
+        #         print(f"ERROR ({fname}): specifying `probability` not allowed with ordinary kriging")
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
             if verbose > 0:
-                print(f"ERROR ({fname}): size of 'probability' is not valid")
+                print(f"ERROR ({fname}): size of `probability` is not valid")
             return None
 
     # --- Fill mpds_geosClassicInput structure (C)
@@ -8314,7 +10194,7 @@ def imgDistanceImage(
 
     # --- Check
     if distance_type not in ('L1', 'L2'):
-        print(f"ERROR ({fname}): unknown 'distance_type'")
+        print(f"ERROR ({fname}): unknown `distance_type`")
         return None
 
     # Set input image "in C"
@@ -8342,7 +10222,7 @@ def imgDistanceImage(
         else:
             err = geosclassic.MPDSOMPImageDistanceEuclidean(input_image_c, output_image_c, nth)
     else:
-        print(f"ERROR ({fname}): 'distance_type' not valid")
+        print(f"ERROR ({fname}): `distance_type` not valid")
         return None
 
     # --- Retrieve output image "in python"
@@ -8388,15 +10268,15 @@ def imgGeobodyImage(
     from the set I=1 if `bound_inf_excluded=True` (resp.
     `bound_sup_excluded=True`) is True or included if `bound_inf_excluded=False`
     (resp. `bound_sup_excluded=False`); hence:
-        - if `bound_inf_excluded, bound_sup_excluded = (True, True)`:
-            I(x) = 1 iff `bound_inf` < v(x) < `bound_sup`
-            (default: I(x) = 1 iff 0 < v(x))
-        - if `bound_inf_excluded, bound_sup_excluded = (True, False)`:
-            I(x) = 1 iff `bound_inf` < v(x) <= `bound_sup`
-        - if `bound_inf_excluded, bound_sup_excluded = (False, True)`:
-            I(x) = 1 iff `bound_inf` <= v(x) < `bound_sup`
-        - if `bound_inf_excluded, bound_sup_excluded = (False, False)`:
-            I(x) = 1 iff `bound_inf` <= v(x) <= `bound_sup`
+    - if `bound_inf_excluded, bound_sup_excluded = (True, True)`:
+    I(x) = 1 iff `bound_inf` < v(x) < `bound_sup`
+    (default: I(x) = 1 iff 0 < v(x))
+    - if `bound_inf_excluded, bound_sup_excluded = (True, False)`:
+    I(x) = 1 iff `bound_inf` < v(x) <= `bound_sup`
+    - if `bound_inf_excluded, bound_sup_excluded = (False, True)`:
+    I(x) = 1 iff `bound_inf` <= v(x) < `bound_sup`
+    - if `bound_inf_excluded, bound_sup_excluded = (False, False)`:
+    I(x) = 1 iff `bound_inf` <= v(x) <= `bound_sup`
 
     If `complementary_set=True`, the variable IC(x) = 1 - I(x) is used
     instead of variable I, i.e. the set I=0 and I=1 are swapped.
@@ -8413,14 +10293,13 @@ def imgGeobodyImage(
 
     The definition of adjacent cells is set according to the parameter
     `connect_type`:
-        - `connect_type='connect_face'` (default):
-            two grid cells are adjacent if they have a common face
-        - `connect_type='connect_face_edge'`:
-            two grid cells are adjacent if they have a common face
-            or a common edge
-        - `connect_type='connect_face_edge_corner'`:
-            two grid cells are adjacent if they have a common face
-            or a common edge or a common corner
+    - `connect_type='connect_face'` (default):
+    two grid cells are adjacent if they have a common face
+    - `connect_type='connect_face_edge'`:
+    two grid cells are adjacent if they have a common face or a common edge
+    - `connect_type='connect_face_edge_corner'`:
+    two grid cells are adjacent if they have a common face or a common edge
+    or a common corner
 
     Parameters
     ----------
@@ -8462,11 +10341,11 @@ def imgGeobodyImage(
 
     # --- Check
     if connect_type not in ('connect_face', 'connect_face_edge', 'connect_face_edge_corner'):
-        print(f"ERROR ({fname}): unknown 'connect_type'")
+        print(f"ERROR ({fname}): unknown `connect_type`")
         return None
 
     if var_index < 0 or var_index >= input_image.nv:
-        print(f"ERROR ({fname}): 'var_index' not valid")
+        print(f"ERROR ({fname}): `var_index` not valid")
         return None
 
     if bound_sup is None:
@@ -8496,7 +10375,7 @@ def imgGeobodyImage(
     elif connect_type == 'connect_face_edge_corner':
         g = geosclassic.MPDSImageGeobody26
     else:
-        print(f"ERROR ({fname}): 'connect_type' not valid")
+        print(f"ERROR ({fname}): `connect_type` not valid")
         return None
 
     err = g(input_image_c, output_image_c, var_index,
@@ -8588,9 +10467,9 @@ def imgTwoPointStatisticsImage(
         (see definition of "is connected to" (<->) in the function
         `imgGeobodyImage`).
         See reference:
-            Renard P, Allard D (2013), Connectivity metrics for subsurface flow
-            and transport. Adv Water Resour 51:168–196.
-            https://doi.org/10.1016/j.advwatres.2011.12.001
+        - Renard P, Allard D (2013), Connectivity metrics for subsurface flow
+        and transport. Adv Water Resour 51:168–196.
+        https://doi.org/10.1016/j.advwatres.2011.12.001
 
     The output image has one variable and its grid is defined according the
     considered lags h defined according to the parameters:
@@ -8671,11 +10550,11 @@ def imgTwoPointStatisticsImage(
                          'covariance_not_centered',
                          'transiogram',
                          'variogram'):
-        print(f"ERROR ({fname}): unknown 'stat_type'")
+        print(f"ERROR ({fname}): unknown `stat_type`")
         return None
 
     if var_index < 0 or var_index >= input_image.nv:
-        print(f"ERROR ({fname}): 'var_index' not valid")
+        print(f"ERROR ({fname}): `var_index` not valid")
         return None
 
     # --- Prepare parameters
@@ -8746,7 +10625,7 @@ def imgTwoPointStatisticsImage(
     elif stat_type == 'variogram':
         g = geosclassic.MPDSOMPImageVariogram
     else:
-        print(f"ERROR ({fname}): 'stat_type' not valid")
+        print(f"ERROR ({fname}): `stat_type` not valid")
         return None
 
     err = g(input_image_c, output_image_c, var_index,
@@ -8799,14 +10678,13 @@ def imgConnectivityGammaValue(
 
     The definition of adjacent cells, required to compute the connected
     components, is set according to the parameter `connect_type`:
-        - `connect_type='connect_face'` (default):
-            two grid cells are adjacent if they have a common face
-        - `connect_type='connect_face_edge'`:
-            two grid cells are adjacent if they have a common face
-            or a common edge
-        - `connect_type='connect_face_edge_corner'`:
-            two grid cells are adjacent if they have a common face
-            or a common edge or a common corner
+    - `connect_type='connect_face'` (default):
+    two grid cells are adjacent if they have a common face
+    - `connect_type='connect_face_edge'`:
+    two grid cells are adjacent if they have a common face or a common edge
+    - `connect_type='connect_face_edge_corner'`:
+    two grid cells are adjacent if they have a common face or a common edge
+    or a common corner
 
     Parameters
     ----------
@@ -8838,20 +10716,19 @@ def imgConnectivityGammaValue(
     The Gamma value is a global indicator of the connectivity for the binary
     image of variable I
     See reference:
-        Renard P, Allard D (2013), Connectivity metrics for subsurface flow
-        and transport. Adv Water Resour 51:168–196.
-        https://doi.org/10.1016/j.advwatres.2011.12.001
-
+    - Renard P, Allard D (2013), Connectivity metrics for subsurface flow and
+    transport. Adv Water Resour 51:168–196.
+    https://doi.org/10.1016/j.advwatres.2011.12.001
     """
     fname = 'imgConnectivityGammaValue'
 
     # --- Check and prepare
     if var_index < 0 or var_index >= input_image.nv:
-        print(f"ERROR ({fname}): 'var_index' not valid")
+        print(f"ERROR ({fname}): `var_index` not valid")
         return None
 
     if not geobody_image_in_input and connect_type not in ('connect_face', 'connect_face_edge', 'connect_face_edge_corner'):
-        print(f"ERROR ({fname}): unknown 'connect_type'")
+        print(f"ERROR ({fname}): unknown `connect_type`")
         return None
 
     # Compute geobody image
@@ -8895,31 +10772,29 @@ def imgConnectivityGammaCurves(
     Computes Gamma curves for an input image with one continuous variable.
 
     For a threshold t:
-        - we consider the indicator variable I(t) defined as
-            I(t)(x) = 1 iif v(x) <= t
-        - we compute
-            gamma(t) = 1/m^2 * sum_{i=1,...,N} n(i)^2,
-          where
-            N is the number of connected components (geobodies)
-                of the set {I(t)=1}
-            n(i) is the size (number of cells) in the i-th connected component
-            m is the size (number of cells) of the set {I(t)=1}
-            note: gamma(t) is set to 1.0 if N = 0
-        - we compute also gammaC(t), the gamma value for the complementary set
-            {IC(t)=1} where IC(t)(x) = 1 - I(t)(x)
+    - we consider the indicator variable I(t) defined as
+    I(t)(x) = 1 iif v(x) <= t
+    - we compute
+    gamma(t) = 1/m^2 * sum_{i=1,...,N} n(i)^2,
+    where
+        - N is the number of connected components (geobodies) of the set {I(t)=1}
+        - n(i) is the size (number of cells) in the i-th connected component
+        - m is the size (number of cells) of the set {I(t)=1}
+    note: gamma(t) is set to 1.0 if N = 0
+    - we compute also gammaC(t), the gamma value for the complementary set
+    {IC(t)=1} where IC(t)(x) = 1 - I(t)(x).
     This is repeated for different threshold values t, which gives the curves
     gamma(t) and gammaC(t).
 
     The definition of adjacent cells, required to compute the connected
     components, is set according to the parameter `connect_type`:
-        - `connect_type='connect_face'` (default):
-            two grid cells are adjacent if they have a common face
-        - `connect_type='connect_face_edge'`:
-            two grid cells are adjacent if they have a common face
-            or a common edge
-        - `connect_type='connect_face_edge_corner'`:
-            two grid cells are adjacent if they have a common face
-            or a common edge or a common corner
+    - `connect_type='connect_face'` (default):
+    two grid cells are adjacent if they have a common face
+    - `connect_type='connect_face_edge'`:
+    two grid cells are adjacent if they have a common face or a common edge
+    - `connect_type='connect_face_edge_corner'`:
+    two grid cells are adjacent if they have a common face or a common edge
+    or a common corner
 
     Parameters
     ----------
@@ -8950,7 +10825,7 @@ def imgConnectivityGammaCurves(
         the columns correspond to: the threshold values, the gamma values, and
         the gammaC values, i.e.:
         - `out_array[i, 0]`:
-            numpy.linspace(threshold_min, threshold_max, nthreshold)`
+        `numpy.linspace(threshold_min, threshold_max, nthreshold)`
         - `out_array[i, 1]`: gamma(out_array[i, 0])
         - `out_array[i, 2]`: gammaC(out_array[i, 0])
 
@@ -8959,9 +10834,9 @@ def imgConnectivityGammaCurves(
     The Gamma value gamma(t) (resp. gammaC(t)) is a global indicator of the
     connectivity for the binary variable I(t) (resp. IC(t)).
     See reference:
-        Renard P, Allard D (2013), Connectivity metrics for subsurface flow
-        and transport. Adv Water Resour 51:168–196.
-        https://doi.org/10.1016/j.advwatres.2011.12.001
+    - Renard P, Allard D (2013), Connectivity metrics for subsurface flow and
+    transport. Adv Water Resour 51:168–196.
+    https://doi.org/10.1016/j.advwatres.2011.12.001
     """
     fname = 'imgConnectivityGammaCurves'
 
@@ -8977,11 +10852,11 @@ def imgConnectivityGammaCurves(
         threshold_max = np.nanmax(input_image.val) + 1.e-10
 
     if threshold_min > threshold_max:
-        print(f"ERROR ({fname}): 'threshold_min' is greater than 'threshold_max'")
+        print(f"ERROR ({fname}): `threshold_min` is greater than `threshold_max`")
         return None
 
     if nthreshold < 0:
-        print(f"ERROR ({fname}): 'nthreshold' is negative")
+        print(f"ERROR ({fname}): `nthreshold` is negative")
         return None
     elif nthreshold == 1:
         threshold_step = 1.0
@@ -8993,7 +10868,7 @@ def imgConnectivityGammaCurves(
         return None
 
     if connect_type not in ('connect_face', 'connect_face_edge', 'connect_face_edge_corner'):
-        print(f"ERROR ({fname}): unknown 'connect_type'")
+        print(f"ERROR ({fname}): unknown `connect_type`")
         return None
 
     # Set input image "in C"
@@ -9018,7 +10893,7 @@ def imgConnectivityGammaCurves(
     elif connect_type == 'connect_face_edge_corner':
         g = geosclassic.MPDSOMPImageConnectivity26GlobalIndicatorCurve
     else:
-        print(f"ERROR ({fname}): 'connect_type' not valid")
+        print(f"ERROR ({fname}): `connect_type` not valid")
         return None
 
     err = g(input_image_c, nthreshold, threshold_min, threshold_step,
@@ -9070,20 +10945,20 @@ def imgConnectivityEulerNumber(
     Computes the Euler number for one variable v of the input image.
 
     The Euler number is defined, for the 3D image grid, as
-        E = number of connected components (geobodies)
-            + number of "holes"
-            - number of "handles"
+    E = number of connected components (geobodies)
+        + number of "holes"
+        - number of "handles"
     for the set {v>0}, i.e. the indicator variable I(x) = 1 iff v(x)>0, is
     considered.
     The Euler number E can be computed by the formula:
-        E = sum_{i=1,...,N} (e0(i) - e1(i) + e2(i) - e3(i)),
+    E = sum_{i=1,...,N} (e0(i) - e1(i) + e2(i) - e3(i)),
     where
         - N the number of connected component (geobodies) in the set {I=1}
         - for a geobody i:
-            e0(i) : the number of vertices (dim 0) in the i-th geobody
-            e1(i) : the number of edges (dim 1) in the i-th geobody
-            e2(i) : the number of faces (dim 2) in the i-th geobody
-            e3(i) : the number of volumes (dim 3) in the i-th geobody
+            - e0(i) : the number of vertices (dim 0) in the i-th geobody
+            - e1(i) : the number of edges (dim 1) in the i-th geobody
+            - e2(i) : the number of faces (dim 2) in the i-th geobody
+            - e3(i) : the number of volumes (dim 3) in the i-th geobody
         where vertices, edges, faces, and volumes of each grid cell
         (3D parallelepiped element) are considered.
 
@@ -9120,15 +10995,15 @@ def imgConnectivityEulerNumber(
     Notes
     -----
     See reference:
-        Renard P, Allard D (2013), Connectivity metrics for subsurface flow
-        and transport. Adv Water Resour 51:168–196.
-        https://doi.org/10.1016/j.advwatres.2011.12.001
+    - Renard P, Allard D (2013), Connectivity metrics for subsurface flow and
+    transport. Adv Water Resour 51:168–196.
+    https://doi.org/10.1016/j.advwatres.2011.12.001
     """
     fname = 'imgConnectivityEulerNumber'
 
     # --- Check and prepare
     if var_index < 0 or var_index >= input_image.nv:
-        print(f"ERROR ({fname}): 'var_index' not valid")
+        print(f"ERROR ({fname}): `var_index` not valid")
         return None
 
     # Compute geobody image
@@ -9201,15 +11076,15 @@ def imgConnectivityEulerNumberCurves(
     Computes the curves of Euler number for one variable v of the input image.
 
     For a threshold t:
-        - we consider the indicator variable I(t) defined as
-            I(t)(x) = 1 iif v(x) <= t
-        - we compute the Euler number
-            E(t) = number of connected components (geobodies)
-                  + number of "holes"
-                  - number of "handles",
-                  for the set {I(t)=1}
-        - we compute also EC(t), the Euler number for the complementary set
-            {IC(t)=1} where IC(t)(x) = 1 - I(t)(x)
+    - we consider the indicator variable I(t) defined as
+    I(t)(x) = 1 iif v(x) <= t
+    - we compute the Euler number
+    E(t) = number of connected components (geobodies)
+        + number of "holes"
+        - number of "handles",
+    for the set {I(t)=1}
+    - we compute also EC(t), the Euler number for the complementary set
+    {IC(t)=1} where IC(t)(x) = 1 - I(t)(x)
     This is repeated for different threshold values t, which gives the curves
     of Euler numbers E(t) and EC(t).
     See function `imgConnectivityEulerNumber` for details about Euler number.
@@ -9244,7 +11119,7 @@ def imgConnectivityEulerNumberCurves(
         the columns correspond to: the threshold values, the Euler numbers E,
         and the Euler numbers EC, i.e.:
         - `out_array[i, 0]`:
-            numpy.linspace(threshold_min, threshold_max, nthreshold)`
+        `numpy.linspace(threshold_min, threshold_max, nthreshold)`
         - `out_array[i, 1]`: E(out_array[i, 0])
         - `out_array[i, 2]`: EC(out_array[i, 0])
     """
@@ -9262,11 +11137,11 @@ def imgConnectivityEulerNumberCurves(
         threshold_max = np.nanmax(input_image.val) + 1.e-10
 
     if threshold_min > threshold_max:
-        print(f"ERROR ({fname}): 'threshold_min' is greater than 'threshold_max'")
+        print(f"ERROR ({fname}): `threshold_min` is greater than `threshold_max`")
         return None
 
     if nthreshold < 0:
-        print(f"ERROR ({fname}): 'nthreshold' is negative")
+        print(f"ERROR ({fname}): `nthreshold` is negative")
         return None
     elif nthreshold == 1:
         threshold_step = 1.0

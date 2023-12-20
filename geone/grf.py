@@ -27,6 +27,8 @@ References:
 
 import numpy as np
 from geone import covModel as gcm
+from geone import img
+from geone.img import Img
 
 # ----------------------------------------------------------------------------
 def extension_min(r, n, s=1.0):
@@ -59,6 +61,8 @@ def extension_min(r, n, s=1.0):
 def grf1D(cov_model,
           dimension, spacing=1.0, origin=0.0,
           x=None, v=None,
+          aggregate_data_op=None,
+          aggregate_data_op_kwargs=None,
           mean=None, var=None,
           nreal=1,
           extensionMin=None, rangeFactorForExtensionMin=1.0,
@@ -71,30 +75,29 @@ def grf1D(cov_model,
     Generates Gaussian Random Fields (GRF) in 1D via Fast Fourier Transform (FFT).
 
     The GRFs:
-        - are generated using the given covariance model / function (`cov_model`),
-        - have a specified mean (mean) and variance (var), which can be non
-          stationary
-        - are conditioned to location(s) `x` with value(s) `v`
+    - are generated using the given covariance model / function (`cov_model`),
+    - have a specified mean (mean) and variance (var), which can be non stationary,
+    - are conditioned to location(s) `x` with value(s) `v`.
 
     Considerations:
     1) For reproducing covariance model, the dimension of GRF should be large
     enough; let K an integer such that K*`spacing` is greater or equal to the
     correlation range, then
-        - correlation accross opposite border should be removed by extending
-          the domain sufficiently, i.e.
-              extensionMin >= K - 1
-        - two cells could not be correlated simultaneously regarding both
-          distances between them (with respect to the periodic grid), i.e. one
-          should have
-              `dimension+extensionMin` >= 2*K - 1,
-          To sum up, `extensionMin` should be chosen such that
-              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
-          i.e.
-              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
+    - correlation accross opposite border should be removed by extending
+    the domain sufficiently, i.e.
+        extensionMin >= K - 1
+    - two cells could not be correlated simultaneously regarding both
+    distances between them (with respect to the periodic grid), i.e. one
+    should have
+        `dimension+extensionMin` >= 2*K - 1.
+    To sum up, `extensionMin` should be chosen such that
+        `dimension+extensionMin` >= max(`dimension`, K) + K - 1
+    i.e.
+        `extensionMin` >= max(K-1, 2*K-`dimension`-1)
     2) For large data set:
-        - `conditioningMethod` should be set to 2 for using FFT
-        - `measureErrVar` can be set to a small positive value to stabilize the
-          covariance matrix for conditioning locations (solving linear system)
+    - `conditioningMethod` should be set to 2 for using FFT
+    - `measureErrVar` can be set to a small positive value to stabilize the
+    covariance matrix for conditioning locations (solving linear system).
 
     Parameters
     ----------
@@ -103,7 +106,7 @@ def grf1D(cov_model,
     dimension : int
         `dimension=nx`, number of cells in the 1D simulation grid
     spacing : float, default: 1.0
-        `spacing=dx`, cell size
+        `spacing=sx`, cell size
     origin : float, default: 0.0
         `origin=ox`, origin of the 1D simulation grid (left border)
     x : 1D array-like of floats, optional
@@ -112,6 +115,31 @@ def grf1D(cov_model,
     v : 1D array-like of floats, optional
         data values at `x` (`v[i]` is the data value at `x[i]`), array of same
         length as `x` (or float if one point)
+    aggregate_data_op : str {'sgs', 'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='sgs'`: function `geone.covModel.sgs` is used
+        with the covariance model `cov_model` given in arguments
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        note: if `aggregate_data_op='sgs'` or `aggregate_data_op='random'`, the
+        aggregation is done for each realization (simulation), i.e. each simulation
+        on the grid starts with a new set of values in conditioning grid cells;
+        note: if `aggregate_data_op='sgs'` or `aggregate_data_op='krige'`, then
+        `cov_model` must be a covariance model and not directly the covariance
+        function;
+        by default: `aggregate_data_op='sgs'` is used
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.sgs`,
+        `geone.covModel.krige`, or `numpy.<aggregate_data_op>`, according to
+        the parameter `aggregate_data_op`
     mean : function (callable), or array-like of floats, or float, optional
         kriging mean value:
         - if a function: function of one argument (xi) that returns the mean at
@@ -266,14 +294,18 @@ def grf1D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): `cov_model` is not stationary")
             return None
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.r()
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return None
+
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        aggregate_data_op = 'sgs'
 
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
@@ -288,7 +320,7 @@ def grf1D(cov_model,
 
     #### Preliminary computation ####
     nx = dimension
-    dx = spacing
+    sx = spacing
     ox = origin
 
     if method not in (1, 2, 3):
@@ -298,7 +330,7 @@ def grf1D(cov_model,
 
     if x is None and v is not None:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
+            print(f"ERROR ({fname}): `x` is not given (None) but `v` is given (not None)")
         return None
 
     if x is not None:
@@ -308,59 +340,168 @@ def grf1D(cov_model,
             return None
         if v is None:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
+                print(f"ERROR ({fname}): `x` is given (not None) but `v` is not given (None)")
             return None
-        x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print(f"ERROR ({fname}): length of 'v' is not valid")
+                print(f"(ERROR ({fname}): length of `v` is not valid")
             return None
 
+    mean_x = mean
     if mean is not None:
         if callable(mean):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            if x is not None:
+                mean_x = mean(x[:, 0])
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             mean = mean(xi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nx):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return None
-    # if mean is None, set mean further according to possible conditioning value (v)
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nx:
+                # mean = mean.reshape(nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=mean), iy=0, iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
+    var_x = var
     if var is not None:
         if callable(var):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            if x is not None:
+                var_x = var(x[:, 0])
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             var = var(xi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nx):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
-            return None
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nx:
+                # var = var.reshape(nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=var), iy=0, iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
+
+    # data point set from x, v
+    if x is not None:
+        if aggregate_data_op_kwargs is None:
+            aggregate_data_op_kwargs = {}
+        if aggregate_data_op == 'krige' or aggregate_data_op == 'sgs':
+            if cov_range is None:
+                # cov_model is directly the covariance function
+                if verbose > 0:
+                    print(f"ERROR ({fname}): `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used")
+                return None
+            # Get grid cell with at least one data point:
+            # x_agg: 2D array, each row contains the coordinates of the center of such cell
+            im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                         nx=nx, sx=sx, ox=ox,
+                                         indicator_var=True, count_var=False)
+            ind_agg = np.where(im_tmp.val[0])
+            x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
+            if len(ind_agg[0]) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            ind_agg = ind_agg[2:] # remove index along z and y axes
+            del(im_tmp)
+            # Compute
+            # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
+            # - or nreal simulation(s) (v_agg) at x_agg
+            if mean is not None and mean.size > 1:
+                mean_x_agg = mean[*ind_agg]
+            else:
+                mean_x_agg = mean
+            if var is not None and var.size > 1:
+                var_x_agg = var[*ind_agg]
+            else:
+                var_x_agg = var
+            if aggregate_data_op == 'krige':
+                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model, method='simple_kriging',
+                                            mean_x=mean_x, mean_xu=mean_x_agg,
+                                            var_x=var_x, var_xu=var_x_agg,
+                                            verbose=0, **aggregate_data_op_kwargs)
+                # all real (same values)
+                v_agg = np.tile(v_agg, nreal).reshape(nreal, -1)
+            else:
+                v_agg = gcm.sgs(x, v, x_agg, cov_model, method='simple_kriging',
+                                mean_x=mean_x, mean_xu=mean_x_agg,
+                                var_x=var_x, var_xu=var_x_agg,
+                                nreal=nreal, seed=None,
+                                verbose=0, **aggregate_data_op_kwargs)
+            xx_agg = x_agg[:, 0]
+            # yy_agg = 0.5*np.ones_like(xx_agg)
+            # zz_agg = 0.5*np.ones_like(xx_agg)
+        elif aggregate_data_op == 'random':
+            # Aggregate data on grid cell by taking random point
+            xx = x[:, 0]
+            yy = 0.5*np.ones_like(xx)
+            zz = 0.5*np.ones_like(xx)
+            # first realization of v_agg
+            xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, 1, 1, sx, 1.0, 1.0, ox, 0.0, 0.0,
+                                                    op=aggregate_data_op, return_inverse=True,
+                                                    **aggregate_data_op_kwargs)
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            # next realizations of v_agg
+            v_agg = np.vstack((v_agg, np.zeros((nreal-1, v_agg.size))))
+            for i in range(1, nreal):
+                v_agg[i] = [v[np.random.choice(np.where(i_inv==j)[0])] for j in range(len(xx_agg))]
+        else:
+            # Aggregate data on grid cell by using the given operation
+            xx = x[:, 0]
+            yy = 0.5*np.ones_like(xx)
+            zz = 0.5*np.ones_like(xx)
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, 1, 1, sx, 1.0, 1.0, ox, 0.0, 0.0,
+                                                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+                return None
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            # all real (same values)
+            v_agg = np.tile(v_agg, nreal).reshape(nreal, -1)
 
     if not crop:
         if x is not None: # conditional simulation
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with conditional simulation')
+                print(f'ERROR ({fname}): `crop=False` is not valid with conditional simulation')
             return None
 
         if mean is not None and mean.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary mean')
+                print(f'ERROR ({fname}): `crop=False` is not valid with non-stationary mean')
             return None
 
         if var is not None and var.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary variance')
+                print(f'ERROR ({fname}): `crop=False` is not valid with non-stationary variance')
             return None
 
     if extensionMin is None:
         # default extensionMin
         if cov_range is not None: # known range
             # ... based on range of covariance model
-            extensionMin = extension_min(rangeFactorForExtensionMin*cov_range, nx, s=dx)
+            extensionMin = extension_min(rangeFactorForExtensionMin*cov_range, nx, s=sx)
         else:
             # ... based on dimension
             extensionMin = dimension - 1
@@ -385,7 +526,7 @@ def grf1D(cov_model,
 
     # ccirc: coefficient of the embedding matrix (first line), vector of size N
     L = int (N/2)
-    h = np.arange(-L, L, dtype=float) * dx # [-L ... 0 ... L-1] * dx
+    h = np.arange(-L, L, dtype=float) * sx # [-L ... 0 ... L-1] * sx
     ccirc = cov_func(h)
 
     del(h)
@@ -448,32 +589,14 @@ def grf1D(cov_model,
         if verbose > 2:
             print('GRF1D: Computing covariance matrix (rAA) for conditioning locations...')
 
-        if np.any(x < origin) or np.any(x > origin + dimension * spacing):
-            if verbose > 0:
-                print(f'ERROR ({fname}): a conditioning point is out of the grid')
-            return None
-
         # Compute
-        #    indc: node index of conditioning node (nearest node),
+        #    indc: node index of conditioning node,
         #          rounded to lower index if between two grid node and index is positive
-        indc_f = (x-origin)/spacing
+        indc_f = (xx_agg-origin)/spacing
         indc = indc_f.astype(int)
         indc = indc - 1 * np.all((indc == indc_f, indc > 0), axis=0)
 
-        # if len(np.unique(indc)) != len(x):
-        #     if verbose > 0:
-        #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
-        #     return None
-
-        indc_unique, indc_inv = np.unique(indc, return_inverse=True)
-        if len(indc_unique) != len(x):
-            if verbose > 1:
-                print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
-            indc = indc_unique
-            x = np.array([x[indc_inv==j].mean(axis=0) for j in range(len(indc_unique))])
-            v = np.array([v[indc_inv==j].mean() for j in range(len(indc_unique))])
-
-        nc = len(x)
+        nc = len(xx_agg)
 
         # rAA
         rAA = np.zeros((nc, nc))
@@ -699,8 +822,8 @@ def grf1D(cov_model,
 
             # Update all simulations at a time,
             # use the matrix rBA * rAA^(-1) already computed
-            grf[:,indnc] = grf[:,indnc] + np.transpose(np.dot(rBArAAinv, np.transpose(v - grf[:,indc])))
-            grf[:,indc] = v
+            grf[:,indnc] = grf[:,indnc] + np.transpose(np.dot(rBArAAinv, np.transpose(v_agg - grf[:,indc])))
+            grf[:,indc] = v_agg
 
         elif conditioningMethod == 2:
             # Method ConditioningB
@@ -716,7 +839,7 @@ def grf1D(cov_model,
                     print('GRF1D: Updating conditional simulation {:4d} of {:4d}...'.format(i+1, nreal))
 
                 # Compute residue
-                residu = v - grf[i,indc]
+                residu = v_agg[i] - grf[i,indc]
                 # ... update if non-stationary variance is specified
                 if var is not None and var.size > 1:
                     residu = 1./varUpdate[indc] * residu
@@ -734,7 +857,7 @@ def grf1D(cov_model,
                     Z = varUpdate[indnc] * Z
 
                 grf[i, indnc] = grf[i, indnc] + Z
-                grf[i, indc] = v
+                grf[i, indc] = v_agg[i]
 
     return grf
 # ----------------------------------------------------------------------------
@@ -743,6 +866,8 @@ def grf1D(cov_model,
 def krige1D(cov_model,
             dimension, spacing=1.0, origin=0.0,
             x=None, v=None,
+            aggregate_data_op=None,
+            aggregate_data_op_kwargs=None,
             mean=None, var=None,
             extensionMin=None, rangeFactorForExtensionMin=1.0,
             conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
@@ -754,30 +879,30 @@ def krige1D(cov_model,
     Computes kriging estimates and standard deviations in 1D via FFT.
 
     It is a simple kriging
-        - of value(s) `v` at location(s) `x`,
-        - based on the covariance model / function (`cov_model`),
-        - with a specified mean (`mean`) and variance (`var`), which can be non
-          stationary
+    - of value(s) `v` at location(s) `x`,
+    - based on the covariance model / function (`cov_model`),
+    - with a specified mean (`mean`) and variance (`var`), which can be non
+    stationary.
 
     Considerations:
     1) For reproducing covariance model, the dimension of GRF should be large
     enough; let K an integer such that K*`spacing` is greater or equal to the
     correlation range, then
-        - correlation accross opposite border should be removed by extending
-          the domain sufficiently, i.e.
-              extensionMin >= K - 1
-        - two cells could not be correlated simultaneously regarding both
-          distances between them (with respect to the periodic grid), i.e. one
-          should have
-              `dimension+extensionMin` >= 2*K - 1,
-          To sum up, `extensionMin` should be chosen such that
-              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
-          i.e.
-              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
+    - correlation accross opposite border should be removed by extending
+    the domain sufficiently, i.e.
+        extensionMin >= K - 1
+    - two cells could not be correlated simultaneously regarding both
+    distances between them (with respect to the periodic grid), i.e. one
+    should have
+        `dimension+extensionMin` >= 2*K - 1.
+    To sum up, `extensionMin` should be chosen such that
+        `dimension+extensionMin` >= max(`dimension`, K) + K - 1
+    i.e.
+        `extensionMin` >= max(K-1, 2*K-`dimension`-1)
     2) For large data set:
-        - `conditioningMethod` should be set to 2 for using FFT
-        - `measureErrVar` can be set to a small positive value to stabilize the
-          covariance matrix for conditioning locations (solving linear system)
+    - `conditioningMethod` should be set to 2 for using FFT
+    - `measureErrVar` can be set to a small positive value to stabilize the
+    covariance matrix for conditioning locations (solving linear system).
 
     Parameters
     ----------
@@ -786,7 +911,7 @@ def krige1D(cov_model,
     dimension : int
         `dimension=nx`, number of cells in the 1D simulation grid
     spacing : float, default: 1.0
-        `spacing=dx`, cell size
+        `spacing=sx`, cell size
     origin : float, default: 0.0
         `origin=ox`, origin of the 1D simulation grid (left border)
     x : 1D array-like of floats, optional
@@ -795,6 +920,25 @@ def krige1D(cov_model,
     v : 1D array-like of floats, optional
         data values at `x` (`v[i]` is the data value at `x[i]`), array of same
         length as `x` (or float if one point)
+    aggregate_data_op : str {'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        note: if `aggregate_data_op='krige'`, then `cov_model` must be a
+        covariance model and not directly the covariance function;
+        by default: `aggregate_data_op='krige'` is used
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.krige` or
+        `numpy.<aggregate_data_op>`, according to the parameter
+        `aggregate_data_op`
     mean : function (callable), or array-like of floats, or float, optional
         kriging mean value:
         - if a function: function of one argument (xi) that returns the mean at
@@ -922,64 +1066,85 @@ def krige1D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): `cov_model` is not stationary")
             return out
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.r()
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (third argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return out
 
-    # Check conditioning method
-    if conditioningMethod not in (1, 2):
-        if verbose > 0:
-            print(f'ERROR ({fname}): invalid method!')
-        return out
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        aggregate_data_op = 'krige'
 
     nx = dimension
-    dx = spacing
+    sx = spacing
     ox = origin
 
     if x is None and v is not None:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
-        return out
+            print(f"ERROR ({fname}): `x` is not given (None) but `v` is given (not None)")
+        return None
 
     if x is not None:
+        if conditioningMethod not in (1, 2):
+            if verbose > 0:
+                print(f'ERROR ({fname}): invalid method for conditioning')
+            return None
         if v is None:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
-            return out
-        x = np.asarray(x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                print(f"ERROR ({fname}): `x` is given (not None) but `v` is not given (None)")
+            return None
+        x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print(f"ERROR ({fname}): length of 'v' is not valid")
-            return out
+                print(f"(ERROR ({fname}): length of `v` is not valid")
+            return None
 
+    mean_x = mean
     if mean is not None:
         if callable(mean):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            if x is not None:
+                mean_x = mean(x[:, 0])
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             mean = mean(xi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nx):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return out
-    # if mean is None, set mean further according to possible conditioning value (v)
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nx:
+                # mean = mean.reshape(nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=mean), iy=0, iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
+    var_x = var
     if var is not None:
         if callable(var):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            if x is not None:
+                var_x = var(x[:, 0])
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
             var = var(xi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nx):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
-            return out
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nx:
+                # var = var.reshape(nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=var), iy=0, iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
 
     if x is None:
         # No data: kriging return the mean and the standard deviation...
@@ -996,11 +1161,70 @@ def krige1D(cov_model,
         else:
             return krig
 
+    if aggregate_data_op_kwargs is None:
+        aggregate_data_op_kwargs = {}
+
+    if aggregate_data_op == 'krige':
+        if cov_range is None:
+            # cov_model is directly the covariance function
+            if verbose > 0:
+                print(f"ERROR ({fname}): `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used")
+            return None
+        # Get grid cell with at least one data point:
+        # x_agg: 2D array, each row contains the coordinates of the center of such cell
+        im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                     nx=nx, sx=sx, ox=ox,
+                                     indicator_var=True, count_var=False)
+        ind_agg = np.where(im_tmp.val[0])
+        x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
+        if len(ind_agg[0]) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
+        ind_agg = ind_agg[2:] # remove index along z and y axes
+        del(im_tmp)
+        # Compute
+        # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
+        # - or nreal simulation(s) (v_agg) at x_agg
+        if mean is not None and mean.size > 1:
+            mean_x_agg = mean[*ind_agg]
+        else:
+            mean_x_agg = mean
+        if var is not None and var.size > 1:
+            var_x_agg = var[*ind_agg]
+        else:
+            var_x_agg = var
+        v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model, method='simple_kriging',
+                                    mean_x=mean_x, mean_xu=mean_x_agg,
+                                    var_x=var_x, var_xu=var_x_agg,
+                                    verbose=0, **aggregate_data_op_kwargs)
+        xx_agg = x_agg[:, 0]
+        # yy_agg = 0.5*np.ones_like(xx_agg)
+        # zz_agg = 0.5*np.ones_like(xx_agg)
+    else:
+        # Aggregate data on grid cell by using the given operation
+        xx = x[:, 0]
+        yy = 0.5*np.ones_like(xx)
+        zz = 0.5*np.ones_like(xx)
+        try:
+            xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, v,
+                                                nx, 1, 1, sx, 1.0, 1.0, ox, 0.0, 0.0,
+                                                op=aggregate_data_op, **aggregate_data_op_kwargs)
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+            return None
+        if len(xx_agg) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
+
     if extensionMin is None:
         # default extensionMin
         if cov_range is not None: # known range
             # ... based on range of covariance model
-            extensionMin = extension_min(rangeFactorForExtensionMin*cov_range, nx, s=dx)
+            extensionMin = extension_min(rangeFactorForExtensionMin*cov_range, nx, s=sx)
         else:
             # ... based on dimension
             extensionMin = dimension - 1
@@ -1025,7 +1249,7 @@ def krige1D(cov_model,
 
     # ccirc: coefficient of the embedding matrix (first line), vector of size N
     L = int (N/2)
-    h = np.arange(-L, L, dtype=float) * dx # [-L ... 0 ... L-1] * dx
+    h = np.arange(-L, L, dtype=float) * sx # [-L ... 0 ... L-1] * sx
     ccirc = cov_func(h)
 
     del(h)
@@ -1097,32 +1321,14 @@ def krige1D(cov_model,
     if verbose > 2:
         print('KRIGE1D: Computing covariance matrix (rAA) for conditioning locations...')
 
-    if np.any(x < origin) or np.any(x > origin + dimension * spacing):
-        if verbose > 0:
-            print(f'ERROR ({fname}): a conditioning point is out of the grid')
-        return out
-
     # Compute
-    #    indc: node index of conditioning node (nearest node),
+    #    indc: node index of conditioning node,
     #          rounded to lower index if between two grid node and index is positive
-    indc_f = (x-origin)/spacing
+    indc_f = (xx_agg-origin)/spacing
     indc = indc_f.astype(int)
     indc = indc - 1 * np.all((indc == indc_f, indc > 0), axis=0)
 
-    # if len(np.unique(indc)) != len(x):
-    #     if verbose > 0:
-    #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
-    #     return out
-
-    indc_unique, indc_inv = np.unique(indc, return_inverse=True)
-    if len(indc_unique) != len(x):
-        if verbose > 1:
-            print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
-        indc = indc_unique
-        x = np.array([x[indc_inv==j].mean(axis=0) for j in range(len(indc_unique))])
-        v = np.array([v[indc_inv==j].mean() for j in range(len(indc_unique))])
-
-    nc = len(x)
+    nc = len(xx_agg)
 
     # rAA
     rAA = np.zeros((nc, nc))
@@ -1155,12 +1361,12 @@ def krige1D(cov_model,
         krigSD = np.zeros(nx)
 
     if mean.size == 1:
-        v = v - mean
+        v_agg = v_agg - mean
     else:
-        v = v - mean[indc]
+        v_agg = v_agg - mean[indc]
 
     if var is not None and var.size > 1:
-        v = 1./varUpdate[indc] * v
+        v_agg = 1./varUpdate[indc] * v_agg
 
     if conditioningMethod == 1:
         # Method ConditioningA
@@ -1191,8 +1397,8 @@ def krige1D(cov_model,
         if verbose > 2:
             print('KRIGE1D: computing kriging estimates...')
 
-        krig[indnc] = np.dot(rBArAAinv, v)
-        krig[indc] = v
+        krig[indnc] = np.dot(rBArAAinv, v_agg)
+        krig[indc] = v_agg
 
         if computeKrigSD:
             # Compute kriging standard deviation
@@ -1224,14 +1430,14 @@ def krige1D(cov_model,
             print('KRIGE1D: computing kriging estimates...')
 
         # Compute
-        #    u = rAA^(-1) * v, and then
+        #    u = rAA^(-1) * v_agg, and then
         #    Z = rBA * u via the circulant embedding of the covariance matrix
         uEmb = np.zeros(N)
-        uEmb[indcEmb] = np.linalg.solve(rAA, v)
+        uEmb[indcEmb] = np.linalg.solve(rAA, v_agg)
         Z = np.fft.ifft(lam * np.fft.fft(uEmb))
         # ...note that Im(Z) = 0
         krig[indnc] = np.real(Z[indncEmb])
-        krig[indc] = v
+        krig[indc] = v_agg
 
         if computeKrigSD:
             # Compute kriging standard deviation
@@ -1245,6 +1451,10 @@ def krige1D(cov_model,
             del(ccirc)
 
             krigSD[indnc] = np.sqrt(np.maximum(diagEntry - krigSD[indnc], 0.))
+
+    if aggregate_data_op == 'krige' and computeKrigSD:
+        # Set kriging standard deviation at grid cell containing a data
+        krigSD[indc] = v_agg_std
 
     # ... update if non-stationary covariance is specified
     if var is not None:
@@ -1265,6 +1475,8 @@ def krige1D(cov_model,
 def grf2D(cov_model,
           dimension, spacing=(1.0, 1.0), origin=(0.0, 0.0),
           x=None, v=None,
+          aggregate_data_op=None,
+          aggregate_data_op_kwargs={},
           mean=None, var=None,
           nreal=1,
           extensionMin=None, rangeFactorForExtensionMin=1.0,
@@ -1277,30 +1489,29 @@ def grf2D(cov_model,
     Generates Gaussian Random Fields (GRF) in 2D via Fast Fourier Transform (FFT).
 
     The GRFs:
-        - are generated using the given covariance model / function (`cov_model`),
-        - have a specified mean (mean) and variance (var), which can be non
-          stationary
-        - are conditioned to location(s) `x` with value(s) `v`
+    - are generated using the given covariance model / function (`cov_model`),
+    - have a specified mean (mean) and variance (var), which can be non stationary,
+    - are conditioned to location(s) `x` with value(s) `v`.
 
-    Considerations
+    Considerations:
     1) For reproducing covariance model, the dimension of GRF should be large
     enough; let K an integer such that K*`spacing` is greater or equal to the
     correlation range, then
-        - correlation accross opposite border should be removed by extending
-          the domain sufficiently, i.e.
-              extensionMin >= K - 1
-        - two cells could not be correlated simultaneously regarding both
-          distances between them (with respect to the periodic grid), i.e. one
-          should have
-              `dimension+extensionMin` >= 2*K - 1,
-          To sum up, `extensionMin` should be chosen such that
-              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
-          i.e.
-              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
+    - correlation accross opposite border should be removed by extending
+    the domain sufficiently, i.e.
+        extensionMin >= K - 1
+    - two cells could not be correlated simultaneously regarding both
+    distances between them (with respect to the periodic grid), i.e. one
+    should have
+        `dimension+extensionMin` >= 2*K - 1.
+    To sum up, `extensionMin` should be chosen such that
+        `dimension+extensionMin` >= max(`dimension`, K) + K - 1
+    i.e.
+        `extensionMin` >= max(K-1, 2*K-`dimension`-1)
     2) For large data set:
-        - `conditioningMethod` should be set to 2 for using FFT
-        - `measureErrVar` can be set to a small positive value to stabilize the
-          covariance matrix for conditioning locations (solving linear system)
+    - `conditioningMethod` should be set to 2 for using FFT
+    - `measureErrVar` can be set to a small positive value to stabilize the
+    covariance matrix for conditioning locations (solving linear system).
 
     Parameters
     ----------
@@ -1312,7 +1523,7 @@ def grf2D(cov_model,
         `dimension=(nx, ny)`, number of cells in the 2D simulation grid along
         each axis
     spacing : 2-tuple of floats, default: (1.0, 1.0)
-        `spacing=(dx, dy)`, cell size along each axis
+        `spacing=(sx, sy)`, cell size along each axis
     origin : 2-tuple of floats, default: (0.0, 0.0)
         `origin=(ox, oy)`, origin of the 2D simulation grid (lower-left corner)
     x : 2D array of floats of shape (n, 2), optional
@@ -1321,6 +1532,31 @@ def grf2D(cov_model,
         shape (2,) is accepted
     v : 1D array of floats of shape (n,), optional
         data values at `x` (`v[i]` is the data value at `x[i]`)
+    aggregate_data_op : str {'sgs', 'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='sgs'`: function `geone.covModel.sgs` is used
+        with the covariance model `cov_model` given in arguments
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        note: if `aggregate_data_op='sgs'` or `aggregate_data_op='random'`, the
+        aggregation is done for each realization (simulation), i.e. each simulation
+        on the grid starts with a new set of values in conditioning grid cells;
+        note: if `aggregate_data_op='sgs'` or `aggregate_data_op='krige'`, then
+        `cov_model` must be a covariance model and not directly the covariance
+        function;
+        by default: `aggregate_data_op='sgs'` is used
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.sgs`,
+        `geone.covModel.krige`, or `numpy.<aggregate_data_op>`, according to
+        the parameter `aggregate_data_op`
     mean : function (callable), or array-like of floats, or float, optional
         kriging mean value:
         - if a function: function of two arguments (xi, yi) that returns the mean
@@ -1488,23 +1724,28 @@ def grf2D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): `cov_model` is not stationary")
             return None
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxy()
     elif isinstance(cov_model, gcm.CovModel1D):
-        cov_model_2D = gcm.covModel1D_to_covModel2D(cov_model) # convert model 1D in 2D
+        cov_model = gcm.covModel1D_to_covModel2D(cov_model) # convert model 1D in 2D
+            # -> will not be modified cov_model at exit
         # Prevent calculation if covariance model is not stationary
-        if not cov_model_2D.is_stationary():
+        if not cov_model.is_stationary():
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): `cov_model` is not stationary")
             return None
-        cov_func = cov_model_2D.func() # covariance function
-        cov_range = cov_model_2D.rxy()
+        cov_func = cov_model.func() # covariance function
+        cov_range = cov_model.rxy()
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return None
+
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        aggregate_data_op = 'sgs'
 
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
@@ -1519,7 +1760,7 @@ def grf2D(cov_model,
 
     #### Preliminary computation ####
     nx, ny = dimension
-    dx, dy = spacing
+    sx, sy = spacing
     ox, oy = origin
 
     nxy = nx*ny
@@ -1536,7 +1777,7 @@ def grf2D(cov_model,
 
     if x is None and v is not None:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
+            print(f"ERROR ({fname}): `x` is not given (None) but `v` is given (not None)")
         return None
 
     if x is not None:
@@ -1546,60 +1787,160 @@ def grf2D(cov_model,
             return None
         if v is None:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
+                print(f"ERROR ({fname}): `x` is given (not None) but `v` is not given (None)")
             return None
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print(f"ERROR ({fname}): length of 'v' is not valid")
+                print(f"ERROR ({fname}): length of `v` is not valid")
             return None
 
+    mean_x = mean
     if mean is not None:
         if callable(mean):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
-            yi = oy + dy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            xxi, yyi = np.meshgrid(xi, yi)
+            if x is not None:
+                mean_x = mean(x[:, 0], x[:, 1])
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            yyi, xxi = np.meshgrid(yi, xi, indexing='ij')
             mean = mean(xxi, yyi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nxy):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return None
-        if mean.size == nxy:
-            mean = np.asarray(mean).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
-    # if mean is None, set mean further according to possible conditioning value (v)
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nxy:
+                mean = mean.reshape(ny, nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=mean), iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
+    var_x = var
     if var is not None:
         if callable(var):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
-            yi = oy + dy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            xxi, yyi = np.meshgrid(xi, yi)
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            yyi, xxi = np.meshgrid(yi, xi, indexing='ij')
             var = var(xxi, yyi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nxy):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
-            return None
-        if var.size == nxy:
-            var = np.asarray(var).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nxy:
+                var = var.reshape(ny, nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=var), iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
+
+    # data point set from x, v
+    if x is not None:
+        if aggregate_data_op_kwargs is None:
+            aggregate_data_op_kwargs = {}
+        if aggregate_data_op == 'krige' or aggregate_data_op == 'sgs':
+            if cov_range is None:
+                # cov_model is directly the covariance function
+                if verbose > 0:
+                    print(f"ERROR ({fname}): `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used")
+                return None
+            # Get grid cell with at least one data point:
+            # x_agg: 2D array, each row contains the coordinates of the center of such cell
+            im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                         nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
+                                         indicator_var=True, count_var=False)
+            ind_agg = np.where(im_tmp.val[0])
+            if len(ind_agg[0]) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
+            ind_agg = ind_agg[1:] # remove index along z axis
+            del(im_tmp)
+            # Compute
+            # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
+            # - or nreal simulation(s) (v_agg) at x_agg
+            if mean is not None and mean.size > 1:
+                mean_x_agg = mean[*ind_agg]
+            else:
+                mean_x_agg = mean
+            if var is not None and var.size > 1:
+                var_x_agg = var[*ind_agg]
+            else:
+                var_x_agg = var
+            if aggregate_data_op == 'krige':
+                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model, method='simple_kriging',
+                                            mean_x=mean_x, mean_xu=mean_x_agg,
+                                            var_x=var_x, var_xu=var_x_agg,
+                                            verbose=0, **aggregate_data_op_kwargs)
+                # all real (same values)
+                v_agg = np.tile(v_agg, nreal).reshape(nreal, -1)
+            else:
+                v_agg = gcm.sgs(x, v, x_agg, cov_model, method='simple_kriging',
+                                mean_x=mean_x, mean_xu=mean_x_agg,
+                                var_x=var_x, var_xu=var_x_agg,
+                                nreal=nreal, seed=None,
+                                verbose=0, **aggregate_data_op_kwargs)
+            xx_agg, yy_agg = x_agg.T
+            # zz_agg = 0.5*np.ones_like(xx_agg)
+        elif aggregate_data_op == 'random':
+            # Aggregate data on grid cell by taking random point
+            xx, yy = x.T
+            zz = 0.5*np.ones_like(xx)
+            # first realization of v_agg
+            xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, return_inverse=True,
+                                                    **aggregate_data_op_kwargs)
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            # next realizations of v_agg
+            v_agg = np.vstack((v_agg, np.zeros((nreal-1, v_agg.size))))
+            for i in range(1, nreal):
+                v_agg[i] = [v[np.random.choice(np.where(i_inv==j)[0])] for j in range(len(xx_agg))]
+        else:
+            # Aggregate data on grid cell by using the given operation
+            xx, yy = x.T
+            zz = 0.5*np.ones_like(xx)
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, 1, sx, sy, 1.0, ox, oy, 0.0,
+                                                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+                return None
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            # all real (same values)
+            v_agg = np.tile(v_agg, nreal).reshape(nreal, -1)
 
     if not crop:
         if x is not None: # conditional simulation
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with conditional simulation')
+                print(f'ERROR ({fname}): `crop=False` is not valid with conditional simulation')
             return None
 
         if mean is not None and mean.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary mean')
+                print(f'ERROR ({fname}): `crop=False` is not valid with non-stationary mean')
             return None
 
         if var is not None and var.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary variance')
+                print(f'ERROR ({fname}): `crop=False` is not valid with non-stationary variance')
             return None
 
     if extensionMin is None:
@@ -1638,8 +1979,8 @@ def grf2D(cov_model,
     # ccirc: coefficient of the embedding matrix (N2, N1) array
     L1 = int (N1/2)
     L2 = int (N2/2)
-    h1 = np.arange(-L1, L1, dtype=float) * dx # [-L1 ... 0 ... L1-1] * dx
-    h2 = np.arange(-L2, L2, dtype=float) * dy # [-L2 ... 0 ... L2-1] * dy
+    h1 = np.arange(-L1, L1, dtype=float) * sx # [-L1 ... 0 ... L1-1] * sx
+    h2 = np.arange(-L2, L2, dtype=float) * sy # [-L2 ... 0 ... L2-1] * sy
 
     hh = np.meshgrid(h1, h2)
     ccirc = cov_func(np.hstack((hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
@@ -1707,37 +2048,17 @@ def grf2D(cov_model,
         if verbose > 2:
             print('GRF2D: Computing covariance matrix (rAA) for conditioning locations...')
 
-        if np.any(x < origin) or np.any(x > np.asarray(origin) + np.asarray(dimension) * np.asarray(spacing)):
-            if verbose > 0:
-                print(f'ERROR ({fname}): a conditioning point is out of the grid')
-            return None
-
         # Compute
-        #    indc: node index of conditioning node (nearest node),
+        #    indc: node index of conditioning node,
         #          rounded to lower index if between two grid node and index is positive
-        indc_f = (x-origin)/spacing
+        indc_f = (np.array((xx_agg, yy_agg)).T-origin)/spacing
         indc = indc_f.astype(int)
         indc = indc - 1 * np.all((indc == indc_f, indc > 0), axis=0)
         ix, iy = indc[:, 0], indc[:, 1]
 
         indc = ix + iy * nx # single-indices
 
-        # if len(np.unique(indc)) != len(x):
-        #     if verbose > 0:
-        #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
-        #     return None
-
-        indc_unique, indc_inv = np.unique(indc, return_inverse=True)
-        if len(indc_unique) != len(x):
-            if verbose > 1:
-                print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
-            indc = indc_unique
-            iy = indc//nx
-            ix = indc%nx
-            x = np.array([x[indc_inv==j].mean(axis=0) for j in range(len(indc_unique))])
-            v = np.array([v[indc_inv==j].mean() for j in range(len(indc_unique))])
-
-        nc = len(x)
+        nc = len(xx_agg)
 
         # rAA
         rAA = np.zeros((nc, nc))
@@ -1936,8 +2257,8 @@ def grf2D(cov_model,
 
             # Update all simulations at a time,
             # use the matrix rBA * rAA^(-1) already computed
-            grf[:,indnc] = grf[:,indnc] + np.transpose(np.dot(rBArAAinv, np.transpose(v - grf[:,indc])))
-            grf[:,indc] = v
+            grf[:,indnc] = grf[:,indnc] + np.transpose(np.dot(rBArAAinv, np.transpose(v_agg - grf[:,indc])))
+            grf[:,indc] = v_agg
 
         elif conditioningMethod == 2:
             # Method ConditioningB
@@ -1953,7 +2274,7 @@ def grf2D(cov_model,
                     print('GRF2D: Updating conditional simulation {:4d} of {:4d}...'.format(i+1, nreal))
 
                 # Compute residue
-                residu = v - grf[i,indc]
+                residu = v_agg[i] - grf[i, indc]
                 # ... update if non-stationary variance is specified
                 if var is not None and var.size > 1:
                     residu = 1./varUpdate.reshape(-1)[indc] * residu
@@ -1971,7 +2292,7 @@ def grf2D(cov_model,
                     Z = varUpdate.reshape(-1)[indnc] * Z
 
                 grf[i, indnc] = grf[i, indnc] + Z
-                grf[i, indc] = v
+                grf[i, indc] = v_agg[i]
 
         # Reshape grf as initially
         grf.resize(nreal, grfNy, grfNx)
@@ -1983,6 +2304,8 @@ def grf2D(cov_model,
 def krige2D(cov_model,
             dimension, spacing=(1.0, 1.0), origin=(0.0, 0.0),
             x=None, v=None,
+            aggregate_data_op=None,
+            aggregate_data_op_kwargs=None,
             mean=None, var=None,
             extensionMin=None, rangeFactorForExtensionMin=1.0,
             conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
@@ -1994,30 +2317,30 @@ def krige2D(cov_model,
     Computes kriging estimates and standard deviations in 2D via FFT.
 
     It is a simple kriging
-        - of value(s) `v` at location(s) `x`,
-        - based on the covariance model / function (`cov_model`),
-        - with a specified mean (`mean`) and variance (`var`), which can be non
-          stationary
+    - of value(s) `v` at location(s) `x`,
+    - based on the covariance model / function (`cov_model`),
+    - with a specified mean (`mean`) and variance (`var`), which can be non
+    stationary.
 
-    Considerations
+    Considerations:
     1) For reproducing covariance model, the dimension of GRF should be large
     enough; let K an integer such that K*`spacing` is greater or equal to the
     correlation range, then
-        - correlation accross opposite border should be removed by extending
-          the domain sufficiently, i.e.
-              extensionMin >= K - 1
-        - two cells could not be correlated simultaneously regarding both
-          distances between them (with respect to the periodic grid), i.e. one
-          should have
-              `dimension+extensionMin` >= 2*K - 1,
-          To sum up, `extensionMin` should be chosen such that
-              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
-          i.e.
-              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
+    - correlation accross opposite border should be removed by extending
+    the domain sufficiently, i.e.
+        extensionMin >= K - 1
+    - two cells could not be correlated simultaneously regarding both
+    distances between them (with respect to the periodic grid), i.e. one
+    should have
+        `dimension+extensionMin` >= 2*K - 1.
+    To sum up, `extensionMin` should be chosen such that
+        `dimension+extensionMin` >= max(`dimension`, K) + K - 1
+    i.e.
+        `extensionMin` >= max(K-1, 2*K-`dimension`-1)
     2) For large data set:
-        - `conditioningMethod` should be set to 2 for using FFT
-        - `measureErrVar` can be set to a small positive value to stabilize the
-          covariance matrix for conditioning locations (solving linear system)
+    - `conditioningMethod` should be set to 2 for using FFT
+    - `measureErrVar` can be set to a small positive value to stabilize the
+    covariance matrix for conditioning locations (solving linear system).
 
     Parameters
     ----------
@@ -2029,7 +2352,7 @@ def krige2D(cov_model,
         `dimension=(nx, ny)`, number of cells in the 2D simulation grid along
         each axis
     spacing : 2-tuple of floats, default: (1.0, 1.0)
-        `spacing=(dx, dy)`, cell size along each axis
+        `spacing=(sx, sy)`, cell size along each axis
     origin : 2-tuple of floats, default: (0.0, 0.0)
         `origin=(ox, oy)`, origin of the 2D simulation grid (lower-left corner)
     x : 2D array of floats of shape (n, 2), optional
@@ -2038,6 +2361,25 @@ def krige2D(cov_model,
         shape (2,) is accepted
     v : 1D array of floats of shape (n,), optional
         data values at `x` (`v[i]` is the data value at `x[i]`)
+    aggregate_data_op : str {'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        note: if `aggregate_data_op='krige'`, then `cov_model` must be a
+        covariance model and not directly the covariance function;
+        by default: `aggregate_data_op='krige'` is used
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.krige` or
+        `numpy.<aggregate_data_op>`, according to the parameter
+        `aggregate_data_op`
     mean : function (callable), or array-like of floats, or float, optional
         kriging mean value:
         - if a function: function of two arguments (xi, yi) that returns the mean
@@ -2177,83 +2519,99 @@ def krige2D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): `cov_model` is not stationary")
             return out
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxy()
     elif isinstance(cov_model, gcm.CovModel1D):
-        cov_model_2D = gcm.covModel1D_to_covModel2D(cov_model) # convert model 1D in 2D
+        cov_model = gcm.covModel1D_to_covModel2D(cov_model) # convert model 1D in 2D
+            # -> will not be modified cov_model at exit
         # Prevent calculation if covariance model is not stationary
-        if not cov_model_2D.is_stationary():
+        if not cov_model.is_stationary():
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): `cov_model` is not stationary")
             return None
-        cov_func = cov_model_2D.func() # covariance function
-        cov_range = cov_model_2D.rxy()
+        cov_func = cov_model.func() # covariance function
+        cov_range = cov_model.rxy()
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (third argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return out
 
-    # Check conditioning method
-    if conditioningMethod not in (1, 2):
-        if verbose > 0:
-            print(f'ERROR ({fname}): invalid method!')
-        return out
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        aggregate_data_op = 'krige'
 
     nx, ny = dimension
-    dx, dy = spacing
+    sx, sy = spacing
     ox, oy = origin
 
     nxy = nx*ny
 
     if x is None and v is not None:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
-        return out
+            print(f"ERROR ({fname}): `x` is not given (None) but `v` is given (not None)")
+        return None
 
     if x is not None:
+        if conditioningMethod not in (1, 2):
+            if verbose > 0:
+                print(f'ERROR ({fname}): invalid method for conditioning')
+            return None
         if v is None:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
-            return out
+                print(f"ERROR ({fname}): `x` is given (not None) but `v` is not given (None)")
+            return None
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print(f"ERROR ({fname}): length of 'v' is not valid")
-            return out
+                print(f"ERROR ({fname}): length of `v` is not valid")
+            return None
 
+    mean_x = mean
     if mean is not None:
         if callable(mean):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
-            yi = oy + dy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            xxi, yyi = np.meshgrid(xi, yi)
+            if x is not None:
+                mean_x = mean(x[:, 0], x[:, 1])
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            yyi, xxi = np.meshgrid(yi, xi, indexing='ij')
             mean = mean(xxi, yyi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nxy):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return out
-        if mean.size == nxy:
-            mean = np.asarray(mean).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
-    # if mean is None, set mean further according to possible conditioning value (v)
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nxy:
+                mean = mean.reshape(ny, nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=mean), iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
+    var_x = var
     if var is not None:
         if callable(var):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
-            yi = oy + dy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            xxi, yyi = np.meshgrid(xi, yi)
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            yyi, xxi = np.meshgrid(yi, xi, indexing='ij')
             var = var(xxi, yyi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nxy):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
-            return out
-        if var.size == nxy:
-            var = np.asarray(var).reshape(ny, nx) # cast in 2-dimensional array of same shape as grid
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nxy:
+                var = var.reshape(ny, nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=var), iz=0)(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
 
     if x is None:
         # No data: kriging return the mean and the standard deviation...
@@ -2269,6 +2627,63 @@ def krige2D(cov_model,
             return krig, krigSD
         else:
             return krig
+
+    if aggregate_data_op_kwargs is None:
+        aggregate_data_op_kwargs = {}
+
+    if aggregate_data_op == 'krige':
+        if cov_range is None:
+            # cov_model is directly the covariance function
+            if verbose > 0:
+                print(f"ERROR ({fname}): `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used")
+            return None
+        # Get grid cell with at least one data point:
+        # x_agg: 2D array, each row contains the coordinates of the center of such cell
+        im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                     nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
+                                     indicator_var=True, count_var=False)
+        ind_agg = np.where(im_tmp.val[0])
+        if len(ind_agg[0]) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
+        x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
+        ind_agg = ind_agg[1:] # remove index along z axis
+        del(im_tmp)
+        # Compute
+        # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
+        # - or nreal simulation(s) (v_agg) at x_agg
+        if mean is not None and mean.size > 1:
+            mean_x_agg = mean[*ind_agg]
+        else:
+            mean_x_agg = mean
+        if var is not None and var.size > 1:
+            var_x_agg = var[*ind_agg]
+        else:
+            var_x_agg = var
+        v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model, method='simple_kriging',
+                                    mean_x=mean_x, mean_xu=mean_x_agg,
+                                    var_x=var_x, var_xu=var_x_agg,
+                                    verbose=0, **aggregate_data_op_kwargs)
+        xx_agg, yy_agg = x_agg.T
+        # zz_agg = 0.5*np.ones_like(xx_agg)
+    else:
+        # Aggregate data on grid cell by using the given operation
+        xx, yy = x.T
+        zz = 0.5*np.ones_like(xx)
+        try:
+            xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, v,
+                                                nx, ny, 1, sx, sy, 1.0, ox, oy, 0.0,
+                                                op=aggregate_data_op, **aggregate_data_op_kwargs)
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+            return None
+        if len(xx_agg) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
 
     if extensionMin is None:
         # default extensionMin
@@ -2306,8 +2721,8 @@ def krige2D(cov_model,
     # ccirc: coefficient of the embedding matrix (N2, N1) array
     L1 = int (N1/2)
     L2 = int (N2/2)
-    h1 = np.arange(-L1, L1, dtype=float) * dx # [-L1 ... 0 ... L1-1] * dx
-    h2 = np.arange(-L2, L2, dtype=float) * dy # [-L2 ... 0 ... L2-1] * dy
+    h1 = np.arange(-L1, L1, dtype=float) * sx # [-L1 ... 0 ... L1-1] * sx
+    h2 = np.arange(-L2, L2, dtype=float) * sy # [-L2 ... 0 ... L2-1] * sy
 
     hh = np.meshgrid(h1, h2)
     ccirc = cov_func(np.hstack((hh[0].reshape(-1,1), hh[1].reshape(-1,1))))
@@ -2385,37 +2800,17 @@ def krige2D(cov_model,
     if verbose > 2:
         print('KRIGE2D: Computing covariance matrix (rAA) for conditioning locations...')
 
-    if np.any(x < origin) or np.any(x > np.asarray(origin) + np.asarray(dimension) * np.asarray(spacing)):
-        if verbose > 0:
-            print(f'ERROR ({fname}): a conditioning point is out of the grid')
-        return out
-
     # Compute
-    #    indc: node index of conditioning node (nearest node),
+    #    indc: node index of conditioning node,
     #          rounded to lower index if between two grid node and index is positive
-    indc_f = (x-origin)/spacing
+    indc_f = (np.array((xx_agg, yy_agg)).T-origin)/spacing
     indc = indc_f.astype(int)
     indc = indc - 1 * np.all((indc == indc_f, indc > 0), axis=0)
     ix, iy = indc[:, 0], indc[:, 1]
 
     indc = ix + iy * nx # single-indices
 
-    # if len(np.unique(indc)) != len(x):
-    #     if verbose > 0:
-    #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
-    #     return out
-
-    indc_unique, indc_inv = np.unique(indc, return_inverse=True)
-    if len(indc_unique) != len(x):
-        if verbose > 1:
-            print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
-        indc = indc_unique
-        iy = indc//nx
-        ix = indc%nx
-        x = np.array([x[indc_inv==j].mean(axis=0) for j in range(len(indc_unique))])
-        v = np.array([v[indc_inv==j].mean() for j in range(len(indc_unique))])
-
-    nc = len(x)
+    nc = len(xx_agg)
 
     # rAA
     rAA = np.zeros((nc, nc))
@@ -2451,12 +2846,12 @@ def krige2D(cov_model,
         krigSD = np.zeros(ny*nx)
 
     if mean.size == 1:
-        v = v - mean
+        v_agg = v_agg - mean
     else:
-        v = v - mean.reshape(-1)[indc]
+        v_agg = v_agg - mean.reshape(-1)[indc]
 
     if var is not None and var.size > 1:
-        v = 1./varUpdate.reshape(-1)[indc] * v
+        v_agg = 1./varUpdate.reshape(-1)[indc] * v_agg
 
     if conditioningMethod == 1:
         # Method ConditioningA
@@ -2487,8 +2882,8 @@ def krige2D(cov_model,
         if verbose > 2:
             print('KRIGE2D: computing kriging estimates...')
 
-        krig[indnc] = np.dot(rBArAAinv, v)
-        krig[indc] = v
+        krig[indnc] = np.dot(rBArAAinv, v_agg)
+        krig[indc] = v_agg
 
         if computeKrigSD:
             # Compute kriging standard deviation
@@ -2520,14 +2915,14 @@ def krige2D(cov_model,
             print('KRIGE2D: computing kriging estimates...')
 
         # Compute
-        #    u = rAA^(-1) * v, and then
+        #    u = rAA^(-1) * v_agg, and then
         #    Z = rBA * u via the circulant embedding of the covariance matrix
         uEmb = np.zeros(N2*N1)
-        uEmb[indcEmb] = np.linalg.solve(rAA, v)
+        uEmb[indcEmb] = np.linalg.solve(rAA, v_agg)
         Z = np.fft.ifft2(lam * np.fft.fft2(uEmb.reshape(N2, N1)))
         # ...note that Im(Z) = 0
         krig[indnc] = np.real(Z.reshape(-1)[indncEmb])
-        krig[indc] = v
+        krig[indc] = v_agg
 
         if computeKrigSD:
             # Compute kriging standard deviation
@@ -2543,6 +2938,10 @@ def krige2D(cov_model,
             krigSD[indnc] = np.sqrt(np.maximum(diagEntry - krigSD[indnc], 0.))
 
         del(ix, iy, kx, ky)
+
+    if aggregate_data_op == 'krige' and computeKrigSD:
+        # Set kriging standard deviation at grid cell containing a data
+        krigSD[indc] = v_agg_std
 
     # ... update if non-stationary covariance is specified
     if var is not None:
@@ -2567,6 +2966,8 @@ def krige2D(cov_model,
 def grf3D(cov_model,
           dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
           x=None, v=None,
+          aggregate_data_op=None,
+          aggregate_data_op_kwargs=None,
           mean=None, var=None,
           nreal=1,
           extensionMin=None, rangeFactorForExtensionMin=1.0,
@@ -2579,30 +2980,29 @@ def grf3D(cov_model,
     Generates Gaussian Random Fields (GRF) in 3D via Fast Fourier Transform (FFT).
 
     The GRFs:
-        - are generated using the given covariance model / function (`cov_model`),
-        - have a specified mean (mean) and variance (var), which can be non
-          stationary
-        - are conditioned to location(s) `x` with value(s) `v`
+    - are generated using the given covariance model / function (`cov_model`),
+    - have a specified mean (mean) and variance (var), which can be non stationary
+    - are conditioned to location(s) `x` with value(s) `v`.
 
-    Considerations
+    Considerations:
     1) For reproducing covariance model, the dimension of GRF should be large
     enough; let K an integer such that K*`spacing` is greater or equal to the
     correlation range, then
-        - correlation accross opposite border should be removed by extending
-          the domain sufficiently, i.e.
-              extensionMin >= K - 1
-        - two cells could not be correlated simultaneously regarding both
-          distances between them (with respect to the periodic grid), i.e. one
-          should have
-              `dimension+extensionMin` >= 2*K - 1,
-          To sum up, `extensionMin` should be chosen such that
-              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
-          i.e.
-              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
+    - correlation accross opposite border should be removed by extending
+    the domain sufficiently, i.e.
+        extensionMin >= K - 1
+    - two cells could not be correlated simultaneously regarding both
+    distances between them (with respect to the periodic grid), i.e. one
+    should have
+        `dimension+extensionMin` >= 2*K - 1.
+    To sum up, `extensionMin` should be chosen such that
+        `dimension+extensionMin` >= max(`dimension`, K) + K - 1
+    i.e.
+        `extensionMin` >= max(K-1, 2*K-`dimension`-1)
     2) For large data set:
-        - `conditioningMethod` should be set to 2 for using FFT
-        - `measureErrVar` can be set to a small positive value to stabilize the
-          covariance matrix for conditioning locations (solving linear system)
+    - `conditioningMethod` should be set to 2 for using FFT
+    - `measureErrVar` can be set to a small positive value to stabilize the
+    covariance matrix for conditioning locations (solving linear system).
 
     Parameters
     ----------
@@ -2614,7 +3014,7 @@ def grf3D(cov_model,
         `dimension=(nx, ny, nz)`, number of cells in the 3D simulation grid along
         each axis
     spacing : 3-tuple of floats, default: (1.0,1.0, 1.0)
-        `spacing=(dx, dy, dz)`, cell size along each axis
+        `spacing=(sx, sy, sz)`, cell size along each axis
     origin : 3-tuple of floats, default: (0.0, 0.0, 0.0)
         `origin=(ox, oy, oz)`, origin of the 3D simulation grid (bottom-lower-left
         corner)
@@ -2624,6 +3024,31 @@ def grf3D(cov_model,
         shape (3,) is accepted
     v : 1D array of floats of shape (n,), optional
         data values at `x` (`v[i]` is the data value at `x[i]`)
+    aggregate_data_op : str {'sgs', 'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='sgs'`: function `geone.covModel.sgs` is used
+        with the covariance model `cov_model` given in arguments
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        note: if `aggregate_data_op='sgs'` or `aggregate_data_op='random'`, the
+        aggregation is done for each realization (simulation), i.e. each simulation
+        on the grid starts with a new set of values in conditioning grid cells;
+        note: if `aggregate_data_op='sgs'` or `aggregate_data_op='krige'`, then
+        `cov_model` must be a covariance model and not directly the covariance
+        function;
+        by default: `aggregate_data_op='sgs'` is used
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.sgs`,
+        `geone.covModel.krige`, or `numpy.<aggregate_data_op>`, according to
+        the parameter `aggregate_data_op`
     mean : function (callable), or array-like of floats, or float, optional
         kriging mean value:
         - if a function: function of three arguments (xi, yi, zi) that returns
@@ -2795,23 +3220,28 @@ def grf3D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): `cov_model` is not stationary")
             return None
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxyz()
     elif isinstance(cov_model, gcm.CovModel1D):
-        cov_model_3D = gcm.covModel1D_to_covModel3D(cov_model) # convert model 1D in 3D
+        cov_model = gcm.covModel1D_to_covModel3D(cov_model) # convert model 1D in 3D
+            # -> will not be modified cov_model at exit
         # Prevent calculation if covariance model is not stationary
-        if not cov_model_3D.is_stationary():
+        if not cov_model.is_stationary():
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): `cov_model` is not stationary")
             return None
-        cov_func = cov_model_3D.func() # covariance function
-        cov_range = cov_model_3D.rxyz()
+        cov_func = cov_model.func() # covariance function
+        cov_range = cov_model.rxyz()
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (first argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return None
+
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        aggregate_data_op = 'sgs'
 
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
@@ -2826,7 +3256,7 @@ def grf3D(cov_model,
 
     #### Preliminary computation ####
     nx, ny, nz = dimension
-    dx, dy, dz = spacing
+    sx, sy, sz = spacing
     ox, oy, oz = origin
 
     nxy = nx*ny
@@ -2844,7 +3274,7 @@ def grf3D(cov_model,
 
     if x is None and v is not None:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
+            print(f"ERROR ({fname}): `x` is not given (None) but `v` is given (not None)")
         return None
 
     if x is not None:
@@ -2854,62 +3284,158 @@ def grf3D(cov_model,
             return None
         if v is None:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
+                print(f"ERROR ({fname}): `x` is given (not None) but `v` is not given (None)")
             return None
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 3-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print(f"ERROR ({fname}): length of 'v' is not valid")
+                print(f"ERROR ({fname}): length of `v` is not valid")
             return None
 
+    mean_x = mean
     if mean is not None:
         if callable(mean):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
-            yi = oy + dy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            zi = oz + dz*(0.5+np.arange(nz)) # z-coordinate of cell center
+            if x is not None:
+                mean_x = mean(x[:, 0], x[:, 1], x[:, 2])
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
             zzi, yyi, xxi = np.meshgrid(zi, yi, xi, indexing='ij')
             mean = mean(xxi, yyi, zzi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return None
-        if mean.size == nxyz:
-            mean = np.asarray(mean).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
-    # if mean is None, set mean further according to possible conditioning value (v)
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nxyz:
+                mean = mean.reshape(nz, ny, nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=mean))(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
+    var_x = var
     if var is not None:
         if callable(var):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
-            yi = oy + dy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            zi = oz + dz*(0.5+np.arange(nz)) # z-coordinate of cell center
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
             zzi, yyi, xxi = np.meshgrid(zi, yi, xi, indexing='ij')
             var = var(xxi, yyi, zzi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
-            return None
-        if var.size == nxyz:
-            var = np.asarray(var).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nxyz:
+                var = var.reshape(nz, ny, nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=var))(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
+
+    # data point set from x, v
+    if x is not None:
+        if aggregate_data_op_kwargs is None:
+            aggregate_data_op_kwargs = {}
+        if aggregate_data_op == 'krige' or aggregate_data_op == 'sgs':
+            if cov_range is None:
+                # cov_model is directly the covariance function
+                if verbose > 0:
+                    print(f"ERROR ({fname}): `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used")
+                return None
+            # Get grid cell with at least one data point:
+            # x_agg: 2D array, each row contains the coordinates of the center of such cell
+            im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                         nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
+                                         indicator_var=True, count_var=False)
+            ind_agg = np.where(im_tmp.val[0])
+            if len(ind_agg[0]) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
+            del(im_tmp)
+            # Compute
+            # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
+            # - or nreal simulation(s) (v_agg) at x_agg
+            if mean is not None and mean.size > 1:
+                mean_x_agg = mean[*ind_agg]
+            else:
+                mean_x_agg = mean
+            if var is not None and var.size > 1:
+                var_x_agg = var[*ind_agg]
+            else:
+                var_x_agg = var
+            if aggregate_data_op == 'krige':
+                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model, method='simple_kriging',
+                                             mean_x=mean_x, mean_xu=mean_x_agg,
+                                             var_x=var_x, var_xu=var_x_agg,
+                                             verbose=0, **aggregate_data_op_kwargs)
+                # all real (same values)
+                v_agg = np.tile(v_agg, nreal).reshape(nreal, -1)
+            else:
+                v_agg = gcm.sgs(x, v, x_agg, cov_model, method='simple_kriging',
+                                mean_x=mean_x, mean_xu=mean_x_agg,
+                                var_x=var_x, var_xu=var_x_agg,
+                                nreal=nreal, seed=None,
+                                verbose=0, **aggregate_data_op_kwargs)
+            xx_agg, yy_agg, zz_agg = x_agg.T
+        elif aggregate_data_op == 'random':
+            # Aggregate data on grid cell by taking random point
+            xx, yy, zz = x.T
+            # first realization of v_agg
+            xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, return_inverse=True,
+                                                    **aggregate_data_op_kwargs)
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            # next realizations of v_agg
+            v_agg = np.vstack((v_agg, np.zeros((nreal-1, v_agg.size))))
+            for i in range(1, nreal):
+                v_agg[i] = [v[np.random.choice(np.where(i_inv==j)[0])] for j in range(len(xx_agg))]
+        else:
+            # Aggregate data on grid cell by using the given operation
+            xx, yy, zz = x.T
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                    xx, yy, zz, v,
+                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+                return None
+            if len(xx_agg) == 0:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): no data point in grid")
+                return None
+            # all real (same values)
+            v_agg = np.tile(v_agg, nreal).reshape(nreal, -1)
 
     if not crop:
         if x is not None: # conditional simulation
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with conditional simulation')
+                print(f'ERROR ({fname}): `crop=False` is not valid with conditional simulation')
             return None
 
         if mean is not None and mean.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary mean')
+                print(f'ERROR ({fname}): `crop=False` is not valid with non-stationary mean')
             return None
 
         if var is not None and var.size > 1:
             if verbose > 0:
-                print(f'ERROR ({fname}): "no crop" is not valid with non-stationary variance')
+                print(f'ERROR ({fname}): `crop=False` is not valid with non-stationary variance')
             return None
 
     if extensionMin is None:
@@ -2954,9 +3480,9 @@ def grf3D(cov_model,
     L1 = int (N1/2)
     L2 = int (N2/2)
     L3 = int (N3/2)
-    h1 = np.arange(-L1, L1, dtype=float) * dx # [-L1 ... 0 ... L1-1] * dx
-    h2 = np.arange(-L2, L2, dtype=float) * dy # [-L2 ... 0 ... L2-1] * dy
-    h3 = np.arange(-L3, L3, dtype=float) * dz # [-L3 ... 0 ... L3-1] * dz
+    h1 = np.arange(-L1, L1, dtype=float) * sx # [-L1 ... 0 ... L1-1] * sx
+    h2 = np.arange(-L2, L2, dtype=float) * sy # [-L2 ... 0 ... L2-1] * sy
+    h3 = np.arange(-L3, L3, dtype=float) * sz # [-L3 ... 0 ... L3-1] * sz
 
     hh = np.meshgrid(h2, h3, h1) # as this! hh[i]: (N3, N2, N1) array
                                  # hh[0]: y-coord, hh[1]: z-coord, hh[2]: x-coord
@@ -3028,39 +3554,17 @@ def grf3D(cov_model,
         if verbose > 2:
             print('GRF3D: Computing covariance matrix (rAA) for conditioning locations...')
 
-        if np.any(x < origin) or np.any(x > np.asarray(origin) + np.asarray(dimension) * np.asarray(spacing)):
-            if verbose > 0:
-                print(f'ERROR ({fname}): a conditioning point is out of the grid')
-            return None
-
         # Compute
-        #    indc: node index of conditioning node (nearest node),
+        #    indc: node index of conditioning node,
         #          rounded to lower index if between two grid node and index is positive
-        indc_f = (x-origin)/spacing
+        indc_f = (np.array((xx_agg, yy_agg, zz_agg)).T-origin)/spacing
         indc = indc_f.astype(int)
         indc = indc - 1 * np.all((indc == indc_f, indc > 0), axis=0)
         ix, iy, iz = indc[:, 0], indc[:, 1], indc[:, 2]
 
         indc = ix + iy * nx + iz * nxy # single-indices
 
-        # if len(np.unique(indc)) != len(x):
-        #     if verbose > 0:
-        #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
-        #     return None
-
-        indc_unique, indc_inv = np.unique(indc, return_inverse=True)
-        if len(indc_unique) != len(x):
-            if verbose > 1:
-                print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
-            indc = indc_unique
-            iz = indc//nxy
-            j = indc%nxy
-            iy = j//nx
-            ix = j%nx
-            x = np.array([x[indc_inv==j].mean(axis=0) for j in range(len(indc_unique))])
-            v = np.array([v[indc_inv==j].mean() for j in range(len(indc_unique))])
-
-        nc = len(x)
+        nc = len(xx_agg)
 
         # rAA
         rAA = np.zeros((nc, nc))
@@ -3262,8 +3766,8 @@ def grf3D(cov_model,
 
             # Update all simulations at a time,
             # use the matrix rBA * rAA^(-1) already computed
-            grf[:,indnc] = grf[:,indnc] + np.transpose(np.dot(rBArAAinv, np.transpose(v - grf[:,indc])))
-            grf[:,indc] = v
+            grf[:,indnc] = grf[:,indnc] + np.transpose(np.dot(rBArAAinv, np.transpose(v_agg - grf[:,indc])))
+            grf[:,indc] = v_agg
 
         elif conditioningMethod == 2:
             # Method ConditioningB
@@ -3279,7 +3783,7 @@ def grf3D(cov_model,
                     print('GRF3D: Updating conditional simulation {:4d} of {:4d}...'.format(i+1, nreal))
 
                 # Compute residue
-                residu = v - grf[i,indc]
+                residu = v_agg[i] - grf[i, indc]
                 # ... update if non-stationary variance is specified
                 if var is not None and var.size > 1:
                     residu = 1./varUpdate.reshape(-1)[indc] * residu
@@ -3297,7 +3801,7 @@ def grf3D(cov_model,
                     Z = varUpdate.reshape(-1)[indnc] * Z
 
                 grf[i, indnc] = grf[i, indnc] + Z
-                grf[i, indc] = v
+                grf[i, indc] = v_agg[i]
 
         # Reshape grf as initially
         grf.resize(nreal, grfNz, grfNy, grfNx)
@@ -3309,6 +3813,8 @@ def grf3D(cov_model,
 def krige3D(cov_model,
             dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
             x=None, v=None,
+            aggregate_data_op=None,
+            aggregate_data_op_kwargs=None,
             mean=None, var=None,
             extensionMin=None, rangeFactorForExtensionMin=1.0,
             conditioningMethod=1, # note: set conditioningMethod=2 if unable to allocate memory
@@ -3320,30 +3826,30 @@ def krige3D(cov_model,
     Computes kriging estimates and standard deviations in 3D via FFT.
 
     It is a simple kriging
-        - of value(s) `v` at location(s) `x`,
-        - based on the covariance model / function (`cov_model`),
-        - with a specified mean (`mean`) and variance (`var`), which can be non
-          stationary
+    - of value(s) `v` at location(s) `x`,
+    - based on the covariance model / function (`cov_model`),
+    - with a specified mean (`mean`) and variance (`var`), which can be non
+    stationary.
 
-    Considerations
+    Considerations:
     1) For reproducing covariance model, the dimension of GRF should be large
     enough; let K an integer such that K*`spacing` is greater or equal to the
     correlation range, then
-        - correlation accross opposite border should be removed by extending
-          the domain sufficiently, i.e.
-              extensionMin >= K - 1
-        - two cells could not be correlated simultaneously regarding both
-          distances between them (with respect to the periodic grid), i.e. one
-          should have
-              `dimension+extensionMin` >= 2*K - 1,
-          To sum up, `extensionMin` should be chosen such that
-              `dimension+extensionMin` >= max(`dimension`, K) + K - 1
-          i.e.
-              `extensionMin` >= max(K-1, 2*K-`dimension`-1)
+    - correlation accross opposite border should be removed by extending
+    the domain sufficiently, i.e.
+        extensionMin >= K - 1
+    - two cells could not be correlated simultaneously regarding both
+    distances between them (with respect to the periodic grid), i.e. one
+    should have
+        `dimension+extensionMin` >= 2*K - 1.
+    To sum up, `extensionMin` should be chosen such that
+        `dimension+extensionMin` >= max(`dimension`, K) + K - 1
+    i.e.
+        `extensionMin` >= max(K-1, 2*K-`dimension`-1)
     2) For large data set:
-        - `conditioningMethod` should be set to 2 for using FFT
-        - `measureErrVar` can be set to a small positive value to stabilize the
-          covariance matrix for conditioning locations (solving linear system)
+    - `conditioningMethod` should be set to 2 for using FFT
+    - `measureErrVar` can be set to a small positive value to stabilize the
+    covariance matrix for conditioning locations (solving linear system).
 
     Parameters
     ----------
@@ -3355,7 +3861,7 @@ def krige3D(cov_model,
         `dimension=(nx, ny, nz)`, number of cells in the 3D simulation grid along
         each axis
     spacing : 3-tuple of floats, default: (1.0,1.0, 1.0)
-        `spacing=(dx, dy, dz)`, cell size along each axis
+        `spacing=(sx, sy, sz)`, cell size along each axis
     origin : 3-tuple of floats, default: (0.0, 0.0, 0.0)
         `origin=(ox, oy, oz)`, origin of the 3D simulation grid (bottom-lower-left
         corner)
@@ -3365,6 +3871,25 @@ def krige3D(cov_model,
         shape (3,) is accepted
     v : 1D array of floats of shape (n,), optional
         data values at `x` (`v[i]` is the data value at `x[i]`)
+    aggregate_data_op : str {'krige', 'min', 'max', 'mean', 'quantile',
+                        'most_freq', 'random'}, optional
+        operation used to aggregate data points falling in the same grid cells;
+        - if `aggregate_data_op='krige'`: function `geone.covModel.krige` is used
+        with the covariance model `cov_model` given in arguments
+        - if `aggregate_data_op='most_freq'`: most frequent value is selected
+        (smallest one if more than one value with the maximal frequence)
+        - if `aggregate_data_op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<aggregate_data_op>` is used with the
+        additional parameters given by `aggregate_data_op_kwargs`, note that, e.g.
+        `aggregate_data_op='quantile'` requires the additional parameter
+        `q=<quantile_to_compute>`;
+        note: if `aggregate_data_op='krige'`, then `cov_model` must be a
+        covariance model and not directly the covariance function;
+        by default: `aggregate_data_op='krige'` is used
+    aggregate_data_op_kwargs : dict, optional
+        keyword arguments to be passed to `geone.covModel.krige` or
+        `numpy.<aggregate_data_op>`, according to the parameter
+        `aggregate_data_op`
     mean : function (callable), or array-like of floats, or float, optional
         kriging mean value:
         - if a function: function of three arguments (xi, yi, zi) that returns
@@ -3506,32 +4031,31 @@ def krige3D(cov_model,
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): `cov_model` is not stationary")
             return out
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxyz()
     elif isinstance(cov_model, gcm.CovModel1D):
-        cov_model_3D = gcm.covModel1D_to_covModel3D(cov_model) # convert model 1D in 3D
+        cov_model = gcm.covModel1D_to_covModel3D(cov_model) # convert model 1D in 3D
+            # -> will not be modified cov_model at exit
         # Prevent calculation if covariance model is not stationary
-        if not cov_model_3D.is_stationary():
+        if not cov_model.is_stationary():
             if verbose > 0:
-                print(f"ERROR ({fname}): 'cov_model' is not stationary")
+                print(f"ERROR ({fname}): `cov_model` is not stationary")
             return None
-        cov_func = cov_model_3D.func() # covariance function
-        cov_range = cov_model_3D.rxyz()
+        cov_func = cov_model.func() # covariance function
+        cov_range = cov_model.rxyz()
     else:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'cov_model' (third argument) is not valid")
+            print(f"ERROR ({fname}): `cov_model` is not valid")
         return out
 
-    # Check conditioning method
-    if conditioningMethod not in (1, 2):
-        if verbose > 0:
-            print(f'ERROR ({fname}): invalid method!')
-        return out
+    # aggregate_data_op (default)
+    if aggregate_data_op is None:
+        aggregate_data_op = 'krige'
 
     nx, ny, nz = dimension
-    dx, dy, dz = spacing
+    sx, sy, sz = spacing
     ox, oy, oz = origin
 
     nxy = nx*ny
@@ -3539,53 +4063,70 @@ def krige3D(cov_model,
 
     if x is None and v is not None:
         if verbose > 0:
-            print(f"ERROR ({fname}): 'x' is not given (None) but 'v' is given (not None)")
-        return out
+            print(f"ERROR ({fname}): `x` is not given (None) but `v` is given (not None)")
+        return None
 
     if x is not None:
+        if conditioningMethod not in (1, 2):
+            if verbose > 0:
+                print(f'ERROR ({fname}): invalid method for conditioning')
+            return None
         if v is None:
             if verbose > 0:
-                print(f"ERROR ({fname}): 'x' is given (not None) but 'v' is not given (None)")
-            return out
+                print(f"ERROR ({fname}): `x` is given (not None) but `v` is not given (None)")
+            return None
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 3-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             if verbose > 0:
-                print(f"ERROR ({fname}): length of 'v' is not valid")
-            return out
+                print(f"ERROR ({fname}): length of `v` is not valid")
+            return None
 
+    mean_x = mean
     if mean is not None:
         if callable(mean):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
-            yi = oy + dy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            zi = oz + dz*(0.5+np.arange(nz)) # z-coordinate of cell center
+            if x is not None:
+                mean_x = mean(x[:, 0], x[:, 1], x[:, 2])
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
             zzi, yyi, xxi = np.meshgrid(zi, yi, xi, indexing='ij')
             mean = mean(xxi, yyi, zzi) # replace function 'mean' by its evaluation on the grid
         else:
             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if mean.size not in (1, nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'mean' is not valid")
-            return out
-        if mean.size == nxyz:
-            mean = np.asarray(mean).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
-    # if mean is None, set mean further according to possible conditioning value (v)
+            if mean.size == 1:
+                if x is not None:
+                    mean_x = mean
+            elif mean.size == nxyz:
+                mean = mean.reshape(nz, ny, nx)
+                if x is not None:
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=mean))(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `mean` is not valid")
+                return None
 
+    var_x = var
     if var is not None:
         if callable(var):
-            xi = ox + dx*(0.5+np.arange(nx)) # x-coordinate of cell center
-            yi = oy + dy*(0.5+np.arange(ny)) # y-coordinate of cell center
-            zi = oz + dz*(0.5+np.arange(nz)) # z-coordinate of cell center
+            xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+            yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+            zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
             zzi, yyi, xxi = np.meshgrid(zi, yi, xi, indexing='ij')
             var = var(xxi, yyi, zzi) # replace function 'var' by its evaluation on the grid
         else:
             var = np.asarray(var, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-        if var.size not in (1, nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of 'var' is not valid")
-            return out
-        if var.size == nxyz:
-            var = np.asarray(var).reshape(nz, ny, nx) # cast in 2-dimensional array of same shape as grid
+            if var.size == 1:
+                if x is not None:
+                    var_x = var
+            elif var.size == nxyz:
+                var = var.reshape(nz, ny, nx)
+                if x is not None:
+                    var_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=var))(x)
+            else:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): size of `var` is not valid")
+                return None
 
     if x is None:
         # No data: kriging return the mean and the standard deviation...
@@ -3601,6 +4142,60 @@ def krige3D(cov_model,
             return krig, krigSD
         else:
             return krig
+
+    if aggregate_data_op_kwargs is None:
+        aggregate_data_op_kwargs = {}
+
+    if aggregate_data_op == 'krige':
+        if cov_range is None:
+            # cov_model is directly the covariance function
+            if verbose > 0:
+                print(f"ERROR ({fname}): `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used")
+            return None
+        # Get grid cell with at least one data point:
+        # x_agg: 2D array, each row contains the coordinates of the center of such cell
+        im_tmp = img.imageFromPoints(x, values=None, varname=None,
+                                     nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
+                                     indicator_var=True, count_var=False)
+        ind_agg = np.where(im_tmp.val[0])
+        if len(ind_agg[0]) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
+        x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
+        del(im_tmp)
+        # Compute
+        # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
+        # - or nreal simulation(s) (v_agg) at x_agg
+        if mean is not None and mean.size > 1:
+            mean_x_agg = mean[*ind_agg]
+        else:
+            mean_x_agg = mean
+        if var is not None and var.size > 1:
+            var_x_agg = var[*ind_agg]
+        else:
+            var_x_agg = var
+        v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model, method='simple_kriging',
+                                     mean_x=mean_x, mean_xu=mean_x_agg,
+                                     var_x=var_x, var_xu=var_x_agg,
+                                     verbose=0, **aggregate_data_op_kwargs)
+        xx_agg, yy_agg, zz_agg = x_agg.T
+    else:
+        # Aggregate data on grid cell by using the given operation
+        xx, yy, zz = x.T
+        try:
+            xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
+                                                xx, yy, zz, v,
+                                                nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                op=aggregate_data_op, **aggregate_data_op_kwargs)
+        except:
+            if verbose > 0:
+                print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
+            return None
+        if len(xx_agg) == 0:
+            if verbose > 0:
+                print(f"ERROR ({fname}): no data point in grid")
+            return None
 
     if extensionMin is None:
         # default extensionMin
@@ -3644,9 +4239,9 @@ def krige3D(cov_model,
     L1 = int (N1/2)
     L2 = int (N2/2)
     L3 = int (N3/2)
-    h1 = np.arange(-L1, L1, dtype=float) * dx # [-L1 ... 0 ... L1-1] * dx
-    h2 = np.arange(-L2, L2, dtype=float) * dy # [-L2 ... 0 ... L2-1] * dy
-    h3 = np.arange(-L3, L3, dtype=float) * dz # [-L3 ... 0 ... L3-1] * dz
+    h1 = np.arange(-L1, L1, dtype=float) * sx # [-L1 ... 0 ... L1-1] * sx
+    h2 = np.arange(-L2, L2, dtype=float) * sy # [-L2 ... 0 ... L2-1] * sy
+    h3 = np.arange(-L3, L3, dtype=float) * sz # [-L3 ... 0 ... L3-1] * sz
 
     hh = np.meshgrid(h2, h3, h1) # as this! hh[i]: (N3, N2, N1) array
                                  # hh[0]: y-coord, hh[1]: z-coord, hh[2]: x-coord
@@ -3728,39 +4323,17 @@ def krige3D(cov_model,
     if verbose > 2:
         print('KRIGE3D: Computing covariance matrix (rAA) for conditioning locations...')
 
-    if np.any(x < origin) or np.any(x > np.asarray(origin) + np.asarray(dimension) * np.asarray(spacing)):
-        if verbose > 0:
-            print(f'ERROR ({fname}): a conditioning point is out of the grid')
-        return out
-
     # Compute
-    #    indc: node index of conditioning node (nearest node),
+    #    indc: node index of conditioning node,
     #          rounded to lower index if between two grid node and index is positive
-    indc_f = (x-origin)/spacing
+    indc_f = (np.array((xx_agg, yy_agg, zz_agg)).T-origin)/spacing
     indc = indc_f.astype(int)
     indc = indc - 1 * np.all((indc == indc_f, indc > 0), axis=0)
     ix, iy, iz = indc[:, 0], indc[:, 1], indc[:, 2]
 
     indc = ix + iy * nx + iz * nxy # single-indices
 
-    # if len(np.unique(indc)) != len(x):
-    #     if verbose > 0:
-    #         print(f'ERROR ({fname}): more than one conditioning point in a same grid cell')
-    #     return out
-
-    indc_unique, indc_inv = np.unique(indc, return_inverse=True)
-    if len(indc_unique) != len(x):
-        if verbose > 1:
-            print(f'WARNING ({fname}): aggregating (mean) conditioning points falling in a same grid cell')
-        indc = indc_unique
-        iz = indc//nxy
-        j = indc%nxy
-        iy = j//nx
-        ix = j%nx
-        x = np.array([x[indc_inv==j].mean(axis=0) for j in range(len(indc_unique))])
-        v = np.array([v[indc_inv==j].mean() for j in range(len(indc_unique))])
-
-    nc = len(x)
+    nc = len(xx_agg)
 
     # rAA
     rAA = np.zeros((nc, nc))
@@ -3799,12 +4372,12 @@ def krige3D(cov_model,
         krigSD = np.zeros(nz*ny*nx)
 
     if mean.size == 1:
-        v = v - mean
+        v_agg = v_agg - mean
     else:
-        v = v - mean.reshape(-1)[indc]
+        v_agg = v_agg - mean.reshape(-1)[indc]
 
     if var is not None and var.size > 1:
-        v = 1./varUpdate.reshape(-1)[indc] * v
+        v_agg = 1./varUpdate.reshape(-1)[indc] * v_agg
 
     if conditioningMethod == 1:
         # Method ConditioningA
@@ -3835,8 +4408,8 @@ def krige3D(cov_model,
         if verbose > 2:
             print('KRIGE3D: computing kriging estimates...')
 
-        krig[indnc] = np.dot(rBArAAinv, v)
-        krig[indc] = v
+        krig[indnc] = np.dot(rBArAAinv, v_agg)
+        krig[indc] = v_agg
 
         if computeKrigSD:
             # Compute kriging standard deviation
@@ -3868,14 +4441,14 @@ def krige3D(cov_model,
             print('KRIGE3D: computing kriging estimates...')
 
         # Compute
-        #    u = rAA^(-1) * v, and then
+        #    u = rAA^(-1) * v_agg, and then
         #    Z = rBA * u via the circulant embedding of the covariance matrix
         uEmb = np.zeros(N3*N2*N1)
-        uEmb[indcEmb] = np.linalg.solve(rAA, v)
+        uEmb[indcEmb] = np.linalg.solve(rAA, v_agg)
         Z = np.fft.ifftn(lam * np.fft.fftn(uEmb.reshape(N3, N2, N1)))
         # ...note that Im(Z) = 0
         krig[indnc] = np.real(Z.reshape(-1)[indncEmb])
-        krig[indc] = v
+        krig[indc] = v_agg
 
         if computeKrigSD:
             # Compute kriging standard deviation
@@ -3891,6 +4464,10 @@ def krige3D(cov_model,
             krigSD[indnc] = np.sqrt(np.maximum(diagEntry - krigSD[indnc], 0.))
 
         del(ix, iy, iz, kx, ky, kz)
+
+    if aggregate_data_op == 'krige' and computeKrigSD:
+        # Set kriging standard deviation at grid cell containing a data
+        krigSD[indc] = v_agg_std
 
     # ... update if non-stationary covariance is specified
     if var is not None:
@@ -3926,7 +4503,7 @@ if __name__ == "__main__":
     ########## 1D case ##########
     # Define grid
     nx = 2000
-    dx = 0.5
+    sx = 0.5
     ox = 0.0
     # Define covariance model
     cov_model1 = gcm.CovModel1D(elem=[
@@ -3953,7 +4530,7 @@ if __name__ == "__main__":
 
     # Generate GRF
     t1 = time.time()
-    grf1 = grf1D(cov_model1, nx, dx, origin=ox,
+    grf1 = grf1D(cov_model1, nx, sx, origin=ox,
                  nreal=nreal, mean=mean, var=var,
                  x=x, v=v,
                  method=3, conditioningMethod=2 ) # grf1: (nreal,nx) array
@@ -3970,7 +4547,7 @@ if __name__ == "__main__":
     if x is not None:
         # Kriging
         t1 = time.time()
-        krig1, krig1_std = krige1D(x, v, cov_model1, nx, dx, origin=ox,
+        krig1, krig1_std = krige1D(x, v, cov_model1, nx, sx, origin=ox,
                                mean=mean, var=var,
                                conditioningMethod=2)
         t2 = time.time()
@@ -3986,7 +4563,7 @@ if __name__ == "__main__":
     # Display
     # -------
     # xg: center of grid points
-    xg = ox + dx * (0.5 + np.arange(nx))
+    xg = ox + sx * (0.5 + np.arange(nx))
 
     # === 4 real and mean and sd of all real
     fig, ax = plt.subplots(figsize=(20,10))
@@ -4043,11 +4620,11 @@ if __name__ == "__main__":
     ########## 2D case ##########
     # Define grid
     nx, ny = 231, 249
-    dx, dy = 1., 1.
+    sx, sy = 1., 1.
     ox, oy = 0., 0.
 
     dimension = [nx, ny]
-    spacing = [dx, dy]
+    spacing = [sx, sy]
     origin = [ox, oy]
 
     # Define covariance model
@@ -4089,7 +4666,7 @@ if __name__ == "__main__":
     # print('Elapsed time: {} sec'.format(time_case2D))
 
     # Fill an image (Img class) (for display, see below)
-    im2 = img.Img(nx, ny, 1, dx, dy, 1., ox, oy, 0., nv=nreal, val=grf2)
+    im2 = img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=nreal, val=grf2)
     del(grf2)
 
     # Compute mean and standard deviation over the realizations
@@ -4109,7 +4686,7 @@ if __name__ == "__main__":
         # print('Elapsed time for kriging: {} sec'.format(time_krig_case2D))
 
         # Fill an image (Img class) (for display, see below)
-        im2_krig = img.Img(nx, ny, 1, dx, dy, 1., ox, oy, 0., nv=2, val=np.array((krig2, krig2_std)))
+        im2_krig = img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=2, val=np.array((krig2, krig2_std)))
         del(krig2, krig2_std)
 
         peak_to_peak_mean2 = np.ptp(im2_mean.val[0] - im2_krig.val[0])
@@ -4203,11 +4780,11 @@ if __name__ == "__main__":
     ########## 3D case ##########
     # Define grid
     nx, ny, nz = 85, 56, 34
-    dx, dy, dz = 1., 1., 1.
+    sx, sy, sz = 1., 1., 1.
     ox, oy, oz = 0., 0., 0.
 
     dimension = [nx, ny, nz]
-    spacing = [dx, dy, dy]
+    spacing = [sx, sy, sz]
     origin = [ox, oy, oz]
 
     # Define covariance model
@@ -4249,7 +4826,7 @@ if __name__ == "__main__":
     # print('Elapsed time: {} sec'.format(time_case3D))
 
     # Fill an image (Img class) (for display, see below)
-    im3 = img.Img(nx, ny, nz, dx, dy, dz, ox, oy, oz, nv=nreal, val=grf3)
+    im3 = img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=nreal, val=grf3)
     del(grf3)
 
     # Compute mean and standard deviation over the realizations
@@ -4269,7 +4846,7 @@ if __name__ == "__main__":
         # print('Elapsed time for kriging: {} sec'.format(time_krig_case3D))
 
         # Fill an image (Img class) (for display, see below)
-        im3_krig = img.Img(nx, ny, nz, dx, dy, dz, ox, oy, oz, nv=2, val=np.array((krig3, krig3_std)))
+        im3_krig = img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=2, val=np.array((krig3, krig3_std)))
         del(krig3, krig3_std)
 
         peak_to_peak_mean3 = np.ptp(im3_mean.val[0] - im3_krig.val[0])

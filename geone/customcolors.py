@@ -85,17 +85,17 @@ def custom_cmap(cseq,
     if aseq.size == 1:
         aseq = aseq.flat[0] * np.ones(len(cseq))
     elif aseq.size != len(cseq):
-        print(f'ERROR ({fname}): length of alpha not compatible with cseq')
+        print(f'ERROR ({fname}): length of `alpha` not compatible with `cseq`')
         return None
 
     # Set vseqn: sequence of values rescaled in [0,1]
     if vseq is not None:
         if len(vseq) != len(cseq):
-            print(f'ERROR ({fname}): length of vseq and cseq differs')
+            print(f'ERROR ({fname}): length of `vseq` and `cseq` differs')
             return None
 
         if sum(np.diff(vseq) <= 0.0 ):
-            print(f'ERROR ({fname}): vseq is not an increasing sequence')
+            print(f'ERROR ({fname}): `vseq` is not an increasing sequence')
             return None
 
         # Linearly rescale vseq on [0,1]

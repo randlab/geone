@@ -29,11 +29,11 @@ def add_path_by_drawing(path_list, close=False, show_instructions=True, last_poi
     coordinates of) a point. A path is interactively determined on the plot on
     the current axis (get with `matplotlib.pyplot.gca()`), with the following
     rules:
-        - left click: add the nex point (or first one),
-        - right click: remove the last point.
+    - left click: add the nex point (or first one),
+    - right click: remove the last point.
     When pressing a key:
-        - key n/N: terminate the current path, and start a new path,
-        - key ENTER (or other): terminate the current path and exits.
+    - key n/N: terminate the current path, and start a new path,
+    - key ENTER (or other): terminate the current path and exits.
 
     Parameters
     ----------
@@ -171,8 +171,8 @@ def is_in_polygon(x, vertices, wrap=None, **kwargs):
     wrap : bool, optional
         - if True: last and first vertices has to be linked to form a close line
         - if False: last and first vertices should be the same ones (i.e. the
-        vertices form a close line)
-        By default (`None`): `wrap` is automatically computed
+        vertices form a close line);
+        by default (`None`): `wrap` is automatically computed
     kwargs :
         keyword arguments passed to function `numpy.isclose`
 
@@ -186,10 +186,7 @@ def is_in_polygon(x, vertices, wrap=None, **kwargs):
     """
     # Set wrap (and adjust vertices) if needed
     if wrap is None:
-        if np.isclose(np.sqrt(((vertices[-1] - vertices[0])**2).sum()), 0.0):
-            wrap = False
-        else:
-            wrap = True
+        wrap = ~np.isclose(np.sqrt(((vertices[-1] - vertices[0])**2).sum()), 0.0)
     if not wrap:
         # remove last vertice (should be equal to the first one)
         vertices = np.delete(vertices, -1, axis=0)
@@ -246,20 +243,16 @@ def is_in_polygon_mp(x, vertices, wrap=None, nproc=-1, **kwargs):
 
     The number of processes used (in parallel) is n, and determined by the
     parameter `nproc` (int, optional) as follows:
-        - if `nproc>0`: n = `nproc`;
-        - if `nproc<= 0`: n = max(nmax+`nproc`, 1), where nmax is the total
-        number of cpu(s) of the system (retrieved by
-        `multiprocessing.cpu_count()`), i.e. all cpus except `nproc` is used
-        (but at least one).
+    - if `nproc > 0`: n = `nproc`,
+    - if `nproc <= 0`: n = max(nmax+`nproc`, 1), where nmax is the total
+    number of cpu(s) of the system (retrieved by `multiprocessing.cpu_count()`),
+    i.e. all cpus except `-nproc` is used (but at least one).
 
     See function `is_in_polygon`.
     """
     # Set wrap (and adjust vertices) if needed
     if wrap is None:
-        if np.isclose(np.sqrt(((vertices[-1] - vertices[0])**2).sum()), 0.0):
-            wrap = False
-        else:
-            wrap = True
+        wrap = ~np.isclose(np.sqrt(((vertices[-1] - vertices[0])**2).sum()), 0.0)
     if not wrap:
         # remove last vertice (should be equal to the first one)
         vertices = np.delete(vertices, -1, axis=0)
@@ -276,7 +269,7 @@ def is_in_polygon_mp(x, vertices, wrap=None, nproc=-1, **kwargs):
     else:
         n = min(multiprocessing.cpu_count()+nproc, 1)
 
-    # Set index for sharing task
+    # Set index for distributing tasks
     q, r = np.divmod(xx.shape[0], n)
     ids_proc = [i*q + min(i, r) for i in range(n+1)]
 
@@ -318,13 +311,13 @@ def rasterize_polygon_2d(vertices,
     The grid geometry of the output image is set by the given parameters or
     computed from the vertices, as in function `geone.img.imageFromPoints`,
     i.e. for the x axis (similar for y):
-        - `ox` (origin), `nx` (number of cells) and `sx` (resolution, cell size)
-        - or only `nx`: `ox` and `sx` automatically computed
-        - or only `sx`: `ox` and `nx` automatically computed
+    - `ox` (origin), `nx` (number of cells) and `sx` (resolution, cell size),
+    - or only `nx`: `ox` and `sx` automatically computed,
+    - or only `sx`: `ox` and `nx` automatically computed.
     In the two last cases, the parameters `xmin_ext`, `xmax_ext`, are used and
     the approximate limit of the grid along x axis is set to x0, x1, where
-        - x0: min x coordinate of the vertices minus `xmin_ext`
-        - x1: max x coordinate of the vertices plus `xmax_ext`
+    - x0: min x coordinate of the vertices minus `xmin_ext`,
+    - x1: max x coordinate of the vertices plus `xmax_ext`.
 
     Parameters
     ----------
@@ -340,8 +333,8 @@ def rasterize_polygon_2d(vertices,
     sx, sy : floats
         cell size along each axis (optional, see above for possible inputs)
     ox, oy : floats
-        origin of the grid (bottom-lower-left corner) (optional, see above for
-        possible inputs)
+        origin of the grid (lower-left corner) (optional, see above for possible
+        inputs)
     xmin_ext : float, default: 0.0
         extension beyond the min x coordinate of the vertices (see above)
     xmax_ext : float, default: 0.0
@@ -353,8 +346,8 @@ def rasterize_polygon_2d(vertices,
     wrap : bool, optional
         - if True: last and first vertices has to be linked to form a close line
         - if False: last and first vertices should be the same ones (i.e. the
-        vertices form a close line)
-        By default (`None`): `wrap` is automatically computed
+        vertices form a close line);
+        by default (`None`): `wrap` is automatically computed
     kwargs:
         keyword arguments passed to function `is_in_polygon`
 
@@ -365,7 +358,8 @@ def rasterize_polygon_2d(vertices,
         note: the image grid is defined in 3D with `nz=1`, `sz=1.0`, `oz=-0.5`
     """
     # Define grid geometry (image with no variable)
-    im = img.imageFromPoints(vertices, sx=sx, sy=sy,
+    im = img.imageFromPoints(vertices,
+                             nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
                              xmin_ext=xmin_ext, xmax_ext=xmax_ext,
                              ymin_ext=ymin_ext, ymax_ext=ymax_ext)
 
@@ -392,16 +386,16 @@ def rasterize_polygon_2d_mp(vertices,
 
     The number of processes used (in parallel) is n, and determined by the
     parameter `nproc` (int, optional) as follows:
-        - if `nproc>0`: n = `nproc`;
-        - if `nproc<= 0`: n = max(nmax+`nproc`, 1), where nmax is the total
-        number of cpu(s) of the system (retrieved by
-        `multiprocessing.cpu_count()`), i.e. all cpus except `nproc` is used
-        (but at least one).
+    - if `nproc > 0`: n = `nproc`,
+    - if `nproc <= 0`: n = max(nmax+`nproc`, 1), where nmax is the total
+    number of cpu(s) of the system (retrieved by `multiprocessing.cpu_count()`),
+    i.e. all cpus except `-nproc` is used (but at least one).
 
     See function `rasterize_polygon_2d`.
     """
     # Define grid geometry (image with no variable)
-    im = img.imageFromPoints(vertices, sx=sx, sy=sy,
+    im = img.imageFromPoints(vertices,
+                             nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
                              xmin_ext=xmin_ext, xmax_ext=xmax_ext,
                              ymin_ext=ymin_ext, ymax_ext=ymax_ext)
 
@@ -423,19 +417,19 @@ def curv_coord_2d_from_center_line(
 
     This functions allows to change coordinates system in 2D. For a point in 2D,
     let the coordinates
-        - u = (u1, u2) (in 2D) in curvilinear system,
-        - x = (x1, x2) (in 2D) in standard system.
+    - u = (u1, u2) (in 2D) in curvilinear system,
+    - x = (x1, x2) (in 2D) in standard system.
     The curvilinear coordinates system (u) is defined according to a center line
     in a 2D grid as follows:
-        - considering the distance map (geone image `im_cl_dist`) of L2 distance
-            to the center line (`cl_position`);
-        - the path from x to the point I on the center line is computed,
-            descending the gradient (`gradx`, `grady`) of the distance map;
-        - u = (u1, u2) is defined as
-            - u1: the distance along the center line to the point I,
-            - u2: +/-the value of the distance map at x; with
-                * sign + for point "at left" of the center line and,
-                * sign - for point "at right" of the center line.
+    - considering the distance map (geone image `im_cl_dist`) of L2 distance
+    to the center line (`cl_position`);
+    - the path from x to the point I on the center line is computed, descending
+    the gradient (`gradx`, `grady`) of the distance map;
+    - u = (u1, u2) is defined as:
+        - u1: the distance along the center line to the point I,
+        - u2: +/-the value of the distance map at x, with
+            * sign + for point "at left" of the center line and,
+            * sign - for point "at right" of the center line.
 
     Parameters
     ----------
@@ -449,12 +443,12 @@ def curv_coord_2d_from_center_line(
         the resolution of the u1 coordinate
     im_cl_dist : :class:`geone.img.Img`
         image of the distance to the center line:
-            - its grid is the "support" of standard coordinate system and it
-            should contain all the points `x`,
-            - the center line (`cl_position`) should "separate" the image grid
-            in two (disconnected) regions,
-            - this image can be computed using the function
-            `geone.geosclassicinterface.imgDistanceImage`
+        - its grid is the "support" of standard coordinate system and it
+        should contain all the points `x`
+        - the center line (`cl_position`) should "separate" the image grid
+        in two (disconnected) regions,
+        - this image can be computed using the function
+        `geone.geosclassicinterface.imgDistanceImage`
     cl_u : 1D array-like of length n, optional
         distance along the center line (automatically computed if not given
         (`None`)), used for determining u1 coordinate
@@ -487,9 +481,9 @@ def curv_coord_2d_from_center_line(
     x_path : list of 2D arrays (or 2D array), optional
         path(s) from the initial point(s) to the point(s) I of the centerline
         (descending the gradient of the distance map):
-            - `x_path[i]`: 2D array of floats with 2 columns
-                `xpath[i][j]` is the coordinates (in standard system) of the
-                j-th point of the path from `x[i]` to the center line
+        - `x_path[i]` : 2D array of floats with 2 columns
+            `xpath[i][j]` is the coordinates (in standard system) of the
+            j-th point of the path from `x[i]` to the center line;
         note: if `x` is reduced to one point and given as 1D array-like, then
         `x_path` is a 2D array of floats with 2 columns containing the path from
         `x` to the center line;
@@ -600,11 +594,10 @@ def curv_coord_2d_from_center_line_mp(
 
     The number of processes used (in parallel) is n, and determined by the
     parameter `nproc` (int, optional) as follows:
-        - if `nproc>0`: n = `nproc`;
-        - if `nproc<= 0`: n = max(nmax+`nproc`, 1), where nmax is the total
-        number of cpu(s) of the system (retrieved by
-        `multiprocessing.cpu_count()`), i.e. all cpus except `nproc` is used
-        (but at least one).
+    - if `nproc > 0`: n = `nproc`,
+    - if `nproc <= 0`: n = max(nmax+`nproc`, 1), where nmax is the total
+    number of cpu(s) of the system (retrieved by `multiprocessing.cpu_count()`),
+    i.e. all cpus except `-nproc` is used (but at least one).
 
     See function `curv_coord_2d_from_center_line`.
     """
@@ -617,7 +610,7 @@ def curv_coord_2d_from_center_line_mp(
     else:
         n = min(multiprocessing.cpu_count()+nproc, 1)
 
-    # Set index for sharing task
+    # Set index for distributing tasks
     q, r = np.divmod(xx.shape[0], n)
     ids_proc = [i*q + min(i, r) for i in range(n+1)]
 

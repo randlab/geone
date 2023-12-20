@@ -34,11 +34,11 @@ class Img(object):
         number of variable(s) / attribute(s)
     val : 4D array of float of shape (`nv`, `nz`, `ny`, `nx`)
         attribute(s) / variable(s) values:
-            - val[iv, iz, iy, ix]: value of the variable iv attached to the
-            grid cell of index iz, iy, ix along axis iz, iy, ix respectively
+        - `val[iv, iz, iy, ix]`: value of the variable iv attached to the
+        grid cell of index `iz`, `iy`, `ix `along axis z, y, x respectively
     varname : list of str, of length `nv`
         variable names:
-            - varname[iv]: name of the variable iv
+        - `varname[iv]`: name of the variable `iv`
     name : str
         name of the image
 
@@ -202,7 +202,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(nx*ny*nz*nv)
         elif valarr.size != nx*ny*nz*nv:
-            print(f'ERROR ({fname}): val does not have an acceptable size')
+            print(f'ERROR ({fname}): `val` does not have an acceptable size')
             return None
 
         self.val = valarr.reshape(nv, nz, ny, nx)
@@ -216,7 +216,7 @@ class Img(object):
             elif len(varname) == 1: # more than one variable and only one varname
                 self.varname = ["{}{:d}".format(varname[0], i) for i in range(nv)]
             else:
-                print(f'ERROR ({fname}): varname has not an acceptable size')
+                print(f'ERROR ({fname}): `varname` has not an acceptable size')
                 return None
 
         self.name = name
@@ -481,9 +481,9 @@ class Img(object):
         ----------
         val : float or array-like, default: `numpy.nan`
             value(s) of the new variable(s); the size of the array must be
-                - a multiple of the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
-                - or 1 (a float is considered of size 1); in this case the value
-                is duplicated once over all grid cells
+            - a multiple of the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
+            - or 1 (a float is considered of size 1); in this case the value
+            is duplicated once over all grid cells
         varname : str or 1D array-like of strs, optional
             name(s) of the new variable(s); by default variable names are set
             to "V<num>", where <num> starts from the number of variables before
@@ -509,7 +509,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size % self.nxyz() != 0:
-            print(f'ERROR ({fname}): val does not have an acceptable size')
+            print(f'ERROR ({fname}): `val` does not have an acceptable size')
             return None
 
         m = valarr.size // self.nxyz() # number of variable(s) to be inserted
@@ -519,7 +519,7 @@ class Img(object):
             if isinstance(varname, str):
                 varname = [varname]
             elif (not isinstance(varname, tuple) and not isinstance(varname, list) and not isinstance(varname, np.ndarray)) or len(varname)!=m:
-                print(f'ERROR ({fname}): varname does not have an acceptable size')
+                print(f'ERROR ({fname}): `varname` does not have an acceptable size')
                 return None
             else:
                 varname = list(varname)
@@ -550,9 +550,9 @@ class Img(object):
         ----------
         val : float or array-like, default: `numpy.nan`
             value(s) of the new variable(s); the size of the array must be
-                - a multiple of the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
-                - or 1 (a float is considered of size 1); in this case the value
-                is duplicated once over all grid cells
+            - a multiple of the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
+            - or 1 (a float is considered of size 1); in this case the value
+            is duplicated once over all grid cells
         varname : str or 1D array-like of strs, optional
             name(s) of the new variable(s); by default variable names are set
             to "V<num>", where <num> starts from the number of variables before
@@ -622,9 +622,9 @@ class Img(object):
         ----------
         val : float or array-like, default: `numpy.nan`
             value(s) of variable to be set; the size of the array must be
-                - the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
-                - or 1 (a float is considered of size 1); in this case the value
-                is duplicated once over all grid cells
+            - the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
+            - or 1 (a float is considered of size 1); in this case the value
+            is duplicated once over all grid cells
         varname : str, optional
             name of the variable to be set
         ind : int, default: -1
@@ -646,7 +646,7 @@ class Img(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
-            print(f'ERROR ({fname}): val does not have an acceptable size')
+            print(f'ERROR ({fname}): `val` does not have an acceptable size')
             return None
 
         # Set variable of index ii
@@ -829,8 +829,8 @@ class Img(object):
         prop: 2D array
             density (proportions) or counts of the values `unique_val` for
             each variable:
-                - prop[i, j]: proportion or count of value `unique_val[j]` for
-                the variable `i`
+            - prop[i, j]: proportion or count of value `unique_val[j]` for
+            the variable `i`
         """
         uv_all = self.get_unique(ignore_missing_value)
         n = len(uv_all)
@@ -1109,8 +1109,8 @@ class Img(object):
         Returns
         -------
         out : 3D array of shape (`.nz`, `.ny`, `.nx`)
-            out[iz, iy, ix]: x coordinate of the grid cell center of index
-                iz, iy, ix along axis iz, iy, ix respectively
+            `out[iz, iy, ix]`: x coordinate of the grid cell center of index
+            `iz`, `iy`, `ix` along axis z, y, x respectively
         """
         return np.tile(self.ox + 0.5 * self.sx + self.sx * np.arange(self.nx), self.ny*self.nz).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -1124,8 +1124,8 @@ class Img(object):
         Returns
         -------
         out : 3D array of shape (`.nz`, `.ny`, `.nx`)
-            out[iz, iy, ix]: y coordinate of the grid cell center of index
-                iz, iy, ix along axis iz, iy, ix respectively
+            `out[iz, iy, ix]`: y coordinate of the grid cell center of index
+            `iz`, `iy`, `ix` along axis z, y, x respectively
         """
         return np.tile(np.repeat(self.oy + 0.5 * self.sy + self.sy * np.arange(self.ny), self.nx), self.nz).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -1139,8 +1139,8 @@ class Img(object):
         Returns
         -------
         out : 3D array of shape (`.nz`, `.ny`, `.nx`)
-            out[iz, iy, ix]: z coordinate of the grid cell center of index
-                iz, iy, ix along axis iz, iy, ix respectively
+            `out[iz, iy, ix]`: z coordinate of the grid cell center of index
+            `iz`, `iy`, `ix` along axis z, y, x respectively
         """
         return np.repeat(self.oz + 0.5 * self.sz + self.sz * np.arange(self.nz), self.nx*self.ny).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -1178,8 +1178,8 @@ class Img(object):
         Returns
         -------
         out : 3D array of shape (`.nz`, `.ny`, `.nx`)
-            out[iz, iy, ix]: index along x axis of the grid cell of index
-                iz, iy, ix along axis iz, iy, ix respectively
+            `out[iz, iy, ix]`: index along x axis of the grid cell center of
+            index `iz`, `iy`, `ix` along axis z, y, x respectively
         """
         return np.tile(np.arange(self.nx), self.ny*self.nz).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -1193,8 +1193,8 @@ class Img(object):
         Returns
         -------
         out : 3D array of shape (`.nz`, `.ny`, `.nx`)
-            out[iz, iy, ix]: index along y axis of the grid cell of index
-                iz, iy, ix along axis iz, iy, ix respectively
+            `out[iz, iy, ix]`: index along y axis of the grid cell center of
+            index `iz`, `iy`, `ix` along axis z, y, x respectively
         """
         return np.tile(np.repeat(np.arange(self.ny), self.nx), self.nz).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -1208,8 +1208,8 @@ class Img(object):
         Returns
         -------
         out : 3D array of shape (`.nz`, `.ny`, `.nx`)
-            out[iz, iy, ix]: index along z axis of the grid cell of index
-                iz, iy, ix along axis iz, iy, ix respectively
+            `out[iz, iy, ix]`: index along z axis of the grid cell center of
+            index `iz`, `iy`, `ix` along axis z, y, x respectively
         """
         return np.repeat(np.arange(self.nz), self.nx*self.ny).reshape(self.nz, self.ny, self.nx)
         # equiv:
@@ -1246,10 +1246,10 @@ class PointSet(object):
         number of variables including x, y, z coordinates
     val : 2D array of float of shape (`nv`, `npt`)
         variable values:
-            - val[i, j]: value of the i-th variable for the j-th point
+        - `val[i, j]`: value of the i-th variable for the j-th point
     varname : list of str, of length `nv`
         variable names:
-            - varname[i]: name of the i-th variable
+        - `varname[i]`: name of the i-th variable
     name : str
         name of the point set
 
@@ -1274,7 +1274,7 @@ class PointSet(object):
             attribute(s) / variable(s) values
         varname : list of str, of length `nv`
             variable names:
-            - varname[iv]: name of the variable iv
+            - `varname[iv]`: name of the variable iv
         name : str, default: ''
             name of the point set
         """
@@ -1287,7 +1287,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(npt*nv)
         elif valarr.size != npt*nv:
-            print(f'ERROR ({fname}): val does not have an acceptable size')
+            print(f'ERROR ({fname}): `val` does not have an acceptable size')
             return None
 
         self.val = valarr.reshape(nv, npt)
@@ -1311,7 +1311,7 @@ class PointSet(object):
         else:
             varname = list(np.asarray(varname).reshape(-1))
             if len(varname) != nv:
-                print(f'ERROR ({fname}): varname has not an acceptable size')
+                print(f'ERROR ({fname}): `varname` has not an acceptable size')
                 return None
 
             self.varname = list(np.asarray(varname).reshape(-1))
@@ -1392,9 +1392,9 @@ class PointSet(object):
         ----------
         val : float or array-like, default: `numpy.nan`
             value(s) of the new variable(s); the size of the array must be
-                - a multiple of the number of points (i.e. `.npt`)
-                - or 1 (a float is considered of size 1); in this case the value
-                is duplicated once over all points
+            - a multiple of the number of points (i.e. `.npt`)
+            - or 1 (a float is considered of size 1); in this case the value
+            is duplicated once over all points
         varname : str or 1D array-like of strs, optional
             name(s) of the new variable(s); by default variable names are set
             to "V<num>", where <num> starts from the number of variables before
@@ -1420,7 +1420,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size % self.npt != 0:
-            print(f'ERROR ({fname}): val does not have an acceptable size')
+            print(f'ERROR ({fname}): `val` does not have an acceptable size')
             return None
 
         m = valarr.size // self.npt # number of variable to be inserted
@@ -1430,7 +1430,7 @@ class PointSet(object):
             if isinstance(varname, str):
                 varname = [varname]
             elif (not isinstance(varname, tuple) and not isinstance(varname, list) and not (isinstance(varname, np.ndarray) and im_list.ndim==1)) or len(varname)!=m:
-                print(f'ERROR ({fname}): varname does not have an acceptable size')
+                print(f'ERROR ({fname}): `varname` does not have an acceptable size')
                 return None
             else:
                 varname = list(varname)
@@ -1461,9 +1461,9 @@ class PointSet(object):
         ----------
         val : float or array-like, default: `numpy.nan`
             value(s) of the new variable(s); the size of the array must be
-                - a multiple of the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
-                - or 1 (a float is considered of size 1); in this case the value
-                is duplicated once over all grid cells
+            - a multiple of the number of grid cells (i.e. `.nx`*`.ny`*`.nz`)
+            - or 1 (a float is considered of size 1); in this case the value
+            is duplicated once over all grid cells
         varname : str or 1D array-like of strs, optional
             name(s) of the new variable(s); by default variable names are set
             to "V<num>", where <num> starts from the number of variables before
@@ -1532,9 +1532,9 @@ class PointSet(object):
         ----------
         val : float or array-like, default: `numpy.nan`
             value(s) of variable to be set; the size of the array must be
-                - the number of points (i.e. `.npt`)
-                - or 1 (a float is considered of size 1); in this case the value
-                is duplicated once over all points
+            - the number of points (i.e. `.npt`)
+            - or 1 (a float is considered of size 1); in this case the value
+            is duplicated once over all points
         varname : str, optional
             name of the variable to be set
         ind : int, default: -1
@@ -1556,7 +1556,7 @@ class PointSet(object):
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
-            print(f'ERROR ({fname}): val does not have an acceptable size')
+            print(f'ERROR ({fname}): `val` does not have an acceptable size')
             return None
 
         # Set variable of index ii
@@ -1677,7 +1677,7 @@ class PointSet(object):
         Parameters
         ----------
         ind : int or 1D array-like of ints
-            index(es) of the point(s) to be extracted (kept),
+            index(es) of the point(s) to be extracted (kept);
             note: use `ind=[]` to remove all points
         """
         fname = 'extract_point'
@@ -2410,7 +2410,8 @@ def aggregateDataPointsWrtGrid(x, y, z, v,
                                nx, ny, nz,
                                sx=1.0, sy=1.0, sz=1.0,
                                ox=0.0, oy=0.0, oz=0.0,
-                               op='mean', **kwargs):
+                               op='mean', return_inverse=False,
+                               **kwargs):
     """
     Aggregates points in same cells of a given grid geometry.
 
@@ -2437,34 +2438,52 @@ def aggregateDataPointsWrtGrid(x, y, z, v,
         origin of the grid (bottom-lower-left corner)
     op : str {'min', 'max', 'mean', 'std', 'var', 'quantile', 'most_freq',
             'random'}, default: 'mean'
-        statistic operator; the function `numpy.<op>` is used except
-            - if `op='most_freq'`: most frequent value (smallest ones if more
-            than one value with the maximal frequence)
-            - if `op='random'`: value from a random point
-        note: `op='quantile'` requires the parameter
-        `q=<sequence of quantile to compute>` that should be passed via `kwargs`
+        operation used to aggregate values of data points falling in a same grid
+        cell:
+        - if `op='most_freq'`: most frequent value is selected (smallest one if
+        more than one value with the maximal frequence)
+        - if `op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<op>` is used with the additional
+        parameters given by `kwargs`, note that, e.g. `op='quantile'` requires
+        the additional parameter `q=<quantile_to_compute>`
+    return_inverse : bool, default: False
+        if True, return the index of the aggregated point corresponding to each
+        input point (see Returns below)
     kwargs : dict
         keyword arguments passed to `numpy.<op>` function, e.g.
         `ddof=1` if `op='std'` or`op='var'`
 
     Returns
     -------
-    x_out : float or 1D array
+    x_out : 1D array
         x coordinate of aggregated point(s)
-    y_out : float or 1D array
+    y_out : 1D array
         y coordinate of aggregated point(s)
-    z_out : float or 1D array
+    z_out : 1D array
         z coordinate of aggregated point(s)
-    v_out : float or 1D array or 2D array
+    v_out : 1D array or 2D array
         values attached to aggregated point(s), each row (if 2D array)
         corresponds to a same variable
+    i_inv : 1D array of ints, optional
+        indexes of the aggregated points, array of ints of same size as `x, `y`,
+        `z`, `v`, and such that the i-th data point
+        (`(x[i], y[i], z[i]), v[i]`)
+        contributes to the `i_inv[i]`-th aggregated point
+        (`(x_out[i_inv[i]], y_out[i_inv[i]], z_out[i_inv[i]]), v_out[i_inv[i]]`),
+        or `i_inv[i] = -1` if the i-th data point has been removed;
+        returned if `return_inverse=True`
     """
-    v_ndim = v.ndim
+    fname = 'aggregateDataPointsWrtGrid'
 
-    x = np.atleast_1d(x)
-    y = np.atleast_1d(y)
-    z = np.atleast_1d(z)
-    v = np.atleast_2d(v)
+    if np.asarray(v).ndim > 1:
+        multi_var = True
+    else:
+        multi_var = False
+
+    x = np.atleast_1d(x).reshape(-1)
+    y = np.atleast_1d(y).reshape(-1)
+    z = np.atleast_1d(z).reshape(-1)
+    v = np.atleast_2d(v).reshape(-1, x.size)
 
     # Keep only the points within the grid
     ind = np.all((x >= ox, x <= ox+sx*nx, y >= oy, y <= oy+sy*ny, z >= oz, z <= oz+sz*nz), axis=0)
@@ -2473,7 +2492,12 @@ def aggregateDataPointsWrtGrid(x, y, z, v,
         x = np.zeros(0)
         y = np.zeros(0)
         z = np.zeros(0)
-        v = np.zeros(shape=np.repeat(0, v.ndim))
+        if multi_var:
+            v = np.zeros((v.shape[0], 0))
+        else:
+            v = np.zeros(0)
+        if return_inverse:
+            return x, y, z, v, -1 * np.ones(len(x), dtype='int')
         return x, y, z, v
 
     x = x[ind]
@@ -2491,7 +2515,7 @@ def aggregateDataPointsWrtGrid(x, y, z, v,
 
     ix, iy, iz = ic[:, 0], ic[:, 1], ic[:, 2]
     # ix, iy, iz = pointToGridIndex(x, y, z, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz) # Equivalent
-    ic = ix + nx * (iy + ny * iz) # single-indices
+    ic = ix + nx * (iy + ny * iz) # single-indexes
 
     ic_unique, ic_inv = np.unique(ic, return_inverse=True)
     if len(ic_unique) != len(ic):
@@ -2511,33 +2535,44 @@ def aggregateDataPointsWrtGrid(x, y, z, v,
         elif op == 'quantile':
             func = np.nanquantile
             if 'q' not in kwargs:
-                print(f"ERROR ({fname}): keyword argument 'q' required for op='quantile', nothing done!")
+                print(f"ERROR ({fname}): keyword argument 'q' required by `op='quantile'`, nothing done!")
                 return None
         elif op == 'most_freq':
-            def func(arr):
-                arr_unique, arr_count = np.unique(arr, return_counts=True)
-                return arr_unique[np.argmax(arr_count)]
+            def func(arr, axis=0):
+                # fake keyword argument `axis=0`, because the function can be called with it below
+                arr_out = np.zeros(arr.shape[1])
+                for i in range(arr.shape[1]):
+                    arr_unique, arr_count = np.unique(arr[:, i], return_counts=True)
+                    arr_out[i] = arr_unique[np.argmax(arr_count)]
+                return arr_out
         elif op == 'random':
-            def func(arr):
-                return arr[np.random.randint(arr.size)]
+            def func(arr, axis=0):
+                # fake keyword argument `axis=0`, because the function can be called with it below
+                return arr[np.random.randint(arr.shape[0])]
         else:
             print(f"ERROR ({fname}): unkown operation '{op}', nothing done!")
             return None
 
-        nxy = nx*ny
-        ic = ic_unique
-        iz = ic//nxy
-        j = ic%nxy
-        iy = j//nx
-        ix = j%nx
         c = np.array([c[ic_inv==j].mean(axis=0) for j in range(len(ic_unique))])
         v = np.array([func(np.asarray(v[ic_inv==j]), axis=0, **kwargs) for j in range(len(ic_unique))])
-        #v = np.array([v[ic_inv==j].mean(axis=0) for j in range(len(ic_unique))])
+
+    else:
+        # Reorder points
+        c = np.array([c[ic_inv==j][0] for j in range(len(ic_unique))])
+        v = np.array([v[ic_inv==j][0] for j in range(len(ic_unique))])
 
     x, y, z = c.T # unpack
     v = v.T
-    if v_ndim == 1:
+    if not multi_var:
         v = v[0]
+
+    if return_inverse:
+        i_inv = np.zeros(len(ic), dtype='int')
+        for j in range(len(ic_unique)):
+            i_inv[ic_inv==j] = j
+        for j in np.where(~ind)[0]:
+            i_inv = np.insert(i_inv, j, -1)
+        return x, y, z, v, i_inv
 
     return x, y, z, v
 # ----------------------------------------------------------------------------
@@ -2565,18 +2600,19 @@ def imageFromPoints(points, values=None, varname=None,
 
     The output image grid geometry is defined as follows for the x axis (similar
     for y and z axes):
-        - `ox` (origin), `nx` (number of cells) and `sx` (resolution, cell size)
-        - or only `nx`: `ox` and `sx` automatically computed
-        - or only `sx`: `ox` and `nx` automatically computed
+    - `ox` (origin), `nx` (number of cells) and `sx` (resolution, cell size),
+    - or only `nx`: `ox` and `sx` automatically computed,
+    - or only `sx`: `ox` and `nx` automatically computed.
+    In the first case, points out of the specified grid are removed.
     In the two last cases, the parameters `xmin_ext`, `xmax_ext`, are used and
     the approximate limit of the grid along x axis is set to x0, x1, where
-        - x0: min x coordinate of the points minus `xmin_ext`
-        - x1: max x coordinate of the points plus `xmax_ext`
+    - x0: min x coordinate of the points minus `xmin_ext`,
+    - x1: max x coordinate of the points plus `xmax_ext`.
     Note that points in 1D or 2D are accepted, if the points are in 1D, the
     default values
-        `ny=nz=1`, `sy=sz=1.0`, `oy=oz=-0.5` are used
+    - `ny=nz=1`, `sy=sz=1.0`, `oy=oz=-0.5` are used
     and if the points are in 2D, the default values
-        `nz=1`, `sz=1.0`, `oz=-0.5` are used
+    - `nz=1`, `sz=1.0`, `oz=-0.5` are used.
 
     Parameters
     ----------
@@ -2615,12 +2651,14 @@ def imageFromPoints(points, values=None, varname=None,
         indicating if the "count" variable is added (prepended) (see above)
     op : str {'min', 'max', 'mean', 'std', 'var', 'quantile', 'most_freq',
             'random'}, default: 'mean'
-        statistic operator; the function `numpy.<op>` is used except
-            - if `op='most_freq'`: most frequent value (smallest ones if more
-            than one value with the maximal frequence)
-            - if `op='random'`: value from a random point
-        note: `op='quantile'` requires the parameter
-        `q=<sequence of quantile to compute>` that should be passed via `kwargs`
+        operation used to aggregate values of data points falling in a same grid
+        cell:
+        - if `op='most_freq'`: most frequent value is selected (smallest one if
+        more than one value with the maximal frequence)
+        - if `op='random'`: value from a random point is selected
+        - otherwise: the function `numpy.<op>` is used with the additional
+        parameters given by `kwargs`, note that, e.g. `op='quantile'` requires
+        the additional parameter `q=<quantile_to_compute>`
     kwargs : dict
         keyword arguments passed to `numpy.<op>` function, e.g.
         `ddof=1` if `op='std'` or`op='var'`
@@ -2731,7 +2769,7 @@ def imageFromPoints(points, values=None, varname=None,
     # Keep points within the grid
     ix, iy, iz = ix[ind], iy[ind], iz[ind]
 
-    ic = ix + nx * (iy + ny * iz) # single-indices
+    ic = ix + nx * (iy + ny * iz) # single-indexes
 
     nxyz = nx*ny*nz
 
@@ -2776,7 +2814,7 @@ def imageFromPoints(points, values=None, varname=None,
             elif op == 'quantile':
                 func = np.nanquantile
                 if 'q' not in kwargs:
-                    print(f"ERROR ({fname}): keyword argument 'q' required for op='quantile', nothing done!")
+                    print(f"ERROR ({fname}): keyword argument 'q' required by `op='quantile'`, nothing done!")
                     return None
             elif op == 'most_freq':
                 def func(arr):
@@ -3113,7 +3151,7 @@ def imageContStat(im, op='mean', **kwargs):
     op : str {'min', 'max', 'mean', 'std', 'var', 'quantile'}, default: 'mean'
         statistic operator; the function `numpy.<op>`;
         note: `op='quantile'` requires the parameter
-        `q=<sequence of quantile to compute>` that should be passed via `kwargs`
+        `q=<sequence_of_quantile_to_compute>` that should be passed via `kwargs`
     kwargs : dict
         keyword arguments passed to `numpy.<op>` function, e.g.
         `ddof=1` if `op='std'` or`op='var'`
@@ -3146,7 +3184,7 @@ def imageContStat(im, op='mean', **kwargs):
     elif op == 'quantile':
         func = np.nanquantile
         if 'q' not in kwargs:
-            print(f"ERROR ({fname}): keyword argument 'q' required for op='quantile', nothing done!")
+            print(f"ERROR ({fname}): keyword argument 'q' required by `op='quantile'`, nothing done!")
             return None
         varname = [op + '_' + str(v) for v in kwargs['q']]
     else:
@@ -3181,7 +3219,7 @@ def imageListContStat(im_list, ind=0, op='mean', **kwargs):
     op : str {'min', 'max', 'mean', 'std', 'var', 'quantile'}, default: 'mean'
         statistic operator; the function `numpy.<op>`;
         note: `op='quantile'` requires the parameter
-        `q=<sequence of quantile to compute>` that should be passed via `kwargs`
+        `q=<sequence_of_quantile_to_compute>` that should be passed via `kwargs`
     kwargs : dict
         keyword arguments passed to `numpy.<op>` function, e.g.
         `ddof=1` if `op='std'` or`op='var'`
@@ -3236,7 +3274,7 @@ def imageListContStat(im_list, ind=0, op='mean', **kwargs):
     elif op == 'quantile':
         func = np.nanquantile
         if 'q' not in kwargs:
-            print(f"ERROR ({fname}): keyword argument 'q' required for op='quantile', nothing done!")
+            print(f"ERROR ({fname}): keyword argument 'q' required by `op='quantile'`, nothing done!")
             return None
         varname = [op + '_' + str(v) for v in kwargs['q']]
     else:
@@ -3564,14 +3602,14 @@ def interpolateImage(im, categVar=None,
 
     The output image grid geometry is defined as follows for the x axis (similar
     for y and z axes):
-        - if `ox` is None:
-            `ox = im.ox` is used
-        - if `nx` is None and `sx` is not None:
-            `nx = int(np.round(im.nx*im.sx/sx))` is used
-        - if `nx` is not None and `sx` is None:
-            `sx = im.nx*im.sx/nx` is used
-        - if `nx` is None and `sx` is None:
-            `nx = im.nx` and `sx = im.sx` are used
+    - if `ox` is None:
+        - `ox = im.ox` is used
+    - if `nx` is None and `sx` is not None:
+        - `nx = int(np.round(im.nx*im.sx/sx))` is used
+    - if `nx` is not None and `sx` is None:
+        - `sx = im.nx*im.sx/nx` is used
+    - if `nx` is None and `sx` is None:
+        - `nx = im.nx` and `sx = im.sx` are used
     Note: this function allows for example to refine an image.
 
     Parameters
@@ -3580,8 +3618,8 @@ def interpolateImage(im, categVar=None,
         input image
     categVar : 1D array-like of bools, optional
         sequence of `im.nv`:
-        - categVar[i]=True : the variable i is treated as a categorical variable
-        - categVar[i]=False: the variable i is treated as a continuous variable
+        - `categVar[i]=True` : the variable i is treated as a categorical variable
+        - `categVar[i]=False`: the variable i is treated as a continuous variable
         by default (`None`): all variables are treated as continuous variable
     nx, ny, nz : ints
         number of grid cells along each axis in the ouput image (optional, see
@@ -3720,7 +3758,7 @@ def imageCategFromImageOfProp(im, mode='most_probable', target_prop=None, varInd
         each category, used if `mode='target_prop'`:
         - if not given (`None`), the target proportions are set according to the
         proportions of the input image, i.e.
-            `target_prop[i] = mean(im.val[varInd[i]])`
+        `target_prop[i] = mean(im.val[varInd[i]])`
     varInd : 1D array-like, optional
         indexes of the variables of the input image to be taken into account (of
         length at least 2); by default (`None`): all variables are considered
@@ -3850,23 +3888,23 @@ def sampleFromPointSet(ps, size, mask_val=None, seed=None):
         if mask_val.size != ps.npt:
             print(f'ERROR ({fname}): size of `mask_val` invalid')
             return None
-        indices = np.where(mask_val != 0)[0]
-        if size > len(indices):
+        indexes = np.where(mask_val != 0)[0]
+        if size > len(indexes):
             print(f'ERROR ({fname}): `size` greater than number of active points in `ps`')
             return None
     else:
-        indices = ps.npt
-        if size > indices:
+        indexes = ps.npt
+        if size > indexes:
             print(f'ERROR ({fname}): `size` greater than number of points in `ps`')
             return None
 
-    sample_indices = np.sort(np.random.choice(indices, size, replace=False))
+    sample_indexes = np.sort(np.random.choice(indexes, size, replace=False))
 
     # Return the new object
     return PointSet(
             npt=size,
             nv=ps.nv,
-            val=ps.val[:, sample_indices],
+            val=ps.val[:, sample_indexes],
             varname=ps.varname,
             name='sample_from_' + ps.name)
 # ----------------------------------------------------------------------------
@@ -3906,22 +3944,22 @@ def sampleFromImage(im, size, mask_val=None, seed=None):
         if mask_val.size != im.nxyz():
             print(f'ERROR ({fname}): size of `mask_val` invalid')
             return None
-        indices = np.where(mask_val != 0)[0]
-        if size > len(indices):
+        indexes = np.where(mask_val != 0)[0]
+        if size > len(indexes):
             print(f'ERROR ({fname}): `size` greater than number of active grid cells in `im`')
             return None
     else:
-        indices = im.nxyz()
-        if size > indices:
+        indexes = im.nxyz()
+        if size > indexes:
             print(f'ERROR ({fname}): `size` greater than number of grid cells in `im`')
             return None
 
-    sample_indices = np.sort(np.random.choice(indices, size, replace=False))
+    sample_indexes = np.sort(np.random.choice(indexes, size, replace=False))
 
-    x = im.xx().reshape(-1)[sample_indices]
-    y = im.yy().reshape(-1)[sample_indices]
-    z = im.zz().reshape(-1)[sample_indices]
-    val = im.val.reshape(im.nv, -1)[:, sample_indices]
+    x = im.xx().reshape(-1)[sample_indexes]
+    y = im.yy().reshape(-1)[sample_indexes]
+    z = im.zz().reshape(-1)[sample_indexes]
+    val = im.val.reshape(im.nv, -1)[:, sample_indexes]
 
     # Return the sampled point set
     return PointSet(
@@ -3958,7 +3996,7 @@ def extractRandomPointFromImage(im, npt, seed=None):
     fname = 'extractRandomPointFromImage'
 
     if npt <= 0:
-        print(f'ERROR ({fname}): number of points negative or zero (npt={npt}), nothing done!')
+        print(f'ERROR ({fname}): number of points negative or zero (`npt={npt}`), nothing done!')
         return None
 
     if npt >= im.nxyz():
@@ -3967,10 +4005,10 @@ def extractRandomPointFromImage(im, npt, seed=None):
     if seed is not None:
         np.random.seed(seed)
 
-    # Get random single grid indices
+    # Get random single grid indexes
     ind_grid = np.random.choice(np.arange(im.nxyz()), size=npt, replace=False)
 
-    # Get grid indices along each axis
+    # Get grid indiexes along each axis
     ind_ixyz = np.array([singleGridIndexToGridIndex(i, im.nx, im.ny, im.nz) for i in ind_grid])
 
     # Get points coordinates
@@ -4205,20 +4243,20 @@ def readGridInfoFromHeaderTxt(
     means that the grid is filled with
         x index increases, then y index increases, then z index increases
     The string `sorting` should have 6 characters (see exception below):
-        '[+|-][X|Y|Z][+|-][X|Y|Z][+|-][X|Y|Z]'
+    - '[+|-][X|Y|Z][+|-][X|Y|Z][+|-][X|Y|Z]'
     where 'X', 'Y', 'Z' appears exactly once, and has the following meaning: the
     grid is filled with first
-        `sorting[1]` index decreases if `sorting[0]='-'`, increases if `sorting[0]='+'`
+    - `sorting[1]` index decreases if `sorting[0]='-'`, increases if `sorting[0]='+'`
     then
-        `sorting[3]` index decreases if `sorting[2]='-'`, increases if `sorting[2]='+'`
+    - `sorting[3]` index decreases if `sorting[2]='-'`, increases if `sorting[2]='+'`
     then
-        `sorting[5]` index decreases if `sorting[4]='-'`, increases if `sorting[4]='+'`
+    - `sorting[5]` index decreases if `sorting[4]='-'`, increases if `sorting[4]='+'`
     As an exception, if `nz=1`, the string sorting can have 4 characters:
-        '[+|-][X|Y][+|-][X|Y]'
+    - '[+|-][X|Y][+|-][X|Y]'
     and it is then interpreted as above by appending '+Z'.
     Note that
-        - the string `sorting` is case insensitive,
-        - the validity of the string `sorting` is not checked in this function.
+    - the string `sorting` is case insensitive,
+    - the validity of the string `sorting` is not checked in this function.
 
     Example of file:
         --- file (ascii) ---
@@ -4315,7 +4353,7 @@ def readGridInfoFromHeaderTxt(
     # Check header_str identifier
     if header_str is not None:
         if header_str == '':
-            print(f'ERROR ({fname}): header_str identifier cannot be an empty string, use header_str=None instead')
+            print(f'ERROR ({fname}): `header_str` identifier cannot be an empty string, use `header_str=None` instead')
             return None
         else:
             nhs = len(header_str)
@@ -4353,122 +4391,122 @@ def readGridInfoFromHeaderTxt(
                 entry = line_s[k].lower()
                 if entry in key_nx: # entry for nx ?
                     if nx_flag:
-                        print(f'ERROR ({fname}): more than one entry for "nx"')
+                        print(f'ERROR ({fname}): more than one entry for `nx`')
                         return None
                     try:
                         nx = int(line_s[k+1])
                         k = k+2
                         nx_flag = True
                     except:
-                        print(f'ERROR ({fname}): reading entry for "nx"')
+                        print(f'ERROR ({fname}): reading entry for `nx`')
                         return None
 
                 elif entry in key_ny: # entry for ny ?
                     if ny_flag:
-                        print(f'ERROR ({fname}): more than one entry for "ny"')
+                        print(f'ERROR ({fname}): more than one entry for `ny`')
                         return None
                     try:
                         ny = int(line_s[k+1])
                         k = k+2
                         ny_flag = True
                     except:
-                        print(f'ERROR ({fname}): reading entry for "ny"')
+                        print(f'ERROR ({fname}): reading entry for `ny`')
                         return None
 
                 elif entry in key_nz: # entry for nz ?
                     if nz_flag:
-                        print(f'ERROR ({fname}): more than one entry for "nz"')
+                        print(f'ERROR ({fname}): more than one entry for `nz`')
                         return None
                     try:
                         nz = int(line_s[k+1])
                         k = k+2
                         nz_flag = True
                     except:
-                        print(f'ERROR ({fname}): reading entry for "nz"')
+                        print(f'ERROR ({fname}): reading entry for `nz`')
                         return None
 
                 elif entry in key_sx: # entry for sx ?
                     if sx_flag:
-                        print(f'ERROR ({fname}): more than one entry for "sx"')
+                        print(f'ERROR ({fname}): more than one entry for `sx`')
                         return None
                     try:
                         sx = float(line_s[k+1])
                         k = k+2
                         sx_flag = True
                     except:
-                        print(f'ERROR ({fname}): reading entry for "sx"')
+                        print(f'ERROR ({fname}): reading entry for `sx`')
                         return None
 
                 elif entry in key_sy: # entry for sy ?
                     if sy_flag:
-                        print(f'ERROR ({fname}): more than one entry for "sy"')
+                        print(f'ERROR ({fname}): more than one entry for `sy`')
                         return None
                     try:
                         sy = float(line_s[k+1])
                         k = k+2
                         sy_flag = True
                     except:
-                        print(f'ERROR ({fname}): reading entry for "sy"')
+                        print(f'ERROR ({fname}): reading entry for `sy`')
                         return None
 
                 elif entry in key_sz: # entry for sz ?
                     if sz_flag:
-                        print(f'ERROR ({fname}): more than one entry for "sz"')
+                        print(f'ERROR ({fname}): more than one entry for `sz`')
                         return None
                     try:
                         sz = float(line_s[k+1])
                         k = k+2
                         sz_flag = True
                     except:
-                        print(f'ERROR ({fname}): reading entry for "sz"')
+                        print(f'ERROR ({fname}): reading entry for `sz`')
                         return None
 
                 elif entry in key_ox: # entry for ox ?
                     if ox_flag:
-                        print(f'ERROR ({fname}): more than one entry for "ox"')
+                        print(f'ERROR ({fname}): more than one entry for `ox`')
                         return None
                     try:
                         ox = float(line_s[k+1])
                         k = k+2
                         ox_flag = True
                     except:
-                        print(f'ERROR ({fname}): reading entry for "ox"')
+                        print(f'ERROR ({fname}): reading entry for `ox`')
                         return None
 
                 elif entry in key_oy: # entry for oy ?
                     if oy_flag:
-                        print(f'ERROR ({fname}): more than one entry for "oy"')
+                        print(f'ERROR ({fname}): more than one entry for `oy`')
                         return None
                     try:
                         oy = float(line_s[k+1])
                         k = k+2
                         oy_flag = True
                     except:
-                        print(f'ERROR ({fname}): reading entry for "oy"')
+                        print(f'ERROR ({fname}): reading entry for `oy`')
                         return None
 
                 elif entry in key_oz: # entry for oz ?
                     if oz_flag:
-                        print(f'ERROR ({fname}): more than one entry for "oz"')
+                        print(f'ERROR ({fname}): more than one entry for `oz`')
                         return None
                     try:
                         oz = float(line_s[k+1])
                         k = k+2
                         oz_flag = True
                     except:
-                        print(f'ERROR ({fname}): reading entry for "oz"')
+                        print(f'ERROR ({fname}): reading entry for `oz`')
                         return None
 
                 elif entry in key_sorting and get_sorting: # entry for sorting (and get_sorting)?
                     if sorting_flag:
-                        print(f'ERROR ({fname}): more than one entry for "sorting"')
+                        print(f'ERROR ({fname}): more than one entry for `sorting`')
                         return None
                     try:
                         sorting = line_s[k+1]
                         k = k+2
                         sorting_flag = True
                     except:
-                        print(f'ERROR ({fname}): reading entry for "sorting"')
+                        print(f'ERROR ({fname}): reading entry for `sorting`')
                         return None
 
                 else:
@@ -4621,7 +4659,7 @@ def readImageTxt(
         sorting = sorting + '+Z'
 
     if len(sorting) != 6:
-        print(f'ERROR ({fname}): invalid sorting (string)')
+        print(f'ERROR ({fname}): `sorting` (string) not valid')
         return None
 
     sorting = sorting.lower() # tranform to lower case
@@ -4645,7 +4683,7 @@ def readImageTxt(
         sha = (nx, ny, nz)
         tr = (3, 2, 1)
     else:
-        print(f'ERROR ({fname}): invalid sorting (string)')
+        print(f'ERROR ({fname}): `sorting` (string) not valid')
         return None
 
     flip = [1, 1, 1]
@@ -4654,7 +4692,7 @@ def readImageTxt(
         if s == '-':
             flip[i] = -1
         elif s != '+':
-            print(f'ERROR ({fname}): invalid sorting (string)')
+            print(f'ERROR ({fname}): `sorting` (string) not valid')
             return None
 
     # Read variale names and values from file
@@ -4771,17 +4809,17 @@ def writeImageTxt(
 
     # Check comments identifier
     if comments is None or comments == '':
-        print(f'ERROR ({fname}): comments cannot be an empty string (nor None)')
+        print(f'ERROR ({fname}): `comments` cannot be an empty string (nor None)')
         return None
 
     if usevars is not None:
         if isinstance(usevars, int):
             if usevars < 0 or usevars >= im.nv:
-                print(f'ERROR ({fname}): usevars invalid')
+                print(f'ERROR ({fname}): `usevars` invalid')
                 return None
         else:
             if np.any([iv < 0 or iv >= im.nv for iv in usevars]):
-                print(f'ERROR ({fname}): usevars invalid')
+                print(f'ERROR ({fname}): `usevars` invalid')
                 return None
 
     # Deal with sorting
@@ -4789,7 +4827,7 @@ def writeImageTxt(
         sorting = sorting + '+Z'
 
     if len(sorting) != 6:
-        print(f'ERROR ({fname}): invalid sorting (string)')
+        print(f'ERROR ({fname}): `sorting` (string) not valid')
         return None
 
     sorting = sorting.lower() # tranform to lower case
@@ -4807,7 +4845,7 @@ def writeImageTxt(
     elif s == 'zyx': # "transpose_xyz_to_zyx (inv. of "transpose_xyz_to_zyx") to do
         tr = (3, 2, 1)
     else:
-        print(f'ERROR ({fname}): invalid sorting (string)')
+        print(f'ERROR ({fname}): `sorting` (string) not valid')
         return None
 
     flip = [1, 1, 1]
@@ -4823,7 +4861,7 @@ def writeImageTxt(
             else: # s2 == 'z'
                 flip[2] = -1
         elif s1 != '+':
-            print(f'ERROR ({fname}): invalid sorting (string)')
+            print(f'ERROR ({fname}): `sorting` (string) not valid')
             return None
 
     # Reorganize val array according to sorting, final shape: (im.nx*im.ny*im.nz, len(varname))
@@ -5074,11 +5112,11 @@ def writePointSetTxt(
     if usevars is not None:
         if isinstance(usevars, int):
             if usevars < 0 or usevars >= ps.nv:
-                print(f'ERROR ({fname}): usevars invalid')
+                print(f'ERROR ({fname}): `usevars` invalid')
                 return None
         else:
             if np.any([iv < 0 or iv >= ps.nv for iv in usevars]):
-                print(f'ERROR ({fname}): usevars invalid')
+                print(f'ERROR ({fname}): `usevars` invalid')
                 return None
 
     # Set header
@@ -5130,10 +5168,10 @@ def readImage2Drgb(filename, categ=False, nancol=None, keep_channels=True, rgb_w
         sequence of length 3 or 4 (`keep_channels=True`). Note that the output
         image can be displayed (plotted) directly by using:
         - `geone.imgplot.drawImage2D(im, categ=True, categCol=col)`,
-            if `keep_channels=True`
+        if `keep_channels=True`
         - `geone.imgplot.drawImage2D(im, categ=True, categCol=[cmap(c) for c in col])`,
-            where cmap is a color map function defined on the interval [0, 1],
-            if `keep_channels=False`
+        where cmap is a color map function defined on the interval [0, 1],
+        if `keep_channels=False`
 
     Parameters
     ----------
@@ -5270,7 +5308,7 @@ def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0),
         variable by using colormap `cmap`, the variable values should be floats
         in the interval [0,1]
     - if the input image has 3 or 4 variables, they are interpreted as RGB
-        or RGBA color codes
+    or RGBA color codes
     - `nancol` is the color used for missing value (`numpy.nan`) in input image
 
     Parameters
@@ -5299,11 +5337,11 @@ def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0),
 
     # Check image parameters
     if im.nz != 1:
-        print(f"ERROR ({fname}): 'im.nz' must be 1")
+        print(f"ERROR ({fname}): `im.nz` must be 1")
         return None
 
     if im.nv not in [1, 3, 4]:
-        print(f"ERROR ({fname}): 'im.nv' must be 1, 3, or 4")
+        print(f"ERROR ({fname}): `im.nv` must be 1, 3, or 4")
         return None
 
     # Extract the array of values
@@ -5320,11 +5358,11 @@ def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0),
             try:
                 nchan = len(col[0])
             except:
-                print(f'ERROR ({fname}): col must be a sequence of RGB or RBGA color (each entry is a sequence of length 3 or 4)')
+                print(f'ERROR ({fname}): `col` must be a sequence of RGB or RBGA color (each entry is a sequence of length 3 or 4)')
                 return None
 
             if not np.all(np.array([len(c) for c in col]) == nchan):
-                print(f'ERROR ({fname}): same format is required for every color in col')
+                print(f'ERROR ({fname}): same format is required for every color in `col`')
                 return None
 
             # "format" nancol
@@ -5338,7 +5376,7 @@ def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0),
 
             # Check value in vv
             if np.any((vv < 0, vv >= len(col))):
-                print(f'ERROR ({fname}): variable value in image cannot be treated as index in col')
+                print(f'ERROR ({fname}): variable value in image cannot be treated as index in `col`')
                 return None
 
             # Set ouput colors
@@ -5354,7 +5392,7 @@ def writeImage2Drgb(filename, im, col=None, cmap='gray', nancol=(1.0, 0.0, 0.0),
                 try:
                     cmap = plt.get_cmap(cmap)
                 except:
-                    print(f'ERROR ({fname}): invalid cmap string! (grayscale is used)')
+                    print(f'ERROR ({fname}): invalid `cmap` string! (grayscale is used)')
                     cmap = plt.get_cmap("gray")
 
             if np.any((vv < 0, vv > 1)):

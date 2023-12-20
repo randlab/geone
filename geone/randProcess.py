@@ -25,11 +25,11 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
         intensity of the Poisson process, i.e. the mean number of points per
         unitary volume:
         - if a function: (non-homogeneous Poisson point process)
-            `mu(x)` returns the intensity at `x`, with `x` array_like, the last
-            axis of `x` denoting the components
+        `mu(x)` returns the intensity at `x`, with `x` array_like, the last
+        axis of `x` denoting the components
         - if a ndarray: (non-homogeneous Poisson point process)
-            `mu[i_n, ..., i_0]` is the intensity on the box
-            `[xmin[j]+i_j*(xmax[j]-xmin[j])/mu.shape[n-j]]`, j = 0,..., n
+        `mu[i_n, ..., i_0]` is the intensity on the box
+        `[xmin[j]+i_j*(xmax[j]-xmin[j])/mu.shape[n-j]]`, j = 0,..., n
         - if a float: homogeneous Poisson point process
     xmin : float, or array-like of floats of shape(m,)
         lower bound of each coordinate
@@ -53,11 +53,11 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
     xmax = np.atleast_1d(xmax)
 
     if xmin.ndim != xmax.ndim or xmin.ndim != 1:
-        print(f'ERROR ({fname}): xmin, xmax not valid (dimension or shape)')
+        print(f'ERROR ({fname}): `xmin`, `xmax` not valid (dimension or shape)')
         return None
 
     if np.any(xmin >= xmax):
-        print(f'ERROR ({fname}): xmin, xmax not valid ((component of) xmin less than or equal to xmax)')
+        print(f'ERROR ({fname}): `xmin`, `xmax` not valid ((component of) xmin less than or equal to xmax)')
         return None
 
     # dimension
@@ -65,18 +65,18 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
 
     if callable(mu):
         if ninterval is None:
-            print(f'ERROR ({fname}): ninterval must be specified when a function is passed for the intensity (mu)')
+            print(f'ERROR ({fname}): `ninterval` must be specified when a function is passed for the intensity (mu)')
             return None
 
         ninterval = np.asarray(ninterval, dtype=int)  # possibly 0-dimensional
         if ninterval.size == 1:
             ninterval = ninterval.flat[0] * np.ones(dim)
         elif ninterval.size != dim:
-            print(f'ERROR ({fname}): ninterval does not have an acceptable size')
+            print(f'ERROR ({fname}): `ninterval` does not have an acceptable size')
             return None
 
         if np.any(ninterval < 1):
-            print(f'ERROR ({fname}): ninterval has negative or zero value')
+            print(f'ERROR ({fname}): `ninterval` has negative or zero value')
             return None
 
     elif isinstance(mu, np.ndarray):
@@ -132,15 +132,15 @@ def chentsov1D(n_mean,
 
     The domain of simulation is `[xmin, xmax]`, with `nx` cells along x axis,
     each cell having a length of `dx`, the left side is the origin:
-        - along x axis:
-            `nx = dimension`
-            `dx = spacing`
-            `xmin = origin`
-            `xmax = origin + nx*dx`
+    - along x axis:
+        - `nx = dimension`
+        - `dx = spacing`
+        - `xmin = origin`
+        - `xmax = origin + nx*dx`.
 
     The simulation consists in
     1. Drawing random hyper-plane (i.e. points in 1D) in the space
-        [p_min, p_max] following a Poisson point process with intensity
+        [p_min, p_max] following a Poisson point process with intensity:
             mu = n_mean / vol([p_min, p_max]);
         the points are given in the parametrized form: p;
         then, for each point p, and with direction_origin = x0
@@ -214,7 +214,7 @@ def chentsov1D(n_mean,
             p_max = d
 
     if p_min >= p_max:
-        print(f"ERROR ({fname}): 'p_min' is greater than or equal to 'p_max'")
+        print(f"ERROR ({fname}): `p_min` is greater than or equal to `p_max`")
         return None
 
     # center of each grid cell of the simulation domain
@@ -259,16 +259,16 @@ def chentsov2D(n_mean,
         `[xmin, xmax]` x `[ymin x ymax]`,
     with `nx` and `ny` cells along x axis and y axis respectively, each cell
     being a box of size `dx` x `dy`, the lower-left corner is the origin:
-        - along x axis:
-            `nx = dimension[0]`
-            `dx = spacing[0]`
-            `xmin = origin[0]`
-            `xmax = origin[0] + nx*dx`
-        - along y axis:
-            `ny = dimension[1]`
-            `dy = spacing[1]`
-            `ymin = origin[1]`
-            `ymax = origin[1] + ny*dy`
+    - along x axis:
+        - `nx = dimension[0]`
+        - `dx = spacing[0]`
+        - `xmin = origin[0]`
+        - `xmax = origin[0] + nx*dx`
+    - along y axis:
+        - `ny = dimension[1]`
+        - `dy = spacing[1]`
+        - `ymin = origin[1]`
+        - `ymax = origin[1] + ny*dy`.
 
     The simulation consists in
     1. Drawing random hyper-plane (i.e. lines in 2D):
@@ -360,7 +360,7 @@ def chentsov2D(n_mean,
             p_max = d
 
     if p_min >= p_max:
-        print(f"ERROR ({fname}): 'p_min' is greater than or equal to 'p_max'")
+        print(f"ERROR ({fname}): `p_min` is greater than or equal to `p_max`")
         return None
 
     if phi_min >= phi_max:
@@ -430,21 +430,21 @@ def chentsov3D(n_mean,
     with `nx`, `ny`, `nz` cells along x axis, y axis, z axis respectively, each
     cell being a box of size `dx` x `dy` x `dy`, the bottom-lower-left corner is
     the origin:
-        - along x axis:
-            `nx = dimension[0]`
-            `dx = spacing[0]`
-            `xmin = origin[0]`
-            `xmax = origin[0] + nx*dx`
-        - along y axis:
-            `ny = dimension[1]`
-            `dy = spacing[1]`
-            `ymin = origin[1]`
-            `ymax = origin[1] + ny*dy`
-        - along z axis:
-            `nz = dimension[0]`
-            `dz = spacing[0]`
-            `zmin = origin[0]`
-            `zmax = origin[0] + nz*dz`
+    - along x axis:
+        - `nx = dimension[0]`
+        - `dx = spacing[0]`
+        - `xmin = origin[0]`
+        - `xmax = origin[0] + nx*dx`
+    - along y axis:
+        - `ny = dimension[1]`
+        - `dy = spacing[1]`
+        - `ymin = origin[1]`
+        - `ymax = origin[1] + ny*dy`
+    - along z axis:
+        - `nz = dimension[0]`
+        - `dz = spacing[0]`
+        - `zmin = origin[0]`
+        - `zmax = origin[0] + nz*dz`.
 
     The simulation consists in
     1. Drawing random hyper-plane (i.e. planes in 3D):
@@ -549,15 +549,15 @@ def chentsov3D(n_mean,
             p_max = d
 
     if p_min >= p_max:
-        print(f"ERROR ({fname}): 'p_min' is greater than or equal to 'p_max'")
+        print(f"ERROR ({fname}): `p_min` is greater than or equal to `p_max`")
         return None
 
     if phi_min >= phi_max:
-        print(f"ERROR ({fname}): 'phi_min' is greater than or equal to 'phi_max'")
+        print(f"ERROR ({fname}): `phi_min` is greater than or equal to `phi_max`")
         return None
 
     if theta_min >= theta_max:
-        print(f"ERROR ({fname}): 'theta_min' is greater than or equal to 'theta_max'")
+        print(f"ERROR ({fname}): `theta_min` is greater than or equal to `theta_max`")
         return None
 
     # center of each grid cell of the simulation domain
