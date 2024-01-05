@@ -1673,18 +1673,21 @@ def simulate1D(
                 if verbose > 0:
                     print(f"ERROR ({fname}): no data point in grid")
                 return None
-            x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
+            x_agg = im_tmp.xx()[ind_agg].reshape(-1, 1)
+            # x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1) # ok from python 3.11 only ?
             ind_agg = ind_agg[2:] # remove index along z and y axes
             del(im_tmp)
             # Compute
             # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
             # - or nreal simulation(s) (v_agg) at x_agg
             if mean is not None and mean.size > 1:
-                mean_x_agg = mean[*ind_agg]
+                mean_x_agg = mean[ind_agg]
+                # mean_x_agg = mean[*ind_agg]
             else:
                 mean_x_agg = mean
             if var is not None and var.size > 1:
-                var_x_agg = var[*ind_agg]
+                var_x_agg = var[ind_agg]
+                # var_x_agg = var[*ind_agg]
             else:
                 var_x_agg = var
             # Set parameters `nneighborMax` from the arguments if not given in `aggregate_data_op_kwargs`
@@ -2816,22 +2819,26 @@ def simulate2D(
                 if verbose > 0:
                     print(f"ERROR ({fname}): no data point in grid")
                 return None
-            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
+            x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1))).T
+            # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
             ind_agg = ind_agg[1:] # remove index along z axis
             del(im_tmp)
             # Compute
             # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
             # - or nreal simulation(s) (v_agg) at x_agg
             if mean is not None and mean.size > 1:
-                mean_x_agg = mean[*ind_agg]
+                mean_x_agg = mean[ind_agg]
+                # mean_x_agg = mean[*ind_agg]
             else:
                 mean_x_agg = mean
             if var is not None and var.size > 1:
-                var_x_agg = var[*ind_agg]
+                var_x_agg = var[ind_agg]
+                # var_x_agg = var[*ind_agg]
             else:
                 var_x_agg = var
             if isinstance(cov_model.alpha, np.ndarray) and cov_model.alpha.size == nxyz:
-                alpha_x_agg = cov_model.alpha.reshape(ny, nx)[*ind_agg]
+                alpha_x_agg = cov_model.alpha.reshape(ny, nx)[ind_agg]
+                # alpha_x_agg = cov_model.alpha.reshape(ny, nx)[*ind_agg]
             else:
                 alpha_x_agg = cov_model.alpha
             # Set parameters `nneighborMax` from the arguments if not given in `aggregate_data_op_kwargs`
@@ -3980,29 +3987,35 @@ def simulate3D(
                 if verbose > 0:
                     print(f"ERROR ({fname}): no data point in grid")
                 return None
-            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
+            x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1), im_tmp.zz()[ind_agg].reshape(-1))).T
+            # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
             del(im_tmp)
             # Compute
             # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
             # - or nreal simulation(s) (v_agg) at x_agg
             if mean is not None and mean.size > 1:
-                mean_x_agg = mean[*ind_agg]
+                mean_x_agg = mean[ind_agg]
+                # mean_x_agg = mean[*ind_agg]
             else:
                 mean_x_agg = mean
             if var is not None and var.size > 1:
-                var_x_agg = var[*ind_agg]
+                var_x_agg = var[ind_agg]
+                # var_x_agg = var[*ind_agg]
             else:
                 var_x_agg = var
             if isinstance(cov_model.alpha, np.ndarray) and cov_model.alpha.size == nxyz:
-                alpha_x_agg = cov_model.alpha[*ind_agg]
+                alpha_x_agg = cov_model.alpha[ind_agg]
+                # alpha_x_agg = cov_model.alpha[*ind_agg]
             else:
                 alpha_x_agg = cov_model.alpha
             if isinstance(cov_model.beta, np.ndarray) and cov_model.beta.size == nxyz:
-                beta_x_agg = cov_model.beta[*ind_agg]
+                beta_x_agg = cov_model.beta[ind_agg]
+                # beta_x_agg = cov_model.beta[*ind_agg]
             else:
                 beta_x_agg = cov_model.beta
             if isinstance(cov_model.gamma, np.ndarray) and cov_model.gamma.size == nxyz:
-                gamma_x_agg = cov_model.gamma[*ind_agg]
+                gamma_x_agg = cov_model.gamma[ind_agg]
+                # gamma_x_agg = cov_model.gamma[*ind_agg]
             else:
                 gamma_x_agg = cov_model.gamma
             # Set parameters `nneighborMax` from the arguments if not given in `aggregate_data_op_kwargs`
@@ -5012,16 +5025,19 @@ def estimate1D(
                 if verbose > 0:
                     print(f"ERROR ({fname}): no data point in grid")
                 return None
-            x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
+            x_agg = im_tmp.xx()[ind_agg].reshape(-1, 1)
+            # x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
             ind_agg = ind_agg[2:] # remove index along z and y axes
             del(im_tmp)
             # Compute kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg
             if mean is not None and mean.size > 1:
-                mean_x_agg = mean[*ind_agg]
+                mean_x_agg = mean[ind_agg]
+                # mean_x_agg = mean[*ind_agg]
             else:
                 mean_x_agg = mean
             if var is not None and var.size > 1:
-                var_x_agg = var[*ind_agg]
+                var_x_agg = var[ind_agg]
+                # var_x_agg = var[*ind_agg]
             else:
                 var_x_agg = var
             # Set parameters `use_unique_neighborhood` and `nneighborMax`
@@ -5177,7 +5193,8 @@ def estimate1D(
 
     if x is not None and aggregate_data_op == 'krige':
         # Set kriging standard deviation at grid cell containing a data
-        geosclassic_output['image'].val[1, 0, 0, *ind_agg] = v_agg_std
+        geosclassic_output['image'].val[1, 0, 0, ind_agg[0]] = v_agg_std
+        # geosclassic_output['image'].val[1, 0, 0, *ind_agg] = v_agg_std
 
     if mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
@@ -5569,20 +5586,24 @@ def estimate2D(
                 if verbose > 0:
                     print(f"ERROR ({fname}): no data point in grid")
                 return None
-            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
+            x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1))).T
+            # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
             ind_agg = ind_agg[1:] # remove index along z axis
             del(im_tmp)
             # Compute kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg
             if mean is not None and mean.size > 1:
-                mean_x_agg = mean[*ind_agg]
+                mean_x_agg = mean[ind_agg]
+                # mean_x_agg = mean[*ind_agg]
             else:
                 mean_x_agg = mean
             if var is not None and var.size > 1:
-                var_x_agg = var[*ind_agg]
+                var_x_agg = var[ind_agg]
+                # var_x_agg = var[*ind_agg]
             else:
                 var_x_agg = var
             if isinstance(cov_model.alpha, np.ndarray) and cov_model.alpha.size == nxyz:
-                alpha_x_agg = cov_model.alpha.reshape(ny, nx)[*ind_agg]
+                alpha_x_agg = cov_model.alpha.reshape(ny, nx)[ind_agg]
+                # alpha_x_agg = cov_model.alpha.reshape(ny, nx)[*ind_agg]
             else:
                 alpha_x_agg = cov_model.alpha
             # Set parameters `use_unique_neighborhood` and `nneighborMax`
@@ -5737,7 +5758,8 @@ def estimate2D(
 
     if x is not None and aggregate_data_op == 'krige':
         # Set kriging standard deviation at grid cell containing a data
-        geosclassic_output['image'].val[1, 0, *ind_agg] = v_agg_std
+        geosclassic_output['image'].val[1, 0, ind_agg[0], ind_agg[1]] = v_agg_std
+        # geosclassic_output['image'].val[1, 0, *ind_agg] = v_agg_std
 
     if mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
@@ -6148,27 +6170,33 @@ def estimate3D(
                 if verbose > 0:
                     print(f"ERROR ({fname}): no data point in grid")
                 return None
-            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
+            x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1), im_tmp.zz()[ind_agg].reshape(-1))).T
+            # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
             del(im_tmp)
             # Compute kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg
             if mean is not None and mean.size > 1:
-                mean_x_agg = mean[*ind_agg]
+                mean_x_agg = mean[ind_agg]
+                # mean_x_agg = mean[*ind_agg]
             else:
                 mean_x_agg = mean
             if var is not None and var.size > 1:
-                var_x_agg = var[*ind_agg]
+                var_x_agg = var[ind_agg]
+                # var_x_agg = var[*ind_agg]
             else:
                 var_x_agg = var
             if isinstance(cov_model.alpha, np.ndarray) and cov_model.alpha.size == nxyz:
-                alpha_x_agg = cov_model.alpha[*ind_agg]
+                alpha_x_agg = cov_model.alpha[ind_agg]
+                # alpha_x_agg = cov_model.alpha[*ind_agg]
             else:
                 alpha_x_agg = cov_model.alpha
             if isinstance(cov_model.beta, np.ndarray) and cov_model.beta.size == nxyz:
-                beta_x_agg = cov_model.beta[*ind_agg]
+                beta_x_agg = cov_model.beta[ind_agg]
+                # beta_x_agg = cov_model.beta[*ind_agg]
             else:
                 beta_x_agg = cov_model.beta
             if isinstance(cov_model.gamma, np.ndarray) and cov_model.gamma.size == nxyz:
-                gamma_x_agg = cov_model.gamma[*ind_agg]
+                gamma_x_agg = cov_model.gamma[ind_agg]
+                # gamma_x_agg = cov_model.gamma[*ind_agg]
             else:
                 gamma_x_agg = cov_model.gamma
             # Set parameters `use_unique_neighborhood` and `nneighborMax`
@@ -6321,7 +6349,8 @@ def estimate3D(
 
     if x is not None and aggregate_data_op == 'krige':
         # Set kriging standard deviation at grid cell containing a data
-        geosclassic_output['image'].val[1, *ind_agg] = v_agg_std
+        geosclassic_output['image'].val[1, ind_agg[0], ind_agg[1], ind_agg[2]] = v_agg_std
+        # geosclassic_output['image'].val[1, *ind_agg] = v_agg_std
 
     if mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)

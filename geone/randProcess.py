@@ -10,7 +10,203 @@ Module for miscellaneous algorithms based on random processes.
 """
 
 import numpy as np
-import scipy.stats as stats
+import scipy
+
+# ----------------------------------------------------------------------------
+def acceptRejectSampler(n, xmin, xmax, f, c=None, g=None, g_rvs=None,
+                        return_accept_ratio=False,
+                        max_trial=None, show_progress=False,
+                        opt_kwargs=None):
+    """
+    Generates samples according to a given density function.
+
+    This function generates `n` points (which can be multi-variate) in a
+    box-shape domain of lower bound(s) `xmin` and upper bound(s) `xmax`,
+    according to a density proportional to the function `f`, based on the
+    accept-reject algorithm.
+
+    Let `g_rvs` a function returning random variates sample(s) from an
+    instrumental distribution with density proportional to `g`, and `c` a
+    constant such that `c*g(x) >= f(x)` for any `x` (in `[xmin, xmax[` (can be
+    multi-dimensional), i.e. `x[i]` in `[xmin[i], xmax[i][` for any i). Let `fd`
+    (resp. `gd`) the density function proportional to `f` (resp. `g`); the
+    alogrithm consists in the following steps to generate samples `x ~ fd`:
+    - generate `y ~ gd` (using `g_rvs`)
+    - generate `u ~ Unif([0,1])`
+    - if `u < f(y)/c*g(y)`, then accept `x` (reject `x` otherwise)
+
+    The default instrumental distribution (if both `g` and `g_rvs` set to `None`)
+    is the uniform distribution (`g=1`). If the domain (`[xmin, xmax[`) is
+    infinite, the instrumental distribution (`g`, and `g_rvs`) and `c` must be
+    specified.
+
+    Parameters
+    ----------
+    n : int
+        number of sample points
+    xmin : float (or int), or array-like of shape(m,)
+        lower bound of each coordinate (m is the space dimension);
+        note: component(s) can be set to `-np.inf`
+    xmax : float (or int), or array-like of shape(m,)
+        upper bound of each coordinate (m is the space dimension)
+        note: component(s) can be set to `np.inf`
+    f : function (callable)
+        function proportional to target density, `f(x)` returns the target
+        density (times a constant) at `x`; with `x` array_like, the last
+        axis of `x` denotes the components of the points where the function is
+        evaluated
+    c : float (or int), optional
+        constant such that (not checked)) `c*g(x) >= f(x)` for all x in
+        [xmin, xmax[, with `g(x)=1` if `g` is not specified (`g=None`);
+        by default (`c=None`), the domain (`[xmin, xmax[`) must be finite and
+        `c` is automatically computed (using the function
+        `scipy.optimize.differential_evolution`)
+    g : function (callable), optional
+        function proportional to the instrumental density on `[xmin, xmax[`,
+        `g(x)` returns the instrumental density (times a constant) at `x`;
+        with `x` array_like, the last axis of `x` denotes the components of the
+        points where the function is evaluated;
+        by default (`g=None`), the domain (`[xmin, xmax[`) must be finite and
+        the instrumental distribution considered is uniform (constant
+        function `g=1` is considered)
+    g_rvs : function (callable), optional
+        function returning samples from the instrumental distribution with
+        density proportional to `g` on `[xmin, xmax[` (restricted on this
+        domain if needed); `g_rvs` must have the keyword arguments `size`
+        (the number of sample(s) to draw)
+        by default (`None`), uniform instrumental distribution is considered
+        (see `g`);
+        note: both `g` and `g_rvs` must be specified (or both set to `None`)
+    return_accept_ratio : bool, default: False
+        indicates if the acceptance ratio is returned
+    show_progress : bool, default: False
+        indicates if progress is displayed (True) or not (False)
+    opt_kwargs : dict, optional
+        keyword arguments to be passed to `scipy.optimize.differential_evolution`
+        (do not set `'bounds'` key, bounds are set according to `xmin`, `xmax`)
+
+    Returns
+    -------
+    x : 2d-array of shape (n, m), or 1d-array of shape (n,)
+        samples according to the target density proportional to `f on the
+        domain `[xmin, max[`, `x[i]` is the i-th sample point;
+        notes:
+        - if dimension m >= 2: `x` is a 2d-array of shape (n, m)
+        - if diemnsion is 1: `x` is an array of shape (n,)
+    t : float, optional
+        acceptance ratio, returned if `return_accept_ratio=True`, i.e.
+        `t = n/ntot` where `ntot` is the number of points draws in the
+        instrumental distribution
+    """
+    fname = 'acceptRejectSampler'
+
+    xmin = np.atleast_1d(xmin)
+    xmax = np.atleast_1d(xmax)
+
+    if xmin.ndim != xmax.ndim or np.any(np.isnan(xmin)) or np.any(np.isnan(xmax)) or np.any(xmin >= xmax):
+        print(f'ERROR ({fname}): `xmin`, `xmax` not valid')
+        return None
+
+    lx = xmax - xmin
+    dim = len(xmin)
+
+    if np.any(np.isinf(lx)):
+        dom_finite = False
+    else:
+        dom_finite = True
+
+    if n <= 0:
+        x = np.zeros((n, dim))
+        if dim == 1:
+            x = x.reshape(-1)
+        if return_accept_ratio:
+            return x, 1.0
+        else:
+            return x
+
+    # Set g, g_rvs
+    if (g is None and g_rvs is not None) or (g is not None and g_rvs is None):
+        print(f'ERROR ({fname}): `g` and `g_rvs` should be both specified')
+        return None
+
+    if g is None:
+        if not dom_finite:
+            print(f'ERROR ({fname}): `g` and `g_rvs` must be specified when infinite domain is considered')
+            return None
+        # g
+        g = lambda x: 1.0
+        # g_rvs
+        if dim == 1:
+            def g_rvs(size=1):
+                return xmin[0] + scipy.stats.uniform.rvs(size=size) * lx[0]
+        else:
+            def g_rvs(size=1):
+                return xmin + scipy.stats.uniform.rvs(size=(size,dim)) * lx
+
+    if c is None:
+        if not dom_finite:
+            print(f'ERROR ({fname}): `c` must be specified when infinite domain is considered')
+            return None
+        h = lambda x: -f(x)/g(x)
+        # Compute the min of h(x) with the function scipy.optimize.differential_evolution
+        if opt_kwargs is None:
+            opt_kwargs = {}
+        res = scipy.optimize.differential_evolution(h, bounds=list(zip(xmin, xmax)), **opt_kwargs)
+        if not res.success:
+            print(f'ERROR ({fname}): `scipy.optimize.differential_evolution` failed {res.message})')
+            return None
+        # -> res.x realizes the minimum of h(x)
+        # -> res.fun is the minimum of h(x)
+        # Set c such that c > f(x)/g(x) for all x in the domain
+        c = -res.fun + 1.e-3 # add small number to ensure the inequality
+
+    # Apply accept-reject algo
+    naccept = 0
+    ntot = 0
+    x = []
+    if max_trial is None:
+        max_trial = np.inf
+    if show_progress:
+        progress = 0
+        progressOld = -1
+    while naccept < n:
+        nn = n - naccept
+        ntot = ntot+nn
+        xnew = g_rvs(size=nn)
+        ind = np.all((xnew >= xmin, xnew < xmax), axis=0)
+        if dim > 1:
+            ind = np.all(ind, axis=-1)
+        xnew = xnew[ind]
+        nn = len(xnew)
+        if nn == 0:
+            continue
+        u = np.random.random(size=nn)
+        xnew = xnew[u < (f(xnew)/(c*g(xnew))).reshape(nn)]
+        nn = len(xnew)
+        if nn == 0:
+            continue
+        x.extend(xnew)
+        naccept = naccept+nn
+        if show_progress:
+            progress = int(100*naccept/n)
+            if progress > progressOld:
+                print(f'A-R algo, progress: {progress:3d} %')
+                progressOld = progress
+        if ntot >= max_trial:
+            ok = False
+            break
+
+    x = np.asarray(x)
+
+    if naccept < n:
+        print(f'WARNING ({fname}): sample size is only {naccept}! (increase `max_trial`)')
+
+    if return_accept_ratio:
+        accept_ratio = naccept/ntot
+        return x, accept_ratio
+    else:
+        return x
+# ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
 def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
@@ -25,15 +221,16 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
         intensity of the Poisson process, i.e. the mean number of points per
         unitary volume:
         - if a function: (non-homogeneous Poisson point process)
-        `mu(x)` returns the intensity at `x`, with `x` array_like, the last
-        axis of `x` denoting the components
+        `mu(x)` returns the intensity at `x`; with `x` array_like, the last
+        axis of `x` denotes the components of the points where the function is
+        evaluated
         - if a ndarray: (non-homogeneous Poisson point process)
         `mu[i_n, ..., i_0]` is the intensity on the box
         `[xmin[j]+i_j*(xmax[j]-xmin[j])/mu.shape[n-j]]`, j = 0,..., n
         - if a float: homogeneous Poisson point process
-    xmin : float, or array-like of floats of shape(m,)
+    xmin : float (or int), or array-like of shape(m,)
         lower bound of each coordinate
-    xmax : float, or array-like of floats of shape(m,)
+    xmax : float (or int), or array-like of shape(m,)
         upper bound of each coordinate
     ninterval : int, or array-like of ints of shape (m,), optional
         used only if `mu` is a function (callable);
@@ -111,7 +308,7 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
         mu_cell = mu.reshape(-1) * vol_cell
 
     # Generate number of points in each grid cell (Poisson)
-    npts_cell = np.array([stats.poisson.rvs(m) for m in mu_cell])
+    npts_cell = np.array([scipy.stats.poisson.rvs(m) for m in mu_cell])
 
     # Generate random points (uniformly) in each cell
     pts = np.array([np.hstack(
@@ -592,3 +789,252 @@ def chentsov3D(n_mean,
 
 if __name__ == "__main__":
     print("Module 'geone.randProcess'.")
+
+#####  OLD BELOW #####
+# # ----------------------------------------------------------------------------
+# def acceptRejectSampler(n, xmin, xmax, f, c=None, g=None, g_rvs=None,
+#                         return_accept_ratio=False,
+#                         max_trial=None, show_progress=False):
+#     """
+#     Generates samples according to a given density function.
+#
+#     This function generates `n` points in a box-shape domain of lower bound(s)
+#     `xmin` and upper bound(s) `xmax`, according to a density proportional to the
+#     function `f` are generated, based on the accept-reject algorithm.
+#
+#     Let `g_rvs` a function returning random variates sample(s) from an
+#     instrumental distribution with density proportional to `g`, and `c` a
+#     constant such that `c*g(x) >= f(x)` for any `x` (in `[xmin, xmax[` (can be
+#     multi-dimensional), i.e. `x[i]` in `[xmin[i], xmax[i][` for any i). Let `fd`
+#     (resp. `gd`) the density function proportional to `f` (resp. `g`); the
+#     alogrithm consists in the following steps to generate samples `x ~ fd`:
+#     - generate `y ~ gd` (using `g_rvs`)
+#     - generate `u ~ Unif([0,1])`
+#     - if `u < f(y)/c*g(y)`, then accept `x` (reject `x` otherwise)
+#
+#     If the instrumental distribution is not specified (both `g` and `g_rvs` set
+#     to `None`), then:
+#     - the uniform distribution if the domain `[xmin, xmax[` is finite
+#     - the multi-normal distribution, centered at a point maximizing `f`, with
+#     a variance 1 (covariance matrix I), if the domain `[xmin, xmax[` is infinite
+#
+#     Parameters
+#     ----------
+#     n : int
+#         number of sample points
+#     xmin : float (or int), or array-like of shape(m,)
+#         lower bound of each coordinate (m is the space dimension);
+#         note: component(s) can be set to `-np.inf`
+#     xmax : float (or int), or array-like of shape(m,)
+#         upper bound of each coordinate (m is the space dimension)
+#         note: component(s) can be set to `np.inf`
+#     f : function (callable)
+#         function proportional to target density, `f(x)` returns the target
+#         density (times a constant) at `x`; with `x` array_like, the last
+#         axis of `x` denotes the components of the points where the function is
+#         evaluated
+#     c : float (or int), optional
+#         constant such that (not checked)) `c*g(x) >= f(x)` for all x in
+#         [xmin, xmax[, with `g(x)=1` if `g` is not specified (`g=None`);
+#         by default (`c=None`), `c` is automatically computed (using the function
+#         `scipy.optimize.minimize`)
+#     g : function (callable), optional
+#         function proportional to the instrumental density on `[xmin, xmax[`,
+#         `g(x)` returns the instrumental density (times a constant) at `x`;
+#         with `x` array_like, the last axis of `x` denotes the components of the
+#         points where the function is evaluated;
+#         by default (`g=None`): the instrumental distribution considered is
+#         - uniform (constant function `g=1` is considered), if the domain
+#         `[xmin, xmax[` is finite
+#         - (multi-)normal density of variance 1 (covariance matrix I), centered
+#         at a point maximizing `f`, otherwise;
+#     g_rvs : function (callable), optional
+#         function returning samples from the instrumental distribution with
+#         density proportional to `g` on `[xmin, xmax[` (restricted on this
+#         domain if needed); `g_rvs` must have the keyword arguments `size`
+#         (the number of sample(s) to draw)
+#         by default: uniform or non-correlated multi-normal instrumental
+#         distribution is considered (see `g`);
+#         note: both `g` and `g_rvs` must be specified (or both set to `None`)
+#     return_accept_ratio : bool, default: False
+#         indicates if the acceptance ratio is returned
+#     show_progress : bool, default: False
+#         indicates if progress is displayed (True) or not (False)
+#
+#     Returns
+#     -------
+#     x : 2d-array of shape (n, m), or 1d-array of shape (n,)
+#         samples according to the target density proportional to `f on the
+#         domain `[xmin, max[`, `x[i]` is the i-th sample point;
+#         notes:
+#         - if dimension m >= 2: `x` is a 2d-array of shape (n, m)
+#         - if diemnsion is 1: `x` is an array of shape (n,)
+#     t : float, optional
+#         acceptance ratio, returned if `return_accept_ratio=True`, i.e.
+#         `t = n/ntot` where `ntot` is the number of points draws in the
+#         instrumental distribution
+#     """
+#     fname = 'acceptRejectSampler'
+#
+#     xmin = np.atleast_1d(xmin)
+#     xmax = np.atleast_1d(xmax)
+#
+#     if xmin.ndim != xmax.ndim or np.any(np.isnan(xmin)) or np.any(np.isnan(xmax)) or np.any(xmin >= xmax):
+#         print(f'ERROR ({fname}): `xmin`, `xmax` not valid')
+#         return None
+#
+#     lx = xmax - xmin
+#     dim = len(xmin)
+#
+#     x = np.zeros((n, dim)) # initialize random samples (one sample by row)
+#     if n <= 0:
+#         if return_accept_ratio:
+#             return x, 1.0
+#         else:
+#             return x
+#
+#     # Set g, g_rvs, and c
+#     if (g is None and g_rvs is not None) or (g is not None and g_rvs is None):
+#         print(f'ERROR ({fname}): `g` and `g_rvs` should be both specified')
+#         return None
+#
+#     mu = None # not necessarily used
+#     if c is None:
+#         if g is None:
+#             h = lambda x: -f(x)
+#         else:
+#             h = lambda x: -f(x)/g(x)
+#         # Compute the min of h(x) with the function scipy.optimize.minimize
+#         # x0: initial guess (random)
+#         x0 = xmin + np.random.random(size=dim)*lx
+#         for i, binf in enumerate(np.isinf(x0)):
+#             if binf:
+#                 x0[i] = min(xmax[i], max(xmin[i], 0.0))
+#         res = scipy.optimize.minimize(h, x0, bounds=list(zip(xmin, xmax)))
+#         if not res.success:
+#             print(f'ERROR ({fname}): `scipy.optimize.minimize` failed {res.message})')
+#             return None
+#         # -> res.x realizes the minimum of h(x)
+#         # -> res.fun is the minimum of h(x)
+#         mu = res.x
+#         # Set c such that c > f(x)/g(x) for all x in the domain
+#         c = -res.fun + 1.e-3 # add small number to ensure the inequality
+#
+#     if g is None:
+#         if np.any((np.isinf(xmin), np.isinf(xmax))):
+#             if mu is None:
+#                 # Compute the min of h(x) = (f(x)-c)**2 with the function scipy.optimize.minimize
+#                 h = lambda x: (f(x)-c)**2
+#                 # x0: initial guess (random)
+#                 x0 = xmin + np.random.random(size=dim)*lx
+#                 for i, binf in enumerate(np.isinf(x0)):
+#                     if binf:
+#                         x0[i] = min(xmax[i], max(xmin[i], 0.0))
+#                 res = scipy.optimize.minimize(h, x0, bounds=list(zip(xmin, xmax)))
+#                 if not res.success:
+#                     print(f'ERROR ({fname}): `scipy.optimize.minimize` failed {res.message})')
+#                     return None
+#                 # -> res.x is the minimum of h(x)
+#             mu = res.x
+#             # Set instrumental pdf proportional to: g = exp(-1/2 sum_i((x[i]-mu[i])**2))
+#             # Set g, g_rvs
+#             g = lambda x: np.exp(-0.5*np.sum((np.atleast_2d(x)-mu)**2), axis=1)
+#             g_rvs = scipy.stats.multivariate_normal(mean=mu).rvs
+#
+#             # Update c
+#             # Compute the min of h(x) = -f(x)/g(x) with the function scipy.optimize.minimize
+#             h = lambda x: -f(x)/g(x)
+#             # x0: initial guess
+#             x0 = mu
+#             res = scipy.optimize.minimize(h, x0, bounds=list(zip(xmin, xmax)))
+#             if not res.success:
+#                 print(f'ERROR ({fname}): `scipy.optimize.minimize` failed {res.message})')
+#                 return None
+#             # -> res.fun is the minimum of h(x)
+#
+#             # Set c such that c > f(x)/g(x) for all x in the domain
+#             c = -res.fun + 1.e-3 # add small number to ensure the inequality
+#
+#         else:
+#             # Set instrumental pdf proportional to: g = 1 (uniform distribution)
+#             # Set g, g_rvs
+#             g = lambda x: 1.0
+#             def g_rvs(size=1):
+#                 return xmin + scipy.stats.uniform.rvs(size=(size,dim)) * lx
+#
+#     # Apply accept-reject algo
+#     naccept = 0
+#     ntot = 0
+#     x = []
+#     if max_trial is None:
+#         max_trial = np.inf
+#     if show_progress:
+#         progress = 0
+#         progressOld = -1
+#     while naccept < n:
+#         nn = n - naccept
+#         ntot = ntot+nn
+#         xnew = g_rvs(size=nn)
+#         # print('1', xnew)
+#         # print('1b', np.all(np.all((xnew >= xmin, xnew < xmax), axis=0), axis=-1))
+#         xnew = xnew[np.all(np.all((xnew >= xmin, xnew < xmax), axis=0), axis=-1)]
+#         # print('2', xnew)
+#         nn = len(xnew)
+#         if nn == 0:
+#             continue
+#         u = np.random.random(size=nn)
+#         xnew = xnew[u < (f(xnew)/(c*g(xnew))).reshape(nn)]
+#         # print('3', xnew)
+#         nn = len(xnew)
+#         if nn == 0:
+#             continue
+#         x.extend(xnew)
+#         naccept = naccept+nn
+#         if show_progress:
+#             progress = int(100*naccept/n)
+#             if progress > progressOld:
+#                 print(f'A-R algo, progress: {progress:3d} %')
+#                 progressOld = progress
+#         if ntot >= max_trial:
+#             ok = False
+#             break
+#
+#     x = np.asarray(x)
+#     if dim == 1:
+#         x = x.reshape(-1)
+#
+#     # # Apply accept-reject algo
+#     # naccept = 0
+#     # ntot = 0
+#     # if max_trial is None:
+#     #     max_trial = np.inf
+#     # if show_progress:
+#     #     progress = 0
+#     #     progressOld = -1
+#     # while naccept < n:
+#     #     ntot = ntot+1
+#     #     xnew = g_rvs()
+#     #     if np.any((xnew < xmin, xnew >= xmax)):
+#     #         continue
+#     #     u = np.random.random()
+#     #     if u < f(xnew)/(c*g(xnew)):
+#     #         x[naccept] = xnew
+#     #         naccept = naccept+1
+#     #         if show_progress:
+#     #             progress = int(100*naccept/n)
+#     #             if progress > progressOld:
+#     #                 print(f'A-R algo, progress: {progress:3d} %')
+#     #                 progressOld = progress
+#     #     if ntot >= max_trial:
+#     #         ok = False
+#     #         break
+#
+#     if naccept < n:
+#         print(f'WARNING: sample size is only {naccept}! (increase `max_trial`)')
+#
+#     if return_accept_ratio:
+#         accept_ratio = naccept/ntot
+#         return x, accept_ratio
+#     else:
+#         return x
+# # ----------------------------------------------------------------------------

@@ -407,7 +407,8 @@ def grf1D(cov_model,
                                          nx=nx, sx=sx, ox=ox,
                                          indicator_var=True, count_var=False)
             ind_agg = np.where(im_tmp.val[0])
-            x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
+            x_agg = im_tmp.xx()[ind_agg].reshape(-1, 1)
+            # x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1) # ok from python 3.11 only ?
             if len(ind_agg[0]) == 0:
                 if verbose > 0:
                     print(f"ERROR ({fname}): no data point in grid")
@@ -418,11 +419,13 @@ def grf1D(cov_model,
             # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
             # - or nreal simulation(s) (v_agg) at x_agg
             if mean is not None and mean.size > 1:
-                mean_x_agg = mean[*ind_agg]
+                mean_x_agg = mean[ind_agg]
+                # mean_x_agg = mean[*ind_agg]
             else:
                 mean_x_agg = mean
             if var is not None and var.size > 1:
-                var_x_agg = var[*ind_agg]
+                var_x_agg = var[ind_agg]
+                # var_x_agg = var[*ind_agg]
             else:
                 var_x_agg = var
             if aggregate_data_op == 'krige':
@@ -1176,7 +1179,8 @@ def krige1D(cov_model,
                                      nx=nx, sx=sx, ox=ox,
                                      indicator_var=True, count_var=False)
         ind_agg = np.where(im_tmp.val[0])
-        x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
+        x_agg = im_tmp.xx()[ind_agg].reshape(-1, 1)
+        # x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
         if len(ind_agg[0]) == 0:
             if verbose > 0:
                 print(f"ERROR ({fname}): no data point in grid")
@@ -1187,11 +1191,13 @@ def krige1D(cov_model,
         # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
         # - or nreal simulation(s) (v_agg) at x_agg
         if mean is not None and mean.size > 1:
-            mean_x_agg = mean[*ind_agg]
+            mean_x_agg = mean[ind_agg]
+            # mean_x_agg = mean[*ind_agg]
         else:
             mean_x_agg = mean
         if var is not None and var.size > 1:
-            var_x_agg = var[*ind_agg]
+            var_x_agg = var[ind_agg]
+            # var_x_agg = var[*ind_agg]
         else:
             var_x_agg = var
         v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model, method='simple_kriging',
@@ -1860,18 +1866,21 @@ def grf2D(cov_model,
                 if verbose > 0:
                     print(f"ERROR ({fname}): no data point in grid")
                 return None
-            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
+            x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1))).T
+            # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
             ind_agg = ind_agg[1:] # remove index along z axis
             del(im_tmp)
             # Compute
             # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
             # - or nreal simulation(s) (v_agg) at x_agg
             if mean is not None and mean.size > 1:
-                mean_x_agg = mean[*ind_agg]
+                mean_x_agg = mean[ind_agg]
+                # mean_x_agg = mean[*ind_agg]
             else:
                 mean_x_agg = mean
             if var is not None and var.size > 1:
-                var_x_agg = var[*ind_agg]
+                var_x_agg = var[ind_agg]
+                # var_x_agg = var[*ind_agg]
             else:
                 var_x_agg = var
             if aggregate_data_op == 'krige':
@@ -2647,18 +2656,21 @@ def krige2D(cov_model,
             if verbose > 0:
                 print(f"ERROR ({fname}): no data point in grid")
             return None
-        x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
+        x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1))).T
+        # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
         ind_agg = ind_agg[1:] # remove index along z axis
         del(im_tmp)
         # Compute
         # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
         # - or nreal simulation(s) (v_agg) at x_agg
         if mean is not None and mean.size > 1:
-            mean_x_agg = mean[*ind_agg]
+            mean_x_agg = mean[ind_agg]
+            # mean_x_agg = mean[*ind_agg]
         else:
             mean_x_agg = mean
         if var is not None and var.size > 1:
-            var_x_agg = var[*ind_agg]
+            var_x_agg = var[ind_agg]
+            # var_x_agg = var[*ind_agg]
         else:
             var_x_agg = var
         v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model, method='simple_kriging',
@@ -3359,17 +3371,20 @@ def grf3D(cov_model,
                 if verbose > 0:
                     print(f"ERROR ({fname}): no data point in grid")
                 return None
-            x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
+            x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1), im_tmp.zz()[ind_agg].reshape(-1))).T
+            # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
             del(im_tmp)
             # Compute
             # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
             # - or nreal simulation(s) (v_agg) at x_agg
             if mean is not None and mean.size > 1:
-                mean_x_agg = mean[*ind_agg]
+                mean_x_agg = mean[ind_agg]
+                # mean_x_agg = mean[*ind_agg]
             else:
                 mean_x_agg = mean
             if var is not None and var.size > 1:
-                var_x_agg = var[*ind_agg]
+                var_x_agg = var[ind_agg]
+                # var_x_agg = var[*ind_agg]
             else:
                 var_x_agg = var
             if aggregate_data_op == 'krige':
@@ -4162,17 +4177,20 @@ def krige3D(cov_model,
             if verbose > 0:
                 print(f"ERROR ({fname}): no data point in grid")
             return None
-        x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
+        x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1), im_tmp.zz()[ind_agg].reshape(-1))).T
+        # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
         del(im_tmp)
         # Compute
         # - kriging estimate (v_agg) and kriging std (v_agg_std) at x_agg,
         # - or nreal simulation(s) (v_agg) at x_agg
         if mean is not None and mean.size > 1:
-            mean_x_agg = mean[*ind_agg]
+            mean_x_agg = mean[ind_agg]
+            # mean_x_agg = mean[*ind_agg]
         else:
             mean_x_agg = mean
         if var is not None and var.size > 1:
-            var_x_agg = var[*ind_agg]
+            var_x_agg = var[ind_agg]
+            # var_x_agg = var[*ind_agg]
         else:
             var_x_agg = var
         v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model, method='simple_kriging',

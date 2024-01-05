@@ -27,13 +27,13 @@ pip install .
 Do not launch python from the directory where the installation has been done (with `pip`), otherwise `import geone` will fail.
 
 ## Requirements
-The following python packages are used by GEONE (tested on python 3.10.9):
-   - matplotlib (3.6.2)
+The following python packages are used by GEONE (tested on python 3.11.5):
+   - matplotlib (3.8.1)
    - multiprocessing (for parallel processes)
-   - numpy (tested with version 1.23.5)
-   - pandas (tested with version 1.5.2)
-   - pyvista (tested with version 0.38.5)
-   - scipy (tested with version 1.10.0)
+   - numpy (tested with version 1.26.0)
+   - pandas (tested with version 2.1.2)
+   - pyvista (tested with version 0.42.3)
+   - scipy (tested with version 1.11.3)
 
 ## Important notes
 - GEONE includes a *DEESSE wrapper* to directly launch DEESSE within python. DEESSE is a commercial product which is not provided as an open source software and belongs to the University of Neuchâtel. See [LICENSE](LICENSE).
@@ -114,6 +114,7 @@ Multiple-point statistics - X-simulation using the DEESSEX wrapper:
 - `ex_pgs.ipynb`: example of pluri-Gaussian simulations in 1D, 2D and 3D (categorical, conditional or not), based on two latent Gaussian fields
 
 #### Examples - Ohter algorithms based on random processes
+- `ex_acceptRejectSampler.ipynb`: example of accept-reject sampler for generating samples according to given density function (uni- or multi-variate)
 - `ex_randProcess.ipynb`: example of Poisson point process, and Chentsov simulation in 1D, 2D and 3D
 
 ## Some references about DEESSE
