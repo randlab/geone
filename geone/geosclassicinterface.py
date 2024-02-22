@@ -12,6 +12,7 @@ based on simple and ordinary kriging).
 
 import numpy as np
 import sys, os
+import copy
 import multiprocessing
 
 from geone import img
@@ -7463,7 +7464,7 @@ def simulateIndicator2D(
         # cov model will be converted:
         #    as applying modification in an array is persistent at exit,
         #    work on a copy to ensure no modification of the initial entry
-        cm_for_cat = np.deepcopy(cov_model_for_category)
+        cm_for_cat = copy.deepcopy(cov_model_for_category)
     else:
         cm_for_cat = cov_model_for_category
 
@@ -8143,7 +8144,7 @@ def simulateIndicator3D(
         # cov model will be converted:
         #    as applying modification in an array is persistent at exit,
         #    work on a copy to ensure no modification of the initial entry
-        cm_for_cat = np.deepcopy(cov_model_for_category)
+        cm_for_cat = copy.deepcopy(cov_model_for_category)
     else:
         cm_for_cat = cov_model_for_category
 
@@ -9334,11 +9335,14 @@ def estimateIndicator2D(
         # cov model will be converted:
         #    as applying modification in an array is persistent at exit,
         #    work on a copy to ensure no modification of the initial entry
-        cm_for_cat = np.deepcopy(cov_model_for_category)
+        cm_for_cat = copy.deepcopy(cov_model_for_category)
     else:
         cm_for_cat = cov_model_for_category
 
     cm_for_cat = np.asarray(cm_for_cat).reshape(-1)
+    for i in range(len(cm_for_cat)):
+        if isinstance(cm_for_cat[i], gcm.CovModel1D):
+            cm_for_cat[i] = gcm.covModel1D_to_covModel2D(cm_for_cat[i]) # convert model 1D in 2D
     if len(cm_for_cat) == 1:
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
@@ -9842,11 +9846,14 @@ def estimateIndicator3D(
         # cov model will be converted:
         #    as applying modification in an array is persistent at exit,
         #    work on a copy to ensure no modification of the initial entry
-        cm_for_cat = np.deepcopy(cov_model_for_category)
+        cm_for_cat = copy.deepcopy(cov_model_for_category)
     else:
         cm_for_cat = cov_model_for_category
 
     cm_for_cat = np.asarray(cm_for_cat).reshape(-1)
+    for i in range(len(cm_for_cat)):
+        if isinstance(cm_for_cat[i], gcm.CovModel1D):
+            cm_for_cat[i] = gcm.covModel1D_to_covModel3D(cm_for_cat[i]) # convert model 1D in 3D
     if len(cm_for_cat) == 1:
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
