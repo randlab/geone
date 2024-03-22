@@ -59,7 +59,7 @@ def add_path_by_drawing(path_list, close=False, show_instructions=True, last_poi
     is the last path, a 2D array, where `path_list[-1][i]` is the i-th point
     (1D array of two floats) of that path.
     * An interactive maplotlib backend must be used, so that this function works
-    propoerly.
+    properly.
     """
     ax = plt.gca()
     obj_drawn = []

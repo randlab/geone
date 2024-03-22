@@ -7407,6 +7407,12 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
 
     # here: rot = True means that local rotation are applied
 
+    # Check that all data points (locations) are distinct
+    for i in range(1, n):
+        if np.any(np.isclose(np.sum((x[:i]-x[i])**2, axis=1), 0.0)):
+            print(f"ERROR ({fname}): `x` contains duplicated entries")
+            return None
+
     if use_unique_neighborhood:
         if rot:
             print(f"ERROR ({fname}): unique search neighborhood can not be used with local rotation")

@@ -1409,8 +1409,11 @@ def simulate1D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     nGibbsSamplerPathMin, nGibbsSamplerPathMax: ints, default: 50, 200
         minimal and maximal number of Gibbs sampler paths to deal with inequality
         data; the conditioning locations with inequality data are first simulated
@@ -1554,21 +1557,34 @@ def simulate1D(
         # set greatest possible value
         if cov_model.is_stationary():
             searchNeighborhoodSortMode = 2
-        elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
-            searchNeighborhoodSortMode = 1
         else:
-            searchNeighborhoodSortMode = 0
+            searchNeighborhoodSortMode = 1
     else:
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
                 if verbose > 0:
                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                 return None
-        elif searchNeighborhoodSortMode == 1:
-            if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                return None
+
+    # if searchNeighborhoodSortMode is None:
+    #     # set greatest possible value
+    #     if cov_model.is_stationary():
+    #         searchNeighborhoodSortMode = 2
+    #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
+    #         searchNeighborhoodSortMode = 1
+    #     else:
+    #         searchNeighborhoodSortMode = 0
+    # else:
+    #     if searchNeighborhoodSortMode == 2:
+    #         if not cov_model.is_stationary():
+    #             if verbose > 0:
+    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+    #             return None
+    #     elif searchNeighborhoodSortMode == 1:
+    #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
+    #             if verbose > 0:
+    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+    #             return None
 
     # Preparation of data points
     if x is not None:
@@ -1695,10 +1711,15 @@ def simulate1D(
             if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
                 aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
             if aggregate_data_op == 'krige':
-                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
-                                            mean_x=mean_x, mean_xu=mean_x_agg,
-                                            var_x=var_x, var_xu=var_x_agg,
-                                            verbose=0, **aggregate_data_op_kwargs)
+                try:
+                    v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                                 mean_x=mean_x, mean_xu=mean_x_agg,
+                                                 var_x=var_x, var_xu=var_x_agg,
+                                                 verbose=0, **aggregate_data_op_kwargs)
+                except:
+                    if verbose > 0:
+                        print(f"ERROR ({fname}): kriging error")
+                    return None
             else:
                 aggregate_data_by_simul = True
                 v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
@@ -1706,6 +1727,10 @@ def simulate1D(
                                 var_x=var_x, var_xu=var_x_agg,
                                 nreal=nreal, seed=seed,
                                 verbose=0, **aggregate_data_op_kwargs)
+                if v_agg is None:
+                    if verbose > 0:
+                        print(f"ERROR ({fname}): sgs error")
+                    return None
             xx_agg = x_agg[:, 0]
             yy_agg = np.ones_like(xx_agg) * oy + 0.5 * sy
             zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
@@ -2136,7 +2161,7 @@ def simulate1D(
         # Set geosclassic_output
         geosclassic_output = {'image':image, 'nwarning':nwarning, 'warnings':warnings}
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -2536,8 +2561,11 @@ def simulate2D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     nGibbsSamplerPathMin, nGibbsSamplerPathMax: ints, default: 50, 200
         minimal and maximal number of Gibbs sampler paths to deal with inequality
         data; the conditioning locations with inequality data are first simulated
@@ -2692,21 +2720,34 @@ def simulate2D(
         # set greatest possible value
         if cov_model.is_stationary():
             searchNeighborhoodSortMode = 2
-        elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
-            searchNeighborhoodSortMode = 1
         else:
-            searchNeighborhoodSortMode = 0
+            searchNeighborhoodSortMode = 1
     else:
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
                 if verbose > 0:
                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                 return None
-        elif searchNeighborhoodSortMode == 1:
-            if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                return None
+
+    # if searchNeighborhoodSortMode is None:
+    #     # set greatest possible value
+    #     if cov_model.is_stationary():
+    #         searchNeighborhoodSortMode = 2
+    #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
+    #         searchNeighborhoodSortMode = 1
+    #     else:
+    #         searchNeighborhoodSortMode = 0
+    # else:
+    #     if searchNeighborhoodSortMode == 2:
+    #         if not cov_model.is_stationary():
+    #             if verbose > 0:
+    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+    #             return None
+    #     elif searchNeighborhoodSortMode == 1:
+    #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
+    #             if verbose > 0:
+    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+    #             return None
 
     # Preparation of data points
     if x is not None:
@@ -2846,11 +2887,16 @@ def simulate2D(
             if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
                 aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
             if aggregate_data_op == 'krige':
-                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
-                                            mean_x=mean_x, mean_xu=mean_x_agg,
-                                            var_x=var_x, var_xu=var_x_agg,
-                                            alpha_xu=alpha_x_agg,
-                                            verbose=0, **aggregate_data_op_kwargs)
+                try:
+                    v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                                 mean_x=mean_x, mean_xu=mean_x_agg,
+                                                 var_x=var_x, var_xu=var_x_agg,
+                                                 alpha_xu=alpha_x_agg,
+                                                 verbose=0, **aggregate_data_op_kwargs)
+                except:
+                    if verbose > 0:
+                        print(f"ERROR ({fname}): kriging error")
+                    return None
             else:
                 aggregate_data_by_simul = True
                 v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
@@ -2859,6 +2905,10 @@ def simulate2D(
                                 alpha_xu=alpha_x_agg,
                                 nreal=nreal, seed=seed,
                                 verbose=0, **aggregate_data_op_kwargs)
+                if v_agg is None:
+                    if verbose > 0:
+                        print(f"ERROR ({fname}): sgs error")
+                    return None
             xx_agg, yy_agg = x_agg.T
             zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
         elif aggregate_data_op == 'random':
@@ -3284,7 +3334,7 @@ def simulate2D(
         # Set geosclassic_output
         geosclassic_output = {'image':image, 'nwarning':nwarning, 'warnings':warnings}
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -3686,8 +3736,11 @@ def simulate3D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     nGibbsSamplerPathMin, nGibbsSamplerPathMax: ints, default: 50, 200
         minimal and maximal number of Gibbs sampler paths to deal with inequality
         data; the conditioning locations with inequality data are first simulated
@@ -3856,21 +3909,34 @@ def simulate3D(
         # set greatest possible value
         if cov_model.is_stationary():
             searchNeighborhoodSortMode = 2
-        elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
-            searchNeighborhoodSortMode = 1
         else:
-            searchNeighborhoodSortMode = 0
+            searchNeighborhoodSortMode = 1
     else:
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
                 if verbose > 0:
                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                 return None
-        elif searchNeighborhoodSortMode == 1:
-            if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                return None
+
+    # if searchNeighborhoodSortMode is None:
+    #     # set greatest possible value
+    #     if cov_model.is_stationary():
+    #         searchNeighborhoodSortMode = 2
+    #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
+    #         searchNeighborhoodSortMode = 1
+    #     else:
+    #         searchNeighborhoodSortMode = 0
+    # else:
+    #     if searchNeighborhoodSortMode == 2:
+    #         if not cov_model.is_stationary():
+    #             if verbose > 0:
+    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+    #             return None
+    #     elif searchNeighborhoodSortMode == 1:
+    #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
+    #             if verbose > 0:
+    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+    #             return None
 
     # Preparation of data points
     if x is not None:
@@ -4023,11 +4089,16 @@ def simulate3D(
             if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
                 aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
             if aggregate_data_op == 'krige':
-                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
-                                             mean_x=mean_x, mean_xu=mean_x_agg,
-                                             var_x=var_x, var_xu=var_x_agg,
-                                             alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
-                                             verbose=0, **aggregate_data_op_kwargs)
+                try:
+                    v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                                 mean_x=mean_x, mean_xu=mean_x_agg,
+                                                 var_x=var_x, var_xu=var_x_agg,
+                                                 alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
+                                                 verbose=0, **aggregate_data_op_kwargs)
+                except:
+                    if verbose > 0:
+                        print(f"ERROR ({fname}): kriging error")
+                    return None
             else:
                 aggregate_data_by_simul = True
                 v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
@@ -4036,6 +4107,10 @@ def simulate3D(
                                 alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
                                 nreal=nreal, seed=seed,
                                 verbose=0, **aggregate_data_op_kwargs)
+                if v_agg is None:
+                    if verbose > 0:
+                        print(f"ERROR ({fname}): sgs error")
+                    return None
             xx_agg, yy_agg, zz_agg = x_agg.T
         elif aggregate_data_op == 'random':
             aggregate_data_by_simul = True
@@ -4456,7 +4531,7 @@ def simulate3D(
         # Set geosclassic_output
         geosclassic_output = {'image':image, 'nwarning':nwarning, 'warnings':warnings}
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -4797,8 +4872,11 @@ def estimate1D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     outputReportFile : str, default: False
         name of the report file (if desired in output); by default (`None`): no
         report file
@@ -4928,21 +5006,34 @@ def estimate1D(
            # set greatest possible value
            if cov_model.is_stationary():
                searchNeighborhoodSortMode = 2
-           elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
-               searchNeighborhoodSortMode = 1
            else:
-               searchNeighborhoodSortMode = 0
+               searchNeighborhoodSortMode = 1
        else:
            if searchNeighborhoodSortMode == 2:
                if not cov_model.is_stationary():
                    if verbose > 0:
                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                    return None
-           elif searchNeighborhoodSortMode == 1:
-               if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                   if verbose > 0:
-                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                   return None
+
+       # if searchNeighborhoodSortMode is None:
+       #     # set greatest possible value
+       #     if cov_model.is_stationary():
+       #         searchNeighborhoodSortMode = 2
+       #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
+       #         searchNeighborhoodSortMode = 1
+       #     else:
+       #         searchNeighborhoodSortMode = 0
+       # else:
+       #     if searchNeighborhoodSortMode == 2:
+       #         if not cov_model.is_stationary():
+       #             if verbose > 0:
+       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+       #             return None
+       #     elif searchNeighborhoodSortMode == 1:
+       #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
+       #             if verbose > 0:
+       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+       #             return None
 
     # Preparation of data points
     if x is not None:
@@ -5047,10 +5138,15 @@ def estimate1D(
                 aggregate_data_op_kwargs['use_unique_neighborhood'] = use_unique_neighborhood
             if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
                 aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
-            v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
-                                         mean_x=mean_x, mean_xu=mean_x_agg,
-                                         var_x=var_x, var_xu=var_x_agg,
-                                         verbose=0, **aggregate_data_op_kwargs)
+            try:
+                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                             mean_x=mean_x, mean_xu=mean_x_agg,
+                                             var_x=var_x, var_xu=var_x_agg,
+                                             verbose=0, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): kriging error")
+                return None
             xx_agg = x_agg[:, 0]
             yy_agg = np.ones_like(xx_agg) * oy + 0.5 * sy
             zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
@@ -5192,12 +5288,12 @@ def estimate1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if x is not None and aggregate_data_op == 'krige':
+    if geosclassic_output is not None and x is not None and aggregate_data_op == 'krige':
         # Set kriging standard deviation at grid cell containing a data
         geosclassic_output['image'].val[1, 0, 0, ind_agg[0]] = v_agg_std
         # geosclassic_output['image'].val[1, 0, 0, *ind_agg] = v_agg_std
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -5339,8 +5435,11 @@ def estimate2D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     outputReportFile : str, default: False
         name of the report file (if desired in output); by default (`None`): no
         report file
@@ -5481,21 +5580,34 @@ def estimate2D(
            # set greatest possible value
            if cov_model.is_stationary():
                searchNeighborhoodSortMode = 2
-           elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
-               searchNeighborhoodSortMode = 1
            else:
-               searchNeighborhoodSortMode = 0
+               searchNeighborhoodSortMode = 1
        else:
            if searchNeighborhoodSortMode == 2:
                if not cov_model.is_stationary():
                    if verbose > 0:
                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                    return None
-           elif searchNeighborhoodSortMode == 1:
-               if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                   if verbose > 0:
-                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                   return None
+
+       # if searchNeighborhoodSortMode is None:
+       #     # set greatest possible value
+       #     if cov_model.is_stationary():
+       #         searchNeighborhoodSortMode = 2
+       #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
+       #         searchNeighborhoodSortMode = 1
+       #     else:
+       #         searchNeighborhoodSortMode = 0
+       # else:
+       #     if searchNeighborhoodSortMode == 2:
+       #         if not cov_model.is_stationary():
+       #             if verbose > 0:
+       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+       #             return None
+       #     elif searchNeighborhoodSortMode == 1:
+       #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
+       #             if verbose > 0:
+       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+       #             return None
 
     # Preparation of data points
     if x is not None:
@@ -5613,11 +5725,16 @@ def estimate2D(
                 aggregate_data_op_kwargs['use_unique_neighborhood'] = use_unique_neighborhood
             if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
                 aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
-            v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
-                                         mean_x=mean_x, mean_xu=mean_x_agg,
-                                         var_x=var_x, var_xu=var_x_agg,
-                                         alpha_xu=alpha_x_agg,
-                                         verbose=0, **aggregate_data_op_kwargs)
+            try:
+                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                             mean_x=mean_x, mean_xu=mean_x_agg,
+                                             var_x=var_x, var_xu=var_x_agg,
+                                             alpha_xu=alpha_x_agg,
+                                             verbose=0, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): kriging error")
+                return None
             xx_agg, yy_agg = x_agg.T
             zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
         else:
@@ -5757,12 +5874,12 @@ def estimate2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if x is not None and aggregate_data_op == 'krige':
+    if geosclassic_output is not None and x is not None and aggregate_data_op == 'krige':
         # Set kriging standard deviation at grid cell containing a data
         geosclassic_output['image'].val[1, 0, ind_agg[0], ind_agg[1]] = v_agg_std
         # geosclassic_output['image'].val[1, 0, *ind_agg] = v_agg_std
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -5905,8 +6022,11 @@ def estimate3D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     outputReportFile : str, default: False
         name of the report file (if desired in output); by default (`None`): no
         report file
@@ -6061,21 +6181,34 @@ def estimate3D(
            # set greatest possible value
            if cov_model.is_stationary():
                searchNeighborhoodSortMode = 2
-           elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
-               searchNeighborhoodSortMode = 1
            else:
-               searchNeighborhoodSortMode = 0
+               searchNeighborhoodSortMode = 1
        else:
            if searchNeighborhoodSortMode == 2:
                if not cov_model.is_stationary():
                    if verbose > 0:
                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                    return None
-           elif searchNeighborhoodSortMode == 1:
-               if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-                   if verbose > 0:
-                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                   return None
+
+       # if searchNeighborhoodSortMode is None:
+       #     # set greatest possible value
+       #     if cov_model.is_stationary():
+       #         searchNeighborhoodSortMode = 2
+       #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
+       #         searchNeighborhoodSortMode = 1
+       #     else:
+       #         searchNeighborhoodSortMode = 0
+       # else:
+       #     if searchNeighborhoodSortMode == 2:
+       #         if not cov_model.is_stationary():
+       #             if verbose > 0:
+       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+       #             return None
+       #     elif searchNeighborhoodSortMode == 1:
+       #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
+       #             if verbose > 0:
+       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+       #             return None
 
     # Preparation of data points
     if x is not None:
@@ -6206,11 +6339,16 @@ def estimate3D(
                 aggregate_data_op_kwargs['use_unique_neighborhood'] = use_unique_neighborhood
             if 'nneighborMax' not in aggregate_data_op_kwargs.keys():
                 aggregate_data_op_kwargs['nneighborMax'] = nneighborMax
-            v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
-                                         mean_x=mean_x, mean_xu=mean_x_agg,
-                                         var_x=var_x, var_xu=var_x_agg,
-                                         alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
-                                         verbose=0, **aggregate_data_op_kwargs)
+            try:
+                v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
+                                             mean_x=mean_x, mean_xu=mean_x_agg,
+                                             var_x=var_x, var_xu=var_x_agg,
+                                             alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
+                                             verbose=0, **aggregate_data_op_kwargs)
+            except:
+                if verbose > 0:
+                    print(f"ERROR ({fname}): kriging error")
+                return None
             xx_agg, yy_agg, zz_agg = x_agg.T
         else:
             # Aggregate data on grid cell by using the given operation
@@ -6348,12 +6486,12 @@ def estimate3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if x is not None and aggregate_data_op == 'krige':
+    if geosclassic_output is not None and x is not None and aggregate_data_op == 'krige':
         # Set kriging standard deviation at grid cell containing a data
         geosclassic_output['image'].val[1, ind_agg[0], ind_agg[1], ind_agg[2]] = v_agg_std
         # geosclassic_output['image'].val[1, *ind_agg] = v_agg_std
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -6729,8 +6867,11 @@ def simulateIndicator1D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     seed : int, optional
         seed for initializing random number generator
     outputReportFile : str, default: False
@@ -6953,21 +7094,35 @@ def simulateIndicator1D(
             # set greatest possible value
             if cm_for_cat[i].is_stationary():
                 searchNeighborhoodSortMode[i] = 2
-            elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-                searchNeighborhoodSortMode[i] = 1
             else:
-                searchNeighborhoodSortMode[i] = 0
+                searchNeighborhoodSortMode[i] = 1
         else:
             if searchNeighborhoodSortMode[i] == 2:
                 if not cm_for_cat[i].is_stationary():
                     if verbose > 0:
                         print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                     return None
-            elif searchNeighborhoodSortMode[i] == 1:
-                if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                    return None
+
+    # for i in range(ncategory):
+    #     if searchNeighborhoodSortMode[i] is None:
+    #         # set greatest possible value
+    #         if cm_for_cat[i].is_stationary():
+    #             searchNeighborhoodSortMode[i] = 2
+    #         elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+    #             searchNeighborhoodSortMode[i] = 1
+    #         else:
+    #             searchNeighborhoodSortMode[i] = 0
+    #     else:
+    #         if searchNeighborhoodSortMode[i] == 2:
+    #             if not cm_for_cat[i].is_stationary():
+    #                 if verbose > 0:
+    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+    #                 return None
+    #         elif searchNeighborhoodSortMode[i] == 1:
+    #             if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+    #                 if verbose > 0:
+    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+    #                 return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
@@ -7080,7 +7235,7 @@ def simulateIndicator1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -7393,8 +7548,11 @@ def simulateIndicator2D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     seed : int, optional
         seed for initializing random number generator
     outputReportFile : str, default: False
@@ -7633,21 +7791,35 @@ def simulateIndicator2D(
             # set greatest possible value
             if cm_for_cat[i].is_stationary():
                 searchNeighborhoodSortMode[i] = 2
-            elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-                searchNeighborhoodSortMode[i] = 1
             else:
-                searchNeighborhoodSortMode[i] = 0
+                searchNeighborhoodSortMode[i] = 1
         else:
             if searchNeighborhoodSortMode[i] == 2:
                 if not cm_for_cat[i].is_stationary():
                     if verbose > 0:
                         print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                     return None
-            elif searchNeighborhoodSortMode[i] == 1:
-                if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                    return None
+
+    # for i in range(ncategory):
+    #     if searchNeighborhoodSortMode[i] is None:
+    #         # set greatest possible value
+    #         if cm_for_cat[i].is_stationary():
+    #             searchNeighborhoodSortMode[i] = 2
+    #         elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+    #             searchNeighborhoodSortMode[i] = 1
+    #         else:
+    #             searchNeighborhoodSortMode[i] = 0
+    #     else:
+    #         if searchNeighborhoodSortMode[i] == 2:
+    #             if not cm_for_cat[i].is_stationary():
+    #                 if verbose > 0:
+    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+    #                 return None
+    #         elif searchNeighborhoodSortMode[i] == 1:
+    #             if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+    #                 if verbose > 0:
+    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+    #                 return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
@@ -7759,7 +7931,7 @@ def simulateIndicator2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -7990,7 +8162,7 @@ def simulateIndicator3D(
         - if `ncategory=1`: the unique category value given must not be equal to
         zero; it is used for a binary case with values "unique category value"
         and 0, where 0 indicates the absence of the considered medium; the
-        conditioning data values should be equal to"unique category value" or 0
+        conditioning data values should be equal to "unique category value" or 0
         - if `ncategory>=2`: it is used for a multi-category case with given
         category values (distinct); the conditioning data values should be in the
         `category_values`
@@ -8073,8 +8245,11 @@ def simulateIndicator3D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     seed : int, optional
         seed for initializing random number generator
     outputReportFile : str, default: False
@@ -8326,21 +8501,35 @@ def simulateIndicator3D(
             # set greatest possible value
             if cm_for_cat[i].is_stationary():
                 searchNeighborhoodSortMode[i] = 2
-            elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-                searchNeighborhoodSortMode[i] = 1
             else:
-                searchNeighborhoodSortMode[i] = 0
+                searchNeighborhoodSortMode[i] = 1
         else:
             if searchNeighborhoodSortMode[i] == 2:
                 if not cm_for_cat[i].is_stationary():
                     if verbose > 0:
                         print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                     return None
-            elif searchNeighborhoodSortMode[i] == 1:
-                if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                    return None
+
+    # for i in range(ncategory):
+    #     if searchNeighborhoodSortMode[i] is None:
+    #         # set greatest possible value
+    #         if cm_for_cat[i].is_stationary():
+    #             searchNeighborhoodSortMode[i] = 2
+    #         elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+    #             searchNeighborhoodSortMode[i] = 1
+    #         else:
+    #             searchNeighborhoodSortMode[i] = 0
+    #     else:
+    #         if searchNeighborhoodSortMode[i] == 2:
+    #             if not cm_for_cat[i].is_stationary():
+    #                 if verbose > 0:
+    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+    #                 return None
+    #         elif searchNeighborhoodSortMode[i] == 1:
+    #             if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+    #                 if verbose > 0:
+    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+    #                 return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
@@ -8452,7 +8641,7 @@ def simulateIndicator3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -8771,8 +8960,11 @@ def estimateIndicator1D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     outputReportFile : str, default: False
         name of the report file (if desired in output); by default (`None`): no
         report file
@@ -9010,21 +9202,34 @@ def estimateIndicator1D(
                 # set greatest possible value
                 if cm_for_cat[i].is_stationary():
                     searchNeighborhoodSortMode[i] = 2
-                elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-                    searchNeighborhoodSortMode[i] = 1
                 else:
-                    searchNeighborhoodSortMode[i] = 0
+                    searchNeighborhoodSortMode[i] = 1
             else:
                 if searchNeighborhoodSortMode[i] == 2:
                     if not cm_for_cat[i].is_stationary():
                         if verbose > 0:
                             print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                         return None
-                elif searchNeighborhoodSortMode[i] == 1:
-                    if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-                        if verbose > 0:
-                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                        return None
+
+            # if searchNeighborhoodSortMode[i] is None:
+            #     # set greatest possible value
+            #     if cm_for_cat[i].is_stationary():
+            #         searchNeighborhoodSortMode[i] = 2
+            #     elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+            #         searchNeighborhoodSortMode[i] = 1
+            #     else:
+            #         searchNeighborhoodSortMode[i] = 0
+            # else:
+            #     if searchNeighborhoodSortMode[i] == 2:
+            #         if not cm_for_cat[i].is_stationary():
+            #             if verbose > 0:
+            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+            #             return None
+            #     elif searchNeighborhoodSortMode[i] == 1:
+            #         if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+            #             if verbose > 0:
+            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+            #             return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
@@ -9128,7 +9333,7 @@ def estimateIndicator1D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -9265,8 +9470,11 @@ def estimateIndicator2D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     outputReportFile : str, default: False
         name of the report file (if desired in output); by default (`None`): no
         report file
@@ -9520,21 +9728,34 @@ def estimateIndicator2D(
                 # set greatest possible value
                 if cm_for_cat[i].is_stationary():
                     searchNeighborhoodSortMode[i] = 2
-                elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-                    searchNeighborhoodSortMode[i] = 1
                 else:
-                    searchNeighborhoodSortMode[i] = 0
+                    searchNeighborhoodSortMode[i] = 1
             else:
                 if searchNeighborhoodSortMode[i] == 2:
                     if not cm_for_cat[i].is_stationary():
                         if verbose > 0:
                             print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                         return None
-                elif searchNeighborhoodSortMode[i] == 1:
-                    if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-                        if verbose > 0:
-                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                        return None
+
+            # if searchNeighborhoodSortMode[i] is None:
+            #     # set greatest possible value
+            #     if cm_for_cat[i].is_stationary():
+            #         searchNeighborhoodSortMode[i] = 2
+            #     elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+            #         searchNeighborhoodSortMode[i] = 1
+            #     else:
+            #         searchNeighborhoodSortMode[i] = 0
+            # else:
+            #     if searchNeighborhoodSortMode[i] == 2:
+            #         if not cm_for_cat[i].is_stationary():
+            #             if verbose > 0:
+            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+            #             return None
+            #     elif searchNeighborhoodSortMode[i] == 1:
+            #         if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+            #             if verbose > 0:
+            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+            #             return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
@@ -9638,7 +9859,7 @@ def estimateIndicator2D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
@@ -9776,8 +9997,11 @@ def estimateIndicator3D(
         - if the covariance model has any non-stationary parameter, then
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary
-        angle, then `searchNeighborhoodSortMode=0` must be used;
-        by default (`None`): the greatest possible value is used
+        angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to
+        direction from the central cell) are used to compute distance for sorting
+        the neighbors;
+        by default (`None`): the greatest possible value is used (i.e. 2 for
+        stationary covariance model, or 1 otherwise)
     outputReportFile : str, default: False
         name of the report file (if desired in output); by default (`None`): no
         report file
@@ -10044,21 +10268,34 @@ def estimateIndicator3D(
                 # set greatest possible value
                 if cm_for_cat[i].is_stationary():
                     searchNeighborhoodSortMode[i] = 2
-                elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-                    searchNeighborhoodSortMode[i] = 1
                 else:
-                    searchNeighborhoodSortMode[i] = 0
+                    searchNeighborhoodSortMode[i] = 1
             else:
                 if searchNeighborhoodSortMode[i] == 2:
                     if not cm_for_cat[i].is_stationary():
                         if verbose > 0:
                             print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
                         return None
-                elif searchNeighborhoodSortMode[i] == 1:
-                    if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-                        if verbose > 0:
-                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-                        return None
+
+            # if searchNeighborhoodSortMode[i] is None:
+            #     # set greatest possible value
+            #     if cm_for_cat[i].is_stationary():
+            #         searchNeighborhoodSortMode[i] = 2
+            #     elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+            #         searchNeighborhoodSortMode[i] = 1
+            #     else:
+            #         searchNeighborhoodSortMode[i] = 0
+            # else:
+            #     if searchNeighborhoodSortMode[i] == 2:
+            #         if not cm_for_cat[i].is_stationary():
+            #             if verbose > 0:
+            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
+            #             return None
+            #     elif searchNeighborhoodSortMode[i] == 1:
+            #         if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+            #             if verbose > 0:
+            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
+            #             return None
 
     searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
@@ -10162,7 +10399,7 @@ def estimateIndicator3D(
     #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if mask is not None and add_data_point_to_mask:
+    if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
