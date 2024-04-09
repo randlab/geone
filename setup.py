@@ -64,6 +64,8 @@ elif python_version == (3, 10):
     suffix = 'py310'
 elif python_version == (3, 11):
     suffix = 'py311'
+elif python_version == (3, 12):
+    suffix = 'py312'
 else:
     suffix = None
 
