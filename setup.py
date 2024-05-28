@@ -15,7 +15,7 @@ linux_old_glibc_version = (2, 27) # glibc version for the library in */linux_old
 
 # Get configuration: platform system, version of python, version of glibc
 try:
-    platform_system = platform.system()     # 'Windows' or 'Linux' accepted
+    platform_system = platform.system()     # 'Windows' or 'Linux' or 'Darwin' accepted
 
     python_version = sys.version_info[0:2]  # e.g. (3, 10)
 
@@ -48,6 +48,8 @@ elif platform_system == 'Linux':
             prefix = None
     else:
         prefix = 'linux' # default
+elif platform_system == 'Darwin':
+    prefix = 'mac'
 else:
     prefix = None
 
