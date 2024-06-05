@@ -25,6 +25,11 @@ try:
     except:
         glibc_version = None
 
+    try:
+        machine = platform.uname().machine
+    except:
+        machine = None
+
 except:
     print(f'{COL_ERR}ERROR: getting config{COL_RESET}')
     exit()
@@ -49,7 +54,12 @@ elif platform_system == 'Linux':
     else:
         prefix = 'linux' # default
 elif platform_system == 'Darwin':
-    prefix = 'mac'
+    if machine == 'x86_64':
+        prefix = 'mac_x86_64'
+    elif machine == 'arm64':
+        prefix = 'mac_arm64'
+    else:
+        prefix = None
 else:
     prefix = None
 
