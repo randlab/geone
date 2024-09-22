@@ -1,0 +1,61 @@
+
+.. _LICENSE_file:
+
+LICENSE
+*******
+
+Copyright (c) 2023 - University of Neuchâtel
+
+
+PREAMBLE
+
+GEONE is a python package providing a set of tools for geostatistical
+and multiple-point statistics modeling. It contains the DEESSE library
+in the sub-package deesse_core.
+
+DEESSE is a commercial product which is not provided as an open source
+software and belongs to the University of Neuchâtel. GEONE includes a
+wrapper allowing to launch DEESSE directly in python.
+
+GEONE is provided as an open source code with an open access license
+applicable for all the code except the deesse_core subpackage (see
+details below).
+
+DEESSE and therefore the deesse_core subpackage requires a specific
+license agreement for commercial use only.  The use of  DEESSE is free
+(royalty free) and unlimited for academic research and teaching
+activities. Its use for industrial and commercial activities is
+authorized only under a specific license agreement to be concluded
+with the University of Neuchâtel. Such commercial license must be
+obtained before any commercial or industrial use to take place and
+fees will be charged. To obtain such a commercial license from the
+University of Neuchâtel, the users shall contact directly Prof.
+Philippe Renard (philippe.renard@unine.ch).
+
+
+LICENSE TERMS FOR THE SOFTWARE GEONE
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files, to deal in
+the software GEONE (“The Software”) excluding the software DEESSE,
+without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following condition:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+The permission granted herehover is related to the Software only and
+does not imply any commercial or industrial license grant concerning
+DEESSE software also made available by the copyright owners and the
+University of Neuchâtel on the GitHub platform.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+

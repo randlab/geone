@@ -6,6 +6,8 @@
 import sys, os, platform
 import setuptools
 
+src_dir = 'src'
+
 COL_CONFIG = '\033[1;36m\033[40m' # bold cyan on black
 COL_ERR = '\033[1;91m'            # high-intensity bold red
 COL_RESET = '\033[0m'
@@ -92,15 +94,15 @@ if subdir_name is None:
     exit()
 
 # Set directories containing the libraries
-deesse_core_dir = f'geone/deesse_core/{subdir_name}'
-geosclassic_core_dir = f'geone/geosclassic_core/{subdir_name}'
+deesse_core_dir = f'{src_dir}/geone/deesse_core/{subdir_name}'
+geosclassic_core_dir = f'{src_dir}/geone/geosclassic_core/{subdir_name}'
 
 # Set long_description
 with open("README.md", "r") as file_handle:
     long_description = file_handle.read()
 
 # Load version
-with open('geone/_version.py', 'r') as f:
+with open(f'{src_dir}/geone/_version.py', 'r') as f:
     exec(f.read())
 
 setuptools.setup(
@@ -114,7 +116,7 @@ setuptools.setup(
     url='https://github.com/randlab/geone',
     install_requires=['matplotlib', 'numpy>=1,<2', 'pandas', 'pyvista', 'scipy'],
     packages=['geone', 'geone.deesse_core', 'geone.geosclassic_core'],
-    package_dir={'geone':'geone', 'geone.deesse_core':deesse_core_dir, 'geone.geosclassic_core':geosclassic_core_dir},
+    package_dir={'geone':f'{src_dir}/geone', 'geone.deesse_core':deesse_core_dir, 'geone.geosclassic_core':geosclassic_core_dir},
     package_data={'geone.deesse_core':['*'], 'geone.geosclassic_core':['*']},
     include_package_data=True,
     license=open('LICENSE', encoding='utf-8').read()
