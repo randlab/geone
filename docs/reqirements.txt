@@ -1,0 +1,5 @@
+sphinx==7.3.7
+sphinx-gallery==0.17.1
+nbsphinx==0.9.5
+sphinx_rtd_theme=2.0.0
+
