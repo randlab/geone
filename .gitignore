@@ -3,6 +3,7 @@
 zzz*
 
 build/
+dist/
 geone.egg-info/
 
 # !docs/build/
@@ -10,6 +11,7 @@ geone.egg-info/
 examples/out/
 
 # Note: if not installed "locally", the following directories should not be present
+src/geone/__pycache__/
 src/geone/deesse_core/__pycache__/
 src/geone/geosclassic_core/__pycache__/
 src/geone/deesse_core/__init__.py

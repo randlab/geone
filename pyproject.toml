@@ -1,0 +1,66 @@
+# Choosing the build backend:
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# Project metadata
+[project]
+name = "geone"
+dynamic = [
+   "version",
+   "license"
+]
+#version = "0.0.1"
+
+# author = ["Julien Straubhaar"]
+authors = [
+  { name="Julien Straubhaar", email="julien.straubhaar@unine.ch" },
+  { name="Philippe Renard", email="philippe.renard@unine.ch" },
+]
+
+
+readme = "README.md"
+keywords = ["Geostatistics", "Multiple Point Statistics", "deesse", "two point statistics", "simulation", "kriging"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+#     "License :: OSI Approved :: MIT License",
+#     "Operating System :: OS Independent",
+]
+
+description="Geostatistics tools and Multiple Point Statistics"
+
+# Dependencies and requirements
+requires-python = ">=3.7"
+
+# Base dependencies
+dependencies = [
+    'matplotlib',
+    'numpy>=1,<2',
+    'pandas',
+    'pyvista',
+    'scipy',
+]
+
+# # Optional dependencies to install a development environment
+# # Install with:
+# # > pip install geone[dev]
+# [project.optional-dependencies]
+# dev = [
+#     'sphinx'
+#     'sphinx-gallery'
+#     'nbsphinx'
+#     'sphinx_rtd_theme'
+#     'build',
+#     'twine'
+# ]
+
+# Web resources
+[project.urls]
+Repository = "https://github.com/randlab/geone"
+Issues = "https://github.com/randlab/geone/issues"
+
+[tool.distutils.bdist_wheel]
+python-tag = "py311"
+plat-name = "manylinux_2_35_x86_64"
+# To get supported tag:
+# python -c "from pip._internal.utils.compatibility_tags import get_supported; print(get_supported())"

@@ -102,19 +102,20 @@ with open("README.md", "r") as file_handle:
     long_description = file_handle.read()
 
 # Load version
+__version__ = '0.0.0' # default
 with open(f'{src_dir}/geone/_version.py', 'r') as f:
     exec(f.read())
 
 setuptools.setup(
     name='geone',
     version=__version__,
-    author="Julien Straubhaar",
-    author_email="julien.straubhaar@unine.ch",
-    description="Geostatistics simulation tools",
+    # author="Julien Straubhaar",
+    # author_email="julien.straubhaar@unine.ch",
+    # description="Geostatistics tools and Multiple Point Statistics",
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/randlab/geone',
-    install_requires=['matplotlib', 'numpy>=1,<2', 'pandas', 'pyvista', 'scipy'],
+    # url='https://github.com/randlab/geone',
+    # install_requires=['matplotlib', 'numpy>=1,<2', 'pandas', 'pyvista', 'scipy'],
     packages=['geone', 'geone.deesse_core', 'geone.geosclassic_core'],
     package_dir={'geone':f'{src_dir}/geone', 'geone.deesse_core':deesse_core_dir, 'geone.geosclassic_core':geosclassic_core_dir},
     package_data={'geone.deesse_core':['*'], 'geone.geosclassic_core':['*']},
