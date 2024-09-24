@@ -1,3 +1,8 @@
+matplotlib
+numpy<2
+pandas
+pyvista
+scipy
 sphinx==7.3.7
 sphinx-gallery==0.17.1
 nbsphinx==0.9.5
