@@ -3,11 +3,18 @@
 Examples - Notebooks List
 *************************
 
-Switch to :ref:`Noteboks Gallery <examples_gallery_file>`
+Switch to :ref:`Notebooks Gallery <examples_gallery_file>`
 
 Various examples are provided in notebooks below to get started with GEONE. 
 
-*Note: these examples (with related data files) are on Github at `<https://github.com/randlab/geone/examples>`_.*
+The notebooks (with related data files) from this doc are available on Github at `<https://github.com/randlab/geone/docs/source/notebooks>`_
+
+.. note::
+    In the list below, abbreviations are used for the beginning of the original notebook file names:
+
+    - `ex_gc` stands for `ex_geosclassic`
+    - `ex_VA` stands for `ex_vario_analysis`
+
 
 Images and point sets
 ---------------------
@@ -81,8 +88,6 @@ SGS / SIS and kriging based on search neighborhood
 --------------------------------------------------
 Sequential Gaussian Simulation (SGS), Sequential Indicator Simulation (SIS) and estimation (kriging) in a grid - based on (limited) search neigborhood; tools for image analysis : covariance variogram, connectivity of images (GEOSCLASSIC wrapper).
 
-*Note: file prefix `ex_geosclassic` is abbreviated `ex_gc`.*
-
     .. toctree::
         :maxdepth: 1
 
@@ -100,8 +105,6 @@ Sequential Gaussian Simulation (SGS), Sequential Indicator Simulation (SIS) and 
 Variogram analysis tools
 ------------------------
 Tools for variogram analysis - variogram fitting - illustrated in various cases.
-
-*Note: file prefix `ex_vario_analysis` is abbreviated `ex_VA`.*
 
     .. toctree::
         :maxdepth: 1

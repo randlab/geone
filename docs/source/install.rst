@@ -1,14 +1,29 @@
 Installation
 ************
 
-Installation from `PyPI <https://pypi.org/>`_ (The Python Package Index)
-------------------------------------------------------------------------
+GEONE relies on pre-compiled C libraries (DEESSE and GEOSCLASSIC core).
+
+.. note::
+    GEONE is available:
+    
+    - on `PyPI <https://pypi.org/>`_ (The Python Package Index), for:
+        - linux (x86_64 with GLIBC 2.35) and python 3.9 to 3.12
+        - mac (x86_64 or arm64) and python 3.9 to 3.12
+        - windows and python 3.9 to 3.12
+    - on the `Github repository <https://github.com/randlab/geone>`_, for:
+        - linux (x86_64 with GLIBC 2.35 or GLIBC 2.27) and python 3.7 to 3.12
+        - mac (x86_64 or arm64) and python 3.8 to 3.12
+        - windows and python 3.7 to 3.12
+
+Installation from `PyPI <https://pypi.org/>`_
+---------------------------------------------
 
 In a terminal type::
 
     pip install geone
 
-(or `python -m pip install geone`).
+Or, equivalently: `python -m pip install geone`.
+
 
 Installation from the `Github repository <https://github.com/randlab/geone>`_
 -----------------------------------------------------------------------------
@@ -19,7 +34,8 @@ In a terminal, change directory where to download GEONE, and type::
     cd geone
     pip install .
 
-*Note:* use `pip install . --verbose` or `pip install . -v` for printing (more) messages during the installation.
+.. tip::
+    Use `pip install . --verbose` or `pip install . -v` for printing (more) messages during the installation.
 
 Alternatively:
 
@@ -27,9 +43,8 @@ Alternatively:
 - Then, unzip the archive on your computer
 - Finally, in a terminal, go into the unzipped directory, and type `pip install .`
 
-**Using GEONE - Important note**
-
-If the installation has been done from github, do not launch python from the directory containing the downloaded sources and where the installation has been done (with `pip`), otherwise `import geone` will fail.
+.. warning::
+    If the installation has been done from github, do not launch python from the directory containing the downloaded sources and where the installation has been done (with `pip`), otherwise `import geone` will fail.
 
 Requirements
 ------------
@@ -43,7 +58,6 @@ The following python packages are used by GEONE (tested on python 3.11.5):
 - scipy (tested with version 1.11.3)
 
 .. warning::
-
     numpy version **less than 2.** is required
 
 Removing GEONE
@@ -52,4 +66,5 @@ In a terminal type::
 
     pip uninstall -y geone
 
-*Note: first remove the directory 'geone.egg-info' from the current directory (if present).*
+.. note::
+    First remove the directory 'geone.egg-info' from the current directory (if present).

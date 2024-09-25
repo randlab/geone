@@ -6,8 +6,6 @@
 import sys, os, platform, glob
 import setuptools
 
-src_dir = 'src'
-
 COL_CONFIG = '\033[1;36m\033[40m' # bold cyan on black
 COL_ERR = '\033[1;91m'            # high-intensity bold red
 COL_RESET = '\033[0m'
@@ -38,9 +36,9 @@ except:
 
 print(f'{COL_CONFIG}Your configuration: platform_system={platform_system}, python_version={python_version}, glibc_version={glibc_version}{COL_RESET}')
 
-# Set subdir_name: name of the subdirectory containing the C libraries,
+# Set subdir_selected: name of the subdirectory containing the C libraries to be installed,
 # according to the platform system, the version of python and the version of glibc
-# [subdir_name = <prefix>_<suffix>]
+# [subdir_selected = <prefix>_<suffix>]
 
 # Set prefix
 if platform_system == 'Windows':
@@ -83,15 +81,33 @@ elif python_version == (3, 12):
 else:
     suffix = None
 
-# Set subdir_name
+# Set subdir_selected
 if prefix is None or suffix is None:
-    subdir_name = None
+    subdir_selected = None
 else:
-    subdir_name = f'{prefix}_{suffix}'
+    subdir_selected = f'{prefix}_{suffix}'
 
-if subdir_name is None:
+# Set directories containing the libraries and data files to be kept in source when building package
+supported_py_version = ['39', '310', '311', '312']
+supported_lib = ['linux', 'mac_x86_64', 'mac_arm64', 'win']
+lib_subdir_list = ['_py'.join([li, py]) for li in supported_lib for py in supported_py_version]
+
+if subdir_selected is None or subdir_selected not in lib_subdir_list:
+# if subdir_selected is None or not os.path.isdir(f'src/geone/lib_deesse_core/{subdir_selected}'):
     print(f'{COL_ERR}ERROR: package geone not available for your configuration [platform_system={platform_system}, python_version={python_version}, glibc_version={glibc_version}]{COL_RESET}')
-    exit()
+    # exit()
+
+# Set directories containing the libraries of the right version
+deesse_core_dir_selected = f'src/geone/lib_deesse_core/{subdir_selected}'
+geosclassic_core_dir_selected = f'src/geone/lib_geosclassic_core/{subdir_selected}'
+
+lib_deesse_target_dir_list = [f'src.geone.lib_deesse_core.{d}' for d in lib_subdir_list]
+lib_deesse_files_list = [glob.glob(f'src/geone/lib_deesse_core/{d}/*') for d in lib_subdir_list]
+
+lib_geosclassic_target_dir_list = [f'src.geone.lib_geosclassic_core.{d}' for d in lib_subdir_list]
+lib_geosclassic_files_list = [glob.glob(f'src/geone/lib_geosclassic_core/{d}/*') for d in lib_subdir_list]
+
+data_files = list(zip(lib_deesse_target_dir_list, lib_deesse_files_list)) + list(zip(lib_geosclassic_target_dir_list, lib_geosclassic_files_list))
 
 # Set long_description
 with open("README.md", "r") as file_handle:
@@ -99,26 +115,8 @@ with open("README.md", "r") as file_handle:
 
 # Load version
 __version__ = '0.0.0' # default
-with open(f'{src_dir}/geone/_version.py', 'r') as f:
+with open(f'src/geone/_version.py', 'r') as f:
     exec(f.read())
-
-# Set directories containing the libraries and data files
-src_dir = 'src'
-pkg_name = 'geone'
-
-lib_deesse_subdir = 'lib_deesse_core'
-lib_deesse_platform_subdir_list = sorted(glob.glob('*', root_dir=f'{src_dir}/{pkg_name}/{lib_deesse_subdir}'))
-lib_deesse_target_dir_list = [f'{src_dir}.{pkg_name}.{lib_deesse_subdir}.{s}' for s in lib_deesse_platform_subdir_list]
-lib_deesse_files_list = [glob.glob(f'{src_dir}/{pkg_name}/{lib_deesse_subdir}/{s}/*', root_dir=None) for s in lib_deesse_platform_subdir_list]
-deesse_core_dir_selected = f'{src_dir}/{pkg_name}/{lib_deesse_subdir}/{subdir_name}'
-
-lib_geosclassic_subdir = 'lib_geosclassic_core'
-lib_geosclassic_platform_subdir_list = sorted(glob.glob('*', root_dir=f'{src_dir}/{pkg_name}/{lib_geosclassic_subdir}'))
-lib_geosclassic_target_dir_list = [f'{src_dir}.{pkg_name}.{lib_geosclassic_subdir}.{s}' for s in lib_geosclassic_platform_subdir_list]
-lib_geosclassic_files_list = [glob.glob(f'{src_dir}/{pkg_name}/{lib_geosclassic_subdir}/{s}/*', root_dir=None) for s in lib_geosclassic_platform_subdir_list]
-geosclassic_core_dir_selected = f'{src_dir}/{pkg_name}/{lib_geosclassic_subdir}/{subdir_name}'
-
-data_files = list(zip(lib_deesse_target_dir_list, lib_deesse_files_list)) + list(zip(lib_geosclassic_target_dir_list, lib_geosclassic_files_list))
 
 setuptools.setup(
     name='geone',
@@ -127,7 +125,7 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     packages=['geone', 'geone.deesse_core', 'geone.geosclassic_core'],
     package_dir={
-        'geone':f'{src_dir}/geone',
+        'geone':'src/geone',
         'geone.deesse_core':deesse_core_dir_selected,
         'geone.geosclassic_core':geosclassic_core_dir_selected
         },

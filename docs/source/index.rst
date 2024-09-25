@@ -6,19 +6,16 @@
 GEONE's documentation
 =====================
 
-GEONE is a Python3 package providing a set of tools for geostatistical modeling, comprising:
+GEONE is a Python3 package providing a set of tools for geostatistical modeling, including:
 
-- a DEESSE wrapper for multiple-point statistics (MPS) simulation
-- geostatistical tools based on two-point statistics
+- multiple-point statistics (MPS) simulation as "DEESSE wrapper"
+- geostatistical tools based on two-point statistics, including  "GEOSCLASSIC wrapper"
 - miscellaneous algorithms based on random processes
 
 Github
 ======
+
 Github repository of GEONE : `<https://github.com/randlab/geone>`_.
-
-.. note::
-
-    DEESSE and some other geostatistical tools (GEOSCLASSIC) provided by GEONE are compiled in C for windows, linux and mac, and for python 3.7 to 3.12 (from python 3.8 for mac). Hence, DEESSE and GEOSCLASSIC wrappers use pre-compiled C libraries. The installation process detects the operating system and the python version, ensuring the installation of the right libraries. Note that for linux, libraries depending on the library GLIBC 2.35 or GLIBC 2.27 are provided, hence the library GLIBC of your OS has to be compatible with one of those versions to ensure proper operation of GEONE.
 
 .. toctree::
     :maxdepth: 2
