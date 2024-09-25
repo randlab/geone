@@ -12,7 +12,8 @@ GEONE is a Python3 package providing a set of tools for geostatistical modeling,
 
 The documentation of GEONE is on https://geone.readthedocs.io.
 
-The notebooks (examples) from the doc are available in [docs/source/notebooks](./docs/source/notebooks).
+<!-- The notebooks (examples) from the documentation are available in [docs/source/notebooks](./docs/source/notebooks). -->
+The notebooks (examples) from the documentation are available in [docs/source/notebooks](https://github.com/randlab/geone/tree/master/docs/source/notebooks).
 
 ## Installation
 
@@ -104,7 +105,9 @@ In a terminal type
 
 ## License
 
-See [LICENSE](LICENSE) file.
+<!-- See [LICENSE](LICENSE) file. -->
+<!-- See [LICENSE](https://geone.readthedocs.io/en/latest/LICENSE.html) file. -->
+See [LICENSE](https://github.com/randlab/geone/blob/master/LICENSE) file.
 
 ## Authors
 GEONE is developed by [Julien Straubhaar](https://www.unine.ch/philippe.renard/home/the-team/julien-straubhaar.html) and [Philippe Renard](https://www.unine.ch/philippe.renard/home/the-team/philippe-renard.html).
