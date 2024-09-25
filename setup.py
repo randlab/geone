@@ -3,7 +3,7 @@
 # or
 #    pip install . -v
 
-import sys, os, platform
+import sys, os, platform, glob
 import setuptools
 
 src_dir = 'src'
@@ -93,10 +93,6 @@ if subdir_name is None:
     print(f'{COL_ERR}ERROR: package geone not available for your configuration [platform_system={platform_system}, python_version={python_version}, glibc_version={glibc_version}]{COL_RESET}')
     exit()
 
-# Set directories containing the libraries
-deesse_core_dir = f'{src_dir}/geone/deesse_core/{subdir_name}'
-geosclassic_core_dir = f'{src_dir}/geone/geosclassic_core/{subdir_name}'
-
 # Set long_description
 with open("README.md", "r") as file_handle:
     long_description = file_handle.read()
@@ -106,19 +102,46 @@ __version__ = '0.0.0' # default
 with open(f'{src_dir}/geone/_version.py', 'r') as f:
     exec(f.read())
 
+# Set directories containing the libraries and data files
+src_dir = 'src'
+pkg_name = 'geone'
+
+lib_deesse_subdir = 'lib_deesse_core'
+lib_deesse_platform_subdir_list = sorted(glob.glob('*', root_dir=f'{src_dir}/{pkg_name}/{lib_deesse_subdir}'))
+lib_deesse_target_dir_list = [f'{src_dir}.{pkg_name}.{lib_deesse_subdir}.{s}' for s in lib_deesse_platform_subdir_list]
+lib_deesse_files_list = [glob.glob(f'{src_dir}/{pkg_name}/{lib_deesse_subdir}/{s}/*', root_dir=None) for s in lib_deesse_platform_subdir_list]
+deesse_core_dir_selected = f'{src_dir}/{pkg_name}/{lib_deesse_subdir}/{subdir_name}'
+
+lib_geosclassic_subdir = 'lib_geosclassic_core'
+lib_geosclassic_platform_subdir_list = sorted(glob.glob('*', root_dir=f'{src_dir}/{pkg_name}/{lib_geosclassic_subdir}'))
+lib_geosclassic_target_dir_list = [f'{src_dir}.{pkg_name}.{lib_geosclassic_subdir}.{s}' for s in lib_geosclassic_platform_subdir_list]
+lib_geosclassic_files_list = [glob.glob(f'{src_dir}/{pkg_name}/{lib_geosclassic_subdir}/{s}/*', root_dir=None) for s in lib_geosclassic_platform_subdir_list]
+geosclassic_core_dir_selected = f'{src_dir}/{pkg_name}/{lib_geosclassic_subdir}/{subdir_name}'
+
+data_files = list(zip(lib_deesse_target_dir_list, lib_deesse_files_list)) + list(zip(lib_geosclassic_target_dir_list, lib_geosclassic_files_list))
+
 setuptools.setup(
     name='geone',
     version=__version__,
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    packages=['geone', 'geone.deesse_core', 'geone.geosclassic_core'],
+    package_dir={
+        'geone':f'{src_dir}/geone',
+        'geone.deesse_core':deesse_core_dir_selected,
+        'geone.geosclassic_core':geosclassic_core_dir_selected
+        },
+    package_data={
+        'geone.deesse_core':['*'],
+        'geone.geosclassic_core':['*']
+        },
+    include_package_data=True,
+    data_files=data_files, # sources (lib) for all platforms
+    license=open('LICENSE', encoding='utf-8').read()
+    # # already defined in pyproject.toml...
     # author="Julien Straubhaar",
     # author_email="julien.straubhaar@unine.ch",
     # description="Geostatistics tools and Multiple Point Statistics",
-    long_description=long_description,
-    long_description_content_type='text/markdown',
     # url='https://github.com/randlab/geone',
     # install_requires=['matplotlib', 'numpy>=1,<2', 'pandas', 'pyvista', 'scipy'],
-    packages=['geone', 'geone.deesse_core', 'geone.geosclassic_core'],
-    package_dir={'geone':f'{src_dir}/geone', 'geone.deesse_core':deesse_core_dir, 'geone.geosclassic_core':geosclassic_core_dir},
-    package_data={'geone.deesse_core':['*'], 'geone.geosclassic_core':['*']},
-    include_package_data=True,
-    license=open('LICENSE', encoding='utf-8').read()
 )

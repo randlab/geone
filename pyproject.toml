@@ -20,7 +20,7 @@ authors = [
 
 
 readme = "README.md"
-keywords = ["Geostatistics", "Multiple Point Statistics", "deesse", "two point statistics", "simulation", "kriging"]
+keywords = ["Geostatistics", "Multiple Point Statistics", "deesse", "two point statistics", "covariance", "variogram", "simulation", "kriging"]
 classifiers = [
     "Programming Language :: Python :: 3",
 #     "License :: OSI Approved :: MIT License",
