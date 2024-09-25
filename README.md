@@ -10,9 +10,9 @@ GEONE is a Python3 package providing a set of tools for geostatistical modeling,
 
 ## Documentation, examples and references
 
-The documentation of GEONE is on (https://geone.readthedocs.io).
+The documentation of GEONE is on https://geone.readthedocs.io.
 
-The notebooks (examples) from the doc are available in `docs/source/notebooks`.
+The notebooks (examples) from the doc are available in [docs/source/notebooks](./docs/source/notebooks).
 
 ## Installation
 
