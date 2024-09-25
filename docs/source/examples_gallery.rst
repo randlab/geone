@@ -7,7 +7,7 @@ Switch to :ref:`Notebooks List <examples_list_file>`
 
 Various examples are provided in notebooks below to get started with GEONE. 
 
-The notebooks (with related data files) from this doc are available on Github at `<https://github.com/randlab/geone/docs/source/notebooks>`_
+The notebooks (with related data files) from this doc are available on Github at `<https://github.com/randlab/geone/tree/master/docs/source/notebooks>`_
 
 .. note::
     In the gallery below, abbreviations are used for the beginning of the original notebook file names:
