@@ -22,3 +22,5 @@ Some references about GRF
 Other references
 ----------------
 - C\. Lantuéjoul (2002) Geostatistical Simulation, Models and Algorithms. Springer Verlag, Berlin, 256 p.
+- P\. Renard, D\. Allard (2013), Connectivity metrics for subsurface flow and transport. Advances in Water Resources 51:168-196, `doi:10.1016/j.advwatres.2011.12.001 <https://doi.org/10.1016/j.advwatres.2011.12.001>`_
+- J\. Straubhaar, P\. Renard (2024), Exploring substitution random functions composed of stationary multi-Gaussian processes. Stochastic Environmental Research and Risk Assessment, `doi:10.1007/s00477-024-02662-x <https://doi.org/10.1007/s00477-024-02662-x>`_

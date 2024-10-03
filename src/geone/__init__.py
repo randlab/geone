@@ -12,9 +12,11 @@ from . import img
 from . import imgplot
 from . import imgplot3d
 from . import img
+from . import markovChain
 from . import multiGaussian
 from . import pgs
 from . import randProcess
+from . import srf
 from . import tools
 
 # # import all modules

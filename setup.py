@@ -16,7 +16,6 @@ linux_old_glibc_version = (2, 27) # glibc version for the library in */linux_old
 # Get configuration: platform system, version of python, version of glibc
 try:
     platform_system = platform.system()     # 'Windows' or 'Linux' or 'Darwin' accepted
-
     python_version = sys.version_info[0:2]  # e.g. (3, 10)
 
     try:
@@ -31,8 +30,7 @@ try:
         machine = None
 
 except:
-    print(f'{COL_ERR}ERROR: getting config{COL_RESET}')
-    exit()
+    sys.exit(f'{COL_ERR}ERROR: getting config{COL_RESET}')
 
 print(f'{COL_CONFIG}Your configuration: platform_system={platform_system}, python_version={python_version}, glibc_version={glibc_version}{COL_RESET}')
 
@@ -64,22 +62,7 @@ else:
     prefix = None
 
 # Set suffix
-if python_version == (3, 6):
-    suffix = 'py36'
-elif python_version == (3, 7):
-    suffix = 'py37'
-elif python_version == (3, 8):
-    suffix = 'py38'
-elif python_version == (3, 9):
-    suffix = 'py39'
-elif python_version == (3, 10):
-    suffix = 'py310'
-elif python_version == (3, 11):
-    suffix = 'py311'
-elif python_version == (3, 12):
-    suffix = 'py312'
-else:
-    suffix = None
+suffix = f'py{python_version[0]}{python_version[1]}'
 
 # Set subdir_selected
 if prefix is None or suffix is None:
@@ -87,27 +70,12 @@ if prefix is None or suffix is None:
 else:
     subdir_selected = f'{prefix}_{suffix}'
 
-# Set directories containing the libraries and data files to be kept in source when building package
-supported_py_version = ['39', '310', '311', '312']
-supported_lib = ['linux', 'mac_x86_64', 'mac_arm64', 'win']
-lib_subdir_list = ['_py'.join([li, py]) for li in supported_lib for py in supported_py_version]
-
-if subdir_selected is None or subdir_selected not in lib_subdir_list:
-# if subdir_selected is None or not os.path.isdir(f'src/geone/lib_deesse_core/{subdir_selected}'):
-    print(f'{COL_ERR}ERROR: package geone not available for your configuration [platform_system={platform_system}, python_version={python_version}, glibc_version={glibc_version}]{COL_RESET}')
-    # exit()
-
 # Set directories containing the libraries of the right version
 deesse_core_dir_selected = f'src/geone/lib_deesse_core/{subdir_selected}'
 geosclassic_core_dir_selected = f'src/geone/lib_geosclassic_core/{subdir_selected}'
 
-lib_deesse_target_dir_list = [f'src.geone.lib_deesse_core.{d}' for d in lib_subdir_list]
-lib_deesse_files_list = [glob.glob(f'src/geone/lib_deesse_core/{d}/*') for d in lib_subdir_list]
-
-lib_geosclassic_target_dir_list = [f'src.geone.lib_geosclassic_core.{d}' for d in lib_subdir_list]
-lib_geosclassic_files_list = [glob.glob(f'src/geone/lib_geosclassic_core/{d}/*') for d in lib_subdir_list]
-
-data_files = list(zip(lib_deesse_target_dir_list, lib_deesse_files_list)) + list(zip(lib_geosclassic_target_dir_list, lib_geosclassic_files_list))
+if subdir_selected is None or not os.path.isdir(subdir_selected):
+    sys.exit(f'{COL_ERR}ERROR: package geone not available for your configuration [platform_system={platform_system}, python_version={python_version}, glibc_version={glibc_version}]{COL_RESET}')
 
 # Set long_description
 with open("README.md", "r") as file_handle:
@@ -133,8 +101,8 @@ setuptools.setup(
         'geone.deesse_core':['*'],
         'geone.geosclassic_core':['*']
         },
-    include_package_data=True,
-    data_files=data_files, # sources (lib) for all platforms
+    include_package_data=False, # False to prevent files from MANIFEST.in to be included in the wheel (.whl)
+    # data_files=... # do not use! set files to be included in the source distribution (.tar.gz) in MANIFEST.in
     license=open('LICENSE', encoding='utf-8').read()
     # # already defined in pyproject.toml...
     # author="Julien Straubhaar",

@@ -4071,7 +4071,7 @@ def plot_variogramCloud1D(h, g, decim=1.0, seed=None, grid=True, **kwargs):
         hi = h
         gi = g
 
-    plt.plot(h, g, **kwargs)
+    plt.plot(hi, gi, **kwargs)
     plt.xlabel('h')
     plt.ylabel(r'$1/2(Z(x)-Z(x+h))^2$')
     plt.grid(grid)
@@ -8179,7 +8179,7 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
     The CRPS at x[i] is defined as
 
     .. math::
-        crps[i] = - \\int_{-\\infty}^{+\\infty}(F[i](y) - \\mathbb{I}(y>v[i]))^2 dy
+        crps[i] = - \\int_{-\\infty}^{+\\infty}(F[i](y) - \\mathbf{1}(y>v[i]))^2 dy
 
     and is equal to
 

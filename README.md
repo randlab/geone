@@ -21,16 +21,16 @@ GEONE relies on pre-compiled C libraries (DEESSE and GEOSCLASSIC core)
 
 GEONE is available:
 
-- on [PyPI](https://pypi.org/) (The Python Package Index), for:
-    - linux (x86_64 with GLIBC 2.35) and python 3.9 to 3.12
+- on [PyPI](https://pypi.org/project/geone) (The Python Package Index), for:
+    - linux (x86_64 with GLIBC 2.35 or GLIBC 2.27) and python 3.9 to 3.12
     - mac (x86_64 or arm64) and python 3.9 to 3.12
     - windows and python 3.9 to 3.12
-- on this [Github repository](https://github.com/randlab/geone), for:
+- on the [Github repository](https://github.com/randlab/geone), for:
     - linux (x86_64 with GLIBC 2.35 or GLIBC 2.27) and python 3.7 to 3.12
     - mac (x86_64 or arm64) and python 3.8 to 3.12
     - windows and python 3.7 to 3.12
 
-### Installation from [PyPI](https://pypi.org/)
+### Installation from [PyPI](https://pypi.org/project/geone)
 
 In a terminal type 
 ```
@@ -38,7 +38,7 @@ pip install geone
 ```
 Or, equivalently: `python -m pip install geone`.
 
-### Installation from this [Github repository](https://github.com/randlab/geone)
+### Installation from the [Github repository](https://github.com/randlab/geone)
 
 In a terminal, change directory where to download GEONE, and type
 ```
@@ -101,6 +101,8 @@ In a terminal type
 
 ### Other references 
 - C. Lantuéjoul (2002) Geostatistical Simulation, Models and Algorithms. Springer Verlag, Berlin, 256 p.
+- P. Renard, D. Allard (2013), Connectivity metrics for subsurface flow and transport. Advances in Water Resources 51:168-196, `doi:10.1016/j.advwatres.2011.12.001 <https://doi.org/10.1016/j.advwatres.2011.12.001>`_
+- J. Straubhaar, P. Renard (2024), Exploring substitution random functions composed of stationary multi-Gaussian processes. Stochastic Environmental Research and Risk Assessment, `doi:10.1007/s00477-024-02662-x <https://doi.org/10.1007/s00477-024-02662-x>`_
  -->
 
 ## License

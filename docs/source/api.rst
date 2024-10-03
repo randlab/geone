@@ -55,6 +55,12 @@ imgplot3d
 .. automodule:: imgplot3d
     :members:
 
+markovChain
+===========
+
+.. automodule:: markovChain
+    :members:
+
 multiGaussian
 =============
 
@@ -65,6 +71,12 @@ pgs
 ===
 
 .. automodule:: pgs
+    :members:
+
+srf
+===
+
+.. automodule:: srf
     :members:
 
 randProcess

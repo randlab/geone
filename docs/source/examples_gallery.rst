@@ -125,12 +125,21 @@ Pluri-Gaussian simulation (PGS)
         
         ex_pgs - PGS in 1D, 2D, 3D <notebooks/ex_pgs>
 
+Substitution Random Function (SRF)
+----------------------------------
+    .. nbgallery::
+        :maxdepth: 1
+        
+        ex_srf_mg_mc - categorical SRF in 1D, 2D, 3D <notebooks/ex_srf_mg_mc>
+        ex_srf_mg_mg - continuous SRF in 1D, 2D, 3D  <notebooks/ex_srf_mg_mg>
+
 Miscellaneous algorithms based on random processes
 --------------------------------------------------
-Accept-reject sampler and other algorithms such as homogeneous and non-homogeneous Poisson point process, Chentsov simulations.
+Other algorithms based on random processes such accept-reject sampler, Markov chain on finite set, homogeneous and non-homogeneous Poisson point process, Chentsov simulations.
 
     .. nbgallery::
         :maxdepth: 1
         
         ex_acceptRejectSampler            <notebooks/ex_acceptRejectSampler>
+        ex_markov_chain                   <notebooks/ex_markov_chain>
         ex_randProcess - various examples <notebooks/ex_randProcess>

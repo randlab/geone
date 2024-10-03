@@ -6,8 +6,8 @@ GEONE relies on pre-compiled C libraries (DEESSE and GEOSCLASSIC core).
 .. note::
     GEONE is available:
     
-    - on `PyPI <https://pypi.org/>`_ (The Python Package Index), for:
-        - linux (x86_64 with GLIBC 2.35) and python 3.9 to 3.12
+    - on `PyPI <https://pypi.org/project/geone>`_ (The Python Package Index), for:
+        - linux (x86_64 with GLIBC 2.35 or GLIBC 2.27) and python 3.9 to 3.12
         - mac (x86_64 or arm64) and python 3.9 to 3.12
         - windows and python 3.9 to 3.12
     - on the `Github repository <https://github.com/randlab/geone>`_, for:
@@ -15,8 +15,8 @@ GEONE relies on pre-compiled C libraries (DEESSE and GEOSCLASSIC core).
         - mac (x86_64 or arm64) and python 3.8 to 3.12
         - windows and python 3.7 to 3.12
 
-Installation from `PyPI <https://pypi.org/>`_
----------------------------------------------
+Installation from `PyPI <https://pypi.org/project/geone>`_
+-----------------------------------------------------------
 
 In a terminal type::
 

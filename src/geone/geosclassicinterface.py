@@ -11588,9 +11588,9 @@ def imgTwoPointStatisticsImage(
 
     References
     ----------
-    - Renard P, Allard D (2013), \
+    - P\. Renard, D\. Allard (2013), \
     Connectivity metrics for subsurface flow and transport. \
-    Adv Water Resour 51:168–196, \
+    Advances in Water Resources 51:168-196, \
     `doi:10.1016/j.advwatres.2011.12.001 <https://doi.org/10.1016/j.advwatres.2011.12.001>`_
     """
     # * correlogram            : g(h) = cor(v(x), v(x+h)) (linear correlation)
@@ -11801,9 +11801,9 @@ def imgConnectivityGammaValue(
 
     References
     ----------
-    - Renard P, Allard D (2013), \
+    - P\. Renard, D\. Allard (2013), \
     Connectivity metrics for subsurface flow and transport. \
-    Adv Water Resour 51:168–196, \
+    Advances in Water Resources 51:168-196, \
     `doi:10.1016/j.advwatres.2011.12.001 <https://doi.org/10.1016/j.advwatres.2011.12.001>`_
     """
     fname = 'imgConnectivityGammaValue'
@@ -11942,9 +11942,9 @@ def imgConnectivityGammaCurves(
 
     References
     ----------
-    - Renard P, Allard D (2013), \
+    - P\. Renard, D\. Allard (2013), \
     Connectivity metrics for subsurface flow and transport. \
-    Adv Water Resour 51:168–196, \
+    Advances in Water Resources 51:168-196, \
     `doi:10.1016/j.advwatres.2011.12.001 <https://doi.org/10.1016/j.advwatres.2011.12.001>`_
     """
     fname = 'imgConnectivityGammaCurves'
@@ -12112,9 +12112,9 @@ def imgConnectivityEulerNumber(
 
     References
     ----------
-    - Renard P, Allard D (2013), \
+    - P\. Renard, D\. Allard (2013), \
     Connectivity metrics for subsurface flow and transport. \
-    Adv Water Resour 51:168–196, \
+    Advances in Water Resources 51:168-196, \
     `doi:10.1016/j.advwatres.2011.12.001 <https://doi.org/10.1016/j.advwatres.2011.12.001>`_
     """
     fname = 'imgConnectivityEulerNumber'

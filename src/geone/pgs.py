@@ -108,7 +108,7 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
         - if `True`: simulation(s) of Z, T1, and T2 are retrieved in output
         - if `False`: simulation(s) of Z only is retrieved in output
 
-    verbose : int, default: 2
+    verbose : int, default: 4
         verbose mode, higher implies more printing (info)
 
     Returns
@@ -215,11 +215,6 @@ def pluriGaussianSim_unconditional(cov_model_T1, cov_model_T2, flag_value,
         if verbose > 0:
             print(f"ERROR ({fname}): `dimension` of incompatible length")
         return out
-
-    if d == 1:
-        grid_size = dimension
-    else:
-        grid_size = np.prod(dimension)
 
     # Check (or set) argument 'spacing'
     if spacing is None:
@@ -462,7 +457,7 @@ def pluriGaussianSim(cov_model_T1, cov_model_T2, flag_value,
         retrieved in output
         - if `False`: simulation(s) of Z only is retrieved in output
 
-    verbose : int, default: 2
+    verbose : int, default: 4
         verbose mode, higher implies more printing (info)
 
     Returns
