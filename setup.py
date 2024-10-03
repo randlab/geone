@@ -3,7 +3,7 @@
 # or
 #    pip install . -v
 
-import sys, os, platform, glob
+import sys, os, platform
 import setuptools
 
 COL_CONFIG = '\033[1;36m\033[40m' # bold cyan on black
@@ -74,7 +74,7 @@ else:
 deesse_core_dir_selected = f'src/geone/lib_deesse_core/{subdir_selected}'
 geosclassic_core_dir_selected = f'src/geone/lib_geosclassic_core/{subdir_selected}'
 
-if subdir_selected is None or not os.path.isdir(subdir_selected):
+if subdir_selected is None or not os.path.isdir(deesse_core_dir_selected) or not os.path.isdir(geosclassic_core_dir_selected):
     sys.exit(f'{COL_ERR}ERROR: package geone not available for your configuration [platform_system={platform_system}, python_version={python_version}, glibc_version={glibc_version}]{COL_RESET}')
 
 # Set long_description
