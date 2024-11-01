@@ -210,10 +210,10 @@ def drawImage3D_surface (
         keyword arguments passed to function `plotter.add_text`
         (can be useful for customization, used if `text` is not `None`)
 
-    background_color : color
+    background_color : color, optional
         background color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
 
-    foreground_color : color
+    foreground_color : color, optional
         foreground color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
 
     cpos : sequence[sequence[float]], optional
@@ -687,10 +687,10 @@ def drawImage3D_slice (
         keyword arguments passed to function `plotter.add_text`
         (can be useful for customization, used if `text` is not `None`)
 
-    background_color : color
+    background_color : color, optional
         background color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
 
-    foreground_color : color
+    foreground_color : color, optional
         foreground color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
 
     cpos : sequence[sequence[float]], optional
@@ -1347,10 +1347,10 @@ def drawImage3D_volume (
         keyword arguments passed to function `plotter.add_text`
         (can be useful for customization, used if `text` is not `None`)
 
-    background_color : color
+    background_color : color, optional
         background color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
 
-    foreground_color : color
+    foreground_color : color, optional
         foreground color (3-tuple (RGB code), 4-tuple (RGBA code) or str)
 
     cpos : sequence[sequence[float]], optional

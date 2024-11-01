@@ -45,7 +45,7 @@ def multiGaussianRun(
 
     dimension : [sequence of] int(s)
         number of cells along each axis, for simulation in:
-        
+
         - 1D: `dimension=nx`
         - 2D: `dimension=(nx, ny)`
         - 3D: `dimension=(nx, ny, nz)`
@@ -56,16 +56,16 @@ def multiGaussianRun(
         - 1D: `spacing=sx`
         - 2D: `spacing=(sx, sy)`
         - 3D: `spacing=(sx, sy, sz)`
-        
+
         by default (`None`): 1.0 along each axis
 
     origin : [sequence of] float(s), optional
         origin of the grid ("corner of the first cell"), for simulation in:
-        
+
         - 1D: `origin=ox`
         - 2D: `origin=(ox, oy)`
         - 3D: `origin=(ox, oy, oz)`
-        
+
         by default (`None`): 0.0 along each axis
 
     x : array-like of floats, optional
@@ -83,7 +83,7 @@ def multiGaussianRun(
 
     mode : str {'simulation', 'estimation'}, default: 'simulation'
         mode of computation:
-        
+
         - `mode='simulation'`: generates multi-Gaussian simulations
         - `mode='estimation'`: computes multi-Gaussian estimation (and st. dev.)
 
@@ -99,10 +99,10 @@ def multiGaussianRun(
         for <d>D (d = 1, 2, or 3):
             - 'geone.geoscalassicinterface.simulate<d>D', `if mode='simulation'`
             - 'geone.geoscalassicinterface.estimate<d>D', `if mode='estimation'`
-    
+
     output_mode : str {'array', 'img'}, default: 'img'
         defines the type of output returned (see below)
-    
+
     retrieve_warnings : bool, default: False
         indicates if the warnings encountered during the run are retrieved in
         output (`True`) or not (`False`) (see below)
@@ -120,7 +120,9 @@ def multiGaussianRun(
 
     kwargs : dict
         keyword arguments (additional parameters) to be passed to the function
-        that is called (according to `algo` and space dimension)
+        that is called (according to `algo` and space dimension);
+        note: argument `mask` can also be used with `algo='fft'`; in this case
+        the mask is applied afterward
 
     Returns
     -------
@@ -143,7 +145,7 @@ def multiGaussianRun(
             - `output.nv=1` if `mode='estimation'` with kriging estimate only
             - `output.nv=2` if `mode='estimation'` with krig. est. and st. dev.
             - `output.nv=nreal` if `mode='simulation'`
-            
+
     warnings : list of strs, optional
         list of distinct warnings encountered (can be empty) during the run
         (no warning (empty list) if `algo='fft'`);
@@ -230,10 +232,21 @@ def multiGaussianRun(
         kwargs_common_keys = run_f_set_of_all_args.intersection(kwargs.keys())
         kwargs_new = {key: kwargs[key] for key in kwargs_common_keys}
         kwargs_unexpected_keys = set(kwargs.keys()).difference(run_f_set_of_all_args)
+        apply_mask = False # default
         if kwargs_unexpected_keys:
-            # set kwargs_unexpected_keys is not empty
-            s = "', '".join(kwargs_unexpected_keys)
-            print(f"WARNING ({fname}): unexpected keyword arguments (`{s}`) passed to function '{run_f.__module__}.{run_f.__name__}' were ignored")
+            if algo=='fft' and 'mask' in kwargs_unexpected_keys:
+                kwargs_unexpected_keys.remove('mask')
+                if kwargs['mask'] is not None:
+                    try:
+                        mask = np.asarray(kwargs['mask']).reshape(np.atleast_1d(dimension)[::-1]).astype('bool')
+                    except:
+                        print(f"ERROR ({fname}): `mask` is not valid")
+                        return None
+                    apply_mask = True # to apply mask afterward
+            if kwargs_unexpected_keys:
+                # set kwargs_unexpected_keys is not empty
+                s = "', '".join(kwargs_unexpected_keys)
+                print(f"WARNING ({fname}): unexpected keyword arguments (`{s}`) passed to function '{run_f.__module__}.{run_f.__name__}' were ignored")
 
         output = run_f(cov_model, dimension, spacing=spacing, origin=origin, x=x, v=v, verbose=verbose, **kwargs_new)
         # -> if mode = 'simulation':
@@ -249,6 +262,8 @@ def multiGaussianRun(
                 output = np.asarray(output)
             else:
                 output = output[np.newaxis, :]
+        if apply_mask:
+            output[:, ~mask] = np.nan
         if output_mode == 'img':
             output = img.Img(
                 *np.hstack((np.atleast_1d(dimension), np.ones(3-d, dtype='int'))),

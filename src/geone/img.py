@@ -42,10 +42,10 @@ class Img(object):
 
     sy : float, default: 1.0
         cell size along y axis
-        
+
     sz : float, default: 1.0
         cell size along z axis
-        
+
         Note: `(sx, sy, sz)` is the cell size
 
     ox : float, default: 0.0
@@ -221,10 +221,10 @@ class Img(object):
 
         sy : float, default: 1.0
             cell size along y axis
-            
+
         sz : float, default: 1.0
             cell size along z axis
-            
+
             Note: `(sx, sy, sz)` is the cell size
 
         ox : float, default: 0.0
@@ -246,8 +246,8 @@ class Img(object):
 
         varname : str or 1D array-like of strs of length `nv`, optional
             variable name(s); if one variable name is given for multiple
-            variables, the variable index is used as suffix; 
-            by default (`None`): variable names are set to "V<num>", 
+            variables, the variable index is used as suffix;
+            by default (`None`): variable names are set to "V<num>",
             where <num> starts from 0
 
         name : str, default: ''
@@ -266,7 +266,7 @@ class Img(object):
         self.oz = float(oz)
         self.nv = int(nv)
 
-        valarr = np.asarray(val, dtype=float)  # possibly 0-dimensional
+        valarr = np.asarray(val, dtype=float) # possibly 0-dimensional
         if valarr.size == 1:
             valarr = valarr.flat[0] * np.ones(nx*ny*nz*nv)
         elif valarr.size != nx*ny*nz*nv:
@@ -324,7 +324,7 @@ class Img(object):
         Parameters
         ----------
         varname : str, optional
-            name to be set; by default (`None`): "V" followed by the variable 
+            name to be set; by default (`None`): "V" followed by the variable
             index is used
 
         ind : int, default: -1
@@ -397,7 +397,7 @@ class Img(object):
 
         sy : float
             cell size along y axis
-            
+
         sz : float
             cell size along z axis
         """
@@ -450,10 +450,10 @@ class Img(object):
 
         sy : float, default: 1.0
             cell size along y axis
-            
+
         sz : float, default: 1.0
             cell size along z axis
-            
+
             Note: `(sx, sy, sz)` is the cell size
 
         ox : float, default: 0.0
@@ -607,8 +607,8 @@ class Img(object):
             is duplicated once over all grid cells
 
         varname : str or 1D array-like of strs, optional
-            name(s) of the new variable(s); 
-            by default (`None`): variable names are set to "V<num>", where <num> 
+            name(s) of the new variable(s);
+            by default (`None`): variable names are set to "V<num>", where <num>
             starts from the number of variables before the insertion
 
         ind : int, default: 0
@@ -679,8 +679,8 @@ class Img(object):
             is duplicated once over all grid cells
 
         varname : str or 1D array-like of strs, optional
-            name(s) of the new variable(s); 
-            by default (`None`): variable names are set to "V<num>", where <num> 
+            name(s) of the new variable(s);
+            by default (`None`): variable names are set to "V<num>", where <num>
             starts from the number of variables before the insertion
         """
         self.insert_var(val=val, varname=varname, ind=self.nv)
@@ -1396,7 +1396,7 @@ class PointSet(object):
     name : str
         name of the point set
     """
-    #    
+    #
     # Methods
     # -------
     #
@@ -1515,7 +1515,7 @@ class PointSet(object):
         Parameters
         ----------
         varname : str, optional
-            name to be set; 
+            name to be set;
             by default (`None`): "V" followed by the variable index is used
 
         ind : int, default: -1
@@ -1553,8 +1553,8 @@ class PointSet(object):
             is duplicated once over all points
 
         varname : str or 1D array-like of strs, optional
-            name(s) of the new variable(s); 
-            by default (`None`): variable names are set to "V<num>", where <num> 
+            name(s) of the new variable(s);
+            by default (`None`): variable names are set to "V<num>", where <num>
             starts from the number of variables before the insertion
 
         ind : int, default: 0
@@ -1625,8 +1625,8 @@ class PointSet(object):
             is duplicated once over all points
 
         varname : str or 1D array-like of strs, optional
-            name(s) of the new variable(s); 
-            by default (`None`): variable names are set to "V<num>", where <num> 
+            name(s) of the new variable(s);
+            by default (`None`): variable names are set to "V<num>", where <num>
             starts from the number of variables before the insertion
         """
         self.insert_var(val=val, varname=varname, ind=self.nv)
@@ -1700,7 +1700,7 @@ class PointSet(object):
 
         varname : str, optional
             name of the variable to be set
-        
+
         ind : int, default: -1
             index of the variable to be set (negative integer for indexing from
             the end)
@@ -2058,7 +2058,7 @@ class Img_interp_func(object):
 
     iz : int or `None` (default)
         same as `ix`, but for z axis
-        
+
     angle_var: bool, default: False
         - if `True`: variable to be interpolated are considered as angles, and the \
         interpolation is done by first interpolating the cosine and the sine of \
@@ -2073,7 +2073,8 @@ class Img_interp_func(object):
         - if `False`: the variable values are angles in radians
 
     order : int, default: 1
-        order for the interpolator within the domain of the image grid
+        order for the interpolator within the domain of the image grid,
+        integer in {0, ..., 5}
         (1: linear, 3: cubic, 5: quintic)
 
     mode : str, default: 'nearest'
@@ -2089,7 +2090,7 @@ class Img_interp_func(object):
     See web page
     https://docs.scipy.org/doc/scipy/tutorial/interpolate/ND_regular_grid.html
     under "Uniformly space data", introducing a similar class originating
-    from the Johanness Buchner's 'regulargrid' package on 
+    from the Johanness Buchner's 'regulargrid' package on
     https://github.com/JohannesBuchner/regulargrid/
 
     Examples
@@ -2257,7 +2258,7 @@ class Img_interp_func(object):
                     spacing = np.array([im.sz])
                     min_coords = np.array([im.oz]) + 0.5*spacing
                 else:
-                    print(f'ERROR ({fname}): none of the axis correpsonds to "no slice"')
+                    print(f'ERROR ({fname}): none of the axis corresponds to "no slice"')
                     return None
 
         self.angle_var = angle_var
@@ -2465,8 +2466,8 @@ def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
         y coordinate of point(s)
 
     z : float or 1D array-like of floats
-        z coordinate of point(s) 
-        
+        z coordinate of point(s)
+
         Note: `x`, `y`, `z` are of same size
 
     sx : float, default: 1.0
@@ -2474,10 +2475,10 @@ def pointToGridIndex(x, y, z, sx=1.0, sy=1.0, sz=1.0, ox=0.0, oy=0.0, oz=0.0):
 
     sy : float, default: 1.0
         cell size along y axis
-        
+
     sz : float, default: 1.0
         cell size along z axis
-        
+
         Note: `(sx, sy, sz)` is the cell size
 
     ox : float, default: 0.0
@@ -2670,13 +2671,13 @@ def aggregateDataPointsWrtGrid(x, y, z, v,
 
     z : float or 1D array-like of floats
         z coordinate of point(s)
-         
+
         Note: `x`, `y`, `z` are of same size
 
     v : float or 1D array-like or 2D array-like of floats
         values attached to point(s), each row (if 2D array) corresponds to a
         same variable ; last dimension of same size as `x`, `y`, `z`
-        
+
     nx : int
         number of grid cells along x axis
 
@@ -2693,10 +2694,10 @@ def aggregateDataPointsWrtGrid(x, y, z, v,
 
     sy : float, default: 1.0
         cell size along y axis
-        
+
     sz : float, default: 1.0
         cell size along z axis
-        
+
         Note: `(sx, sy, sz)` is the cell size
 
     ox : float, default: 0.0
@@ -2745,7 +2746,7 @@ def aggregateDataPointsWrtGrid(x, y, z, v,
         corresponds to a same variable
 
     i_inv : 1D array of ints, optional
-        indexes of the aggregated points, array of ints of same size as 
+        indexes of the aggregated points, array of ints of same size as
         `x, `y`, `z`, `v` (last dimension) and such that the i-th data point
         `((x[i], y[i], z[i]), v[..., i])`
         contributes to the `i_inv[i]`-th aggregated point
@@ -2880,11 +2881,11 @@ def imageFromPoints(points, values=None, varname=None,
 
     The output image grid geometry is defined as follows for the x axis (similar
     for y and z axes):
-    
+
     - `ox` (origin), `nx` (number of cells) and `sx` (resolution, cell size)
     - or only `nx`: `ox` and `sx` automatically computed
     - or only `sx`: `ox` and `nx` automatically computed
-    
+
     In the first case, points out of the specified grid are removed.
     In the two last cases, the parameters `xmin_ext`, `xmax_ext`, are used and
     the approximate limit of the grid along x axis is set to x0, x1, where
@@ -2894,11 +2895,11 @@ def imageFromPoints(points, values=None, varname=None,
 
     Note that points in 1D or 2D are accepted, if the points are in 1D, the
     default values
-    
+
     - `ny=nz=1`, `sy=sz=1.0`, `oy=oz=-0.5` are used
-    
+
     and if the points are in 2D, the default values
-    
+
     - `nz=1`, `sz=1.0`, `oz=-0.5` are used
 
     Parameters
@@ -2934,15 +2935,15 @@ def imageFromPoints(points, values=None, varname=None,
         cell size along z axis; see above for possible inputs
 
     ox : float, optional
-        origin of the grid along x axis (x coordinate of cell border); 
+        origin of the grid along x axis (x coordinate of cell border);
         see above for possible inputs
 
     oy : float, optional
-        origin of the grid along y axis (y coordinate of cell border); 
+        origin of the grid along y axis (y coordinate of cell border);
         see above for possible inputs
 
     oz : float, optional
-        origin of the grid along z axis (z coordinate of cell border); 
+        origin of the grid along z axis (z coordinate of cell border);
         see above for possible inputs
 
         Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
@@ -3173,11 +3174,11 @@ def pointSetToImage(ps,
 
     The first three variable of the point set must correspond to x, y, z
     float coordinates (location of points). Then, it is equivalent to
-    
+
     - `imageFromPoints(points, values, varname, ..., indicator_var=False, count_var=False, ...)`
 
     with
-        
+
     - `points = ps.val[0:3].T`
     - `values=ps.val[3:].T`
     - `varname=ps.varname[3:]`
@@ -3219,7 +3220,7 @@ def isImageDimensionEqual(im1, im2):
     ----------
     im1 : :class:`Img`
         first image
-    
+
     im2 : :class:`Img`
         second image
 
@@ -3242,7 +3243,7 @@ def isImageEqual(im1, im2):
     ----------
     im1 : :class:`Img`
         first image
-    
+
     im2 : :class:`Img`
         second image
 
@@ -3369,7 +3370,7 @@ def indicatorImage(im, ind=0, categ=None, return_categ=False):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def gatherImages(im_list, varInd=None, keep_varname=False, 
+def gatherImages(im_list, varInd=None, keep_varname=False,
                  rem_var_from_source=False, treat_image_one_by_one=False):
     """
     Gathers images into one image.
@@ -3751,13 +3752,13 @@ def imageEntropy(im, varInd=None, varIndList=None):
     Computes "pixel-wise" entropy from proportions given as variables in an image.
 
     For each grid cell of (single) index i, the entropy is defined as
-    
+
     .. math::
         H[i] = - \sum_{v} v[i] \cdot \log_{n}(v[i])
 
-    where :math:`v` loops on each considered variable, and :math:`n` is the number 
-    of considered variables, assuming that the variables are proportions that sum 
-    to 1.0 in each grid cell, i.e. :math:`\sum_{v} v[i]` should be equal to 1.0, 
+    where :math:`v` loops on each considered variable, and :math:`n` is the number
+    of considered variables, assuming that the variables are proportions that sum
+    to 1.0 in each grid cell, i.e. :math:`\sum_{v} v[i]` should be equal to 1.0,
     for any i.
 
     Parameters
@@ -3844,7 +3845,7 @@ def imageCategFromImageOfProp(im, mode='most_probable', target_prop=None, varInd
 
     mode : str {'most_probable', 'target_prop'}, default: 'most_probable'
         defines how is computed the output variable:
-        
+
         - 'most_probable': most probable category (index) in each grid cell
         - 'target_prop': category (index) such that the proportions over all \
         image grid cells match as much as possible the proportions given by \
@@ -3864,7 +3865,7 @@ def imageCategFromImageOfProp(im, mode='most_probable', target_prop=None, varInd
         category values to be assigned in place of the category indexes in the
         output image, i.e. output index i (corresponding to variable `varInd[i]`
         in the input image) is replaced by `categ[i]` (note that the length of
-        `categ` must be the same as the length of `varInd`); 
+        `categ` must be the same as the length of `varInd`);
         by default (`None`): `categ[i]=i` is used
 
     Returns
@@ -3965,7 +3966,7 @@ def interpolateImage(im, categVar=None,
 
     The output image grid geometry is defined as follows for the x axis (similar
     for y and z axes):
-    
+
     - if `ox` is None:
         - `ox = im.ox` is used
 
@@ -3991,7 +3992,7 @@ def interpolateImage(im, categVar=None,
         - `categVar[i]=True` : the variable i is treated as a categorical variable
         - `categVar[i]=False`: the variable i is treated as a continuous variable \
         by default (`None`): all variables are treated as continuous variable
-        
+
     nx : int, optional
         number of grid cells along x axis in the output image;
         see above for possible inputs
@@ -4398,7 +4399,7 @@ def extractRandomPointFromImage(im, npt, seed=None):
     npt : int
         number of points to be sampled (if greater than the number of image grid
         cells, every cell is sampled)
-        
+
     seed : int, optional
         seed for initializing random number generator
 
@@ -4462,7 +4463,7 @@ def readVarsTxt(fname, missing_value=None, delimiter=' ', comments='#', usecols=
         v[1, 0]    v[1, 1]    ... v[1, nv-1]
         ...
         v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
-    
+
     where `varname[j]` (str) is a the name of the variable of index j, and
     `v[i, j]` (float) is the value of the variable of index j, for the entry of
     index i, i.e. one entry per line.
@@ -4560,7 +4561,7 @@ def writeVarsTxt(fname, varname, val, missing_value=None, delimiter=' ', usecols
         v[1, 0]    v[1, 1]    ... v[1, nv-1]
         ...
         v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
-    
+
     where `varname[j]` (str) is a the name of the variable of index j, and
     `v[i, j]` (float) is the value of the variable of index j, for the entry of
     index i, i.e. one entry per line.
@@ -4657,7 +4658,7 @@ def readGridInfoFromHeaderTxt(
     Reads grid geometry information, and sorting mode of filling, from the header in a file.
 
     The grid geometry , i.e.
-    
+
     - (nx, ny, nz), grid size, number of cells along each direction
     - (sx, sy, sz), grid cell size along each direction
     - (ox, oy, oz), grid origin, coordinates of the bottom-lower-left corner
@@ -4672,24 +4673,24 @@ def readGridInfoFromHeaderTxt(
     - x index increases, then y index increases, then z index increases
 
     The string `sorting` should have 6 characters (see exception below):
-    
+
     - '[+|-][X|Y|Z][+|-][X|Y|Z][+|-][X|Y|Z]'
-    
+
     where 'X', 'Y', 'Z' appears exactly once, and has the following meaning: the
     grid is filled with
-    
+
     - first, `sorting[1]` index decreases (resp. increases) if `sorting[0]='-'` (resp. `sorting[0]='+'`)
     - then, `sorting[3]` index decreases (resp. increases) if `sorting[2]='-'` (resp. `sorting[2]='+'`)
     - then, `sorting[5]` index decreases (resp. increases) if `sorting[4]='-'` (resp. `sorting[4]='+'`)
-    
+
     As an exception, if `nz=1`, the string `sorting` can have 4 characters:
-    
+
     - '[+|-][X|Y][+|-][X|Y]'
-    
+
     and it is then interpreted as above by appending '+Z'.
 
     Note that
-    
+
     - the string `sorting` is case insensitive,
     - the validity of the string `sorting` is not checked in this function.
 
@@ -4716,7 +4717,7 @@ def readGridInfoFromHeaderTxt(
         v[1, 0]    v[1, 1]    ... v[1, nv-1]
         ...
         v[n-1, 0]  v[n-1, 1]  ... v[n-1, nv-1]
-        
+
     where `varname[j]` (str) is a the name of the variable of index j, and
     `v[i, j]` (float) is the value of the variable of index j, for the entry of
     index i, i.e. one entry per line.
@@ -4746,10 +4747,10 @@ def readGridInfoFromHeaderTxt(
 
     sy : float, default: 1.0
         cell size along y axis used as default
-        
+
     sz : float, default: 1.0
         cell size along z axis used as default
-        
+
         Note: `(sx, sy, sz)` is the cell size
 
     ox : float, default: 0.0
@@ -4794,7 +4795,7 @@ def readGridInfoFromHeaderTxt(
 
     key_sz : 1D array-like of strs, or str
         possible key words (case insensitive) for entry `sz`
-        
+
     key_ox : 1D array-like of strs, or str
         possible key words (case insensitive) for entry `ox`
 
@@ -5018,7 +5019,7 @@ def readImageTxt(
     Reads an image from a txt file, including grid geometry, and sorting mode of filling.
 
     The image grid geometry , i.e.
-    
+
     - (nx, ny, nz), grid size, number of cells along each direction
     - (sx, sy, sz), grid cell size along each direction
     - (ox, oy, oz), grid origin, coordinates of the bottom-lower-left corner
@@ -5030,24 +5031,24 @@ def readImageTxt(
     The number n of values (see below) for each variable should be equal to
     `nx*ny*nz`. The grid is filled according to the specified `sorting` mode.
     By default `sorting='+X+Y+Z'`, which means that the grid is filled with
-    
+
     - x index increases, then y index increases, then z index increases
-    
+
     The string `sorting` must have 6 characters (see exception below):
-    
+
     - '[+|-][X|Y|Z][+|-][X|Y|Z][+|-][X|Y|Z]'
 
     where 'X', 'Y', 'Z' appears exactly once, and has the following meaning: the
     grid is filled with
-    
+
     - first, `sorting[1]` index decreases (resp. increases) if `sorting[0]='-'` (resp. `sorting[0]='+'`)
     - then, `sorting[3]` index decreases (resp. increases) if `sorting[2]='-'` (resp. `sorting[2]='+'`)
     - then, `sorting[5]` index decreases (resp. increases) if `sorting[4]='-'` (resp. `sorting[4]='+'`)
 
     As an exception, if `nz=1`, the string `sorting` can have 4 characters:
-    
+
     - '[+|-][X|Y][+|-][X|Y]'
-    
+
     and it is then interpreted as above by appending '+Z'.
 
     Note that the string `sorting` is case insensitive.
@@ -5105,10 +5106,10 @@ def readImageTxt(
 
     sy : float, default: 1.0
         cell size along y axis used as default
-        
+
     sz : float, default: 1.0
         cell size along z axis used as default
-        
+
         Note: `(sx, sy, sz)` is the cell size
 
     ox : float, default: 0.0
@@ -5262,20 +5263,20 @@ def writeImageTxt(
     - x index increases, then y index increases, then z index increases
 
     The string `sorting` should have 6 characters (see exception below):
-    
+
     - '[+|-][X|Y|Z][+|-][X|Y|Z][+|-][X|Y|Z]'
-    
+
     where 'X', 'Y', 'Z' appears exactly once, and has the following meaning: the
     grid is filled with
-    
+
     - first, `sorting[1]` index decreases (resp. increases) if `sorting[0]='-'` (resp. `sorting[0]='+'`)
     - then, `sorting[3]` index decreases (resp. increases) if `sorting[2]='-'` (resp. `sorting[2]='+'`)
     - then, `sorting[5]` index decreases (resp. increases) if `sorting[4]='-'` (resp. `sorting[4]='+'`)
-    
+
     As an exception, if `nz=1`, the string `sorting` can have 4 characters:
-    
+
     - '[+|-][X|Y][+|-][X|Y]'
-    
+
     and it is then interpreted as above by appending '+Z'.
 
     Note that the string `sorting` is case insensitive.
@@ -5697,7 +5698,7 @@ def writePointSetTxt(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def readImage2Drgb(filename, categ=False, nancol=None, keep_channels=True, 
+def readImage2Drgb(filename, categ=False, nancol=None, keep_channels=True,
                    rgb_weight=(0.299, 0.587, 0.114), flip_vertical=True):
     """
     Reads an "RGB" image from a file.
@@ -5727,7 +5728,7 @@ def readImage2Drgb(filename, categ=False, nancol=None, keep_channels=True,
     - categorical (`categ=True`): the list of distinct colors is retrieved (`col`) \
     and indexed (from 0); the ouptut image has one variable defined as the \
     index of the color (in the list `col`); the list `col` is also retrieved \
-    in output, every entry is a unique value (`keep_channels=Fase`) or a \
+    in output, every entry is a unique value (`keep_channels=False`) or a \
     sequence of length 3 or 4 (`keep_channels=True`). Note that the output \
     image can be displayed (plotted) directly by using:
         - `geone.imgplot.drawImage2D(im, categ=True, categCol=col)`, \
@@ -5761,10 +5762,10 @@ def readImage2Drgb(filename, categ=False, nancol=None, keep_channels=True,
         is ignored)
 
     rgb_weight : 1D array-like of 3 floats
-        weights for R, G, B channels used to combine channels (if 
+        weights for R, G, B channels used to combine channels (if
         `keep_channels=False`);
         notes:
-        
+
         - by default: values set from `Pillow`, image convert mode “L”
         - other weights can be e.g. (0.2125, 0.7154, 0.0721)
 
@@ -6000,7 +6001,7 @@ def readImageGslib(filename, missing_value=None):
     """
     Reads an image from a file in "gslib" format.
 
-    It is recommended to use the functions 
+    It is recommended to use the functions
     :func:`img.readImageTxt` / :func:`img.writeImageTxt` instead.
 
     File is assumed to be in the following format (text file)::
@@ -6096,7 +6097,7 @@ def writeImageGslib(im, filename, missing_value=None, fmt="%.10g"):
     """
     Writes an image in a file in "gslib" format.
 
-    It is recommended to use the functions 
+    It is recommended to use the functions
     :func:`img.readImageTxt` / :func:`img.writeImageTxt` instead.
 
     File is written in the following format (text file)::
@@ -6176,7 +6177,7 @@ def readImageVtk(filename, missing_value=None):
     """
     Reads an image from a file in "vtk" format.
 
-    It is recommended to use the functions 
+    It is recommended to use the functions
     :func:`img.readImageTxt` / :func:`img.writeImageTxt` instead.
 
     Parameters
@@ -6236,7 +6237,7 @@ def writeImageVtk(im, filename, missing_value=None, fmt="%.10g",
     """
     Writes an image in a file in "vtk" format.
 
-    It is recommended to use the functions 
+    It is recommended to use the functions
     :func:`img.readImageTxt` / :func:`img.writeImageTxt` instead.
 
     Parameters
@@ -6307,7 +6308,7 @@ def readPointSetGslib(filename, missing_value=None):
     """
     Reads a point set from a file in "gslib" format.
 
-    It is recommended to use the functions 
+    It is recommended to use the functions
     :func:`img.readPointSetTxt` / :func:`img.writePointSetTxt` instead.
 
     File is assumed to be in the following format::
@@ -6384,7 +6385,7 @@ def writePointSetGslib(ps, filename, missing_value=None, fmt="%.10g"):
     """
     Writes a point set in a file in "gslib" format.
 
-    It is recommended to use the functions 
+    It is recommended to use the functions
     :func:`img.readPointSetTxt` / :func:`img.writePointSetTxt` instead.
 
     File is written in the following format::
@@ -6416,7 +6417,7 @@ def writePointSetGslib(ps, filename, missing_value=None, fmt="%.10g"):
 
     missing_value : float, optional
         `numpy.nan` value will be replaced by `missing_value` before writing
-        
+
     fmt : str, default: '%.10g'
         format for single variable value, `fmt` is a string of the form
         '%[flag]width[.precision]specifier'

@@ -45,7 +45,7 @@ def cov_nug(h, w=1.0):
     1D-nugget covariance model.
 
     Function `v = w * f(h)`, where
-    
+
     * f(h) = 1, if h=0
     * f(h) = 0, otherwise
 
@@ -66,10 +66,10 @@ def cov_nug(h, w=1.0):
 
 def cov_sph(h, w=1.0, r=1.0):
     """
-    1D-shperical covariance model.
+    1D-spherical covariance model.
 
     Function `v = w * f(|h|/r)`, where
-    
+
     * f(t) = 1 - 3/2 * t + 1/2 * t**3, if 0 <= t < 1
     * f(t) = 0,                        if t >= 1
 
@@ -97,7 +97,7 @@ def cov_exp(h, w=1.0, r=1.0):
     1D-exponential covariance model.
 
     Function `v = w * f(|h|/r)`, where
-    
+
     * f(t) = exp(-3*t)
 
     Parameters
@@ -177,7 +177,7 @@ def cov_cub(h, w=1.0, r=1.0):
     1D-cubic covariance model.
 
     Function `v = w * f(|h|/r)`, where
-    
+
     * f(t) = 1 - 7 * t**2 + 35/4 * t**3 - 7/2 * t**5 + 3/4 * t**7, if 0 <= t < 1
     * f(t) = 0,                                                    if t >= 1
 
@@ -206,7 +206,7 @@ def cov_sinc(h, w=1.0, r=1.0):
     1D-sinus-cardinal covariance model.
 
     Function `v = w * f(|h|/r)`, where
-    
+
     * f(t) = sin(pi*t)/(pi*t)
 
     Parameters
@@ -233,7 +233,7 @@ def cov_gamma(h, w=1.0, r=1.0, s=1.0):
     1D-gamma covariance model.
 
     Function `v = w * f(|h|/r)`, where
-    
+
     * f(t) = 1 / (1 + alpha*t)**s, with alpha = 20**(1/s) - 1
 
     Parameters
@@ -263,7 +263,7 @@ def cov_pow(h, w=1.0, r=1.0, s=1.0):
     1D-power covariance model.
 
     Function `v = w * f(|h|/r)`, where
-    
+
     * f(t) = 1 - t**s
 
     Parameters
@@ -292,7 +292,7 @@ def cov_exp_gen(h, w=1.0, r=1.0, s=1.0):
     1D-exponential-generalized covariance model.
 
     Function `v = w * f(|h|/r)`, where
-    
+
     * f(t) = exp(-3*t**s)
 
     Parameters
@@ -321,9 +321,9 @@ def cov_matern(h, w=1.0, r=1.0, nu=0.5):
     1D-Matern covariance model (the effective range depends on `nu`).
 
     Function
-    
+
     * `v = w * 1.0/(2.0**(nu-1.0)*Gamma(nu)) * u**nu * K_{nu}(u)`
-    
+
     where
 
     * `u = np.sqrt(2.0*nu)/r * |h|`
@@ -438,16 +438,16 @@ def check_elem_cov_model(elem, dim, verbose=0):
     This function validates the type and the dictionary of parameters for an
     elementary contribution in a covariance model in 1D, 2D, or 3D (classes
     :class:`CovModel1D`, :class:`CovModel2D`, :class:`CovModel3D`).
-        
+
     Parameters
     ----------
     elem : 2-tuple
         elementary model (contributing to a covariance model), elem = (t, d)
         with
-        
+
         * t : str
             type of elementary covariance model, can be
-            
+
             - 'nugget'         (see function :func:`covModel.cov_nug`)
             - 'spherical'      (see function :func:`covModel.cov_sph`)
             - 'exponential'    (see function :func:`covModel.cov_exp`)
@@ -459,7 +459,7 @@ def check_elem_cov_model(elem, dim, verbose=0):
             - 'power'          (see function :func:`covModel.cov_pow`)
             - 'exponential_generalized' (see function :func:`covModel.cov_exp_gen`)
             - 'matern'         (see function :func:`covModel.cov_matern`)
-        
+
         * d : dict
             dictionary of required parameters to be passed to the elementary
             model `t`; parameters required according to `t`:
@@ -659,11 +659,11 @@ class CovModel1D(object):
             - 'power'          (see function :func:`covModel.cov_pow`)
             - 'exponential_generalized' (see function :func:`covModel.cov_exp_gen`)
             - 'matern'         (see function :func:`covModel.cov_matern`)
-        
+
         - d : dict
             dictionary of required parameters to be passed to the elementary
             model `t`
-        
+
         e.g.
 
         - (t, d) = ('spherical', {'w':2.0, 'r':1.5})
@@ -672,10 +672,10 @@ class CovModel1D(object):
 
     name : str, optional
         name of the model
-    
-    
+
+
     **Private attributes (SHOULD NOT BE SET DIRECTLY)**
-    
+
     _r : float
         (effective) range
 
@@ -699,7 +699,7 @@ class CovModel1D(object):
     --------
     To define a covariance model (1D) that is the sum of the 2 following
     elementary models:
-    
+
     - gaussian with a contribution (weight) of 10.0 and a range of 100.0,
     - nugget of (contribution, weight) 0.5
 
@@ -884,7 +884,7 @@ class CovModel1D(object):
             multiplier(s), if array, its shape must be compatible with the
             dimension of the grid on which the covariance model is used (for
             Gaussian interpolation or simulation)
-            
+
         elem_ind : 1D array-like of ints, or int, optional
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
@@ -1092,10 +1092,10 @@ class CovModel1D(object):
         -------
         f : function
             function with parameters (arguments):
-            
+
             - h : 1D array-like of floats, or float
                 point(s) (lag(s)) where the covariance model is evaluated
-            
+
             that returns:
 
             - f(h) : 1D array
@@ -1158,10 +1158,10 @@ class CovModel1D(object):
         -------
         f : function
             function with parameters (arguments):
-            
+
             - h : 1D array-like of floats, or float
                 point(s) (lag(s)) where the variogram model is evaluated
-            
+
             that returns:
 
             - f(h) : 1D array
@@ -1338,8 +1338,8 @@ class CovModel2D(object):
         The 2x2 matrix m for changing the coordinates system from Ox'y' to Oxy is:
 
         .. math::
-            m = \\left(\\begin{array}{cc} 
-                    \\cos\\alpha & \\sin\\alpha\\\\ 
+            m = \\left(\\begin{array}{cc}
+                    \\cos\\alpha & \\sin\\alpha\\\\
                    -\\sin\\alpha & \\cos\\alpha
                 \\end{array}\\right)
 
@@ -1347,7 +1347,7 @@ class CovModel2D(object):
         name of the model
 
     **Private attributes (SHOULD NOT BE SET DIRECTLY)**
- 
+
     _r : float
         maximal (effective) range, along the two axes
 
@@ -1376,7 +1376,7 @@ class CovModel2D(object):
 
     - gaussian with a contribution (weight) of 10.0 and ranges of 150.0 and 50.0,
     - nugget of (contribution, weight) 0.5
-    
+
     and in the system Ox'y' defined by the angle alpha=-30.0
 
         >>> cov_model = CovModel2D(elem=[
@@ -1901,13 +1901,13 @@ class CovModel2D(object):
         -------
         f : function
             function with parameters (arguments):
-            
+
             - h : 2D array-like of shape (n, 2) or 1D array-like of shape (2,)
                 point(s) (lag(s)) where the covariance model is evaluated;
                 if `h` is a 2D array, each row is a lag
-            
+
             that returns:
-    
+
             - f(h) : 1D array
                 evaluation of the covariance model at `h`;
                 note: the result is casted to a 1D array if `h` is a 1D array
@@ -1976,13 +1976,13 @@ class CovModel2D(object):
         -------
         f : function
             function with parameters (arguments):
-            
+
             - h : 2D array-like of shape (n, 2) or 1D array-like of shape (2,)
                 point(s) (lag(s)) where the variogram model is evaluated;
                 if `h` is a 2D array, each row is a lag
-            
+
             that returns:
-            
+
             - f(h) : 1D array
                 evaluation of the variogram model at `h`;
                 note: the result is casted to a 1D array if `h` is a 1D array
@@ -2439,7 +2439,7 @@ class CovModel3D(object):
         - (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5, 3.0]})
         - (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5, 3.0], 's':1.7})
         - (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5, 3.0], 'nu':1.5})
-        
+
     alpha, beta, gamma: floats, default: 0.0, 0.0, 0.0
         azimuth, dip and plunge angles in degrees; the system Ox'''y''''z''',
         supporting the axes of the model (ranges), is obtained from the system
@@ -2448,12 +2448,12 @@ class CovModel3D(object):
             # Oxyz      -- rotation of angle -alpha around Oz  --> Ox'y'z'
             # Ox'y'z'   -- rotation of angle -beta  around Ox' --> Ox''y''z''
             # Ox''y''z''-- rotation of angle -gamma around Oy''--> Ox'''y'''z'''
-        
+
         The 3x3 matrix m for changing the coordinates system from Ox'''y'''z'''
         to Oxyz is:
 
         .. math::
-            m = \\left(\\begin{array}{rrr} 
+            m = \\left(\\begin{array}{rrr}
                     \\cos\\alpha \\cdot \\cos\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\sin\\alpha \\cdot \\cos\\beta & - \\cos\\alpha \\cdot \\sin\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\ \
                   - \\sin\\alpha \\cdot \\cos\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\cos\\alpha \\cdot \\cos\\beta &   \\sin\\alpha \\cdot \\sin\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\ \
                                                                            \\cos\\beta \\cdot \\sin\\gamma &                    - \\sin\\beta &                                                          \\cos\\beta \\cdot \\cos\\gamma
@@ -2510,7 +2510,7 @@ class CovModel3D(object):
     #     m = |- sa * cc + ca * sb * sc,  ca * cb,   sa * sc + ca * sb * cc|
     #         |                 cb * sc,     - sb,                  cb * cc|
     #         +                                                            +
-    # where 
+    # where
     #     ca = cos(alpha), cb = cos(beta), cc = cos(gamma),
     #     sa = sin(alpha), sb = sin(beta), sc = sin(gamma)
     #
@@ -3088,13 +3088,13 @@ class CovModel3D(object):
         -------
         f : function
             function with parameters (arguments):
-            
+
             - h : 2D array-like of shape (n, 3) or 1D array-like of shape (3,)
                 point(s) (lag(s)) where the covariance model is evaluated;
                 if `h` is a 2D array, each row is a lag
-            
+
             that returns:
-    
+
             - f(h) : 1D array
                 evaluation of the covariance model at `h`;
                 note: the result is casted to a 1D array if `h` is a 1D array
@@ -3163,13 +3163,13 @@ class CovModel3D(object):
         -------
         f : function
             function with parameters (arguments):
-            
+
             - h : 2D array-like of shape (n, 3) or 1D array-like of shape (3,)
                 point(s) (lag(s)) where the variogram model is evaluated;
                 if `h` is a 2D array, each row is a lag
-            
+
             that returns:
-    
+
             - f(h) : 1D array
                 evaluation of the variogram model at `h`;
                 note: the result is casted to a 1D array if `h` is a 1D array
@@ -3332,7 +3332,7 @@ class CovModel3D(object):
         ncell : sequence of 3 ints, default: (101, 101, 101)
             `ncell=(nx, ny, nz)` 3 ints defining the number of the cells in the
             plot along each direction (in "original" coordinates system)
-            
+
         kwargs : dict
             keyword arguments passed to the funtion
             `geone.imgplot3d.drawImage3D_volume` (cmap, etc.)
@@ -3856,7 +3856,7 @@ def covModel2D_to_covModel3D(cov_model_2d, r_ind=(0, 0, 1), alpha=0.0, beta=0.0,
     """
     Converts a covariance model in 2D to a covariance model in 3D.
 
-    The elementary models of the 3D model are those of the 2D model. 
+    The elementary models of the 3D model are those of the 2D model.
     See parameters below for the ranges and angles `alpha`, `beta`, `gamma`.
 
     Parameters
@@ -3869,7 +3869,7 @@ def covModel2D_to_covModel3D(cov_model_2d, r_ind=(0, 0, 1), alpha=0.0, beta=0.0,
         axes of the covariance model in 3D, i.e. the parameter `r` of every
         elementary models is set to `(r[r_ind[0]], r[r_ind[1]], r[r_ind[2]])` for
         the 3D model, from the parameter `r`
-    
+
     alpha : float, default: 0.0
         attribute `alpha` of the 3D model
 
@@ -3920,8 +3920,8 @@ def rotationMatrix2D(alpha=0.0):
     applying a rotation of angle -alpha,
 
     .. math::
-        m = \\left(\\begin{array}{cc} 
-                \\cos\\alpha & \\sin\\alpha\\\\ 
+        m = \\left(\\begin{array}{cc}
+                \\cos\\alpha & \\sin\\alpha\\\\
                 -\\sin\\alpha & \\cos\\alpha
             \\end{array}\\right)
 
@@ -3966,7 +3966,7 @@ def rotationMatrix3D(alpha=0.0, beta=0.0, gamma=0.0):
     The matrix m is given by
 
     .. math::
-        m = \\left(\\begin{array}{rrr} 
+        m = \\left(\\begin{array}{rrr}
                 \\cos\\alpha \\cdot \\cos\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\sin\\alpha \\cdot \\cos\\beta & - \\cos\\alpha \\cdot \\sin\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\ \
                 - \\sin\\alpha \\cdot \\cos\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\cos\\alpha \\cdot \\cos\\beta &   \\sin\\alpha \\cdot \\sin\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\ \
                                                                         \\cos\\beta \\cdot \\sin\\gamma &                    - \\sin\\beta &                                                          \\cos\\beta \\cdot \\cos\\gamma
@@ -3998,7 +3998,7 @@ def rotationMatrix3D(alpha=0.0, beta=0.0, gamma=0.0):
     #     m = |- sa * cc + ca * sb * sc,  ca * cb,   sa * sc + ca * sb * cc|
     #         |                 cb * sc,     - sb,                  cb * cc|
     #         +                                                            +
-    # where 
+    # where
     #     ca = cos(alpha), cb = cos(beta), cc = cos(gamma),
     #     sa = sin(alpha), sb = sin(beta), sc = sin(gamma)
     #
@@ -4029,12 +4029,12 @@ def plot_variogramCloud1D(h, g, decim=1.0, seed=None, grid=True, **kwargs):
     h : 1D array of floats
         see `g`
     g : 1D array of floats
-        `h` and `g` (of same length) are the coordinates of the 
+        `h` and `g` (of same length) are the coordinates of the
         points (lag values and gamma values resp.) in the variogram cloud
 
     decim : float, default: 1.0
-        the variogram cloud plotted after decimation by taking into account 
-        a proportion of `decim` points, randomly chosen; by default (`1`): all 
+        the variogram cloud plotted after decimation by taking into account
+        a proportion of `decim` points, randomly chosen; by default (`1`): all
         points are plotted
 
     seed : int, optional
@@ -4087,7 +4087,7 @@ def plot_variogramExp1D(hexp, gexp, cexp, show_count=True, grid=True, **kwargs):
     hexp : 1D array of floats
         see `gexp`
     gexp : 1D array of floats
-        `hexp` and `gexp` (of same length) are the coordinates of the 
+        `hexp` and `gexp` (of same length) are the coordinates of the
         points (lag values and gamma values resp.) in the experimental variogram
 
     cexp : 1D array of ints
@@ -4144,11 +4144,11 @@ def variogramCloud1D(x, v, hmax=None,
             g(i, j) &=& \\frac{1}{2}(v_i - v_j)^2
         \\end{array}
 
-    where :math:`x_i` and :math:`x_j` are the coordinates of the i-th and j-th 
-    data points and :math:`v_i` and :math:`v_j` the values at these points 
-    (:math:`v_i=Z(x_i)`, where :math:`Z` is the considered variable). 
-    The points  :math:`(\\Vert h(i, j)\\Vert, g(i, j))` such that 
-    :math:`\\Vert h(i, j)\\Vert` does not exceed `hmax` (see below) constitute 
+    where :math:`x_i` and :math:`x_j` are the coordinates of the i-th and j-th
+    data points and :math:`v_i` and :math:`v_j` the values at these points
+    (:math:`v_i=Z(x_i)`, where :math:`Z` is the considered variable).
+    The points  :math:`(\\Vert h(i, j)\\Vert, g(i, j))` such that
+    :math:`\\Vert h(i, j)\\Vert` does not exceed `hmax` (see below) constitute
     the points of the variogram cloud.
 
     Moreover, the parameters `w_factor_loc_func` and `coord_factor_loc_func`
@@ -4207,7 +4207,7 @@ def variogramCloud1D(x, v, hmax=None,
     h : 1D array of floats
         see `g`
     g : 1D array of floats
-        `h` and `g` (of same length) are the coordinates of the 
+        `h` and `g` (of same length) are the coordinates of the
         points (lag values and gamma values resp.) in the variogram cloud
 
     npair : int
@@ -4359,7 +4359,7 @@ def variogramExp1D(x, v, hmax=None,
     interval
 
         `]cla_center[i]-cla_length[i]/2, cla_center[i]+cla_length[i]/2]`
-    
+
     along h (lag) axis (abscissa).
 
     Parameters
@@ -4403,9 +4403,9 @@ def variogramExp1D(x, v, hmax=None,
     ncla : int, default: 10
         number of classes, the parameter is used if `cla_center=None`, in that
         situation `ncla` classes are considered and the class centers are set to
-        
+
         - `cla_center[i] = (i+0.5)*l, i=0,...,ncla-1`
-        
+
         with l = H / ncla, H being the max of the distance between two points of
         the considered pairs (in the variogram cloud);
         if `cla_center` is specified (not `None`), the number of classes (`ncla`)
@@ -4428,9 +4428,9 @@ def variogramExp1D(x, v, hmax=None,
         times
 
     variogramCloud : 3-tuple, optional
-        `variogramCloud` =(h, g, npair) is a variogram cloud (already computed and 
-        returned by the function `variogramCloud1D` (npair not used)); in this case, 
-        `x`, `v`, `hmax`, `w_factor_loc_func`, `coord_factor_loc_func`, `loc_m` 
+        `variogramCloud` = (h, g, npair) is a variogram cloud (already computed and
+        returned by the function `variogramCloud1D` (npair not used)); in this case,
+        `x`, `v`, `hmax`, `w_factor_loc_func`, `coord_factor_loc_func`, `loc_m`
         are not used
 
         By default (`None`): the variogram cloud is computed by using the
@@ -4449,7 +4449,7 @@ def variogramExp1D(x, v, hmax=None,
     hexp : 1D array of floats
         see `gexp`
     gexp : 1D array of floats
-        `hexp` and `gexp` (of same length) are the coordinates of the 
+        `hexp` and `gexp` (of same length) are the coordinates of the
         points (lag values and gamma values resp.) in the experimental variogram
 
     cexp : 1D array of ints
@@ -4559,16 +4559,16 @@ def covModel1D_fit(x, v, cov_model, hmax=None,
         integer (greater than or equal to 0) defining how the function(s)
         `*_loc_func` (above) are evaluated for a pair of two locations x1, x2
         (data point locations):
-        
+
         - if `loc_m>0` the segment from x1 to x2 is divided in `loc_m` intervals \
         of same length and the mean of the evaluations of the function at the \
         (`loc_m` + 1) interval bounds is computed
         - if `loc_m=0`, the evaluation at x1 is considered
 
     variogramCloud : 3-tuple, optional
-        `variogramCloud` =(h, g, npair) is a variogram cloud (already computed and 
-        returned by the function `variogramCloud1D` (npair not used)); in this case, 
-        `x`, `v`, `hmax`, `w_factor_loc_func`, `coord_factor_loc_func`, `loc_m` 
+        `variogramCloud` =(h, g, npair) is a variogram cloud (already computed and
+        returned by the function `variogramCloud1D` (npair not used)); in this case,
+        `x`, `v`, `hmax`, `w_factor_loc_func`, `coord_factor_loc_func`, `loc_m`
         are not used
 
         By default (`None`): the variogram cloud is computed by using the
@@ -4742,12 +4742,12 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
             g(i, j) &=& \\frac{1}{2}(v_i - v_j)^2
         \\end{array}
 
-    where :math:`x_i` and :math:`x_j` are the coordinates of the i-th and j-th 
-    data points and :math:`v_i` and :math:`v_j` the values at these points 
+    where :math:`x_i` and :math:`x_j` are the coordinates of the i-th and j-th
+    data points and :math:`v_i` and :math:`v_j` the values at these points
     (:math:`v_i=Z(x_i)`, where :math:`Z` is the considered variable).
-    The lag vector :math:`h(i, j)` is expressed along the two orthogonal main axes: 
-    h(i, j) = (h1(i, j), h2(i, j)). Let `tol_dist` = (tol_dist1, tol_dist2), 
-    `tol_angle` = (tol_angle1, tol_angle2), and `hmax` = (h1max, h2max) 
+    The lag vector :math:`h(i, j)` is expressed along the two orthogonal main axes:
+    h(i, j) = (h1(i, j), h2(i, j)). Let `tol_dist` = (tol_dist1, tol_dist2),
+    `tol_angle` = (tol_angle1, tol_angle2), and `hmax` = (h1max, h2max)
     (see parameters below); if distance from h(i, j) to
     the 1st (resp. 2nd) main axis, i.e. \|h2(i, j)\| (resp. \|h1(i, j)\|) does not
     exceed tol_dist1 (resp. toldist2), and if the angle between the lag h(i, j)
@@ -4830,7 +4830,7 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
         integer (greater than or equal to 0) defining how the function(s)
         `*_loc_func` (above) are evaluated for a pair of two locations x1, x2
         (data point locations):
-        
+
         - if `loc_m>0` the segment from x1 to x2 is divided in `loc_m` intervals \
         of same length and the mean of the evaluations of the function at the \
         (`loc_m` + 1) interval bounds is computed
@@ -4862,7 +4862,7 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
         h0, g0 : 1D arrays of floats of same length
             coordinates of the points in the variogram cloud along 1st main axis
             (see above)
-        
+
         npair0 : int
             number of points (pairs of data points considered) in the variogram
             cloud along the 1st main axis
@@ -4871,7 +4871,7 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
         h1, g1 : 1D arrays of floats of same length
             coordinates of the points in the variogram cloud along 2nd main axis
             (see above)
-        
+
         npair1 : int
             number of points (pairs of data points considered) in the variogram
             cloud along the 2nd main axis
@@ -5145,7 +5145,7 @@ def variogramExp2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
     interval
 
         `]cla_center[j][i]-cla_length[j][i]/2, cla_center[j][i]+cla_length[j][i]/2]`
-    
+
     along h1 (resp. h2) (lag) axis (abscissa).
 
     Parameters
@@ -5531,17 +5531,17 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
     v : 1D array of floats of shape (n,)
         data points values, with n the number of data points, `v[i]` is the data
         value at location `x[i]`
-        
+
     cov_model : :class:`CovModel2D`
         covariance model to otpimize (parameters set to `numpy.nan` are optimized)
 
     hmax : sequence of 2 floats, or float, optional
         the pairs of data points with lag h (in rotated coordinates system if
         applied) satisfying
-        
+
         .. math::
             (h[0]/hmax[0])^2 + (h[1]/hmax[1])^2 \\leqslant 1
-        
+
         are taking into account in the variogram cloud
         note: if `hmax` is specified as a float or `None` (default), the entry is
         duplicated, and `None`, `numpy.nan` are converted to `numpy.inf` (no
@@ -5567,7 +5567,7 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
         axis as function of a given location in 2D, i.e. "h2" values (i.e.
         abscissa axis component in the 2nd variogram) are multiplied
         (the condition wrt `hmax`, is checked after)
-        
+
     loc_m : int, default: 1
         integer (greater than or equal to 0) defining how the function(s)
         `*_loc_func` (above) are evaluated for a pair of two locations x1, x2
@@ -5897,7 +5897,7 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
         d : 1D array
             xdata, i.e. lags (h) from the variogram cloud where the current
             covariance model is evaluated
-            
+
         p : 1D array
             current values of the parameters (floats) to optimize in the
             covariance model (parameters to optimized are identified with
@@ -5987,11 +5987,11 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_an
             h(i, j) &=& x_i-x_j \\\\[2mm]
             g(i, j) &=& \\frac{1}{2}(v_i - v_j)^2
         \\end{array}
-    
-    where :math:`x_i` and :math:`x_j` are the coordinates of the i-th and j-th 
-    data points and :math:`v_i` and :math:`v_j` the values at these points 
+
+    where :math:`x_i` and :math:`x_j` are the coordinates of the i-th and j-th
+    data points and :math:`v_i` and :math:`v_j` the values at these points
     (:math:`v_i=Z(x_i)`, where :math:`Z` is the considered variable).
-    The lag vector h(i, j) is expressed along the three orthogonal main axes, 
+    The lag vector h(i, j) is expressed along the three orthogonal main axes,
     h(i, j) = (h1(i, j), h2(i, j), h3(i, j)). Let
     `tol_dist` = (tol_dist1, tol_dist2, tol_dist3),
     `tol_angle` = (tol_angle1, tol_angle2, tol_angle3), and
@@ -6030,7 +6030,7 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_an
 
     gamma : float, default: 0.0
         plunge angle in degrees (see :class:`CovModel3D`)
-        
+
     tol_dist : sequence of 3 floats, or float, optional
         let `tol_dist` = (tol_dist1, tol_dist2, tol_dist3); tol_dist1 (resp.
         tol_dist2, tol_dist3) is the maximal distance to the 1st (resp. 2nd, 3rd)
@@ -6101,7 +6101,7 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_an
         integer (greater than or equal to 0) defining how the function(s)
         `*_loc_func` (above) are evaluated for a pair of two locations x1, x2
         (data point locations):
-        
+
         - if `loc_m>0` the segment from x1 to x2 is divided in `loc_m` intervals \
         of same length and the mean of the evaluations of the function at the \
         (`loc_m` + 1) interval bounds is computed
@@ -6709,7 +6709,7 @@ def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_angl
         number of classes along each main axis, the parameter `ncla[j]` is used
         if `cla_center[j]=None`, in that situation `ncla[j]` classes are
         considered and the class centers are set to
-        
+
         - `cla_center[j][i] = (i+0.5)*l, i=0,...,ncla[j]-1`
 
         with l = H / ncla[j], H being the max of the distance, along the
@@ -6796,7 +6796,7 @@ def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_angl
             array of same length as `hexp1`, `gexp1`, number of points (pairs of
             data points considered) in each class in the variogram cloud along
             the 2nd main axis
-            
+
     (hexp2, gexp2, cexp2) : 3-tuple
         hexp2, gexp2 : 1D arrays of floats of same length
             coordinates of the points of the experimental variogram along the
@@ -6923,10 +6923,10 @@ def covModel3D_fit(x, v, cov_model,
     hmax : sequence of 3 floats, or float, optional
         the pairs of data points with lag h (in rotated coordinates system if
         applied) satisfying
-        
+
         .. math::
             (h[0]/hmax[0])^2 + (h[1]/hmax[1])^2 + (h[2]/hmax[2])^2 \\leqslant 1
-        
+
         are taking into account in the variogram cloud
         note: if `hmax` is specified as a float or `None` (default), the entry is
         duplicated, and `None`, `numpy.nan` are converted to `numpy.inf` (no
@@ -7698,9 +7698,9 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
         - :class:`CovModel1D` for data in 1D (d=1)
         - :class:`CovModel2D` for data in 2D (d=2)
         - :class:`CovModel3D` for data in 3D (d=3)
-        
-        or 
-        
+
+        or
+
         - :class:`CovModel1D` interpreted as an omni-directional covariance model \
         whatever dimension of points (d);
 
@@ -7723,7 +7723,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
 
     mean_xu : 1D array-like of floats, or float, optional
         kriging mean value at points `xu`
-        
+
         - if `mean_xu` is a float, the same value is considered for any point
         - if `mean_xu=None` (default): the value `mean_x` (assumed to be a single \
         float) is considered for any point
@@ -7732,7 +7732,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
 
     var_x : 1D array-like of floats, or float, optional
         kriging variance value at data points `x`
-        
+
         - if `var_x` is a float, the same value is considered for any point
         - if `var_x=None` (default): not used  (use of covariance model only)
 
@@ -7743,7 +7743,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
 
         - if `var_xu` is a float, the same value is considered for any point
         - if `var_xu=None` (default): not used  (use of covariance model only)
-        
+
         note: if `method=ordinary_kriging`, parameter `var_xu` is ignored
 
     alpha_xu : 1D array-like of floats, or float, optional
@@ -7759,7 +7759,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
 
         - if `beta_xu` is a float, the same value is considered for any point
         - if `beta_xu=None` (default): `beta_xu=0.0` is used for any point
-        
+
         note: `beta_xu` is ignored if the covariance model is in 1D or 2D
 
     gamma_xu : 1D array-like of floats, or float, optional
@@ -7767,7 +7767,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
 
         - if `gamma_xu` is a float, the same value is considered for any point
         - if `gamma_xu=None` (default): `gamma_xu=0.0` is used for any point
-        
+
         note: `gamma_xu` is ignored if the covariance model is in 1D or 2D
 
     use_unique_neighborhood : bool, default: False
@@ -8189,13 +8189,13 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
     where :math:`w[i] = (v[i] - vm[i])/vsd[i]`, and :math:`\\varphi`, :math:`\\Phi`
     are respectively the pdf and cdf of the standard nomral distribution
     (:math:`\\mathcal{N}(0,1)`); see reference:
-    
+
     - Tilmann Gneiting, Adrian E. Raftery (2012), Strictly Proper Scoring Rules, \
     Prediction, and Estimation, pp. 359-378, \
     `doi:10.1198/016214506000001437 <https://dx.doi.org/10.1198/016214506000001437>`_
 
     Note that
-    
+
     - the normalized error e[i] (see below) verifies: w[i] = -e[i]
     - CRPS is negative, the larger, the better; moreover, the unbiased prediction \
     at x[i] with a standard deviation of std(v) (st. dev. of the data values) \
@@ -8207,9 +8207,9 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
 
     .. math::
         e[i] = (vm[i] - v[i])/vsd[i]
-    
+
     should follows a standard normal distribution (:math:`\\mathcal{N}(0,1)`).
-    
+
     Then:
 
     - the mean of the nomalized error should follow (according to the central \
@@ -8231,7 +8231,7 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
     model should be rejected (falsely rejected with probability alpha):
     the smaller the p-value, the more evidence there is to reject the model;
     each test computes:
-    
+
     - the p-value `pvalue`
     - the result (success/failure): the boolean `success=(pvalue > significance)` \
     which means that the model should be rejected when `success=False` with \
@@ -8256,9 +8256,9 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
         - :class:`CovModel1D` for data in 1D (d=1)
         - :class:`CovModel2D` for data in 2D (d=2)
         - :class:`CovModel3D` for data in 3D (d=3)
-        
-        or 
-        
+
+        or
+
         - :class:`CovModel1D` interpreted as an omni-directional covariance model \
         whatever dimension of points (d);
 
@@ -8275,7 +8275,7 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
         - if `mean_x` is a float, the same value is considered for any point;
         - if `mean_x=None` (default): the mean of data values, i.e. mean of `v`, \
         is considered for any point;
-        
+
         note: parameter `mean_x` is ignored if ordinary kriging is used as
         interpolator
 
@@ -8290,7 +8290,7 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
 
     alpha_x : 1D array-like of floats, or float, optional
         azimuth angle in degrees at points `x`
-        
+
         - if `alpha_x` is a float, the same value is considered for any point
         - if `alpha_x=None` (default): `alpha_x=0.0` is used for any point
 
@@ -8308,12 +8308,12 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
 
         - if `gamma_x` is a float, the same value is considered for any point
         - if `gamma_x=None` (default): `gamma_x=0.0` is used for any point
-        
+
         note: `gamma_x` is ignored if the covariance model is in 1D or 2D
 
     w_multiplier_x : 1D array-like of floats, or float, optional
         multiplier for weight (sill) at points `x`
-        
+
         - if `w_multiplier_x` is a float, the same value is considered \
         for any point
         - if `w_multiplier_x=None` (default): `w_multiplier_x=1.0` is used \
@@ -8334,7 +8334,7 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
         for any point
         - if `r1_multiplier_x=None` (default): `r1_multiplier_x=1.0` is used \
         for any point
-        
+
         note: `r1_multiplier_x` is ignored if the covariance model is in 1D
 
     r2_multiplier_x : 1D array-like of floats, or float, optional
@@ -8409,7 +8409,7 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
         - `success[i] = (pvalue[i] > significance)`, success (True) \
         or failure (False) of the corresponding statistical test
 
-        if one False is obtained, it means that the model should be 
+        if one False is obtained, it means that the model should be
         rejected
     """
     fname = 'cross_valid_loo'
@@ -8893,9 +8893,9 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
         - :class:`CovModel1D` for data in 1D (d=1)
         - :class:`CovModel2D` for data in 2D (d=2)
         - :class:`CovModel3D` for data in 3D (d=3)
-        
-        or 
-        
+
+        or
+
         - :class:`CovModel1D` interpreted as an omni-directional covariance model \
         whatever dimension of points (d);
 
@@ -8918,7 +8918,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
 
     mean_xu : 1D array-like of floats, or float, optional
         kriging mean value at points `xu`
-        
+
         - if `mean_xu` is a float, the same value is considered for any point
         - if `mean_xu=None` (default): the value `mean_x` (assumed to be a single \
         float) is considered for any point
@@ -8927,7 +8927,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
 
     var_x : 1D array-like of floats, or float, optional
         kriging variance value at data points `x`
-        
+
         - if `var_x` is a float, the same value is considered for any point
         - if `var_x=None` (default): not used  (use of covariance model only)
 
@@ -8938,7 +8938,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
 
         - if `var_xu` is a float, the same value is considered for any point
         - if `var_xu=None` (default): not used  (use of covariance model only)
-        
+
         note: if `method=ordinary_kriging`, parameter `var_xu` is ignored
 
     alpha_xu : 1D array-like of floats, or float, optional
@@ -8954,7 +8954,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
 
         - if `beta_xu` is a float, the same value is considered for any point
         - if `beta_xu=None` (default): `beta_xu=0.0` is used for any point
-        
+
         note: `beta_xu` is ignored if the covariance model is in 1D or 2D
 
     gamma_xu : 1D array-like of floats, or float, optional
@@ -8962,7 +8962,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
 
         - if `gamma_xu` is a float, the same value is considered for any point
         - if `gamma_xu=None` (default): `gamma_xu=0.0` is used for any point
-        
+
         note: `gamma_xu` is ignored if the covariance model is in 1D or 2D
 
     dmax : float, optional
@@ -9360,10 +9360,10 @@ def sgs_mp(x, v, xu, cov_model, method='simple_kriging',
     Then, n parallel processes are launched [parallel calls of the
     function `sgs`]; the set of realizations (specified by `nreal`) is
     distributed in a balanced way over the processes.
-    
+
     Note that, if `nreal` < n, then n is reduced to `nreal`.
 
-    Specifying a `seed` guarantees reproducible results whatever the number 
+    Specifying a `seed` guarantees reproducible results whatever the number
     of processes used.
 
     See function :func:`covModel.sgs` for details.
