@@ -31,6 +31,14 @@ from geone import imgplot as imgplt
 from geone import imgplot3d as imgplt3
 
 # ============================================================================
+class CovModelError(Exception):
+    """
+    Custom exception related to `covModel` module.
+    """
+    pass
+# ============================================================================
+
+# ============================================================================
 # Definition of 1D elementary covariance models:
 #   - nugget, spherical, exponential, gaussian, linear, cubic, sinus_cardinal
 #       parameters: w, r
@@ -62,6 +70,7 @@ def cov_nug(h, w=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
+    # fname = 'cov_nug'
     return w * np.asarray(h==0., dtype=float)
 
 def cov_sph(h, w=1.0, r=1.0):
@@ -89,6 +98,7 @@ def cov_sph(h, w=1.0, r=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
+    # fname = 'cov_sph'
     t = np.minimum(np.abs(h)/r, 1.) # "parallel or element-wise minimum"
     return w * (1 - 0.5 * t * (3. - t**2))
 
@@ -116,6 +126,7 @@ def cov_exp(h, w=1.0, r=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
+    # fname = 'cov_exp'
     return w * np.exp(-3. * np.abs(h)/r)
 
 def cov_gau(h, w=1.0, r=1.0):
@@ -142,6 +153,7 @@ def cov_gau(h, w=1.0, r=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
+    # fname = 'cov_gau'
     return w * np.exp(-3. * (h/r)**2)
 
 def cov_lin(h, w=1.0, r=1.0):
@@ -169,6 +181,7 @@ def cov_lin(h, w=1.0, r=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
+    # fname = 'cov_lin'
     t = np.minimum(np.abs(h)/r, 1.) # "parallel or element-wise minimum"
     return w * (1.0 - t)
 
@@ -197,6 +210,7 @@ def cov_cub(h, w=1.0, r=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
+    # fname = 'cov_cub'
     t = np.minimum(np.abs(h)/r, 1.) # "parallel or element-wise minimum"
     t2 = t**2
     return w * (1 + t2 * (-7. + t * (8.75 + t2 * (-3.5 + 0.75 * t2))))
@@ -225,6 +239,7 @@ def cov_sinc(h, w=1.0, r=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
+    # fname = 'cov_sinc'
     # np.sinc(x) = np.sin(np.pi*x)/(np.pi*x)
     return w * np.sinc(h/r)
 
@@ -255,6 +270,7 @@ def cov_gamma(h, w=1.0, r=1.0, s=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
+    # fname = 'cov_gamma'
     alpha = 20.0**(1.0/s) - 1.0
     return w / (1.0 + alpha * np.abs(h)/r)**s
 
@@ -285,6 +301,7 @@ def cov_pow(h, w=1.0, r=1.0, s=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
+    # fname = 'cov_pow'
     return w * (1. - (np.abs(h)/r)**s)
 
 def cov_exp_gen(h, w=1.0, r=1.0, s=1.0):
@@ -314,6 +331,7 @@ def cov_exp_gen(h, w=1.0, r=1.0, s=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
+    # fname = 'cov_exp_gen'
     return w * np.exp(-3. * (np.abs(h)/r)**s)
 
 def cov_matern(h, w=1.0, r=1.0, nu=0.5):
@@ -356,6 +374,7 @@ def cov_matern(h, w=1.0, r=1.0, nu=0.5):
     2. `cov_matern(h, w, r, nu)` tends to `cov_gau(h, w, np.sqrt(6)*r)` when `nu` \
     tends to infinity
     """
+    # fname = 'cov_matern'
     v = np.zeros_like(h).astype(float) # be sure that the type is float to avoid truncation
     u = np.sqrt(2.0*nu)/r * np.abs(h)
     u1 = (0.5*u)**nu
@@ -399,6 +418,7 @@ def cov_matern_get_effective_range(nu, r):
         effective range of the 1D-Matern covariance model of parameters "nu"
         and "r"
     """
+    # fname = 'cov_matern_get_effective_range'
     res = scipy.optimize.root_scalar(lambda h: cov_matern(h, w=1.0, r=r, nu=nu) - 0.05, bracket=[1.e-10*r, 4.0*r])
     return res.root
 # ----------------------------------------------------------------------------
@@ -422,6 +442,7 @@ def cov_matern_get_r_param(nu, r_eff):
         parameter "r" (scale) of the 1D-Matern covariance model of parameter "nu",
         such that its effective range is `r_eff`
     """
+    # fname = 'cov_matern_get_r_param'
     res = scipy.optimize.minimize_scalar(lambda r: (cov_matern_get_effective_range(nu, r) - r_eff)**2, bracket=[1.e-10*r_eff, 4*r_eff])
     return res.x
 # ----------------------------------------------------------------------------
@@ -756,10 +777,12 @@ class CovModel1D(object):
         for el in self.elem:
             ok, err_mes_list = check_elem_cov_model(el, 1, verbose=0)
             if not ok:
-                print(f'ERROR ({fname}): elementary contribution not valid')
-                for s in err_mes_list:
-                    print(f'   {s}')
-                return None
+                err_msg = f'{fname}: elementary contribution not valid\n ... ' + '\n ... '.join(err_mes_list)
+                raise CovModelError(err_msg)
+                # print(f'ERROR ({fname}): elementary contribution not valid')
+                # for s in err_mes_list:
+                #     print(f'   {s}')
+                # return None
         if name is None:
             if len(elem) == 1:
                 name = 'cov1D-' + elem[0][0]
@@ -826,6 +849,8 @@ class CovModel1D(object):
         """
         Resets (sets to `None`) the "private" attributes (beginning with "_").
         """
+        # fname = 'reset_private_attributes'
+
         self._r = None
         self._sill = None
         self._is_orientation_stationary = None
@@ -860,8 +885,8 @@ class CovModel1D(object):
             elem_ind = np.atleast_1d(elem_ind).reshape(-1)
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
-                print(f'ERROR ({fname}): `elem_ind` not valid')
-                return
+                err_msg = f'{fname}: `elem_ind` invalid'
+                raise CovModelError(err_msg)
 
         for i in elem_ind:
             if 'w' in self.elem[i][1].keys():
@@ -898,8 +923,8 @@ class CovModel1D(object):
             elem_ind = np.atleast_1d(elem_ind).reshape(-1)
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
-                print(f'ERROR ({fname}): `elem_ind` not valid')
-                return
+                err_msg = f'{fname}: `elem_ind` invalid'
+                raise CovModelError(err_msg)
 
         for i in elem_ind:
             if 'r' in self.elem[i][1].keys():
@@ -926,6 +951,8 @@ class CovModel1D(object):
             boolean indicating if the orientation is stationary
             (private attribute `_is_orientation_stationary`)
         """
+        # fname = 'is_orientation_stationary'
+
         self._is_orientation_stationary = True
         return self._is_orientation_stationary
 
@@ -945,6 +972,7 @@ class CovModel1D(object):
             contribution is stationary (defined as a unique value)
             (private attribute `_is_weight_stationary`)
         """
+        # fname = 'is_weight_stationary'
         if self._is_weight_stationary is None or recompute:
             self._is_weight_stationary = not np.any([np.size(el[1]['w']) > 1 for el in self.elem])
         return self._is_weight_stationary
@@ -965,6 +993,8 @@ class CovModel1D(object):
             contribution is stationary (defined as a unique value)
             (private attribute `_is_range_stationary`)
         """
+        # fname = 'is_range_stationary'
+
         if self._is_range_stationary is None or recompute:
             self._is_range_stationary = True
             for el in self.elem:
@@ -989,6 +1019,7 @@ class CovModel1D(object):
             a unique value)
             (private attribute `_is_stationary`)
         """
+        # fname = 'is_stationary'
         if self._is_stationary is None or recompute:
             self._is_stationary = self.is_orientation_stationary(recompute) and self.is_weight_stationary(recompute) and self.is_range_stationary(recompute)
             if self._is_stationary:
@@ -1025,6 +1056,8 @@ class CovModel1D(object):
         Nothing is returned if the model has non-stationary weight
         (return `None`).
         """
+        # fname = 'sill'
+
         if self._sill is None or recompute:
             # Prevent calculation if weight is not stationary
             if not self.is_weight_stationary(recompute):
@@ -1059,6 +1092,8 @@ class CovModel1D(object):
         Nothing is returned if the model has non-stationary range
         (return `None`).
         """
+        # fname = 'r'
+
         if self._r is None or recompute:
             # Prevent calculation if range is not stationary
             if not self.is_range_stationary(recompute):
@@ -1106,6 +1141,8 @@ class CovModel1D(object):
         -----
         No evaluation is done if the model is not stationary (return `None`).
         """
+        # fname = 'func'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -1172,6 +1209,8 @@ class CovModel1D(object):
         -----
         No evaluation is done if the model is not stationary (return `None`).
         """
+        # fname = 'vario_func'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -1216,8 +1255,16 @@ class CovModel1D(object):
 
         return f
 
-    def plot_model(self, vario=False, hmin=0.0, hmax=None, npts=500,
-                   grid=True, show_xlabel=True, show_ylabel=True, **kwargs):
+    def plot_model(
+            self,
+            vario=False,
+            hmin=0.0,
+            hmax=None,
+            npts=500,
+            show_xlabel=True,
+            show_ylabel=True,
+            grid=True,
+            **kwargs):
         """
         Plots the covariance or variogram model f(h) (in the current figure axis).
 
@@ -1236,13 +1283,14 @@ class CovModel1D(object):
         npts : int, default: 500
             number of points used in interval [`hmin`,` hmax`]
 
+        show_xlabel : bool, default: True
+            indicates if (default) label for abscissa is displayed
+
+        show_ylabel : bool, default: True
+            indicates if (default) label for ordinate is displayed
+
         grid : bool, default: True
             indicates if a grid is plotted
-
-        show_xlabel : bool, default: True
-            see `show_ylabel`
-        show_ylabel : bool, default: True
-            indicates if (default) label for abscissa resp. ordinate, is displayed
 
         kwargs : dict
             keyword arguments passed to the funtion `matplotlib.pyplot.plot`
@@ -1251,6 +1299,8 @@ class CovModel1D(object):
         -----
         No plot is displayed if the model is not stationary.
         """
+        # fname = 'plot_model'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -1453,10 +1503,12 @@ class CovModel2D(object):
         for el in self.elem:
             ok, err_mes_list = check_elem_cov_model(el, 2, verbose=0)
             if not ok:
-                print(f'ERROR ({fname}): elementary contribution not valid')
-                for s in err_mes_list:
-                    print(f'   {s}')
-                return None
+                err_msg = f'{fname}: elementary contribution not valid\n ... ' + '\n ... '.join(err_mes_list)
+                raise CovModelError(err_msg)
+                # print(f'ERROR ({fname}): elementary contribution not valid')
+                # for s in err_mes_list:
+                #     print(f'   {s}')
+                # return None
         self.alpha = alpha
         if name is None:
             if len(elem) == 1:
@@ -1530,6 +1582,8 @@ class CovModel2D(object):
         """
         Resets (sets to `None`) the "private" attributes (beginning with "_").
         """
+        # fname = 'reset_private_attributes'
+
         self._r = None
         self._sill = None
         self._mrot = None
@@ -1552,6 +1606,8 @@ class CovModel2D(object):
             the dimension of the grid on which the covariance model is used (for
             Gaussian interpolation or simulation)
         """
+        # fname = 'set_alpha'
+
         self.alpha = alpha
         self._mrot = None
         self._is_orientation_stationary = None
@@ -1584,8 +1640,8 @@ class CovModel2D(object):
             elem_ind = np.atleast_1d(elem_ind).reshape(-1)
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
-                print(f'ERROR ({fname}): `elem_ind` not valid')
-                return
+                err_msg = f'{fname}: `elem_ind` invalid'
+                raise CovModelError(err_msg)
 
         for i in elem_ind:
             if 'w' in self.elem[i][1].keys():
@@ -1626,8 +1682,8 @@ class CovModel2D(object):
         else:
             r_ind = np.atleast_1d(r_ind).reshape(-1)
             if np.any((r_ind > 1, r_ind < -2)):
-                print(f'ERROR ({fname}): `r_ind` not valid')
-                return
+                err_msg = f'{fname}: `r_ind` invalid'
+                raise CovModelError(err_msg)
 
         if elem_ind is None:
             elem_ind = np.arange(len(self.elem))
@@ -1635,8 +1691,8 @@ class CovModel2D(object):
             elem_ind = np.atleast_1d(elem_ind).reshape(-1)
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
-                print(f'ERROR ({fname}): `elem_ind` not valid')
-                return
+                err_msg = f'{fname}: `elem_ind` invalid'
+                raise CovModelError(err_msg)
 
         for i in elem_ind:
             if 'r' in self.elem[i][1].keys():
@@ -1663,6 +1719,8 @@ class CovModel2D(object):
             `alpha` is defined as a unique value
             (private attribute `_is_orientation_stationary`)
         """
+        # fname = 'is_orientation_stationary'
+
         if self._is_orientation_stationary is None or recompute:
             self._is_orientation_stationary = np.size(self.alpha) == 1
         return self._is_orientation_stationary
@@ -1683,6 +1741,8 @@ class CovModel2D(object):
             contribution is stationary (defined as a unique value)
             (private attribute `_is_weight_stationary`)
         """
+        # fname = 'is_weight_stationary'
+
         if self._is_weight_stationary is None or recompute:
             self._is_weight_stationary = not np.any([np.size(el[1]['w']) > 1 for el in self.elem])
         return self._is_weight_stationary
@@ -1704,6 +1764,8 @@ class CovModel2D(object):
             unique value)
             (private attribute `_is_range_stationary`)
         """
+        # fname = 'is_range_stationary'
+
         if self._is_range_stationary is None or recompute:
             self._is_range_stationary = True
             for el in self.elem:
@@ -1728,6 +1790,8 @@ class CovModel2D(object):
             a unique value)
             (private attribute `_is_stationary`)
         """
+        # fname = 'is_stationary'
+
         if self._is_stationary is None or recompute:
             self._is_stationary = self.is_orientation_stationary(recompute) and self.is_weight_stationary(recompute) and self.is_range_stationary(recompute)
             if self._is_stationary:
@@ -1764,6 +1828,8 @@ class CovModel2D(object):
         Nothing is returned if the model has non-stationary weight
         (return `None`).
         """
+        # fname = 'sill'
+
         if self._sill is None or recompute:
             # Prevent calculation if weight is not stationary
             if not self.is_weight_stationary(recompute):
@@ -1796,6 +1862,8 @@ class CovModel2D(object):
         Nothing is returned if the model has non-stationary orientation
         (return `None`).
         """
+        # fname = 'mrot'
+
         if self._mrot is None or recompute:
             # Prevent calculation if orientation is not stationary
             if not self.is_orientation_stationary(recompute):
@@ -1834,6 +1902,8 @@ class CovModel2D(object):
         Nothing is returned if the model has non-stationary ranges
         (return `None`).
         """
+        # fname = 'r12'
+
         if self._r is None or recompute:
             # Prevent calculation if range is not stationary
             if not self.is_range_stationary(recompute):
@@ -1886,6 +1956,8 @@ class CovModel2D(object):
         Nothing is returned if the model has non-stationary ranges or non
         stationary orientation (return `None`).
         """
+        # fname = 'rxy'
+
         # Prevent calculation if range or orientation is not stationary
         if not self.is_range_stationary(recompute) or not self.is_orientation_stationary(recompute):
             return None
@@ -1916,6 +1988,8 @@ class CovModel2D(object):
         -----
         No evaluation is done if the model is not stationary (return `None`).
         """
+        # fname = 'func'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -1991,6 +2065,8 @@ class CovModel2D(object):
         -----
         No evaluation is done if the model is not stationary (return `None`).
         """
+        # fname = 'vario_func'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -2061,6 +2137,8 @@ class CovModel2D(object):
         -----
         No plot is displayed if the model has non-stationary orientation.
         """
+        # fname = 'plot_mrot'
+
         # Prevent calculation if orientation is not stationary
         if not self.is_orientation_stationary():
             return None
@@ -2096,13 +2174,27 @@ class CovModel2D(object):
         # plt.gca().spines['bottom'].set_position('zero')
         # plt.gca().spines['top'].set_color('none')
 
-    def plot_model(self, vario=False,
-                   plot_map=True, plot_curves=True,
-                   cmap='terrain', color0='red', color1='green',
-                   extent=None, ncell=(201, 201),
-                   h1min=0.0, h1max=None, h2min=0.0, h2max=None, n1=500, n2=500,
-                   grid=True, show_xlabel=True, show_ylabel=True,
-                   show_suptitle=True, figsize=None):
+    def plot_model(
+            self,
+            vario=False,
+            plot_map=True,
+            plot_curves=True,
+            cmap='terrain',
+            color0='red',
+            color1='green',
+            extent=None,
+            ncell=(201, 201),
+            h1min=0.0,
+            h1max=None,
+            h2min=0.0,
+            h2max=None,
+            n1=500,
+            n2=500,
+            show_xlabel=True,
+            show_ylabel=True,
+            grid=True,
+            show_suptitle=True,
+            figsize=None):
         """
         Plots the covariance or variogram model.
 
@@ -2172,13 +2264,14 @@ class CovModel2D(object):
             number of points for the plot of the curve along the 2nd axis, in
             interval [`h2min`,` h2max`]
 
+        show_xlabel : bool, default: True
+            indicates if (default) label for abscissa is displayed
+
+        show_ylabel : bool, default: True
+            indicates if (default) label for ordinate is displayed
+
         grid : bool, default: True
             indicates if a grid is plotted for the plot of the curves
-
-        show_xlabel : bool, default: True
-            see `show_ylabel`
-        show_ylabel : bool, default: True
-            indicates if (default) label for abscissa resp. ordinate, is displayed
 
         show_suptitle : bool, default: True
             indicates if (default) suptitle is displayed, if both map and curves
@@ -2193,6 +2286,8 @@ class CovModel2D(object):
         -----
         No plot is displayed if the model is not stationary.
         """
+        # fname = 'plot_model'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -2298,16 +2393,23 @@ class CovModel2D(object):
 
         if plot_map and plot_curves and show_suptitle:
             if vario:
-                s = ['Model (vario): alpha={}'.format(self.alpha)] + ['{}'.format(el) for el in self.elem]
+                s = [f'Model (vario): alpha={self.alpha}'] + [f'{el}' for el in self.elem]
             else:
-                s = ['Model (cov): alpha={}'.format(self.alpha)] + ['{}'.format(el) for el in self.elem]
+                s = [f'Model (cov): alpha={self.alpha}'] + [f'{el}' for el in self.elem]
             plt.suptitle('\n'.join(s))
             # plt.show()
 
-    def plot_model_one_curve(self, main_axis=1, vario=False,
-                             hmin=0.0, hmax=None, npts=500,
-                             grid=True, show_xlabel=True, show_ylabel=True,
-                             **kwargs):
+    def plot_model_one_curve(
+            self,
+            main_axis=1,
+            vario=False,
+            hmin=0.0,
+            hmax=None,
+            npts=500,
+            show_xlabel=True,
+            show_ylabel=True,
+            grid=True,
+            **kwargs):
         """
         Plots the covariance or variogram curve along one main axis (in the current figure axis).
 
@@ -2331,13 +2433,14 @@ class CovModel2D(object):
         npts : int, default: 500
             number of points used in interval [`hmin`,` hmax`]
 
+        show_xlabel : bool, default: True
+            indicates if (default) label for abscissa is displayed
+
+        show_ylabel : bool, default: True
+            indicates if (default) label for ordinate is displayed
+
         grid : bool, default: True
             indicates if a grid is plotted
-
-        show_xlabel : bool, default: True
-            see `show_ylabel`
-        show_ylabel : bool, default: True
-            indicates if (default) label for abscissa resp. ordinate, is displayed
 
         kwargs : dict
             keyword arguments passed to the funtion `matplotlib.pyplot.plot`
@@ -2352,8 +2455,8 @@ class CovModel2D(object):
         if not self.is_stationary():
             return None
         if main_axis not in (1, 2):
-            print(f'ERROR ({fname}): main_axis not valid (should be 1 or 2)')
-            return None
+            err_msg = f'{fname}: `main_axis` invalid (should be 1 or 2)'
+            raise CovModelError(err_msg)
 
         # In kwargs:
         #   - add default 'label' if not given
@@ -2589,10 +2692,12 @@ class CovModel3D(object):
         for el in self.elem:
             ok, err_mes_list = check_elem_cov_model(el, 3, verbose=0)
             if not ok:
-                print(f'ERROR ({fname}): elementary contribution not valid')
-                for s in err_mes_list:
-                    print(f'   {s}')
-                return None
+                err_msg = f'{fname}: elementary contribution not valid\n ... ' + '\n ... '.join(err_mes_list)
+                raise CovModelError(err_msg)
+                # print(f'ERROR ({fname}): elementary contribution not valid')
+                # for s in err_mes_list:
+                #     print(f'   {s}')
+                # return None
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
@@ -2671,6 +2776,8 @@ class CovModel3D(object):
         """
         Resets (sets to `None`) the "private" attributes (beginning with "_").
         """
+        # fname = 'reset_private_attributes'
+
         self._r = None
         self._sill = None
         self._mrot = None
@@ -2693,6 +2800,8 @@ class CovModel3D(object):
             the dimension of the grid on which the covariance model is used (for
             Gaussian interpolation or simulation)
         """
+        # fname = 'set_alpha'
+
         self.alpha = alpha
         self._mrot = None
         self._is_orientation_stationary = None
@@ -2712,6 +2821,8 @@ class CovModel3D(object):
             the dimension of the grid on which the covariance model is used (for
             Gaussian interpolation or simulation)
         """
+        # fname = 'set_beta'
+
         self.beta = beta
         self._mrot = None
         self._is_orientation_stationary = None
@@ -2731,6 +2842,8 @@ class CovModel3D(object):
             the dimension of the grid on which the covariance model is used (for
             Gaussian interpolation or simulation)
         """
+        # fname = 'set_gamma'
+
         self.gamma = gamma
         self._mrot = None
         self._is_orientation_stationary = None
@@ -2763,8 +2876,8 @@ class CovModel3D(object):
             elem_ind = np.atleast_1d(elem_ind).reshape(-1)
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
-                print(f'ERROR ({fname}): `elem_ind` not valid')
-                return
+                err_msg = f'{fname}: `elem_ind` invalid'
+                raise CovModelError(err_msg)
 
         for i in elem_ind:
             if 'w' in self.elem[i][1].keys():
@@ -2805,8 +2918,8 @@ class CovModel3D(object):
         else:
             r_ind = np.atleast_1d(r_ind).reshape(-1)
             if np.any((r_ind > 2, r_ind < -3)):
-                print(f'ERROR ({fname}): `r_ind` not valid')
-                return
+                err_msg = f'{fname}: `r_ind` invalid'
+                raise CovModelError(err_msg)
 
         if elem_ind is None:
             elem_ind = np.arange(len(self.elem))
@@ -2814,8 +2927,8 @@ class CovModel3D(object):
             elem_ind = np.atleast_1d(elem_ind).reshape(-1)
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
-                print(f'ERROR ({fname}): `elem_ind` not valid')
-                return
+                err_msg = f'{fname}: `elem_ind` invalid'
+                raise CovModelError(err_msg)
 
         for i in elem_ind:
             if 'r' in self.elem[i][1].keys():
@@ -2842,6 +2955,8 @@ class CovModel3D(object):
             `alpha`, `beta`, `gamma` are defined as a unique value
             (private attribute `_is_orientation_stationary`)
         """
+        # fname = 'is_orientation_stationary'
+
         if self._is_orientation_stationary is None or recompute:
             self._is_orientation_stationary = np.size(self.alpha) == 1 and np.size(self.beta) == 1 and np.size(self.gamma) == 1
         return self._is_orientation_stationary
@@ -2862,6 +2977,8 @@ class CovModel3D(object):
             contribution is stationary (defined as a unique value)
             (private attribute `_is_weight_stationary`)
         """
+        # fname = is_weight_stationary
+
         if self._is_weight_stationary is None or recompute:
             self._is_weight_stationary = not np.any([np.size(el[1]['w']) > 1 for el in self.elem])
         return self._is_weight_stationary
@@ -2883,6 +3000,8 @@ class CovModel3D(object):
             unique value)
             (private attribute `_is_range_stationary`)
         """
+        # fname = 'is_range_stationary'
+
         if self._is_range_stationary is None or recompute:
             self._is_range_stationary = True
             for el in self.elem:
@@ -2907,6 +3026,8 @@ class CovModel3D(object):
             a unique value)
             (private attribute `_is_stationary`)
         """
+        # fname = 'is_stationary'
+
         if self._is_stationary is None or recompute:
             self._is_stationary = self.is_orientation_stationary(recompute) and self.is_weight_stationary(recompute) and self.is_range_stationary(recompute)
             if self._is_stationary:
@@ -2943,6 +3064,8 @@ class CovModel3D(object):
         Nothing is returned if the model has non-stationary weight
         (return `None`).
         """
+        # fname = 'sill'
+
         if self._sill is None or recompute:
             # Prevent calculation if weight is not stationary
             if not self.is_weight_stationary(recompute):
@@ -2975,6 +3098,8 @@ class CovModel3D(object):
         Nothing is returned if the model has non-stationary orientation
         (return `None`).
         """
+        # fname = 'mrot'
+
         if self._mrot is None or recompute:
             # Prevent calculation if orientation is not stationary
             if not self.is_orientation_stationary(recompute):
@@ -3021,6 +3146,8 @@ class CovModel3D(object):
         Nothing is returned if the model has non-stationary ranges
         (return `None`).
         """
+        # fname = 'r123'
+
         if self._r is None or recompute:
             # Prevent calculation if range is not stationary
             if not self.is_range_stationary(recompute):
@@ -3073,6 +3200,8 @@ class CovModel3D(object):
         Nothing is returned if the model has non-stationary ranges or non
         stationary orientation (return `None`).
         """
+        # fname = 'rxyz'
+
         # Prevent calculation if range or orientation is not stationary
         if not self.is_range_stationary(recompute) or not self.is_orientation_stationary(recompute):
             return None
@@ -3103,6 +3232,8 @@ class CovModel3D(object):
         -----
         No evaluation is done if the model is not stationary (return `None`).
         """
+        # fname = 'func'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -3178,6 +3309,8 @@ class CovModel3D(object):
         -----
         No evaluation is done if the model is not stationary (return `None`).
         """
+        # fname = 'vario_func'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -3259,6 +3392,8 @@ class CovModel3D(object):
         -----
         No plot is displayed if the model has non-stationary orientation.
         """
+        # fname = 'plot_mrot'
+
         # Prevent calculation if orientation is not stationary
         if not self.is_orientation_stationary():
             return None
@@ -3289,9 +3424,16 @@ class CovModel3D(object):
         # plt.title("System Ox'''y'''z'''")
         # plt.show()
 
-    def plot_model3d_volume(self, plotter=None, vario=False,
-                            color0='red', color1='green', color2='blue',
-                            extent=None, ncell=(101, 101, 101), **kwargs):
+    def plot_model3d_volume(
+            self,
+            plotter=None,
+            vario=False,
+            color0='red',
+            color1='green',
+            color2='blue',
+            extent=None,
+            ncell=(101, 101, 101),
+            **kwargs):
         """
         Plots the covariance or variogram model in 3D (volume).
 
@@ -3341,6 +3483,8 @@ class CovModel3D(object):
         -----
         No plot is displayed if the model is not stationary.
         """
+        # fname = 'plot_model3d_volume'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -3409,9 +3553,16 @@ class CovModel3D(object):
         if plotter_show:
             plotter.show()
 
-    def plot_model3d_slice(self, plotter=None, vario=False,
-                           color0='red', color1='green', color2='blue',
-                           extent=None, ncell=(101, 101, 101), **kwargs):
+    def plot_model3d_slice(
+            self,
+            plotter=None,
+            vario=False,
+            color0='red',
+            color1='green',
+            color2='blue',
+            extent=None,
+            ncell=(101, 101, 101),
+            **kwargs):
         """
         Plots the covariance or variogram model in 3D (slices).
 
@@ -3465,6 +3616,8 @@ class CovModel3D(object):
         -----
         No plot is displayed if the model is not stationary.
         """
+        # fname = 'plot_model3d_slice'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -3536,11 +3689,25 @@ class CovModel3D(object):
         if plotter_show:
             plotter.show()
 
-    def plot_model_curves(self, plotter=None, vario=False,
-                          color0='red', color1='green', color2='blue',
-                          h1min=0.0, h1max=None, h2min=0.0, h2max=None, h3min=0.0, h3max=None,
-                          n1=500, n2=500, n3=500,
-                          grid=True, show_xlabel=True, show_ylabel=True):
+    def plot_model_curves(
+            self,
+            plotter=None,
+            vario=False,
+            color0='red',
+            color1='green',
+            color2='blue',
+            h1min=0.0,
+            h1max=None,
+            h2min=0.0,
+            h2max=None,
+            h3min=0.0,
+            h3max=None,
+            n1=500,
+            n2=500,
+            n3=500,
+            show_xlabel=True,
+            show_ylabel=True,
+            grid=True):
         """
         Plots the covariance or variogram model along the main axes x''', y''', z''' (in current figure axis).
 
@@ -3598,18 +3765,21 @@ class CovModel3D(object):
             number of points for the plot of the curve along the 3rd axis, in
             interval [`h3min`,` h3max`]
 
+        show_xlabel : bool, default: True
+            indicates if (default) label for abscissa is displayed
+
+        show_ylabel : bool, default: True
+            indicates if (default) label for ordinate is displayed
+
         grid : bool, default: True
             indicates if a grid is plotted for the plot of the curves
-
-        show_xlabel : bool, default: True
-            see `show_ylabel`
-        show_ylabel : bool, default: True
-            indicates if (default) label for abscissa resp. ordinate, is displayed
 
         Notes
         -----
         No plot is displayed if the model is not stationary.
         """
+        # fname = 'plot_model_curves'
+
         # Prevent calculation if covariance model is not stationary
         if not self.is_stationary():
             return None
@@ -3673,10 +3843,17 @@ class CovModel3D(object):
         plt.legend()
         plt.grid(grid)
 
-    def plot_model_one_curve(self, main_axis=1, vario=False,
-                             hmin=0.0, hmax=None, npts=500,
-                             grid=True, show_xlabel=True, show_ylabel=True,
-                             **kwargs):
+    def plot_model_one_curve(
+            self,
+            main_axis=1,
+            vario=False,
+            hmin=0.0,
+            hmax=None,
+            npts=500,
+            show_xlabel=True,
+            show_ylabel=True,
+            grid=True,
+            **kwargs):
         """
         Plots the covariance or variogram curve along one main axis (in the current figure axis).
 
@@ -3701,13 +3878,14 @@ class CovModel3D(object):
         npts : int, default: 500
             number of points used in interval [`hmin`,` hmax`]
 
+        show_xlabel : bool, default: True
+            indicates if (default) label for abscissa is displayed
+
+        show_ylabel : bool, default: True
+            indicates if (default) label for ordinate is displayed
+
         grid : bool, default: True
             indicates if a grid is plotted
-
-        show_xlabel : bool, default: True
-            see `show_ylabel`
-        show_ylabel : bool, default: True
-            indicates if (default) label for abscissa resp. ordinate, is displayed
 
         kwargs : dict
             keyword arguments passed to the funtion `matplotlib.pyplot.plot`
@@ -3722,8 +3900,8 @@ class CovModel3D(object):
         if not self.is_stationary():
             return None
         if main_axis not in (1, 2, 3):
-            print(f'ERROR ({fname}): main_axis not valid (should be 1, 2 or 3)')
-            return None
+            err_msg = f'{fname}: `main_axis` invalid (should be 1, 2 or 3)'
+            raise CovModelError(err_msg)
 
         # In kwargs:
         #   - add default 'label' if not given
@@ -3785,6 +3963,8 @@ def copyCovModel(cov_model):
     cov_model_out : same type as cov_model
         copy of cov_model
     """
+    # fname = 'copyCovModel'
+
     cov_model_out = copy.deepcopy(cov_model)
     return cov_model_out
 # ----------------------------------------------------------------------------
@@ -3812,6 +3992,8 @@ def covModel1D_to_covModel2D(cov_model_1d):
         covariance model in 2D, omni-directional (same range parameter `r` along
         each axis for every elementary models), defined from `cov_model_1d`
     """
+    # fname = 'covModel1D_to_covModel2D'
+
     cov_model_2d = CovModel2D()
     cov_model_2d.elem = copy.deepcopy(cov_model_1d.elem)
     for el in cov_model_2d.elem:
@@ -3841,6 +4023,8 @@ def covModel1D_to_covModel3D(cov_model_1d):
         covariance model in 3D, omni-directional (same range parameter `r` along
         each axis for every elementary models), defined from `cov_model_1d`
     """
+    # fname = 'covModel1D_to_covModel3D'
+
     cov_model_3d = CovModel3D()
     cov_model_3d.elem = copy.deepcopy(cov_model_1d.elem)
     for el in cov_model_3d.elem:
@@ -3888,11 +4072,12 @@ def covModel2D_to_covModel3D(cov_model_2d, r_ind=(0, 0, 1), alpha=0.0, beta=0.0,
 
     r_ind = np.atleast_1d(r_ind).reshape(-1)
     if r_ind.size != 3:
-        print(f'ERROR ({fname}): `r_ind` not valid (should be of length 3)')
-        return None
+        err_msg = f'{fname}: `r_ind` invalid (should be of length 3)'
+        raise CovModelError(err_msg)
+
     if np.any((r_ind > 1, r_ind < -2)):
-        print(f'ERROR ({fname}): `r_ind` not valid (index)')
-        return None
+        err_msg = f'{fname}: `r_ind` invalid  (index)'
+        raise CovModelError(err_msg)
 
     cov_model_3d = CovModel3D()
     cov_model_3d.elem = copy.deepcopy(cov_model_2d.elem)
@@ -3937,6 +4122,7 @@ def rotationMatrix2D(alpha=0.0):
     mrot : 2D array of shape (2, 2)
         rotation matrix (see above)
     """
+    # fname = 'rotationMatrix2D'
     #
     # The 2x2 matrix m for changing the coordinates system from Ox'y' to Oxy is:
     #         +                         +
@@ -3990,6 +4176,7 @@ def rotationMatrix3D(alpha=0.0, beta=0.0, gamma=0.0):
     mrot : 2D array of shape (3, 3)
         rotation matrix (see above)
     """
+    # fname = 'rotationMatrix3D'
     #
     # The 3x3 matrix m for changing the coordinates system from Ox'''y'''z'''
     # to Oxyz is:
@@ -4020,7 +4207,14 @@ def rotationMatrix3D(alpha=0.0, beta=0.0, gamma=0.0):
 # Basic functions for plotting variogram cloud and experimental variogram (1D)
 # ============================================================================
 # ----------------------------------------------------------------------------
-def plot_variogramCloud1D(h, g, decim=1.0, seed=None, grid=True, **kwargs):
+def plot_variogramCloud1D(
+        h, g,
+        decim=1.0,
+        seed=None,
+        show_xlabel=True,
+        show_ylabel=True,
+        grid=True,
+        **kwargs):
     """
     Plots a variogram cloud (1D) (in the current figure axis).
 
@@ -4028,6 +4222,7 @@ def plot_variogramCloud1D(h, g, decim=1.0, seed=None, grid=True, **kwargs):
     -------
     h : 1D array of floats
         see `g`
+
     g : 1D array of floats
         `h` and `g` (of same length) are the coordinates of the
         points (lag values and gamma values resp.) in the variogram cloud
@@ -4041,12 +4236,20 @@ def plot_variogramCloud1D(h, g, decim=1.0, seed=None, grid=True, **kwargs):
         seed number used to initialize the random number generator (used if
         `decim<1`)
 
+    show_xlabel : bool, default: True
+        indicates if (default) label for abscissa is displayed
+
+    show_ylabel : bool, default: True
+        indicates if (default) label for ordinate is displayed
+
     grid : bool, default: True
         indicates if a grid is plotted
 
     kwargs : dict
         keyword arguments passed to the funtion `matplotlib.pyplot.plot`
     """
+    # fname = 'plot_variogramCloud1D'
+
     # In kwargs:
     #   - add default 'label' if not given
     #   - set default 'marker' if not given
@@ -4067,18 +4270,29 @@ def plot_variogramCloud1D(h, g, decim=1.0, seed=None, grid=True, **kwargs):
             ind = np.random.choice(len(h), size=n, replace=False)
             hi = h[ind]
             gi = g[ind]
+        else:
+            hi = []
+            gi = []
     else:
         hi = h
         gi = g
 
     plt.plot(hi, gi, **kwargs)
-    plt.xlabel('h')
-    plt.ylabel(r'$1/2(Z(x)-Z(x+h))^2$')
+    if show_xlabel:
+        plt.xlabel('h')
+    if show_ylabel:
+        plt.ylabel(r'$1/2(Z(x)-Z(x+h))^2$')
     plt.grid(grid)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def plot_variogramExp1D(hexp, gexp, cexp, show_count=True, grid=True, **kwargs):
+def plot_variogramExp1D(
+        hexp, gexp, cexp,
+        show_count=True,
+        show_ylabel=True,
+        show_xlabel=True,
+        grid=True,
+        **kwargs):
     """
     Plots an experimental variogram (1D) (in the current figure axis).
 
@@ -4098,12 +4312,20 @@ def plot_variogramExp1D(hexp, gexp, cexp, show_count=True, grid=True, **kwargs):
     show_count : bool, default: True
         indicates if counters (`cexp`) are displayed on the plot
 
+    show_xlabel : bool, default: True
+        indicates if (default) label for abscissa is displayed
+
+    show_ylabel : bool, default: True
+        indicates if (default) label for ordinate is displayed
+
     grid : bool, default: True
         indicates if a grid is plotted
 
     kwargs : dict
         keyword arguments passed to the funtion `matplotlib.pyplot.plot`
     """
+    # fname = 'plot_variogramExp1D'
+
     # In kwargs:
     #   - add default 'label' if not given
     #   - set default 'marker' if not given
@@ -4120,8 +4342,10 @@ def plot_variogramExp1D(hexp, gexp, cexp, show_count=True, grid=True, **kwargs):
         for i, c in enumerate(cexp):
             if c > 0:
                 plt.text(hexp[i], gexp[i], str(c), ha='left', va='top')
-    plt.xlabel('h')
-    plt.ylabel(r'$1/2(Z(x)-Z(x+h))^2$')
+    if show_xlabel:
+        plt.xlabel('h')
+    if show_ylabel:
+        plt.ylabel(r'$1/2(Z(x)-Z(x+h))^2$')
     plt.grid(grid)
 # ----------------------------------------------------------------------------
 
@@ -4130,9 +4354,14 @@ def plot_variogramExp1D(hexp, gexp, cexp, show_count=True, grid=True, **kwargs):
 # and covariance model fitting (1D)
 # ============================================================================
 # ----------------------------------------------------------------------------
-def variogramCloud1D(x, v, hmax=None,
-                     w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=1,
-                     make_plot=True, **kwargs):
+def variogramCloud1D(
+        x, v,
+        hmax=None,
+        w_factor_loc_func=None,
+        coord_factor_loc_func=None,
+        loc_m=1,
+        make_plot=True,
+        **kwargs):
     """
     Computes the omni-directional variogram cloud for a data set in 1D, 2D or 3D.
 
@@ -4206,6 +4435,7 @@ def variogramCloud1D(x, v, hmax=None,
     -------
     h : 1D array of floats
         see `g`
+
     g : 1D array of floats
         `h` and `g` (of same length) are the coordinates of the
         points (lag values and gamma values resp.) in the variogram cloud
@@ -4230,8 +4460,8 @@ def variogramCloud1D(x, v, hmax=None,
 
     # Check length of v
     if len(v) != n:
-        print(f"ERROR ({fname}): length of `v` is not valid")
-        return None, None, None
+        err_msg = f'{fname}: length of `v` is not valid'
+        raise CovModelError(err_msg)
 
     # Set types of local transformations
     #    w_loc:     True / False: is local w (weight / sill) used ?
@@ -4339,17 +4569,25 @@ def variogramCloud1D(x, v, hmax=None,
             g = np.hstack(g)
 
     if make_plot:
-        plot_variogramCloud1D(h, g, npair, **kwargs)
-        plt.title('Variogram cloud ({} pts)'.format(npair))
+        plot_variogramCloud1D(h, g, **kwargs)
+        plt.title(f'Variogram cloud ({npair} pts)')
 
-    return (h, g, npair)
+    return h, g, npair
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def variogramExp1D(x, v, hmax=None,
-                   w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=1,
-                   ncla=10, cla_center=None, cla_length=None,
-                   variogramCloud=None, make_plot=True, **kwargs):
+def variogramExp1D(
+        x, v,
+        hmax=None,
+        w_factor_loc_func=None,
+        coord_factor_loc_func=None,
+        loc_m=1,
+        ncla=10,
+        cla_center=None,
+        cla_length=None,
+        variogramCloud=None,
+        make_plot=True,
+        **kwargs):
     """
     Computes the exprimental omni-directional variogram for a data set in 1D, 2D or 3D.
 
@@ -4448,6 +4686,7 @@ def variogramExp1D(x, v, hmax=None,
     -------
     hexp : 1D array of floats
         see `gexp`
+
     gexp : 1D array of floats
         `hexp` and `gexp` (of same length) are the coordinates of the
         points (lag values and gamma values resp.) in the experimental variogram
@@ -4461,21 +4700,32 @@ def variogramExp1D(x, v, hmax=None,
 
     # Compute variogram cloud if needed (npair won't be used)
     if variogramCloud is None:
-        h, g, npair = variogramCloud1D(x, v, hmax=hmax,
-                                       w_factor_loc_func=w_factor_loc_func, coord_factor_loc_func=coord_factor_loc_func, loc_m=loc_m,
-                                       make_plot=False)
+        try:
+            h, g, npair = variogramCloud1D(
+                    x, v, hmax=hmax,
+                    w_factor_loc_func=w_factor_loc_func, coord_factor_loc_func=coord_factor_loc_func, loc_m=loc_m,
+                    make_plot=False)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot compute variogram cloud (1D)'
+            raise CovModelError(err_msg) from exc
+
     else:
         h, g, npair = variogramCloud
 
     if npair == 0:
-        print('No point in the variogram cloud (nothing is done).')
-        return None, None, None
+        # print('No point in the variogram cloud (nothing is done).')
+        # return None, None, None
+        return np.empty(0), np.empty(0), np.empty(0, dtype=int)
 
     # Set classes
     if cla_center is not None:
         cla_center = np.asarray(cla_center, dtype='float').reshape(-1)
         ncla = len(cla_center)
     else:
+        if ncla == 0:
+            err_msg = f'{fname}: `ncla` invalid (must be greater than 0)'
+            raise CovModelError(err_msg)
+
         length = np.max(h) / ncla
         cla_center = (np.arange(ncla, dtype='float') + 0.5) * length
 
@@ -4484,8 +4734,9 @@ def variogramExp1D(x, v, hmax=None,
         if len(cla_length) == 1:
             cla_length = np.repeat(cla_length, ncla)
         elif len(cla_length) != ncla:
-            print(f"ERROR ({fname}): `cla_length` not valid")
-            return None, None, None
+            err_msg = f'{fname}: `cla_length` invalid'
+            raise CovModelError(err_msg)
+
     else:
         if ncla == 1:
             cla_length = np.array([np.inf], dtype='float')
@@ -4508,13 +4759,19 @@ def variogramExp1D(x, v, hmax=None,
         plot_variogramExp1D(hexp, gexp, cexp, **kwargs)
         plt.title('Experimental variogram')
 
-    return (hexp, gexp, cexp)
+    return hexp, gexp, cexp
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def covModel1D_fit(x, v, cov_model, hmax=None,
-                   w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=1,
-                   variogramCloud=None, make_plot=True, **kwargs):
+def covModel1D_fit(
+        x, v, cov_model,
+        hmax=None,
+        w_factor_loc_func=None,
+        coord_factor_loc_func=None,
+        loc_m=1,
+        variogramCloud=None,
+        make_plot=True,
+        **kwargs):
     """
     Fits a covariance model in 1D, from data in 1D, 2D, or 3D.
 
@@ -4598,7 +4855,7 @@ def covModel1D_fit(x, v, cov_model, hmax=None,
     elementary model and a nugget effect (nugget elementary model), where the
     weight and range of the gaussian elementary model and the weight of the
     nugget effect are fitted (optimized) in intervals given by the keyword
-    argument `bound`. The arguments `x`, `v` are the data points and values,
+    argument `bounds`. The arguments `x`, `v` are the data points and values,
     and the fitted covariance model is not plotted (`make_plot=False`)
 
         >>> # covariance model to optimize
@@ -4615,16 +4872,17 @@ def covModel1D_fit(x, v, cov_model, hmax=None,
 
     # Check cov_model
     if not isinstance(cov_model, CovModel1D):
-        print(f"ERROR ({fname}): `cov_model` is not a covariance model in 1D")
-        return None, None
+        err_msg = f'{fname}: `cov_model` is not a covariance model in 1D'
+        raise CovModelError(err_msg)
+
     # if cov_model.__class__.__name__ != 'CovModel1D':
-    #     print("ERROR: 'cov_model' is incompatible with dimension (1D)")
-    #     return None, None
+    #     err_msg = f'{fname}: `cov_model` is not a covariance model in 1D'
+    #     raise CovModelError(err_msg)
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print(f"ERROR ({fname}): `cov_model` is not stationary: fit can not be applied")
-        return None, None
+        err_msg = f'{fname}: `cov_model` is not stationary: fit cannot be applied'
+        raise CovModelError(err_msg)
 
     # Work on a (deep) copy of cov_model
     cov_model_opt = copy.deepcopy(cov_model)
@@ -4640,20 +4898,28 @@ def covModel1D_fit(x, v, cov_model, hmax=None,
 
     nparam = len(ielem_to_fit)
     if nparam == 0:
-        print('No parameter to fit!')
-        return (cov_model_opt, np.array([]))
+        # print('No parameter to fit!')
+        return cov_model_opt, np.array([])
 
     # Compute variogram cloud if needed (npair won't be used)
     if variogramCloud is None:
-        h, g, npair = variogramCloud1D(x, v, hmax=hmax,
-                                       w_factor_loc_func=w_factor_loc_func, coord_factor_loc_func=coord_factor_loc_func, loc_m=loc_m,
-                                       make_plot=False) # npair won't be used
+        try:
+            h, g, npair = variogramCloud1D(
+                    x, v, hmax=hmax,
+                    w_factor_loc_func=w_factor_loc_func, coord_factor_loc_func=coord_factor_loc_func, loc_m=loc_m,
+                    make_plot=False) # npair won't be used
+        except Exception as exc:
+            err_msg = f'{fname}: cannot compute variogram cloud (1D)'
+            raise CovModelError(err_msg) from exc
+
     else:
         h, g, npair = variogramCloud
 
     if npair == 0:
-        print('No point to fit!')
-        return (cov_model_opt, np.nan * np.ones(nparam))
+        err_msg = f'{fname}: no pair of points (in variogram cloud) for fitting'
+        raise CovModelError(err_msg)
+        # print('No point to fit!')
+        # return cov_model_opt, np.nan * np.ones(nparam)
 
     def func(d, *p):
         """
@@ -4703,23 +4969,25 @@ def covModel1D_fit(x, v, cov_model, hmax=None,
         kwargs['p0'] = p0
     else:
         if len(kwargs['p0']) != nparam:
-            print(f"ERROR ({fname}): length of `p0` not compatible")
-            return None, None
+            err_msg = f'{fname}: length of `p0` and number of parameters to fit differ'
+            raise CovModelError(err_msg)
 
     # Fit with curve_fit
     try:
         popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
     except:
-        print('Curve fit failed!')
-        return (cov_model_opt, np.nan * np.ones(nparam))
+        err_msg = f'{fname}: fitting covariance model failed'
+        raise CovModelError(err_msg)
+        # print('Curve fit failed!')
+        # return cov_model_opt, np.nan * np.ones(nparam)
 
     if make_plot:
         cov_model_opt.plot_model(vario=True, hmax=np.max(h), label='vario opt.')
-        s = ['Vario opt.:'] + ['{}'.format(el) for el in cov_model_opt.elem]
+        s = ['Vario opt.:'] + [f'{el}' for el in cov_model_opt.elem]
         # plt.title(textwrap.TextWrapper(width=50).fill(s))
         plt.title('\n'.join(s))
 
-    return (cov_model_opt, popt)
+    return cov_model_opt, popt
 # ----------------------------------------------------------------------------
 
 # ============================================================================
@@ -4727,10 +4995,22 @@ def covModel1D_fit(x, v, cov_model, hmax=None,
 # and covariance model fitting (2D)
 # ============================================================================
 # ----------------------------------------------------------------------------
-def variogramCloud2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
-                     alpha_loc_func=None, w_factor_loc_func=None,
-                     coord1_factor_loc_func=None, coord2_factor_loc_func=None, loc_m=1,
-                     make_plot=True, color0='red', color1='green', figsize=None, **kwargs):
+def variogramCloud2D(
+        x, v,
+        alpha=0.0,
+        tol_dist=None,
+        tol_angle=None,
+        hmax=None,
+        alpha_loc_func=None,
+        w_factor_loc_func=None,
+        coord1_factor_loc_func=None,
+        coord2_factor_loc_func=None,
+        loc_m=1,
+        make_plot=True,
+        color0='red',
+        color1='green',
+        figsize=None,
+        **kwargs):
     """
     Computes the two directional variogram clouds (wrt. main axes) for a data set in 2D.
 
@@ -4883,8 +5163,8 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
 
     # Check length of v
     if len(v) != n:
-        print(f"ERROR ({fname}): length of `v` is not valid")
-        return ((None, None, None), (None, None, None))
+        err_msg = f'{fname}: length of `v` is not valid'
+        raise CovModelError(err_msg)
 
     # Set hmax as an array of shape (2,)
     hmax = np.atleast_1d(hmax).astype('float').reshape(-1) # None is converted to nan
@@ -4892,16 +5172,17 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
     if hmax.size == 1:
         hmax = np.array([hmax[0], hmax[0]])
     elif hmax.size != 2:
-        print(f"ERROR ({fname}): `hmax` of invalid size (length)")
-        return ((None, None, None), (None, None, None))
+        err_msg = f'{fname}: size of `hmax` is not valid'
+        raise CovModelError(err_msg)
 
     # Set tol_dist as an array of shape (2,)
     tol_dist = np.atleast_1d(tol_dist).astype('float').reshape(-1) # None is converted to nan
     if tol_dist.size == 1:
         tol_dist = np.array([tol_dist[0], tol_dist[0]])
     elif tol_dist.size != 2:
-        print(f"ERROR ({fname}): `tol_dist` of invalid size (length)")
-        return ((None, None, None), (None, None, None))
+        err_msg = f'{fname}: size of `tol_dist` is not valid'
+        raise CovModelError(err_msg)
+
     for i in range(2):
         if np.isnan(tol_dist[i]):
             if np.isinf(hmax[i]):
@@ -4914,8 +5195,9 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
     if tol_angle.size == 1:
         tol_angle = np.array([tol_angle[0], tol_angle[0]])
     elif tol_angle.size != 2:
-        print(f"ERROR ({fname}): `tol_angle` of invalid size (length)")
-        return ((None, None, None), (None, None, None))
+        err_msg = f'{fname}: size of `tol_angle` is not valid'
+        raise CovModelError(err_msg)
+
     tol_angle[np.isnan(tol_angle)] = 45.0
 
     if alpha != 0.0:
@@ -4926,6 +5208,7 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
         mrot = np.array([[ca, sa], [-sa, ca]])
     else:
         rotate_coord_sys = False
+        mrot = np.eye(2)
 
     # Set types of local transformations
     #    alpha_loc: True / False: is local angle alpha used ?
@@ -5100,40 +5383,54 @@ def variogramCloud2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
         # plt.gca().spines['right'].set_color('none')
         # plt.gca().spines['bottom'].set_position('zero')
         # plt.gca().spines['top'].set_color('none')
-        # plt.title("Vario cloud: alpha= {} deg.\ntol_dist ={}deg. / tol_angle ={}deg.".format(alpha, tol_dist, tol_angle))
+        # plt.title(f'Vario cloud: alpha= {alpha} deg.\ntol_dist ={tol_dist} deg. / tol_angle ={tol_angle} deg.')
 
         plt.sca(ax[0,1])
         # Plot both variogram clouds
-        plot_variogramCloud1D(h0, g0, npair0, c=color0, alpha=0.5, label="along x'")
-        plot_variogramCloud1D(h1, g1, npair1, c=color1, alpha=0.5, label="along y'")
+        plot_variogramCloud1D(h0, g0, c=color0, alpha=0.5, label="along x'")
+        plot_variogramCloud1D(h1, g1, c=color1, alpha=0.5, label="along y'")
         plt.legend()
-        #plt.title('Total #points = {}'.format(npair0 + npair1))
+        #plt.title(f'Total #points = {npair0 + npair1}')
 
         plt.sca(ax[1,0])
         # Plot variogram cloud along x'
-        plot_variogramCloud1D(h0, g0, npair0, c=color0, **kwargs)
-        plt.title("along x' ({} pts)".format(npair0))
+        plot_variogramCloud1D(h0, g0, c=color0, **kwargs)
+        plt.title(f"along x' ({npair0} pts)")
 
         plt.sca(ax[1,1])
         # Plot variogram cloud along y'
-        plot_variogramCloud1D(h1, g1, npair1, c=color1, **kwargs)
-        plt.title("along y' ({} pts)".format(npair1))
+        plot_variogramCloud1D(h1, g1, c=color1, **kwargs)
+        plt.title(f"along y' ({npair1} pts)")
 
         plt.suptitle('Vario cloud')
         #plt.suptitle(f'Vario cloud: alpha={alpha} deg.')
-        # plt.suptitle("Vario cloud: alpha={}deg.\ntol_dist={} / tol_angle={}deg.".format(alpha, tol_dist, tol_angle))
+        # plt.suptitle(f'Vario cloud: alpha={alpha} deg.\ntol_dist={tol_dist} / tol_angle={tol_angle}deg.')
         # plt.show()
 
-    return ((h0, g0, npair0), (h1, g1, npair1))
+    return (h0, g0, npair0), (h1, g1, npair1)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def variogramExp2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
-                   alpha_loc_func=None, w_factor_loc_func=None,
-                   coord1_factor_loc_func=None, coord2_factor_loc_func=None, loc_m=1,
-                   ncla=(10, 10), cla_center=(None, None), cla_length=(None, None),
-                   variogramCloud=None, make_plot=True, color0='red', color1='green',
-                   figsize=None, **kwargs):
+def variogramExp2D(
+        x, v,
+        alpha=0.0,
+        tol_dist=None,
+        tol_angle=None,
+        hmax=None,
+        alpha_loc_func=None,
+        w_factor_loc_func=None,
+        coord1_factor_loc_func=None,
+        coord2_factor_loc_func=None,
+        loc_m=1,
+        ncla=(10, 10),
+        cla_center=(None, None),
+        cla_length=(None, None),
+        variogramCloud=None,
+        make_plot=True,
+        color0='red',
+        color1='green',
+        figsize=None,
+        **kwargs):
     """
     Computes the two experimental directional variograms (wrt. main axes) for a data set in 2D.
 
@@ -5307,12 +5604,20 @@ def variogramExp2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
             data points considered) in each class in the variogram cloud along
             the 2nd main axis
     """
+    fname = 'variogramExp2D'
+
     # Compute variogram clouds if needed
     if variogramCloud is None:
-        vc = variogramCloud2D(x, v, alpha=alpha, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
-                              alpha_loc_func=alpha_loc_func, w_factor_loc_func=w_factor_loc_func,
-                              coord1_factor_loc_func=coord1_factor_loc_func, coord2_factor_loc_func=coord2_factor_loc_func, loc_m=loc_m,
-                              make_plot=False)
+        try:
+            vc = variogramCloud2D(
+                    x, v, alpha=alpha, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
+                    alpha_loc_func=alpha_loc_func, w_factor_loc_func=w_factor_loc_func,
+                    coord1_factor_loc_func=coord1_factor_loc_func, coord2_factor_loc_func=coord2_factor_loc_func, loc_m=loc_m,
+                    make_plot=False)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot compute variogram cloud (2D)'
+            raise CovModelError(err_msg) from exc
+
     else:
         vc = variogramCloud
     # -> vc[0] = (h0, g0, npair0) and vc[1] = (h1, g1, npair1)
@@ -5320,8 +5625,13 @@ def variogramExp2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
     # Compute variogram experimental in each direction (using function variogramExp1D)
     ve = [None, None]
     for j in (0, 1):
-        ve[j] = variogramExp1D(None, None, hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
-                               ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], make_plot=False)
+        try:
+            ve[j] = variogramExp1D(
+                    None, None, hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
+                    ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], make_plot=False)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot compute experimental variogram in one direction'
+            raise CovModelError(err_msg) from exc
 
     (hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1) = ve
 
@@ -5380,14 +5690,21 @@ def variogramExp2D(x, v, alpha=0.0, tol_dist=None, tol_angle=None, hmax=None,
         plot_variogramExp1D(hexp1, gexp1, cexp1, color=color1, **kwargs)
         plt.title("along y'")
 
-        plt.suptitle("Vario exp.: alpha={}deg.\ntol_dist={} / tol_angle={}deg.".format(alpha, tol_dist, tol_angle))
+        plt.suptitle(f'Vario exp.: alpha={alpha}deg.\ntol_dist={tol_dist} / tol_angle={tol_angle}deg.')
         # plt.show()
 
-    return ((hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1))
+    return (hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def variogramExp2D_rose(x, v, r_max=None, r_ncla=10, phi_ncla=12, set_polar_subplot=True, figsize=None, **kwargs):
+def variogramExp2D_rose(
+        x, v,
+        r_max=None,
+        r_ncla=10,
+        phi_ncla=12,
+        set_polar_subplot=True,
+        figsize=None,
+        **kwargs):
     """
     Computes and shows an experimental variogram rose for a data set in 2D.
 
@@ -5436,8 +5753,8 @@ def variogramExp2D_rose(x, v, r_max=None, r_ncla=10, phi_ncla=12, set_polar_subp
 
     # Check length of v
     if len(v) != n:
-        print(f"ERROR ({fname}): length of `v` is not valid")
-        return None
+        err_msg = f'{fname}: length of `v` is not valid'
+        raise CovModelError(err_msg)
 
     # Compute lag vector (h) and gamma value (g) for pair of points with distance less than or equal to hmax
     if r_max is None or np.isnan(r_max):
@@ -5511,10 +5828,18 @@ def variogramExp2D_rose(x, v, r_max=None, r_ncla=10, phi_ncla=12, set_polar_subp
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def covModel2D_fit(x, v, cov_model, hmax=None,
-                   alpha_loc_func=None, w_factor_loc_func=None,
-                   coord1_factor_loc_func=None, coord2_factor_loc_func=None, loc_m=1,
-                   make_plot=True, figsize=None, **kwargs):
+def covModel2D_fit(
+        x, v, cov_model,
+        hmax=None,
+        alpha_loc_func=None,
+        w_factor_loc_func=None,
+        coord1_factor_loc_func=None,
+        coord2_factor_loc_func=None,
+        loc_m=1,
+        make_plot=True,
+        figsize=None,
+        verbose=0,
+        **kwargs):
     """
     Fits a covariance model in 2D (for data in 2D).
 
@@ -5585,6 +5910,9 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
     figsize : 2-tuple, optional
         size of the new "1x2" figure (if `make_plot=True`)
 
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
     kwargs : dict
         keyword arguments passed to the funtion `scipy.optimize.curve_fit`
 
@@ -5605,7 +5933,7 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
     elementary model and a nugget effect (nugget elementary model), where the
     azimuth angle (defining the main axes), the weight and ranges of the gaussian
     elementary model and the weight of the nugget effect are fitted (optimized)
-    in intervals given by the keyword argument `bound`. The arguments `x`, `v`
+    in intervals given by the keyword argument `bounds`. The arguments `x`, `v`
     are the data points and values, and the fitted covariance model is not plotted
     (`make_plot=False`)
 
@@ -5625,16 +5953,17 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
 
     # Check cov_model
     if not isinstance(cov_model, CovModel2D):
-        print(f"ERROR ({fname}): `cov_model` is not a covariance model in 2D")
-        return None, None
+        err_msg = f'{fname}: `cov_model` is not a covariance model in 2D'
+        raise CovModelError(err_msg)
+
     # if cov_model.__class__.__name__ != 'CovModel2D':
-    #     print("ERROR: 'cov_model' is incompatible with dimension (2D)")
-    #     return None, None
+    #     err_msg = f'{fname}: `cov_model` is not a covariance model in 2D'
+    #     raise CovModelError(err_msg)
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print(f"ERROR ({fname}): `cov_model` is not stationary: fit can not be applied")
-        return None, None
+        err_msg = f'{fname}: `cov_model` is not stationary: fit cannot be applied'
+        raise CovModelError(err_msg)
 
     # Work on a (deep) copy of cov_model
     cov_model_opt = copy.deepcopy(cov_model)
@@ -5661,8 +5990,8 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
 
     nparam = len(ielem_to_fit) + int(alpha_to_fit)
     if nparam == 0:
-        print('No parameter to fit!')
-        return (cov_model_opt, np.array([]))
+        # print('No parameter to fit!')
+        return cov_model_opt, np.array([])
 
     # Set hmax as an array of shape (2,)
     hmax = np.atleast_1d(hmax).astype('float').reshape(-1) # None is converted to nan
@@ -5670,10 +5999,11 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
     if hmax.size == 1:
         hmax = np.array([hmax[0], hmax[0]])
     elif hmax.size != 2:
-        print(f"ERROR ({fname}): `hmax` of invalid size (length)")
-        return None, None
-    if alpha_to_fit and hmax[0] != hmax[1]:
-        print(f"WARNING ({fname}): as angle is flagged for fitting, all the components of `hmax` should be equal")
+        err_msg = f'{fname}: size of `hmax` is not valid'
+        raise CovModelError(err_msg)
+
+    if alpha_to_fit and hmax[0] != hmax[1] and verbose > 0:
+        print(f'{fname}: WARNING: as angle is flagged for fitting, all the components of `hmax` should be equal')
 
     if not alpha_to_fit and cov_model_opt.alpha != 0.0:
         alpha_copy = cov_model_opt.alpha
@@ -5884,8 +6214,10 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
             g = np.hstack(g)
 
     if npair == 0:
-        print('No point to fit!')
-        return (cov_model_opt, np.nan * np.ones(nparam))
+        err_msg = f'{fname}: no pair of points (in variogram cloud) for fitting'
+        raise CovModelError(err_msg)
+        # print('No point to fit!')
+        # return cov_model_opt, np.nan * np.ones(nparam)
 
     # Defines the function to optimize in a format compatible with curve_fit from scipy.optimize
     def func(d, *p):
@@ -5942,8 +6274,8 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
         kwargs['p0'] = p0
     else:
         if len(kwargs['p0']) != nparam:
-            print(f"ERROR ({fname}): length of `p0` not compatible")
-            return None, None
+            err_msg = f'{fname}: length of `p0` and number of parameters to fit differ'
+            raise CovModelError(err_msg)
 
     # Fit with curve_fit
     try:
@@ -5952,20 +6284,22 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
             # Restore alpha
             cov_model_opt.alpha = alpha_copy
     except:
-        print('Curve fit failed!')
-        if rotate_coord_sys:
-            # Restore alpha
-            cov_model_opt.alpha = alpha_copy
-        return (cov_model_opt, np.nan * np.ones(nparam))
+        err_msg = f'{fname}: fitting covariance model failed'
+        raise CovModelError(err_msg)
+        # print('Curve fit failed!')
+        # if rotate_coord_sys:
+        #     # Restore alpha
+        #     cov_model_opt.alpha = alpha_copy
+        # return cov_model_opt, np.nan * np.ones(nparam)
 
     if make_plot:
         cov_model_opt.plot_model(vario=True, figsize=figsize)
         # suptitle already in function cov_model_opt.plot_model...
-        # s = ['Vario opt.: alpha={}'.format(cov_model_opt.alpha)] + ['{}'.format(el) for el in cov_model_opt.elem]
+        # s = [f'Vario opt.: alpha={cov_model_opt.alpha}'] + [f'{el}' for el in cov_model_opt.elem]
         # # plt.suptitle(textwrap.TextWrapper(width=50).fill(s))
         # plt.suptitle('\n'.join(s))
 
-    return (cov_model_opt, popt)
+    return cov_model_opt, popt
 # ----------------------------------------------------------------------------
 
 # ============================================================================
@@ -5973,12 +6307,30 @@ def covModel2D_fit(x, v, cov_model, hmax=None,
 # and covariance model fitting (3D)
 # ============================================================================
 # ----------------------------------------------------------------------------
-def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_angle=None, hmax=None,
-                     alpha_loc_func=None, beta_loc_func=None, gamma_loc_func=None, w_factor_loc_func=None,
-                     coord1_factor_loc_func=None, coord2_factor_loc_func=None, coord3_factor_loc_func=None, loc_m=1,
-                     make_plot=True, color0='red', color1='green', color2='blue', figsize=None, **kwargs):
+def variogramCloud3D(
+        x, v,
+        alpha=0.0,
+        beta=0.0,
+        gamma=0.0,
+        tol_dist=None,
+        tol_angle=None,
+        hmax=None,
+        alpha_loc_func=None,
+        beta_loc_func=None,
+        gamma_loc_func=None,
+        w_factor_loc_func=None,
+        coord1_factor_loc_func=None,
+        coord2_factor_loc_func=None,
+        coord3_factor_loc_func=None,
+        loc_m=1,
+        make_plot=True,
+        color0='red',
+        color1='green',
+        color2='blue',
+        figsize=None,
+        **kwargs):
     """
-    Computes the two directional variogram clouds (wrt. main axes) for a data set in 3D.
+    Computes the three directional variogram clouds (wrt. main axes) for a data set in 3D.
 
     From the pair of the i-th and j-th data points (i not equal to j), let
 
@@ -6168,8 +6520,8 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_an
 
     # Check length of v
     if len(v) != n:
-        print(f"ERROR ({fname}): length of `v` is not valid")
-        return ((None, None, None), (None, None, None), (None, None, None))
+        err_msg = f'{fname}: length of `v` is not valid'
+        raise CovModelError(err_msg)
 
     # Set hmax as an array of shape (3,)
     hmax = np.atleast_1d(hmax).astype('float').reshape(-1) # None is converted to nan
@@ -6177,16 +6529,17 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_an
     if hmax.size == 1:
         hmax = np.array([hmax[0], hmax[0], hmax[0]])
     elif hmax.size != 3:
-        print(f"ERROR ({fname}): `hmax` of invalid size (length)")
-        return ((None, None, None), (None, None, None), (None, None, None))
+        err_msg = f'{fname}: size of `hmax` is not valid'
+        raise CovModelError(err_msg)
 
     # Set tol_dist as an array of shape (3,)
     tol_dist = np.atleast_1d(tol_dist).astype('float').reshape(-1) # None is converted to nan
     if tol_dist.size == 1:
         tol_dist = np.array([tol_dist[0], tol_dist[0], tol_dist[0]])
     elif tol_dist.size != 3:
-        print(f"ERROR ({fname}): `tol_dist` of invalid size (length)")
-        return ((None, None, None), (None, None, None), (None, None, None))
+        err_msg = f'{fname}: size of `tol_dist` is not valid'
+        raise CovModelError(err_msg)
+
     for i in range(3):
         if np.isnan(tol_dist[i]):
             if np.isinf(hmax[i]):
@@ -6199,8 +6552,9 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_an
     if tol_angle.size == 1:
         tol_angle = np.array([tol_angle[0], tol_angle[0], tol_angle[0]])
     elif tol_angle.size != 3:
-        print(f"ERROR ({fname}): `tol_angle` of invalid size (length)")
-        return ((None, None, None), (None, None, None), (None, None, None))
+        err_msg = f'{fname}: size of `tol_angle` is not valid'
+        raise CovModelError(err_msg)
+
     tol_angle[np.isnan(tol_angle)] = 45.0
 
     if alpha != 0.0 or beta != 0.0 or gamma != 0.0:
@@ -6396,10 +6750,10 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_an
                     # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
                     # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
                 d_abs = np.fabs(d)
-                # di: distance to axe i (in new system)
-                d0 = np.sqrt((d[:, 1]**2 + d[:, 2]**2))
-                d1 = np.sqrt((d[:, 0]**2 + d[:, 2]**2))
-                d2 = np.sqrt((d[:, 0]**2 + d[:, 1]**2))
+                # di: distance to axis i (in new system)
+                d0 = np.sqrt(d[:, 1]**2 + d[:, 2]**2)
+                d1 = np.sqrt(d[:, 0]**2 + d[:, 2]**2)
+                d2 = np.sqrt(d[:, 0]**2 + d[:, 1]**2)
                 ind = np.where(np.all((d_abs[:, 0] <= hmax[0], d0 <= tol_dist[0], d0 <= tol_s[0]*d_abs[:, 0]), axis=0))[0]
                 if len(ind) > 0:
                     h0.append(d_abs[ind, 0])
@@ -6484,10 +6838,10 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_an
                     d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
                     d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
                 d_abs = np.fabs(d)
-                # di: distance to axe i (in new system)
-                d0 = np.sqrt((d[:, 1]**2 + d[:, 2]**2))
-                d1 = np.sqrt((d[:, 0]**2 + d[:, 2]**2))
-                d2 = np.sqrt((d[:, 0]**2 + d[:, 1]**2))
+                # di: distance to axis i (in new system)
+                d0 = np.sqrt(d[:, 1]**2 + d[:, 2]**2)
+                d1 = np.sqrt(d[:, 0]**2 + d[:, 2]**2)
+                d2 = np.sqrt(d[:, 0]**2 + d[:, 1]**2)
                 ind = np.where(np.all((d_abs[:, 0] <= hmax[0], d0 <= tol_dist[0], d0 <= tol_s[0]*d_abs[:, 0]), axis=0))[0]
                 if len(ind) > 0:
                     h0.append(d_abs[ind, 0])
@@ -6513,10 +6867,10 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_an
         for i in range(n-1):
             d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
             d_abs = np.fabs(d)
-            # di: distance to axe i (in new system)
-            d0 = np.sqrt((d[:, 1]**2 + d[:, 2]**2))
-            d1 = np.sqrt((d[:, 0]**2 + d[:, 2]**2))
-            d2 = np.sqrt((d[:, 0]**2 + d[:, 1]**2))
+            # di: distance to axis i (in new system)
+            d0 = np.sqrt(d[:, 1]**2 + d[:, 2]**2)
+            d1 = np.sqrt(d[:, 0]**2 + d[:, 2]**2)
+            d2 = np.sqrt(d[:, 0]**2 + d[:, 1]**2)
             ind = np.where(np.all((d_abs[:, 0] <= hmax[0], d0 <= tol_dist[0], d0 <= tol_s[0]*d_abs[:, 0]), axis=0))[0]
             if len(ind) > 0:
                 h0.append(d_abs[ind, 0])
@@ -6570,38 +6924,57 @@ def variogramCloud3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_an
 
         plt.sca(ax2)
         # Plot variogram cloud along x'''
-        plot_variogramCloud1D(h0, g0, npair0, c=color0, **kwargs)
-        plt.title("along x''' ({} pts)".format(npair0))
+        plot_variogramCloud1D(h0, g0, c=color0, **kwargs)
+        plt.title(f"along x''' ({npair0} pts)")
 
         plt.sca(ax3)
         # Plot variogram cloud along y'''
-        plot_variogramCloud1D(h1, g1, npair1, c=color1, **kwargs)
-        plt.title("along y''' ({} pts)".format(npair1))
+        plot_variogramCloud1D(h1, g1, c=color1, **kwargs)
+        plt.title(f"along y''' ({npair1} pts)")
 
         plt.sca(ax4)
         # Plot variogram cloud along z'''
-        plot_variogramCloud1D(h2, g2, npair2, c=color2, **kwargs)
-        plt.title("along z''' ({} pts)".format(npair2))
+        plot_variogramCloud1D(h2, g2, c=color2, **kwargs)
+        plt.title(f"along z''' ({npair2} pts)")
 
-        plt.suptitle("Vario cloud: alpha={}deg. beta={}deg. gamma={}deg.\ntol_dist={} / tol_angle={}deg.".format(alpha, beta, gamma, tol_dist, tol_angle))
+        plt.suptitle(f'Vario cloud: alpha={alpha}deg. beta={beta}deg. gamma={gamma}deg.\ntol_dist={tol_dist} / tol_angle={tol_angle}deg.')
         # plt.show()
 
-    return ((h0, g0, npair0), (h1, g1, npair1), (h2, g2, npair2))
+    return (h0, g0, npair0), (h1, g1, npair1), (h2, g2, npair2)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_angle=None, hmax=None,
-                   alpha_loc_func=None, beta_loc_func=None, gamma_loc_func=None, w_factor_loc_func=None,
-                   coord1_factor_loc_func=None, coord2_factor_loc_func=None, coord3_factor_loc_func=None, loc_m=1,
-                   ncla=(10, 10, 10), cla_center=(None, None, None), cla_length=(None, None, None),
-                   variogramCloud=None, make_plot=True, color0='red', color1='green', color2='blue',
-                   figsize=None, **kwargs):
+def variogramExp3D(
+        x, v,
+        alpha=0.0,
+        beta=0.0,
+        gamma=0.0,
+        tol_dist=None,
+        tol_angle=None,
+        hmax=None,
+        alpha_loc_func=None,
+        beta_loc_func=None,
+        gamma_loc_func=None,
+        w_factor_loc_func=None,
+        coord1_factor_loc_func=None,
+        coord2_factor_loc_func=None,
+        coord3_factor_loc_func=None,
+        loc_m=1,
+        ncla=(10, 10, 10),
+        cla_center=(None, None, None),
+        cla_length=(None, None, None),
+        variogramCloud=None,
+        make_plot=True,
+        color0='red',
+        color1='green',
+        color2='blue',
+        figsize=None, **kwargs):
     """
-    Computes the two experimental directional variograms (wrt. main axes) for a data set in 3D.
+    Computes the three experimental directional variograms (wrt. main axes) for a data set in 3D.
 
     For the experimental variogram along the 1st (resp. 2nd, 3rd) main axis, the
     mean point in each class is retrieved from the 1st (resp. 2nd, 3rd) variogram
-    cloud (returned by the function `variogramCloud3D`); along the 1st axis (1=0)
+    cloud (returned by the function `variogramCloud3D`); along the 1st axis (j=0)
     (resp. 2nd axis (j=1), 3rd axis (j=2)), the i-th class is determined by its
     center `cla_center[j][i]` and its length `cla_length[j][i]`, and corresponds
     to the interval
@@ -6725,7 +7098,7 @@ def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_angl
             along the 1st (j=0) (resp. 2nd (j=1),) main axis; by default (`None`):
             `cla_center[j]` is defined from `ncla[j]` (see above)
 
-    cla_length : sequence of length 2
+    cla_length : sequence of length 3
         cla_length[j] : 1D array-like of floats, or float, or `None`
             length of each class centered at `cla_center[j]` (in abscissa) in the
             experimental variogram along the 1st (j=0) (resp. 2nd (j=1),
@@ -6750,7 +7123,7 @@ def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_angl
         function `variogramCloud3D`
 
     make_plot : bool, default: True
-        indicates if the experimental variograms are plotted (in a new "2x2"
+        indicates if the experimental variograms are plotted (in a new "2x3"
         figure)
 
     color0 : color, default: 'red'
@@ -6769,7 +7142,7 @@ def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_angl
         (if `make_plot=True`)
 
     figsize : 2-tuple, optional
-        size of the new "2x2" figure (if `make_plot=True`)
+        size of the new "2x3" figure (if `make_plot=True`)
 
     kwargs : dict
         keyword arguments passed to the funtion `plot_variogramExp1D`
@@ -6807,13 +7180,21 @@ def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_angl
             data points considered) in each class in the variogram cloud along
             the 3rd main axis
     """
+    fname = 'variogramExp3D'
+
     # Compute variogram clouds if needed
     if variogramCloud is None:
-        vc = variogramCloud3D(x, v, alpha=alpha, beta=beta, gamma=gamma, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
-                              alpha_loc_func=alpha_loc_func, beta_loc_func=beta_loc_func, gamma_loc_func=gamma_loc_func,
-                              w_factor_loc_func=w_factor_loc_func,
-                              coord1_factor_loc_func=coord1_factor_loc_func, coord2_factor_loc_func=coord2_factor_loc_func, coord3_factor_loc_func=coord3_factor_loc_func, loc_m=loc_m,
-                              make_plot=False)
+        try:
+            vc = variogramCloud3D(
+                    x, v, alpha=alpha, beta=beta, gamma=gamma, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
+                    alpha_loc_func=alpha_loc_func, beta_loc_func=beta_loc_func, gamma_loc_func=gamma_loc_func,
+                    w_factor_loc_func=w_factor_loc_func,
+                    coord1_factor_loc_func=coord1_factor_loc_func, coord2_factor_loc_func=coord2_factor_loc_func, coord3_factor_loc_func=coord3_factor_loc_func, loc_m=loc_m,
+                    make_plot=False)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot compute variogram cloud (3D)'
+            raise CovModelError(err_msg) from exc
+
     else:
         vc = variogramCloud
     # -> vc[0] = (h0, g0, npair0) and vc[1] = (h1, g1, npair1) and vc[2] = (h2, g2, npair2)
@@ -6821,8 +7202,13 @@ def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_angl
     # Compute variogram experimental in each direction (using function variogramExp1D)
     ve = [None, None, None]
     for j in (0, 1, 2):
-        ve[j] = variogramExp1D(None, None, hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
-                               ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], make_plot=False)
+        try:
+            ve[j] = variogramExp1D(
+                    None, None, hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
+                    ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], make_plot=False)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot compute experimental variogram in one direction'
+            raise CovModelError(err_msg) from exc
 
     (hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1), (hexp2, gexp2, cexp2) = ve
 
@@ -6887,19 +7273,963 @@ def variogramExp3D(x, v, alpha=0.0, beta=0.0, gamma=0.0, tol_dist=None, tol_angl
         plot_variogramExp1D(hexp2, gexp2, cexp2, c=color2, **kwargs)
         plt.title("along z'''")
 
-        plt.suptitle("Vario exp.: alpha={}deg. beta={}deg. gamma={}deg.".format(alpha, beta, gamma))
-        # plt.suptitle("Vario exp.: alpha={}deg. beta={}deg. gamma={}deg.\ntol_dist={} / tol_angle={}deg.".format(alpha, beta, gamma, tol_dist, tol_angle))
+        plt.suptitle(f'Vario exp.: alpha={alpha}deg. beta={beta}deg. gamma={gamma}deg.')
+        # plt.suptitle(f'Vario exp.: alpha={alpha}deg. beta={beta}deg. gamma={gamma}deg.\ntol_dist={tol_dist} / tol_angle={tol_angle}deg.')
         # plt.show()
 
-    return ((hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1), (hexp2, gexp2, cexp2))
+    return (hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1), (hexp2, gexp2, cexp2)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def covModel3D_fit(x, v, cov_model,
-                   hmax=None, alpha_loc_func=None, beta_loc_func=None, gamma_loc_func=None,
-                   w_factor_loc_func=None, coord1_factor_loc_func=None, coord2_factor_loc_func=None, coord3_factor_loc_func=None,
-                   loc_m=1,
-                   make_plot=True, **kwargs):
+def variogramCloud3D_omni_wrt_2_first_axes(
+        x, v,
+        alpha=0.0,
+        beta=0.0,
+        gamma=0.0,
+        tol_dist=None,
+        tol_angle=None,
+        hmax=None,
+        alpha_loc_func=None,
+        beta_loc_func=None,
+        gamma_loc_func=None,
+        w_factor_loc_func=None,
+        coord1_factor_loc_func=None,
+        coord2_factor_loc_func=None,
+        coord3_factor_loc_func=None,
+        loc_m=1,
+        make_plot=True,
+        color01='orange',
+        color2='blue',
+        figsize=None,
+        **kwargs):
+    """
+    Computes two variogram clouds for a data set in 3D.
+
+    The computed variogram clouds are:
+
+    - the omni-directional variogram cloud wrt. the first 2 axes (i.e with any direction \
+    parallel to the plane spanned by the first 2 axes)
+    - the directional variogram cloud wrt. the 3rd main axis.
+
+    From the pair of the i-th and j-th data points (i not equal to j), let
+
+    .. math::
+        \\begin{array}{rcl}
+            h(i, j) &=& x_i-x_j \\\\[2mm]
+            g(i, j) &=& \\frac{1}{2}(v_i - v_j)^2
+        \\end{array}
+
+    where :math:`x_i` and :math:`x_j` are the coordinates of the i-th and j-th
+    data points and :math:`v_i` and :math:`v_j` the values at these points
+    (:math:`v_i=Z(x_i)`, where :math:`Z` is the considered variable).
+    The lag vector h(i, j) is expressed along the three orthogonal main axes,
+    h(i, j) = (h1(i, j), h2(i, j), h3(i, j)). Let
+    `tol_dist` = (tol_dist12, tol_dist3),
+    `tol_angle` = (tol_angle12, tol_angle3), and
+    `hmax` = (h12max, h3max) (see parameters below); if distance from h(i, j)
+    to the plane spanned by the first two main axes (resp. to the 3rd main axis)
+    does not exceed tol_dist12 (resp. toldist3), and if the angle between the
+    lag h(i, j) and the the plane spanned by the first two main axes (resp. the
+    3rd main axis) does not exceed tol_angle12 (resp. tol_angle3),
+    and if the distance :math:`\\sqrt{h1(i, j)^2+h2(i, j)^2}` in the plane spanned
+    by the first two main axes (resp. the distance \|h3(i,j)\| along the 3rd main
+    axis) does not exceed h12max (resp. h3max), then, the point
+    (:math:`\\sqrt{h1(i, j)^2+h2(i, j)^2}`, g(i, j)) (resp. (\|h3(i, j)\|, g(i, j)))
+    is integrated in the omni-directional variogram cloud wrt. the first two main axes
+    (resp. the directional variogram cloud wrt. the 3rd main axis).
+
+    Moreover, the parameters `alpha_loc_func`, `beta_loc_func`, `gamma_loc_func`
+    allow to account for main axes locally varying in space, and the parameters
+    `w_factor_loc_func` and `coord1_factor_loc_func`, `coord2_factor_loc_func`,
+    `coord2_factor_loc_func` allow to account for variogram locally varying in
+    space with respect to weight and ranges along each main axis resp., by
+    multiplying "g", "h1", "h2", "h3" values resp.
+
+    Parameters
+    ----------
+    x : 2D array of floats of shape (n, 3)
+        data points locations, with n the number of data points, each row of `x`
+        is the coordinatates of one data point
+
+    v : 1D array of floats of shape (n,)
+        data points values, with n the number of data points, `v[i]` is the data
+        value at location `x[i]`
+
+    alpha : float, default: 0.0
+        azimuth angle in degrees (see :class:`CovModel3D`)
+
+    beta : float, default: 0.0
+        dip angle in degrees (see :class:`CovModel3D`)
+
+    gamma : float, default: 0.0
+        plunge angle in degrees (see :class:`CovModel3D`)
+
+    tol_dist : sequence of 2 floats, or float, optional
+        let `tol_dist` = (tol_dist12, tol_dist3); tol_dist12 (resp. tol_dist3) is
+        the maximal distance to the plane spanned by the first two main axes (resp.
+        to the 3rd main axis) for the lag (vector between two data points), such
+        that the pair is integrated in
+        the omni-directional variogram cloud wrt. the first two main axes
+        (resp. the directional variogram cloud wrt. the 3rd main axis);
+        note: if `tol_dist` is specified as a float or `None` (default), the
+        entry is duplicated; if tol_dist12 (resp. tol_dist3) is `None`,
+        then tol_dist12 (resp. tol_dist3) is set to 10% of h12max (resp.
+        h3max) if h12max (resp. h3max) is finite, and set to 10.0
+        otherwise: see parameter `hmax` for the definition of h12max and h3max
+
+    tol_angle : sequence of 2 floats, or float, optional
+        let `tol_angle` = (tol_angle12, tol_angl3); tol_angle12 (resp. tol_angle3)
+        is the maximal angle in degrees between the lag (vector between two data
+        points) and the plane spanned by the first two main axes (resp.
+        the 3rd main axis), such that the pair is integrated in
+        the omni-directional variogram cloud wrt. the first two main axes
+        (resp. the directional variogram cloud wrt. the 3rd main axis);
+        note: if `tol_angle` is specified as a float, it is duplicated;
+        by default (`None`): `tol_angle` is set to 45.0
+
+    hmax : sequence of 2 floats, or float, optional
+        let `hmax` = (h12max, h3max); h12max (resp. h3max) is the
+        maximal distance between a pair of data points in the plane
+        spanned by the first two main axes (resp. along the 3rd) main axis,
+        such that the pair in
+        the omni-directional variogram cloud wrt. the first two main axes
+        (resp. the directional variogram cloud wrt. the 3rd main axis);
+        note: if `hmax` is specified as a float or `None` (default), the entry is
+        duplicated, and `None`, `numpy.nan` are converted to `numpy.inf` (no
+        restriction)
+
+    alpha_loc_func : function (`callable`), optional
+        function returning azimuth angle, defining the main axes, as function of
+        a given location in 3D, i.e. the main axes are defined locally
+
+    beta_loc_func : function (`callable`), optional
+        function returning dip angle, defining the main axes, as function of
+        a given location in 3D, i.e. the main axes are defined locally
+
+    gamma_loc_func : function (`callable`), optional
+        function returning plunge angle, defining the main axes, as function of
+        a given location in 3D, i.e. the main axes are defined locally
+
+    w_factor_loc_func : function (`callable`), optional
+        function returning a multiplier for the "weight" as function of a given
+        location in 3D, i.e. "g" values (i.e. ordinate axis component in the two
+        variograms) are multiplied
+
+    coord1_factor_loc_func : function (`callable`), optional
+        function returning a multiplier for the "lag" along the 1st (local) main
+        axis as function of a given location in 3D, i.e. "h1" values (i.e.
+        abscissa axis component in the 1st variogram) are multiplied
+        (the condition wrt h1max, see `hmax`, is checked after)
+
+    coord2_factor_loc_func : function (`callable`), optional
+        function returning a multiplier for the "lag" along the 2nd (local) main
+        axis as function of a given location in 3D, i.e. "h2" values (i.e.
+        abscissa axis component in the 2nd variogram) are multiplied
+        (the condition wrt h2max, see `hmax`, is checked after)
+
+    coord3_factor_loc_func : function (`callable`), optional
+        function returning a multiplier for the "lag" along the 3rd (local) main
+        axis as function of a given location in 3D, i.e. "h3" values (i.e.
+        abscissa axis component in the 3rd variogram) are multiplied
+        (the condition wrt h3max, see `hmax`, is checked after)
+
+    loc_m : int, default: 1
+        integer (greater than or equal to 0) defining how the function(s)
+        `*_loc_func` (above) are evaluated for a pair of two locations x1, x2
+        (data point locations):
+
+        - if `loc_m>0` the segment from x1 to x2 is divided in `loc_m` intervals \
+        of same length and the mean of the evaluations of the function at the \
+        (`loc_m` + 1) interval bounds is computed
+        - if `loc_m=0`, the evaluation at x1 is considered
+
+    make_plot : bool, default: True
+        indicates if the variogram clouds are plotted (in a new "2x2" figure)
+
+    color01 : color, default: 'orange'
+        color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
+        the plot of the omni-directional variogram cloud wrt. the first 2 axes
+        (if `make_plot=True`)
+
+    color2 : color, default: 'blue'
+        color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
+        the plot of the variogram cloud along the 3rd main axis
+        (if `make_plot=True`)
+
+    figsize : 2-tuple, optional
+        size of the new "2x2" figure (if `make_plot=True`)
+
+    kwargs : dict
+        keyword arguments passed to the funtion `plot_variogramCloud1D`
+        (if `make_plot=True`)
+
+    Returns
+    -------
+    (h01, g01, npair01) : 3-tuple
+        h01, g01 : 1D arrays of floats of same length
+            coordinates of the points in the omni-directional variogram cloud
+            wrt. the first 2 axes (see above)
+
+        npair01 : int
+            number of points (pairs of data points considered) in the
+            omni-directional variogram cloud wrt. the first 2 axes
+
+    (h2, g2, npair2) : 3-tuple
+        h2, g2 : 1D arrays of floats of same length
+            coordinates of the points in the variogram cloud along 3rd main axis
+            (see above)
+
+        npair2 : int
+            number of points (pairs of data points considered) in the variogram
+            cloud along the 3rd main axis
+    """
+    fname = 'variogramCloud3D_omni_wrt_2_first_axes'
+
+    # Number of data points
+    n = x.shape[0]
+
+    # Check length of v
+    if len(v) != n:
+        err_msg = f'{fname}: length of `v` is not valid'
+        raise CovModelError(err_msg)
+
+    # Set hmax as an array of shape (2,)
+    hmax = np.atleast_1d(hmax).astype('float').reshape(-1) # None is converted to nan
+    hmax[np.isnan(hmax)] = np.inf # convert nan to inf
+    if hmax.size == 1:
+        hmax = np.array([hmax[0], hmax[0]])
+    elif hmax.size != 2:
+        err_msg = f'{fname}: size of `hmax` is not valid'
+        raise CovModelError(err_msg)
+
+    # Set tol_dist as an array of shape (2,)
+    tol_dist = np.atleast_1d(tol_dist).astype('float').reshape(-1) # None is converted to nan
+    if tol_dist.size == 1:
+        tol_dist = np.array([tol_dist[0], tol_dist[0]])
+    elif tol_dist.size != 2:
+        err_msg = f'{fname}: size of `tol_dist` is not valid'
+        raise CovModelError(err_msg)
+
+    for i in range(2):
+        if np.isnan(tol_dist[i]):
+            if np.isinf(hmax[i]):
+                tol_dist[i] = 10.0
+            else:
+                tol_dist[i] = 0.1 * hmax[i]
+
+    # Set tol_angle as an array of shape (2,)
+    tol_angle = np.atleast_1d(tol_angle).astype('float').reshape(-1) # None is converted to nan
+    if tol_angle.size == 1:
+        tol_angle = np.array([tol_angle[0], tol_angle[0]])
+    elif tol_angle.size != 2:
+        err_msg = f'{fname}: size of `tol_angle` is not valid'
+        raise CovModelError(err_msg)
+
+    tol_angle[np.isnan(tol_angle)] = 45.0
+
+    if alpha != 0.0 or beta != 0.0 or gamma != 0.0:
+        rotate_coord_sys = True
+        # Rotation matrix
+        a = alpha * np.pi/180.
+        b = beta * np.pi/180.
+        c = gamma * np.pi/180.
+        ca, sa = np.cos(a), np.sin(a)
+        cb, sb = np.cos(b), np.sin(b)
+        cc, sc = np.cos(c), np.sin(c)
+        mrot = np.array([[  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc],
+                         [- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc],
+                         [                 cb * sc,     - sb,                  cb * cc ]])
+    else:
+        rotate_coord_sys = False
+        mrot = np.eye(3)
+
+    # Set types of local transformations
+    #    alpha_loc: True / False: is local angle alpha used ?
+    #    beta_loc : True / False: is local angle beta used ?
+    #    gamma_loc: True / False: is local angle gamma used ?
+    #    rotation_loc: True / False: is local rotation used ?
+    #    w_loc:     True / False: is local w (weight / sill) used ?
+    #    coord_loc: integer
+    #               0: no transformation
+    #               1: transformation for 1st coordinate only
+    #               2: transformation for 2nd coordinate only
+    #               3: distinct transformations for 1st and 2nd coordinates, no transformation for 3rd coordinate
+    #               4: transformation for 3rd coordinate only
+    #               5: distinct transformations for 1st and 3rd coordinates, no transformation for 2nd coordinate
+    #               6: distinct transformations for 2nd and 3rd coordinates, no transformation for 1st coordinate
+    #               7: distinct transformations for 1st, 2nd and 3rd coordinates
+    #               8: same transformation for 1st, 2nd and 3rd coordinates
+    #               9: same transformation for 1st and 2nd coordinates, no transformation for 3rd coordinate
+    #              10: same transformation for 1st and 3rd coordinates, no transformation for 2nd coordinate
+    #              11: same transformation for 2nd and 3rd coordinates, no transformation for 1st coordinate
+    #              12: same transformation for 1st and 2nd coordinates, distinct transformation for 3rd coordinate
+    #              13: same transformation for 1st and 3rd coordinates, distinct transformation for 2nd coordinate
+    #              14: same transformation for 2nd and 3rd coordinates, distinct transformation for 1st coordinate
+    alpha_loc = False
+    beta_loc = False
+    gamma_loc = False
+    rotation_loc = False
+    w_loc = False
+    coord_loc = 0
+    if alpha_loc_func is not None:
+        alpha_loc = True
+        rotation_loc = True
+    if beta_loc_func is not None:
+        beta_loc = True
+        rotation_loc = True
+    if gamma_loc_func is not None:
+        gamma_loc = True
+        rotation_loc = True
+
+    if rotation_loc:
+        # factor to transform angle in degree into radian
+        t_angle = np.pi/180.0
+
+    if w_factor_loc_func is not None:
+        w_loc = True
+
+    if coord1_factor_loc_func is not None:
+        coord_loc = coord_loc + 1
+    if coord2_factor_loc_func is not None:
+        coord_loc = coord_loc + 2
+    if coord3_factor_loc_func is not None:
+        coord_loc = coord_loc + 4
+    if coord_loc == 3:
+        if coord1_factor_loc_func == coord2_factor_loc_func:
+            coord_loc = 9
+    elif coord_loc == 5:
+        if coord1_factor_loc_func == coord3_factor_loc_func:
+            coord_loc = 10
+    elif coord_loc == 6:
+        if coord2_factor_loc_func == coord3_factor_loc_func:
+            coord_loc = 11
+    elif coord_loc == 7:
+        if coord1_factor_loc_func == coord2_factor_loc_func and coord1_factor_loc_func == coord3_factor_loc_func:
+            coord_loc = 8
+        elif coord1_factor_loc_func == coord2_factor_loc_func:
+            coord_loc = 12
+        elif coord1_factor_loc_func == coord3_factor_loc_func:
+            coord_loc = 13
+        elif coord2_factor_loc_func == coord3_factor_loc_func:
+            coord_loc = 14
+
+    if alpha_loc or beta_loc or gamma_loc or w_loc or coord_loc > 0:
+        transform_flag = True
+    else:
+        transform_flag = False
+
+    # Tolerance for slope compute from tol_angle
+    tol_s = np.tan(tol_angle*np.pi/180)
+
+    # Compute variogram clouds
+    h01, g01, h2, g2 = [], [], [], []
+    if transform_flag:
+        wf = 1.0 # default weight factor
+        if loc_m > 0:
+            for i in range(n-1):
+                d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
+                dx = d/loc_m
+                ddx = np.asarray([x[i]+np.outer(np.arange(loc_m+1), dxk) for dxk in dx]) # 3-dimensional array (n-1-i) x (loc_m+1) x dim
+                if rotate_coord_sys:
+                    # Rotate according to new system
+                    d = d.dot(mrot)
+                if rotation_loc:
+                    if alpha_loc:
+                        a = t_angle * alpha_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
+                        # a = t_angle * np.asarray([alpha_loc_func(ddxk) for ddxk in ddx])
+                        ca, sa = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
+                    else:
+                        ca, sa = np.ones(d.shape[0]), np.zeros(d.shape[0])
+                    if beta_loc:
+                        a = t_angle * beta_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
+                        # a = t_angle * np.asarray([beta_loc_func(ddxk) for ddxk in ddx])
+                        cb, sb = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
+                    else:
+                        cb, sb = np.ones(d.shape[0]), np.zeros(d.shape[0])
+                    if gamma_loc:
+                        a = t_angle * gamma_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
+                        # a = t_angle * np.asarray([gamma_loc_func(ddxk) for ddxk in ddx])
+                        cc, sc = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
+                    else:
+                        cc, sc = np.ones(d.shape[0]), np.zeros(d.shape[0])
+                    d = np.asarray([dk.dot(np.array(
+                                    [[  cak * cck + sak * sbk * sck,  sak * cbk, - cak * sck + sak * sbk * cck],
+                                     [- sak * cck + cak * sbk * sck,  cak * cbk,   sak * sck + cak * sbk * cck],
+                                     [                    cbk * sck,      - sbk,                     cbk * cck]]))
+                                 for (cak, sak, cbk, sbk, cck, sck, dk) in zip (ca, sa, cb, sb, cc, sc, d)])
+                    # d = np.asarray([np.array(
+                    #                 [[  cak * cck + sak * sbk * sck,  - sak * cck + cak * sbk * sck,  cbk * sck],
+                    #                  [                    sak * cbk,                      cak * cbk,      - sbk],
+                    #                  [- cak * sck + sak * sbk * cck,    sak * sck + cak * sbk * cck,  cbk * cck]]).dot(dk)
+                    #              for (cak, sak, cbk, sbk, cck, sck, dk) in zip (ca, sa, cb, sb, cc, sc, d)])
+                if coord_loc == 1:
+                    d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+                    # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+                elif coord_loc == 2:
+                    d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+                    # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+                elif coord_loc == 3:
+                    d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+                    d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+                    # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+                    # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+                elif coord_loc == 4:
+                    d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+                    # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+                elif coord_loc == 5:
+                    d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+                    d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+                    # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+                    # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+                elif coord_loc == 6:
+                    d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+                    d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+                    # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+                    # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+                elif coord_loc == 7:
+                    d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+                    d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+                    d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+                    # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+                    # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+                    # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+                elif coord_loc == 8:
+                    d = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d.T).T
+                    # d = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d.T).T
+                elif coord_loc == 9:
+                    d[:, (0, 1)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 1)].T).T
+                    # d[:, (0, 1)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 1)].T).T
+                elif coord_loc == 10:
+                    d[:, (0, 2)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 2)].T).T
+                    # d[:, (0, 2)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 2)].T).T
+                elif coord_loc == 11:
+                    d[:, (1, 2)] = (np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (1, 2)].T).T
+                    # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
+                elif coord_loc == 12:
+                    d[:, (0, 1)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 1)].T).T
+                    d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+                    # d[:, (0, 1)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 1)].T).T
+                    # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+                elif coord_loc == 13:
+                    d[:, (0, 2)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 2)].T).T
+                    d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+                    # d[:, (0, 2)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 2)].T).T
+                    # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+                elif coord_loc == 14:
+                    d[:, (1, 2)] = (np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (1, 2)].T).T
+                    d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+                    # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
+                    # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+                d_abs = np.fabs(d)
+                # d01: distance to plane spanned by axes 0 and 1 (in new system)
+                # d2: distance to axis 2 (in new system)
+                d01 = d_abs[:, 2]
+                d2 = np.sqrt(d[:, 0]**2 + d[:, 1]**2)
+                ind = np.where(np.all((d2 <= hmax[0], d01 <= tol_dist[0], d01 <= tol_s[0]*d2), axis=0))[0]
+                if len(ind) > 0:
+                    h01.append(d2[ind])
+                    if w_loc:
+                        wf = np.mean(w_factor_loc_func(ddx[ind].reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)
+                        # wf = np.asarray([np.mean(w_factor_loc_func(ddxk)) for ddxk in ddx[ind]])
+                    g01.append(wf * 0.5*(v[i] - v[i+1+ind])**2)
+                ind = np.where(np.all((d01 <= hmax[1], d2 <= tol_dist[1], d2 <= tol_s[1]*d01), axis=0))[0]
+                if len(ind) > 0:
+                    h2.append(d01[ind])
+                    if w_loc:
+                        wf = np.mean(w_factor_loc_func(ddx[ind].reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)
+                        # wf = np.asarray([np.mean(w_factor_loc_func(ddxk)) for ddxk in ddx[ind]])
+                    g2.append(wf * 0.5*(v[i] - v[i+1+ind])**2)
+        else:
+            for i in range(n-1):
+                d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
+                if rotate_coord_sys:
+                    # Rotate according to new system
+                    d = d.dot(mrot)
+                if rotation_loc:
+                    if alpha_loc:
+                        a = t_angle * alpha_loc_func(x[i])[0]
+                        ca, sa = np.cos(a), np.sin(a)
+                    else:
+                        ca, sa = np.ones(d.shape[0]), np.zeros(d.shape[0])
+                    if beta_loc:
+                        a = t_angle * beta_loc_func(x[i])[0]
+                        cb, sb = np.cos(a), np.sin(a)
+                    else:
+                        cb, sb = np.ones(d.shape[0]), np.zeros(d.shape[0])
+                    if gamma_loc:
+                        a = t_angle * gamma_loc_func(x[i])[0]
+                        cc, sc = np.cos(a), np.sin(a)
+                    else:
+                        cc, sc = np.ones(d.shape[0]), np.zeros(d.shape[0])
+                    d = d.dot(np.array(
+                            [[  ca * cc + sa * sb * sc,  sa * cb, - ca * sc + sa * sb * cc],
+                             [- sa * cc + ca * sb * sc,  ca * cb,   sa * sc + ca * sb * cc],
+                             [                 cb * sc,     - sb,                  cb * cc]]))
+                if coord_loc == 1:
+                    d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+                elif coord_loc == 2:
+                    d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+                elif coord_loc == 3:
+                    d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+                    d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+                elif coord_loc == 4:
+                    d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+                elif coord_loc == 5:
+                    d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+                    d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+                elif coord_loc == 6:
+                    d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+                    d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+                elif coord_loc == 7:
+                    d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+                    d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+                    d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+                elif coord_loc == 8:
+                    d = coord1_factor_loc_func(x[i])[0]*d
+                elif coord_loc == 9:
+                    d[:, (0, 1)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 1)]
+                elif coord_loc == 10:
+                    d[:, (0, 2)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 2)]
+                elif coord_loc == 11:
+                    d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
+                elif coord_loc == 12:
+                    d[:, (0, 1)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 1)]
+                    d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+                elif coord_loc == 13:
+                    d[:, (0, 2)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 2)]
+                    d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+                elif coord_loc == 14:
+                    d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
+                    d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+                d_abs = np.fabs(d)
+                # d01: distance to plane spanned by axes 0 and 1 (in new system)
+                # d2: distance to axis 2 (in new system)
+                d01 = d_abs[:, 2]
+                d2 = np.sqrt(d[:, 0]**2 + d[:, 1]**2)
+                ind = np.where(np.all((d2 <= hmax[0], d01 <= tol_dist[0], d01 <= tol_s[0]*d2), axis=0))[0]
+                if len(ind) > 0:
+                    h01.append(d2[ind])
+                    if w_loc:
+                        wf = w_factor_loc_func(x[i])[0]
+                    g01.append(wf * 0.5*(v[i] - v[i+1+ind])**2)
+                ind = np.where(np.all((d01 <= hmax[1], d2 <= tol_dist[1], d2 <= tol_s[1]*d01), axis=0))[0]
+                if len(ind) > 0:
+                    h2.append(d01[ind])
+                    if w_loc:
+                        wf = w_factor_loc_func(x[i])[0]
+                    g2.append(wf * 0.5*(v[i] - v[i+1+ind])**2)
+    else:
+        if rotate_coord_sys:
+            # Rotate according to new system
+            x = x.dot(mrot)
+        for i in range(n-1):
+            d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
+            d_abs = np.fabs(d)
+            # d01: distance to plane spanned by axes 0 and 1 (in new system)
+            # d2: distance to axis 2 (in new system)
+            d01 = d_abs[:, 2]
+            d2 = np.sqrt(d[:, 0]**2 + d[:, 1]**2)
+            ind = np.where(np.all((d2 <= hmax[0], d01 <= tol_dist[0], d01 <= tol_s[0]*d2), axis=0))[0]
+            if len(ind) > 0:
+                h01.append(d2[ind])
+                g01.append(0.5*(v[i] - v[i+1+ind])**2)
+            ind = np.where(np.all((d01 <= hmax[1], d2 <= tol_dist[1], d2 <= tol_s[1]*d01), axis=0))[0]
+            if len(ind) > 0:
+                h2.append(d01[ind])
+                g2.append(0.5*(v[i] - v[i+1+ind])**2)
+
+    npair01 = len(h01)
+    if npair01:
+        h01 = np.hstack(h01)
+        g01 = np.hstack(g01)
+    npair2 = len(h2)
+    if npair2:
+        h2 = np.hstack(h2)
+        g2 = np.hstack(g2)
+
+    if make_plot:
+        fig = plt.figure(figsize=figsize)
+        ax1 = fig.add_subplot(2,2,1, projection='3d')
+        ax2 = fig.add_subplot(2,2,2)
+        ax3 = fig.add_subplot(2,2,3)
+        ax4 = fig.add_subplot(2,2,4)
+
+        # Plot system Oxzy and Ox'y'z'
+        # This:
+        ax1.plot([0,1], [0,0], [0,0], color='k')
+        ax1.plot([0,0], [0,1], [0,0], color='k')
+        ax1.plot([0,0], [0,0], [0,1], color='k')
+        ax1.plot([0, mrot[0,0]], [0, mrot[1,0]], [0, mrot[2,0]], color=color01, label="x'''")
+        ax1.plot([0, mrot[0,1]], [0, mrot[1,1]], [0, mrot[2,1]], color=color01, label="y'''")
+        ax1.plot([0, mrot[0,2]], [0, mrot[1,2]], [0, mrot[2,2]], color=color2, label="z'''")
+        ax1.set_xticks([0,1])
+        ax1.set_yticks([0,1])
+        ax1.set_zticks([0,1])
+        ax1.set_xlabel('x')
+        ax1.set_ylabel('y')
+        ax1.set_zlabel('z')
+        ax1.legend()
+        plt.sca(ax1)
+        plt.title("System Ox'''y'''z'''")
+
+        plt.sca(ax2)
+        # Plot both variogram clouds
+        plot_variogramCloud1D(h01, g01, c=color01, alpha=0.5, label="in x'''y'''")
+        plot_variogramCloud1D(h2,  g2,  c=color2,  alpha=0.5, label="along z'''")
+        plt.legend()
+
+        plt.sca(ax3)
+        # Plot variogram cloud in x'''y'''
+        plot_variogramCloud1D(h01, g01, c=color01, **kwargs)
+        plt.title(f"in x'''y''' ({npair01} pts)")
+
+        plt.sca(ax4)
+        # Plot variogram cloud along z'''
+        plot_variogramCloud1D(h2, g2, c=color2, **kwargs)
+        plt.title(f"along z''' ({npair2} pts)")
+
+        plt.suptitle(f'Vario cloud: alpha={alpha}deg. beta={beta}deg. gamma={gamma}deg.\ntol_dist={tol_dist} / tol_angle={tol_angle}deg.')
+        # plt.show()
+
+    return (h01, g01, npair01), (h2, g2, npair2)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def variogramExp3D_omni_wrt_2_first_axes(
+        x, v,
+        alpha=0.0,
+        beta=0.0,
+        gamma=0.0,
+        tol_dist=None,
+        tol_angle=None,
+        hmax=None,
+        alpha_loc_func=None,
+        beta_loc_func=None,
+        gamma_loc_func=None,
+        w_factor_loc_func=None,
+        coord1_factor_loc_func=None,
+        coord2_factor_loc_func=None,
+        coord3_factor_loc_func=None,
+        loc_m=1,
+        ncla=(10, 10),
+        cla_center=(None, None),
+        cla_length=(None, None),
+        variogramCloud=None,
+        make_plot=True,
+        color01='orange',
+        color2='blue',
+        figsize=None, **kwargs):
+    """
+    Computes two experimental variograms for a data set in 3D.
+
+    The computed experimental variograms are:
+
+    - the experimental omni-directional variogram wrt. the first 2 axes (i.e with \
+    any direction parallel to the plane spanned by the first 2 axes)
+    - the experimental directional variogram wrt. the 3rd main axis
+
+    For both experimental variograms, the mean point in each class is retrieved
+    from corresponding variogram cloud (returned by the function
+    `variogramCloud3D_omni_wrt_2_first_axes`); for the experimental omni-directional
+    variograma (j=0) (resp. the experimental directional variogram (j=1)),
+    the i-th class is determined by its
+    center `cla_center[j][i]` and its length `cla_length[j][i]`, and corresponds
+    to the interval
+
+        `]cla_center[j][i]-cla_length[j][i]/2, cla_center[j][i]+cla_length[j][i]/2]`
+
+    (lag) axis (abscissa).
+
+    Parameters
+    ----------
+    x : 2D array of floats of shape (n, 3)
+        data points locations, with n the number of data points, each row of `x`
+        is the coordinatates of one data point
+
+    v : 1D array of floats of shape (n,)
+        data points values, with n the number of data points, `v[i]` is the data
+        value at location `x[i]`
+
+    alpha : float, default: 0.0
+        azimuth angle in degrees (see :class:`CovModel3D`)
+
+    beta : float, default: 0.0
+        dip angle in degrees (see :class:`CovModel3D`)
+
+    gamma : float, default: 0.0
+        plunge angle in degrees (see :class:`CovModel3D`)
+
+    tol_dist : sequence of 2 floats, or float, optional
+        let `tol_dist` = (tol_dist12, tol_dist3); tol_dist12 (resp. tol_dist3) is
+        the maximal distance to the plane spanned by the first two main axes (resp.
+        to the 3rd main axis) for the lag (vector between two data points), such
+        that the pair is integrated in
+        the omni-directional variogram cloud wrt. the first two main axes
+        (resp. the directional variogram cloud wrt. the 3rd main axis);
+        note: if `tol_dist` is specified as a float or `None` (default), the
+        entry is duplicated; if tol_dist12 (resp. tol_dist3) is `None`,
+        then tol_dist12 (resp. tol_dist3) is set to 10% of h12max (resp.
+        h3max) if h12max (resp. h3max) is finite, and set to 10.0
+        otherwise: see parameter `hmax` for the definition of h12max and h3max
+
+    tol_angle : sequence of 2 floats, or float, optional
+        let `tol_angle` = (tol_angle12, tol_angl3); tol_angle12 (resp. tol_angle3)
+        is the maximal angle in degrees between the lag (vector between two data
+        points) and the plane spanned by the first two main axes (resp.
+        the 3rd main axis), such that the pair is integrated in
+        the omni-directional variogram cloud wrt. the first two main axes
+        (resp. the directional variogram cloud wrt. the 3rd main axis);
+        note: if `tol_angle` is specified as a float, it is duplicated;
+        by default (`None`): `tol_angle` is set to 45.0
+
+    hmax : sequence of 2 floats, or float, optional
+        let `hmax` = (h12max, h3max); h12max (resp. h3max) is the
+        maximal distance between a pair of data points in the plane
+        spanned by the first two main axes (resp. along the 3rd) main axis,
+        such that the pair in
+        the omni-directional variogram cloud wrt. the first two main axes
+        (resp. the directional variogram cloud wrt. the 3rd main axis);
+        note: if `hmax` is specified as a float or `None` (default), the entry is
+        duplicated, and `None`, `numpy.nan` are converted to `numpy.inf` (no
+        restriction)
+
+    alpha_loc_func : function (`callable`), optional
+        function returning azimuth angle, defining the main axes, as function of
+        a given location in 3D, i.e. the main axes are defined locally
+
+    beta_loc_func : function (`callable`), optional
+        function returning dip angle, defining the main axes, as function of
+        a given location in 3D, i.e. the main axes are defined locally
+
+    gamma_loc_func : function (`callable`), optional
+        function returning plunge angle, defining the main axes, as function of
+        a given location in 3D, i.e. the main axes are defined locally
+
+    w_factor_loc_func : function (`callable`), optional
+        function returning a multiplier for the "weight" as function of a given
+        location in 3D, i.e. "g" values (i.e. ordinate axis component in the two
+        variograms) are multiplied
+
+    coord1_factor_loc_func : function (`callable`), optional
+        function returning a multiplier for the "lag" along the 1st (local) main
+        axis as function of a given location in 3D, i.e. "h1" values (i.e.
+        abscissa axis component in the 1st variogram) are multiplied
+        (the condition wrt h1max, see `hmax`, is checked after)
+
+    coord2_factor_loc_func : function (`callable`), optional
+        function returning a multiplier for the "lag" along the 2nd (local) main
+        axis as function of a given location in 3D, i.e. "h2" values (i.e.
+        abscissa axis component in the 2nd variogram) are multiplied
+        (the condition wrt h2max, see `hmax`, is checked after)
+
+    coord3_factor_loc_func : function (`callable`), optional
+        function returning a multiplier for the "lag" along the 3rd (local) main
+        axis as function of a given location in 3D, i.e. "h3" values (i.e.
+        abscissa axis component in the 3rd variogram) are multiplied
+        (the condition wrt h3max, see `hmax`, is checked after)
+
+    loc_m : int, default: 1
+        integer (greater than or equal to 0) defining how the function(s)
+        `*_loc_func` (above) are evaluated for a pair of two locations x1, x2
+        (data point locations):
+
+        - if `loc_m>0` the segment from x1 to x2 is divided in `loc_m` intervals \
+        of same length and the mean of the evaluations of the function at the \
+        (`loc_m` + 1) interval bounds is computed
+        - if `loc_m=0`, the evaluation at x1 is considered
+
+    ncla : sequence of 2 ints, default: (10, 10)
+        number of classes for each experimental variogram, the parameter `ncla[j]`
+        is used if `cla_center[j]=None`, in that situation `ncla[j]` classes are
+        considered and the class centers are set to
+
+        - `cla_center[j][i] = (i+0.5)*l, i=0,...,ncla[j]-1`
+
+        with l = H / ncla[j], H being the max of the distance, between two points
+        of the considered pairs in the corresponding variogram cloud;
+        if `cla_center[j]` is specified (not `None`), the number of classes
+        (`ncla[j]`) is set to the length of the sequence `cla_center[j]`
+        (ignoring the value passed as argument)
+
+    cla_center : sequence of length 2
+        cla_center[j] : 1D array-like of floats, or `None` (default)
+            center of each class (in abscissa) for each experimental variogram;
+            by default (`None`):
+            `cla_center[j]` is defined from `ncla[j]` (see above)
+
+    cla_length : sequence of length 2
+        cla_length[j] : 1D array-like of floats, or float, or `None`
+            length of each class centered at `cla_center[j]` (in abscissa) for
+            each experimental variogram:
+
+            - if `cla_length[j]` is a sequence, it should be of length `ncla[j]`
+            - if `cla_length[j]` is a float, the value is repeated `ncla[j]` times
+            - if `cla_length[j]=None` (default), the minimum of difference between \
+            two sucessive class centers (`np.inf` if one class) is used and \
+            repeated `ncla[j]` times
+
+    variogramCloud : sequence of two 3-tuple, optional
+        `variogramCloud` = ((h01, g01, npair01), (h2, g2, npair2))
+        is variogram clouds (already computed and returned by the function
+        `variogramCloud3D_omni_wrt_2_first_axes` (npair01, npair2 not used));
+        in this case, `x`, `v`, `alpha`, `tol_dist`, `tol_angle`, `hmax`,
+        `alpha_loc_func`, `w_factor_loc_func`, `coord1_factor_loc_func`,
+        `coord2_factor_loc_func`, `coord3_factor_loc_func`, `loc_m` are not used
+
+        By default (`None`): the variogram clouds are computed by using the
+        function `variogramCloud3D_omni_wrt_2_first_axes`
+
+    make_plot : bool, default: True
+        indicates if the experimental variograms are plotted (in a new "2x2"
+        figure)
+
+    color01 : color, default: 'orange'
+        color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
+        the plot of the experimental variogram, omni-directional wrt. the first 2
+        main axes (if `make_plot=True`)
+
+    color2 : color, default: 'blue'
+        color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
+        the plot of the variogram cloud along the 3rd main axis
+        (if `make_plot=True`)
+
+    figsize : 2-tuple, optional
+        size of the new "2x2" figure (if `make_plot=True`)
+
+    kwargs : dict
+        keyword arguments passed to the funtion `plot_variogramExp1D`
+        (if `make_plot=True`)
+
+    Returns
+    -------
+    (hexp01, gexp01, cexp01) : 3-tuple
+        hexp0, gexp0 : 1D arrays of floats of same length
+            coordinates of the points of the experimental variogram,
+            omni-directional wrt. the first 2 main axes
+
+        cexp01 : 1D array of ints
+            array of same length as `hexp01`, `gexp01`, number of points (pairs of
+            data points considered) in each class in the variogram,
+            omni-directional wrt. the first 2 main axes
+
+    (hexp2, gexp2, cexp2) : 3-tuple
+        hexp2, gexp2 : 1D arrays of floats of same length
+            coordinates of the points of the experimental variogram along the
+            3rd main axis
+
+        cexp2 : 1D array of ints
+            array of same length as `hexp2`, `gexp2`, number of points (pairs of
+            data points considered) in each class in the variogram cloud along
+            the 3rd main axis
+    """
+    fname = 'variogramExp3D_omni_wrt_2_first_axes'
+
+    # Compute variogram clouds if needed
+    if variogramCloud is None:
+        try:
+            vc = variogramCloud3D_omni_wrt_2_first_axes(
+                    x, v, alpha=alpha, beta=beta, gamma=gamma, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
+                    alpha_loc_func=alpha_loc_func, beta_loc_func=beta_loc_func, gamma_loc_func=gamma_loc_func,
+                    w_factor_loc_func=w_factor_loc_func,
+                    coord1_factor_loc_func=coord1_factor_loc_func, coord2_factor_loc_func=coord2_factor_loc_func, coord3_factor_loc_func=coord3_factor_loc_func, loc_m=loc_m,
+                    make_plot=False)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot compute variogram cloud (3D)'
+            raise CovModelError(err_msg) from exc
+
+    else:
+        vc = variogramCloud
+    # -> vc[0] = (h01, g01, npair01) and vc[1] = (h2, g2, npair2)
+
+    # Compute variogram experimental in each direction (using function variogramExp1D)
+    ve = [None, None]
+    for j in (0, 1):
+        try:
+            ve[j] = variogramExp1D(
+                    None, None, hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
+                    ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], make_plot=False)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot compute experimental variogram in one direction'
+            raise CovModelError(err_msg) from exc
+
+    (hexp01, gexp01, cexp01), (hexp2, gexp2, cexp2) = ve
+
+    if make_plot:
+        # Rotation matrix
+        a = alpha * np.pi/180.
+        b = beta * np.pi/180.
+        c = gamma * np.pi/180.
+        ca, sa = np.cos(a), np.sin(a)
+        cb, sb = np.cos(b), np.sin(b)
+        cc, sc = np.cos(c), np.sin(c)
+
+        mrot = np.array([[  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc],
+                         [- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc],
+                         [                 cb * sc,     - sb,                   cb * cc]])
+
+        fig = plt.figure(figsize=figsize)
+        ax1 = fig.add_subplot(2,2,1, projection='3d')
+        ax2 = fig.add_subplot(2,2,2)
+        ax3 = fig.add_subplot(2,2,3)
+        ax4 = fig.add_subplot(2,2,4)
+
+        # Plot system Oxzy and Ox'y'z'
+        # This:
+        ax1.plot([0,1], [0,0], [0,0], color='k')
+        ax1.plot([0,0], [0,1], [0,0], color='k')
+        ax1.plot([0,0], [0,0], [0,1], color='k')
+        ax1.plot([0, mrot[0,0]], [0, mrot[1,0]], [0, mrot[2,0]], color=color01, label="x'''")
+        ax1.plot([0, mrot[0,1]], [0, mrot[1,1]], [0, mrot[2,1]], color=color01, label="y'''")
+        ax1.plot([0, mrot[0,2]], [0, mrot[1,2]], [0, mrot[2,2]], color=color2, label="z'''")
+        ax1.set_xticks([0,1])
+        ax1.set_yticks([0,1])
+        ax1.set_zticks([0,1])
+        ax1.set_xlabel('x')
+        ax1.set_ylabel('y')
+        ax1.set_zlabel('z')
+        ax1.legend()
+        plt.sca(ax1)
+        plt.title("System Ox'''y'''z'''")
+
+        plt.sca(ax2)
+        # Plot variogram exp in x'''y''' and along z'''
+        plot_variogramExp1D(hexp01, gexp01, cexp01, show_count=False, grid=True, c=color01, alpha=0.5, label="in x'''y'''")
+        plot_variogramExp1D(hexp2,  gexp2,  cexp2,  show_count=False, grid=True, c=color2,  alpha=0.5, label="along z'''")
+        plt.legend()
+
+        plt.sca(ax3)
+        # Plot variogram exp in x'''y'''
+        plot_variogramExp1D(hexp01, gexp01, cexp01, c=color01, **kwargs)
+        plt.title("in x'''y'''")
+
+        plt.sca(ax4)
+        # Plot variogram exp along z'''
+        plot_variogramExp1D(hexp2, gexp2, cexp2, c=color2, **kwargs)
+        plt.title("along z'''")
+
+        plt.suptitle(f'Vario exp.: alpha={alpha}deg. beta={beta}deg. gamma={gamma}deg.')
+        # plt.suptitle(f'Vario exp.: alpha={alpha}deg. beta={beta}deg. gamma={gamma}deg.\ntol_dist={tol_dist} / tol_angle={tol_angle}deg.')
+        # plt.show()
+
+    return (hexp01, gexp01, cexp01), (hexp2, gexp2, cexp2)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def covModel3D_fit(
+        x, v, cov_model,
+        hmax=None,
+        link_range12=False,
+        alpha_loc_func=None,
+        beta_loc_func=None,
+        gamma_loc_func=None,
+        w_factor_loc_func=None,
+        coord1_factor_loc_func=None,
+        coord2_factor_loc_func=None,
+        coord3_factor_loc_func=None,
+        loc_m=1,
+        make_plot=True,
+        verbose=0,
+        **kwargs):
     """
     Fits a covariance model in 3D (for data in 3D).
 
@@ -6931,6 +8261,13 @@ def covModel3D_fit(x, v, cov_model,
         note: if `hmax` is specified as a float or `None` (default), the entry is
         duplicated, and `None`, `numpy.nan` are converted to `numpy.inf` (no
         restriction)
+
+    link_range12 : bool, default: False
+        - if `True`: ranges along the first two main axes are "linked", i.e. must \
+        have the same value; in particular, both ranges along the first two main axes \
+        must be set to the same value or be set for optimization, and `hmax[0]` \
+        must be equal to `hmax[1]`
+        - if `False`: ranges along the first two main axes are independent
 
     alpha_loc_func : function (`callable`), optional
         function returning azimuth angle, defining the main axes, as function of
@@ -6984,6 +8321,9 @@ def covModel3D_fit(x, v, cov_model,
     figsize : 2-tuple, optional
         size of the new "1x2" figure (if `make_plot=True`)
 
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
     kwargs : dict
         keyword arguments passed to the funtion `scipy.optimize.curve_fit`
 
@@ -7003,7 +8343,7 @@ def covModel3D_fit(x, v, cov_model,
     elementary model and a nugget effect (nugget elementary model), where the
     azimuth angle (defining the main axes), the weight and ranges of the gaussian
     elementary model and the weight of the nugget effect are fitted (optimized)
-    in intervals given by the keyword argument `bound`. The arguments `x`, `v`
+    in intervals given by the keyword argument `bounds`. The arguments `x`, `v`
     are the data points and values, and the fitted covariance model is not plotted
     (`make_plot=False`)
 
@@ -7023,16 +8363,16 @@ def covModel3D_fit(x, v, cov_model,
 
     # Check cov_model
     if not isinstance(cov_model, CovModel3D):
-        print(f"ERROR ({fname}): `cov_model` is not a covariance model in 3D")
-        return None, None
+        err_msg = f'{fname}: `cov_model` is not a covariance model in 3D'
+        raise CovModelError(err_msg)
     # if cov_model.__class__.__name__ != 'CovModel3D':
-    #     print(f"ERROR ({fname}): `cov_model` is incompatible with dimension (3D)")
-    #     return None, None
+    #     err_msg = f'{fname}: `cov_model` is not a covariance model in 1D'
+    #     raise CovModelError(err_msg)
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print(f"ERROR ({fname}): `cov_model` is not stationary: fit can not be applied")
-        return None, None
+        err_msg = f'{fname}: `cov_model` is not stationary: fit cannot be applied'
+        raise CovModelError(err_msg)
 
     # Work on a (deep) copy of cov_model
     cov_model_opt = copy.deepcopy(cov_model)
@@ -7044,11 +8384,34 @@ def covModel3D_fit(x, v, cov_model,
     for i, el in enumerate(cov_model_opt.elem):
         for k, val in el[1].items():
             if k == 'r':
-                for j in (0, 1, 2):
-                    if np.isnan(val[j]):
+                if link_range12:
+                    if np.isnan(val[0]):
+                        if not np.isnan(val[1]):
+                            err_msg = f"{fname}: with `link_range12=True`, range ('r') along the first two main axes must both be defined (to the same value) or both to be optimized"
+                            raise CovModelError(err_msg)
+
                         ielem_to_fit.append(i)
                         key_to_fit.append(k)
-                        ir_to_fit.append(j)
+                        ir_to_fit.append(0)
+                    else:
+                        if np.isnan(val[1]):
+                            err_msg = f"{fname}: with `link_range12=True`, range ('r') along the first two main axes must both be defined (to the same value) or both to be optimized"
+                            raise CovModelError(err_msg)
+
+                        if val[0] != val[1]:
+                            err_msg = f"{fname}: with `link_range12=True`, range ('r') defined along the first two main axes must have the same value"
+                            raise CovModelError(err_msg)
+
+                    if np.isnan(val[2]):
+                        ielem_to_fit.append(i)
+                        key_to_fit.append(k)
+                        ir_to_fit.append(2)
+                else:
+                    for j in (0, 1, 2):
+                        if np.isnan(val[j]):
+                            ielem_to_fit.append(i)
+                            key_to_fit.append(k)
+                            ir_to_fit.append(j)
             elif np.isnan(val):
                 ielem_to_fit.append(i)
                 key_to_fit.append(k)
@@ -7061,8 +8424,8 @@ def covModel3D_fit(x, v, cov_model,
 
     nparam = len(ielem_to_fit) + int(alpha_to_fit) + int(beta_to_fit) + int(gamma_to_fit)
     if nparam == 0:
-        print('No parameter to fit!')
-        return (cov_model_opt, np.array([]))
+        # print('No parameter to fit!')
+        return cov_model_opt, np.array([])
 
     # Set hmax as an array of shape (2,)
     hmax = np.atleast_1d(hmax).astype('float').reshape(-1) # None are converted to nan
@@ -7070,22 +8433,27 @@ def covModel3D_fit(x, v, cov_model,
     if hmax.size == 1:
         hmax = np.array([hmax[0], hmax[0], hmax[0]])
     elif hmax.size != 3:
-        print(f"ERROR ({fname}): `hmax` of invalid size (length)")
-        return None, None
+        err_msg = f'{fname}: size of `hmax` is not valid'
+        raise CovModelError(err_msg)
+
+    if link_range12 and hmax[0] != hmax[1]:
+        err_msg = f'{fname}: with `link_range12=True`, the first two entries of `hmax` must be the same ones'
+        raise CovModelError(err_msg)
+
     a = alpha_to_fit + beta_to_fit + gamma_to_fit
     if a == 1:
         if alpha_to_fit:
-            if hmax[0] != hmax[1]:
-                print(f"WARNING ({fname}): as alpha angle (only) is flagged for fitting, `hmax[0]` and `hmax[1]` should be equal")
+            if hmax[0] != hmax[1] and verbose > 0:
+                print(f'{fname}: WARNING: as alpha angle (only) is flagged for fitting, `hmax[0]` and `hmax[1]` should be equal')
         elif beta_to_fit:
-            if hmax[1] != hmax[2]:
-                print(f"WARNING ({fname}): as beta angle (only) is flagged for fitting, `hmax[1]` and `hmax[2]` should be equal")
+            if hmax[1] != hmax[2] and verbose > 0:
+                print(f'{fname}: WARNING: as beta angle (only) is flagged for fitting, `hmax[1]` and `hmax[2]` should be equal')
         elif gamma_to_fit:
-            if hmax[0] != hmax[2]:
-                print(f"WARNING ({fname}): as beta angle (only) is flagged for fitting, `hmax[0]` and `hmax[2]` should be equal")
+            if hmax[0] != hmax[2] and verbose > 0:
+                print(f'{fname}: WARNING: as beta angle (only) is flagged for fitting, `hmax[0]` and `hmax[2]` should be equal')
     elif a > 0:
-        if hmax[0] != hmax[2] or hmax[0] != hmax[1] or hmax[1] != hmax[2]:
-            print(f"WARNING ({fname}): as (at least two) angles are flagged for fitting, all the components of `hmax` should be equal")
+        if hmax[0] != hmax[2] or hmax[0] != hmax[1] or hmax[1] != hmax[2] and verbose > 0:
+            print(f'{fname}: WARNING: as (at least two) angles are flagged for fitting, all the components of `hmax` should be equal')
 
     if not alpha_to_fit and not beta_to_fit and not gamma_to_fit \
             and (cov_model_opt.alpha != 0.0 or cov_model_opt.beta != 0.0 or cov_model_opt.gamma != 0.0):
@@ -7566,8 +8934,10 @@ def covModel3D_fit(x, v, cov_model,
             g = np.hstack(g)
 
     if npair == 0:
-        print('No point to fit!')
-        return (cov_model_opt, np.nan * np.ones(nparam))
+        err_msg = f'{fname}: no pair of points (in variogram cloud) for fitting'
+        raise CovModelError(err_msg)
+        # print('No point to fit!')
+        # return cov_model_opt, np.nan * np.ones(nparam)
 
     # Defines the function to optimize in a format compatible with curve_fit from scipy.optimize
     def func(d, *p):
@@ -7593,6 +8963,8 @@ def covModel3D_fit(x, v, cov_model,
         for i, (iel, k, j) in enumerate(zip(ielem_to_fit, key_to_fit, ir_to_fit)):
             if k == 'r':
                 cov_model_opt.elem[iel][1]['r'][j] = p[i]
+                if link_range12 and j == 0:
+                    cov_model_opt.elem[iel][1]['r'][1] = p[i]
             else:
                 cov_model_opt.elem[iel][1][k] = p[i]
         if alpha_to_fit:
@@ -7630,8 +9002,8 @@ def covModel3D_fit(x, v, cov_model,
         kwargs['p0'] = p0
     else:
         if len(kwargs['p0']) != nparam:
-            print(f"ERROR ({fname}): length of `p0` not compatible")
-            return None, None
+            err_msg = f'{fname}: length of `p0` and number of parameters to fit differ'
+            raise CovModelError(err_msg)
 
     # Fit with curve_fit
     try:
@@ -7642,30 +9014,823 @@ def covModel3D_fit(x, v, cov_model,
             cov_model_opt.beta = beta_copy
             cov_model_opt.gamma = gamma_copy
     except:
-        print('Curve fit failed!')
-        if rotate_coord_sys:
-            # Restore alpha, beta, gamma
-            cov_model_opt.alpha = alpha_copy
-            cov_model_opt.beta = beta_copy
-            cov_model_opt.gamma = gamma_copy
-        return (cov_model_opt, np.nan * np.ones(nparam))
+        err_msg = f'{fname}: fitting covariance model failed'
+        raise CovModelError(err_msg)
+        # print('Curve fit failed!')
+        # if rotate_coord_sys:
+        #     # Restore alpha, beta, gamma
+        #     cov_model_opt.alpha = alpha_copy
+        #     cov_model_opt.beta = beta_copy
+        #     cov_model_opt.gamma = gamma_copy
+        # return cov_model_opt, np.nan * np.ones(nparam)
 
     if make_plot:
         # plt.suptitle(textwrap.TextWrapper(width=50).fill(s))
-        s = ['Vario opt.: alpha={}, beta={}, gamma={}'.format(cov_model_opt.alpha, cov_model_opt.beta, cov_model_opt.gamma)] + ['{}'.format(el) for el in cov_model_opt.elem]
+        s = [f'Vario opt.: alpha={cov_model_opt.alpha}, beta={cov_model_opt.beta}, gamma={cov_model_opt.gamma}'] + [f'{el}' for el in cov_model_opt.elem]
         cov_model_opt.plot_model3d_volume(vario=True, text='\n'.join(s), text_kwargs={'font_size':12})
-    return (cov_model_opt, popt)
+
+    return cov_model_opt, popt
 # ----------------------------------------------------------------------------
+
+# # ----------------------------------------------------------------------------
+# def covModel3D_fit(
+#         x, v, cov_model,
+#         hmax=None,
+#         alpha_loc_func=None,
+#         beta_loc_func=None,
+#         gamma_loc_func=None,
+#         w_factor_loc_func=None,
+#         coord1_factor_loc_func=None,
+#         coord2_factor_loc_func=None,
+#         coord3_factor_loc_func=None,
+#         loc_m=1,
+#         make_plot=True,
+#         verbose=0,
+#         **kwargs):
+#     """
+#     Fits a covariance model in 3D (for data in 3D).
+#
+#     The parameter `cov_model` is a covariance model in 3D where all the
+#     parameters to be fitted are set to `numpy.nan`. The fit is done according to
+#     the variogram cloud, by using the function `scipy.optimize.curve_fit`.
+#
+#     Parameters
+#     ----------
+#     x : 2D array of floats of shape (n, 3)
+#         data points locations, with n the number of data points, each row of `x`
+#         is the coordinatates of one data point
+#
+#     v : 1D array of floats of shape (n,)
+#         data points values, with n the number of data points, `v[i]` is the data
+#         value at location `x[i]`
+#
+#     cov_model : :class:`CovModel3D`
+#         covariance model to otpimize (parameters set to `numpy.nan` are optimized)
+#
+#     hmax : sequence of 3 floats, or float, optional
+#         the pairs of data points with lag h (in rotated coordinates system if
+#         applied) satisfying
+#
+#         .. math::
+#             (h[0]/hmax[0])^2 + (h[1]/hmax[1])^2 + (h[2]/hmax[2])^2 \\leqslant 1
+#
+#         are taking into account in the variogram cloud
+#         note: if `hmax` is specified as a float or `None` (default), the entry is
+#         duplicated, and `None`, `numpy.nan` are converted to `numpy.inf` (no
+#         restriction)
+#
+#     alpha_loc_func : function (`callable`), optional
+#         function returning azimuth angle, defining the main axes, as function of
+#         a given location in 3D, i.e. the main axes are defined locally
+#
+#     beta_loc_func : function (`callable`), optional
+#         function returning dip angle, defining the main axes, as function of
+#         a given location in 3D, i.e. the main axes are defined locally
+#
+#     gamma_loc_func : function (`callable`), optional
+#         function returning plunge angle, defining the main axes, as function of
+#         a given location in 3D, i.e. the main axes are defined locally
+#
+#     w_factor_loc_func : function (`callable`), optional
+#         function returning a multiplier for the "weight" as function of a given
+#         location in 3D, i.e. "g" values (i.e. ordinate axis component in the two
+#         variograms) are multiplied
+#
+#     coord1_factor_loc_func : function (`callable`), optional
+#         function returning a multiplier for the "lag" along the 1st (local) main
+#         axis as function of a given location in 3D, i.e. "h1" values (i.e.
+#         abscissa axis component in the 1st variogram) are multiplied
+#         (the condition wrt `hmax`, is checked after)
+#
+#     coord2_factor_loc_func : function (`callable`), optional
+#         function returning a multiplier for the "lag" along the 2nd (local) main
+#         axis as function of a given location in 3D, i.e. "h2" values (i.e.
+#         abscissa axis component in the 2nd variogram) are multiplied
+#         (the condition wrt `hmax`, is checked after)
+#
+#     coord3_factor_loc_func : function (`callable`), optional
+#         function returning a multiplier for the "lag" along the 3rd (local) main
+#         axis as function of a given location in 3D, i.e. "h3" values (i.e.
+#         abscissa axis component in the 3rd variogram) are multiplied
+#         (the condition wrt `hmax`, is checked after)
+#
+#     loc_m : int, default: 1
+#         integer (greater than or equal to 0) defining how the function(s)
+#         `*_loc_func` (above) are evaluated for a pair of two locations x1, x2
+#         (data point locations):
+#
+#         - if `loc_m>0` the segment from x1 to x2 is divided in `loc_m` intervals \
+#         of same length and the mean of the evaluations of the function at the \
+#         (`loc_m` + 1) interval bounds is computed
+#         - if `loc_m=0`, the evaluation at x1 is considered
+#
+#     make_plot : bool, default: True
+#         indicates if the fitted covariance model is plotted (in a new "1x2"
+#         figure, using the method `plot_model` with default parameters)
+#
+#     figsize : 2-tuple, optional
+#         size of the new "1x2" figure (if `make_plot=True`)
+#
+#     verbose : int, default: 0
+#         verbose mode, higher implies more printing (info)
+#
+#     kwargs : dict
+#         keyword arguments passed to the funtion `scipy.optimize.curve_fit`
+#
+#     Returns
+#     -------
+#     cov_model_opt: :class:`CovModel3D`
+#         optimized covariance model
+#     popt: 1D array
+#         values of the optimal parameters, corresponding to the parameters of the
+#         input covariance model (`cov_model`) set to `numpy.nan`, in the order of
+#         appearance (vector of optimized parameters returned by
+#         `scipy.optimize.curve_fit`)
+#
+#     Examples
+#     --------
+#     The following allows to fit a covariance model made up of a gaussian
+#     elementary model and a nugget effect (nugget elementary model), where the
+#     azimuth angle (defining the main axes), the weight and ranges of the gaussian
+#     elementary model and the weight of the nugget effect are fitted (optimized)
+#     in intervals given by the keyword argument `bounds`. The arguments `x`, `v`
+#     are the data points and values, and the fitted covariance model is not plotted
+#     (`make_plot=False`)
+#
+#         >>> # covariance model to optimize
+#         >>> cov_model = CovModel3D(elem=[
+#         >>>     ('gaussian', {'w':np.nan, 'r':[np.nan, np.nan, np.nan]}), # el. contrib.
+#         >>>     ('nugget', {'w':np.nan})                                  # el. contrib.
+#         >>>     ], alpha=np.nan, beta=0.0, gamma=0.0,      # azimuth, dip, plunge angles
+#         >>>     name='')
+#         >>> covModel3D_fit(x, v, cov_model_to_optimize,
+#         >>>                bounds=([ 0.0,   0.0,   0.0,   0.0,  0.0, -90.0],  # lower b.
+#         >>>                        [10.0, 100.0, 100.0, 100.0, 10.0,  90.0]), # upper b.
+#         >>>                                                      # for parameters to fit
+#         >>>                make_plot=False)
+#     """
+#     fname = 'covModel3D_fit'
+#
+#     # Check cov_model
+#     if not isinstance(cov_model, CovModel3D):
+#         err_msg = f'{fname}: `cov_model` is not a covariance model in 3D'
+#         raise CovModelError(err_msg)
+#     # if cov_model.__class__.__name__ != 'CovModel3D':
+#     #     err_msg = f'{fname}: `cov_model` is not a covariance model in 1D'
+#     #     raise CovModelError(err_msg)
+#
+#     # Prevent calculation if covariance model is not stationary
+#     if not cov_model.is_stationary():
+#         err_msg = f'{fname}: `cov_model` is not stationary: fit cannot be applied'
+#         raise CovModelError(err_msg)
+#
+#     # Work on a (deep) copy of cov_model
+#     cov_model_opt = copy.deepcopy(cov_model)
+#
+#     # Get index of element, key of parameters and index of range to fit
+#     ielem_to_fit=[]
+#     key_to_fit=[]
+#     ir_to_fit=[] # if key is equal to 'r' (range), set the index of the range to fit, otherwise set np.nan
+#     for i, el in enumerate(cov_model_opt.elem):
+#         for k, val in el[1].items():
+#             if k == 'r':
+#                 for j in (0, 1, 2):
+#                     if np.isnan(val[j]):
+#                         ielem_to_fit.append(i)
+#                         key_to_fit.append(k)
+#                         ir_to_fit.append(j)
+#             elif np.isnan(val):
+#                 ielem_to_fit.append(i)
+#                 key_to_fit.append(k)
+#                 ir_to_fit.append(np.nan)
+#
+#     # Is angle alpha, beta, gamma must be fit ?
+#     alpha_to_fit = np.isnan(cov_model_opt.alpha)
+#     beta_to_fit  = np.isnan(cov_model_opt.beta)
+#     gamma_to_fit = np.isnan(cov_model_opt.gamma)
+#
+#     nparam = len(ielem_to_fit) + int(alpha_to_fit) + int(beta_to_fit) + int(gamma_to_fit)
+#     if nparam == 0:
+#         # print('No parameter to fit!')
+#         return cov_model_opt, np.array([])
+#
+#     # Set hmax as an array of shape (2,)
+#     hmax = np.atleast_1d(hmax).astype('float').reshape(-1) # None are converted to nan
+#     hmax[np.isnan(hmax)] = np.inf # convert nan to inf
+#     if hmax.size == 1:
+#         hmax = np.array([hmax[0], hmax[0], hmax[0]])
+#     elif hmax.size != 3:
+#         err_msg = f'{fname}: size of `hmax` is not valid'
+#         raise CovModelError(err_msg)
+#
+#     a = alpha_to_fit + beta_to_fit + gamma_to_fit
+#     if a == 1:
+#         if alpha_to_fit:
+#             if hmax[0] != hmax[1] and verbose > 0:
+#                 print(f'{fname}: WARNING: as alpha angle (only) is flagged for fitting, `hmax[0]` and `hmax[1]` should be equal')
+#         elif beta_to_fit:
+#             if hmax[1] != hmax[2] and verbose > 0:
+#                 print(f'{fname}: WARNING: as beta angle (only) is flagged for fitting, `hmax[1]` and `hmax[2]` should be equal')
+#         elif gamma_to_fit:
+#             if hmax[0] != hmax[2] and verbose > 0:
+#                 print(f'{fname}: WARNING: as beta angle (only) is flagged for fitting, `hmax[0]` and `hmax[2]` should be equal')
+#     elif a > 0:
+#         if hmax[0] != hmax[2] or hmax[0] != hmax[1] or hmax[1] != hmax[2] and verbose > 0:
+#             print(f'{fname}: WARNING: as (at least two) angles are flagged for fitting, all the components of `hmax` should be equal')
+#
+#     if not alpha_to_fit and not beta_to_fit and not gamma_to_fit \
+#             and (cov_model_opt.alpha != 0.0 or cov_model_opt.beta != 0.0 or cov_model_opt.gamma != 0.0):
+#         alpha_copy = cov_model_opt.alpha
+#         beta_copy = cov_model_opt.beta
+#         gamma_copy = cov_model_opt.gamma
+#         rotate_coord_sys = True
+#         mrot = cov_model_opt.mrot()
+#         cov_model_opt.alpha = 0.0 # set (temporarily) to 0.0
+#         cov_model_opt.beta = 0.0 # set (temporarily) to 0.0
+#         cov_model_opt.gamma = 0.0 # set (temporarily) to 0.0
+#     else:
+#         rotate_coord_sys = False
+#
+#     # Set types of local transformations
+#     #    alpha_loc: True / False: is local angle alpha used ?
+#     #    beta_loc : True / False: is local angle beta used ?
+#     #    gamma_loc: True / False: is local angle gamma used ?
+#     #    rotation_loc: True / False: is local rotation used ?
+#     #    w_loc:     True / False: is local w (weight / sill) used ?
+#     #    coord_loc: integer
+#     #               0: no transformation
+#     #               1: transformation for 1st coordinate only
+#     #               2: transformation for 2nd coordinate only
+#     #               3: distinct transformations for 1st and 2nd coordinates, no transformation for 3rd coordinate
+#     #               4: transformation for 3rd coordinate only
+#     #               5: distinct transformations for 1st and 3rd coordinates, no transformation for 2nd coordinate
+#     #               6: distinct transformations for 2nd and 3rd coordinates, no transformation for 1st coordinate
+#     #               7: distinct transformations for 1st, 2nd and 3rd coordinates
+#     #               8: same transformation for 1st, 2nd and 3rd coordinates
+#     #               9: same transformation for 1st and 2nd coordinates, no transformation for 3rd coordinate
+#     #              10: same transformation for 1st and 3rd coordinates, no transformation for 2nd coordinate
+#     #              11: same transformation for 2nd and 3rd coordinates, no transformation for 1st coordinate
+#     #              12: same transformation for 1st and 2nd coordinates, distinct transformation for 3rd coordinate
+#     #              13: same transformation for 1st and 3rd coordinates, distinct transformation for 2nd coordinate
+#     #              14: same transformation for 2nd and 3rd coordinates, distinct transformation for 1st coordinate
+#     alpha_loc = False
+#     beta_loc = False
+#     gamma_loc = False
+#     rotation_loc = False
+#     w_loc = False
+#     coord_loc = 0
+#     if alpha_loc_func is not None:
+#         alpha_loc = True
+#         rotation_loc = True
+#     if beta_loc_func is not None:
+#         beta_loc = True
+#         rotation_loc = True
+#     if gamma_loc_func is not None:
+#         gamma_loc = True
+#         rotation_loc = True
+#
+#     if rotation_loc:
+#         # factor to transform angle in degree into radian
+#         t_angle = np.pi/180.0
+#
+#     if w_factor_loc_func is not None:
+#         w_loc = True
+#
+#     if coord1_factor_loc_func is not None:
+#         coord_loc = coord_loc + 1
+#     if coord2_factor_loc_func is not None:
+#         coord_loc = coord_loc + 2
+#     if coord3_factor_loc_func is not None:
+#         coord_loc = coord_loc + 4
+#     if coord_loc == 3:
+#         if coord1_factor_loc_func == coord2_factor_loc_func:
+#             coord_loc = 9
+#     elif coord_loc == 5:
+#         if coord1_factor_loc_func == coord3_factor_loc_func:
+#             coord_loc = 10
+#     elif coord_loc == 6:
+#         if coord2_factor_loc_func == coord3_factor_loc_func:
+#             coord_loc = 11
+#     elif coord_loc == 7:
+#         if coord1_factor_loc_func == coord2_factor_loc_func and coord1_factor_loc_func == coord3_factor_loc_func:
+#             coord_loc = 8
+#         elif coord1_factor_loc_func == coord2_factor_loc_func:
+#             coord_loc = 12
+#         elif coord1_factor_loc_func == coord3_factor_loc_func:
+#             coord_loc = 13
+#         elif coord2_factor_loc_func == coord3_factor_loc_func:
+#             coord_loc = 14
+#
+#     if alpha_loc or beta_loc or gamma_loc or w_loc or coord_loc > 0:
+#         transform_flag = True
+#     else:
+#         transform_flag = False
+#
+#     # Compute lag vector (h) and gamma value (g) for pair of points with distance less than or equal to hmax
+#     n = x.shape[0] # number of points
+#     if np.all(np.isinf(hmax)):
+#         # Consider all pairs of points
+#         npair = int(0.5*(n-1)*n)
+#         h = np.zeros((npair, 3))
+#         g = np.zeros(npair)
+#         j = 0
+#         if transform_flag:
+#             wf = 1.0 # default weight factor
+#             if loc_m > 0:
+#                 for i in range(n-1):
+#                     jj = n-1-i
+#                     d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
+#                     dx = d/loc_m
+#                     ddx = np.asarray([x[i]+np.outer(np.arange(loc_m+1), dxk) for dxk in dx]) # 3-dimensional array (n-1-i) x (loc_m+1) x dim
+#                     if rotate_coord_sys:
+#                         # Rotate according to new system
+#                         d = d.dot(mrot)
+#                     if rotation_loc:
+#                         if alpha_loc:
+#                             a = t_angle * alpha_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
+#                             # a = t_angle * np.asarray([alpha_loc_func(ddxk) for ddxk in ddx])
+#                             ca, sa = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
+#                         else:
+#                             ca, sa = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         if beta_loc:
+#                             a = t_angle * beta_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
+#                             # a = t_angle * np.asarray([beta_loc_func(ddxk) for ddxk in ddx])
+#                             cb, sb = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
+#                         else:
+#                             cb, sb = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         if gamma_loc:
+#                             a = t_angle * gamma_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
+#                             # a = t_angle * np.asarray([gamma_loc_func(ddxk) for ddxk in ddx])
+#                             cc, sc = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
+#                         else:
+#                             cc, sc = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         d = np.asarray([dk.dot(np.array(
+#                                         [[  cak * cck + sak * sbk * sck,  sak * cbk, - cak * sck + sak * sbk * cck],
+#                                          [- sak * cck + cak * sbk * sck,  cak * cbk,   sak * sck + cak * sbk * cck],
+#                                          [                    cbk * sck,      - sbk,                     cbk * cck]]))
+#                                      for (cak, sak, cbk, sbk, cck, sck, dk) in zip (ca, sa, cb, sb, cc, sc, d)])
+#                         # d = np.asarray([np.array(
+#                         #                 [[  cak * cck + sak * sbk * sck,  - sak * cck + cak * sbk * sck,  cbk * sck],
+#                         #                  [                    sak * cbk,                      cak * cbk,      - sbk],
+#                         #                  [- cak * sck + sak * sbk * cck,    sak * sck + cak * sbk * cck,  cbk * cck]]).dot(dk)
+#                         #              for (cak, sak, cbk, sbk, cck, sck, dk) in zip (ca, sa, cb, sb, cc, sc, d)])
+#                     if coord_loc == 1:
+#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+#                     elif coord_loc == 2:
+#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+#                     elif coord_loc == 3:
+#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+#                     elif coord_loc == 4:
+#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+#                     elif coord_loc == 5:
+#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+#                     elif coord_loc == 6:
+#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+#                     elif coord_loc == 7:
+#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+#                     elif coord_loc == 8:
+#                         d = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d.T).T
+#                         # d = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d.T).T
+#                     elif coord_loc == 9:
+#                         d[:, (0, 1)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 1)].T).T
+#                         # d[:, (0, 1)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 1)].T).T
+#                     elif coord_loc == 10:
+#                         d[:, (0, 2)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 2)].T).T
+#                         # d[:, (0, 2)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 2)].T).T
+#                     elif coord_loc == 11:
+#                         d[:, (1, 2)] = (np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (1, 2)].T).T
+#                         # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
+#                     elif coord_loc == 12:
+#                         d[:, (0, 1)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 1)].T).T
+#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+#                         # d[:, (0, 1)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 1)].T).T
+#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+#                     elif coord_loc == 13:
+#                         d[:, (0, 2)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 2)].T).T
+#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+#                         # d[:, (0, 2)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 2)].T).T
+#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+#                     elif coord_loc == 14:
+#                         d[:, (1, 2)] = (np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (1, 2)].T).T
+#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+#                         # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
+#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+#                     h[j:(j+jj),:] = d
+#                     if w_loc:
+#                         wf = np.mean(w_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)
+#                         # wf = np.asarray([np.mean(w_factor_loc_func(ddxk)) for ddxk in ddx])
+#                     g[j:(j+jj)] = wf * 0.5*(v[i] - v[(i+1):])**2
+#                     j = j+jj
+#             else:
+#                 for i in range(n-1):
+#                     jj = n-1-i
+#                     d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
+#                     if rotate_coord_sys:
+#                         # Rotate according to new system
+#                         d = d.dot(mrot)
+#                     if rotation_loc:
+#                         if alpha_loc:
+#                             a = t_angle * alpha_loc_func(x[i])[0]
+#                             ca, sa = np.cos(a), np.sin(a)
+#                         else:
+#                             ca, sa = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         if beta_loc:
+#                             a = t_angle * beta_loc_func(x[i])[0]
+#                             cb, sb = np.cos(a), np.sin(a)
+#                         else:
+#                             cb, sb = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         if gamma_loc:
+#                             a = t_angle * gamma_loc_func(x[i])[0]
+#                             cc, sc = np.cos(a), np.sin(a)
+#                         else:
+#                             cc, sc = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         d = d.dot(np.array(
+#                                 [[  ca * cc + sa * sb * sc,  sa * cb, - ca * sc + sa * sb * cc],
+#                                  [- sa * cc + ca * sb * sc,  ca * cb,   sa * sc + ca * sb * cc],
+#                                  [                 cb * sc,     - sb,                  cb * cc]]))
+#                     if coord_loc == 1:
+#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+#                     elif coord_loc == 2:
+#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+#                     elif coord_loc == 3:
+#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+#                     elif coord_loc == 4:
+#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+#                     elif coord_loc == 5:
+#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+#                     elif coord_loc == 6:
+#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+#                     elif coord_loc == 7:
+#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+#                     elif coord_loc == 8:
+#                         d = coord1_factor_loc_func(x[i])[0]*d
+#                     elif coord_loc == 9:
+#                         d[:, (0, 1)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 1)]
+#                     elif coord_loc == 10:
+#                         d[:, (0, 2)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 2)]
+#                     elif coord_loc == 11:
+#                         d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
+#                     elif coord_loc == 12:
+#                         d[:, (0, 1)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 1)]
+#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+#                     elif coord_loc == 13:
+#                         d[:, (0, 2)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 2)]
+#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+#                     elif coord_loc == 14:
+#                         d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
+#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+#                     h[j:(j+jj),:] = d
+#                     if w_loc:
+#                         wf = w_factor_loc_func(x[i])[0]
+#                     g[j:(j+jj)] = wf * 0.5*(v[i] - v[(i+1):])**2
+#                     j = j+jj
+#         else:
+#             if rotate_coord_sys:
+#                 # Rotate according to new system
+#                 x = x.dot(mrot)
+#             for i in range(n-1):
+#                 jj = n-1-i
+#                 d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
+#                 h[j:(j+jj),:] = d
+#                 g[j:(j+jj)] = 0.5*(v[i] - v[(i+1):])**2
+#                 j = j+jj
+#     else:
+#         # Consider only pairs of points according to parameter hmax, i.e.
+#         #   pairs with lag h (in rotated coordinates system if applied) satisfying
+#         #   (h[0]/hmax[0])**2 + (h[1]/hmax[1])**2 + (h[2]/hmax[2])**2 <= 1
+#         h, g = [], []
+#         npair = 0
+#         if transform_flag:
+#             wf = 1.0 # default weight factor
+#             if loc_m > 0:
+#                 for i in range(n-1):
+#                     jj = n-1-i
+#                     d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
+#                     dx = d/loc_m
+#                     ddx = np.asarray([x[i]+np.outer(np.arange(loc_m+1), dxk) for dxk in dx]) # 3-dimensional array (n-1-i) x (loc_m+1) x dim
+#                     if rotate_coord_sys:
+#                         # Rotate according to new system
+#                         d = d.dot(mrot)
+#                     if rotation_loc:
+#                         if alpha_loc:
+#                             a = t_angle * alpha_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
+#                             # a = t_angle * np.asarray([alpha_loc_func(ddxk) for ddxk in ddx])
+#                             ca, sa = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
+#                         else:
+#                             ca, sa = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         if beta_loc:
+#                             a = t_angle * beta_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
+#                             # a = t_angle * np.asarray([beta_loc_func(ddxk) for ddxk in ddx])
+#                             cb, sb = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
+#                         else:
+#                             cb, sb = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         if gamma_loc:
+#                             a = t_angle * gamma_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
+#                             # a = t_angle * np.asarray([gamma_loc_func(ddxk) for ddxk in ddx])
+#                             cc, sc = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
+#                         else:
+#                             cc, sc = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         d = np.asarray([dk.dot(np.array(
+#                                         [[  cak * cck + sak * sbk * sck,  sak * cbk, - cak * sck + sak * sbk * cck],
+#                                          [- sak * cck + cak * sbk * sck,  cak * cbk,   sak * sck + cak * sbk * cck],
+#                                          [                    cbk * sck,      - sbk,                     cbk * cck]]))
+#                                      for (cak, sak, cbk, sbk, cck, sck, dk) in zip (ca, sa, cb, sb, cc, sc, d)])
+#                         # d = np.asarray([np.array(
+#                         #                 [[  cak * cck + sak * sbk * sck,  - sak * cck + cak * sbk * sck,  cbk * sck],
+#                         #                  [                    sak * cbk,                      cak * cbk,      - sbk],
+#                         #                  [- cak * sck + sak * sbk * cck,    sak * sck + cak * sbk * cck,  cbk * cck]]).dot(dk)
+#                         #              for (cak, sak, cbk, sbk, cck, sck, dk) in zip (ca, sa, cb, sb, cc, sc, d)])
+#                     if coord_loc == 1:
+#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+#                     elif coord_loc == 2:
+#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+#                     elif coord_loc == 3:
+#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+#                     elif coord_loc == 4:
+#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+#                     elif coord_loc == 5:
+#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+#                     elif coord_loc == 6:
+#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+#                     elif coord_loc == 7:
+#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+#                     elif coord_loc == 8:
+#                         d = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d.T).T
+#                         # d = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d.T).T
+#                     elif coord_loc == 9:
+#                         d[:, (0, 1)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 1)].T).T
+#                         # d[:, (0, 1)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 1)].T).T
+#                     elif coord_loc == 10:
+#                         d[:, (0, 2)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 2)].T).T
+#                         # d[:, (0, 2)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 2)].T).T
+#                     elif coord_loc == 11:
+#                         d[:, (1, 2)] = (np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (1, 2)].T).T
+#                         # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
+#                     elif coord_loc == 12:
+#                         d[:, (0, 1)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 1)].T).T
+#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
+#                         # d[:, (0, 1)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 1)].T).T
+#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
+#                     elif coord_loc == 13:
+#                         d[:, (0, 2)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 2)].T).T
+#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
+#                         # d[:, (0, 2)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 2)].T).T
+#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
+#                     elif coord_loc == 14:
+#                         d[:, (1, 2)] = (np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (1, 2)].T).T
+#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
+#                         # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
+#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
+#                     ind = np.where(np.sum((d/hmax)**2, axis=1) <= 1.0)[0]
+#                     if len(ind) == 0:
+#                         continue
+#                     h.append(d[ind])
+#                     if w_loc:
+#                         wf = np.mean(w_factor_loc_func(ddx[ind].reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)
+#                         # wf = np.asarray([np.mean(w_factor_loc_func(ddxk)) for ddxk in ddx[ind]])
+#                     g.append(wf * 0.5*(v[i] - v[i+1+ind])**2)
+#                     npair = npair + len(ind)
+#             else:
+#                 for i in range(n-1):
+#                     jj = n-1-i
+#                     d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
+#                     if rotate_coord_sys:
+#                         # Rotate according to new system
+#                         d = d.dot(mrot)
+#                     if rotation_loc:
+#                         if alpha_loc:
+#                             a = t_angle * alpha_loc_func(x[i])[0]
+#                             ca, sa = np.cos(a), np.sin(a)
+#                         else:
+#                             ca, sa = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         if beta_loc:
+#                             a = t_angle * beta_loc_func(x[i])[0]
+#                             cb, sb = np.cos(a), np.sin(a)
+#                         else:
+#                             cb, sb = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         if gamma_loc:
+#                             a = t_angle * gamma_loc_func(x[i])[0]
+#                             cc, sc = np.cos(a), np.sin(a)
+#                         else:
+#                             cc, sc = np.ones(d.shape[0]), np.zeros(d.shape[0])
+#                         d = d.dot(np.array(
+#                                 [[  ca * cc + sa * sb * sc,  sa * cb, - ca * sc + sa * sb * cc],
+#                                  [- sa * cc + ca * sb * sc,  ca * cb,   sa * sc + ca * sb * cc],
+#                                  [                 cb * sc,     - sb,                  cb * cc]]))
+#                     if coord_loc == 1:
+#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+#                     elif coord_loc == 2:
+#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+#                     elif coord_loc == 3:
+#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+#                     elif coord_loc == 4:
+#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+#                     elif coord_loc == 5:
+#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+#                     elif coord_loc == 6:
+#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+#                     elif coord_loc == 7:
+#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+#                     elif coord_loc == 8:
+#                         d = coord1_factor_loc_func(x[i])[0]*d
+#                     elif coord_loc == 9:
+#                         d[:, (0, 1)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 1)]
+#                     elif coord_loc == 10:
+#                         d[:, (0, 2)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 2)]
+#                     elif coord_loc == 11:
+#                         d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
+#                     elif coord_loc == 12:
+#                         d[:, (0, 1)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 1)]
+#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
+#                     elif coord_loc == 13:
+#                         d[:, (0, 2)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 2)]
+#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
+#                     elif coord_loc == 14:
+#                         d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
+#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
+#                     ind = np.where(np.sum((d/hmax)**2, axis=1) <= 1.0)[0]
+#                     if len(ind) == 0:
+#                         continue
+#                     h.append(d[ind])
+#                     if w_loc:
+#                         wf = w_factor_loc_func(x[i])[0]
+#                     g.append(wf * 0.5*(v[i] - v[i+1+ind])**2)
+#                     npair = npair + len(ind)
+#         else:
+#             if rotate_coord_sys:
+#                 # Rotate according to new system
+#                 x = x.dot(mrot)
+#             for i in range(n-1):
+#                 d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
+#                 ind = np.where(np.sum((d/hmax)**2, axis=1) <= 1.0)[0]
+#                 if len(ind) == 0:
+#                     continue
+#                 h.append(d[ind])
+#                 g.append(0.5*(v[i] - v[i+1+ind])**2)
+#                 npair = npair + len(ind)
+#         if npair > 0:
+#             h = np.vstack(h)
+#             g = np.hstack(g)
+#
+#     if npair == 0:
+#         err_msg = f'{fname}: no pair of points (in variogram cloud) for fitting'
+#         raise CovModelError(err_msg)
+#         # print('No point to fit!')
+#         # return cov_model_opt, np.nan * np.ones(nparam)
+#
+#     # Defines the function to optimize in a format compatible with curve_fit from scipy.optimize
+#     def func(d, *p):
+#         """
+#         Function whose p is the vector of parameters to optimize.
+#
+#         Parameters
+#         ----------
+#         d : 1D array
+#             xdata, i.e. lags (h) from the variogram cloud where the current
+#             covariance model is evaluated
+#
+#         p : 1D array
+#             current values of the parameters (floats) to optimize in the
+#             covariance model (parameters to optimized are identified with
+#             ielem_to_fit, key_to_fit, computed above)
+#
+#         Returns
+#         -------
+#         v: 1D array
+#             evaluations of the current variogram model at `d`
+#         """
+#         for i, (iel, k, j) in enumerate(zip(ielem_to_fit, key_to_fit, ir_to_fit)):
+#             if k == 'r':
+#                 cov_model_opt.elem[iel][1]['r'][j] = p[i]
+#             else:
+#                 cov_model_opt.elem[iel][1][k] = p[i]
+#         if alpha_to_fit:
+#             cov_model_opt.alpha = p[-1-int(beta_to_fit)-int(gamma_to_fit)]
+#             cov_model_opt._mrot = None # reset attribute _mrot !
+#         if beta_to_fit:
+#             cov_model_opt.beta = p[-1-int(gamma_to_fit)]
+#             cov_model_opt._mrot = None # reset attribute _mrot !
+#         if gamma_to_fit:
+#             cov_model_opt.gamma = p[-1]
+#             cov_model_opt._mrot = None # reset attribute _mrot !
+#         return cov_model_opt(d, vario=True)
+#
+#     # Optimize parameters with curve_fit: initial vector of parameters (p0) must be given
+#     #   because number of parameter to fit in function func is not known in its expression
+#     bounds = None
+#     if 'bounds' in kwargs.keys():
+#         bounds = kwargs['bounds']
+#
+#     if 'p0' not in kwargs.keys():
+#         # add default p0 in kwargs
+#         p0 = np.ones(nparam)
+#         if bounds is not None:
+#             # adjust p0 to given bounds
+#             for i in range(nparam):
+#                 if np.isinf(bounds[0][i]):
+#                     if np.isinf(bounds[1][i]):
+#                         p0[i] = 1.
+#                     else:
+#                         p0[i] = bounds[1][i]
+#                 elif np.isinf(bounds[1][i]):
+#                     p0[i] = bounds[0][i]
+#                 else:
+#                     p0[i] = 0.5*(bounds[0][i]+bounds[1][i])
+#         kwargs['p0'] = p0
+#     else:
+#         if len(kwargs['p0']) != nparam:
+#             err_msg = f'{fname}: length of `p0` and number of parameters to fit differ'
+#             raise CovModelError(err_msg)
+#
+#     # Fit with curve_fit
+#     try:
+#         popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
+#         if rotate_coord_sys:
+#             # Restore alpha, beta, gamma
+#             cov_model_opt.alpha = alpha_copy
+#             cov_model_opt.beta = beta_copy
+#             cov_model_opt.gamma = gamma_copy
+#     except:
+#         err_msg = f'{fname}: fitting covariance model failed'
+#         raise CovModelError(err_msg)
+#         # print('Curve fit failed!')
+#         # if rotate_coord_sys:
+#         #     # Restore alpha, beta, gamma
+#         #     cov_model_opt.alpha = alpha_copy
+#         #     cov_model_opt.beta = beta_copy
+#         #     cov_model_opt.gamma = gamma_copy
+#         # return cov_model_opt, np.nan * np.ones(nparam)
+#
+#     if make_plot:
+#         # plt.suptitle(textwrap.TextWrapper(width=50).fill(s))
+#         s = [f'Vario opt.: alpha={cov_model_opt.alpha}, beta={cov_model_opt.beta}, gamma={cov_model_opt.gamma}'] + [f'{el}' for el in cov_model_opt.elem]
+#         cov_model_opt.plot_model3d_volume(vario=True, text='\n'.join(s), text_kwargs={'font_size':12})
+#
+#     return cov_model_opt, popt
+# # ----------------------------------------------------------------------------
 
 # ============================================================================
 # Simple and ordinary kriging and cross validation by leave-one-out (loo)
 # ============================================================================
 # ----------------------------------------------------------------------------
-def krige(x, v, xu, cov_model, method='simple_kriging',
-          mean_x=None, mean_xu=None, var_x=None, var_xu=None,
-          alpha_xu=None, beta_xu=None, gamma_xu=None,
-          use_unique_neighborhood=False, dmax=None, nneighborMax=12,
-          verbose=0):
+def krige(
+        x, v, xu, cov_model,
+        method='simple_kriging',
+        mean_x=None,
+        mean_xu=None,
+        var_x=None,
+        var_xu=None,
+        alpha_xu=None,
+        beta_xu=None,
+        gamma_xu=None,
+        use_unique_neighborhood=False,
+        dmax=None,
+        nneighborMax=12,
+        verbose=0):
     """
     Interpolates data by kriging at given location(s).
 
@@ -7812,8 +9977,8 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print(f"ERROR ({fname}): `cov_model` is not stationary: krige can not be applied")
-        return None, None
+        err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+        raise CovModelError(err_msg)
 
     # Get dimension (d) from x
     if np.asarray(x).ndim == 1:
@@ -7839,27 +10004,28 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
     nu = xu.shape[0]
 
     if n == 0 or nu == 0:
-        print(f"ERROR ({fname}): size (number of points) of `x` or `xu` is 0")
-        return None, None
+        err_msg = f'{fname}: size (number of points) of `x` or `xu` is 0'
+        raise CovModelError(err_msg)
 
     # Check size of v
     v = np.asarray(v).reshape(-1)
     if v.size != n:
-        print(f"ERROR ({fname}): size of `v` is not valid")
-        return None, None
+        err_msg = f'{fname}: size of `v` is not valid'
+        raise CovModelError(err_msg)
 
     # Check dimension of x and xu
     if d != du:
-        print(f"ERROR ({fname}): `x` and `xu` do not have same dimension")
-        return None, None
+        err_msg = f'{fname}: `x` and `xu` do not have the same dimension'
+        raise CovModelError(err_msg)
 
     # Check dimension of cov_model and set if used as omni-directional model
     if isinstance(cov_model, CovModel1D):
         omni_dir = True
     else:
-        if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
-            print(f"ERROR ({fname}): `cov_model` is incompatible with dimension of points")
-            return None, None
+        if cov_model.__class__.__name__ != f'CovModel{d}D':
+            err_msg = f'{fname}: `cov_model` dimension is incompatible with dimension of points'
+            raise CovModelError(err_msg)
+
         omni_dir = False
 
     # Covariance function
@@ -7880,8 +10046,9 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
             if mean_x.size == 1:
                 mean_x = mean_x * np.ones(n)
             elif mean_x.size != n:
-                print(f"ERROR ({fname}): size of `mean_x` is not valid")
-                return None, None
+                err_msg = f'{fname}: size of `mean_x` is not valid'
+                raise CovModelError(err_msg)
+
         if mean_xu is None:
             mean_xu = mean_x[0] * np.ones(nu)
         else:
@@ -7889,34 +10056,38 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
             if mean_xu.size == 1:
                 mean_xu = mean_xu * np.ones(nu)
             elif mean_xu.size != nu:
-                print(f"ERROR ({fname}): size of `mean_xu` is not valid")
-                return None, None
+                err_msg = f'{fname}: size of `mean_xu` is not valid'
+                raise CovModelError(err_msg)
+
         if (var_x is None and var_xu is not None) or (var_x is not None and var_xu is None):
-            print(f"ERROR ({fname}): `var_x` and `var_xu` must be both specified")
-            return None, None
+            err_msg = f'{fname}: `var_x` and `var_xu` must both be specified'
+            raise CovModelError(err_msg)
+
         if var_x is not None:
             var_x = np.asarray(var_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if var_x.size == 1:
                 var_x = var_x * np.ones(n)
             elif var_x.size != n:
-                print(f"ERROR ({fname}): size of `var_x` is not valid")
-                return None, None
+                err_msg = f'{fname}: size of `var_x` is not valid'
+                raise CovModelError(err_msg)
+
             varUpdate_x = np.sqrt(var_x/cov0)
         if var_xu is not None:
             var_xu = np.asarray(var_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if var_xu.size == 1:
                 var_xu = var_xu * np.ones(nu)
             elif var_xu.size != nu:
-                print(f"ERROR ({fname}): size of `var_xu` is not valid")
-                return None, None
+                err_msg = f'{fname}: size of `var_xu` is not valid'
+                raise CovModelError(err_msg)
+
             varUpdate_xu = np.sqrt(var_xu/cov0)
 
     elif method == 'ordinary_kriging':
         ordinary_kriging = True
         mean_x, mean_xu, var_x, var_xu = None, None, None, None
     else:
-        print(f"ERROR ({fname}): `method` is not valid")
-        return None, None
+        err_msg = f'{fname}: `method` invalid'
+        raise CovModelError(err_msg)
 
     # Rotation given by alpha, beta, gamma
     if omni_dir:
@@ -7940,8 +10111,9 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
                     rot = True
                     rot_mat_unique = False
                 else:
-                    print(f"ERROR ({fname}): size of `alpha_xu` is not valid")
-                    return None, None
+                    err_msg = f'{fname}: size of `alpha_xu` is not valid'
+                    raise CovModelError(err_msg)
+
         else: # d == 3
             # 3D
             if alpha_xu is None and beta_xu is None and gamma_xu is None:
@@ -7952,8 +10124,9 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
                     if alpha_xu.size == 1:
                         alpha_xu = alpha_xu * np.ones(nu)
                     elif alpha_xu.size != nu:
-                        print(f"ERROR ({fname}): size of `alpha_xu` is not valid")
-                        return None, None
+                        err_msg = f'{fname}: size of `alpha_xu` is not valid'
+                        raise CovModelError(err_msg)
+
                 else:
                     alpha_xu = np.zeros(nu)
                 if beta_xu is not None:
@@ -7961,8 +10134,9 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
                     if beta_xu.size == 1:
                         beta_xu = beta_xu * np.ones(nu)
                     elif beta_xu.size != nu:
-                        print(f"ERROR ({fname}): size of `beta_xu` is not valid")
-                        return None, None
+                        err_msg = f'{fname}: size of `beta_xu` is not valid'
+                        raise CovModelError(err_msg)
+
                 else:
                     beta_xu = np.zeros(nu)
                 if gamma_xu is not None:
@@ -7970,8 +10144,9 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
                     if gamma_xu.size == 1:
                         gamma_xu = gamma_xu * np.ones(nu)
                     elif gamma_xu.size != nu:
-                        print(f"ERROR ({fname}): size of `gamma_xu` is not valid")
-                        return None, None
+                        err_msg = f'{fname}: size of `gamma_xu` is not valid'
+                        raise CovModelError(err_msg)
+
                 else:
                     gamma_xu = np.zeros(nu)
                 if np.unique(np.array((alpha_xu, beta_xu, gamma_xu)).T, axis=0).shape[0] == 1:
@@ -7997,13 +10172,14 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
     # Check that all data points (locations) are distinct
     for i in range(1, n):
         if np.any(np.isclose(np.sum((x[:i]-x[i])**2, axis=1), 0.0)):
-            print(f"ERROR ({fname}): `x` contains duplicated entries")
-            return None
+            err_msg = f'{fname}: `x` contains duplicated entries'
+            raise CovModelError(err_msg)
 
     if use_unique_neighborhood:
         if rot:
-            print(f"ERROR ({fname}): unique search neighborhood can not be used with local rotation")
-            return None, None
+            err_msg = f'{fname}: unique search neighborhood cannot be used with local rotation'
+            raise CovModelError(err_msg)
+
         # Set kriging matrix (mat) of order nmat
         if ordinary_kriging:
             nmat = n+1
@@ -8080,7 +10256,7 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
             if verbose > 0:
                 progress = int(j/nu*100.0)
                 if progress > progress_old:
-                    print(f'kriging {progress:3d}%')
+                    print(f'{fname}: {progress:3d}%')
                     progress_old = progress
             h = x - x0
             d2 = np.sum(h**2, axis=1)
@@ -8150,18 +10326,32 @@ def krige(x, v, xu, cov_model, method='simple_kriging',
         vu_std = varUpdate_xu * vu_std
 
     if verbose > 0:
-        print(f'kriging {100:3d}%')
+        print(f'{fname}: {100:3d}%')
 
-    return (vu, vu_std)
+    return vu, vu_std
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
-                    mean_x=None, var_x=None, alpha_x=None, beta_x=None, gamma_x=None,
-                    w_multiplier_x=None, r_multiplier_x=None,
-                    r1_multiplier_x=None, r2_multiplier_x=None, r3_multiplier_x=None,
-                    interpolator=krige, interpolator_kwargs=None,
-                    print_result=True, make_plot=True, figsize=None, nbins=None):
+def cross_valid_loo(
+        x, v, cov_model,
+        significance=0.05,
+        dmin=None,
+        mean_x=None,
+        var_x=None,
+        alpha_x=None,
+        beta_x=None,
+        gamma_x=None,
+        w_multiplier_x=None,
+        r_multiplier_x=None,
+        r1_multiplier_x=None,
+        r2_multiplier_x=None,
+        r3_multiplier_x=None,
+        interpolator=krige,
+        interpolator_kwargs=None,
+        print_result=True,
+        make_plot=True,
+        figsize=None,
+        nbins=None):
     """
     Performs cross-validation by leave-one-out error.
 
@@ -8416,8 +10606,8 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print(f"ERROR ({fname}): `cov_model` is not stationary: cross validation can not be applied")
-        return None, None, None, None
+        err_msg = f'{fname}: `cov_model` is not stationary: cross validation cannot be applied'
+        raise CovModelError(err_msg)
 
     # Get dimension (d) from x
     if np.asarray(x).ndim == 1:
@@ -8434,16 +10624,17 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
     # Check size of v
     v = np.asarray(v).reshape(-1)
     if v.size != n:
-        print(f"ERROR ({fname}): size of `v` is not valid")
-        return None, None, None, None
+        err_msg = f'{fname}: size of `v` is not valid'
+        raise CovModelError(err_msg)
 
     # Check dimension of cov_model and set if used as omni-directional model
     if isinstance(cov_model, CovModel1D):
         omni_dir = True
     else:
-        if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
-            print(f"ERROR ({fname}): `cov_model` is incompatible with dimension of points")
-            return None, None, None, None
+        if cov_model.__class__.__name__ != f'CovModel{d}D':
+            err_msg = f'{fname}: `cov_model` dimension is incompatible with dimension of points'
+            raise CovModelError(err_msg)
+
         omni_dir = False
 
     # Leave-one-out (loo) cross validation dictionary of parameters of the interpolator
@@ -8459,40 +10650,45 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
             if mean_x.size == 1:
                 mean_x = mean_x * np.ones(n)
             elif mean_x.size != n:
-                print(f"ERROR ({fname}): size of `mean_x` is not valid")
-                return None, None, None, None
+                err_msg = f'{fname}: size of `mean_x` is not valid'
+                raise CovModelError(err_msg)
+
             adapt_kwds = True
         if var_x is not None:
             var_x = np.asarray(var_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if var_x.size == 1:
                 var_x = var_x * np.ones(n)
             elif var_x.size != n:
-                print(f"ERROR ({fname}): size of `var_x` is not valid")
-                return None, None, None, None
+                err_msg = f'{fname}: size of `var_x` is not valid'
+                raise CovModelError(err_msg)
+
             adapt_kwds = True
         if alpha_x is not None:
             alpha_x = np.asarray(alpha_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if alpha_x.size == 1:
                 alpha_x = alpha_x * np.ones(n)
             elif alpha_x.size != n:
-                print(f"ERROR ({fname}): size of `alpha_x` is not valid")
-                return None, None, None, None
+                err_msg = f'{fname}: size of `alpha_x` is not valid'
+                raise CovModelError(err_msg)
+
             adapt_kwds = True
         if beta_x is not None:
             beta_x = np.asarray(beta_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if beta_x.size == 1:
                 beta_x = beta_x * np.ones(n)
             elif beta_x.size != n:
-                print(f"ERROR ({fname}): size of `beta_x` is not valid")
-                return None, None, None, None
+                err_msg = f'{fname}: size of `beta_x` is not valid'
+                raise CovModelError(err_msg)
+
             adapt_kwds = True
         if gamma_x is not None:
             gamma_x = np.asarray(gamma_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if gamma_x.size == 1:
                 gamma_x = gamma_x * np.ones(n)
             elif gamma_x.size != n:
-                print(f"ERROR ({fname}): size of `gamma_x` is not valid")
-                return None, None, None, None
+                err_msg = f'{fname}: size of `gamma_x` is not valid'
+                raise CovModelError(err_msg)
+
             adapt_kwds = True
 
     # Prepare w_multiplier_x, r_multiplier_x, r1_multiplier_x, r2_multiplier_x, r3_multiplier_x
@@ -8504,52 +10700,61 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
             if w_multiplier_x.size == 1:
                 w_multiplier_x = w_multiplier_x * np.ones(n)
             elif w_multiplier_x.size != n:
-                print(f"ERROR ({fname}): size of `w_multiplier_x` is not valid")
-                return None, None, None, None
+                err_msg = f'{fname}: size of `w_multiplier_x` is not valid'
+                raise CovModelError(err_msg)
+
             adapt_cov_model = True
         if r_multiplier_x is not None:
             r_multiplier_x = np.asarray(r_multiplier_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if r_multiplier_x.size == 1:
                 r_multiplier_x = r_multiplier_x * np.ones(n)
             elif r_multiplier_x.size != n:
-                print(f"ERROR ({fname}): size of `r_multiplier_x` is not valid")
-                return None, None, None, None
+                err_msg = f'{fname}: size of `r_multiplier_x` is not valid'
+                raise CovModelError(err_msg)
+
             adapt_cov_model = True
         if r1_multiplier_x is not None:
             if omni_dir:
-                print(f"ERROR ({fname}): `r1_multiplier_x` cannot be used with 1D covariance model (use `r_multiplier_x`)")
-                return None, None, None, None
+                err_msg = f'{fname}: `r1_multiplier_x` cannot be used with 1D covariance model (use `r_multiplier_x`)'
+                raise CovModelError(err_msg)
+
             r1_multiplier_x = np.asarray(r1_multiplier_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if r1_multiplier_x.size == 1:
                 r1_multiplier_x = r1_multiplier_x * np.ones(n)
             elif r1_multiplier_x.size != n:
-                print(f"ERROR ({fname}): size of `r1_multiplier_x` is not valid")
-                return None, None, None, None
+                err_msg = f'{fname}: size of `r1_multiplier_x` is not valid'
+                raise CovModelError(err_msg)
+
             adapt_cov_model = True
         if r2_multiplier_x is not None:
             if omni_dir:
-                print(f"ERROR ({fname}): `r2_multiplier_x` cannot be used with 1D covariance model")
-                return None, None, None, None
+                err_msg = f'{fname}: `r2_multiplier_x` cannot be used with 1D covariance model'
+                raise CovModelError(err_msg)
+
             r2_multiplier_x = np.asarray(r2_multiplier_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if r2_multiplier_x.size == 1:
                 r2_multiplier_x = r2_multiplier_x * np.ones(n)
             elif r2_multiplier_x.size != n:
-                print(f"ERROR ({fname}): size of `r2_multiplier_x` is not valid")
-                return None, None, None, None
+                err_msg = f'{fname}: size of `r2_multiplier_x` is not valid'
+                raise CovModelError(err_msg)
+
             adapt_cov_model = True
         if r3_multiplier_x is not None:
             if omni_dir:
-                print(f"ERROR ({fname}): `r3_multiplier_x` cannot be used with 1D covariance model")
-                return None, None, None, None
+                err_msg = f'{fname}: `r3_multiplier_x` cannot be used with 1D covariance model'
+                raise CovModelError(err_msg)
+
             elif d == 2:
-                print(f"ERROR ({fname}): `r3_multiplier_x` cannot be used with 2D covariance model")
-                return None, None, None, None
+                err_msg = f'{fname}: `r3_multiplier_x` cannot be used with 2D covariance model'
+                raise CovModelError(err_msg)
+
             r3_multiplier_x = np.asarray(r3_multiplier_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if r3_multiplier_x.size == 1:
                 r3_multiplier_x = r3_multiplier_x * np.ones(n)
             elif r3_multiplier_x.size != n:
-                print(f"ERROR ({fname}): size of `r3_multiplier_x` is not valid")
-                return None, None, None, None
+                err_msg = f'{fname}: size of `r3_multiplier_x` is not valid'
+                raise CovModelError(err_msg)
+
             adapt_cov_model = True
 
     # Do loo
@@ -8563,8 +10768,9 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
                 for i in range(n):
                     indx = np.sum((x-x[i])**2, axis=1) >= dmin2
                     if np.all(~indx):
-                        print(f"ERROR ({fname}): `dmin` is too large: no more point for evaluation")
-                        return None, None, None, None
+                        err_msg = f'{fname}: `dmin` is too large: no more point for evaluation'
+                        raise CovModelError(err_msg)
+
                     # adapt kwds
                     if mean_x is not None:
                         interpolator_kwargs['mean_x'] = mean_x[indx]
@@ -8597,8 +10803,9 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
                 for i in range(n):
                     indx = np.sum((x-x[i])**2, axis=1) >= dmin2
                     if np.all(~indx):
-                        print(f"ERROR ({fname}): `dmin` is too large: no more point for evaluation")
-                        return None, None, None, None
+                        err_msg = f'{fname}: `dmin` is too large: no more point for evaluation'
+                        raise CovModelError(err_msg)
+
                     # adapt kwds
                     if mean_x is not None:
                         interpolator_kwargs['mean_x'] = mean_x[indx]
@@ -8620,8 +10827,9 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
                 for i in range(n):
                     indx = np.sum((x-x[i])**2, axis=1) >= dmin2
                     if np.all(~indx):
-                        print(f"ERROR ({fname}): `dmin` is too large: no more point for evaluation")
-                        return None, None, None, None
+                        err_msg = f'{fname}: `dmin` is too large: no more point for evaluation'
+                        raise CovModelError(err_msg)
+
                     # adapt cov_model
                     cov_model_cp = copyCovModel(cov_model)
                     if w_multiplier_x is not None:
@@ -8641,8 +10849,9 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
                 for i in range(n):
                     indx = np.sum((x-x[i])**2, axis=1) >= dmin2
                     if np.all(~indx):
-                        print(f"ERROR ({fname}): `dmin` is too large: no more point for evaluation")
-                        return None, None, None, None
+                        err_msg = f'{fname}: `dmin` is too large: no more point for evaluation'
+                        raise CovModelError(err_msg)
+
                     # interpolation
                     v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
     else:
@@ -8856,11 +11065,20 @@ def cross_valid_loo(x, v, cov_model, significance=0.05, dmin=None,
 # Sequential Gaussian Simulation based an simple or ordinary kriging
 # ============================================================================
 # ----------------------------------------------------------------------------
-def sgs(x, v, xu, cov_model, method='simple_kriging',
-        mean_x=None, mean_xu=None, var_x=None, var_xu=None,
-        alpha_xu=None, beta_xu=None, gamma_xu=None,
-        dmax=None, nneighborMax=12,
-        nreal=1, seed=None, verbose=0):
+def sgs(x, v, xu, cov_model,
+        method='simple_kriging',
+        mean_x=None,
+        mean_xu=None,
+        var_x=None,
+        var_xu=None,
+        alpha_xu=None,
+        beta_xu=None,
+        gamma_xu=None,
+        dmax=None,
+        nneighborMax=12,
+        nreal=1,
+        seed=None,
+        verbose=0):
     """
     Performs Sequential Gaussian Simulation (SGS) at given location(s).
 
@@ -8996,8 +11214,8 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        print(f"ERROR ({fname}): `cov_model` is not stationary: krige can not be applied")
-        return None
+        err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+        raise CovModelError(err_msg)
 
     # Get dimension (d) from x
     if np.asarray(x).ndim == 1:
@@ -9023,27 +11241,28 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
     nu = xu.shape[0]
 
     if n == 0 or nu == 0:
-        print(f"ERROR ({fname}): size (number of points) of `x` or `xu` is 0")
-        return None
+        err_msg = f'{fname}: size (number of points) of `x` or `xu` is 0'
+        raise CovModelError(err_msg)
 
     # Check size of v
     v = np.asarray(v).reshape(-1)
     if v.size != n:
-        print(f"ERROR ({fname}): size of `v` is not valid")
-        return None
+        err_msg = f'{fname}: size of `v` is not valid'
+        raise CovModelError(err_msg)
 
     # Check dimension of x and xu
     if d != du:
-        print(f"ERROR ({fname}): `x` and `xu` do not have same dimension")
-        return None
+        err_msg = f'{fname}: `x` and `xu` do not have the same dimension'
+        raise CovModelError(err_msg)
 
     # Check dimension of cov_model and set if used as omni-directional model
     if isinstance(cov_model, CovModel1D):
         omni_dir = True
     else:
-        if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
-            print(f"ERROR ({fname}): `cov_model` is incompatible with dimension of points")
-            return None
+        if cov_model.__class__.__name__ != f'CovModel{d}D':
+            err_msg = f'{fname}: `cov_model` dimension is incompatible with dimension of points'
+            raise CovModelError(err_msg)
+
         omni_dir = False
 
     # Covariance function
@@ -9064,8 +11283,9 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
             if mean_x.size == 1:
                 mean_x = mean_x * np.ones(n)
             elif mean_x.size != n:
-                print(f"ERROR ({fname}): size of `mean_x` is not valid")
-                return None
+                err_msg = f'{fname}: size of `mean_x` is not valid'
+                raise CovModelError(err_msg)
+
         if mean_xu is None:
             mean_xu = mean_x[0] * np.ones(nu)
         else:
@@ -9073,34 +11293,38 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
             if mean_xu.size == 1:
                 mean_xu = mean_xu * np.ones(nu)
             elif mean_xu.size != nu:
-                print(f"ERROR ({fname}): size of `mean_xu` is not valid")
-                return None
+                err_msg = f'{fname}: size of `mean_xu` is not valid'
+                raise CovModelError(err_msg)
+
         if (var_x is None and var_xu is not None) or (var_x is not None and var_xu is None):
-            print(f"ERROR ({fname}): `var_x` and `var_xu` must be both specified")
-            return None
+            err_msg = f'{fname}: `var_x` and `var_xu` must both be specified'
+            raise CovModelError(err_msg)
+
         if var_x is not None:
             var_x = np.asarray(var_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if var_x.size == 1:
                 var_x = var_x * np.ones(n)
             elif var_x.size != n:
-                print(f"ERROR ({fname}): size of `var_x` is not valid")
-                return None
+                err_msg = f'{fname}: size of `var_x` is not valid'
+                raise CovModelError(err_msg)
+
             varUpdate_x = np.sqrt(var_x/cov0)
         if var_xu is not None:
             var_xu = np.asarray(var_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if var_xu.size == 1:
                 var_xu = var_xu * np.ones(nu)
             elif var_xu.size != nu:
-                print(f"ERROR ({fname}): size of `var_xu` is not valid")
-                return None
+                err_msg = f'{fname}: size of `var_xu` is not valid'
+                raise CovModelError(err_msg)
+
             varUpdate_xu = np.sqrt(var_xu/cov0)
 
     elif method == 'ordinary_kriging':
         ordinary_kriging = True
         mean_x, mean_xu, var_x, var_xu = None, None, None, None
     else:
-        print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise CovModelError(err_msg)
 
     # Rotation given by alpha, beta, gamma
     if omni_dir:
@@ -9124,8 +11348,9 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
                     rot = True
                     rot_mat_unique = False
                 else:
-                    print(f"ERROR ({fname}): size of `alpha_xu` is not valid")
-                    return None
+                    err_msg = f'{fname}: size of `alpha_xu` is not valid'
+                    raise CovModelError(err_msg)
+
         else: # d == 3
             # 3D
             if alpha_xu is None and beta_xu is None and gamma_xu is None:
@@ -9136,8 +11361,9 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
                     if alpha_xu.size == 1:
                         alpha_xu = alpha_xu * np.ones(nu)
                     elif alpha_xu.size != nu:
-                        print(f"ERROR ({fname}): size of `alpha_xu` is not valid")
-                        return None
+                        err_msg = f'{fname}: size of `alpha_xu` is not valid'
+                        raise CovModelError(err_msg)
+
                 else:
                     alpha_xu = np.zeros(nu)
                 if beta_xu is not None:
@@ -9145,8 +11371,9 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
                     if beta_xu.size == 1:
                         beta_xu = beta_xu * np.ones(nu)
                     elif beta_xu.size != nu:
-                        print(f"ERROR ({fname}): size of `beta_xu` is not valid")
-                        return None
+                        err_msg = f'{fname}: size of `beta_xu` is not valid'
+                        raise CovModelError(err_msg)
+
                 else:
                     beta_xu = np.zeros(nu)
                 if gamma_xu is not None:
@@ -9154,8 +11381,9 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
                     if gamma_xu.size == 1:
                         gamma_xu = gamma_xu * np.ones(nu)
                     elif gamma_xu.size != nu:
-                        print(f"ERROR ({fname}): size of `gamma_xu` is not valid")
-                        return None
+                        err_msg = f'{fname}: size of `gamma_xu` is not valid'
+                        raise CovModelError(err_msg)
+
                 else:
                     gamma_xu = np.zeros(nu)
                 if np.unique(np.array((alpha_xu, beta_xu, gamma_xu)).T, axis=0).shape[0] == 1:
@@ -9181,8 +11409,8 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
     # Check that all data points (locations) are distinct
     for i in range(1, n):
         if np.any(np.isclose(np.sum((x[:i]-x[i])**2, axis=1), 0.0)):
-            print(f"ERROR ({fname}): `x` contains duplicated entries")
-            return None
+            err_msg = f'{fname}: `x` contains duplicated entries'
+            raise CovModelError(err_msg)
 
     # Identify points in xu that are in x
     ind_xu = []
@@ -9257,7 +11485,7 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
             if verbose > 0:
                 progress = int((j+k*nu_new)/(nreal*nu_new)*100.0)
                 if progress > progress_old:
-                    print(f'sgs {progress:3d}% ({k:3d} realizations done of {nreal})')
+                    print(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
                     progress_old = progress
             h = x_all[:(n+j)] - x0
             d2 = np.sum(h**2, axis=1)
@@ -9331,18 +11559,28 @@ def sgs(x, v, xu, cov_model, method='simple_kriging',
             vu[k, ind_xu_new[ind_u[j]]] = v_all[n+j]
 
     if verbose > 0:
-        print(f'sgs {100:3d}% ({nreal:3d} realizations done of {nreal})')
+        print(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
 
     return vu
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def sgs_mp(x, v, xu, cov_model, method='simple_kriging',
-           mean_x=None, mean_xu=None, var_x=None, var_xu=None,
-           alpha_xu=None, beta_xu=None, gamma_xu=None,
-           dmax=None, nneighborMax=12,
-           nreal=1, seed=None, verbose=0,
-           nproc=-1):
+def sgs_mp(
+        x, v, xu, cov_model,
+        method='simple_kriging',
+        mean_x=None,
+        mean_xu=None,
+        var_x=None,
+        var_xu=None,
+        alpha_xu=None,
+        beta_xu=None,
+        gamma_xu=None,
+        dmax=None,
+        nneighborMax=12,
+        nreal=1,
+        seed=None,
+        verbose=0,
+        nproc=-1):
     """
     Computes the same as the function :func:`covModel.sgs`, using multiprocessing.
 
@@ -9384,7 +11622,7 @@ def sgs_mp(x, v, xu, cov_model, method='simple_kriging',
     ids_proc = [i*q + min(i, r) for i in range(n+1)]
 
     if verbose > 0:
-        print(f'Running sgs on {n} processes...')
+        print(f'{fname}: running sgs on {n} processes...')
 
     # Set seed (base)
     if seed is None:
@@ -9412,8 +11650,9 @@ def sgs_mp(x, v, xu, cov_model, method='simple_kriging',
     # Get result from each process
     out = [w.get() for w in out_pool]
     if np.any([x is None for x in out]):
-        print(f"ERROR ({fname}): an error occurs on a process (worker)")
-        return None
+        err_msg = f'{fname}: an error occured on a process (worker)'
+        raise CovModelError(err_msg)
+
     vu = np.vstack(out)
 
     return vu
@@ -9475,7 +11714,7 @@ def sgs_mp(x, v, xu, cov_model, method='simple_kriging',
 #
 #     # Prevent calculation if covariance model is not stationary
 #     if not cov_model.is_stationary():
-#         print(f"ERROR ({fname}): `cov_model` is not stationary: sgs can not be applied")
+#         print(f"ERROR ({fname}): `cov_model` is not stationary: sgs cannot be applied")
 #         return None
 #
 #     # Get dimension (d) from x
@@ -9502,7 +11741,7 @@ def sgs_mp(x, v, xu, cov_model, method='simple_kriging',
 #         return None
 #
 #     # Check dimension of cov_model and set if used as omni-directional model
-#     if cov_model.__class__.__name__ != 'CovModel{}D'.format(d):
+#     if cov_model.__class__.__name__ != f'CovModel{d}D':
 #         if isinstance(cov_model, CovModel1D):
 #             omni_dir = True
 #         else:
@@ -9631,7 +11870,7 @@ def sgs_mp(x, v, xu, cov_model, method='simple_kriging',
 #                             np.hstack((mat[ind[:nj], ind[nj]], np.array([1.]))) # second member
 #                         )
 #                 except:
-#                     print(f"ERROR ({fname}): unable to solve kriging system...")
+#                     print(f"ERROR ({fname}): cannot solve kriging system...")
 #                     return None
 #                 # Mean (kriged) value at xu[k]
 #                 mu = np.hstack((v, vu[i, indu[:j]])).dot(w[:nj])
@@ -9644,7 +11883,7 @@ def sgs_mp(x, v, xu, cov_model, method='simple_kriging',
 #                             mat[ind[:nj], ind[nj]], # second member
 #                         )
 #                 except:
-#                     print(f"ERROR ({fname}): unable to solve kriging system...")
+#                     print(f"ERROR ({fname}): cannot solve kriging system...")
 #                     return None
 #                 # Mean (kriged) value at xu[k]
 #                 mu = mean[ind[nj]] + (np.hstack((v, vu[i, indu[:j]])) - mean[ind[:nj]]).dot(w[:nj])

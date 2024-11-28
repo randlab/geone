@@ -22,6 +22,14 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams as mpl_rcParams
 import matplotlib.colors as mcolors
 
+# ============================================================================
+class ImgplotError(Exception):
+    """
+    Custom exception related to `imgplot` module.
+    """
+    pass
+# ============================================================================
+
 # ----------------------------------------------------------------------------
 def drawImage2D(
         im, ix=None, iy=None, iz=None, iv=None,
@@ -49,6 +57,7 @@ def drawImage2D(
         colorbar_extend='neither',
         colorbar_aspect=20, colorbar_pad_fraction=1.0,
         showColorbar=True, removeColorbar=False, showColorbarOnly=0,
+        verbose=1,
         **kwargs):
     # animated : bool, default: False
     #     keyword argument passed to `matplotlib.pyplot.imshow` for animation...
@@ -89,7 +98,7 @@ def drawImage2D(
         `matplotlib.pyplot.get_cmap(cmap)`)
 
     alpha : float, optional
-        value of the "alpha" channel (for transparency); 
+        value of the "alpha" channel (for transparency);
         by default (`None`): `alpha=1.0` is used (no transparency)
 
     excludedVal : sequence of values, or single value, optional
@@ -259,6 +268,9 @@ def drawImage2D(
             - `showColorbarOnly=2`: an image of same color as the background is \
             drawn onto the plotted image
 
+    verbose : int, default: 1
+        verbose mode, higher implies more printing (info)
+
     kwargs : dict
         additional keyword arguments : each keyword argument with the key
         'xxx_<name>' will be passed as keyword argument with the key '<name>' to
@@ -271,29 +283,29 @@ def drawImage2D(
 
             *   - string (prefix)
                 - method from `Axes` from `matplotlib`
-            *   - 'title\_'         
+            *   - 'title\_'
                 - `ax.set_title()`
-            *   - 'xlabel\_'        
+            *   - 'xlabel\_'
                 - `ax.set_xlabel()`
-            *   - 'xticks\_'        
+            *   - 'xticks\_'
                 - `ax.set_xticks()`
-            *   - 'xticklabels\_'   
+            *   - 'xticklabels\_'
                 - `ax.set_xticklabels()`
-            *   - 'ylabel\_'        
+            *   - 'ylabel\_'
                 - `ax.set_ylabel()`
-            *   - 'yticks\_'        
+            *   - 'yticks\_'
                 - `ax.set_yticks()`
-            *   - 'yticklabels\_'   
+            *   - 'yticklabels\_'
                 - `ax.set_yticklabels()`
-            *   - 'clabel\_'        
+            *   - 'clabel\_'
                 - `cbar.set_label()`
-            *   - 'cticks\_'        
+            *   - 'cticks\_'
                 - `cbar.set_ticks()`
-            *   - 'cticklabels\_'   
+            *   - 'cticklabels\_'
                 - `cbar.ax.set_yticklabels()`
 
         for examples:
-        
+
         - 'title_fontsize', '<x|y|c>label_fontsize' (keys)
         - 'title_fontweight', '<x|y|c>label_fontweight' (keys), with \
         possible values: numeric value in 0-1000 or \
@@ -320,7 +332,7 @@ def drawImage2D(
     # - 'yticklabels\_'   fun: ax.set_yticklabels()
     # - 'clabel\_'        fun: cbar.set_label()
     # - 'cticks\_'        fun: cbar.set_ticks()
-    # - 'cticklabels\_'   fun: cbar.ax.set_yticklabels()        
+    # - 'cticklabels\_'   fun: cbar.ax.set_yticklabels()
     fname = 'drawImage2D'
 
     # Initialization for output
@@ -339,9 +351,8 @@ def drawImage2D(
                 iv = im.nv + iv
 
             if iv < 0 or iv >= im.nv:
-                print(f'ERROR ({fname}): invalid `iv` index!')
-                return imout
-                #return (ax, cbar)
+                err_msg = f'{fname}: invalid `iv` index'
+                raise ImgplotError(err_msg)
 
     # Check slice direction and indices
     n = int(ix is not None) + int(iy is not None) + int(iz is not None)
@@ -356,9 +367,8 @@ def drawImage2D(
                 ix = im.nx + ix
 
             if ix < 0 or ix >= im.nx:
-                print(f'ERROR ({fname}): invalid `ix` index!')
-                return imout
-                #return (ax, cbar)
+                err_msg = f'{fname}: invalid `ix` index'
+                raise ImgplotError(err_msg)
 
             sliceDir = 'x'
 
@@ -367,9 +377,8 @@ def drawImage2D(
                 iy = im.ny + iy
 
             if iy < 0 or iy >= im.ny:
-                print(f'ERROR ({fname}): invalid `iy` index!')
-                return imout
-                #return (ax, cbar)
+                err_msg = f'{fname}: invalid `iy` index'
+                raise ImgplotError(err_msg)
 
             sliceDir = 'y'
 
@@ -378,16 +387,14 @@ def drawImage2D(
                 iz = im.nz + iz
 
             if iz < 0 or iz >= im.nz:
-                print(f'ERROR ({fname}): invalid `iz` index!')
-                return imout
-                #return (ax, cbar)
+                err_msg = f'{fname}: invalid `iz` index'
+                raise ImgplotError(err_msg)
 
             sliceDir = 'z'
 
     else: # n > 1
-        print(f'ERROR ({fname}): slice specified in more than one direction!')
-        return imout
-        #return (ax, cbar)
+        err_msg = f'{fname}: slice specified in more than one direction'
+        raise ImgplotError(err_msg)
 
     # Extract what to be plotted
     if sliceDir == 'x':
@@ -435,33 +442,29 @@ def drawImage2D(
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid `cmap` string!')
-            return imout
-            #return (ax, cbar)
+            err_msg = f'{fname}: invalid `cmap` string'
+            raise ImgplotError(err_msg)
 
     if categ:
         # --- Treat categorical variable ---
         if categCol is not None \
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
-            return imout
-            #return (ax, cbar)
+            err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            raise ImgplotError(err_msg)
 
         # Get array 'dval' of displayed values
         if categVal is not None:
-            dval = np.array(categVal).reshape(-1) # force to be an 1d array
+            dval = np.array(categVal).reshape(-1) # force to be a 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
-                return imout
-                #return (ax, cbar)
+                err_msg = f'{fname}: `categVal` contains duplicated entries'
+                raise ImgplotError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
-                return imout
-                #return (ax, cbar)
+                err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                raise ImgplotError(err_msg)
 
         else:
             # Possibly exclude values from zz
@@ -472,8 +475,8 @@ def drawImage2D(
             # Get the unique value in zz
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
 
-        if not len(dval): # len(dval) == 0
-            print("Warning: no value to be drawn!")
+        if not len(dval) and verbose > 0: # len(dval) == 0
+            print(f'{fname}: WARNING: no value to be drawn!')
 
         # Replace dval[i] by i in zz and other values by np.nan
         zz2 = np.array(zz) # copy array
@@ -491,11 +494,13 @@ def drawImage2D(
                 # colorList = [mcolors.ColorConverter().to_rgba(categCol[i]) for i in range(len(dval))]
 
             elif categColCycle:
-                print("Warning: 'categCol' is used cyclically (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
                 colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
 
             else:
-                print("Warning: 'categCol' not used (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
@@ -519,8 +524,8 @@ def drawImage2D(
             cticks = range(len(dval))
 
         if cticklabels is None:
-            #cticklabels = ['{:.3g}'.format(v) for v in cticks]
-            cticklabels = ['{:.3g}'.format(v) for v in dval]
+            #cticklabels = [f'{v:.3g}' for v in cticks]
+            cticklabels = [f'{v:.3g}' for v in dval]
 
         # Reset cextend if needed
         colorbar_extend = 'neither'
@@ -529,7 +534,7 @@ def drawImage2D(
         # --- Treat continuous variable ---
         # Possibly exclude values from zz
         if excludedVal is not None:
-            for val in np.array(excludedVal).reshape(-1): # force to be an 1d array
+            for val in np.array(excludedVal).reshape(-1): # force to be a 1d array
                 np.putmask(zz, zz == val, np.nan)
 
     # Generate "sub-dictionaries" from kwargs
@@ -717,7 +722,8 @@ def get_colors_from_values(
         categ=False, categVal=None,
         categCol=None, categColCycle=False, categColbad=ccol.cbad_def,
         vmin=None, vmax=None,
-        cmin=None, cmax=None):
+        cmin=None, cmax=None,
+        verbose=1):
     """
     Gets the colors for given values, according to color settings as used in function :func:`imgplot.drawImage2D`.
 
@@ -727,7 +733,7 @@ def get_colors_from_values(
         values for which the colors have to be retrieved
 
     cmap : see function :func:`imgplot.drawImage2D`
-    
+
     alpha : see function :func:`imgplot.drawImage2D`
 
     excludedVal : see function :func:`imgplot.drawImage2D`
@@ -739,20 +745,23 @@ def get_colors_from_values(
     categCol : see function :func:`imgplot.drawImage2D`
 
     categColCycle : see function :func:`imgplot.drawImage2D`
-    
+
     categColbad : see function :func:`imgplot.drawImage2D`
 
     vmin : see function :func:`imgplot.drawImage2D`
 
     vmax : see function :func:`imgplot.drawImage2D`
-    
+
     cmin : float, optional
         alternative keyword for `vmin` (for compatibility with color settings
         in the functions of the module `geone.imgplot3d`)
-    
+
     cmax : float, optional
         alternative keyword for `vmax` (for compatibility with color settings
         in the functions of the module `geone.imgplot3d`)
+
+    verbose : int, default: 1
+        verbose mode, higher implies more printing (info)
 
     Returns
     -------
@@ -763,12 +772,12 @@ def get_colors_from_values(
 
     # Check vmin, cmin and vmax, cmax
     if vmin is not None and cmin is not None:
-        print(f'ERROR ({fname}): use `vmin` or `cmin` (not both)')
-        return None
+        err_msg = f'{fname}: use `vmin` or `cmin` (not both)'
+        raise ImgplotError(err_msg)
 
     if vmax is not None and cmax is not None:
-        print(f'ERROR ({fname}): use `vmax` or `cmax` (not both)')
-        return None
+        err_msg = f'{fname}: use `vmax` or `cmax` (not both)'
+        raise ImgplotError(err_msg)
 
     if vmin is None:
         vmin = cmin
@@ -785,37 +794,29 @@ def get_colors_from_values(
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid `cmap` string!')
-            return None
-            # return imout
-            # #return (ax, cbar)
+            err_msg = f'{fname}: invalid `cmap` string'
+            raise ImgplotError(err_msg)
 
     if categ:
         # --- Treat categorical variable ---
         if categCol is not None \
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
-            return None
-            # return imout
-            # #return (ax, cbar)
+            err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            raise ImgplotError(err_msg)
 
         # Get array 'dval' of displayed values
         if categVal is not None:
-            dval = np.array(categVal).reshape(-1) # force to be an 1d array
+            dval = np.array(categVal).reshape(-1) # force to be a 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
-                return None
-                # return imout
-                # #return (ax, cbar)
+                err_msg = f'{fname}: `categVal` contains duplicated entries'
+                raise ImgplotError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
-                return None
-                # return imout
-                # #return (ax, cbar)
+                err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                raise ImgplotError(err_msg)
 
         else:
             # Possibly exclude values from zz
@@ -826,8 +827,8 @@ def get_colors_from_values(
             # Get the unique value in zz
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
 
-        if not len(dval): # len(dval) == 0
-            print("Warning: no value to be drawn!")
+        if not len(dval) and verbose > 0: # len(dval) == 0
+            print(f'{fname}: WARNING: no value to be drawn!')
 
         # Replace dval[i] by i in zz and other values by np.nan
         zz2 = np.array(zz) # copy array
@@ -845,11 +846,13 @@ def get_colors_from_values(
                 # colorList = [mcolors.ColorConverter().to_rgba(categCol[i]) for i in range(len(dval))]
 
             elif categColCycle:
-                print("Warning: 'categCol' is used cyclically (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
                 colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
 
             else:
-                print("Warning: 'categCol' not used (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
@@ -872,7 +875,7 @@ def get_colors_from_values(
         # --- Treat continuous variable ---
         # Possibly exclude values from zz
         if excludedVal is not None:
-            for v in np.array(excludedVal).reshape(-1): # force to be an 1d array
+            for v in np.array(excludedVal).reshape(-1): # force to be a 1d array
                 np.putmask(zz, zz == v, np.nan)
 
         if np.all(np.isnan(zz)):
@@ -908,12 +911,12 @@ def drawImage2Drgb(im, nancol=(1.0, 0.0, 0.0)):
 
     # Check image parameters
     if im.nz != 1:
-        print(f"ERROR ({fname}): `im.nz` must be 1")
-        return None
+        err_msg = f'{fname}: `im.nz` must be 1'
+        raise ImgplotError(err_msg)
 
     if im.nv != 3 and im.nv != 4:
-        print(f"ERROR ({fname}): `im.nv` must be 3 or 4")
-        return None
+        err_msg = f'{fname}: `im.nv` must be 3 or 4'
+        raise ImgplotError(err_msg)
 
     vv = im.val.reshape(im.nv, -1).T
 
@@ -938,13 +941,15 @@ def drawGeobodyMap2D(im, iv=0):
     im : :class:`geone.img.Img`
         input image, with variable of index `iv` interpreted as geobody labels,
         i.e.:
-        
+
         - value 0: cell not in the considered medium,
         - value n > 0: cell in the n-th geobody (connected component)
 
     iv : int, default: 0
         index of the variable to be displayed
     """
+    # fname = 'drawGeobodyMap2D'
+
     categ = True
     ngeo = int(im.val[iv].max())
     categVal = [i for i in range(1, ngeo+1)]
@@ -970,12 +975,15 @@ def drawGeobodyMap2D(im, iv=0):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def writeImage2Dppm(im, filename,
-                    ix=None, iy=None, iz=None, iv=0,
-                    cmap=ccol.cmap_def,
-                    excludedVal=None,
-                    categ=False, categVal=None, categCol=None,
-                    vmin=None, vmax=None):
+def writeImage2Dppm(
+        im,
+        filename,
+        ix=None, iy=None, iz=None, iv=0,
+        cmap=ccol.cmap_def,
+        excludedVal=None,
+        categ=False, categVal=None, categCol=None,
+        vmin=None, vmax=None,
+        verbose=1):
     """
     Writes an image in a file in ppm format.
 
@@ -1011,6 +1019,9 @@ def writeImage2Dppm(im, filename,
     vmin : see function :func:`imgplot.drawImage2D`
 
     vmax : see function :func:`imgplot.drawImage2D`
+
+    verbose : int, default: 1
+        verbose mode, higher implies more printing (info)
     """
     fname = 'writeImage2Dppm'
 
@@ -1019,8 +1030,8 @@ def writeImage2Dppm(im, filename,
         iv = im.nv + iv
 
     if iv < 0 or iv >= im.nv:
-        print(f'ERROR ({fname}): invalid `iv` index!')
-        return None
+        err_msg = f'{fname}: invalid `iv` index'
+        raise ImgplotError(err_msg)
 
     # Check slice direction and indices
     n = int(ix is not None) + int(iy is not None) + int(iz is not None)
@@ -1035,8 +1046,8 @@ def writeImage2Dppm(im, filename,
                 ix = im.nx + ix
 
             if ix < 0 or ix >= im.nx:
-                print(f'ERROR ({fname}): invalid `ix` index!')
-                return None
+                err_msg = f'{fname}: invalid `ix` index'
+                raise ImgplotError(err_msg)
 
             sliceDir = 'x'
 
@@ -1045,8 +1056,8 @@ def writeImage2Dppm(im, filename,
                 iy = im.ny + iy
 
             if iy < 0 or iy >= im.ny:
-                print(f'ERROR ({fname}): invalid `iy` index!')
-                return None
+                err_msg = f'{fname}: invalid `iy` index'
+                raise ImgplotError(err_msg)
 
             sliceDir = 'y'
 
@@ -1055,14 +1066,14 @@ def writeImage2Dppm(im, filename,
                 iz = im.nz + iz
 
             if iz < 0 or iz >= im.nz:
-                print(f'ERROR ({fname}): invalid `iz` index!')
-                return None
+                err_msg = f'{fname}: invalid `iz` index'
+                raise ImgplotError(err_msg)
 
             sliceDir = 'z'
 
     else: # n > 1
-        print(f'ERROR ({fname}): slice specified in more than one direction!')
-        return None
+        err_msg = f'{fname}: slice specified in more than one direction'
+        raise ImgplotError(err_msg)
 
     # Extract what to be plotted
     if sliceDir == 'x':
@@ -1101,21 +1112,21 @@ def writeImage2Dppm(im, filename,
         if categCol is not None \
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
-            return None
+            err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            raise ImgplotError(err_msg)
 
         # Get array 'dval' of displayed values
         if categVal is not None:
-            dval = np.array(categVal).reshape(-1) # force to be an 1d array
+            dval = np.array(categVal).reshape(-1) # force to be a 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
-                return None
+                err_msg = f'{fname}: `categVal` contains duplicated entries'
+                raise ImgplotError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
-                return None
+                err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                raise ImgplotError(err_msg)
 
         else:
             # Possibly exclude values from zz
@@ -1127,7 +1138,8 @@ def writeImage2Dppm(im, filename,
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
 
         if not len(dval): # len(dval) == 0
-            print(f'ERROR ({fname}): no value to be drawn!')
+            err_msg = f'{fname}: no value to be drawn' # Warning instead and not raise error...
+            raise ImgplotError(err_msg)
 
         # Replace dval[i] by i in zz and other values by np.nan
         zz2 = np.array(zz) # copy array
@@ -1144,7 +1156,8 @@ def writeImage2Dppm(im, filename,
                 colorList = [categCol[i] for i in range(len(dval))]
 
             else:
-                print("Warning: 'categCol' not used (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
@@ -1172,7 +1185,7 @@ def writeImage2Dppm(im, filename,
             cticks = range(len(dval))
 
         if cticklabels is None:
-            cticklabels = ['{:.3g}'.format(v) for v in dval]
+            cticklabels = [f'{v:.3g}' for v in dval]
 
         # Reset cextend if needed
         colorbar_extend = 'neither'
@@ -1181,7 +1194,7 @@ def writeImage2Dppm(im, filename,
         # --- Treat continuous variable ---
         # Possibly exclude values from zz
         if excludedVal is not None:
-            for val in np.array(excludedVal).reshape(-1): # force to be an 1d array
+            for val in np.array(excludedVal).reshape(-1): # force to be a 1d array
                 np.putmask(zz, zz == val, np.nan)
 
     # Get dimension of zz, flip zz vertically, then reshape as a list of value
@@ -1289,11 +1302,11 @@ if __name__ == "__main__":
 
     plt.subplot(2,2,3)
     drawImage2D(imMean, vmin=vmin, vmax=vmax,
-                title='Mean over {} real'.format(nv),
+                title=f'Mean over {nv} real',
                 colorbar_extend='both')
 
     plt.subplot(2,2,4)
-    drawImage2D(imStd, title='Std over {} real'.format(nv))
+    drawImage2D(imStd, title=f'Std over {nv} real')
 
     # plt.tight_layout()
 
@@ -1342,20 +1355,20 @@ if __name__ == "__main__":
 
     plt.subplot(2,3,3)
     drawImage2D(imCatProp, iv=0, vmin=0, vmax=0.7, colorbar_extend='max',
-                title='Prop. of "{}" over {} real'.format(categ[0], nv))
+                title=f'Prop. of "{categ[0]}" over {nv} real')
 
     plt.subplot(2,3,4)
     drawImage2D(imCatProp, iv=1, vmin=0, vmax=0.7, colorbar_extend='max',
-                title='Prop. of "{}" over {} real'.format(categ[1], nv))
+                title=f'Prop. of "{categ[1]}" over {nv} real')
 
     plt.subplot(2,3,5)
     drawImage2D(imCatProp, iv=2, vmin=0, vmax=0.7, colorbar_extend='max',
-                title='Prop. of "{}" over {} real'.format(categ[2], nv))
+                title=f'Prop. of "{categ[2]}" over {nv} real')
 
     plt.subplot(2,3,6)
     drawImage2D(imCatProp, iv=3, vmin=0, vmax=0.7, colorbar_extend='max',
-                title='Prop. of "{}" over {} real'.format(categ[3], nv),
-                cticks=np.arange(0,.8,.1), cticklabels=['{:4.2f}'.format(i) for i in np.arange(0,.8,.1)],
+                title=f'Prop. of "{categ[3]}" over {nv} real',
+                cticks=np.arange(0,.8,.1), cticklabels=[f'{i:4.2f}' for i in np.arange(0,.8,.1)],
                 cticklabels_fontweight='bold')
 
     plt.suptitle('Categorized images...')

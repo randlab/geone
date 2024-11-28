@@ -15,7 +15,7 @@ Module for definition of custom colors and colormaps.
 - "default" color for "bad" value (nan)
     - `cbad_def = (.9, .9, .9, 0.5)` : default color for "bad" value (nan)
 
-- "default" color map 
+- "default" color map
     - `cmap_def`
 
 - some colors from "libreoffice" (merci Christoph!)
@@ -52,8 +52,8 @@ Module for definition of custom colors and colormaps.
                         col_chart09, col_chart10, col_chart11, col_chart12]`
     - `col_chart_list_s = [col_chart_list[i] for i in (8, 0, 11, 5, 3, 6, 7, 2, 9, 1, 10, 4)]`
 
-- pre-defined colormaps 
-    - `cmap1`, `cmap2`, `cmapW2B` (white to black), `cmapB2W` (black to white) 
+- pre-defined colormaps
+    - `cmap1`, `cmap2`, `cmapW2B` (white to black), `cmapB2W` (black to white)
 """
 
 import numpy as np
@@ -61,6 +61,14 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 
 from mpl_toolkits import axes_grid1
+
+# ============================================================================
+class CustomcolorsError(Exception):
+    """
+    Custom exception related to `customcolors` module.
+    """
+    pass
+# ============================================================================
 
 # ----------------------------------------------------------------------------
 def add_colorbar(im, aspect=20.0, pad_fraction=1.0, **kwargs):
@@ -77,7 +85,7 @@ def add_colorbar(im, aspect=20.0, pad_fraction=1.0, **kwargs):
 
     pad_fraction : float, default: 1.0
         padding fraction with respect to the color bar width; if w is the width
-        of the color bar, then the space between the image and the color bar will 
+        of the color bar, then the space between the image and the color bar will
         be of with `pad_fraction` * w
 
     kwargs : dict
@@ -87,6 +95,8 @@ def add_colorbar(im, aspect=20.0, pad_fraction=1.0, **kwargs):
     -----
     Code from https://nbviewer.jupyter.org/github/mgeier/python-audio/blob/master/plotting/matplotlib-colorbar.ipynb
     """
+    # fname = 'add_colorbar'
+
     divider = axes_grid1.make_axes_locatable(im.axes)
     width = axes_grid1.axes_size.AxesY(im.axes, aspect=1./aspect)
     pad = axes_grid1.axes_size.Fraction(pad_fraction, width)
@@ -97,14 +107,15 @@ def add_colorbar(im, aspect=20.0, pad_fraction=1.0, **kwargs):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def custom_cmap(cseq,
-                vseq=None,
-                ncol=256,
-                cunder=None,
-                cover=None,
-                cbad=None,
-                alpha=None,
-                cmap_name='custom_cmap'):
+def custom_cmap(
+        cseq,
+        vseq=None,
+        ncol=256,
+        cunder=None,
+        cover=None,
+        cbad=None,
+        alpha=None,
+        cmap_name='custom_cmap'):
     """
     Defines a custom color map given colors at transition values.
 
@@ -157,7 +168,7 @@ def custom_cmap(cseq,
         >>> #
         >>> # Create a custom colormap
         >>> #   - from blue to white for values from vmin to 0
-        >>> #   - from white to red for values from 0 to vmax 
+        >>> #   - from white to red for values from 0 to vmax
         >>> #   - with specified colors for "under", "over" and "bad" values
         >>> my_cmap = custom_cmap(
         >>>     ('blue', 'white', 'red'), vseq=(vmin,0,vmax),
@@ -181,18 +192,18 @@ def custom_cmap(cseq,
     if aseq.size == 1:
         aseq = aseq.flat[0] * np.ones(len(cseq))
     elif aseq.size != len(cseq):
-        print(f'ERROR ({fname}): length of `alpha` not compatible with `cseq`')
-        return None
+        err_msg = f'{fname}: length of `alpha` not compatible with `cseq`'
+        raise CustomcolorsError(err_msg)
 
     # Set vseqn: sequence of values rescaled in [0,1]
     if vseq is not None:
         if len(vseq) != len(cseq):
-            print(f'ERROR ({fname}): length of `vseq` and `cseq` differs')
-            return None
+            err_msg = f'{fname}: length of `vseq` and length of `cseq` differ'
+            raise CustomcolorsError(err_msg)
 
         if sum(np.diff(vseq) <= 0.0 ):
-            print(f'ERROR ({fname}): `vseq` is not an increasing sequence')
-            return None
+            err_msg = f'{fname}: `vseq` is not an increasing sequence'
+            raise CustomcolorsError(err_msg)
 
         # Linearly rescale vseq on [0,1]
         vseqn = (np.array(vseq,dtype=float) - vseq[0]) / (vseq[-1] - vseq[0])
@@ -421,8 +432,7 @@ if __name__ == "__main__":
     cbar = add_colorbar(im_plot, ticks=[vmin,vmax])
     # cbar.ax.set_yticklabels(cbar.get_ticks(), fontsize=16)
     cbar.set_ticks([vmin, 0, vmax])
-    cbar.ax.set_yticklabels(["min={}".format(vmin), 0, "max={}".format(vmax)],
-                            fontsize=16)
+    cbar.ax.set_yticklabels([f'min={vmin}', 0, f'max={vmax}'], fontsize=16)
 
     col = [0 for i in range(len(pz))]
     for i in range(len(pz)):

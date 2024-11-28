@@ -19,6 +19,14 @@ from geone import img
 from geone import geosclassicinterface as gci
 from geone import grf
 
+# ============================================================================
+class MultiGaussianError(Exception):
+    """
+    Custom exception related to `multiGaussian` module.
+    """
+    pass
+# ============================================================================
+
 # ----------------------------------------------------------------------------
 def multiGaussianRun(
         cov_model,
@@ -107,7 +115,7 @@ def multiGaussianRun(
         indicates if the warnings encountered during the run are retrieved in
         output (`True`) or not (`False`) (see below)
 
-    verbose : int, default: 1
+    verbose : int, default: 2
         verbose mode, higher implies more printing (info)
 
     use_multiprocessing : bool, default: False
@@ -152,22 +160,18 @@ def multiGaussianRun(
         returned if `retrieve_warnings=True`
     """
     fname = 'multiGaussianRun'
-    if retrieve_warnings:
-        out = None, None
-    else:
-        out = None
 
     if mode not in ('simulation', 'estimation'):
-        print(f"ERROR ({fname}): `mode` invalid, should be 'simulation' or 'estimation' (default)")
-        return out
+        err_msg = f"{fname}: `mode` invalid, should be 'simulation' or 'estimation' (default)"
+        raise MultiGaussianError(err_msg)
 
     if algo not in ('fft', 'FFT', 'classic', 'CLASSIC'):
-        print(f"ERROR ({fname}): `algo` invalid, should be 'fft' (default) or 'classic'")
-        return out
+        err_msg = f"{fname}: `algo` invalid, should be 'fft' (default) or 'classic'"
+        raise MultiGaussianError(err_msg)
 
     if output_mode not in ('array', 'img'):
-        print(f"ERROR ({fname}): `output_mode` invalid, should be 'array' or 'img' (default)")
-        return out
+        err_msg = f"{fname}: `output_mode` invalid, should be 'array' or 'img' (default)"
+        raise MultiGaussianError(err_msg)
 
     # Set space dimension: d
     if hasattr(dimension, '__len__'):
@@ -179,35 +183,38 @@ def multiGaussianRun(
     # Check space dimension and covariance model
     if d == 1:
         if not isinstance(cov_model, gcm.CovModel1D):
-            print(f"ERROR ({fname}): `cov_model` invalid for 1D grid, should be a class: <geone.covModel.CovModel1D> ")
-            return out
+            err_msg = f'{fname}: `cov_model` invalid for 1D grid, should be a class `geone.covModel.CovModel1D`'
+            raise MultiGaussianError(err_msg)
+
     elif d == 2:
         if not isinstance(cov_model, gcm.CovModel2D) and not isinstance(cov_model, gcm.CovModel1D):
-            print(f"ERROR ({fname}): `cov_model` invalid for 2D grid, should be a class: <geone.covModel.CovModel2D> or <geone.covModel.CovModel1D>")
-            return out
+            err_msg = f'{fname}: `cov_model` invalid for 2D grid, should be a class `geone.covModel.CovModel2D` or `geone.covModel.CovModel1D`'
+            raise MultiGaussianError(err_msg)
+
     elif d == 3:
         if not isinstance(cov_model, gcm.CovModel3D) and not isinstance(cov_model, gcm.CovModel1D):
-            print(f"ERROR ({fname}): `cov_model` invalid for 3D grid, should be a class: <geone.covModel.CovModel3D> or <geone.covModel.CovModel1D>")
-            return out
+            err_msg = f'{fname}: `cov_model` invalid for 3D grid, should be a class `geone.covModel.CovModel3D` or `geone.covModel.CovModel1D`'
+            raise MultiGaussianError(err_msg)
+
     else:
-        print(f"ERROR ({fname}): unknown space dimension (check 2nd argurment `dimension`)")
-        return out
+        err_msg = f'{fname}: unknown space dimension (check 2nd argurment `dimension`)'
+        raise MultiGaussianError(err_msg)
 
     # Check (or set) argument 'spacing'
     if spacing is None:
         spacing = tuple(np.ones(d))
     else:
         if hasattr(spacing, '__len__') and len(spacing) != d:
-            print(f"ERROR ({fname}): `spacing` of incompatible length")
-            return out
+            err_msg = f'{fname}: `spacing` of incompatible length'
+            raise MultiGaussianError(err_msg)
 
     # Check (or set) argument 'origin'
     if origin is None:
         origin = tuple(np.zeros(d))
     else:
         if hasattr(origin, '__len__') and len(origin) != d:
-            print(f"ERROR ({fname}): `origin` of incompatible length")
-            return out
+            err_msg = f'{fname}: `origin` of incompatible length'
+            raise MultiGaussianError(err_msg)
 
     # Note: data (x, v) not checked here, directly passed to further function
 
@@ -240,23 +247,27 @@ def multiGaussianRun(
                     try:
                         mask = np.asarray(kwargs['mask']).reshape(np.atleast_1d(dimension)[::-1]).astype('bool')
                     except:
-                        print(f"ERROR ({fname}): `mask` is not valid")
-                        return None
+                        err_msg = f'{fname}: `mask` invalid'
+                        raise MultiGaussianError(err_msg)
+
                     apply_mask = True # to apply mask afterward
             if kwargs_unexpected_keys:
                 # set kwargs_unexpected_keys is not empty
-                s = "', '".join(kwargs_unexpected_keys)
-                print(f"WARNING ({fname}): unexpected keyword arguments (`{s}`) passed to function '{run_f.__module__}.{run_f.__name__}' were ignored")
+                if verbose > 0:
+                    s = "', '".join(kwargs_unexpected_keys)
+                    print(f"{fname}: WARNING: unexpected keyword arguments (`{s}`) passed to function '{run_f.__module__}.{run_f.__name__}' were ignored")
 
-        output = run_f(cov_model, dimension, spacing=spacing, origin=origin, x=x, v=v, verbose=verbose, **kwargs_new)
+        try:
+            output = run_f(cov_model, dimension, spacing=spacing, origin=origin, x=x, v=v, verbose=verbose, **kwargs_new)
+        except Exception as exc:
+            err_msg = f'{fname}: computation failed'
+            raise MultiGaussianError(err_msg) from exc
+
         # -> if mode = 'simulation':
         #    output is an array with (d+1) dimension (axis 0 corresponds to realizations)
         # -> if mode = 'estimation':
         #    output is an array (kriging estimate only) or a 2-tuple of array (kriging estimate and standard deviation);
         #    each array with d dimension
-        if (isinstance(output, tuple) and np.any([a is None for a in output])) or output is None:
-            print(f"ERROR ({fname}): an error occurred...")
-            return out
         if mode == 'estimation':
             if isinstance(output, tuple):
                 output = np.asarray(output)
@@ -303,13 +314,15 @@ def multiGaussianRun(
         kwargs_unexpected_keys = set(kwargs.keys()).difference(run_f_set_of_all_args)
         if kwargs_unexpected_keys:
             # set kwargs_unexpected_keys is not empty
-            s = "', '".join(kwargs_unexpected_keys)
-            print(f"WARNING ({fname}): unexpected keyword arguments (`{s}`) passed to function '{run_f.__module__}.{run_f.__name__}' were ignored")
+            if verbose > 0:
+                s = "', '".join(kwargs_unexpected_keys)
+                print(f"{fname}: WARNING: unexpected keyword arguments (`{s}`) passed to function '{run_f.__module__}.{run_f.__name__}' were ignored")
 
-        output = run_f(cov_model, dimension, spacing=spacing, origin=origin, x=x, v=v, verbose=verbose, **kwargs_new)
-        if output is None:
-            print(f'ERROR ({fname}): an error occurred...')
-            return out
+        try:
+            output = run_f(cov_model, dimension, spacing=spacing, origin=origin, x=x, v=v, verbose=verbose, **kwargs_new)
+        except Exception as exc:
+            err_msg = f'{fname}: computation failed'
+            raise MultiGaussianError(err_msg) from exc
 
         warnings = output['warnings']
         output = output['image']

@@ -13,6 +13,14 @@ Module for simulation of Markov Chain on finite sets of states.
 
 import numpy as np
 
+# ============================================================================
+class MarkovChainError(Exception):
+    """
+    Custom exception related to `markovChain` module.
+    """
+    pass
+# ============================================================================
+
 # ----------------------------------------------------------------------------
 def mc_kernel1(n, p, return_pinv=False):
     """
@@ -43,14 +51,16 @@ def mc_kernel1(n, p, return_pinv=False):
     -------
     kernel : 2d-array of shape (n, n)
         transition kernel (P) above
-    
+
     pinv : (1d-array of shape (n,)
-        invariant distibution of the kernel, that is 
-        
+        invariant distibution of the kernel, that is
+
         - [1/n, ... , 1/n]
 
         returned if `return_pinv=True`
     """
+    # fname = 'mc_kernel1'
+
     if p < 0 or p >= 1:
         return None
     r = (1.0 - p)/(n-1)
@@ -97,14 +107,16 @@ def mc_kernel2(n, p, return_pinv=False):
     -------
     kernel : 2d-array of shape (n, n)
         transition kernel (P) above
-    
+
     pinv : (1d-array of shape (n,)
         invariant distibution of the kernel, that is
-        
+
         - [1/(2(n-1)), 1/(n-1), ... , 1/(n-1), 1/(2(n-1))]
 
         returned if `return_pinv=True`
     """
+    # fname = 'mc_kernel2'
+
     if p < 0 or p >= 1:
         return None
     r = (1.0 - p)/2.0
@@ -137,7 +149,7 @@ def mc_kernel3(n, p, q, return_pinv=False):
             (1-p)q     & 0       & \\ldots   & (1-p)(1-q)  & p
             \\end{array}\\right)
 
-    where :math:`0\\leqslant p < 1` and :math:`0\\leqslant q \\leqslant 1` are 
+    where :math:`0\\leqslant p < 1` and :math:`0\\leqslant q \\leqslant 1` are
     two parameters.
 
     Parameters
@@ -147,7 +159,7 @@ def mc_kernel3(n, p, q, return_pinv=False):
 
     p : float
         number in the interval [0, 1[
-    
+
     q : float
         number in the interval [0, 1]
 
@@ -158,14 +170,16 @@ def mc_kernel3(n, p, q, return_pinv=False):
     -------
     kernel : 2d-array of shape (n, n)
         transition kernel (P) above
-    
+
     pinv : (1d-array of shape (n,)
         invariant distibution of the kernel, that is
-        
+
         - [1/n, ... , 1/n]
 
         returned if `return_pinv=True`
     """
+    # fname = 'mc_kernel3'
+
     if p < 0 or p >= 1 or q < 0 or q > 1:
         return None
     r = (1.0 - p)*q
@@ -204,7 +218,7 @@ def mc_kernel4(n, p, q, return_pinv=False):
 
     p : float
         number in the interval [0, 1[
-    
+
     q : float
         number in the interval [0, 1[
 
@@ -215,14 +229,16 @@ def mc_kernel4(n, p, q, return_pinv=False):
     -------
     kernel : 2d-array of shape (n, n)
         transition kernel (P) above
-    
+
     pinv : (1d-array of shape (n,)
         invariant distibution of the kernel, that is
-        
+
         - 1/(2-p-q) * [(1-p)/(n-1), ... , (1-p)/(n-1), 1-q]
 
         returned if `return_pinv=True`
     """
+    # fname = 'mc_kernel4'
+
     if p < 0 or p >= 1 or q < 0 or q >= 1:
         return None
     kernel = np.vstack((np.hstack((np.diag(q*np.ones(n-1)), (1-q)*np.ones((n-1, 1)))),[(n-1)*[(1-p)/(n-1)]+[p]]))
@@ -236,7 +252,7 @@ def mc_kernel4(n, p, q, return_pinv=False):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def compute_mc_pinv(kernel, verbose=0):
+def compute_mc_pinv(kernel):
     """
     Computes the invariant distribution of a Markov chain for a given kernel.
 
@@ -244,8 +260,8 @@ def compute_mc_pinv(kernel, verbose=0):
     ----------
     kernel : 2d-array of shape (n, n)
         transition kernel of a Markov chain on a set of states
-        :math:`S=\\{0, \ldots, n-1\\}`; the element at row `i` and column `j` is 
-        the probability to have the state of index `j` at the next step given 
+        :math:`S=\\{0, \ldots, n-1\\}`; the element at row `i` and column `j` is
+        the probability to have the state of index `j` at the next step given
         the state `i` at the current step, i.e.
 
         - :math:`kernel[i][j] = P(X_{k+1}=j\\ \\vert\\ X_{k}=i)`
@@ -255,34 +271,32 @@ def compute_mc_pinv(kernel, verbose=0):
 
         In particular, every element of `kernel` is positive or zero, and its
         rows sum to one.
-    
-    verbose : int, default: 0
-        verbose mode, integer >=0, higher implies more display
 
     Returns
     -------
-    pinv : 1d-array of shape (n,) 
-        invariant distribution of the Markov chain, i.e. `pinv` is an eigen 
-        vector of eigen value `1` of the transpose of `kernel`: 
-        :math:`pinv\\cdot kernel= pinv`; note: 
+    pinv : 1d-array of shape (n,)
+        invariant distribution of the Markov chain, i.e. `pinv` is an eigen
+        vector of eigen value `1` of the transpose of `kernel`:
+        :math:`pinv\\cdot kernel= pinv`; note:
 
         - `None` is returned if no eigen value is equal to 1
         - if more than one eigen value is equal to 1, only the first corresponding\
         eigen vector computed by `numpy.linalg.eig` is returned
     """
     fname = 'compute_mc_pinv'
+
     valt, st = np.linalg.eig(kernel.T)
     ind = np.where(np.isclose(valt, 1.0))[0]
     if len(ind) == 0:
-        if verbose > 0:
-            print(f'ERROR ({fname}): no invariant distribution found')
-        return None
+        err_msg = f'{fname}: no invariant distribution found'
+        raise MarkovChainError(err_msg)
+
     pinv = np.real(st[:,ind[0]]/np.sum(st[:,ind[0]]))
     return pinv
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def compute_mc_kernel_rev(kernel, pinv=None, verbose=0):
+def compute_mc_kernel_rev(kernel, pinv=None):
     """
     Computes the reverse transition kernel of a Markov chain for a given kernel.
 
@@ -290,8 +304,8 @@ def compute_mc_kernel_rev(kernel, pinv=None, verbose=0):
     ----------
     kernel : 2d-array of shape (n, n)
         transition kernel of a Markov chain on a set of states
-        :math:`S=\\{0, \ldots, n-1\\}`; the element at row `i` and column `j` is 
-        the probability to have the state of index `j` at the next step given 
+        :math:`S=\\{0, \ldots, n-1\\}`; the element at row `i` and column `j` is
+        the probability to have the state of index `j` at the next step given
         the state `i` at the current step, i.e.
 
         - :math:`kernel[i][j] = P(X_{k+1}=j\\ \\vert\\ X_{k}=i)`
@@ -305,40 +319,43 @@ def compute_mc_kernel_rev(kernel, pinv=None, verbose=0):
     pinv : 1d-array of shape (n,), optional
         invariant distribution of the Markov chain;
         by default (`None`): `pinv` is automatically computed
-    
-    verbose : int, default: 0
-        verbose mode, integer >=0, higher implies more display
-    
+
     Returns
     -------
     kernel_rev : 2d-array of shape (n, n)
-        reverse transition kernel of the Markov chain, i.e. 
+        reverse transition kernel of the Markov chain, i.e.
 
         - :math:`kernel\_rev[i, j] = pinv[i]^{-1} \cdot kernel[j, i] \cdot pinv[j]`
     """
     fname = 'compute_mc_kernel_rev'
+    
     if pinv is None:
-        pinv = compute_mc_pinv(kernel, verbose)
+        try:
+            pinv = compute_mc_pinv(kernel)
+        except Exception as exc:
+            err_msg = f'{fname}: computing invariant distribution failed'
+            raise MarkovChainError(err_msg) from exc
+
     if pinv is None or np.any(np.isclose(pinv, 0)):
-        if verbose > 0:
-            print(f'ERROR ({fname}): kernel not reversible')
-        kernel_rev = None
-    else:
-        kernel_rev = (kernel/pinv).T*pinv
+        err_msg = f'{fname}: kernel not reversible'
+        raise MarkovChainError(err_msg)
+
+    kernel_rev = (kernel/pinv).T*pinv
+
     return kernel_rev
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def compute_mc_cov(kernel, pinv=None, nsteps=1, verbose=0):
+def compute_mc_cov(kernel, pinv=None, nsteps=1):
     """
-    Computes covariances of indicators for a Markov chain, accross time steps. 
+    Computes covariances of indicators for a Markov chain, accross time steps.
 
     Parameters
     ----------
     kernel : 2d-array of shape (n, n)
         transition kernel of a Markov chain on a set of states
-        :math:`S=\\{0, \ldots, n-1\\}`; the element at row `i` and column `j` is 
-        the probability to have the state of index `j` at the next step given 
+        :math:`S=\\{0, \ldots, n-1\\}`; the element at row `i` and column `j` is
+        the probability to have the state of index `j` at the next step given
         the state `i` at the current step, i.e.
 
         - :math:`kernel[i][j] = P(X_{k+1}=j\\ \\vert\\ X_{k}=i)`
@@ -352,21 +369,18 @@ def compute_mc_cov(kernel, pinv=None, nsteps=1, verbose=0):
     pinv : 1d-array of shape (n,), optional
         invariant distribution of the Markov chain;
         by default (`None`): `pinv` is automatically computed
-    
+
     nsteps : int, default: 1
         number of (time) steps for which the covariance is computed
-    
-    verbose : int, default: 0
-        verbose mode, integer >=0, higher implies more display
-    
+
     Returns
     -------
     mc_cov : 3d-array of shape (nstep, n, n)
-        covariances of indicators for a Markov chain X built from the kernel 
+        covariances of indicators for a Markov chain X built from the kernel
         and its invariant distribution:
-        
+
         - :math:`mc\_cov[l, i, j] = \operatorname{Cov}(X_k=i, X_{k+l}=j) = pinv[i] \cdot ((kernel^l)[i,j]- pinv[j])`
-        
+
         for `l=0,\\ldots,nsteps-1`, and :math:`0\leqslant i, j \leqslant n-1`
     """
     fname = 'compute_mc_cov'
@@ -378,11 +392,11 @@ def compute_mc_cov(kernel, pinv=None, nsteps=1, verbose=0):
     sinv = np.linalg.inv(s)
 
     if pinv is None:
-        pinv = compute_mc_pinv(kernel, verbose)
-        if pinv is None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): unable to compute covariances')
-            return None
+        try:
+            pinv = compute_mc_pinv(kernel)
+        except Exception as exc:
+            err_msg = f'{fname}: computing invariant distribution failed'
+            raise MarkovChainError(err_msg) from exc
 
     n = kernel.shape[0]
     mc_cov = np.zeros((nsteps, n, n))
@@ -394,24 +408,24 @@ def compute_mc_cov(kernel, pinv=None, nsteps=1, verbose=0):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def simulate_mc(kernel, 
-                nsteps, 
-                categVal=None, 
-                data_ind=None, data_val=None, 
-                pstep0=None,
-                pinv=None, 
-                kernel_rev=None, kernel_pow=None,
-                nreal=1,
-                verbose=0):    
+def simulate_mc(
+        kernel,
+        nsteps,
+        categVal=None,
+        data_ind=None, data_val=None,
+        pstep0=None,
+        pinv=None,
+        kernel_rev=None, kernel_pow=None,
+        nreal=1):
     """
     Generates (conditional) Markov chains for a given kernel.
-    
+
     Parameters
     ----------
     kernel : 2d-array of shape (n, n)
         transition kernel of a Markov chain on a set of states
-        :math:`S=\\{0, \ldots, n-1\\}`; the element at row `i` and column `j` is 
-        the probability to have the state of index `j` at the next step given 
+        :math:`S=\\{0, \ldots, n-1\\}`; the element at row `i` and column `j` is
+        the probability to have the state of index `j` at the next step given
         the state `i` at the current step, i.e.
 
         - :math:`kernel[i][j] = P(X_{k+1}=j\\ \\vert\\ X_{k}=i)`
@@ -425,23 +439,23 @@ def simulate_mc(kernel,
     nsteps : int
         length of each generated chain, number of time steps
 
-    categVal :1d-array of shape (n,), optional 
+    categVal :1d-array of shape (n,), optional
         values of categories (one value for each state `0, ..., n-1`);
         by default (`None`) : `categVal` is set to `[0, ..., n-1]`
-   
+
     data_ind : sequence, optional
-        index (time step) of conditioning locations; each index should be in 
+        index (time step) of conditioning locations; each index should be in
         `{0, 1, ..., nsteps-1}`
-    
+
     data_val : sequence, optional
-        values at conditioning locations (same length as `data_ind`); each value 
+        values at conditioning locations (same length as `data_ind`); each value
         should be in `categVal`
 
     pstep0 : 1d-array of shape (n,), optional
         distribution for step 0 of the chain, for unconditional simulation
         (used only if `data_ind=None` and `data_val=None`)
         by default (`None`): `pinv` is used (see below)
-    
+
     pinv : 1d-array of shape (n,), optional
         invariant distribution of the Markov chain;
         by default (`None`): `pinv` is automatically computed
@@ -457,20 +471,17 @@ def simulate_mc(kernel,
         - :math:`kernel\_pow[k] = kernel^k`
 
         note: only used for conditional simulation
-        
+
     nreal : int, default: 1
         number of realization(s), number of generated chain(s)
 
-    verbose : int, default: 0
-        verbose mode, integer >=0, higher implies more display
-    
     Returns
     -------
     x : 3d-array of shape (nreal, nsteps)
         generated Markov chain (conditional to `data_ind, data_val` if present), `x[i]` is
         the i-th realization
     """
-    fname = 'compute_mc_cov'
+    fname = 'simulate_mc'
 
     # Number of categories (order of the kernel)
     n = kernel.shape[0]
@@ -481,19 +492,17 @@ def simulate_mc(kernel,
     else:
         categVal = np.asarray(categVal)
         if categVal.ndim != 1 or categVal.shape[0] != n:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `categVal` not valid')
-            return None
+            err_msg = f'{fname}: `categVal` invalid'
+            raise MarkovChainError(err_msg)
+
         if len(np.unique(categVal)) != len(categVal):
-            if verbose > 0:
-                print(f'ERROR ({fname}): `categVal` contains duplicated values')
-            return None
+            err_msg = f'{fname}: `categVal` contains duplicated values'
+            raise MarkovChainError(err_msg)
 
     # Conditioning
     if (data_ind is None and data_val is not None) or (data_ind is not None and data_val is None):
-        if verbose > 0:
-            print(f'ERROR ({fname}): only one of `data_ind` and `data_val` is specified')
-        return None
+        err_msg = f'{fname}: `data_ind` and `data_val` must both be specified'
+        raise MarkovChainError(err_msg)
 
     if data_ind is None:
         nhd = 0
@@ -502,25 +511,25 @@ def simulate_mc(kernel,
         data_val = np.asarray(data_val, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         nhd = len(data_ind)
         if len(data_ind) != len(data_val):
-            if verbose > 0:
-                print(f'ERROR ({fname}): lengths of `data_ind` and `data_val` do not match')
-            return None
+            err_msg = f'{fname}: length of `data_ind` and length of `data_val` differ'
+            raise MarkovChainError(err_msg)
+
         # Check values
         if not np.all([xv in categVal for xv in data_val]):
-            if verbose > 0:
-                print(f'ERROR ({fname}): `data_val` contains an invalid value')
-            return None
+            err_msg = f'{fname}: `data_val` contains an invalid value'
+            raise MarkovChainError(err_msg)
+
         # Replace values by their index in categVal
         data_val = np.array([np.where(categVal==xv)[0][0] for xv in data_val], dtype='int')
 
     if nhd == 0:
         # Compute invariant distribution for kernel
         if pinv is None:
-            pinv = compute_mc_pinv(kernel, verbose)
-            if pinv is None:
-                if verbose > 0:
-                    print(f'ERROR ({fname}): unable to compute invariant distribution')
-                return None
+            try:
+                pinv = compute_mc_pinv(kernel)
+            except Exception as exc:
+                err_msg = f'{fname}: computing invariant distribution failed'
+                raise MarkovChainError(err_msg) from exc
 
         # Compute cdf for x0
         if pstep0 is not None:
@@ -548,11 +557,11 @@ def simulate_mc(kernel,
         if data_ind[inds[0]] > 0:
             # Compute reverse transition kernel
             if kernel_rev is None:
-                kernel_rev = compute_mc_kernel_rev(kernel, pinv=pinv, verbose=verbose)
-                if kernel_rev is None:
-                    if verbose > 0:
-                        print(f'ERROR ({fname}): unable to compute reverse kernel')
-                    return None
+                try:
+                    kernel_rev = compute_mc_kernel_rev(kernel, pinv=pinv)
+                except Exception as exc:
+                    err_msg = f'{fname}: computing reverse transition kernel failed'
+                    raise MarkovChainError(err_msg) from exc
 
             # Compute conditional cdf from the reverse transition kernel
             kernel_rev_cdf = np.cumsum(kernel_rev, axis=1)
@@ -582,9 +591,8 @@ def simulate_mc(kernel,
             #       Prob(x[k1]=i1 | x[k3]=i3) = kernel^(k3-k1)[i1, i3] > 0
             if np.any(np.isclose([kernel_pow[data_ind[inds[i+1]]-data_ind[inds[i]], int(data_val[inds[i]]), int(data_val[inds[i+1]])] for i in range(nhd-1)], 0)):
             # if np.any([kernel_pow[data_ind[inds[i+1]]-data_ind[inds[i]], int(data_val[inds[i]]), int(data_val[inds[i+1]])] < 1.e-20 for i in range(nhd-1)]):
-                if verbose > 0:
-                    print(f'ERROR ({fname}): invalid conditioning points wrt. kernel')
-                return None
+                err_msg = f'{fname}: invalid conditioning points wrt. kernel'
+                raise MarkovChainError(err_msg)
 
         # Generate X
         x = []

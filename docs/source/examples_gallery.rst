@@ -116,7 +116,8 @@ Tools for variogram analysis - variogram fitting - illustrated in various cases.
         ex_VA_data2D_3 - 2D with non-stationarity <notebooks/ex_vario_analysis_data2D_3_non_stationary>
         ex_VA_data3D_1 - 3D omni-directional      <notebooks/ex_vario_analysis_data3D_1_omnidirectional>
         ex_VA_data3D_2 - 3D with anisotropy       <notebooks/ex_vario_analysis_data3D_2_general>
-        ex_VA_data3D_3 - 3D with non-stationarity <notebooks/ex_vario_analysis_data3D_3_non_stationary>
+        ex_VA_data3D_3 - 3D omni horizonally only <notebooks/ex_vario_analysis_data3D_3_omni_horizontal>
+        ex_VA_data3D_4 - 3D with non-stationarity <notebooks/ex_vario_analysis_data3D_4_non_stationary>
 
 Pluri-Gaussian simulation (PGS)
 -------------------------------

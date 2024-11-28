@@ -15,6 +15,14 @@ import numpy as np
 import os
 
 # ============================================================================
+class BlockDataError(Exception):
+    """
+    Custom exception related to `blockdata` module.
+    """
+    pass
+# ============================================================================
+
+# ============================================================================
 class BlockData(object):
     """
     Class defining block data for one variable (for deesse).
@@ -36,7 +44,7 @@ class BlockData(object):
         - `nodeIndex[i][j]`: sequence of 3 floats, \
         node index in the simulation grid along x, y, z axis \
         of the j-th node of the i-th block
-        
+
     value : sequence of floats of length `nblock`, optional
         target value for each block (used if `blockDataUsage=1`)
 
@@ -87,6 +95,8 @@ class BlockData(object):
             maximal proportion of informed nodes in the block, above which the block
             data constraint is deactivated, for each block
         """
+        # fname = 'BlockData'
+
         self.blockDataUsage = blockDataUsage
         self.nblock = nblock
         self.nodeIndex = nodeIndex
@@ -159,8 +169,8 @@ def readBlockData(filename):
 
     # Check if the file exists
     if not os.path.isfile(filename):
-        print(f'ERROR ({fname}): invalid filename ({filename})')
-        return None
+        err_msg = f'{fname}: invalid filename ({filename})'
+        raise BlockDataError(err_msg)
 
     # Open the file in read mode
     with open(filename,'r') as ff:
@@ -211,6 +221,7 @@ def writeBlockData(bd, filename, fmt='.5g'):
         format string for target value, tolerance and active proportion (min
         and max) in the block data
     """
+    # fname = 'writeBlockData'
 
     if bd.blockDataUsage == 0:
         return None

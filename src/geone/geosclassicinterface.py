@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------------
 
 """
-Module for interfacing classical geostatistics programs (in C) for python 
+Module for interfacing classical geostatistics programs (in C) for python
 (estimation and simulation based on simple and ordinary kriging).
 """
 
@@ -23,6 +23,14 @@ from geone import covModel as gcm
 from geone.img import Img, PointSet
 
 version = [geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER]
+
+# ============================================================================
+class GeosclassicinterfaceError(Exception):
+    """
+    Custom exception related to `geosclassicinterface` module.
+    """
+    pass
+# ============================================================================
 
 # ----------------------------------------------------------------------------
 def img_py2C(im_py):
@@ -46,8 +54,12 @@ def img_py2C(im_py):
 
     err = geosclassic.MPDSMallocImage(im_c, im_py.nxyz(), im_py.nv)
     if err:
-        print(f'ERROR ({fname}): can not convert image from python to C')
-        return None
+        # Free memory on C side
+        geosclassic.MPDSFreeImage(im_c)
+        geosclassic.free_MPDS_IMAGE(im_c)
+        # Raise error
+        err_msg = f'{fname}: cannot convert image from python to C'
+        raise GeosclassicinterfaceError(err_msg)
 
     im_c.grid.nx = im_py.nx
     im_c.grid.ny = im_py.ny
@@ -95,6 +107,8 @@ def img_C2py(im_c):
     im_py : :class:`geone.img.Img`
         image in python
     """
+    # fname = 'img_C2py'
+
     nxyz = im_c.grid.nx * im_c.grid.ny * im_c.grid.nz
     nxyzv = nxyz * im_c.nvar
 
@@ -132,8 +146,8 @@ def ps_py2C(ps_py):
     fname = 'ps_py2C'
 
     if ps_py.nv < 4:
-        print(f'ERROR ({fname}): point set (python) have less than 4 variables')
-        return None
+        err_msg = f'{fname}: point set (python) have less than 4 variables'
+        raise GeosclassicinterfaceError(err_msg)
 
     nvar = ps_py.nv - 3
 
@@ -142,8 +156,12 @@ def ps_py2C(ps_py):
 
     err = geosclassic.MPDSMallocPointSet(ps_c, ps_py.npt, nvar)
     if err:
-        print(f'ERROR ({fname}): can not convert point set from python to C')
-        return None
+        # Free memory on C side
+        geosclassic.MPDSFreePointSet(ps_c)
+        geosclassic.free_MPDS_POINTSET(ps_c)
+        # Raise error
+        err_msg = f'{fname}: cannot convert point set from python to C'
+        raise GeosclassicinterfaceError(err_msg)
 
     ps_c.npoint = ps_py.npt
     ps_c.nvar = nvar
@@ -178,6 +196,8 @@ def ps_C2py(ps_c):
     ps_py : :class:`geone.img.PointSet`
         point set in python
     """
+    # fname = 'ps_C2py'
+
     varname = ['X', 'Y', 'Z'] + [geosclassic.mpds_get_varname(ps_c.varName, i) for i in range(ps_c.nvar)]
 
     v = np.zeros(ps_c.npoint*ps_c.nvar)
@@ -208,7 +228,11 @@ def ps_C2py(ps_c):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
+def covModel1Delem_py2C(
+        covModelElem_py,
+        nx, ny, nz,
+        sx, sy, sz,
+        ox, oy, oz):
     """
     Converts an elementary covariance model 1D from python to C.
 
@@ -220,7 +244,7 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModelElem_py : 2-tuple
         elementary covariance model 1D in python, `covModelElem_py` = (t, d),
         with:
-        
+
         * t : str
             type of elementary covariance model, can be
 
@@ -235,15 +259,15 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             - 'power'          (see function :func:`covModel.cov_pow`)
             - 'exponential_generalized' (see function :func:`covModel.cov_exp_gen`)
             - 'matern'         (see function :func:`covModel.cov_matern`)
-        
+
         * d : dict
             dictionary of required parameters to be passed to the elementary
             model `t` (value can be a "single value" or an array that matches
             the dimension of the simulation grid (for non-stationary
             covariance model)
-        
+
         e.g.
-        
+
         - (t, d) = ('spherical', {'w':2.0, 'r':1.5})
         - (t, d) = ('power', {'w':2.0, 'r':1.5, 's':1.7})
         - (t, d) = ('matern', {'w':2.0, 'r':1.5, 'nu':1.5})
@@ -259,7 +283,7 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     sx : float
         cell size along x axis
-                
+
     sy : float
         cell size along y axis
 
@@ -268,7 +292,7 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     ox : float
         origin of the grid along x axis (x coordinate of cell border)
-        
+
     oy : float
         origin of the grid along y axis (y coordinate of cell border)
 
@@ -281,9 +305,6 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     -------
     covModelElem_c : \(MPDS_COVMODELELEM \*\)
         elementary covariance model in C
-
-    flag : bool
-        indicates if the conversion has succeeded (`True`) or failed (`False`)
     """
     fname = 'covModel1Delem_py2C'
 
@@ -338,13 +359,26 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel1D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (1D) from python to C ('w' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
+            try:
+                covModelElem_c.weightImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (1D) from python to C ('w')"
+                raise GeosclassicinterfaceError(err_msg) from exc
 
     # ranges
     if r_flag:
@@ -358,16 +392,31 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel1D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (1D) from python to C ('r(x)' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
+            try:
+                covModelElem_c.rxImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (1D) from python to C ('r(x)')"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
         # ... range ry
         covModelElem_c.ryImageFlag = geosclassic.FALSE
         covModelElem_c.ryValue = 0.0
+
         # ... range rz
         covModelElem_c.rzImageFlag = geosclassic.FALSE
         covModelElem_c.rzValue = 0.0
@@ -383,19 +432,36 @@ def covModel1Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel1D from python to C ('s' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (1D) from python to C ('s' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.sImage = img_py2C(im)
+            try:
+                covModelElem_c.sImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (1D) from python to C ('s')"
+                raise GeosclassicinterfaceError(err_msg) from exc
 
-    return covModelElem_c, True
+    return covModelElem_c
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
+def covModel2Delem_py2C(
+        covModelElem_py,
+        nx, ny, nz,
+        sx, sy, sz,
+        ox, oy, oz):
     """
     Converts an elementary covariance model 2D from python to C.
 
@@ -407,7 +473,7 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModelElem_py : 2-tuple
         elementary covariance model 2D in python, `covModelElem_py` = (t, d),
         with:
-        
+
         * t : str
             type of elementary covariance model, can be
 
@@ -422,15 +488,15 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             - 'power'          (see function :func:`covModel.cov_pow`)
             - 'exponential_generalized' (see function :func:`covModel.cov_exp_gen`)
             - 'matern'         (see function :func:`covModel.cov_matern`)
-        
+
         * d : dict
             dictionary of required parameters to be passed to the elementary
             model `t` (value can be a "single value" or an array that matches
             the dimension of the simulation grid (for non-stationary
             covariance model)
-        
+
         e.g.
-        
+
         - (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5]})
         - (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5], 's':1.7})
         - (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5], 'nu':1.5})
@@ -446,7 +512,7 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     sx : float
         cell size along x axis
-                
+
     sy : float
         cell size along y axis
 
@@ -455,7 +521,7 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     ox : float
         origin of the grid along x axis (x coordinate of cell border)
-        
+
     oy : float
         origin of the grid along y axis (y coordinate of cell border)
 
@@ -468,9 +534,6 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     -------
     covModelElem_c : \(MPDS_COVMODELELEM \*\)
         elementary covariance model in C
-
-    flag : bool
-        indicates if the conversion has succeeded (`True`) or failed (`False`)
     """
     fname = 'covModel2Delem_py2C'
 
@@ -525,13 +588,26 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel2D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (2D) from python to C ('w' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
+            try:
+                covModelElem_c.weightImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (2D) from python to C ('w')"
+                raise GeosclassicinterfaceError(err_msg) from exc
 
     # ranges
     if r_flag:
@@ -545,13 +621,27 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel2D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (2D) from python to C ('r(x)' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
+            try:
+                covModelElem_c.rxImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (2D) from python to C ('r(x)')"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
         # ... range ry
         param = covModelElem_py[1]['r'][1]
         if np.size(param) == 1:
@@ -562,13 +652,27 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel2D from python to C ('r(y)' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (2D) from python to C ('r(y)' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.ryImage = img_py2C(im)
+            try:
+                covModelElem_c.ryImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (2D) from python to C ('r(y)')"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
         # ... range rz
         covModelElem_c.rzImageFlag = geosclassic.FALSE
         covModelElem_c.rzValue = 0.0
@@ -584,19 +688,36 @@ def covModel2Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel2D from python to C ('s' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (2D) from python to C ('s' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.sImage = img_py2C(im)
+            try:
+                covModelElem_c.sImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (2D) from python to C ('s')"
+                raise GeosclassicinterfaceError(err_msg) from exc
 
-    return covModelElem_c, True
+    return covModelElem_c
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
+def covModel3Delem_py2C(
+        covModelElem_py,
+        nx, ny, nz,
+        sx, sy, sz,
+        ox, oy, oz):
     """
     Converts an elementary covariance model 3D from python to C.
 
@@ -608,10 +729,10 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModelElem_py : 2-tuple
         elementary covariance model 3D in python, `covModelElem_py` = (t, d),
         with:
-        
+
         * t : str
             type of elementary covariance model, can be
-            
+
             - 'nugget'         (see function :func:`covModel.cov_nug`)
             - 'spherical'      (see function :func:`covModel.cov_sph`)
             - 'exponential'    (see function :func:`covModel.cov_exp`)
@@ -623,15 +744,15 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             - 'power'          (see function :func:`covModel.cov_pow`)
             - 'exponential_generalized' (see function :func:`covModel.cov_exp_gen`)
             - 'matern'         (see function :func:`covModel.cov_matern`)
-        
+
         * d : dict
             dictionary of required parameters to be passed to the elementary
             model `t` (value can be a "single value" or an array that matches
             the dimension of the simulation grid (for non-stationary
             covariance model)
-        
+
         e.g.
-        
+
         - (t, d) = ('spherical', {'w':2.0, 'r':[1.5, 2.5, 3.0]})
         - (t, d) = ('power', {'w':2.0, 'r':[1.5, 2.5, 3.0], 's':1.7})
         - (t, d) = ('matern', {'w':2.0, 'r':[1.5, 2.5, 3.0], 'nu':1.5})
@@ -647,7 +768,7 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     sx : float
         cell size along x axis
-                
+
     sy : float
         cell size along y axis
 
@@ -656,7 +777,7 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     ox : float
         origin of the grid along x axis (x coordinate of cell border)
-        
+
     oy : float
         origin of the grid along y axis (y coordinate of cell border)
 
@@ -669,9 +790,6 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     -------
     covModelElem_c : \(MPDS_COVMODELELEM \*\)
         elementary covariance model in C
-
-    flag : bool
-        indicates if the conversion has succeeded (`True`) or failed (`False`)
     """
     fname = 'covModel3Delem_py2C'
 
@@ -726,13 +844,26 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel3D from python to C ('w' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (3D) from python to C ('w' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.weightImage = img_py2C(im)
+            try:
+                covModelElem_c.weightImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (3D) from python to C ('w')"
+                raise GeosclassicinterfaceError(err_msg) from exc
 
     # ranges
     if r_flag:
@@ -746,13 +877,27 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel3D from python to C ('r(x)' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (3D) from python to C ('r(x)' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.rxImage = img_py2C(im)
+            try:
+                covModelElem_c.rxImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (3D) from python to C ('r(x)')"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
         # ... range ry
         param = covModelElem_py[1]['r'][1]
         if np.size(param) == 1:
@@ -763,13 +908,27 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel3D from python to C ('r(y)' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (3D) from python to C ('r(y)' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.ryImage = img_py2C(im)
+            try:
+                covModelElem_c.ryImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (3D) from python to C ('r(y)')"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
         # ... range rz
         param = covModelElem_py[1]['r'][2]
         if np.size(param) == 1:
@@ -780,13 +939,26 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel3D from python to C ('r(z)' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (3D) from python to C ('r(z)' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.rzImage = img_py2C(im)
+            try:
+                covModelElem_c.rzImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (3D) from python to C ('r(z)')"
+                raise GeosclassicinterfaceError(err_msg) from exc
 
     # s (additional parameter)
     if s_flag:
@@ -799,19 +971,36 @@ def covModel3Delem_py2C(covModelElem_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
             try:
                 param = np.asarray(param).reshape(nz, ny, nx)
             except:
-                print(f"ERROR ({fname}): can not convert covModel3D from python to C ('s' not compatible with simulation grid)")
-                return covModelElem_c, False
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (3D) from python to C ('s' not compatible with simulation grid)"
+                raise GeosclassicinterfaceError(err_msg)
+
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=param)
-            covModelElem_c.sImage = img_py2C(im)
+            try:
+                covModelElem_c.sImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeCovModelElem(covModelElem_c)
+                geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
+                # Raise error
+                err_msg = f"{fname}: cannot convert covModelElem (3D) from python to C ('s')"
+                raise GeosclassicinterfaceError(err_msg) from exc
 
-    return covModelElem_c, True
+    return covModelElem_c
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def covModel1D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
+def covModel1D_py2C(
+        covModel_py,
+        nx, ny, nz,
+        sx, sy, sz,
+        ox, oy, oz):
     """
     Converts a covariance model 1D from python to C.
 
@@ -834,7 +1023,7 @@ def covModel1D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     sx : float
         cell size along x axis
-                
+
     sy : float
         cell size along y axis
 
@@ -843,79 +1032,7 @@ def covModel1D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     ox : float
         origin of the grid along x axis (x coordinate of cell border)
-        
-    oy : float
-        origin of the grid along y axis (y coordinate of cell border)
 
-    oz : float
-        origin of the grid along z axis (z coordinate of cell border)
-
-        Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
-
-    Returns
-    -------
-    covModel_c : (MPDS_COVMODEL *)
-        covariance model in C
-
-    flag : bool
-        indicates if the conversion has succeeded (`True`) or failed (`False`)
-    """
-    covModel_c = geosclassic.malloc_MPDS_COVMODEL()
-    geosclassic.MPDSGeosClassicInitCovModel(covModel_c)
-
-    n = len(covModel_py.elem)
-    covModel_c.nelem = n
-    covModel_c.covModelElem = geosclassic.new_MPDS_COVMODELELEM_array(n)
-    for i, covModelElem in enumerate(covModel_py.elem):
-        covModelElem_c, flag = covModel1Delem_py2C(covModelElem, nx, ny, nz, sx, sy, sz, ox, oy, oz)
-        if flag:
-            geosclassic.MPDS_COVMODELELEM_array_setitem(covModel_c.covModelElem, i, covModelElem_c)
-        # geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
-        if not flag:
-            return covModel_c, False
-
-    # covModel_c.angle1, covModel_c.angle2, covModel_c.angle3: keep to 0.0
-    covModel_c.angle1 = 0.0
-    covModel_c.angle2 = 0.0
-    covModel_c.angle3 = 0.0
-
-    return covModel_c, True
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
-def covModel2D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
-    """
-    Converts a covariance model 2D from python to C.
-
-    Simulation grid geometry is specified in case of non-stationary covariance
-    model.
-
-    Parameters
-    ----------
-    covModel_py : :class:`geone.covModel.CovModel2D`
-        covariance model 2D in python
-    
-    nx : int
-        number of grid cells along x axis
-
-    ny : int
-        number of grid cells along y axis
-
-    nz : int
-        number of grid cells along z axis
-
-    sx : float
-        cell size along x axis
-                
-    sy : float
-        cell size along y axis
-
-    sz : float
-        cell size along z axis
-
-    ox : float
-        origin of the grid along x axis (x coordinate of cell border)
-        
     oy : float
         origin of the grid along y axis (y coordinate of cell border)
 
@@ -928,9 +1045,86 @@ def covModel2D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     -------
     covModel_c : \(MPDS_COVMODEL \*\)
         covariance model in C
+    """
+    fname = 'covModel1D_py2C'
 
-    flag : bool
-        indicates if the conversion has succeeded (`True`) or failed (`False`)
+    covModel_c = geosclassic.malloc_MPDS_COVMODEL()
+    geosclassic.MPDSGeosClassicInitCovModel(covModel_c)
+
+    n = len(covModel_py.elem)
+    covModel_c.nelem = n
+    covModel_c.covModelElem = geosclassic.new_MPDS_COVMODELELEM_array(n)
+    for i, covModelElem in enumerate(covModel_py.elem):
+        try:
+            covModelElem_c = covModel1Delem_py2C(covModelElem, nx, ny, nz, sx, sy, sz, ox, oy, oz)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f'{fname}: cannot convert covModel1D from python to C'
+            raise GeosclassicinterfaceError(err_msg) from exc
+
+        geosclassic.MPDS_COVMODELELEM_array_setitem(covModel_c.covModelElem, i, covModelElem_c)
+
+    # covModel_c.angle1, covModel_c.angle2, covModel_c.angle3: keep to 0.0
+    covModel_c.angle1 = 0.0
+    covModel_c.angle2 = 0.0
+    covModel_c.angle3 = 0.0
+
+    return covModel_c
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def covModel2D_py2C(
+        covModel_py,
+        nx, ny, nz,
+        sx, sy, sz,
+        ox, oy, oz):
+    """
+    Converts a covariance model 2D from python to C.
+
+    Simulation grid geometry is specified in case of non-stationary covariance
+    model.
+
+    Parameters
+    ----------
+    covModel_py : :class:`geone.covModel.CovModel2D`
+        covariance model 2D in python
+
+    nx : int
+        number of grid cells along x axis
+
+    ny : int
+        number of grid cells along y axis
+
+    nz : int
+        number of grid cells along z axis
+
+    sx : float
+        cell size along x axis
+
+    sy : float
+        cell size along y axis
+
+    sz : float
+        cell size along z axis
+
+    ox : float
+        origin of the grid along x axis (x coordinate of cell border)
+
+    oy : float
+        origin of the grid along y axis (y coordinate of cell border)
+
+    oz : float
+        origin of the grid along z axis (z coordinate of cell border)
+
+        Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
+
+    Returns
+    -------
+    covModel_c : \(MPDS_COVMODEL \*\)
+        covariance model in C
     """
     fname = 'covModel2D_py2C'
 
@@ -941,12 +1135,17 @@ def covModel2D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModel_c.nelem = n
     covModel_c.covModelElem = geosclassic.new_MPDS_COVMODELELEM_array(n)
     for i, covModelElem in enumerate(covModel_py.elem):
-        covModelElem_c, flag = covModel2Delem_py2C(covModelElem, nx, ny, nz, sx, sy, sz, ox, oy, oz)
-        if flag:
-            geosclassic.MPDS_COVMODELELEM_array_setitem(covModel_c.covModelElem, i, covModelElem_c)
-        # geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
-        if not flag:
-            return covModel_c, False
+        try:
+            covModelElem_c = covModel2Delem_py2C(covModelElem, nx, ny, nz, sx, sy, sz, ox, oy, oz)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f'{fname}: cannot convert covModel2D from python to C'
+            raise GeosclassicinterfaceError(err_msg) from exc
+
+        geosclassic.MPDS_COVMODELELEM_array_setitem(covModel_c.covModelElem, i, covModelElem_c)
 
     # covModel_c.angle2, covModel_c.angle3: keep to 0.0
     # angle1
@@ -959,23 +1158,42 @@ def covModel2D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         try:
             param = np.asarray(param).reshape(nz, ny, nx)
         except:
-            print(f"ERROR ({fname}): can not convert covModel2D from python to C ('alpha' not compatible with simulation grid)")
-            return covModel_c, False
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f"{fname}: cannot convert covModel2D from python to C ('alpha' not compatible with simulation grid)"
+            raise GeosclassicinterfaceError(err_msg)
+
         im = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=1, val=param)
-        covModel_c.angle1Image = img_py2C(im)
+        try:
+            covModel_c.angle1Image = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f"{fname}: cannot convert covModel2D from python to C ('alpha')"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
     # angle2
     covModel_c.angle2 = 0.0
+
     # angle3
     covModel_c.angle3 = 0.0
 
-    return covModel_c, True
+    return covModel_c
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
+def covModel3D_py2C(
+        covModel_py,
+        nx, ny, nz,
+        sx, sy, sz,
+        ox, oy, oz):
     """
     Converts a covariance model 3D from python to C.
 
@@ -986,7 +1204,7 @@ def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     ----------
     covModel_py : :class:`geone.covModel.CovModel3D`
         covariance model 3D in python
-    
+
     nx : int
         number of grid cells along x axis
 
@@ -998,7 +1216,7 @@ def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     sx : float
         cell size along x axis
-                
+
     sy : float
         cell size along y axis
 
@@ -1007,7 +1225,7 @@ def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
 
     ox : float
         origin of the grid along x axis (x coordinate of cell border)
-        
+
     oy : float
         origin of the grid along y axis (y coordinate of cell border)
 
@@ -1020,9 +1238,6 @@ def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     -------
     covModel_c :  \(MPDS_COVMODEL \*\)
         covariance model in C
-
-    flag : bool
-        indicates if the conversion has succeeded (`True`) or failed (`False`)
     """
     fname = 'covModel3D_py2C'
 
@@ -1033,12 +1248,17 @@ def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
     covModel_c.nelem = n
     covModel_c.covModelElem = geosclassic.new_MPDS_COVMODELELEM_array(n)
     for i, covModelElem in enumerate(covModel_py.elem):
-        covModelElem_c, flag = covModel3Delem_py2C(covModelElem, nx, ny, nz, sx, sy, sz, ox, oy, oz)
-        if flag:
-            geosclassic.MPDS_COVMODELELEM_array_setitem(covModel_c.covModelElem, i, covModelElem_c)
-        # geosclassic.free_MPDS_COVMODELELEM(covModelElem_c)
-        if not flag:
-            return covModel_c, False
+        try:
+            covModelElem_c = covModel3Delem_py2C(covModelElem, nx, ny, nz, sx, sy, sz, ox, oy, oz)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f'{fname}: cannot convert covModel3D from python to C'
+            raise GeosclassicinterfaceError(err_msg) from exc
+
+        geosclassic.MPDS_COVMODELELEM_array_setitem(covModel_c.covModelElem, i, covModelElem_c)
 
     # angle1
     param = covModel_py.alpha
@@ -1050,13 +1270,27 @@ def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         try:
             param = np.asarray(param).reshape(nz, ny, nx)
         except:
-            print(f"ERROR ({fname}): can not convert covModel3D from python to C ('alpha' not compatible with simulation grid)")
-            return covModel_c, False
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f"{fname}: cannot convert covModel3D from python to C ('alpha' not compatible with simulation grid)"
+            raise GeosclassicinterfaceError(err_msg)
+
         im = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=1, val=param)
-        covModel_c.angle1Image = img_py2C(im)
+        try:
+            covModel_c.angle1Image = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f"{fname}: cannot convert covModel3D from python to C ('alpha')"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
     # angle2
     param = covModel_py.beta
     if np.size(param) == 1:
@@ -1067,13 +1301,27 @@ def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         try:
             param = np.asarray(param).reshape(nz, ny, nx)
         except:
-            print(f"ERROR ({fname}): can not convert covModel3D from python to C ('beta' not compatible with simulation grid)")
-            return covModel_c, False
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f"{fname}: cannot convert covModel3D from python to C ('beta' not compatible with simulation grid)"
+            raise GeosclassicinterfaceError(err_msg)
+
         im = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=1, val=param)
-        covModel_c.angle2Image = img_py2C(im)
+        try:
+            covModel_c.angle2Image = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f"{fname}: cannot convert covModel3D from python to C ('beta')"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
     # angle3
     param = covModel_py.gamma
     if np.size(param) == 1:
@@ -1084,15 +1332,28 @@ def covModel3D_py2C(covModel_py, nx, ny, nz, sx, sy, sz, ox, oy, oz):
         try:
             param = np.asarray(param).reshape(nz, ny, nx)
         except:
-            print(f"ERROR ({fname}): can not convert covModel3D from python to C ('gamma' not compatible with simulation grid)")
-            return covModel_c, False
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f"{fname}: cannot convert covModel3D from python to C ('gamma' not compatible with simulation grid)"
+            raise GeosclassicinterfaceError(err_msg)
+
         im = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=1, val=param)
-        covModel_c.angle3Image = img_py2C(im)
+        try:
+            covModel_c.angle3Image = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeCovModel(covModel_c)
+            geosclassic.free_MPDS_COVMODEL(covModel_c)
+            # Raise error
+            err_msg = f"{fname}: cannot convert covModel3D from python to C ('gamma')"
+            raise GeosclassicinterfaceError(err_msg) from exc
 
-    return covModel_c, True
+    return covModel_c
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1112,11 +1373,11 @@ def geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor):
     -------
     geosclassic_output : dict
         geosclassic output in python, dictionary
-        
+
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv` variables (output variables:
             simulations or estimates and standard deviations);
@@ -1127,6 +1388,8 @@ def geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor):
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
+    # fname = 'geosclassic_output_C2py'
+
     # Initialization
     image = None
     nwarning, warnings = None, None
@@ -1194,7 +1457,7 @@ def fill_mpds_geosClassicInput(
 
     sx : float
         cell size along x axis
-                
+
     sy : float
         cell size along y axis
 
@@ -1203,7 +1466,7 @@ def fill_mpds_geosClassicInput(
 
     ox : float
         origin of the grid along x axis (x coordinate of cell border)
-        
+
     oy : float
         origin of the grid along y axis (y coordinate of cell border)
 
@@ -1264,13 +1527,11 @@ def fill_mpds_geosClassicInput(
 
     Returns
     -------
-    mpds_geosClassicInput : (MPDS_GEOSCLASSICINPUT *)
+    mpds_geosClassicInput : \(MPDS_GEOSCLASSICINPUT \*\)
         geosclassic input in C, intended for "GeosClassicSim" C program
-
-    flag : bool
-        indicates if the filling has succeeded (`True`) or failed (`False`)
     """
-    # fname = 'fill_mpds_geosClassicInput'
+    fname = 'fill_mpds_geosClassicInput'
+
     nxy = nx * ny
     nxyz = nxy * nz
 
@@ -1318,17 +1579,23 @@ def fill_mpds_geosClassicInput(
     mpds_geosClassicInput.computationMode = int(computationMode)
 
     # mpds_geosClassicInput.covModel
-    if space_dim==1:
-        cov_model_c, flag = covModel1D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
-    elif space_dim==2:
-        cov_model_c, flag = covModel2D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
-    elif space_dim==3:
-        cov_model_c, flag = covModel3D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
+    try:
+        if space_dim==1:
+            cov_model_c = covModel1D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
+        elif space_dim==2:
+            cov_model_c = covModel2D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
+        elif space_dim==3:
+            cov_model_c = covModel3D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
 
-    if flag:
-        mpds_geosClassicInput.covModel = cov_model_c
-    else:
-        return mpds_geosClassicInput, False
+    except Exception as exc:
+        # Free memory on C side
+        geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+        geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+        # Raise error
+        err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure (covModel)'
+        raise GeosclassicinterfaceError(err_msg) from exc
+
+    mpds_geosClassicInput.covModel = cov_model_c
 
     # mpds_geosClassicInput.searchRadiusRelative
     mpds_geosClassicInput.searchRadiusRelative = float(searchRadiusRelative)
@@ -1348,7 +1615,16 @@ def fill_mpds_geosClassicInput(
         mpds_geosClassicInput.ndataImage = n
         mpds_geosClassicInput.dataImage = geosclassic.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(dataImage):
-            im_c = img_py2C(dataIm)
+            try:
+                im_c = img_py2C(dataIm)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+                geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+                # Raise error
+                err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure (dataImage)'
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             geosclassic.MPDS_IMAGE_array_setitem(mpds_geosClassicInput.dataImage, i, im_c)
             geosclassic.free_MPDS_IMAGE(im_c)
             # geosclassic.MPDS_IMAGE_array_setitem(mpds_geosClassicInput.dataImage, i, img_py2C(dataIm))
@@ -1362,7 +1638,16 @@ def fill_mpds_geosClassicInput(
         mpds_geosClassicInput.ndataPointSet = n
         mpds_geosClassicInput.dataPointSet = geosclassic.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(dataPointSet):
-            ps_c = ps_py2C(dataPS)
+            try:
+                ps_c = ps_py2C(dataPS)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+                geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+                # Raise error
+                err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure (dataPointSet)'
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             geosclassic.MPDS_POINTSET_array_setitem(mpds_geosClassicInput.dataPointSet, i, ps_c)
             # geosclassic.free_MPDS_POINTSET(ps_c)
             #
@@ -1377,7 +1662,15 @@ def fill_mpds_geosClassicInput(
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=1, val=mask)
-        mpds_geosClassicInput.maskImage = img_py2C(im)
+        try:
+            mpds_geosClassicInput.maskImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+            geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+            # Raise error
+            err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure (mask)'
+            raise GeosclassicinterfaceError(err_msg) from exc
 
     # mpds_geosClassicInput.meanUsage, mpds_geosClassicInput.meanValue, mpds_geosClassicInput.meanImage
     if mean is None:
@@ -1391,10 +1684,23 @@ def fill_mpds_geosClassicInput(
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=1, val=mean)
-        mpds_geosClassicInput.meanImage = img_py2C(im)
+        try:
+            mpds_geosClassicInput.meanImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+            geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+            # Raise error
+            err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure (meanImage)'
+            raise GeosclassicinterfaceError(err_msg) from exc
+
     else:
-        # print(f"ERROR ({fname}): can not integrate `mean` (not compatible with simulation grid)")
-        return mpds_geosClassicInput, False
+        # Free memory on C side
+        geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+        geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+        # Raise error
+        err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure (`mean` not compatible with simulation grid)'
+        raise GeosclassicinterfaceError(err_msg)
 
     # mpds_geosClassicInput.varianceUsage, mpds_geosClassicInput.varianceValue, mpds_geosClassicInput.varianceImage
     if var is None:
@@ -1408,10 +1714,23 @@ def fill_mpds_geosClassicInput(
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=1, val=var)
-        mpds_geosClassicInput.varianceImage = img_py2C(im)
+        try:
+            mpds_geosClassicInput.varianceImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+            geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+            # Raise error
+            err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure (varianceImage)'
+            raise GeosclassicinterfaceError(err_msg) from exc
+
     else:
-        # print(f"ERROR ({fname}): can not integrate `var` (not compatible with simulation grid)")
-        return mpds_geosClassicInput, False
+        # Free memory on C side
+        geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
+        geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
+        # Raise error
+        err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure (`var` not compatible with simulation grid)'
+        raise GeosclassicinterfaceError(err_msg)
 
     # mpds_geosClassicInput.nGibbsSamplerPathMin
     mpds_geosClassicInput.nGibbsSamplerPathMin = int(nGibbsSamplerPathMin)
@@ -1430,7 +1749,7 @@ def fill_mpds_geosClassicInput(
     # mpds_geosClassicInput.nrealization
     mpds_geosClassicInput.nrealization = int(nreal)
 
-    return mpds_geosClassicInput, True
+    return mpds_geosClassicInput
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -1488,7 +1807,7 @@ def simulate1D(
 
     mean : function (callable), or array-like of floats, or float, optional
         kriging mean value:
-        
+
         - if a function: function of one argument (xi) that returns the mean at \
         location xi
         - if array-like: its size must be equal to the number of grid cells \
@@ -1558,7 +1877,7 @@ def simulate1D(
         Note: if `aggregate_data_op='sgs'` or `aggregate_data_op='random'`, the
         aggregation is done for each realization (simulation), i.e. each simulation
         on the grid starts with a new set of values in conditioning grid cells
-        
+
         By default: if covariance model has stationary ranges and weight (sill),
         `aggregate_data_op='sgs'` is used, otherwise `aggregate_data_op='mean'`
 
@@ -1639,7 +1958,7 @@ def simulate1D(
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
-        
+
         - `searchNeighborhoodSortMode=0`: distance in the usual axes system
         - `searchNeighborhoodSortMode=1`: distance in the axes sytem supporting \
         the covariance model and accounting for anisotropy given by the ranges
@@ -1662,11 +1981,11 @@ def simulate1D(
         see `nGibbsSamplerPathMax`
 
     nGibbsSamplerPathMax: int, default: 200
-        `nGibbsSamplerPathMin` and `nGibbsSamplerPathMax` are the mini and max number 
-        of Gibbs sampler paths to deal with inequality data; the conditioning locations 
-        with inequality data are first simulated (based on truncated gaussian 
-        distribution) sequentially; then, these locations are re-simulated following a 
-        new path as many times as needed, but the total number of paths will be between 
+        `nGibbsSamplerPathMin` and `nGibbsSamplerPathMax` are the mini and max number
+        of Gibbs sampler paths to deal with inequality data; the conditioning locations
+        with inequality data are first simulated (based on truncated gaussian
+        distribution) sequentially; then, these locations are re-simulated following a
+        new path as many times as needed, but the total number of paths will be between
         `nGibbsSamplerPathMin` and `nGibbsSamplerPathMax`
 
     seed : int, optional
@@ -1683,11 +2002,13 @@ def simulate1D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
@@ -1695,17 +2016,17 @@ def simulate1D(
         geosclassic output in python, dictionary
 
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=nreal` variables (simulations);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -1731,37 +2052,35 @@ def simulate1D(
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
-            print(f'{fname}: nreal <= 0: nothing to do!')
+        if verbose > 0:
+            print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
         return None
 
     # cov_model
     if not isinstance(cov_model, gcm.CovModel1D):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model` is not valid")
-        return None
+        err_msg = f'{fname}: `cov_model` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: `cov_model`: weight ('w') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
+
         # ranges
         if 'r' in el[1].keys():
             r  = el[1]['r']
             if np.size(r) != 1 and np.size(r) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: `cov_model`: range ('r') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
+
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: `cov_model`: parameter ('s') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
 
     # aggregate_data_op (default)
     if aggregate_data_op is None:
@@ -1784,30 +2103,23 @@ def simulate1D(
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-        return None
+        err_msg = f'{fname}: `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - nneighborMax
     if nneighborMax != -1 and nneighborMax <= 0:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-        return None
+        err_msg = f'{fname}: `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - searchNeighborhoodSortMode
     if searchNeighborhoodSortMode is None:
@@ -1819,9 +2131,8 @@ def simulate1D(
     else:
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                return None
+                err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                raise GeosclassicinterfaceError(err_msg)
 
     # if searchNeighborhoodSortMode is None:
     #     # set greatest possible value
@@ -1834,47 +2145,42 @@ def simulate1D(
     # else:
     #     if searchNeighborhoodSortMode == 2:
     #         if not cov_model.is_stationary():
-    #             if verbose > 0:
-    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-    #             return None
+    #             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+    #             raise GeosclassicinterfaceError(err_msg)
     #     elif searchNeighborhoodSortMode == 1:
     #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-    #             if verbose > 0:
-    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-    #             return None
+    #             err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+    #             raise GeosclassicinterfaceError(err_msg)
 
     # Preparation of data points
     if x is not None:
         x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if xIneqMin is not None:
         xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMin) != xIneqMin.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `vIneqMin` is not valid")
-            return None
+            err_msg = f'{fname}: length of `vIneqMin` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if xIneqMax is not None:
         xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMax) != xIneqMax.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `vIneqMax` is not valid")
-            return None
+            err_msg = f'{fname}: length of `vIneqMax` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - mean
     mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
-        #     return None
+        #     err_msg = f'{fname}: specifying `mean` not allowed with ordinary kriging'
+        #     raise GeosclassicinterfaceError(err_msg)
+
         if callable(mean):
             if x is not None:
                 mean_x = mean(x[:, 0])
@@ -1890,17 +2196,16 @@ def simulate1D(
                 if x is not None:
                     mean_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=mean), iy=0, iz=0)(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `mean` is not valid")
-                return None
+                err_msg = f'{fname}: size of `mean` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - var
     var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
-            if verbose > 0:
-                print(f"ERROR ({fname}): specifying `var` not allowed with ordinary kriging")
-            return None
+            err_msg = f'{fname}: specifying `var` not allowed with ordinary kriging'
+            raise GeosclassicinterfaceError(err_msg)
+
         if callable(var):
             if x is not None:
                 var_x = var(x[:, 0])
@@ -1916,9 +2221,8 @@ def simulate1D(
                 if x is not None:
                     var_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=var), iy=0, iz=0)(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `var` is not valid")
-                return None
+                err_msg = f'{fname}: size of `var` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # Prepare seed
     if seed is None:
@@ -1933,9 +2237,9 @@ def simulate1D(
     if x is not None:
         if aggregate_data_op == 'krige' or aggregate_data_op == 'sgs':
             if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
-                return None
+                err_msg = f"{fname}: covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'"
+                raise GeosclassicinterfaceError(err_msg)
+
             cov_model_agg = cov_model
             # Get grid cell with at least one data point:
             # x_agg: 2D array, each row contains the coordinates of the center of such cell
@@ -1944,9 +2248,9 @@ def simulate1D(
                                          indicator_var=True, count_var=False)
             ind_agg = np.where(im_tmp.val[0])
             if len(ind_agg[0]) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
+
             x_agg = im_tmp.xx()[ind_agg].reshape(-1, 1)
             # x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1) # ok from python 3.11 only ?
             ind_agg = ind_agg[2:] # remove index along z and y axes
@@ -1973,21 +2277,31 @@ def simulate1D(
                                                  mean_x=mean_x, mean_xu=mean_x_agg,
                                                  var_x=var_x, var_xu=var_x_agg,
                                                  verbose=0, **aggregate_data_op_kwargs)
-                except:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): kriging error")
-                    return None
+                except Exception as exc:
+                    err_msg = f'{fname}: kriging error'
+                    raise GeosclassicinterfaceError(err_msg) from exc
+
             else:
                 aggregate_data_by_simul = True
-                v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
-                                mean_x=mean_x, mean_xu=mean_x_agg,
-                                var_x=var_x, var_xu=var_x_agg,
-                                nreal=nreal, seed=seed,
-                                verbose=0, **aggregate_data_op_kwargs)
-                if v_agg is None:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): sgs error")
-                    return None
+                try:
+                    v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
+                                    mean_x=mean_x, mean_xu=mean_x_agg,
+                                    var_x=var_x, var_xu=var_x_agg,
+                                    nreal=nreal, seed=seed,
+                                    verbose=0, **aggregate_data_op_kwargs)
+                except Exception as exc:
+                    err_msg = f'{fname}: sgs error'
+                    raise GeosclassicinterfaceError(err_msg) from exc
+
+                # v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
+                #                 mean_x=mean_x, mean_xu=mean_x_agg,
+                #                 var_x=var_x, var_xu=var_x_agg,
+                #                 nreal=nreal, seed=seed,
+                #                 verbose=0, **aggregate_data_op_kwargs)
+                # if v_agg is None:
+                #     if verbose > 0:
+                #         print(f"ERROR ({fname}): sgs error")
+                #     return None
             xx_agg = x_agg[:, 0]
             yy_agg = np.ones_like(xx_agg) * oy + 0.5 * sy
             zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
@@ -1998,15 +2312,20 @@ def simulate1D(
             yy = np.ones_like(xx) * oy + 0.5 * sy
             zz = np.ones_like(xx) * oz + 0.5 * sz
             # first realization of v_agg
-            xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
-                                                    xx, yy, zz, v,
-                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                    op=aggregate_data_op, return_inverse=True,
-                                                    **aggregate_data_op_kwargs)
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
+                                                            xx, yy, zz, v,
+                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                            op=aggregate_data_op, return_inverse=True,
+                                                            **aggregate_data_op_kwargs)
+            except Exception as exc:
+                err_msg = f'{fname}: data aggregation'
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             if len(xx_agg) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
+
             # next realizations of v_agg
             v_agg = np.vstack((v_agg, np.zeros((nreal-1, v_agg.size))))
             for i in range(1, nreal):
@@ -2021,14 +2340,13 @@ def simulate1D(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                     op=aggregate_data_op, **aggregate_data_op_kwargs)
-            except:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
-                return None
+            except Exception as exc:
+                err_msg = f"{fname}: data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             if len(xx_agg) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
 
         if xIneqMin is not None or xIneqMax is not None:
             # Get single grid index for data points
@@ -2057,10 +2375,10 @@ def simulate1D(
                                                 xx, yy, zz, vIneqMin,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op=aggregate_data_ineqMin_op, **aggregate_data_ineqMin_op_kwargs)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): inequality data (min) aggregation (`aggregate_data_op='{aggregate_data_ineqMin_op}'`) failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: inequality data (min) aggregation (`aggregate_data_op='{aggregate_data_ineqMin_op}'`) failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if x is not None:
             # Get single grid index for inequality (min) data points
             ix, iy, iz = img.pointToGridIndex(xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg,
@@ -2071,12 +2389,12 @@ def simulate1D(
             ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMin, assume_unique=True, return_indices=True)
 
             if ig_inter.size:
-                if verbose > 1:
-                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (min)" and "equality" data: inequlity data has been removed')
+                if verbose > 0:
+                    print(f'{fname}: WARNING: {ig_inter.size} grid cell(s) have both "inequality (min)" and "equality" data: inequlity data has been removed')
                     if not aggregate_data_by_simul:
                         ninconsistent = (v_agg[ig1] < v_ineqMin_agg[ig2]).sum()
                         if ninconsistent:
-                            print(f'WARNING ({fname}): {ninconsistent} "inequality (min)" found')
+                            print(f'{fname}: WARNING: {ninconsistent} "inequality (min)" found')
                 # Remove redundant points from inequality data set
                 xx_ineqMin_agg = np.delete(xx_ineqMin_agg, ig2)
                 yy_ineqMin_agg = np.delete(yy_ineqMin_agg, ig2)
@@ -2085,11 +2403,11 @@ def simulate1D(
 
         if v_ineqMin_agg.shape[0]:
             dataPointSet.append(
-                PointSet(npt=v_ineqMin_agg.shape[0], nv=4, val=np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg)), varname=['X', 'Y', 'Z', '{}_min'.format(varname)])
+                PointSet(npt=v_ineqMin_agg.shape[0], nv=4, val=np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg)), varname=['X', 'Y', 'Z', f'{varname}_min'])
                 )
         else:
-            if verbose > 1:
-                print(f"WARNING ({fname}): no inequality (min) data point in grid")
+            if verbose > 0:
+                print(f'{fname}: WARNING: no inequality (min) data point in grid')
             xIneqMin = None
 
     # data point set from xIneqMax, vIneqMax
@@ -2103,10 +2421,10 @@ def simulate1D(
                                                 xx, yy, zz, vIneqMax,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op=aggregate_data_ineqMax_op, **aggregate_data_ineqMax_op_kwargs)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): inequality data (max) aggregation (`aggregate_data_op='{aggregate_data_ineqMax_op}'`) failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: inequality data (max) aggregation (`aggregate_data_op='{aggregate_data_ineqMax_op}'`) failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if x is not None:
             # Get single grid index for inequality (max) data points
             ix, iy, iz = img.pointToGridIndex(xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg,
@@ -2117,12 +2435,12 @@ def simulate1D(
             ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMax, assume_unique=True, return_indices=True)
 
             if ig_inter.size:
-                if verbose > 1:
-                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (max)" and "equality" data: inequlity data has been removed')
+                if verbose > 0:
+                    print(f'{fname}: WARNING: {ig_inter.size} grid cell(s) have both "inequality (max)" and "equality" data: inequlity data has been removed')
                     if not aggregate_data_by_simul:
                         ninconsistent = (v_agg[ig1] > v_ineqMax_agg[ig2]).sum()
                         if ninconsistent:
-                            print(f'WARNING ({fname}): {ninconsistent} "inequality (max)" found')
+                            print(f'{fname}: WARNING: {ninconsistent} "inequality (max)" found')
                 # Remove redundant points from inequality data set
                 xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
                 yy_ineqMax_agg = np.delete(yy_ineqMax_agg, ig2)
@@ -2146,11 +2464,10 @@ def simulate1D(
             if ig_inter.size:
                 ii = np.where(v_ineqMin_agg[ig1] > v_ineqMax_agg[ig2])[0]
                 if len(ii):
-                    if verbose > 0:
-                        print(f'ERROR ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data')
-                    return None
-                    # if verbose > 1:
-                    #     print(f'WARNING ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data: inequlity max data has been removed')
+                    err_msg = f'{fname}: {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data'
+                    raise GeosclassicinterfaceError(err_msg)
+                    # if verbose > 0:
+                    #     print(f'{fname}: WARNING: {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data: inequlity max data has been removed')
                     # ig2 = ig2[ii]
                     # # Remove inconsistent inequality max
                     # xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
@@ -2160,11 +2477,11 @@ def simulate1D(
 
         if v_ineqMax_agg.shape[0]:
             dataPointSet.append(
-                PointSet(npt=v_ineqMax_agg.shape[0], nv=4, val=np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg)), varname=['X', 'Y', 'Z', '{}_max'.format(varname)])
+                PointSet(npt=v_ineqMax_agg.shape[0], nv=4, val=np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg)), varname=['X', 'Y', 'Z', f'{varname}_max'])
                 )
         else:
-            if verbose > 1:
-                print(f"WARNING ({fname}): no inequality (max) data point in grid")
+            if verbose > 0:
+                print(f'{fname}: WARNING: no inequality (max) data point in grid')
             xIneqMax = None
 
     # Check parameters - mask
@@ -2172,9 +2489,8 @@ def simulate1D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -2206,34 +2522,36 @@ def simulate1D(
     else:
         nth = nthreads
 
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
     if not aggregate_data_by_simul:
         # --- Fill mpds_geosClassicInput structure (C)
-        mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-            space_dim,
-            cov_model,
-            nx, ny, nz,
-            sx, sy, sz,
-            ox, oy, oz,
-            varname,
-            outputReportFile,
-            computationMode,
-            None,
-            dataPointSet,
-            mask,
-            mean,
-            var,
-            searchRadiusRelative,
-            nneighborMax,
-            searchNeighborhoodSortMode,
-            nGibbsSamplerPathMin,
-            nGibbsSamplerPathMax,
-            seed,
-            nreal)
-
-        if not flag:
-            if verbose > 0:
-                print(f'ERROR ({fname}): can not fill input structure!')
-            return None
+        try:
+            mpds_geosClassicInput = fill_mpds_geosClassicInput(
+                    space_dim,
+                    cov_model,
+                    nx, ny, nz,
+                    sx, sy, sz,
+                    ox, oy, oz,
+                    varname,
+                    outputReportFile,
+                    computationMode,
+                    None,
+                    dataPointSet,
+                    mask,
+                    mean,
+                    var,
+                    searchRadiusRelative,
+                    nneighborMax,
+                    searchNeighborhoodSortMode,
+                    nGibbsSamplerPathMin,
+                    nGibbsSamplerPathMax,
+                    seed,
+                    nreal)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
+            raise GeosclassicinterfaceError(err_msg) from exc
 
         # --- Prepare mpds_geosClassicIOutput structure (C)
         # Allocate mpds_geosClassicOutput
@@ -2264,8 +2582,8 @@ def simulate1D(
         # else:
         #     nth = nthreads
 
-        if verbose >= 2:
-            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        if verbose > 1:
+            print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
             sys.stdout.flush()
             sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -2275,31 +2593,33 @@ def simulate1D(
 
         # Free memory on C side: mpds_geosClassicInput
         geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-        #geosclassic.MPDSFree(mpds_geosClassicInput)
         geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
         if err:
-            if verbose > 0:
-                err_message = geosclassic.mpds_get_error_message(-err)
-                err_message = err_message.replace('\n', '')
-                print(err_message)
-            geosclassic_output = None
-        else:
-            geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+            # Free memory on C side: mpds_geosClassicOutput
+            geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+            geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+            # Free memory on C side: mpds_progressMonitor
+            geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+            # Raise error
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            err_msg = f'{fname}: {err_message}'
+            raise GeosclassicinterfaceError(err_msg)
+
+        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
         # Free memory on C side: mpds_geosClassicOutput
         geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-        #geosclassic.MPDSFree(mpds_geosClassicOutput)
         geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
         # Free memory on C side: mpds_progressMonitor
-        #geosclassic.MPDSFree(mpds_progressMonitor)
         geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     else:
         # Equality data values will change for each realization
-        if verbose >= 2:
-            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        if verbose > 1:
+            print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
             sys.stdout.flush()
             sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
@@ -2317,32 +2637,31 @@ def simulate1D(
                 outputReportFile_ir = outputReportFile + f'.{ir}'
 
             # --- Fill mpds_geosClassicInput structure (C)
-            mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-                space_dim,
-                cov_model,
-                nx, ny, nz,
-                sx, sy, sz,
-                ox, oy, oz,
-                varname,
-                outputReportFile_ir,
-                computationMode,
-                None,
-                dataPointSet,
-                mask,
-                mean,
-                var,
-                searchRadiusRelative,
-                nneighborMax,
-                searchNeighborhoodSortMode,
-                nGibbsSamplerPathMin,
-                nGibbsSamplerPathMax,
-                seed+ir, # seed for realization index ir
-                1) # one real
-
-            if not flag:
-                if verbose > 0:
-                    print(f'ERROR ({fname}): can not fill input structure!')
-                return None
+            try:
+                mpds_geosClassicInput = fill_mpds_geosClassicInput(
+                        space_dim,
+                        cov_model,
+                        nx, ny, nz,
+                        sx, sy, sz,
+                        ox, oy, oz,
+                        varname,
+                        outputReportFile_ir,
+                        computationMode,
+                        None,
+                        dataPointSet,
+                        mask,
+                        mean,
+                        var,
+                        searchRadiusRelative,
+                        nneighborMax,
+                        searchNeighborhoodSortMode,
+                        nGibbsSamplerPathMin,
+                        nGibbsSamplerPathMax,
+                        seed+ir, # seed for realization index ir
+                        1) # one real
+            except Exception as exc:
+                err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
+                raise GeosclassicinterfaceError(err_msg) from exc
 
             # --- Prepare mpds_geosClassicIOutput structure (C)
             # Allocate mpds_geosClassicOutput
@@ -2368,8 +2687,8 @@ def simulate1D(
             # else:
             #     mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
             #
-            # if verbose >= 2:
-            #     print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            # if verbose > 1:
+            #     print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
             #     sys.stdout.flush()
             #     sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -2379,31 +2698,32 @@ def simulate1D(
 
             # Free memory on C side: mpds_geosClassicInput
             geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-            #geosclassic.MPDSFree(mpds_geosClassicInput)
             geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
             if err:
-                if verbose > 0:
-                    err_message = geosclassic.mpds_get_error_message(-err)
-                    err_message = err_message.replace('\n', '')
-                    print(err_message)
-                geosclassic_output = None
-            else:
-                geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+                # Free memory on C side: mpds_geosClassicOutput
+                geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+                geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+                # Free memory on C side: mpds_progressMonitor
+                geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+                # Raise error
+                err_message = geosclassic.mpds_get_error_message(-err)
+                err_message = err_message.replace('\n', '')
+                err_msg = f'{fname}: {err_message}'
+                raise GeosclassicinterfaceError(err_msg)
+
+            geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
             # Free memory on C side: mpds_geosClassicOutput
             geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-            #geosclassic.MPDSFree(mpds_geosClassicOutput)
             geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
             # Free memory on C side: mpds_progressMonitor
-            #geosclassic.MPDSFree(mpds_progressMonitor)
             geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-            if geosclassic_output is not None:
-                image.val[ir] = geosclassic_output['image'].val[0]
-                nwarning = nwarning + geosclassic_output['nwarning']
-                warnings.extend(geosclassic_output['warnings'])
+            image.val[ir] = geosclassic_output['image'].val[0]
+            nwarning = nwarning + geosclassic_output['nwarning']
+            warnings.extend(geosclassic_output['warnings'])
 
             del(geosclassic_output)
 
@@ -2422,14 +2742,14 @@ def simulate1D(
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -2498,7 +2818,7 @@ def simulate1D_mp(
 
     treat_image_one_by_one : bool, default: False
         keyword argument passed to the function :func:`img.gatherImages`:
-        
+
         - if `True`: images (result of each process) are gathered one by one, \
         i.e. the variables of each image are inserted in an output image one by \
         one and removed from the source (slower, may save memory)
@@ -2506,26 +2826,27 @@ def simulate1D_mp(
         i.e. the variables of all images are inserted in an output image at once, \
         and then removed (faster)
     """
-    # fname = 'simulate1D_mp'
+    fname = 'simulate1D_mp'
+
     # Set number of processes: nproc
     if nproc is None:
         nproc = max(min(multiprocessing.cpu_count()-1, nreal), 1)
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
-        if verbose > 0 and nproc != nproc_tmp:
-            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+        if verbose > 1 and nproc != nproc_tmp:
+            print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
         nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
-        if verbose > 0 and nth != nthreads_per_proc:
-            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+        if verbose > 1 and nth != nthreads_per_proc:
+            print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
     # Set the distribution of the realizations over the processes
     # Condider the Euclidean division of nreal by nproc:
@@ -2536,8 +2857,8 @@ def simulate1D_mp(
     q, r = np.divmod(nreal, nproc)
     real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
-    if verbose >= 2:
-        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 1:
+        print('{}: Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
@@ -2557,10 +2878,11 @@ def simulate1D_mp(
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
             outputReportFile_p = outputReportFile + f'.{i}'
-        if i==0:
-            verbose_p = min(verbose, 1) # allow to print error for process i
-        else:
-            verbose_p = 0
+        verbose_p = 0
+        # if i==0:
+        #     verbose_p = min(verbose, 1) # allow to print warnings for process i
+        # else:
+        #     verbose_p = 0
         # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulate1D,
@@ -2624,14 +2946,14 @@ def simulate1D_mp(
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete (all process(es))')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete (all process(es))')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -2692,7 +3014,7 @@ def simulate2D(
 
     mean : function (callable), or array-like of floats, or float, optional
         kriging mean value:
-        
+
         - if a function: function of two arguments (xi, yi) that returns the mean \
         at location (xi, yi)
         - if array-like: its size must be equal to the number of grid cells \
@@ -2704,7 +3026,7 @@ def simulate2D(
 
     var : function (callable), or array-like of floats, or float, optional
         kriging variance value:
-        
+
         - if a function: function of two arguments (xi, yi) that returns the \
         variance at location (xi, yi)
         - if array-like: its size must be equal to the number of grid cells \
@@ -2764,7 +3086,7 @@ def simulate2D(
         Note: if `aggregate_data_op='sgs'` or `aggregate_data_op='random'`, the
         aggregation is done for each realization (simulation), i.e. each simulation
         on the grid starts with a new set of values in conditioning grid cells
-        
+
         By default: if covariance model has stationary ranges and weight (sill),
         `aggregate_data_op='sgs'` is used, otherwise `aggregate_data_op='mean'`
 
@@ -2845,7 +3167,7 @@ def simulate2D(
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
-        
+
         - `searchNeighborhoodSortMode=0`: distance in the usual axes system
         - `searchNeighborhoodSortMode=1`: distance in the axes sytem supporting \
         the covariance model and accounting for anisotropy given by the ranges
@@ -2868,11 +3190,11 @@ def simulate2D(
         see `nGibbsSamplerPathMax`
 
     nGibbsSamplerPathMax: int, default: 200
-        `nGibbsSamplerPathMin` and `nGibbsSamplerPathMax` are the mini and max number 
-        of Gibbs sampler paths to deal with inequality data; the conditioning locations 
-        with inequality data are first simulated (based on truncated gaussian 
-        distribution) sequentially; then, these locations are re-simulated following a 
-        new path as many times as needed, but the total number of paths will be between 
+        `nGibbsSamplerPathMin` and `nGibbsSamplerPathMax` are the mini and max number
+        of Gibbs sampler paths to deal with inequality data; the conditioning locations
+        with inequality data are first simulated (based on truncated gaussian
+        distribution) sequentially; then, these locations are re-simulated following a
+        new path as many times as needed, but the total number of paths will be between
         `nGibbsSamplerPathMin` and `nGibbsSamplerPathMax`
 
     seed : int, optional
@@ -2889,11 +3211,13 @@ def simulate2D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
@@ -2901,17 +3225,17 @@ def simulate2D(
         geosclassic output in python, dictionary
 
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=nreal` variables (simulations);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -2937,8 +3261,8 @@ def simulate2D(
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
-            print(f'{fname}: nreal <= 0: nothing to do!')
+        if verbose > 0:
+            print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
         return None
 
     # cov_model
@@ -2947,38 +3271,35 @@ def simulate2D(
             # -> will not be modified cov_model at exit
 
     if not isinstance(cov_model, gcm.CovModel2D):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model` is not valid")
-        return None
+        err_msg = f'{fname}: `cov_model` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: `cov_model`: weight ('w') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
+
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: `cov_model`: range ('r') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
+
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: `cov_model`: parameter ('s') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model`: angle (alpha) not compatible with simulation grid")
-        return None
+        err_msg = f"{fname}: `cov_model`: angle ('alpha') not compatible with simulation grid"
+        raise GeosclassicinterfaceError(err_msg)
 
     # aggregate_data_op (default)
     if aggregate_data_op is None:
@@ -3001,30 +3322,23 @@ def simulate2D(
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-        return None
+        err_msg = f'{fname}: `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - nneighborMax
     if nneighborMax != -1 and nneighborMax <= 0:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-        return None
+        err_msg = f'{fname}: `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - searchNeighborhoodSortMode
     if searchNeighborhoodSortMode is None:
@@ -3036,9 +3350,8 @@ def simulate2D(
     else:
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                return None
+                err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                raise GeosclassicinterfaceError(err_msg)
 
     # if searchNeighborhoodSortMode is None:
     #     # set greatest possible value
@@ -3051,47 +3364,42 @@ def simulate2D(
     # else:
     #     if searchNeighborhoodSortMode == 2:
     #         if not cov_model.is_stationary():
-    #             if verbose > 0:
-    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-    #             return None
+    #             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+    #             raise GeosclassicinterfaceError(err_msg)
     #     elif searchNeighborhoodSortMode == 1:
     #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-    #             if verbose > 0:
-    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-    #             return None
+    #             err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+    #             raise GeosclassicinterfaceError(err_msg)
 
     # Preparation of data points
     if x is not None:
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if xIneqMin is not None:
         xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMin) != xIneqMin.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `vIneqMin` is not valid")
-            return None
+            err_msg = f'{fname}: length of `vIneqMin` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if xIneqMax is not None:
         xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMax) != xIneqMax.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `vIneqMax` is not valid")
-            return None
+            err_msg = f'{fname}: length of `vIneqMax` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - mean
     mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
-        #     return None
+        #     err_msg = f'{fname}: specifying `mean` not allowed with ordinary kriging'
+        #     raise GeosclassicinterfaceError(err_msg)
+
         if callable(mean):
             if x is not None:
                 mean_x = mean(x[:, 0], x[:, 1])
@@ -3109,17 +3417,16 @@ def simulate2D(
                 if x is not None:
                     mean_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=mean), iz=0)(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `mean` is not valid")
-                return None
+                err_msg = f'{fname}: size of `mean` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - var
     var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
-            if verbose > 0:
-                print(f"ERROR ({fname}): specifying `var` not allowed with ordinary kriging")
-            return None
+            err_msg = f'{fname}: specifying `var` not allowed with ordinary kriging'
+            raise GeosclassicinterfaceError(err_msg)
+
         if callable(var):
             if x is not None:
                 var_x = var(x[:, 0], x[:, 1])
@@ -3137,9 +3444,8 @@ def simulate2D(
                 if x is not None:
                     var_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=var), iz=0)(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `var` is not valid")
-                return None
+                err_msg = f'{fname}: size of `var` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # Prepare seed
     if seed is None:
@@ -3154,9 +3460,9 @@ def simulate2D(
     if x is not None:
         if aggregate_data_op == 'krige' or aggregate_data_op == 'sgs':
             if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
-                return None
+                err_msg = f"{fname}: covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'"
+                raise GeosclassicinterfaceError(err_msg)
+
             if cov_model.is_orientation_stationary():
                 cov_model_agg = cov_model
             else:
@@ -3169,9 +3475,9 @@ def simulate2D(
                                          indicator_var=True, count_var=False)
             ind_agg = np.where(im_tmp.val[0])
             if len(ind_agg[0]) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
+
             x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1))).T
             # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
             ind_agg = ind_agg[1:] # remove index along z axis
@@ -3204,22 +3510,23 @@ def simulate2D(
                                                  var_x=var_x, var_xu=var_x_agg,
                                                  alpha_xu=alpha_x_agg,
                                                  verbose=0, **aggregate_data_op_kwargs)
-                except:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): kriging error")
-                    return None
+                except Exception as exc:
+                    err_msg = f'{fname}: kriging error'
+                    raise GeosclassicinterfaceError(err_msg) from exc
+
             else:
                 aggregate_data_by_simul = True
-                v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
-                                mean_x=mean_x, mean_xu=mean_x_agg,
-                                var_x=var_x, var_xu=var_x_agg,
-                                alpha_xu=alpha_x_agg,
-                                nreal=nreal, seed=seed,
-                                verbose=0, **aggregate_data_op_kwargs)
-                if v_agg is None:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): sgs error")
-                    return None
+                try:
+                    v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
+                                    mean_x=mean_x, mean_xu=mean_x_agg,
+                                    var_x=var_x, var_xu=var_x_agg,
+                                    alpha_xu=alpha_x_agg,
+                                    nreal=nreal, seed=seed,
+                                    verbose=0, **aggregate_data_op_kwargs)
+                except Exception as exc:
+                    err_msg = f'{fname}: sgs error'
+                    raise GeosclassicinterfaceError(err_msg) from exc
+
             xx_agg, yy_agg = x_agg.T
             zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
         elif aggregate_data_op == 'random':
@@ -3228,15 +3535,20 @@ def simulate2D(
             xx, yy = x.T
             zz = np.ones_like(xx) * oz + 0.5 * sz
             # first realization of v_agg
-            xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
-                                                    xx, yy, zz, v,
-                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                    op=aggregate_data_op, return_inverse=True,
-                                                    **aggregate_data_op_kwargs)
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
+                                                            xx, yy, zz, v,
+                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                            op=aggregate_data_op, return_inverse=True,
+                                                            **aggregate_data_op_kwargs)
+            except Exception as exc:
+                err_msg = f'{fname}: data aggregation'
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             if len(xx_agg) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
+
             # next realizations of v_agg
             v_agg = np.vstack((v_agg, np.zeros((nreal-1, v_agg.size))))
             for i in range(1, nreal):
@@ -3250,14 +3562,13 @@ def simulate2D(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                     op=aggregate_data_op, **aggregate_data_op_kwargs)
-            except:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
-                return None
+            except Exception as exc:
+                err_msg = f"{fname}: data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             if len(xx_agg) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
 
         if xIneqMin is not None or xIneqMax is not None:
             # Get single grid index for data points
@@ -3285,10 +3596,10 @@ def simulate2D(
                                                 xx, yy, zz, vIneqMin,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op=aggregate_data_ineqMin_op, **aggregate_data_ineqMin_op_kwargs)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): inequality data (min) aggregation (`aggregate_data_op='{aggregate_data_ineqMin_op}'`) failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: inequality data (min) aggregation (`aggregate_data_op='{aggregate_data_ineqMin_op}'`) failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if x is not None:
             # Get single grid index for inequality (min) data points
             ix, iy, iz = img.pointToGridIndex(xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg,
@@ -3299,12 +3610,12 @@ def simulate2D(
             ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMin, assume_unique=True, return_indices=True)
 
             if ig_inter.size:
-                if verbose > 1:
-                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (min)" and "equality" data: inequlity data has been removed')
+                if verbose > 0:
+                    print(f'{fname}: WARNING: {ig_inter.size} grid cell(s) have both "inequality (min)" and "equality" data: inequlity data has been removed')
                     if not aggregate_data_by_simul:
                         ninconsistent = (v_agg[ig1] < v_ineqMin_agg[ig2]).sum()
                         if ninconsistent:
-                            print(f'WARNING ({fname}): {ninconsistent} "inequality (min)" found')
+                            print(f'{fname}: WARNING: {ninconsistent} "inequality (min)" found')
                 # Remove redundant points from inequality data set
                 xx_ineqMin_agg = np.delete(xx_ineqMin_agg, ig2)
                 yy_ineqMin_agg = np.delete(yy_ineqMin_agg, ig2)
@@ -3313,11 +3624,11 @@ def simulate2D(
 
         if v_ineqMin_agg.shape[0]:
             dataPointSet.append(
-                PointSet(npt=v_ineqMin_agg.shape[0], nv=4, val=np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg)), varname=['X', 'Y', 'Z', '{}_min'.format(varname)])
+                PointSet(npt=v_ineqMin_agg.shape[0], nv=4, val=np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg)), varname=['X', 'Y', 'Z', f'{varname}_min'])
                 )
         else:
-            if verbose > 1:
-                print(f"WARNING ({fname}): no inequality (min) data point in grid")
+            if verbose > 0:
+                print(f'{fname}: WARNING: no inequality (min) data point in grid')
             xIneqMin = None
 
     # data point set from xIneqMax, vIneqMax
@@ -3330,10 +3641,10 @@ def simulate2D(
                                                 xx, yy, zz, vIneqMax,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op=aggregate_data_ineqMax_op, **aggregate_data_ineqMax_op_kwargs)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): inequality data (max) aggregation (`aggregate_data_op='{aggregate_data_ineqMax_op}'`) failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: inequality data (max) aggregation (`aggregate_data_op='{aggregate_data_ineqMax_op}'`) failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if x is not None:
             # Get single grid index for inequality (max) data points
             ix, iy, iz = img.pointToGridIndex(xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg,
@@ -3344,12 +3655,12 @@ def simulate2D(
             ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMax, assume_unique=True, return_indices=True)
 
             if ig_inter.size:
-                if verbose > 1:
-                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (max)" and "equality" data: inequlity data has been removed')
+                if verbose > 0:
+                    print(f'{fname}: WARNING: {ig_inter.size} grid cell(s) have both "inequality (max)" and "equality" data: inequlity data has been removed')
                     if not aggregate_data_by_simul:
                         ninconsistent = (v_agg[ig1] > v_ineqMax_agg[ig2]).sum()
                         if ninconsistent:
-                            print(f'WARNING ({fname}): {ninconsistent} "inequality (max)" found')
+                            print(f'{fname}: WARNING: {ninconsistent} "inequality (max)" found')
                 # Remove redundant points from inequality data set
                 xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
                 yy_ineqMax_agg = np.delete(yy_ineqMax_agg, ig2)
@@ -3373,11 +3684,10 @@ def simulate2D(
             if ig_inter.size:
                 ii = np.where(v_ineqMin_agg[ig1] > v_ineqMax_agg[ig2])[0]
                 if len(ii):
-                    if verbose > 0:
-                        print(f'ERROR ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data')
-                    return None
-                    # if verbose > 1:
-                    #     print(f'WARNING ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data: inequlity max data has been removed')
+                    err_msg = f'{fname}: {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data'
+                    raise GeosclassicinterfaceError(err_msg)
+                    # if verbose > 0:
+                    #     print(f'{fname}: WARNING: {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data: inequlity max data has been removed')
                     # ig2 = ig2[ii]
                     # # Remove inconsistent inequality max
                     # xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
@@ -3387,11 +3697,11 @@ def simulate2D(
 
         if v_ineqMax_agg.shape[0]:
             dataPointSet.append(
-                PointSet(npt=v_ineqMax_agg.shape[0], nv=4, val=np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg)), varname=['X', 'Y', 'Z', '{}_max'.format(varname)])
+                PointSet(npt=v_ineqMax_agg.shape[0], nv=4, val=np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg)), varname=['X', 'Y', 'Z', f'{varname}_max'])
                 )
         else:
-            if verbose > 1:
-                print(f"WARNING ({fname}): no inequality (max) data point in grid")
+            if verbose > 0:
+                print(f'{fname}: WARNING: no inequality (max) data point in grid')
             xIneqMax = None
 
     # Check parameters - mask
@@ -3399,9 +3709,8 @@ def simulate2D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -3433,34 +3742,36 @@ def simulate2D(
     else:
         nth = nthreads
 
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
     if not aggregate_data_by_simul:
         # --- Fill mpds_geosClassicInput structure (C)
-        mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-            space_dim,
-            cov_model,
-            nx, ny, nz,
-            sx, sy, sz,
-            ox, oy, oz,
-            varname,
-            outputReportFile,
-            computationMode,
-            None,
-            dataPointSet,
-            mask,
-            mean,
-            var,
-            searchRadiusRelative,
-            nneighborMax,
-            searchNeighborhoodSortMode,
-            nGibbsSamplerPathMin,
-            nGibbsSamplerPathMax,
-            seed,
-            nreal)
-
-        if not flag:
-            if verbose > 0:
-                print(f'ERROR ({fname}): can not fill input structure!')
-            return None
+        try:
+            mpds_geosClassicInput = fill_mpds_geosClassicInput(
+                    space_dim,
+                    cov_model,
+                    nx, ny, nz,
+                    sx, sy, sz,
+                    ox, oy, oz,
+                    varname,
+                    outputReportFile,
+                    computationMode,
+                    None,
+                    dataPointSet,
+                    mask,
+                    mean,
+                    var,
+                    searchRadiusRelative,
+                    nneighborMax,
+                    searchNeighborhoodSortMode,
+                    nGibbsSamplerPathMin,
+                    nGibbsSamplerPathMax,
+                    seed,
+                    nreal)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
+            raise GeosclassicinterfaceError(err_msg) from exc
 
         # --- Prepare mpds_geosClassicIOutput structure (C)
         # Allocate mpds_geosClassicOutput
@@ -3491,8 +3802,8 @@ def simulate2D(
         # else:
         #     nth = nthreads
 
-        if verbose >= 2:
-            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        if verbose > 1:
+            print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
             sys.stdout.flush()
             sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -3502,31 +3813,33 @@ def simulate2D(
 
         # Free memory on C side: mpds_geosClassicInput
         geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-        #geosclassic.MPDSFree(mpds_geosClassicInput)
         geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
         if err:
-            if verbose > 0:
-                err_message = geosclassic.mpds_get_error_message(-err)
-                err_message = err_message.replace('\n', '')
-                print(err_message)
-            geosclassic_output = None
-        else:
-            geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+            # Free memory on C side: mpds_geosClassicOutput
+            geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+            geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+            # Free memory on C side: mpds_progressMonitor
+            geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+            # Raise error
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            err_msg = f'{fname}: {err_message}'
+            raise GeosclassicinterfaceError(err_msg)
+
+        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
         # Free memory on C side: mpds_geosClassicOutput
         geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-        #geosclassic.MPDSFree(mpds_geosClassicOutput)
         geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
         # Free memory on C side: mpds_progressMonitor
-        #geosclassic.MPDSFree(mpds_progressMonitor)
         geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     else:
         # Equality data values will change for each realization
-        if verbose >= 2:
-            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        if verbose > 1:
+            print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
             sys.stdout.flush()
             sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
@@ -3544,32 +3857,31 @@ def simulate2D(
                 outputReportFile_ir = outputReportFile + f'.{ir}'
 
             # --- Fill mpds_geosClassicInput structure (C)
-            mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-                space_dim,
-                cov_model,
-                nx, ny, nz,
-                sx, sy, sz,
-                ox, oy, oz,
-                varname,
-                outputReportFile_ir,
-                computationMode,
-                None,
-                dataPointSet,
-                mask,
-                mean,
-                var,
-                searchRadiusRelative,
-                nneighborMax,
-                searchNeighborhoodSortMode,
-                nGibbsSamplerPathMin,
-                nGibbsSamplerPathMax,
-                seed+ir, # seed for realization index ir
-                1) # one real
-
-            if not flag:
-                if verbose > 0:
-                    print(f'ERROR ({fname}): can not fill input structure!')
-                return None
+            try:
+                mpds_geosClassicInput = fill_mpds_geosClassicInput(
+                        space_dim,
+                        cov_model,
+                        nx, ny, nz,
+                        sx, sy, sz,
+                        ox, oy, oz,
+                        varname,
+                        outputReportFile_ir,
+                        computationMode,
+                        None,
+                        dataPointSet,
+                        mask,
+                        mean,
+                        var,
+                        searchRadiusRelative,
+                        nneighborMax,
+                        searchNeighborhoodSortMode,
+                        nGibbsSamplerPathMin,
+                        nGibbsSamplerPathMax,
+                        seed+ir, # seed for realization index ir
+                        1) # one real
+            except Exception as exc:
+                err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
+                raise GeosclassicinterfaceError(err_msg) from exc
 
             # --- Prepare mpds_geosClassicIOutput structure (C)
             # Allocate mpds_geosClassicOutput
@@ -3595,8 +3907,8 @@ def simulate2D(
             # else:
             #     mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
             #
-            # if verbose >= 2:
-            #     print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            # if verbose > 1:
+            #     print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
             #     sys.stdout.flush()
             #     sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -3606,31 +3918,32 @@ def simulate2D(
 
             # Free memory on C side: mpds_geosClassicInput
             geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-            #geosclassic.MPDSFree(mpds_geosClassicInput)
             geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
             if err:
-                if verbose > 0:
-                    err_message = geosclassic.mpds_get_error_message(-err)
-                    err_message = err_message.replace('\n', '')
-                    print(err_message)
-                geosclassic_output = None
-            else:
-                geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+                # Free memory on C side: mpds_geosClassicOutput
+                geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+                geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+                # Free memory on C side: mpds_progressMonitor
+                geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+                # Raise error
+                err_message = geosclassic.mpds_get_error_message(-err)
+                err_message = err_message.replace('\n', '')
+                err_msg = f'{fname}: {err_message}'
+                raise GeosclassicinterfaceError(err_msg)
+
+            geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
             # Free memory on C side: mpds_geosClassicOutput
             geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-            #geosclassic.MPDSFree(mpds_geosClassicOutput)
             geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
             # Free memory on C side: mpds_progressMonitor
-            #geosclassic.MPDSFree(mpds_progressMonitor)
             geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-            if geosclassic_output is not None:
-                image.val[ir] = geosclassic_output['image'].val[0]
-                nwarning = nwarning + geosclassic_output['nwarning']
-                warnings.extend(geosclassic_output['warnings'])
+            image.val[ir] = geosclassic_output['image'].val[0]
+            nwarning = nwarning + geosclassic_output['nwarning']
+            warnings.extend(geosclassic_output['warnings'])
 
             del(geosclassic_output)
 
@@ -3649,14 +3962,14 @@ def simulate2D(
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -3707,7 +4020,7 @@ def simulate2D_mp(
     cpu(s)
 
     See function :func:`geosclassicinterface.simulate2D`.
-    
+
     **Parameters (new)**
     --------------------
     nproc : int, optional
@@ -3725,7 +4038,7 @@ def simulate2D_mp(
 
     treat_image_one_by_one : bool, default: False
         keyword argument passed to the function :func:`img.gatherImages`:
-        
+
         - if `True`: images (result of each process) are gathered one by one, \
         i.e. the variables of each image are inserted in an output image one by \
         one and removed from the source (slower, may save memory)
@@ -3733,7 +4046,7 @@ def simulate2D_mp(
         i.e. the variables of all images are inserted in an output image at once, \
         and then removed (faster)
     """
-    # fname = 'simulate2D_mp'
+    fname = 'simulate2D_mp'
 
     # Set number of processes: nproc
     if nproc is None:
@@ -3741,19 +4054,19 @@ def simulate2D_mp(
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
-        if verbose > 0 and nproc != nproc_tmp:
-            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+        if verbose > 1 and nproc != nproc_tmp:
+            print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
         nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
-        if verbose > 0 and nth != nthreads_per_proc:
-            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+        if verbose > 1 and nth != nthreads_per_proc:
+            print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
     # Set the distribution of the realizations over the processes
     # Condider the Euclidean division of nreal by nproc:
@@ -3764,8 +4077,8 @@ def simulate2D_mp(
     q, r = np.divmod(nreal, nproc)
     real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
-    if verbose >= 2:
-        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 1:
+        print('{}: Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
@@ -3785,10 +4098,11 @@ def simulate2D_mp(
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
             outputReportFile_p = outputReportFile + f'.{i}'
-        if i==0:
-            verbose_p = min(verbose, 1) # allow to print error for process i
-        else:
-            verbose_p = 0
+        verbose_p = 0
+        # if i==0:
+        #     verbose_p = min(verbose, 1) # allow to print warnings for process i
+        # else:
+        #     verbose_p = 0
         # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulate2D,
@@ -3852,14 +4166,14 @@ def simulate2D_mp(
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete (all process(es))')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete (all process(es))')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -3933,7 +4247,7 @@ def simulate3D(
 
     var : function (callable), or array-like of floats, or float, optional
         kriging variance value:
-        
+
         - if a function: function of three arguments (xi, yi, yi) that returns \
         the variance at location (xi, yi, zi)
         - if array-like: its size must be equal to the number of grid cells \
@@ -4074,7 +4388,7 @@ def simulate3D(
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
-        
+
         - `searchNeighborhoodSortMode=0`: distance in the usual axes system
         - `searchNeighborhoodSortMode=1`: distance in the axes sytem supporting \
         the covariance model and accounting for anisotropy given by the ranges
@@ -4097,11 +4411,11 @@ def simulate3D(
         see `nGibbsSamplerPathMax`
 
     nGibbsSamplerPathMax: int, default: 200
-        `nGibbsSamplerPathMin` and `nGibbsSamplerPathMax` are the mini and max number 
-        of Gibbs sampler paths to deal with inequality data; the conditioning locations 
-        with inequality data are first simulated (based on truncated gaussian 
-        distribution) sequentially; then, these locations are re-simulated following a 
-        new path as many times as needed, but the total number of paths will be between 
+        `nGibbsSamplerPathMin` and `nGibbsSamplerPathMax` are the mini and max number
+        of Gibbs sampler paths to deal with inequality data; the conditioning locations
+        with inequality data are first simulated (based on truncated gaussian
+        distribution) sequentially; then, these locations are re-simulated following a
+        new path as many times as needed, but the total number of paths will be between
         `nGibbsSamplerPathMin` and `nGibbsSamplerPathMax`
 
     seed : int, optional
@@ -4118,11 +4432,13 @@ def simulate3D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
@@ -4130,17 +4446,17 @@ def simulate3D(
         geosclassic output in python, dictionary
 
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=nreal` variables (simulations);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -4166,8 +4482,8 @@ def simulate3D(
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
-            print(f'{fname}: nreal <= 0: nothing to do!')
+        if verbose > 0:
+            print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
         return None
 
     # cov_model
@@ -4176,52 +4492,47 @@ def simulate3D(
             # -> will not be modified cov_model at exit
 
     if not isinstance(cov_model, gcm.CovModel3D):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model` is not valid")
-        return None
+        err_msg = f'{fname}: `cov_model` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: `cov_model`: weight ('w') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
+
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: `cov_model`: range ('r') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
+
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: `cov_model`: parameter ('s') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model`: angle (alpha) not compatible with simulation grid")
-        return None
+        err_msg = f"{fname}: `cov_model`: angle ('alpha') not compatible with simulation grid"
+        raise GeosclassicinterfaceError(err_msg)
 
     # beta
     angle = cov_model.beta
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model`: angle (beta) not compatible with simulation grid")
-        return None
+        err_msg = f"{fname}: `cov_model`: angle ('beta') not compatible with simulation grid"
+        raise GeosclassicinterfaceError(err_msg)
 
     # gamma
     angle = cov_model.gamma
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model`: angle (gamma) not compatible with simulation grid")
-        return None
+        err_msg = f"{fname}: `cov_model`: angle ('gamma') not compatible with simulation grid"
+        raise GeosclassicinterfaceError(err_msg)
 
     # aggregate_data_op (default)
     if aggregate_data_op is None:
@@ -4244,30 +4555,23 @@ def simulate3D(
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - searchRadiusRelative
     if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-        return None
+        err_msg = f'{fname}: `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - nneighborMax
     if nneighborMax != -1 and nneighborMax <= 0:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-        return None
+        err_msg = f'{fname}: `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - searchNeighborhoodSortMode
     if searchNeighborhoodSortMode is None:
@@ -4279,9 +4583,8 @@ def simulate3D(
     else:
         if searchNeighborhoodSortMode == 2:
             if not cov_model.is_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                return None
+                err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                raise GeosclassicinterfaceError(err_msg)
 
     # if searchNeighborhoodSortMode is None:
     #     # set greatest possible value
@@ -4294,47 +4597,42 @@ def simulate3D(
     # else:
     #     if searchNeighborhoodSortMode == 2:
     #         if not cov_model.is_stationary():
-    #             if verbose > 0:
-    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-    #             return None
+    #             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+    #             raise GeosclassicinterfaceError(err_msg)
     #     elif searchNeighborhoodSortMode == 1:
     #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-    #             if verbose > 0:
-    #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-    #             return None
+    #             err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+    #             raise GeosclassicinterfaceError(err_msg)
 
     # Preparation of data points
     if x is not None:
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if xIneqMin is not None:
         xIneqMin = np.asarray(xIneqMin, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         vIneqMin = np.asarray(vIneqMin, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMin) != xIneqMin.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `vIneqMin` is not valid")
-            return None
+            err_msg = f'{fname}: length of `vIneqMin` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if xIneqMax is not None:
         xIneqMax = np.asarray(xIneqMax, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         vIneqMax = np.asarray(vIneqMax, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(vIneqMax) != xIneqMax.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `vIneqMax` is not valid")
-            return None
+            err_msg = f'{fname}: length of `vIneqMax` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - mean
     mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
-        #     return None
+        #     err_msg = f'{fname}: specifying `mean` not allowed with ordinary kriging'
+        #     raise GeosclassicinterfaceError(err_msg)
+
         if callable(mean):
             if x is not None:
                 mean_x = mean(x[:, 0], x[:, 1], x[:, 2])
@@ -4353,17 +4651,16 @@ def simulate3D(
                 if x is not None:
                     mean_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=mean))(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `mean` is not valid")
-                return None
+                err_msg = f'{fname}: size of `mean` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - var
     var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
-            if verbose > 0:
-                print(f"ERROR ({fname}): specifying `var` not allowed with ordinary kriging")
-            return None
+            err_msg = f'{fname}: specifying `var` not allowed with ordinary kriging'
+            raise GeosclassicinterfaceError(err_msg)
+
         if callable(var):
             if x is not None:
                 var_x = var(x[:, 0], x[:, 1], x[:, 2])
@@ -4382,9 +4679,8 @@ def simulate3D(
                 if x is not None:
                     var_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=var))(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `var` is not valid")
-                return None
+                err_msg = f'{fname}: size of `var` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # Prepare seed
     if seed is None:
@@ -4399,9 +4695,9 @@ def simulate3D(
     if x is not None:
         if aggregate_data_op == 'krige' or aggregate_data_op == 'sgs':
             if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
-                return None
+                err_msg = f"{fname}: covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'"
+                raise GeosclassicinterfaceError(err_msg)
+
             if cov_model.is_orientation_stationary():
                 cov_model_agg = cov_model
             else:
@@ -4416,9 +4712,9 @@ def simulate3D(
                                          indicator_var=True, count_var=False)
             ind_agg = np.where(im_tmp.val[0])
             if len(ind_agg[0]) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
+
             x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1), im_tmp.zz()[ind_agg].reshape(-1))).T
             # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
             del(im_tmp)
@@ -4460,37 +4756,43 @@ def simulate3D(
                                                  var_x=var_x, var_xu=var_x_agg,
                                                  alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
                                                  verbose=0, **aggregate_data_op_kwargs)
-                except:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): kriging error")
-                    return None
+                except Exception as exc:
+                    err_msg = f'{fname}: kriging error'
+                    raise GeosclassicinterfaceError(err_msg) from exc
+
             else:
                 aggregate_data_by_simul = True
-                v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
-                                mean_x=mean_x, mean_xu=mean_x_agg,
-                                var_x=var_x, var_xu=var_x_agg,
-                                alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
-                                nreal=nreal, seed=seed,
-                                verbose=0, **aggregate_data_op_kwargs)
-                if v_agg is None:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): sgs error")
-                    return None
+                try:
+                    v_agg = gcm.sgs(x, v, x_agg, cov_model_agg, method=method,
+                                    mean_x=mean_x, mean_xu=mean_x_agg,
+                                    var_x=var_x, var_xu=var_x_agg,
+                                    alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
+                                    nreal=nreal, seed=seed,
+                                    verbose=0, **aggregate_data_op_kwargs)
+                except Exception as exc:
+                    err_msg = f'{fname}: sgs error'
+                    raise GeosclassicinterfaceError(err_msg) from exc
+
             xx_agg, yy_agg, zz_agg = x_agg.T
         elif aggregate_data_op == 'random':
             aggregate_data_by_simul = True
             # Aggregate data on grid cell by taking random point
             xx, yy, zz = x.T
             # first realization of v_agg
-            xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
-                                                    xx, yy, zz, v,
-                                                    nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                    op=aggregate_data_op, return_inverse=True,
-                                                    **aggregate_data_op_kwargs)
+            try:
+                xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
+                                                        xx, yy, zz, v,
+                                                        nx, ny, nz, sx, sy, sz, ox, oy, oz,
+                                                        op=aggregate_data_op, return_inverse=True,
+                                                        **aggregate_data_op_kwargs)
+            except Exception as exc:
+                err_msg = f'{fname}: data aggregation'
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             if len(xx_agg) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
+
             # next realizations of v_agg
             v_agg = np.vstack((v_agg, np.zeros((nreal-1, v_agg.size))))
             for i in range(1, nreal):
@@ -4503,14 +4805,13 @@ def simulate3D(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                     op=aggregate_data_op, **aggregate_data_op_kwargs)
-            except:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
-                return None
+            except Exception as exc:
+                err_msg = f"{fname}: data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             if len(xx_agg) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
 
         if xIneqMin is not None or xIneqMax is not None:
             # Get single grid index for data points
@@ -4537,10 +4838,10 @@ def simulate3D(
                                                 xx, yy, zz, vIneqMin,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op=aggregate_data_ineqMin_op, **aggregate_data_ineqMin_op_kwargs)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): inequality data (min) aggregation (`aggregate_data_op='{aggregate_data_ineqMin_op}'`) failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: inequality data (min) aggregation (`aggregate_data_op='{aggregate_data_ineqMin_op}'`) failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if x is not None:
             # Get single grid index for inequality (min) data points
             ix, iy, iz = img.pointToGridIndex(xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg,
@@ -4551,12 +4852,12 @@ def simulate3D(
             ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMin, assume_unique=True, return_indices=True)
 
             if ig_inter.size:
-                if verbose > 1:
-                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (min)" and "equality" data: inequlity data has been removed')
+                if verbose > 0:
+                    print(f'{fname}: WARNING: {ig_inter.size} grid cell(s) have both "inequality (min)" and "equality" data: inequlity data has been removed')
                     if not aggregate_data_by_simul:
                         ninconsistent = (v_agg[ig1] < v_ineqMin_agg[ig2]).sum()
                         if ninconsistent:
-                            print(f'WARNING ({fname}): {ninconsistent} "inequality (min)" found')
+                            print(f'{fname}: WARNING: {ninconsistent} "inequality (min)" found')
                 # Remove redundant points from inequality data set
                 xx_ineqMin_agg = np.delete(xx_ineqMin_agg, ig2)
                 yy_ineqMin_agg = np.delete(yy_ineqMin_agg, ig2)
@@ -4565,11 +4866,11 @@ def simulate3D(
 
         if v_ineqMin_agg.shape[0]:
             dataPointSet.append(
-                PointSet(npt=v_ineqMin_agg.shape[0], nv=4, val=np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg)), varname=['X', 'Y', 'Z', '{}_min'.format(varname)])
+                PointSet(npt=v_ineqMin_agg.shape[0], nv=4, val=np.array((xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg)), varname=['X', 'Y', 'Z', f'{varname}_min'])
                 )
         else:
-            if verbose > 1:
-                print(f"WARNING ({fname}): no inequality (min) data point in grid")
+            if verbose > 0:
+                print(f'{fname}: WARNING: no inequality (min) data point in grid')
             xIneqMin = None
 
     # data point set from xIneqMax, vIneqMax
@@ -4581,10 +4882,10 @@ def simulate3D(
                                                 xx, yy, zz, vIneqMax,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op=aggregate_data_ineqMax_op, **aggregate_data_ineqMax_op_kwargs)
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): inequality data (max) aggregation (`aggregate_data_op='{aggregate_data_ineqMax_op}'`) failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: inequality data (max) aggregation (`aggregate_data_op='{aggregate_data_ineqMax_op}'`) failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if x is not None:
             # Get single grid index for inequality (max) data points
             ix, iy, iz = img.pointToGridIndex(xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg,
@@ -4595,12 +4896,12 @@ def simulate3D(
             ig_inter, ig1, ig2 = np.intersect1d(ig, ig_ineqMax, assume_unique=True, return_indices=True)
 
             if ig_inter.size:
-                if verbose > 1:
-                    print(f'WARNING ({fname}): {ig_inter.size} grid cell(s) have both "inequality (max)" and "equality" data: inequlity data has been removed')
+                if verbose > 0:
+                    print(f'{fname}: WARNING: {ig_inter.size} grid cell(s) have both "inequality (max)" and "equality" data: inequlity data has been removed')
                     if not aggregate_data_by_simul:
                         ninconsistent = (v_agg[ig1] > v_ineqMax_agg[ig2]).sum()
                         if ninconsistent:
-                            print(f'WARNING ({fname}): {ninconsistent} "inequality (max)" found')
+                            print(f'{fname}: WARNING: {ninconsistent} "inequality (max)" found')
                 # Remove redundant points from inequality data set
                 xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
                 yy_ineqMax_agg = np.delete(yy_ineqMax_agg, ig2)
@@ -4624,11 +4925,10 @@ def simulate3D(
             if ig_inter.size:
                 ii = np.where(v_ineqMin_agg[ig1] > v_ineqMax_agg[ig2])[0]
                 if len(ii):
-                    if verbose > 0:
-                        print(f'ERROR ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data')
-                    return None
-                    # if verbose > 1:
-                    #     print(f'WARNING ({fname}): {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data: inequlity max data has been removed')
+                    err_msg = f'{fname}: {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data'
+                    raise GeosclassicinterfaceError(err_msg)
+                    # if verbose > 0:
+                    #     print(f'{fname}: WARNING: {len(ii)} grid cell(s) have inconsistent "inequality min" and "inequality max" data: inequlity max data has been removed')
                     # ig2 = ig2[ii]
                     # # Remove inconsistent inequality max
                     # xx_ineqMax_agg = np.delete(xx_ineqMax_agg, ig2)
@@ -4638,11 +4938,11 @@ def simulate3D(
 
         if v_ineqMax_agg.shape[0]:
             dataPointSet.append(
-                PointSet(npt=v_ineqMax_agg.shape[0], nv=4, val=np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg)), varname=['X', 'Y', 'Z', '{}_max'.format(varname)])
+                PointSet(npt=v_ineqMax_agg.shape[0], nv=4, val=np.array((xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg)), varname=['X', 'Y', 'Z', f'{varname}_max'])
                 )
         else:
-            if verbose > 1:
-                print(f"WARNING ({fname}): no inequality (max) data point in grid")
+            if verbose > 0:
+                print(f'{fname}: WARNING: no inequality (max) data point in grid')
             xIneqMax = None
 
     # Check parameters - mask
@@ -4650,9 +4950,8 @@ def simulate3D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -4684,34 +4983,36 @@ def simulate3D(
     else:
         nth = nthreads
 
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
     if not aggregate_data_by_simul:
         # --- Fill mpds_geosClassicInput structure (C)
-        mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-            space_dim,
-            cov_model,
-            nx, ny, nz,
-            sx, sy, sz,
-            ox, oy, oz,
-            varname,
-            outputReportFile,
-            computationMode,
-            None,
-            dataPointSet,
-            mask,
-            mean,
-            var,
-            searchRadiusRelative,
-            nneighborMax,
-            searchNeighborhoodSortMode,
-            nGibbsSamplerPathMin,
-            nGibbsSamplerPathMax,
-            seed,
-            nreal)
-
-        if not flag:
-            if verbose > 0:
-                print(f'ERROR ({fname}): can not fill input structure!')
-            return None
+        try:
+            mpds_geosClassicInput = fill_mpds_geosClassicInput(
+                    space_dim,
+                    cov_model,
+                    nx, ny, nz,
+                    sx, sy, sz,
+                    ox, oy, oz,
+                    varname,
+                    outputReportFile,
+                    computationMode,
+                    None,
+                    dataPointSet,
+                    mask,
+                    mean,
+                    var,
+                    searchRadiusRelative,
+                    nneighborMax,
+                    searchNeighborhoodSortMode,
+                    nGibbsSamplerPathMin,
+                    nGibbsSamplerPathMax,
+                    seed,
+                    nreal)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
+            raise GeosclassicinterfaceError(err_msg) from exc
 
         # --- Prepare mpds_geosClassicIOutput structure (C)
         # Allocate mpds_geosClassicOutput
@@ -4742,8 +5043,8 @@ def simulate3D(
         # else:
         #     nth = nthreads
 
-        if verbose >= 2:
-            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        if verbose > 1:
+            print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
             sys.stdout.flush()
             sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -4753,31 +5054,33 @@ def simulate3D(
 
         # Free memory on C side: mpds_geosClassicInput
         geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-        #geosclassic.MPDSFree(mpds_geosClassicInput)
         geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
         if err:
-            if verbose > 0:
-                err_message = geosclassic.mpds_get_error_message(-err)
-                err_message = err_message.replace('\n', '')
-                print(err_message)
-            geosclassic_output = None
-        else:
-            geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+            # Free memory on C side: mpds_geosClassicOutput
+            geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+            geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+            # Free memory on C side: mpds_progressMonitor
+            geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+            # Raise error
+            err_message = geosclassic.mpds_get_error_message(-err)
+            err_message = err_message.replace('\n', '')
+            err_msg = f'{fname}: {err_message}'
+            raise GeosclassicinterfaceError(err_msg)
+
+        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
         # Free memory on C side: mpds_geosClassicOutput
         geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-        #geosclassic.MPDSFree(mpds_geosClassicOutput)
         geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
         # Free memory on C side: mpds_progressMonitor
-        #geosclassic.MPDSFree(mpds_progressMonitor)
         geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     else:
         # Equality data values will change for each realization
-        if verbose >= 2:
-            print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+        if verbose > 1:
+            print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
             sys.stdout.flush()
             sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
@@ -4795,32 +5098,31 @@ def simulate3D(
                 outputReportFile_ir = outputReportFile + f'.{ir}'
 
             # --- Fill mpds_geosClassicInput structure (C)
-            mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-                space_dim,
-                cov_model,
-                nx, ny, nz,
-                sx, sy, sz,
-                ox, oy, oz,
-                varname,
-                outputReportFile_ir,
-                computationMode,
-                None,
-                dataPointSet,
-                mask,
-                mean,
-                var,
-                searchRadiusRelative,
-                nneighborMax,
-                searchNeighborhoodSortMode,
-                nGibbsSamplerPathMin,
-                nGibbsSamplerPathMax,
-                seed+ir, # seed for realization index ir
-                1) # one real
-
-            if not flag:
-                if verbose > 0:
-                    print(f'ERROR ({fname}): can not fill input structure!')
-                return None
+            try:
+                mpds_geosClassicInput = fill_mpds_geosClassicInput(
+                        space_dim,
+                        cov_model,
+                        nx, ny, nz,
+                        sx, sy, sz,
+                        ox, oy, oz,
+                        varname,
+                        outputReportFile_ir,
+                        computationMode,
+                        None,
+                        dataPointSet,
+                        mask,
+                        mean,
+                        var,
+                        searchRadiusRelative,
+                        nneighborMax,
+                        searchNeighborhoodSortMode,
+                        nGibbsSamplerPathMin,
+                        nGibbsSamplerPathMax,
+                        seed+ir, # seed for realization index ir
+                        1) # one real
+            except Exception as exc:
+                err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
+                raise GeosclassicinterfaceError(err_msg) from exc
 
             # --- Prepare mpds_geosClassicIOutput structure (C)
             # Allocate mpds_geosClassicOutput
@@ -4846,8 +5148,8 @@ def simulate3D(
             # else:
             #     mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
             #
-            # if verbose >= 2:
-            #     print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+            # if verbose > 1:
+            #     print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
             #     sys.stdout.flush()
             #     sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -4857,31 +5159,32 @@ def simulate3D(
 
             # Free memory on C side: mpds_geosClassicInput
             geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-            #geosclassic.MPDSFree(mpds_geosClassicInput)
             geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
             if err:
-                if verbose > 0:
-                    err_message = geosclassic.mpds_get_error_message(-err)
-                    err_message = err_message.replace('\n', '')
-                    print(err_message)
-                geosclassic_output = None
-            else:
-                geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+                # Free memory on C side: mpds_geosClassicOutput
+                geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+                geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+                # Free memory on C side: mpds_progressMonitor
+                geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+                # Raise error
+                err_message = geosclassic.mpds_get_error_message(-err)
+                err_message = err_message.replace('\n', '')
+                err_msg = f'{fname}: {err_message}'
+                raise GeosclassicinterfaceError(err_msg)
+
+            geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
             # Free memory on C side: mpds_geosClassicOutput
             geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-            #geosclassic.MPDSFree(mpds_geosClassicOutput)
             geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
             # Free memory on C side: mpds_progressMonitor
-            #geosclassic.MPDSFree(mpds_progressMonitor)
             geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-            if geosclassic_output is not None:
-                image.val[ir] = geosclassic_output['image'].val[0]
-                nwarning = nwarning + geosclassic_output['nwarning']
-                warnings.extend(geosclassic_output['warnings'])
+            image.val[ir] = geosclassic_output['image'].val[0]
+            nwarning = nwarning + geosclassic_output['nwarning']
+            warnings.extend(geosclassic_output['warnings'])
 
             del(geosclassic_output)
 
@@ -4900,14 +5203,14 @@ def simulate3D(
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -4958,7 +5261,7 @@ def simulate3D_mp(
     cpu(s)
 
     See function :func:`geosclassicinterface.simulate3D`.
-    
+
     **Parameters (new)**
     --------------------
     nproc : int, optional
@@ -4976,7 +5279,7 @@ def simulate3D_mp(
 
     treat_image_one_by_one : bool, default: False
         keyword argument passed to the function :func:`img.gatherImages`:
-        
+
         - if `True`: images (result of each process) are gathered one by one, \
         i.e. the variables of each image are inserted in an output image one by \
         one and removed from the source (slower, may save memory)
@@ -4984,7 +5287,7 @@ def simulate3D_mp(
         i.e. the variables of all images are inserted in an output image at once, \
         and then removed (faster)
     """
-    # fname = 'simulate3D_mp'
+    fname = 'simulate3D_mp'
 
     # Set number of processes: nproc
     if nproc is None:
@@ -4992,19 +5295,19 @@ def simulate3D_mp(
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
-        if verbose > 0 and nproc != nproc_tmp:
-            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+        if verbose > 1 and nproc != nproc_tmp:
+            print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
         nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
-        if verbose > 0 and nth != nthreads_per_proc:
-            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+        if verbose > 1 and nth != nthreads_per_proc:
+            print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
     # Set the distribution of the realizations over the processes
     # Condider the Euclidean division of nreal by nproc:
@@ -5015,8 +5318,8 @@ def simulate3D_mp(
     q, r = np.divmod(nreal, nproc)
     real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
-    if verbose >= 2:
-        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 1:
+        print('{}: Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
@@ -5036,10 +5339,11 @@ def simulate3D_mp(
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
             outputReportFile_p = outputReportFile + f'.{i}'
-        if i==0:
-            verbose_p = min(verbose, 1) # allow to print error for process i
-        else:
-            verbose_p = 0
+        verbose_p = 0
+        # if i==0:
+        #     verbose_p = min(verbose, 1) # allow to print warnings for process i
+        # else:
+        #     verbose_p = 0
         # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulate3D,
@@ -5103,14 +5407,14 @@ def simulate3D_mp(
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete (all process(es))')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete (all process(es))')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -5149,7 +5453,7 @@ def estimate1D(
 
     spacing : float, default: 1.0
         `spacing=sx`, cell size
-        
+
     origin : float, default: 0.0
         `origin=ox`, origin of the 1D simulation grid (left border)
 
@@ -5252,7 +5556,7 @@ def estimate1D(
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
-        
+
         - `searchNeighborhoodSortMode=0`: distance in the usual axes system
         - `searchNeighborhoodSortMode=1`: distance in the axes sytem supporting \
         the covariance model and accounting for anisotropy given by the ranges
@@ -5260,7 +5564,7 @@ def estimate1D(
         model
 
         Notes:
-        
+
         - if the covariance model has any non-stationary parameter, then \
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary \
@@ -5282,30 +5586,32 @@ def estimate1D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     geosclassic_output : dict
         geosclassic output in python, dictionary
-        
+
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=2` variables (estimates and standard
             deviations);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -5329,31 +5635,29 @@ def estimate1D(
     # --- Check and prepare parameters
     # cov_model
     if not isinstance(cov_model, gcm.CovModel1D):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model` is not valid")
-        return None
+        err_msg = f'{fname}: `cov_model` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: `cov_model`: weight ('w') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
+
         # ranges
         if 'r' in el[1].keys():
             r  = el[1]['r']
             if np.size(r) != 1 and np.size(r) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: `cov_model`: range ('r') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
+
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: `cov_model`: parameter ('s') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
 
     # aggregate_data_op (default)
     if aggregate_data_op is None:
@@ -5370,18 +5674,13 @@ def estimate1D(
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
     #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
@@ -5391,68 +5690,62 @@ def estimate1D(
         searchNeighborhoodSortMode = 0
 
     else:
-       # Check parameters - searchRadiusRelative
-       if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-           if verbose > 0:
-               print(f"ERROR ({fname}): 'searchRadiusRelative' too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-           return None
+        # Check parameters - searchRadiusRelative
+        if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
+            err_msg = f'{fname}: `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+            raise GeosclassicinterfaceError(err_msg)
 
-       # Check parameters - nneighborMax
-       if nneighborMax != -1 and nneighborMax <= 0:
-           if verbose > 0:
-               print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-           return None
+        # Check parameters - nneighborMax
+        if nneighborMax != -1 and nneighborMax <= 0:
+            err_msg = f'{fname}: `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+            raise GeosclassicinterfaceError(err_msg)
 
-       # Check parameters - searchNeighborhoodSortMode
-       if searchNeighborhoodSortMode is None:
-           # set greatest possible value
-           if cov_model.is_stationary():
-               searchNeighborhoodSortMode = 2
-           else:
-               searchNeighborhoodSortMode = 1
-       else:
-           if searchNeighborhoodSortMode == 2:
-               if not cov_model.is_stationary():
-                   if verbose > 0:
-                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                   return None
+        # Check parameters - searchNeighborhoodSortMode
+        if searchNeighborhoodSortMode is None:
+            # set greatest possible value
+            if cov_model.is_stationary():
+                searchNeighborhoodSortMode = 2
+            else:
+                searchNeighborhoodSortMode = 1
+        else:
+            if searchNeighborhoodSortMode == 2:
+                if not cov_model.is_stationary():
+                    err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                    raise GeosclassicinterfaceError(err_msg)
 
-       # if searchNeighborhoodSortMode is None:
-       #     # set greatest possible value
-       #     if cov_model.is_stationary():
-       #         searchNeighborhoodSortMode = 2
-       #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
-       #         searchNeighborhoodSortMode = 1
-       #     else:
-       #         searchNeighborhoodSortMode = 0
-       # else:
-       #     if searchNeighborhoodSortMode == 2:
-       #         if not cov_model.is_stationary():
-       #             if verbose > 0:
-       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-       #             return None
-       #     elif searchNeighborhoodSortMode == 1:
-       #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-       #             if verbose > 0:
-       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-       #             return None
+        # if searchNeighborhoodSortMode is None:
+        #     # set greatest possible value
+        #     if cov_model.is_stationary():
+        #         searchNeighborhoodSortMode = 2
+        #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
+        #         searchNeighborhoodSortMode = 1
+        #     else:
+        #         searchNeighborhoodSortMode = 0
+        # else:
+        #     if searchNeighborhoodSortMode == 2:
+        #         if not cov_model.is_stationary():
+        #             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+        #             raise GeosclassicinterfaceError(err_msg)
+        #     elif searchNeighborhoodSortMode == 1:
+        #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
+        #             err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+        #             raise GeosclassicinterfaceError(err_msg)
 
     # Preparation of data points
     if x is not None:
         x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - mean
     mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
-        #     return None
+        #     err_msg = f'{fname}: specifying `mean` not allowed with ordinary kriging'
+        #     raise GeosclassicinterfaceError(err_msg)
+
         if callable(mean):
             if x is not None:
                 mean_x = mean(x[:, 0])
@@ -5468,17 +5761,16 @@ def estimate1D(
                 if x is not None:
                     mean_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=mean), iy=0, iz=0)(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `mean` is not valid")
-                return None
+                err_msg = f'{fname}: size of `mean` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - var
     var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
-            if verbose > 0:
-                print(f"ERROR ({fname}): specifying 'var' not allowed with ordinary kriging")
-            return None
+            err_msg = f'{fname}: specifying `var` not allowed with ordinary kriging'
+            raise GeosclassicinterfaceError(err_msg)
+
         if callable(var):
             if x is not None:
                 var_x = var(x[:, 0])
@@ -5494,9 +5786,8 @@ def estimate1D(
                 if x is not None:
                     var_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=var), iy=0, iz=0)(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `var` is not valid")
-                return None
+                err_msg = f'{fname}: size of `var` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # data points: x, v
     dataPointSet = []
@@ -5505,9 +5796,9 @@ def estimate1D(
     if x is not None:
         if aggregate_data_op == 'krige':
             if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
-                return None
+                err_msg = f"{fname}: covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'"
+                raise GeosclassicinterfaceError(err_msg)
+
             cov_model_agg = cov_model
             # Get grid cell with at least one data point:
             # x_agg: 2D array, each row contains the coordinates of the center of such cell
@@ -5516,9 +5807,9 @@ def estimate1D(
                                          indicator_var=True, count_var=False)
             ind_agg = np.where(im_tmp.val[0])
             if len(ind_agg[0]) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
+
             x_agg = im_tmp.xx()[ind_agg].reshape(-1, 1)
             # x_agg = im_tmp.xx()[*ind_agg].reshape(-1, 1)
             ind_agg = ind_agg[2:] # remove index along z and y axes
@@ -5545,10 +5836,10 @@ def estimate1D(
                                              mean_x=mean_x, mean_xu=mean_x_agg,
                                              var_x=var_x, var_xu=var_x_agg,
                                              verbose=0, **aggregate_data_op_kwargs)
-            except:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): kriging error")
-                return None
+            except Exception as exc:
+                err_msg = f'{fname}: kriging error'
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             xx_agg = x_agg[:, 0]
             yy_agg = np.ones_like(xx_agg) * oy + 0.5 * sy
             zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
@@ -5562,14 +5853,13 @@ def estimate1D(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                     op=aggregate_data_op, **aggregate_data_op_kwargs)
-            except:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
-                return None
+            except Exception as exc:
+                err_msg = f"{fname}: data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             if len(xx_agg) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
 
         dataPointSet.append(
             PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
@@ -5580,9 +5870,8 @@ def estimate1D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -5602,32 +5891,31 @@ def estimate1D(
         del(pts)
 
     # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-        space_dim,
-        cov_model,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        outputReportFile,
-        computationMode,
-        None,
-        dataPointSet,
-        mask,
-        mean,
-        var,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        0,
-        0,
-        0,
-        0)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
+    try:
+        mpds_geosClassicInput = fill_mpds_geosClassicInput(
+                space_dim,
+                cov_model,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                outputReportFile,
+                computationMode,
+                None,
+                dataPointSet,
+                mask,
+                mean,
+                var,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                0,
+                0,
+                0,
+                0)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
     # Allocate mpds_geosClassicOutput
@@ -5658,8 +5946,11 @@ def estimate1D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    if verbose > 1:
+        print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -5669,25 +5960,27 @@ def estimate1D(
 
     # Free memory on C side: mpds_geosClassicInput
     geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-    #geosclassic.MPDSFree(mpds_geosClassicInput)
     geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
     if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
-    else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Free memory on C side: mpds_progressMonitor
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if geosclassic_output is not None and x is not None and aggregate_data_op == 'krige':
@@ -5699,14 +5992,14 @@ def estimate1D(
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -5849,7 +6142,7 @@ def estimate2D(
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
-        
+
         - `searchNeighborhoodSortMode=0`: distance in the usual axes system
         - `searchNeighborhoodSortMode=1`: distance in the axes sytem supporting \
         the covariance model and accounting for anisotropy given by the ranges
@@ -5878,30 +6171,32 @@ def estimate2D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     geosclassic_output : dict
         geosclassic output in python, dictionary
-        
+
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=2` variables (estimates and standard
             deviations);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -5929,38 +6224,35 @@ def estimate2D(
             # -> will not be modified cov_model at exit
 
     if not isinstance(cov_model, gcm.CovModel2D):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model` is not valid")
-        return None
+        err_msg = f'{fname}: `cov_model` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: `cov_model`: weight ('w') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
+
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: `cov_model`: range ('r') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
+
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: `cov_model`: parameter ('s') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model`: angle (alpha) not compatible with simulation grid")
-        return None
+        err_msg = f"{fname}: `cov_model`: angle ('alpha') not compatible with simulation grid"
+        raise GeosclassicinterfaceError(err_msg)
 
     # aggregate_data_op (default)
     if aggregate_data_op is None:
@@ -5977,18 +6269,13 @@ def estimate2D(
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
     #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
@@ -5998,68 +6285,62 @@ def estimate2D(
         searchNeighborhoodSortMode = 0
 
     else:
-       # Check parameters - searchRadiusRelative
-       if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-           if verbose > 0:
-               print(f"ERROR ({fname}): `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-           return None
+        # Check parameters - searchRadiusRelative
+        if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
+            err_msg = f'{fname}: `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+            raise GeosclassicinterfaceError(err_msg)
 
-       # Check parameters - nneighborMax
-       if nneighborMax != -1 and nneighborMax <= 0:
-           if verbose > 0:
-               print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-           return None
+        # Check parameters - nneighborMax
+        if nneighborMax != -1 and nneighborMax <= 0:
+            err_msg = f'{fname}: `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+            raise GeosclassicinterfaceError(err_msg)
 
-       # Check parameters - searchNeighborhoodSortMode
-       if searchNeighborhoodSortMode is None:
-           # set greatest possible value
-           if cov_model.is_stationary():
-               searchNeighborhoodSortMode = 2
-           else:
-               searchNeighborhoodSortMode = 1
-       else:
-           if searchNeighborhoodSortMode == 2:
-               if not cov_model.is_stationary():
-                   if verbose > 0:
-                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                   return None
+        # Check parameters - searchNeighborhoodSortMode
+        if searchNeighborhoodSortMode is None:
+            # set greatest possible value
+            if cov_model.is_stationary():
+                searchNeighborhoodSortMode = 2
+            else:
+                searchNeighborhoodSortMode = 1
+        else:
+            if searchNeighborhoodSortMode == 2:
+                if not cov_model.is_stationary():
+                    err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                    raise GeosclassicinterfaceError(err_msg)
 
-       # if searchNeighborhoodSortMode is None:
-       #     # set greatest possible value
-       #     if cov_model.is_stationary():
-       #         searchNeighborhoodSortMode = 2
-       #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
-       #         searchNeighborhoodSortMode = 1
-       #     else:
-       #         searchNeighborhoodSortMode = 0
-       # else:
-       #     if searchNeighborhoodSortMode == 2:
-       #         if not cov_model.is_stationary():
-       #             if verbose > 0:
-       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-       #             return None
-       #     elif searchNeighborhoodSortMode == 1:
-       #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-       #             if verbose > 0:
-       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-       #             return None
+        # if searchNeighborhoodSortMode is None:
+        #     # set greatest possible value
+        #     if cov_model.is_stationary():
+        #         searchNeighborhoodSortMode = 2
+        #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
+        #         searchNeighborhoodSortMode = 1
+        #     else:
+        #         searchNeighborhoodSortMode = 0
+        # else:
+        #     if searchNeighborhoodSortMode == 2:
+        #         if not cov_model.is_stationary():
+        #             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+        #             raise GeosclassicinterfaceError(err_msg)
+        #     elif searchNeighborhoodSortMode == 1:
+        #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
+        #             err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+        #             raise GeosclassicinterfaceError(err_msg)
 
     # Preparation of data points
     if x is not None:
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - mean
     mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
-        #     return None
+        #     err_msg = f'{fname}: specifying `mean` not allowed with ordinary kriging'
+        #     raise GeosclassicinterfaceError(err_msg)
+
         if callable(mean):
             if x is not None:
                 mean_x = mean(x[:, 0], x[:, 1])
@@ -6077,17 +6358,16 @@ def estimate2D(
                 if x is not None:
                     mean_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=mean), iz=0)(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `mean` is not valid")
-                return None
+                err_msg = f'{fname}: size of `mean` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - var
     var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
-            if verbose > 0:
-                print(f"ERROR ({fname}): specifying `var` not allowed with ordinary kriging")
-            return None
+            err_msg = f'{fname}: specifying `var` not allowed with ordinary kriging'
+            raise GeosclassicinterfaceError(err_msg)
+
         if callable(var):
             if x is not None:
                 var_x = var(x[:, 0], x[:, 1])
@@ -6105,9 +6385,8 @@ def estimate2D(
                 if x is not None:
                     var_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=var), iz=0)(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `var` is not valid")
-                return None
+                err_msg = f'{fname}: size of `var` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # data points: x, v
     dataPointSet = []
@@ -6116,9 +6395,9 @@ def estimate2D(
     if x is not None:
         if aggregate_data_op == 'krige':
             if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
-                return None
+                err_msg = f"{fname}: covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'"
+                raise GeosclassicinterfaceError(err_msg)
+
             if cov_model.is_orientation_stationary():
                 cov_model_agg = cov_model
             else:
@@ -6131,9 +6410,9 @@ def estimate2D(
                                          indicator_var=True, count_var=False)
             ind_agg = np.where(im_tmp.val[0])
             if len(ind_agg[0]) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
+
             x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1))).T
             # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1))).T
             ind_agg = ind_agg[1:] # remove index along z axis
@@ -6166,10 +6445,10 @@ def estimate2D(
                                              var_x=var_x, var_xu=var_x_agg,
                                              alpha_xu=alpha_x_agg,
                                              verbose=0, **aggregate_data_op_kwargs)
-            except:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): kriging error")
-                return None
+            except Exception as exc:
+                err_msg = f'{fname}: kriging error'
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             xx_agg, yy_agg = x_agg.T
             zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
         else:
@@ -6181,14 +6460,13 @@ def estimate2D(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                     op=aggregate_data_op, **aggregate_data_op_kwargs)
-            except:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
-                return None
+            except Exception as exc:
+                err_msg = f"{fname}: data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             if len(xx_agg) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
 
         dataPointSet.append(
             PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
@@ -6199,9 +6477,8 @@ def estimate2D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -6221,32 +6498,31 @@ def estimate2D(
         del(pts)
 
     # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-        space_dim,
-        cov_model,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        outputReportFile,
-        computationMode,
-        None,
-        dataPointSet,
-        mask,
-        mean,
-        var,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        0,
-        0,
-        0,
-        0)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
+    try:
+        mpds_geosClassicInput = fill_mpds_geosClassicInput(
+                space_dim,
+                cov_model,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                outputReportFile,
+                computationMode,
+                None,
+                dataPointSet,
+                mask,
+                mean,
+                var,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                0,
+                0,
+                0,
+                0)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
     # Allocate mpds_geosClassicOutput
@@ -6277,8 +6553,11 @@ def estimate2D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    if verbose > 1:
+        print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -6288,25 +6567,27 @@ def estimate2D(
 
     # Free memory on C side: mpds_geosClassicInput
     geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-    #geosclassic.MPDSFree(mpds_geosClassicInput)
     geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
     if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
-    else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Free memory on C side: mpds_progressMonitor
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if geosclassic_output is not None and x is not None and aggregate_data_op == 'krige':
@@ -6318,14 +6599,14 @@ def estimate2D(
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -6403,7 +6684,7 @@ def estimate3D(
 
     v : 1D array of floats of shape (n,), optional
         data values at `x` (`v[i]` is the data value at `x[i]`)
-    
+
     aggregate_data_op : str {'krige', 'min', 'max', 'mean', 'quantile', \
                         'most_freq', 'random'}, optional
         operation used to aggregate data points falling in the same grid cells
@@ -6469,7 +6750,7 @@ def estimate3D(
     searchNeighborhoodSortMode : int, optional
         indicates how to sort the search neighboorhood cells (neighbors); they
         are sorted in increasing order according to:
-        
+
         - `searchNeighborhoodSortMode=0`: distance in the usual axes system
         - `searchNeighborhoodSortMode=1`: distance in the axes sytem supporting \
         the covariance model and accounting for anisotropy given by the ranges
@@ -6498,30 +6779,32 @@ def estimate3D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     geosclassic_output : dict
         geosclassic output in python, dictionary
-        
+
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=2` variables (estimates and standard
             deviations);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -6549,52 +6832,47 @@ def estimate3D(
             # -> will not be modified cov_model at exit
 
     if not isinstance(cov_model, gcm.CovModel3D):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model` is not valid")
-        return None
+        err_msg = f'{fname}: `cov_model` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     for el in cov_model.elem:
         # weight
         w = el[1]['w']
         if np.size(w) != 1 and np.size(w) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `cov_model`: weight ('w') not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: `cov_model`: weight ('w') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
+
         # ranges
         if 'r' in el[1].keys():
             for r in el[1]['r']:
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): `cov_model`: range ('r') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: `cov_model`: range ('r') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
+
         # additional parameter (s)
         if 's' in el[1].keys():
             s  = el[1]['s']
             if np.size(s) != 1 and np.size(s) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): `cov_model`: parameter ('s') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: `cov_model`: parameter ('s') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
 
     # alpha
     angle = cov_model.alpha
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model`: angle (alpha) not compatible with simulation grid")
-        return None
+        err_msg = f"{fname}: `cov_model`: angle ('alpha') not compatible with simulation grid"
+        raise GeosclassicinterfaceError(err_msg)
 
     # beta
     angle = cov_model.beta
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model`: angle (beta) not compatible with simulation grid")
-        return None
+        err_msg = f"{fname}: `cov_model`: angle ('beta') not compatible with simulation grid"
+        raise GeosclassicinterfaceError(err_msg)
 
     # gamma
     angle = cov_model.gamma
     if np.size(angle) != 1 and np.size(angle) != nxyz:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model`: angle (gamma) not compatible with simulation grid")
-        return None
+        err_msg = f"{fname}: `cov_model`: angle ('gamma') not compatible with simulation grid"
+        raise GeosclassicinterfaceError(err_msg)
 
     # aggregate_data_op (default)
     if aggregate_data_op is None:
@@ -6611,18 +6889,13 @@ def estimate3D(
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     # If unique neighborhood is used, set searchRadiusRelative to -1
     #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
@@ -6632,68 +6905,62 @@ def estimate3D(
         searchNeighborhoodSortMode = 0
 
     else:
-       # Check parameters - searchRadiusRelative
-       if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-           if verbose > 0:
-               print(f"ERROR ({fname}): `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-           return None
+        # Check parameters - searchRadiusRelative
+        if searchRadiusRelative < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
+            err_msg = f'{fname}: `searchRadiusRelative` too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+            raise GeosclassicinterfaceError(err_msg)
 
-       # Check parameters - nneighborMax
-       if nneighborMax != -1 and nneighborMax <= 0:
-           if verbose > 0:
-               print(f"ERROR ({fname}): `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-           return None
+        # Check parameters - nneighborMax
+        if nneighborMax != -1 and nneighborMax <= 0:
+            err_msg = f'{fname}: `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+            raise GeosclassicinterfaceError(err_msg)
 
-       # Check parameters - searchNeighborhoodSortMode
-       if searchNeighborhoodSortMode is None:
-           # set greatest possible value
-           if cov_model.is_stationary():
-               searchNeighborhoodSortMode = 2
-           else:
-               searchNeighborhoodSortMode = 1
-       else:
-           if searchNeighborhoodSortMode == 2:
-               if not cov_model.is_stationary():
-                   if verbose > 0:
-                       print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                   return None
+        # Check parameters - searchNeighborhoodSortMode
+        if searchNeighborhoodSortMode is None:
+            # set greatest possible value
+            if cov_model.is_stationary():
+                searchNeighborhoodSortMode = 2
+            else:
+                searchNeighborhoodSortMode = 1
+        else:
+            if searchNeighborhoodSortMode == 2:
+                if not cov_model.is_stationary():
+                    err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                    raise GeosclassicinterfaceError(err_msg)
 
-       # if searchNeighborhoodSortMode is None:
-       #     # set greatest possible value
-       #     if cov_model.is_stationary():
-       #         searchNeighborhoodSortMode = 2
-       #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
-       #         searchNeighborhoodSortMode = 1
-       #     else:
-       #         searchNeighborhoodSortMode = 0
-       # else:
-       #     if searchNeighborhoodSortMode == 2:
-       #         if not cov_model.is_stationary():
-       #             if verbose > 0:
-       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-       #             return None
-       #     elif searchNeighborhoodSortMode == 1:
-       #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
-       #             if verbose > 0:
-       #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-       #             return None
+        # if searchNeighborhoodSortMode is None:
+        #     # set greatest possible value
+        #     if cov_model.is_stationary():
+        #         searchNeighborhoodSortMode = 2
+        #     elif cov_model.is_orientation_stationary() and cov_model.is_range_stationary():
+        #         searchNeighborhoodSortMode = 1
+        #     else:
+        #         searchNeighborhoodSortMode = 0
+        # else:
+        #     if searchNeighborhoodSortMode == 2:
+        #         if not cov_model.is_stationary():
+        #             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+        #             raise GeosclassicinterfaceError(err_msg)
+        #     elif searchNeighborhoodSortMode == 1:
+        #         if not cov_model.is_orientation_stationary() or not cov_model.is_range_stationary():
+        #             err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+        #             raise GeosclassicinterfaceError(err_msg)
 
     # Preparation of data points
     if x is not None:
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - mean
     mean_x = mean
     if mean is not None:
         # if method == 'ordinary_kriging':
-        #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying `mean` not allowed with ordinary kriging")
-        #     return None
+        #     err_msg = f'{fname}: specifying `mean` not allowed with ordinary kriging'
+        #     raise GeosclassicinterfaceError(err_msg)
+
         if callable(mean):
             if x is not None:
                 mean_x = mean(x[:, 0], x[:, 1], x[:, 2])
@@ -6712,17 +6979,16 @@ def estimate3D(
                 if x is not None:
                     mean_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=mean))(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `mean` is not valid")
-                return None
+                err_msg = f'{fname}: size of `mean` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - var
     var_x = var
     if var is not None:
         if method == 'ordinary_kriging':
-            if verbose > 0:
-                print(f"ERROR ({fname}): specifying `var` not allowed with ordinary kriging")
-            return None
+            err_msg = f'{fname}: specifying `var` not allowed with ordinary kriging'
+            raise GeosclassicinterfaceError(err_msg)
+
         if callable(var):
             if x is not None:
                 var_x = var(x[:, 0], x[:, 1], x[:, 2])
@@ -6741,9 +7007,8 @@ def estimate3D(
                 if x is not None:
                     var_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=var))(x)
             else:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): size of `var` is not valid")
-                return None
+                err_msg = f'{fname}: size of `var` is not valid'
+                raise GeosclassicinterfaceError(err_msg)
 
     # data points: x, v
     dataPointSet = []
@@ -6752,9 +7017,9 @@ def estimate3D(
     if x is not None:
         if aggregate_data_op == 'krige':
             if not cov_model.is_weight_stationary() or not cov_model.is_range_stationary():
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'")
-                return None
+                err_msg = f"{fname}: covariance model with non-stationary weight or range cannot be used with `aggregate_data_op`='{aggregate_data_op}'"
+                raise GeosclassicinterfaceError(err_msg)
+
             if cov_model.is_orientation_stationary():
                 cov_model_agg = cov_model
             else:
@@ -6769,9 +7034,9 @@ def estimate3D(
                                          indicator_var=True, count_var=False)
             ind_agg = np.where(im_tmp.val[0])
             if len(ind_agg[0]) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
+
             x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1), im_tmp.zz()[ind_agg].reshape(-1))).T
             # x_agg = np.array((im_tmp.xx()[*ind_agg].reshape(-1), im_tmp.yy()[*ind_agg].reshape(-1), im_tmp.zz()[*ind_agg].reshape(-1))).T
             del(im_tmp)
@@ -6813,10 +7078,10 @@ def estimate3D(
                                              var_x=var_x, var_xu=var_x_agg,
                                              alpha_xu=alpha_x_agg, beta_xu=beta_x_agg, gamma_xu=gamma_x_agg,
                                              verbose=0, **aggregate_data_op_kwargs)
-            except:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): kriging error")
-                return None
+            except Exception as exc:
+                err_msg = f'{fname}: kriging error'
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             xx_agg, yy_agg, zz_agg = x_agg.T
         else:
             # Aggregate data on grid cell by using the given operation
@@ -6826,14 +7091,13 @@ def estimate3D(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                     op=aggregate_data_op, **aggregate_data_op_kwargs)
-            except:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed")
-                return None
+            except Exception as exc:
+                err_msg = f"{fname}: data aggregation (`aggregate_data_op='{aggregate_data_op}'`) failed"
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             if len(xx_agg) == 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): no data point in grid")
-                return None
+                err_msg = f'{fname}: no data point in grid'
+                raise GeosclassicinterfaceError(err_msg)
 
         dataPointSet.append(
             PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
@@ -6844,9 +7108,8 @@ def estimate3D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -6866,32 +7129,31 @@ def estimate3D(
         del(pts)
 
     # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicInput, flag = fill_mpds_geosClassicInput(
-        space_dim,
-        cov_model,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        outputReportFile,
-        computationMode,
-        None,
-        dataPointSet,
-        mask,
-        mean,
-        var,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        0,
-        0,
-        0,
-        0)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
+    try:
+        mpds_geosClassicInput = fill_mpds_geosClassicInput(
+                space_dim,
+                cov_model,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                outputReportFile,
+                computationMode,
+                None,
+                dataPointSet,
+                mask,
+                mean,
+                var,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                0,
+                0,
+                0,
+                0)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
     # Allocate mpds_geosClassicOutput
@@ -6922,8 +7184,11 @@ def estimate3D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    if verbose > 1:
+        print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -6933,25 +7198,27 @@ def estimate3D(
 
     # Free memory on C side: mpds_geosClassicInput
     geosclassic.MPDSGeosClassicFreeGeosClassicInput(mpds_geosClassicInput)
-    #geosclassic.MPDSFree(mpds_geosClassicInput)
     geosclassic.free_MPDS_GEOSCLASSICINPUT(mpds_geosClassicInput)
 
     if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
-    else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Free memory on C side: mpds_progressMonitor
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if geosclassic_output is not None and x is not None and aggregate_data_op == 'krige':
@@ -6963,14 +7230,14 @@ def estimate3D(
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -7017,7 +7284,7 @@ def fill_mpds_geosClassicIndicatorInput(
 
     sx : float
         cell size along x axis
-                
+
     sy : float
         cell size along y axis
 
@@ -7026,7 +7293,7 @@ def fill_mpds_geosClassicIndicatorInput(
 
     ox : float
         origin of the grid along x axis (x coordinate of cell border)
-        
+
     oy : float
         origin of the grid along y axis (y coordinate of cell border)
 
@@ -7087,12 +7354,9 @@ def fill_mpds_geosClassicIndicatorInput(
 
     Returns
     -------
-    mpds_geosClassicIndicatorInput : (MPDS_GEOSCLASSICINDICATORINPUT *)
+    mpds_geosClassicIndicatorInput : \(MPDS_GEOSCLASSICINDICATORINPUT \*\)
         geosclassicIndicator input in C, intended for "GeosClassicIndicatorSim"
         C program
-
-    flag : bool
-        indicates if the filling has succeeded (`True`) or failed (`False`)
     """
     fname = 'fill_mpds_geosClassicIndicatorInput'
 
@@ -7154,18 +7418,24 @@ def fill_mpds_geosClassicIndicatorInput(
     for i, cov_model in enumerate(cov_model_for_category):
         cov_model_c = geosclassic.malloc_MPDS_COVMODEL()
         geosclassic.MPDSGeosClassicInitCovModel(cov_model_c)
-        if space_dim==1:
-            cov_model_c, flag = covModel1D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
-        elif space_dim==2:
-            cov_model_c, flag = covModel2D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
-        elif space_dim==3:
-            cov_model_c, flag = covModel3D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
-        if flag:
-            geosclassic.MPDS_COVMODEL_array_setitem(mpds_geosClassicIndicatorInput.covModel, i, cov_model_c)
-            # geosclassic.free_MPDS_COVMODEL(cov_model_c)
-        else:
-            geosclassic.free_MPDS_COVMODEL(cov_model_c)
-            return mpds_geosClassicIndicatorInput, False
+
+        try:
+            if space_dim==1:
+                cov_model_c = covModel1D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
+            elif space_dim==2:
+                cov_model_c = covModel2D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
+            elif space_dim==3:
+                cov_model_c = covModel3D_py2C(cov_model, nx, ny, nz, sx, sy, sz, ox, oy, oz)
+
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
+            geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
+            # Raise error
+            err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure (covModel)'
+            raise GeosclassicinterfaceError(err_msg) from exc
+
+        geosclassic.MPDS_COVMODEL_array_setitem(mpds_geosClassicIndicatorInput.covModel, i, cov_model_c)
 
     # mpds_geosClassicIndicatorInput.searchRadiusRelative
     mpds_geosClassicIndicatorInput.searchRadiusRelative = geosclassic.new_real_array(int(ncategory))
@@ -7194,7 +7464,16 @@ def fill_mpds_geosClassicIndicatorInput(
         mpds_geosClassicIndicatorInput.ndataImage = n
         mpds_geosClassicIndicatorInput.dataImage = geosclassic.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(dataImage):
-            im_c = img_py2C(dataIm)
+            try:
+                im_c = img_py2C(dataIm)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
+                geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
+                # Raise error
+                err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure (dataImage)'
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             geosclassic.MPDS_IMAGE_array_setitem(mpds_geosClassicIndicatorInput.dataImage, i, im_c)
             # geosclassic.free_MPDS_IMAGE(im_c)
             #
@@ -7209,7 +7488,16 @@ def fill_mpds_geosClassicIndicatorInput(
         mpds_geosClassicIndicatorInput.ndataPointSet = n
         mpds_geosClassicIndicatorInput.dataPointSet = geosclassic.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(dataPointSet):
-            ps_c = ps_py2C(dataPS)
+            try:
+                ps_c = ps_py2C(dataPS)
+            except Exception as exc:
+                # Free memory on C side
+                geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
+                geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
+                # Raise error
+                err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure (dataPointSet)'
+                raise GeosclassicinterfaceError(err_msg) from exc
+
             geosclassic.MPDS_POINTSET_array_setitem(mpds_geosClassicIndicatorInput.dataPointSet, i, ps_c)
             # geosclassic.free_MPDS_POINTSET(ps_c)
             #
@@ -7224,7 +7512,15 @@ def fill_mpds_geosClassicIndicatorInput(
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=1, val=mask)
-        mpds_geosClassicIndicatorInput.maskImage = img_py2C(im)
+        try:
+            mpds_geosClassicIndicatorInput.maskImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
+            geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
+            # Raise error
+            err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure (mask)'
+            raise GeosclassicinterfaceError(err_msg) from exc
 
     # mpds_geosClassicIndicatorInput.probabilityUsage, mpds_geosClassicIndicatorInput.probabilityValue, mpds_geosClassicIndicatorInput.probabilityImage
     if probability is None:
@@ -7242,10 +7538,23 @@ def fill_mpds_geosClassicIndicatorInput(
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=ncategory, val=probability)
-        mpds_geosClassicIndicatorInput.probabilityImage = img_py2C(im)
+        try:
+            mpds_geosClassicIndicatorInput.probabilityImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
+            geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
+            # Raise error
+            err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure (probabilityImage)'
+            raise GeosclassicinterfaceError(err_msg) from exc
+
     else:
-        print(f"ERROR ({fname}): can not integrate `probability` (not compatible with simulation grid)")
-        return mpds_geosClassicIndicatorInput, False
+        # Free memory on C side
+        geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
+        geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
+        # Raise error
+        err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure (`probability` not compatible with simulation grid)'
+        raise GeosclassicinterfaceError(err_msg)
 
     # mpds_geosClassicIndicatorInput.seed
     if seed is None:
@@ -7258,7 +7567,7 @@ def fill_mpds_geosClassicIndicatorInput(
     # mpds_geosClassicIndicatorInput.nrealization
     mpds_geosClassicIndicatorInput.nrealization = int(nreal)
 
-    return mpds_geosClassicIndicatorInput, True
+    return mpds_geosClassicIndicatorInput
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -7335,7 +7644,7 @@ def simulateIndicator1D(
 
         By default (`None`): proportion of each category computed from the
         data values (`v`) are used for every grid cell
-        
+
         Note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
 
@@ -7391,14 +7700,14 @@ def simulateIndicator1D(
         model
 
         Notes:
-        
+
         - if the covariance model has any non-stationary parameter, then \
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary \
         angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to \
         direction from the central cell) are used to compute distance for sorting \
         the neighbors
-        
+
         By default (`None`): the greatest possible value is used (i.e. 2 for
         stationary covariance model, or 1 otherwise)
 
@@ -7416,29 +7725,31 @@ def simulateIndicator1D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     geosclassic_output : dict
         geosclassic output in python, dictionary
-        
+
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=nreal` variables (simulations);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -7464,15 +7775,13 @@ def simulateIndicator1D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is not valid")
-        return None
+        err_msg = f'{fname}: `category_values` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is empty")
-        return None
+        err_msg = f'{fname}: `category_values` is empty'
+        raise GeosclassicinterfaceError(err_msg)
 
     # cov_model_for_category
     cm_for_cat = cov_model_for_category # no need to work on a copy in 1D
@@ -7481,54 +7790,115 @@ def simulateIndicator1D(
     if len(cm_for_cat) == 1:
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
     if not np.all([isinstance(c, gcm.CovModel1D) for c in cm_for_cat]):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel1D objects")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` should contains CovModel1D objects'
+        raise GeosclassicinterfaceError(err_msg)
 
     for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model: weight ('w') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: covariance model: weight ('w') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
+
             # ranges
             if 'r' in el[1].keys():
                 r  = el[1]['r']
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): covariance model: range ('r') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: covariance model: range ('r') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
+
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): covariance model: parameter ('s') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: covariance model: parameter ('s') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchRadiusRelative
+    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
+    if len(searchRadiusRelative) == 1:
+        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
+    elif len(searchRadiusRelative) != ncategory:
+        err_msg = f'{fname}: `searchRadiusRelative` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    for srr in searchRadiusRelative:
+        if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
+            err_msg = f'{fname}: a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+            raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - nneighborMax
+    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
+    if len(nneighborMax) == 1:
+        nneighborMax = np.repeat(nneighborMax, ncategory)
+    elif len(nneighborMax) != ncategory:
+        err_msg = f'{fname}: `nneighborMax` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    for nn in nneighborMax:
+        if nn != -1 and nn <= 0:
+            err_msg = f'{fname}: any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+            raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchNeighborhoodSortMode
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
+    if len(searchNeighborhoodSortMode) == 1:
+        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
+    elif len(searchNeighborhoodSortMode) != ncategory:
+        err_msg = f'{fname}: `searchNeighborhoodSortMode` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    for i in range(ncategory):
+        if searchNeighborhoodSortMode[i] is None:
+            # set greatest possible value
+            if cm_for_cat[i].is_stationary():
+                searchNeighborhoodSortMode[i] = 2
+            else:
+                searchNeighborhoodSortMode[i] = 1
+        else:
+            if searchNeighborhoodSortMode[i] == 2:
+                if not cm_for_cat[i].is_stationary():
+                    err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                    raise GeosclassicinterfaceError(err_msg)
+
+    # for i in range(ncategory):
+    #     if searchNeighborhoodSortMode[i] is None:
+    #         # set greatest possible value
+    #         if cm_for_cat[i].is_stationary():
+    #             searchNeighborhoodSortMode[i] = 2
+    #         elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+    #             searchNeighborhoodSortMode[i] = 1
+    #         else:
+    #             searchNeighborhoodSortMode[i] = 0
+    #     else:
+    #         if searchNeighborhoodSortMode[i] == 2:
+    #             if not cm_for_cat[i].is_stationary():
+    #                 err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+    #                 raise GeosclassicinterfaceError(err_msg)
+    #         elif searchNeighborhoodSortMode[i] == 1:
+    #             if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+    #                 err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+    #                 raise GeosclassicinterfaceError(err_msg)
+
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
     # data points: x, v
     dataPointSet = []
@@ -7537,9 +7907,8 @@ def simulateIndicator1D(
         x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
         # Aggregate data on grid by taking the most frequent value in grid cell
         xx = x[:, 0]
@@ -7550,14 +7919,13 @@ def simulateIndicator1D(
                                                 xx, yy, zz, v,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op='most_freq')
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: data aggregation ('most_freq') failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if len(xx_agg) == 0:
-            if verbose > 0:
-                print(f"ERROR ({fname}): no data point in grid")
-            return None
+            err_msg = f'{fname}: no data point in grid'
+            raise GeosclassicinterfaceError(err_msg)
 
         dataPointSet.append(
             PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
@@ -7568,9 +7936,8 @@ def simulateIndicator1D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -7589,129 +7956,49 @@ def simulateIndicator1D(
             del(im_tmp)
         del(pts)
 
-    # Check parameters - searchRadiusRelative
-    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
-    if len(searchRadiusRelative) == 1:
-        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
-    elif len(searchRadiusRelative) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
-        return None
-
-    for srr in searchRadiusRelative:
-        if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-            if verbose > 0:
-                print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-            return None
-
-    # Check parameters - nneighborMax
-    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
-    if len(nneighborMax) == 1:
-        nneighborMax = np.repeat(nneighborMax, ncategory)
-    elif len(nneighborMax) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
-        return None
-
-    for nn in nneighborMax:
-        if nn != -1 and nn <= 0:
-            if verbose > 0:
-                print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-            return None
-
-    # Check parameters - searchNeighborhoodSortMode
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
-    if len(searchNeighborhoodSortMode) == 1:
-        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
-    elif len(searchNeighborhoodSortMode) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
-        return None
-
-    for i in range(ncategory):
-        if searchNeighborhoodSortMode[i] is None:
-            # set greatest possible value
-            if cm_for_cat[i].is_stationary():
-                searchNeighborhoodSortMode[i] = 2
-            else:
-                searchNeighborhoodSortMode[i] = 1
-        else:
-            if searchNeighborhoodSortMode[i] == 2:
-                if not cm_for_cat[i].is_stationary():
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                    return None
-
-    # for i in range(ncategory):
-    #     if searchNeighborhoodSortMode[i] is None:
-    #         # set greatest possible value
-    #         if cm_for_cat[i].is_stationary():
-    #             searchNeighborhoodSortMode[i] = 2
-    #         elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-    #             searchNeighborhoodSortMode[i] = 1
-    #         else:
-    #             searchNeighborhoodSortMode[i] = 0
-    #     else:
-    #         if searchNeighborhoodSortMode[i] == 2:
-    #             if not cm_for_cat[i].is_stationary():
-    #                 if verbose > 0:
-    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-    #                 return None
-    #         elif searchNeighborhoodSortMode[i] == 1:
-    #             if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-    #                 if verbose > 0:
-    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-    #                 return None
-
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
-
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
-        #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'probability' not allowed with ordinary kriging")
-        #     return None
+        #     err_msg = f"{fname}: specifying 'probability' not allowed with ordinary kriging"
+        #     raise GeosclassicinterfaceError(err_msg)
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of `probability` is not valid")
-            return None
+            err_msg = f'{fname}: size of `probability` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - nreal
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 1:
-            if verbose > 0:
-                print(f'{fname}: nreal <= 0: nothing to do!')
+        if verbose > 0:
+            print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicIndicatorInput, flag = fill_mpds_geosClassicIndicatorInput(
-        space_dim,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        ncategory,
-        category_values,
-        outputReportFile,
-        computationMode,
-        cm_for_cat,
-        None,
-        dataPointSet,
-        mask,
-        probability,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        seed,
-        nreal)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
+    try:
+        mpds_geosClassicIndicatorInput = fill_mpds_geosClassicIndicatorInput(
+                space_dim,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                ncategory,
+                category_values,
+                outputReportFile,
+                computationMode,
+                cm_for_cat,
+                None,
+                dataPointSet,
+                mask,
+                probability,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                seed,
+                nreal)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
     # Allocate mpds_geosClassicOutput
@@ -7742,8 +8029,11 @@ def simulateIndicator1D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    if verbose > 1:
+        print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -7753,39 +8043,41 @@ def simulateIndicator1D(
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
-    #geosclassic.MPDSFree(mpds_geosClassicIndicatorInput)
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
-    else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Free memory on C side: mpds_progressMonitor
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -7827,7 +8119,7 @@ def simulateIndicator1D_mp(
     cpu(s)
 
     See function :func:`geosclassicinterface.simulateIndicator1D`.
-    
+
     **Parameters (new)**
     --------------------
     nproc : int, optional
@@ -7845,7 +8137,7 @@ def simulateIndicator1D_mp(
 
     treat_image_one_by_one : bool, default: False
         keyword argument passed to the function :func:`img.gatherImages`:
-        
+
         - if `True`: images (result of each process) are gathered one by one, \
         i.e. the variables of each image are inserted in an output image one by \
         one and removed from the source (slower, may save memory)
@@ -7853,7 +8145,7 @@ def simulateIndicator1D_mp(
         i.e. the variables of all images are inserted in an output image at once, \
         and then removed (faster)
     """
-    # fname = 'simulateIndicator1D_mp'
+    fname = 'simulateIndicator1D_mp'
 
     # Set number of processes: nproc
     if nproc is None:
@@ -7861,19 +8153,19 @@ def simulateIndicator1D_mp(
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
-        if verbose > 0 and nproc != nproc_tmp:
-            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+        if verbose > 1 and nproc != nproc_tmp:
+            print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
         nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
-        if verbose > 0 and nth != nthreads_per_proc:
-            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+        if verbose > 1 and nth != nthreads_per_proc:
+            print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
     # Set the distribution of the realizations over the processes
     # Condider the Euclidean division of nreal by nproc:
@@ -7884,8 +8176,8 @@ def simulateIndicator1D_mp(
     q, r = np.divmod(nreal, nproc)
     real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
-    if verbose >= 2:
-        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 1:
+        print('{}: Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
@@ -7905,10 +8197,11 @@ def simulateIndicator1D_mp(
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
             outputReportFile_p = outputReportFile + f'.{i}'
-        if i==0:
-            verbose_p = min(verbose, 1) # allow to print error for process i
-        else:
-            verbose_p = 0
+        verbose_p = 0
+        # if i==0:
+        #     verbose_p = min(verbose, 1) # allow to print warnings for process i
+        # else:
+        #     verbose_p = 0
         # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulateIndicator1D,
@@ -7963,14 +8256,14 @@ def simulateIndicator1D_mp(
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete (all process(es))')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete (all process(es))')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -8050,7 +8343,7 @@ def simulateIndicator2D(
 
         By default (`None`): proportion of each category computed from the
         data values (`v`) are used for every grid cell
-        
+
         Note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
 
@@ -8106,14 +8399,14 @@ def simulateIndicator2D(
         model
 
         Notes:
-        
+
         - if the covariance model has any non-stationary parameter, then \
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary \
         angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to \
         direction from the central cell) are used to compute distance for sorting \
         the neighbors
-        
+
         By default (`None`): the greatest possible value is used (i.e. 2 for
         stationary covariance model, or 1 otherwise)
 
@@ -8131,29 +8424,31 @@ def simulateIndicator2D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     geosclassic_output : dict
         geosclassic output in python, dictionary
-        
+
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=nreal` variables (simulations);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -8179,15 +8474,13 @@ def simulateIndicator2D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is not valid")
-        return None
+        err_msg = f'{fname}: `category_values` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is empty")
-        return None
+        err_msg = f'{fname}: `category_values` is empty'
+        raise GeosclassicinterfaceError(err_msg)
 
     # cov_model_for_category
     cov_model_for_category = np.asarray(cov_model_for_category).reshape(-1)
@@ -8206,61 +8499,121 @@ def simulateIndicator2D(
     if len(cm_for_cat) == 1:
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
     if not np.all([isinstance(c, gcm.CovModel2D) for c in cm_for_cat]):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel2D objects")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` should contains CovModel2D objects'
+        raise GeosclassicinterfaceError(err_msg)
 
     for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model: weight ('w') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: covariance model: weight ('w') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
+
             # ranges
             if 'r' in el[1].keys():
                 for r in el[1]['r']:
                     if np.size(r) != 1 and np.size(r) != nxyz:
-                        if verbose > 0:
-                            print(f"ERROR ({fname}): covariance model: range ('r') not compatible with simulation grid")
-                        return None
+                        err_msg = f"{fname}: covariance model: range ('r') not compatible with simulation grid"
+                        raise GeosclassicinterfaceError(err_msg)
+
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): covariance model: parameter ('s') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: covariance model: parameter ('s') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
 
         # alpha
         angle = cov_model.alpha
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): covariance model: angle (alpha) not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: covariance model: angle ('alpha') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchRadiusRelative
+    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
+    if len(searchRadiusRelative) == 1:
+        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
+    elif len(searchRadiusRelative) != ncategory:
+        err_msg = f'{fname}: `searchRadiusRelative` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    for srr in searchRadiusRelative:
+        if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
+            err_msg = f'{fname}: a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+            raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - nneighborMax
+    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
+    if len(nneighborMax) == 1:
+        nneighborMax = np.repeat(nneighborMax, ncategory)
+    elif len(nneighborMax) != ncategory:
+        err_msg = f'{fname}: `nneighborMax` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    for nn in nneighborMax:
+        if nn != -1 and nn <= 0:
+            err_msg = f'{fname}: any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+            raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchNeighborhoodSortMode
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
+    if len(searchNeighborhoodSortMode) == 1:
+        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
+    elif len(searchNeighborhoodSortMode) != ncategory:
+        err_msg = f'{fname}: `searchNeighborhoodSortMode` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    for i in range(ncategory):
+        if searchNeighborhoodSortMode[i] is None:
+            # set greatest possible value
+            if cm_for_cat[i].is_stationary():
+                searchNeighborhoodSortMode[i] = 2
+            else:
+                searchNeighborhoodSortMode[i] = 1
+        else:
+            if searchNeighborhoodSortMode[i] == 2:
+                if not cm_for_cat[i].is_stationary():
+                    err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                    raise GeosclassicinterfaceError(err_msg)
+
+    # for i in range(ncategory):
+    #     if searchNeighborhoodSortMode[i] is None:
+    #         # set greatest possible value
+    #         if cm_for_cat[i].is_stationary():
+    #             searchNeighborhoodSortMode[i] = 2
+    #         elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+    #             searchNeighborhoodSortMode[i] = 1
+    #         else:
+    #             searchNeighborhoodSortMode[i] = 0
+    #     else:
+    #         if searchNeighborhoodSortMode[i] == 2:
+    #             if not cm_for_cat[i].is_stationary():
+    #                 err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+    #                 raise GeosclassicinterfaceError(err_msg)
+    #         elif searchNeighborhoodSortMode[i] == 1:
+    #             if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+    #                 err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+    #                 raise GeosclassicinterfaceError(err_msg)
+
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
     # data points: x, v
     dataPointSet = []
@@ -8269,9 +8622,8 @@ def simulateIndicator2D(
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
         # Aggregate data on grid by taking the most frequent value in grid cell
         xx, yy = x.T
@@ -8281,14 +8633,13 @@ def simulateIndicator2D(
                                                 xx, yy, zz, v,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op='most_freq')
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: data aggregation ('most_freq') failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if len(xx_agg) == 0:
-            if verbose > 0:
-                print(f"ERROR ({fname}): no data point in grid")
-            return None
+            err_msg = f'{fname}: no data point in grid'
+            raise GeosclassicinterfaceError(err_msg)
 
         dataPointSet.append(
             PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
@@ -8299,9 +8650,8 @@ def simulateIndicator2D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -8320,128 +8670,49 @@ def simulateIndicator2D(
             del(im_tmp)
         del(pts)
 
-    # Check parameters - searchRadiusRelative
-    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
-    if len(searchRadiusRelative) == 1:
-        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
-    elif len(searchRadiusRelative) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
-        return None
-
-    for srr in searchRadiusRelative:
-        if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-            if verbose > 0:
-                print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-            return None
-
-    # Check parameters - nneighborMax
-    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
-    if len(nneighborMax) == 1:
-        nneighborMax = np.repeat(nneighborMax, ncategory)
-    elif len(nneighborMax) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
-        return None
-
-    for nn in nneighborMax:
-        if nn != -1 and nn <= 0:
-            if verbose > 0:
-                print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-            return None
-
-    # Check parameters - searchNeighborhoodSortMode
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
-    if len(searchNeighborhoodSortMode) == 1:
-        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
-    elif len(searchNeighborhoodSortMode) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
-        return None
-
-    for i in range(ncategory):
-        if searchNeighborhoodSortMode[i] is None:
-            # set greatest possible value
-            if cm_for_cat[i].is_stationary():
-                searchNeighborhoodSortMode[i] = 2
-            else:
-                searchNeighborhoodSortMode[i] = 1
-        else:
-            if searchNeighborhoodSortMode[i] == 2:
-                if not cm_for_cat[i].is_stationary():
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                    return None
-
-    # for i in range(ncategory):
-    #     if searchNeighborhoodSortMode[i] is None:
-    #         # set greatest possible value
-    #         if cm_for_cat[i].is_stationary():
-    #             searchNeighborhoodSortMode[i] = 2
-    #         elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-    #             searchNeighborhoodSortMode[i] = 1
-    #         else:
-    #             searchNeighborhoodSortMode[i] = 0
-    #     else:
-    #         if searchNeighborhoodSortMode[i] == 2:
-    #             if not cm_for_cat[i].is_stationary():
-    #                 if verbose > 0:
-    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-    #                 return None
-    #         elif searchNeighborhoodSortMode[i] == 1:
-    #             if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-    #                 if verbose > 0:
-    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-    #                 return None
-
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
-
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
-        #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'probability' not allowed with ordinary kriging")
-        #     return None
+        #     err_msg = f"{fname}: specifying 'probability' not allowed with ordinary kriging"
+        #     raise GeosclassicinterfaceError(err_msg)
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of `probability` is not valid")
-            return None
+            err_msg = f'{fname}: size of `probability` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - nreal
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
-            print(f'{fname}: nreal <= 0: nothing to do!')
+        if verbose > 0:
+            print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicIndicatorInput, flag = fill_mpds_geosClassicIndicatorInput(
-        space_dim,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        ncategory,
-        category_values,
-        outputReportFile,
-        computationMode,
-        cm_for_cat,
-        None,
-        dataPointSet,
-        mask,
-        probability,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        seed,
-        nreal)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
+    try:
+        mpds_geosClassicIndicatorInput = fill_mpds_geosClassicIndicatorInput(
+                space_dim,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                ncategory,
+                category_values,
+                outputReportFile,
+                computationMode,
+                cm_for_cat,
+                None,
+                dataPointSet,
+                mask,
+                probability,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                seed,
+                nreal)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
     # Allocate mpds_geosClassicOutput
@@ -8472,8 +8743,11 @@ def simulateIndicator2D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    if verbose > 1:
+        print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -8483,39 +8757,41 @@ def simulateIndicator2D(
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
-    #geosclassic.MPDSFree(mpds_geosClassicIndicatorInput)
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
-    else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Free memory on C side: mpds_progressMonitor
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -8557,7 +8833,7 @@ def simulateIndicator2D_mp(
     cpu(s)
 
     See function :func:`geosclassicinterface.simulateIndicator2D`.
-    
+
     **Parameters (new)**
     --------------------
     nproc : int, optional
@@ -8575,7 +8851,7 @@ def simulateIndicator2D_mp(
 
     treat_image_one_by_one : bool, default: False
         keyword argument passed to the function :func:`img.gatherImages`:
-        
+
         - if `True`: images (result of each process) are gathered one by one, \
         i.e. the variables of each image are inserted in an output image one by \
         one and removed from the source (slower, may save memory)
@@ -8583,7 +8859,7 @@ def simulateIndicator2D_mp(
         i.e. the variables of all images are inserted in an output image at once, \
         and then removed (faster)
     """
-    # fname = 'simulateIndicator2D_mp'
+    fname = 'simulateIndicator2D_mp'
 
     # Set number of processes: nproc
     if nproc is None:
@@ -8591,19 +8867,19 @@ def simulateIndicator2D_mp(
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
-        if verbose > 0 and nproc != nproc_tmp:
-            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+        if verbose > 1 and nproc != nproc_tmp:
+            print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
         nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
-        if verbose > 0 and nth != nthreads_per_proc:
-            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+        if verbose > 1 and nth != nthreads_per_proc:
+            print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
     # Set the distribution of the realizations over the processes
     # Condider the Euclidean division of nreal by nproc:
@@ -8614,8 +8890,8 @@ def simulateIndicator2D_mp(
     q, r = np.divmod(nreal, nproc)
     real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
-    if verbose >= 2:
-        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 1:
+        print('{}: Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
@@ -8635,10 +8911,11 @@ def simulateIndicator2D_mp(
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
             outputReportFile_p = outputReportFile + f'.{i}'
-        if i==0:
-            verbose_p = min(verbose, 1) # allow to print error for process i
-        else:
-            verbose_p = 0
+        verbose_p = 0
+        # if i==0:
+        #     verbose_p = min(verbose, 1) # allow to print warnings for process i
+        # else:
+        #     verbose_p = 0
         # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulateIndicator2D,
@@ -8693,14 +8970,14 @@ def simulateIndicator2D_mp(
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete (all process(es))')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete (all process(es))')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -8764,7 +9041,7 @@ def simulateIndicator3D(
 
     nreal : int, default: 1
         number of realizations
-    
+
     probability : array-like of floats, optional
         probability for each category:
 
@@ -8781,7 +9058,7 @@ def simulateIndicator3D(
 
         By default (`None`): proportion of each category computed from the
         data values (`v`) are used for every grid cell
-        
+
         Note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
 
@@ -8837,14 +9114,14 @@ def simulateIndicator3D(
         model
 
         Notes:
-        
+
         - if the covariance model has any non-stationary parameter, then \
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary \
         angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to \
         direction from the central cell) are used to compute distance for sorting \
         the neighbors
-        
+
         By default (`None`): the greatest possible value is used (i.e. 2 for
         stationary covariance model, or 1 otherwise)
 
@@ -8862,29 +9139,31 @@ def simulateIndicator3D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     geosclassic_output : dict
         geosclassic output in python, dictionary
-        
+
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=nreal` variables (simulations);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -8910,15 +9189,13 @@ def simulateIndicator3D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is not valid")
-        return None
+        err_msg = f'{fname}: `category_values` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is empty")
-        return None
+        err_msg = f'{fname}: `category_values` is empty'
+        raise GeosclassicinterfaceError(err_msg)
 
     # cov_model_for_category
     cov_model_for_category = np.asarray(cov_model_for_category).reshape(-1)
@@ -8937,75 +9214,133 @@ def simulateIndicator3D(
     if len(cm_for_cat) == 1:
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
     if not np.all([isinstance(c, gcm.CovModel3D) for c in cm_for_cat]):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel3D objects")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` should contains CovModel3D objects'
+        raise GeosclassicinterfaceError(err_msg)
 
     for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model: weight ('w') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: covariance model: weight ('w') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
+
             # ranges
             if 'r' in el[1].keys():
                 for r in el[1]['r']:
                     if np.size(r) != 1 and np.size(r) != nxyz:
-                        if verbose > 0:
-                            print(f"ERROR ({fname}): covariance model: range ('r') not compatible with simulation grid")
-                        return None
+                        err_msg = f"{fname}: covariance model: range ('r') not compatible with simulation grid"
+                        raise GeosclassicinterfaceError(err_msg)
+
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): covariance model: parameter ('s') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: covariance model: parameter ('s') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
 
         # alpha
         angle = cov_model.alpha
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): covariance model: angle (alpha) not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: covariance model: angle ('alpha') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
 
         # beta
         angle = cov_model.beta
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): covariance model: angle (beta) not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: covariance model: angle ('beta') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
 
         # gamma
         angle = cov_model.gamma
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): covariance model: angle (gamma) not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: covariance model: angle ('gamma') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 3
     elif method == 'ordinary_kriging':
         computationMode = 2
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchRadiusRelative
+    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
+    if len(searchRadiusRelative) == 1:
+        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
+    elif len(searchRadiusRelative) != ncategory:
+        err_msg = f'{fname}: `searchRadiusRelative` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    for srr in searchRadiusRelative:
+        if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
+            err_msg = f'{fname}: a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+            raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - nneighborMax
+    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
+    if len(nneighborMax) == 1:
+        nneighborMax = np.repeat(nneighborMax, ncategory)
+    elif len(nneighborMax) != ncategory:
+        err_msg = f'{fname}: `nneighborMax` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    for nn in nneighborMax:
+        if nn != -1 and nn <= 0:
+            err_msg = f'{fname}: any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+            raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchNeighborhoodSortMode
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
+    if len(searchNeighborhoodSortMode) == 1:
+        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
+    elif len(searchNeighborhoodSortMode) != ncategory:
+        err_msg = f'{fname}: `searchNeighborhoodSortMode` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    for i in range(ncategory):
+        if searchNeighborhoodSortMode[i] is None:
+            # set greatest possible value
+            if cm_for_cat[i].is_stationary():
+                searchNeighborhoodSortMode[i] = 2
+            else:
+                searchNeighborhoodSortMode[i] = 1
+        else:
+            if searchNeighborhoodSortMode[i] == 2:
+                if not cm_for_cat[i].is_stationary():
+                    err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                    raise GeosclassicinterfaceError(err_msg)
+
+    # for i in range(ncategory):
+    #     if searchNeighborhoodSortMode[i] is None:
+    #         # set greatest possible value
+    #         if cm_for_cat[i].is_stationary():
+    #             searchNeighborhoodSortMode[i] = 2
+    #         elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+    #             searchNeighborhoodSortMode[i] = 1
+    #         else:
+    #             searchNeighborhoodSortMode[i] = 0
+    #     else:
+    #         if searchNeighborhoodSortMode[i] == 2:
+    #             if not cm_for_cat[i].is_stationary():
+    #                 err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+    #                 raise GeosclassicinterfaceError(err_msg)
+    #         elif searchNeighborhoodSortMode[i] == 1:
+    #             if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+    #                 err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+    #                 raise GeosclassicinterfaceError(err_msg)
+
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
     # data points: x, v
     dataPointSet = []
@@ -9014,9 +9349,8 @@ def simulateIndicator3D(
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
         # Aggregate data on grid by taking the most frequent value in grid cell
         xx, yy, zz = x.T
@@ -9025,14 +9359,13 @@ def simulateIndicator3D(
                                                 xx, yy, zz, v,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op='most_freq')
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: data aggregation ('most_freq') failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if len(xx_agg) == 0:
-            if verbose > 0:
-                print(f"ERROR ({fname}): no data point in grid")
-            return None
+            err_msg = f'{fname}: no data point in grid'
+            raise GeosclassicinterfaceError(err_msg)
 
         dataPointSet.append(
             PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
@@ -9043,9 +9376,8 @@ def simulateIndicator3D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -9064,128 +9396,49 @@ def simulateIndicator3D(
             del(im_tmp)
         del(pts)
 
-    # Check parameters - searchRadiusRelative
-    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
-    if len(searchRadiusRelative) == 1:
-        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
-    elif len(searchRadiusRelative) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
-        return None
-
-    for srr in searchRadiusRelative:
-        if srr < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-            if verbose > 0:
-                print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-            return None
-
-    # Check parameters - nneighborMax
-    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
-    if len(nneighborMax) == 1:
-        nneighborMax = np.repeat(nneighborMax, ncategory)
-    elif len(nneighborMax) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
-        return None
-
-    for nn in nneighborMax:
-        if nn != -1 and nn <= 0:
-            if verbose > 0:
-                print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-            return None
-
-    # Check parameters - searchNeighborhoodSortMode
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
-    if len(searchNeighborhoodSortMode) == 1:
-        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
-    elif len(searchNeighborhoodSortMode) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
-        return None
-
-    for i in range(ncategory):
-        if searchNeighborhoodSortMode[i] is None:
-            # set greatest possible value
-            if cm_for_cat[i].is_stationary():
-                searchNeighborhoodSortMode[i] = 2
-            else:
-                searchNeighborhoodSortMode[i] = 1
-        else:
-            if searchNeighborhoodSortMode[i] == 2:
-                if not cm_for_cat[i].is_stationary():
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                    return None
-
-    # for i in range(ncategory):
-    #     if searchNeighborhoodSortMode[i] is None:
-    #         # set greatest possible value
-    #         if cm_for_cat[i].is_stationary():
-    #             searchNeighborhoodSortMode[i] = 2
-    #         elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-    #             searchNeighborhoodSortMode[i] = 1
-    #         else:
-    #             searchNeighborhoodSortMode[i] = 0
-    #     else:
-    #         if searchNeighborhoodSortMode[i] == 2:
-    #             if not cm_for_cat[i].is_stationary():
-    #                 if verbose > 0:
-    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-    #                 return None
-    #         elif searchNeighborhoodSortMode[i] == 1:
-    #             if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-    #                 if verbose > 0:
-    #                     print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-    #                 return None
-
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
-
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
-        #     if verbose > 0:
-        #         print(f"ERROR ({fname}): specifying 'probability' not allowed with ordinary kriging")
-        #     return None
+        #     err_msg = f"{fname}: specifying 'probability' not allowed with ordinary kriging"
+        #     raise GeosclassicinterfaceError(err_msg)
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of `probability` is not valid")
-            return None
+            err_msg = f'{fname}: size of `probability` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # Check parameters - nreal
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        if verbose >= 2:
-            print(f'{fname}: nreal <= 0: nothing to do!')
+        if verbose > 0:
+            print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
         return None
 
     # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicIndicatorInput, flag = fill_mpds_geosClassicIndicatorInput(
-        space_dim,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        ncategory,
-        category_values,
-        outputReportFile,
-        computationMode,
-        cm_for_cat,
-        None,
-        dataPointSet,
-        mask,
-        probability,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        seed,
-        nreal)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
+    try:
+        mpds_geosClassicIndicatorInput = fill_mpds_geosClassicIndicatorInput(
+                space_dim,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                ncategory,
+                category_values,
+                outputReportFile,
+                computationMode,
+                cm_for_cat,
+                None,
+                dataPointSet,
+                mask,
+                probability,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                seed,
+                nreal)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
     # Allocate mpds_geosClassicOutput
@@ -9216,8 +9469,11 @@ def simulateIndicator3D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    if verbose > 1:
+        print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -9227,39 +9483,41 @@ def simulateIndicator3D(
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
-    #geosclassic.MPDSFree(mpds_geosClassicIndicatorInput)
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
-    else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Free memory on C side: mpds_progressMonitor
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -9301,7 +9559,7 @@ def simulateIndicator3D_mp(
     cpu(s)
 
     See function :func:`geosclassicinterface.simulateIndicator3D`.
-    
+
     **Parameters (new)**
     --------------------
     nproc : int, optional
@@ -9319,7 +9577,7 @@ def simulateIndicator3D_mp(
 
     treat_image_one_by_one : bool, default: False
         keyword argument passed to the function :func:`img.gatherImages`:
-        
+
         - if `True`: images (result of each process) are gathered one by one, \
         i.e. the variables of each image are inserted in an output image one by \
         one and removed from the source (slower, may save memory)
@@ -9327,7 +9585,7 @@ def simulateIndicator3D_mp(
         i.e. the variables of all images are inserted in an output image at once, \
         and then removed (faster)
     """
-    # fname = 'simulateIndicator3D_mp'
+    fname = 'simulateIndicator3D_mp'
 
     # Set number of processes: nproc
     if nproc is None:
@@ -9335,19 +9593,19 @@ def simulateIndicator3D_mp(
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), nreal), 1)
-        if verbose > 0 and nproc != nproc_tmp:
-            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+        if verbose > 1 and nproc != nproc_tmp:
+            print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
         nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
-        if verbose > 0 and nth != nthreads_per_proc:
-            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+        if verbose > 1 and nth != nthreads_per_proc:
+            print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
     # Set the distribution of the realizations over the processes
     # Condider the Euclidean division of nreal by nproc:
@@ -9358,8 +9616,8 @@ def simulateIndicator3D_mp(
     q, r = np.divmod(nreal, nproc)
     real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
-    if verbose >= 2:
-        print('Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 1:
+        print('{}: Geos-Classic running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, nproc, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching geos-classic...
 
@@ -9379,10 +9637,11 @@ def simulateIndicator3D_mp(
         seed_p = seed + real_index_proc[i]
         if outputReportFile is not None:
             outputReportFile_p = outputReportFile + f'.{i}'
-        if i==0:
-            verbose_p = min(verbose, 1) # allow to print error for process i
-        else:
-            verbose_p = 0
+        verbose_p = 0
+        # if i==0:
+        #     verbose_p = min(verbose, 1) # allow to print warnings for process i
+        # else:
+        #     verbose_p = 0
         # Launch geos-classic (i-th process)
         out_pool.append(
             pool.apply_async(simulateIndicator3D,
@@ -9437,14 +9696,14 @@ def simulateIndicator3D_mp(
 
     geosclassic_output = {'image':all_image, 'nwarning':nwarning, 'warnings':warnings}
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete (all process(es))')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete (all process(es))')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -9520,7 +9779,7 @@ def estimateIndicator1D(
 
         By default (`None`): proportion of each category computed from the
         data values (`v`) are used for every grid cell
-        
+
         Note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
 
@@ -9587,14 +9846,14 @@ def estimateIndicator1D(
         model
 
         Notes:
-        
+
         - if the covariance model has any non-stationary parameter, then \
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary \
         angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to \
         direction from the central cell) are used to compute distance for sorting \
         the neighbors
-        
+
         By default (`None`): the greatest possible value is used (i.e. 2 for
         stationary covariance model, or 1 otherwise)
 
@@ -9609,30 +9868,32 @@ def estimateIndicator1D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     geosclassic_output : dict
         geosclassic output in python, dictionary
-        
+
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=ncategory` variables (probability /
             proportion estimates, of each category);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -9658,15 +9919,13 @@ def estimateIndicator1D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is not valid")
-        return None
+        err_msg = f'{fname}: `category_values` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is empty")
-        return None
+        err_msg = f'{fname}: `category_values` is empty'
+        raise GeosclassicinterfaceError(err_msg)
 
     # cov_model_for_category
     cm_for_cat = cov_model_for_category # no need to work on a copy in 1D
@@ -9675,54 +9934,129 @@ def estimateIndicator1D(
     if len(cm_for_cat) == 1:
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
     if not np.all([isinstance(c, gcm.CovModel1D) for c in cm_for_cat]):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel1D objects")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` should contains CovModel1D objects'
+        raise GeosclassicinterfaceError(err_msg)
 
     for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model: weight ('w') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: covariance model: weight ('w') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
+
             # ranges
             if 'r' in el[1].keys():
                 r  = el[1]['r']
                 if np.size(r) != 1 and np.size(r) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): covariance model: range ('r') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: covariance model: range ('r') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
+
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): covariance model: parameter ('s') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: covariance model: parameter ('s') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - use_unique_neighborhood (length)
+    use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
+    if len(use_unique_neighborhood) == 1:
+        use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
+    elif len(use_unique_neighborhood) != ncategory:
+        err_msg = f'{fname}: `use_unique_neighborhood` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchRadiusRelative (length)
+    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
+    if len(searchRadiusRelative) == 1:
+        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
+    elif len(searchRadiusRelative) != ncategory:
+        err_msg = f'{fname}: `searchRadiusRelative` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - nneighborMax (length)
+    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
+    if len(nneighborMax) == 1:
+        nneighborMax = np.repeat(nneighborMax, ncategory)
+    elif len(nneighborMax) != ncategory:
+        err_msg = f'{fname}: `nneighborMax` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchNeighborhoodSortMode (length)
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
+    if len(searchNeighborhoodSortMode) == 1:
+        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
+    elif len(searchNeighborhoodSortMode) != ncategory:
+        err_msg = f'{fname}: `searchNeighborhoodSortMode` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # If unique neighborhood is used, set searchRadiusRelative to -1
+    #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
+    # else: check the parameters
+    for i in range(ncategory):
+        if use_unique_neighborhood[i]:
+            searchRadiusRelative[i] = -1.0
+            nneighborMax[i] = 1
+            searchNeighborhoodSortMode[i] = 0
+
+        else:
+            if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
+                err_msg = f'{fname}: a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+                raise GeosclassicinterfaceError(err_msg)
+
+            if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
+                err_msg = f'{fname}: any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+                raise GeosclassicinterfaceError(err_msg)
+
+            if searchNeighborhoodSortMode[i] is None:
+                # set greatest possible value
+                if cm_for_cat[i].is_stationary():
+                    searchNeighborhoodSortMode[i] = 2
+                else:
+                    searchNeighborhoodSortMode[i] = 1
+            else:
+                if searchNeighborhoodSortMode[i] == 2:
+                    if not cm_for_cat[i].is_stationary():
+                        err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                        raise GeosclassicinterfaceError(err_msg)
+
+            # if searchNeighborhoodSortMode[i] is None:
+            #     # set greatest possible value
+            #     if cm_for_cat[i].is_stationary():
+            #         searchNeighborhoodSortMode[i] = 2
+            #     elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+            #         searchNeighborhoodSortMode[i] = 1
+            #     else:
+            #         searchNeighborhoodSortMode[i] = 0
+            # else:
+            #     if searchNeighborhoodSortMode[i] == 2:
+            #         if not cm_for_cat[i].is_stationary():
+            #             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+            #             raise GeosclassicinterfaceError(err_msg)
+            #     elif searchNeighborhoodSortMode[i] == 1:
+            #         if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+            #             err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+            #             raise GeosclassicinterfaceError(err_msg)
+
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
     # data points: x, v
     dataPointSet = []
@@ -9731,9 +10065,8 @@ def estimateIndicator1D(
         x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
         # Aggregate data on grid by taking the most frequent value in grid cell
         xx = x[:, 0]
@@ -9744,14 +10077,13 @@ def estimateIndicator1D(
                                                 xx, yy, zz, v,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op='most_freq')
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: data aggregation ('most_freq') failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if len(xx_agg) == 0:
-            if verbose > 0:
-                print(f"ERROR ({fname}): no data point in grid")
-            return None
+            err_msg = f'{fname}: no data point in grid'
+            raise GeosclassicinterfaceError(err_msg)
 
         dataPointSet.append(
             PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
@@ -9762,9 +10094,8 @@ def estimateIndicator1D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -9783,97 +10114,6 @@ def estimateIndicator1D(
             del(im_tmp)
         del(pts)
 
-    # Check parameters - use_unique_neighborhood (length)
-    use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
-    if len(use_unique_neighborhood) == 1:
-        use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
-    elif len(use_unique_neighborhood) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `use_unique_neighborhood` of invalid length")
-        return None
-
-    # Check parameters - searchRadiusRelative (length)
-    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
-    if len(searchRadiusRelative) == 1:
-        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
-    elif len(searchRadiusRelative) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
-        return None
-
-    # Check parameters - nneighborMax (length)
-    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
-    if len(nneighborMax) == 1:
-        nneighborMax = np.repeat(nneighborMax, ncategory)
-    elif len(nneighborMax) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
-        return None
-
-    # Check parameters - searchNeighborhoodSortMode (length)
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
-    if len(searchNeighborhoodSortMode) == 1:
-        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
-    elif len(searchNeighborhoodSortMode) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
-        return None
-
-    # If unique neighborhood is used, set searchRadiusRelative to -1
-    #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
-    # else: check the parameters
-    for i in range(ncategory):
-        if use_unique_neighborhood[i]:
-            searchRadiusRelative[i] = -1.0
-            nneighborMax[i] = 1
-            searchNeighborhoodSortMode[i] = 0
-
-        else:
-            if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-                return None
-
-            if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-                return None
-
-            if searchNeighborhoodSortMode[i] is None:
-                # set greatest possible value
-                if cm_for_cat[i].is_stationary():
-                    searchNeighborhoodSortMode[i] = 2
-                else:
-                    searchNeighborhoodSortMode[i] = 1
-            else:
-                if searchNeighborhoodSortMode[i] == 2:
-                    if not cm_for_cat[i].is_stationary():
-                        if verbose > 0:
-                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                        return None
-
-            # if searchNeighborhoodSortMode[i] is None:
-            #     # set greatest possible value
-            #     if cm_for_cat[i].is_stationary():
-            #         searchNeighborhoodSortMode[i] = 2
-            #     elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-            #         searchNeighborhoodSortMode[i] = 1
-            #     else:
-            #         searchNeighborhoodSortMode[i] = 0
-            # else:
-            #     if searchNeighborhoodSortMode[i] == 2:
-            #         if not cm_for_cat[i].is_stationary():
-            #             if verbose > 0:
-            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-            #             return None
-            #     elif searchNeighborhoodSortMode[i] == 1:
-            #         if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-            #             if verbose > 0:
-            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-            #             return None
-
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
-
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
@@ -9882,36 +10122,34 @@ def estimateIndicator1D(
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of `probability` is not valid")
-            return None
+            err_msg = f'{fname}: size of `probability` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicIndicatorInput, flag = fill_mpds_geosClassicIndicatorInput(
-        space_dim,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        ncategory,
-        category_values,
-        outputReportFile,
-        computationMode,
-        cm_for_cat,
-        None,
-        dataPointSet,
-        mask,
-        probability,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        0,
-        0)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
+    try:
+        mpds_geosClassicIndicatorInput = fill_mpds_geosClassicIndicatorInput(
+                space_dim,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                ncategory,
+                category_values,
+                outputReportFile,
+                computationMode,
+                cm_for_cat,
+                None,
+                dataPointSet,
+                mask,
+                probability,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                0,
+                0)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
     # Allocate mpds_geosClassicOutput
@@ -9942,8 +10180,11 @@ def estimateIndicator1D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    if verbose > 1:
+        print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -9953,39 +10194,41 @@ def estimateIndicator1D(
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
-    #geosclassic.MPDSFree(mpds_geosClassicIndicatorInput)
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
-    else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Free memory on C side: mpds_progressMonitor
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -10062,7 +10305,7 @@ def estimateIndicator2D(
 
         By default (`None`): proportion of each category computed from the
         data values (`v`) are used for every grid cell
-        
+
         Note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
 
@@ -10129,14 +10372,14 @@ def estimateIndicator2D(
         model
 
         Notes:
-        
+
         - if the covariance model has any non-stationary parameter, then \
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary \
         angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to \
         direction from the central cell) are used to compute distance for sorting \
         the neighbors
-        
+
         By default (`None`): the greatest possible value is used (i.e. 2 for
         stationary covariance model, or 1 otherwise)
 
@@ -10151,30 +10394,32 @@ def estimateIndicator2D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     geosclassic_output : dict
         geosclassic output in python, dictionary
-        
+
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=ncategory` variables (probability /
             proportion estimates, of each category);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -10200,15 +10445,13 @@ def estimateIndicator2D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is not valid")
-        return None
+        err_msg = f'{fname}: `category_values` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is empty")
-        return None
+        err_msg = f'{fname}: `category_values` is empty'
+        raise GeosclassicinterfaceError(err_msg)
 
     # cov_model_for_category
     cov_model_for_category = np.asarray(cov_model_for_category).reshape(-1)
@@ -10227,61 +10470,135 @@ def estimateIndicator2D(
     if len(cm_for_cat) == 1:
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
     if not np.all([isinstance(c, gcm.CovModel2D) for c in cm_for_cat]):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel2D objects")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` should contains CovModel2D objects'
+        raise GeosclassicinterfaceError(err_msg)
 
     for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model: weight ('w') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: covariance model: weight ('w') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
+
             # ranges
             if 'r' in el[1].keys():
                 for r in el[1]['r']:
                     if np.size(r) != 1 and np.size(r) != nxyz:
-                        if verbose > 0:
-                            print(f"ERROR ({fname}): covariance model: range ('r') not compatible with simulation grid")
-                        return None
+                        err_msg = f"{fname}: covariance model: range ('r') not compatible with simulation grid"
+                        raise GeosclassicinterfaceError(err_msg)
+
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): covariance model: parameter ('s') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: covariance model: parameter ('s') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
 
         # alpha
         angle = cov_model.alpha
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): covariance model: angle (alpha) not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: covariance model: angle ('alpha') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - use_unique_neighborhood (length)
+    use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
+    if len(use_unique_neighborhood) == 1:
+        use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
+    elif len(use_unique_neighborhood) != ncategory:
+        err_msg = f'{fname}: `use_unique_neighborhood` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchRadiusRelative (length)
+    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
+    if len(searchRadiusRelative) == 1:
+        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
+    elif len(searchRadiusRelative) != ncategory:
+        err_msg = f'{fname}: `searchRadiusRelative` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - nneighborMax (length)
+    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
+    if len(nneighborMax) == 1:
+        nneighborMax = np.repeat(nneighborMax, ncategory)
+    elif len(nneighborMax) != ncategory:
+        err_msg = f'{fname}: `nneighborMax` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchNeighborhoodSortMode (length)
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
+    if len(searchNeighborhoodSortMode) == 1:
+        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
+    elif len(searchNeighborhoodSortMode) != ncategory:
+        err_msg = f'{fname}: `searchNeighborhoodSortMode` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # If unique neighborhood is used, set searchRadiusRelative to -1
+    #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
+    # else: check the parameters
+    for i in range(ncategory):
+        if use_unique_neighborhood[i]:
+            searchRadiusRelative[i] = -1.0
+            nneighborMax[i] = 1
+            searchNeighborhoodSortMode[i] = 0
+
+        else:
+            if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
+                err_msg = f'{fname}: a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+                raise GeosclassicinterfaceError(err_msg)
+
+            if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
+                err_msg = f'{fname}: any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+                raise GeosclassicinterfaceError(err_msg)
+
+            if searchNeighborhoodSortMode[i] is None:
+                # set greatest possible value
+                if cm_for_cat[i].is_stationary():
+                    searchNeighborhoodSortMode[i] = 2
+                else:
+                    searchNeighborhoodSortMode[i] = 1
+            else:
+                if searchNeighborhoodSortMode[i] == 2:
+                    if not cm_for_cat[i].is_stationary():
+                        err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                        raise GeosclassicinterfaceError(err_msg)
+
+            # if searchNeighborhoodSortMode[i] is None:
+            #     # set greatest possible value
+            #     if cm_for_cat[i].is_stationary():
+            #         searchNeighborhoodSortMode[i] = 2
+            #     elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+            #         searchNeighborhoodSortMode[i] = 1
+            #     else:
+            #         searchNeighborhoodSortMode[i] = 0
+            # else:
+            #     if searchNeighborhoodSortMode[i] == 2:
+            #         if not cm_for_cat[i].is_stationary():
+            #             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+            #             raise GeosclassicinterfaceError(err_msg)
+            #     elif searchNeighborhoodSortMode[i] == 1:
+            #         if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+            #             err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+            #             raise GeosclassicinterfaceError(err_msg)
+
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
     # data points: x, v
     dataPointSet = []
@@ -10290,9 +10607,8 @@ def estimateIndicator2D(
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
         # Aggregate data on grid by taking the most frequent value in grid cell
         xx, yy = x.T
@@ -10302,14 +10618,13 @@ def estimateIndicator2D(
                                                 xx, yy, zz, v,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op='most_freq')
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: data aggregation ('most_freq') failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if len(xx_agg) == 0:
-            if verbose > 0:
-                print(f"ERROR ({fname}): no data point in grid")
-            return None
+            err_msg = f'{fname}: no data point in grid'
+            raise GeosclassicinterfaceError(err_msg)
 
         dataPointSet.append(
             PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
@@ -10320,9 +10635,8 @@ def estimateIndicator2D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -10341,97 +10655,6 @@ def estimateIndicator2D(
             del(im_tmp)
         del(pts)
 
-    # Check parameters - use_unique_neighborhood (length)
-    use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
-    if len(use_unique_neighborhood) == 1:
-        use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
-    elif len(use_unique_neighborhood) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `use_unique_neighborhood` of invalid length")
-        return None
-
-    # Check parameters - searchRadiusRelative (length)
-    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
-    if len(searchRadiusRelative) == 1:
-        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
-    elif len(searchRadiusRelative) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
-        return None
-
-    # Check parameters - nneighborMax (length)
-    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
-    if len(nneighborMax) == 1:
-        nneighborMax = np.repeat(nneighborMax, ncategory)
-    elif len(nneighborMax) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
-        return None
-
-    # Check parameters - searchNeighborhoodSortMode (length)
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
-    if len(searchNeighborhoodSortMode) == 1:
-        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
-    elif len(searchNeighborhoodSortMode) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
-        return None
-
-    # If unique neighborhood is used, set searchRadiusRelative to -1
-    #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
-    # else: check the parameters
-    for i in range(ncategory):
-        if use_unique_neighborhood[i]:
-            searchRadiusRelative[i] = -1.0
-            nneighborMax[i] = 1
-            searchNeighborhoodSortMode[i] = 0
-
-        else:
-            if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-                return None
-
-            if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-                return None
-
-            if searchNeighborhoodSortMode[i] is None:
-                # set greatest possible value
-                if cm_for_cat[i].is_stationary():
-                    searchNeighborhoodSortMode[i] = 2
-                else:
-                    searchNeighborhoodSortMode[i] = 1
-            else:
-                if searchNeighborhoodSortMode[i] == 2:
-                    if not cm_for_cat[i].is_stationary():
-                        if verbose > 0:
-                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                        return None
-
-            # if searchNeighborhoodSortMode[i] is None:
-            #     # set greatest possible value
-            #     if cm_for_cat[i].is_stationary():
-            #         searchNeighborhoodSortMode[i] = 2
-            #     elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-            #         searchNeighborhoodSortMode[i] = 1
-            #     else:
-            #         searchNeighborhoodSortMode[i] = 0
-            # else:
-            #     if searchNeighborhoodSortMode[i] == 2:
-            #         if not cm_for_cat[i].is_stationary():
-            #             if verbose > 0:
-            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-            #             return None
-            #     elif searchNeighborhoodSortMode[i] == 1:
-            #         if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-            #             if verbose > 0:
-            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-            #             return None
-
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
-
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
@@ -10440,36 +10663,34 @@ def estimateIndicator2D(
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of `probability` is not valid")
-            return None
+            err_msg = f'{fname}: size of `probability` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicIndicatorInput, flag = fill_mpds_geosClassicIndicatorInput(
-        space_dim,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        ncategory,
-        category_values,
-        outputReportFile,
-        computationMode,
-        cm_for_cat,
-        None,
-        dataPointSet,
-        mask,
-        probability,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        0,
-        0)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
+    try:
+        mpds_geosClassicIndicatorInput = fill_mpds_geosClassicIndicatorInput(
+                space_dim,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                ncategory,
+                category_values,
+                outputReportFile,
+                computationMode,
+                cm_for_cat,
+                None,
+                dataPointSet,
+                mask,
+                probability,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                0,
+                0)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
     # Allocate mpds_geosClassicOutput
@@ -10500,8 +10721,11 @@ def estimateIndicator2D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    if verbose > 1:
+        print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -10511,39 +10735,41 @@ def estimateIndicator2D(
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
-    #geosclassic.MPDSFree(mpds_geosClassicIndicatorInput)
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
-    else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Free memory on C side: mpds_progressMonitor
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -10621,7 +10847,7 @@ def estimateIndicator3D(
 
         By default (`None`): proportion of each category computed from the
         data values (`v`) are used for every grid cell
-        
+
         Note: for ordinary kriging (`method='ordinary_kriging'`), it is used for
         case with no neighbor
 
@@ -10688,14 +10914,14 @@ def estimateIndicator3D(
         model
 
         Notes:
-        
+
         - if the covariance model has any non-stationary parameter, then \
         `searchNeighborhoodSortMode=2` is not allowed
         - if the covariance model has any non-stationary range or non-stationary \
         angle and `searchNeighborhoodSortMode=1`: "maximal ranges" (adapted to \
         direction from the central cell) are used to compute distance for sorting \
         the neighbors
-        
+
         By default (`None`): the greatest possible value is used (i.e. 2 for
         stationary covariance model, or 1 otherwise)
 
@@ -10710,30 +10936,32 @@ def estimateIndicator3D(
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings (+ some info)
+        - 1: warnings
+        - 2: warnings + basic info
         - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     geosclassic_output : dict
         geosclassic output in python, dictionary
-        
+
         {'image':image, 'nwarning':nwarning, 'warnings':warnings}
-        
+
         with:
-        
+
         - image : :class:`geone.img.Img`
             output image, with `image.nv=ncategory` variables (probability /
             proportion estimates, of each category);
             note: `image=None` if `mpds_geosClassicOutput->outputImage=NULL`
-        
+
         - nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-        
+
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
@@ -10759,15 +10987,13 @@ def estimateIndicator3D(
     try:
         category_values = np.asarray(category_values, dtype='float').reshape(-1)
     except:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is not valid")
-        return None
+        err_msg = f'{fname}: `category_values` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     ncategory = len(category_values)
     if ncategory <= 0:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `category_values` is empty")
-        return None
+        err_msg = f'{fname}: `category_values` is empty'
+        raise GeosclassicinterfaceError(err_msg)
 
     # cov_model_for_category
     cov_model_for_category = np.asarray(cov_model_for_category).reshape(-1)
@@ -10786,75 +11012,147 @@ def estimateIndicator3D(
     if len(cm_for_cat) == 1:
         cm_for_cat = np.repeat(cm_for_cat, ncategory)
     elif len(cm_for_cat) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` of invalid length")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
     if not np.all([isinstance(c, gcm.CovModel3D) for c in cm_for_cat]):
-        if verbose > 0:
-            print(f"ERROR ({fname}): `cov_model_for_category` should contains CovModel3D objects")
-        return None
+        err_msg = f'{fname}: `cov_model_for_category` should contains CovModel3D objects'
+        raise GeosclassicinterfaceError(err_msg)
 
     for cov_model in cm_for_cat:
         for el in cov_model.elem:
             # weight
             w = el[1]['w']
             if np.size(w) != 1 and np.size(w) != nxyz:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): covariance model: weight ('w') not compatible with simulation grid")
-                return None
+                err_msg = f"{fname}: covariance model: weight ('w') not compatible with simulation grid"
+                raise GeosclassicinterfaceError(err_msg)
+
             # ranges
             if 'r' in el[1].keys():
                 for r in el[1]['r']:
                     if np.size(r) != 1 and np.size(r) != nxyz:
-                        if verbose > 0:
-                            print(f"ERROR ({fname}): covariance model: range ('r') not compatible with simulation grid")
-                        return None
+                        err_msg = f"{fname}: covariance model: range ('r') not compatible with simulation grid"
+                        raise GeosclassicinterfaceError(err_msg)
+
             # additional parameter (s)
             if 's' in el[1].keys():
                 s  = el[1]['s']
                 if np.size(s) != 1 and np.size(s) != nxyz:
-                    if verbose > 0:
-                        print(f"ERROR ({fname}): covariance model: parameter ('s') not compatible with simulation grid")
-                    return None
+                    err_msg = f"{fname}: covariance model: parameter ('s') not compatible with simulation grid"
+                    raise GeosclassicinterfaceError(err_msg)
 
         # alpha
         angle = cov_model.alpha
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): covariance model: angle (alpha) not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: covariance model: angle ('alpha') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
 
         # beta
         angle = cov_model.beta
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): covariance model: angle (beta) not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: covariance model: angle ('beta') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
 
         # gamma
         angle = cov_model.gamma
         if np.size(angle) != 1 and np.size(angle) != nxyz:
-            if verbose > 0:
-                print(f"ERROR ({fname}): covariance model: angle (gamma) not compatible with simulation grid")
-            return None
+            err_msg = f"{fname}: covariance model: angle ('gamma') not compatible with simulation grid"
+            raise GeosclassicinterfaceError(err_msg)
 
     # method
     #    computationMode=0: GEOS_CLASSIC_OK
     #    computationMode=1: GEOS_CLASSIC_SK
     #    computationMode=2: GEOS_CLASSIC_SIM_OK
     #    computationMode=3: GEOS_CLASSIC_SIM_SK
-    # if method not in ('simple_kriging', 'ordinary_kriging'):
-    #     if verbose > 0:
-    #         print(f"ERROR ({fname}): `method` is not valid")
-    #     return None
     if method == 'simple_kriging':
         computationMode = 1
     elif method == 'ordinary_kriging':
         computationMode = 0
     else:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `method` is not valid")
-        return None
+        err_msg = f'{fname}: `method` invalid'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - use_unique_neighborhood (length)
+    use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
+    if len(use_unique_neighborhood) == 1:
+        use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
+    elif len(use_unique_neighborhood) != ncategory:
+        err_msg = f'{fname}: `use_unique_neighborhood` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchRadiusRelative (length)
+    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
+    if len(searchRadiusRelative) == 1:
+        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
+    elif len(searchRadiusRelative) != ncategory:
+        err_msg = f'{fname}: `searchRadiusRelative` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - nneighborMax (length)
+    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
+    if len(nneighborMax) == 1:
+        nneighborMax = np.repeat(nneighborMax, ncategory)
+    elif len(nneighborMax) != ncategory:
+        err_msg = f'{fname}: `nneighborMax` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Check parameters - searchNeighborhoodSortMode (length)
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
+    if len(searchNeighborhoodSortMode) == 1:
+        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
+    elif len(searchNeighborhoodSortMode) != ncategory:
+        err_msg = f'{fname}: `searchNeighborhoodSortMode` of invalid length'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # If unique neighborhood is used, set searchRadiusRelative to -1
+    #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
+    # else: check the parameters
+    for i in range(ncategory):
+        if use_unique_neighborhood[i]:
+            searchRadiusRelative[i] = -1.0
+            nneighborMax[i] = 1
+            searchNeighborhoodSortMode[i] = 0
+
+        else:
+            if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
+                err_msg = f'{fname}: a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})'
+                raise GeosclassicinterfaceError(err_msg)
+
+            if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
+                err_msg = f'{fname}: any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)'
+                raise GeosclassicinterfaceError(err_msg)
+
+            if searchNeighborhoodSortMode[i] is None:
+                # set greatest possible value
+                if cm_for_cat[i].is_stationary():
+                    searchNeighborhoodSortMode[i] = 2
+                else:
+                    searchNeighborhoodSortMode[i] = 1
+            else:
+                if searchNeighborhoodSortMode[i] == 2:
+                    if not cm_for_cat[i].is_stationary():
+                        err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+                        raise GeosclassicinterfaceError(err_msg)
+
+            # if searchNeighborhoodSortMode[i] is None:
+            #     # set greatest possible value
+            #     if cm_for_cat[i].is_stationary():
+            #         searchNeighborhoodSortMode[i] = 2
+            #     elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
+            #         searchNeighborhoodSortMode[i] = 1
+            #     else:
+            #         searchNeighborhoodSortMode[i] = 0
+            # else:
+            #     if searchNeighborhoodSortMode[i] == 2:
+            #         if not cm_for_cat[i].is_stationary():
+            #             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model'
+            #             raise GeosclassicinterfaceError(err_msg)
+            #     elif searchNeighborhoodSortMode[i] == 1:
+            #         if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
+            #             err_msg = f'{fname}: `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model'
+            #             raise GeosclassicinterfaceError(err_msg)
+
+    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
 
     # data points: x, v
     dataPointSet = []
@@ -10863,9 +11161,8 @@ def estimateIndicator3D(
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f"(ERROR ({fname}): length of `v` is not valid")
-            return None
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
         # Aggregate data on grid by taking the most frequent value in grid cell
         xx, yy, zz = x.T
@@ -10874,14 +11171,13 @@ def estimateIndicator3D(
                                                 xx, yy, zz, v,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
                                                 op='most_freq')
-        except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): data aggregation ('most_freq') failed")
-            return None
+        except Exception as exc:
+            err_msg = f"{fname}: data aggregation ('most_freq') failed"
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         if len(xx_agg) == 0:
-            if verbose > 0:
-                print(f"ERROR ({fname}): no data point in grid")
-            return None
+            err_msg = f'{fname}: no data point in grid'
+            raise GeosclassicinterfaceError(err_msg)
 
         dataPointSet.append(
             PointSet(npt=v_agg.shape[0], nv=4, val=np.array((xx_agg, yy_agg, zz_agg, v_agg)), varname=['X', 'Y', 'Z', varname])
@@ -10892,9 +11188,8 @@ def estimateIndicator3D(
         try:
             mask = np.asarray(mask).reshape(nz, ny, nx)
         except:
-            if verbose > 0:
-                print(f"ERROR ({fname}): `mask` is not valid")
-            return None
+            err_msg = f'{fname}: `mask` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     if mask is not None and add_data_point_to_mask:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -10913,97 +11208,6 @@ def estimateIndicator3D(
             del(im_tmp)
         del(pts)
 
-    # Check parameters - use_unique_neighborhood (length)
-    use_unique_neighborhood = np.asarray(use_unique_neighborhood, dtype='bool').reshape(-1)
-    if len(use_unique_neighborhood) == 1:
-        use_unique_neighborhood = np.repeat(use_unique_neighborhood, ncategory)
-    elif len(use_unique_neighborhood) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `use_unique_neighborhood` of invalid length")
-        return None
-
-    # Check parameters - searchRadiusRelative (length)
-    searchRadiusRelative = np.asarray(searchRadiusRelative, dtype='float').reshape(-1)
-    if len(searchRadiusRelative) == 1:
-        searchRadiusRelative = np.repeat(searchRadiusRelative, ncategory)
-    elif len(searchRadiusRelative) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchRadiusRelative` of invalid length")
-        return None
-
-    # Check parameters - nneighborMax (length)
-    nneighborMax = np.asarray(nneighborMax, dtype='intc').reshape(-1)
-    if len(nneighborMax) == 1:
-        nneighborMax = np.repeat(nneighborMax, ncategory)
-    elif len(nneighborMax) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `nneighborMax` of invalid length")
-        return None
-
-    # Check parameters - searchNeighborhoodSortMode (length)
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode).reshape(-1)
-    if len(searchNeighborhoodSortMode) == 1:
-        searchNeighborhoodSortMode = np.repeat(searchNeighborhoodSortMode, ncategory)
-    elif len(searchNeighborhoodSortMode) != ncategory:
-        if verbose > 0:
-            print(f"ERROR ({fname}): `searchNeighborhoodSortMode` of invalid length")
-        return None
-
-    # If unique neighborhood is used, set searchRadiusRelative to -1
-    #    (and initialize nneighborMax, searchNeighborhoodSortMode (unused))
-    # else: check the parameters
-    for i in range(ncategory):
-        if use_unique_neighborhood[i]:
-            searchRadiusRelative[i] = -1.0
-            nneighborMax[i] = 1
-            searchNeighborhoodSortMode[i] = 0
-
-        else:
-            if searchRadiusRelative[i] < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): a `searchRadiusRelative` is too small (should be at least {geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN})")
-                return None
-
-            if nneighborMax[i] != -1 and nneighborMax[i] <= 0:
-                if verbose > 0:
-                    print(f"ERROR ({fname}): any `nneighborMax` should be greater than 0 or equal to -1 (unlimited)")
-                return None
-
-            if searchNeighborhoodSortMode[i] is None:
-                # set greatest possible value
-                if cm_for_cat[i].is_stationary():
-                    searchNeighborhoodSortMode[i] = 2
-                else:
-                    searchNeighborhoodSortMode[i] = 1
-            else:
-                if searchNeighborhoodSortMode[i] == 2:
-                    if not cm_for_cat[i].is_stationary():
-                        if verbose > 0:
-                            print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-                        return None
-
-            # if searchNeighborhoodSortMode[i] is None:
-            #     # set greatest possible value
-            #     if cm_for_cat[i].is_stationary():
-            #         searchNeighborhoodSortMode[i] = 2
-            #     elif cm_for_cat[i].is_orientation_stationary() and cm_for_cat[i].is_range_stationary():
-            #         searchNeighborhoodSortMode[i] = 1
-            #     else:
-            #         searchNeighborhoodSortMode[i] = 0
-            # else:
-            #     if searchNeighborhoodSortMode[i] == 2:
-            #         if not cm_for_cat[i].is_stationary():
-            #             if verbose > 0:
-            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model")
-            #             return None
-            #     elif searchNeighborhoodSortMode[i] == 1:
-            #         if not cm_for_cat[i].is_orientation_stationary() or not cm_for_cat[i].is_range_stationary():
-            #             if verbose > 0:
-            #                 print(f"ERROR ({fname}): `searchNeighborhoodSortMode=1` not allowed with non-stationary range or non-stationary orientation in covariance model")
-            #             return None
-
-    searchNeighborhoodSortMode = np.asarray(searchNeighborhoodSortMode, dtype='intc')
-
     # Check parameters - probability
     if probability is not None:
         # if method == 'ordinary_kriging':
@@ -11012,36 +11216,34 @@ def estimateIndicator3D(
         #     return None
         probability = np.asarray(probability, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if probability.size not in (ncategory, ncategory*nxyz):
-            if verbose > 0:
-                print(f"ERROR ({fname}): size of `probability` is not valid")
-            return None
+            err_msg = f'{fname}: size of `probability` is not valid'
+            raise GeosclassicinterfaceError(err_msg)
 
     # --- Fill mpds_geosClassicInput structure (C)
-    mpds_geosClassicIndicatorInput, flag = fill_mpds_geosClassicIndicatorInput(
-        space_dim,
-        nx, ny, nz,
-        sx, sy, sz,
-        ox, oy, oz,
-        varname,
-        ncategory,
-        category_values,
-        outputReportFile,
-        computationMode,
-        cm_for_cat,
-        None,
-        dataPointSet,
-        mask,
-        probability,
-        searchRadiusRelative,
-        nneighborMax,
-        searchNeighborhoodSortMode,
-        0,
-        0)
-
-    if not flag:
-        if verbose > 0:
-            print(f'ERROR ({fname}): can not fill input structure!')
-        return None
+    try:
+        mpds_geosClassicIndicatorInput = fill_mpds_geosClassicIndicatorInput(
+                space_dim,
+                nx, ny, nz,
+                sx, sy, sz,
+                ox, oy, oz,
+                varname,
+                ncategory,
+                category_values,
+                outputReportFile,
+                computationMode,
+                cm_for_cat,
+                None,
+                dataPointSet,
+                mask,
+                probability,
+                searchRadiusRelative,
+                nneighborMax,
+                searchNeighborhoodSortMode,
+                0,
+                0)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot fill mpds_geosClassicIndicatorInput C structure'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # --- Prepare mpds_geosClassicIOutput structure (C)
     # Allocate mpds_geosClassicOutput
@@ -11072,8 +11274,11 @@ def estimateIndicator3D(
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    if verbose > 1:
+        print('{}: Geos-Classic running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER, geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching GeosClassic...
 
@@ -11083,39 +11288,41 @@ def estimateIndicator3D(
 
     # Free memory on C side: mpds_geosClassicIndicatorInput
     geosclassic.MPDSGeosClassicFreeGeosClassicIndicatorInput(mpds_geosClassicIndicatorInput)
-    #geosclassic.MPDSFree(mpds_geosClassicIndicatorInput)
     geosclassic.free_MPDS_GEOSCLASSICINDICATORINPUT(mpds_geosClassicIndicatorInput)
 
     if err:
-        if verbose > 0:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-        geosclassic_output = None
-    else:
-        geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
+        # Free memory on C side: mpds_geosClassicOutput
+        geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
+        geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
+        # Free memory on C side: mpds_progressMonitor
+        geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    geosclassic_output = geosclassic_output_C2py(mpds_geosClassicOutput, mpds_progressMonitor)
 
     # Free memory on C side: mpds_geosClassicOutput
     geosclassic.MPDSGeosClassicFreeGeosClassicOutput(mpds_geosClassicOutput)
-    #geosclassic.MPDSFree(mpds_geosClassicOutput)
     geosclassic.free_MPDS_GEOSCLASSICOUTPUT(mpds_geosClassicOutput)
 
     # Free memory on C side: mpds_progressMonitor
-    #geosclassic.MPDSFree(mpds_progressMonitor)
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if geosclassic_output is not None and mask is not None and add_data_point_to_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and geosclassic_output:
-        print('Geos-Classic run complete')
+    if verbose > 1 and geosclassic_output:
+        print(f'{fname}: Geos-Classic run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and geosclassic_output and geosclassic_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(geosclassic_output['nwarning']))
+    if verbose > 0 and geosclassic_output and geosclassic_output['nwarning']:
+        print(f"{fname}: warnings encountered ({geosclassic_output['nwarning']} times in all):")
         for i, warning_message in enumerate(geosclassic_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return geosclassic_output
 # ----------------------------------------------------------------------------
@@ -11125,7 +11332,8 @@ def imgDistanceImage(
         input_image,
         distance_type='L2',
         distance_negative=False,
-        nthreads=-1):
+        nthreads=-1,
+        verbose=0):
     """
     Computes distance to a given subset in an image.
 
@@ -11159,6 +11367,9 @@ def imgDistanceImage(
         `nthreads = -n <= 0`: maximal number of threads of the system except n
         (but at least 1)
 
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
     Returns
     -------
     output_image : :class:`geone.img.Img`
@@ -11176,25 +11387,32 @@ def imgDistanceImage(
     """
     fname = 'imgDistanceImage'
 
-    # --- Check
+    # Check
     if distance_type not in ('L1', 'L2'):
-        print(f"ERROR ({fname}): unknown `distance_type`")
-        return None
+        err_msg = f'{fname}: unknown `distance_type`'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Set input image "in C"
-    input_image_c = img_py2C(input_image)
+    try:
+        input_image_c = img_py2C(input_image)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert input image from python to C'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # Allocate output image "in C"
     output_image_c = geosclassic.malloc_MPDS_IMAGE()
     geosclassic.MPDSInitImage(output_image_c)
 
-    # --- Set number of threads
+    # Set number of threads
     if nthreads <= 0:
         nth = max(os.cpu_count() + nthreads, 1)
     else:
         nth = nthreads
 
-    # --- Compute distances (launch C code)
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    # Compute distances (launch C code)
     if distance_type == 'L1':
         if distance_negative:
             err = geosclassic.MPDSOMPImageDistanceL1Sign(input_image_c, output_image_c, nth)
@@ -11206,26 +11424,38 @@ def imgDistanceImage(
         else:
             err = geosclassic.MPDSOMPImageDistanceEuclidean(input_image_c, output_image_c, nth)
     else:
-        print(f"ERROR ({fname}): `distance_type` not valid")
-        return None
+        # Free memory on C side: input_image_c
+        geosclassic.MPDSFreeImage(input_image_c)
+        geosclassic.free_MPDS_IMAGE(input_image_c)
+        # Free memory on C side: output_image_c
+        geosclassic.MPDSFreeImage(output_image_c)
+        geosclassic.free_MPDS_IMAGE(output_image_c)
+        # Raise error
+        err_msg = f'{fname}: `distance_type` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
-    # --- Retrieve output image "in python"
+    # Retrieve output image "in python"
     if err:
+        # Free memory on C side: input_image_c
+        geosclassic.MPDSFreeImage(input_image_c)
+        geosclassic.free_MPDS_IMAGE(input_image_c)
+        # Free memory on C side: output_image_c
+        geosclassic.MPDSFreeImage(output_image_c)
+        geosclassic.free_MPDS_IMAGE(output_image_c)
+        # Raise error
         err_message = geosclassic.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
-        print(err_message)
-        output_image = None
-    else:
-        output_image = img_C2py(output_image_c)
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    output_image = img_C2py(output_image_c)
 
     # Free memory on C side: input_image_c
     geosclassic.MPDSFreeImage(input_image_c)
-    #geosclassic.MPDSFree(input_image_c)
     geosclassic.free_MPDS_IMAGE(input_image_c)
 
     # Free memory on C side: output_image_c
     geosclassic.MPDSFreeImage(output_image_c)
-    #geosclassic.MPDSFree(output_image_c)
     geosclassic.free_MPDS_IMAGE(output_image_c)
 
     return output_image
@@ -11275,14 +11505,14 @@ def imgGeobodyImage(
 
     The geobody image (map) is computed for the indicator variable I, which
     consists in labelling the connected components from 1 to n, i.e.
-    
+
     * C(x) = 0     if I(x) = 0
     * C(x) = k > 0 if I(x) = 1 and x is in the k-th connected component
 
-    Two cells x and y in the grid are said connected, :math:`x \\leftrightarrow y`, 
-    if there exists a path between x and y going composed of adjacent cells, within 
+    Two cells x and y in the grid are said connected, :math:`x \\leftrightarrow y`,
+    if there exists a path between x and y going composed of adjacent cells, within
     the set I=1. Following this definition, we have
-    
+
     * :math:`x \\leftrightarrow y \\iff C(x) = C(y) > 0`
 
     The definition of adjacent cells is set according to the parameter
@@ -11348,21 +11578,39 @@ def imgGeobodyImage(
     """
     # Two cells x and y in the grid are said connected, x <-> y, if there exists
     # a path between x and y going composed of adjacent cells, within the set I=1.
-    # Following this definition, we have    
+    # Following this definition, we have
     # * x <-> y iff C(x) = C(y) > 0
     fname = 'imgGeobodyImage'
 
-    # --- Check
+    # Check
     if connect_type not in ('connect_face', 'connect_face_edge', 'connect_face_edge_corner'):
-        print(f"ERROR ({fname}): unknown `connect_type`")
-        return None
+        err_msg = f'{fname}: unknown `connect_type`'
+        raise GeosclassicinterfaceError(err_msg)
 
     if var_index < 0 or var_index >= input_image.nv:
-        print(f"ERROR ({fname}): `var_index` not valid")
-        return None
+        err_msg = f'{fname}: `var_index` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     if bound_sup is None:
         bound_sup = 1. + np.nanmax(input_image.val[var_index])
+
+    # Set C function to launch for computing geobody image
+    if connect_type == 'connect_face':
+        g = geosclassic.MPDSImageGeobody6
+    elif connect_type == 'connect_face_edge':
+        g = geosclassic.MPDSImageGeobody18
+    elif connect_type == 'connect_face_edge_corner':
+        g = geosclassic.MPDSImageGeobody26
+    else:
+        err_msg = f'{fname}: `connect_type` invalid'
+        raise GeosclassicinterfaceError(err_msg)
+
+    # Set input image "in C"
+    try:
+        input_image_c = img_py2C(input_image)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert input image from python to C'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # Allocate variable in C
     rangeValueMin_c = geosclassic.new_real_array(1)
@@ -11373,59 +11621,52 @@ def imgGeobodyImage(
 
     ngeobody_c = geosclassic.new_int_array(1)
 
-    # Set input image "in C"
-    input_image_c = img_py2C(input_image)
-
     # Allocate output image "in C"
     output_image_c = geosclassic.malloc_MPDS_IMAGE()
     geosclassic.MPDSInitImage(output_image_c)
 
-    # --- Compute geobody image (launch C code)
-    if connect_type == 'connect_face':
-        g = geosclassic.MPDSImageGeobody6
-    elif connect_type == 'connect_face_edge':
-        g = geosclassic.MPDSImageGeobody18
-    elif connect_type == 'connect_face_edge_corner':
-        g = geosclassic.MPDSImageGeobody26
-    else:
-        print(f"ERROR ({fname}): `connect_type` not valid")
-        return None
-
+    # Launch C function
     err = g(input_image_c, output_image_c, var_index,
             complementary_set,
             1, rangeValueMin_c, rangeValueMax_c, bound_inf_excluded, bound_sup_excluded,
             ngeobody_c)
 
-    # --- Retrieve output image "in python"
+    # Retrieve output image "in python"
     if err:
+        # Free memory on C side: input_image_c
+        geosclassic.MPDSFreeImage(input_image_c)
+        geosclassic.free_MPDS_IMAGE(input_image_c)
+        # Free memory on C side: output_image_c
+        geosclassic.MPDSFreeImage(output_image_c)
+        geosclassic.free_MPDS_IMAGE(output_image_c)
+        # Free memory on C side: rangeValueMin_c, rangeValueMax_c, ngeobody_c
+        geosclassic.delete_real_array(rangeValueMin_c)
+        geosclassic.delete_real_array(rangeValueMax_c)
+        geosclassic.delete_int_array(ngeobody_c)
+        # Raise error
         err_message = geosclassic.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
-        print(err_message)
-        output_image = None
-    else:
-        output_image = img_C2py(output_image_c)
-        # # Retrieve the number of geobody (not used, this is simple the max of the output image (max label))
-        # ngeobody = np.zeros(1, dtype='intc') # 'intc' for C-compatibility
-        # geosclassic.mpds_get_array_from_int_vector(ngeobody_c, 0, ngeobody)
-        # ngeobody = ngeobody[0]
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    output_image = img_C2py(output_image_c)
+    # # Retrieve the number of geobody (not used, this is simple the max of the output image (max label))
+    # ngeobody = np.zeros(1, dtype='intc') # 'intc' for C-compatibility
+    # geosclassic.mpds_get_array_from_int_vector(ngeobody_c, 0, ngeobody)
+    # ngeobody = ngeobody[0]
 
     # Free memory on C side: input_image_c
     geosclassic.MPDSFreeImage(input_image_c)
-    #geosclassic.MPDSFree(input_image_c)
     geosclassic.free_MPDS_IMAGE(input_image_c)
 
     # Free memory on C side: output_image_c
     geosclassic.MPDSFreeImage(output_image_c)
-    #geosclassic.MPDSFree(output_image_c)
     geosclassic.free_MPDS_IMAGE(output_image_c)
 
     # Free memory on C side: rangeValueMin_c, rangeValueMax_c, ngeobody_c
     geosclassic.delete_real_array(rangeValueMin_c)
     geosclassic.delete_real_array(rangeValueMax_c)
     geosclassic.delete_int_array(ngeobody_c)
-    # geosclassic.MPDSFree(rangeValueMin_c)
-    # geosclassic.MPDSFree(rangeValueMax_c)
-    # geosclassic.MPDSFree(ngeobody_c)
 
     return output_image
 # ----------------------------------------------------------------------------
@@ -11444,8 +11685,9 @@ def imgTwoPointStatisticsImage(
         hz_max=None,
         hz_step=1,
         stat_type='covariance',
-        show_progress=False,
-        nthreads=-1):
+        show_progress=None,
+        nthreads=-1,
+        verbose=0):
     """
     Computes two-point statistics image (map) for one variable of the input image.
 
@@ -11473,11 +11715,10 @@ def imgTwoPointStatisticsImage(
             - :math:`g(h) = \\mathbb{E}\\left[v(x)*v(x+h)\\right]`
         *   - transiogram
             - :math:`g(h) = \\mathbb{P}\\left(v(x+h) > 0 \\ \\vert\\  v(x) > 0\\right)`
-        *   - variogram  
+        *   - variogram
             - :math:`g(h) = 1/2 \\cdot \\mathbb{E}\\left[(v(x)-v(x+h))^2\\right]`
-    
-    A transiogram can be applied on a binary variable.
 
+    A transiogram can be applied on a binary variable.
 
     A connectivity function (connectivity_func[012]) should be applied on
     a variable consisting of geobody (connected component) labels,
@@ -11486,7 +11727,7 @@ def imgTwoPointStatisticsImage(
     in that case, denoting I(x) is the indicator variable defined as
     :math:`I(x) = 1 \\iff v(x)>0`, the variable v is the geobody
     label for the indicator variable I an we have the relations
-            
+
     .. math::
         \\begin{array}{l}
             \\mathbb{P}\\left(v(x) = v(x+h) > 0\\right) \\\\[2mm]
@@ -11496,17 +11737,17 @@ def imgTwoPointStatisticsImage(
         \\end{array}
 
     i.e.
-        
+
     .. math::
         \\mathbb{P}(x \\leftrightarrow x+h) = \\mathbb{P}\\left(x \\leftrightarrow x+h \\ \\vert \\ x, x+h \\in \\{I=1\\}\\right) \\cdot \\mathbb{E}(I(x) \\cdot I(x+h))
 
     that is "connectivity_func0(v) = connectivity_func2(v)*covariance_not_centered(I)"
-    (see definition of "is connected to" (:math:`\\leftrightarrow`) in the function 
+    (see definition of "is connected to" (:math:`\\leftrightarrow`) in the function
     :func:`geosclassicinterface.imgGeobodyImage`).
-    
+
     The output image has one variable and its grid is defined according the
     considered lags h defined according to the parameters:
-    
+
     * `hx_min`, `hx_max`, `hx_step`
     * `hy_min`, `hy_max`, `hy_step`
     * `hz_min`, `hz_max`, `hz_step`
@@ -11573,13 +11814,20 @@ def imgTwoPointStatisticsImage(
         for type 'connectivity_func[012]', the input image is assumed to be a
         geobody image (see above)
 
-    show_progress : bool, default: False
-        indicates if progress is displayed (`True`) or not (`False`)
+    show_progress : bool, optional
+        deprecated, use `verbose` instead;
+
+        - if `show_progress=False`, `verbose` is set to 1 (overwritten)
+        - if `show_progress=True`, `verbose` is set to 2 (overwritten)
+        - if `show_progress=None` (default): not used
 
     nthreads : int, default: -1
         number of thread(s) to use for C program;
         `nthreads = -n <= 0`: maximal number of threads of the system except n
         (but at least 1)
+
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
 
     Returns
     -------
@@ -11610,7 +11858,14 @@ def imgTwoPointStatisticsImage(
     # * P(x <-> x+h) = P(x <-> x+h | x, x+h in {I=1}) * E(I(x)*I(x+h))
     fname = 'imgTwoPointStatisticsImage'
 
-    # --- Check
+    # Set verbose mode according to show_progress (if given)
+    if show_progress is not None:
+        if show_progress:
+            verbose = 2
+        else:
+            verbose = 1
+
+    # Check
     if stat_type not in ('correlogram',
                          'connectivity_func0',
                          'connectivity_func1',
@@ -11619,14 +11874,14 @@ def imgTwoPointStatisticsImage(
                          'covariance_not_centered',
                          'transiogram',
                          'variogram'):
-        print(f"ERROR ({fname}): unknown `stat_type`")
-        return None
+        err_msg = f'{fname}: unknown `stat_type`'
+        raise GeosclassicinterfaceError(err_msg)
 
     if var_index < 0 or var_index >= input_image.nv:
-        print(f"ERROR ({fname}): `var_index` not valid")
-        return None
+        err_msg = f'{fname}: `var_index` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
-    # --- Prepare parameters
+    # Prepare parameters
     if hx_min is None:
         hx_min = -(input_image.nx // 2)
     else:
@@ -11663,20 +11918,16 @@ def imgTwoPointStatisticsImage(
 
     hz_step = int(hz_step) # ensure int type
 
-    # Set input image "in C"
-    input_image_c = img_py2C(input_image)
-
-    # Allocate output image "in C"
-    output_image_c = geosclassic.malloc_MPDS_IMAGE()
-    geosclassic.MPDSInitImage(output_image_c)
-
-    # --- Set number of threads
+    # Set number of threads
     if nthreads <= 0:
         nth = max(os.cpu_count() + nthreads, 1)
     else:
         nth = nthreads
 
-    # --- Compute two-point statistics (launch C code)
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    # Set C function to launch for computing two-point statistics
     if stat_type == 'correlogram':
         g = geosclassic.MPDSOMPImageCorrelogram
     elif stat_type == 'covariance':
@@ -11694,32 +11945,49 @@ def imgTwoPointStatisticsImage(
     elif stat_type == 'variogram':
         g = geosclassic.MPDSOMPImageVariogram
     else:
-        print(f"ERROR ({fname}): `stat_type` not valid")
-        return None
+        err_msg = f'{fname}: `stat_type` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
+    # Set input image "in C"
+    try:
+        input_image_c = img_py2C(input_image)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert input image from python to C'
+        raise GeosclassicinterfaceError(err_msg) from exc
+
+    # Allocate output image "in C"
+    output_image_c = geosclassic.malloc_MPDS_IMAGE()
+    geosclassic.MPDSInitImage(output_image_c)
+
+    # Launch C function
     err = g(input_image_c, output_image_c, var_index,
             hx_min, hx_max, hx_step,
             hy_min, hy_max, hy_step,
             hz_min, hz_max, hz_step,
-            show_progress, nth)
+            verbose > 1, nth)
 
-    # --- Retrieve output image "in python"
+    # Retrieve output image "in python"
     if err:
+        # Free memory on C side: input_image_c
+        geosclassic.MPDSFreeImage(input_image_c)
+        geosclassic.free_MPDS_IMAGE(input_image_c)
+        # Free memory on C side: output_image_c
+        geosclassic.MPDSFreeImage(output_image_c)
+        geosclassic.free_MPDS_IMAGE(output_image_c)
+        # Raise error
         err_message = geosclassic.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
-        print(err_message)
-        output_image = None
-    else:
-        output_image = img_C2py(output_image_c)
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
+
+    output_image = img_C2py(output_image_c)
 
     # Free memory on C side: input_image_c
     geosclassic.MPDSFreeImage(input_image_c)
-    #geosclassic.MPDSFree(input_image_c)
     geosclassic.free_MPDS_IMAGE(input_image_c)
 
     # Free memory on C side: output_image_c
     geosclassic.MPDSFreeImage(output_image_c)
-    #geosclassic.MPDSFree(output_image_c)
     geosclassic.free_MPDS_IMAGE(output_image_c)
 
     return output_image
@@ -11741,16 +12009,16 @@ def imgConnectivityGammaValue(
         \\Gamma = \\frac{1}{m^2} \\sum_{i=1}^N n(i)^2
 
     where
-    
+
     * :math:`N` is the number of connected components (geobodies) of the set {v>0}
     * :math:`n(i)` is the size (number of cells) in the i-th connected component
     * :math:`m` is the size (number of cells) of the set {v>0}
-    
+
     Note that the Gamma value is set to 1.0 if N = 0.
 
     The definition of adjacent cells, required to compute the connected
     components, is set according to the parameter `connect_type`:
-    
+
     .. list-table::
         :widths: 25 45
         :header-rows: 1
@@ -11810,37 +12078,40 @@ def imgConnectivityGammaValue(
 
     # --- Check and prepare
     if var_index < 0 or var_index >= input_image.nv:
-        print(f"ERROR ({fname}): `var_index` not valid")
-        return None
+        err_msg = f'{fname}: `var_index` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     if not geobody_image_in_input and connect_type not in ('connect_face', 'connect_face_edge', 'connect_face_edge_corner'):
-        print(f"ERROR ({fname}): unknown `connect_type`")
-        return None
+        err_msg = f'{fname}: unknown `connect_type`'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Compute geobody image
     if not geobody_image_in_input:
-        im_geobody = imgGeobodyImage(input_image,
-                                     var_index,
-                                     bound_inf=0.0,
-                                     bound_sup=None,
-                                     bound_inf_excluded=True,
-                                     bound_sup_excluded=True,
-                                     complementary_set=complementary_set,
-                                     connect_type=connect_type)
+        try:
+            im_geobody = imgGeobodyImage(
+                    input_image,
+                    var_index,
+                    bound_inf=0.0,
+                    bound_sup=None,
+                    bound_inf_excluded=True,
+                    bound_sup_excluded=True,
+                    complementary_set=complementary_set,
+                    connect_type=connect_type)
+        except Exception as exc:
+            err_msg = f'{fname}: cannot compute geobody image'
+            raise GeosclassicinterfaceError(err_msg) from exc
+
         iv = 0
     else:
         im_geobody = input_image
         iv = var_index
 
     # Compute Gamma value
-    if im_geobody is not None:
-        ngeo = int(im_geobody.val[iv].max())
-        if ngeo == 0:
-            gamma = 1.0
-        else:
-            gamma = np.sum(np.array([float(np.sum(im_geobody.val[iv] == i))**2 for i in np.arange(1, ngeo+1)])) / float(np.sum(im_geobody.val[iv] != 0))**2
+    ngeo = int(im_geobody.val[iv].max())
+    if ngeo == 0:
+        gamma = 1.0
     else:
-        return None
+        gamma = np.sum(np.array([float(np.sum(im_geobody.val[iv] == i))**2 for i in np.arange(1, ngeo+1)])) / float(np.sum(im_geobody.val[iv] != 0))**2
 
     return gamma
 # ----------------------------------------------------------------------------
@@ -11852,28 +12123,29 @@ def imgConnectivityGammaCurves(
         threshold_max=None,
         nthreshold=50,
         connect_type='connect_face',
-        show_progress=False,
-        nthreads=-1):
+        show_progress=None,
+        nthreads=-1,
+        verbose=0):
     """
     Computes Gamma curves for an input image with one continuous variable.
 
     For a threshold t, we consider the indicator variable I(t) defined as
-    
+
     * :math:`I(t)(x) = 1 \\iff v(x) \\leqslant t`
 
     and we compute
-    
+
     * :math:`\\Gamma(t) = \\frac{1}{m(t)^2} \\sum_{i=1}^{N(t)} n(t, i)^2`
 
     where
-    
+
     * :math`N(t)` is the number of connected components (geobodies) of the set {I(t)=1}
     * :math`n(t, i) is the size (number of cells) in the i-th connected component
     * :math`m(t)` is the size (number of cells) of the set {I(t)=1}
-    
+
     Note: gamma(t) is set to 1.0 if N = 0.
 
-    We also compute :math:`\\Gamma_C(t)`, the gamma value for the complementary set    
+    We also compute :math:`\\Gamma_C(t)`, the gamma value for the complementary set
     {IC(t)=1} where IC(t)(x) = 1 - I(t)(x).
 
     This is repeated for different threshold values t, which gives the curves
@@ -11916,13 +12188,20 @@ def imgConnectivityGammaCurves(
             'connect_face_edge_corner'}, default: 'connect_face'
         indicates which definition of adjacent cells is used (see above)
 
-    show_progress : bool, default: False
-        indicates if progress is displayed (`True`) or not (`False`)
+    show_progress : bool, optional
+        deprecated, use `verbose` instead;
+
+        - if `show_progress=False`, `verbose` is set to 1 (overwritten)
+        - if `show_progress=True`, `verbose` is set to 2 (overwritten)
+        - if `show_progress=None` (default): not used
 
     nthreads : int, default: -1
         number of thread(s) to use for C program;
         `nthreads = -n <= 0`: maximal number of threads of the system except n
         (but at least 1)
+
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
 
     Returns
     -------
@@ -11949,10 +12228,17 @@ def imgConnectivityGammaCurves(
     """
     fname = 'imgConnectivityGammaCurves'
 
-    # --- Check and prepare
+    # Set verbose mode according to show_progress (if given)
+    if show_progress is not None:
+        if show_progress:
+            verbose = 2
+        else:
+            verbose = 1
+
+    # Check and prepare
     if input_image.nv != 1:
-        print(f'ERROR ({fname}): input image must have one variable only')
-        return None
+        err_msg = f'{fname}: input image must have one variable only'
+        raise GeosclassicinterfaceError(err_msg)
 
     if threshold_min is None:
         threshold_min = np.nanmin(input_image.val) - 1.e-10
@@ -11961,40 +12247,36 @@ def imgConnectivityGammaCurves(
         threshold_max = np.nanmax(input_image.val) + 1.e-10
 
     if threshold_min > threshold_max:
-        print(f"ERROR ({fname}): `threshold_min` is greater than `threshold_max`")
-        return None
+        err_msg = f'{fname}: `threshold_min` is greater than `threshold_max`'
+        raise GeosclassicinterfaceError(err_msg)
 
     if nthreshold < 0:
-        print(f"ERROR ({fname}): `nthreshold` is negative")
-        return None
+        err_msg = f'{fname}: `nthreshold` is negative'
+        raise GeosclassicinterfaceError(err_msg)
+
     elif nthreshold == 1:
         threshold_step = 1.0
     else:
         threshold_step = (threshold_max - threshold_min) / (nthreshold - 1)
 
     if threshold_step < geosclassic.MPDS_EPSILON:
-        print(f'ERROR ({fname}): threshold step too small')
-        return None
+        err_msg = f'{fname}: threshold step too small'
+        raise GeosclassicinterfaceError(err_msg)
 
     if connect_type not in ('connect_face', 'connect_face_edge', 'connect_face_edge_corner'):
-        print(f"ERROR ({fname}): unknown `connect_type`")
-        return None
+        err_msg = f'{fname}: unknown `connect_type`'
+        raise GeosclassicinterfaceError(err_msg)
 
-    # Set input image "in C"
-    input_image_c = img_py2C(input_image)
-
-    # Allocate output variable in C
-    threshold_c = geosclassic.new_real_array(nthreshold)
-    gamma_c = geosclassic.new_real_array(nthreshold)
-    gammaC_c = geosclassic.new_real_array(nthreshold)
-
-    # --- Set number of threads
+    # Set number of threads
     if nthreads <= 0:
         nth = max(os.cpu_count() + nthreads, 1)
     else:
         nth = nthreads
 
-    # --- Compute Gamma curves (launch C code)
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    # Set C function to launch for computing Gamma curves
     if connect_type == 'connect_face':
         g = geosclassic.MPDSOMPImageConnectivity6GlobalIndicatorCurve
     elif connect_type == 'connect_face_edge':
@@ -12002,43 +12284,60 @@ def imgConnectivityGammaCurves(
     elif connect_type == 'connect_face_edge_corner':
         g = geosclassic.MPDSOMPImageConnectivity26GlobalIndicatorCurve
     else:
-        print(f"ERROR ({fname}): `connect_type` not valid")
-        return None
+        err_msg = f'{fname}: `connect_type` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
+    # Set input image "in C"
+    try:
+        input_image_c = img_py2C(input_image)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert input image from python to C'
+        raise GeosclassicinterfaceError(err_msg) from exc
+
+    # Allocate output variable in C
+    threshold_c = geosclassic.new_real_array(nthreshold)
+    gamma_c = geosclassic.new_real_array(nthreshold)
+    gammaC_c = geosclassic.new_real_array(nthreshold)
+
+    # Launch C function
     err = g(input_image_c, nthreshold, threshold_min, threshold_step,
             threshold_c, gamma_c, gammaC_c,
-            show_progress, nth)
+            verbose > 1, nth)
 
-    # --- Retrieve output "in python"
+    # Retrieve output "in python"
     if err:
+        # Free memory on C side: input_image_c
+        geosclassic.MPDSFreeImage(input_image_c)
+        geosclassic.free_MPDS_IMAGE(input_image_c)
+        # Free memory on C side: threshold_c, gamma_c, gammaC_c
+        geosclassic.delete_real_array(threshold_c)
+        geosclassic.delete_real_array(gamma_c)
+        geosclassic.delete_real_array(gammaC_c)
+        # Raise error
         err_message = geosclassic.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
-        print(err_message)
-        out_array = None
-    else:
-        threshold = np.zeros(nthreshold)
-        geosclassic.mpds_get_array_from_real_vector(threshold_c, 0, threshold)
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
 
-        gamma = np.zeros(nthreshold)
-        geosclassic.mpds_get_array_from_real_vector(gamma_c, 0, gamma)
+    threshold = np.zeros(nthreshold)
+    geosclassic.mpds_get_array_from_real_vector(threshold_c, 0, threshold)
 
-        gammaC = np.zeros(nthreshold)
-        geosclassic.mpds_get_array_from_real_vector(gammaC_c, 0, gammaC)
+    gamma = np.zeros(nthreshold)
+    geosclassic.mpds_get_array_from_real_vector(gamma_c, 0, gamma)
 
-        out_array = np.array((threshold, gamma, gammaC)).reshape(3, -1).T
+    gammaC = np.zeros(nthreshold)
+    geosclassic.mpds_get_array_from_real_vector(gammaC_c, 0, gammaC)
+
+    out_array = np.array((threshold, gamma, gammaC)).reshape(3, -1).T
 
     # Free memory on C side: input_image_c
     geosclassic.MPDSFreeImage(input_image_c)
-    #geosclassic.MPDSFree(input_image_c)
     geosclassic.free_MPDS_IMAGE(input_image_c)
 
     # Free memory on C side: threshold_c, gamma_c, gammaC_c
     geosclassic.delete_real_array(threshold_c)
     geosclassic.delete_real_array(gamma_c)
     geosclassic.delete_real_array(gammaC_c)
-    # geosclassic.MPDSFree(threshold_c)
-    # geosclassic.MPDSFree(gamma_c)
-    # geosclassic.MPDSFree(gammaC_c)
 
     return out_array
 # ----------------------------------------------------------------------------
@@ -12049,23 +12348,24 @@ def imgConnectivityEulerNumber(
         var_index=0,
         geobody_image_in_input=False,
         complementary_set=False,
-        nthreads=-1):
+        nthreads=-1,
+        verbose=0):
     """
     Computes the Euler number for one variable v of the input image.
 
     The Euler number is defined, for the 3D image grid, as
 
     * E = #{connected components (geobodies)} + #{holes} - #{handles}
-    
-    for the set {v>0}, i.e. the indicator variable 
+
+    for the set {v>0}, i.e. the indicator variable
     :math:`I(x) = 1 \\iff v(x) > 0`, is considered.
 
     The Euler number E can be computed by the formula:
 
     * E = sum_{i=1,...,N} (e0(i) - e1(i) + e2(i) - e3(i)),
-    
+
     where
-    
+
     - N is the number of connected component (geobodies) in the set {I=1}
     - for a geobody i:
         * e0(i) : the number of vertices (dim 0) in the i-th geobody
@@ -12105,6 +12405,9 @@ def imgConnectivityEulerNumber(
         `nthreads = -n <= 0`: maximal number of threads of the system except n
         (but at least 1)
 
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
     Returns
     -------
     euler_number : float
@@ -12121,63 +12424,75 @@ def imgConnectivityEulerNumber(
 
     # --- Check and prepare
     if var_index < 0 or var_index >= input_image.nv:
-        print(f"ERROR ({fname}): `var_index` not valid")
-        return None
+        err_msg = f'{fname}: `var_index` invalid'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Compute geobody image
     if not geobody_image_in_input:
-        im_geobody = imgGeobodyImage(input_image,
-                                     var_index,
-                                     bound_inf=0.0,
-                                     bound_sup=None,
-                                     bound_inf_excluded=True,
-                                     bound_sup_excluded=True,
-                                     complementary_set=complementary_set,
-                                     connect_type='connect_face')
+        try:
+            im_geobody = imgGeobodyImage(
+                    input_image,
+                    var_index,
+                    bound_inf=0.0,
+                    bound_sup=None,
+                    bound_inf_excluded=True,
+                    bound_sup_excluded=True,
+                    complementary_set=complementary_set,
+                    connect_type='connect_face')
+        except Exception as exc:
+            err_msg = f'{fname}: cannot compute geobody image'
+            raise GeosclassicinterfaceError(err_msg) from exc
         iv = 0
     else:
         im_geobody = input_image
         iv = var_index
 
     # Compute Euler Number
-    if im_geobody is not None:
-        # Set geobody image "in C"
+    # Set geobody image "in C"
+    try:
         im_geobody_c = img_py2C(im_geobody)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert geobody image from python to C'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
-        # Allocate euler number "in C"
-        euler_number_c = geosclassic.new_int_array(1)
+    # Allocate euler number "in C"
+    euler_number_c = geosclassic.new_int_array(1)
 
-        # --- Set number of threads
-        if nthreads <= 0:
-            nth = max(os.cpu_count() + nthreads, 1)
-        else:
-            nth = nthreads
+    # Set number of threads
+    if nthreads <= 0:
+        nth = max(os.cpu_count() + nthreads, 1)
+    else:
+        nth = nthreads
 
-        # Compute Euler number (launch C code)
-        err = geosclassic.MPDSOMPImageConnectivityEulerNumber(im_geobody_c, var_index, euler_number_c, nth)
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
 
-        # --- Retrieve output "in python"
-        if err:
-            err_message = geosclassic.mpds_get_error_message(-err)
-            err_message = err_message.replace('\n', '')
-            print(err_message)
-            euler_number = None
-        else:
-            euler_number = np.zeros(1, dtype='intc') # 'intc' for C-compatibility
-            geosclassic.mpds_get_array_from_int_vector(euler_number_c, 0, euler_number)
-            euler_number = euler_number[0]
+    # Compute Euler number (launch C code)
+    err = geosclassic.MPDSOMPImageConnectivityEulerNumber(im_geobody_c, var_index, euler_number_c, nth)
 
+    # Retrieve output "in python"
+    if err:
         # Free memory on C side: im_geobody_c
         geosclassic.MPDSFreeImage(im_geobody_c)
-        #geosclassic.MPDSFree(im_geobody_c)
         geosclassic.free_MPDS_IMAGE(im_geobody_c)
-
         # Free memory on C side: euler_number_c
         geosclassic.delete_int_array(euler_number_c)
-        # geosclassic.MPDSFree(euler_number_c)
+        # Raise error
+        err_message = geosclassic.mpds_get_error_message(-err)
+        err_message = err_message.replace('\n', '')
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
 
-    else:
-        return None
+    euler_number = np.zeros(1, dtype='intc') # 'intc' for C-compatibility
+    geosclassic.mpds_get_array_from_int_vector(euler_number_c, 0, euler_number)
+    euler_number = euler_number[0]
+
+    # Free memory on C side: im_geobody_c
+    geosclassic.MPDSFreeImage(im_geobody_c)
+    geosclassic.free_MPDS_IMAGE(im_geobody_c)
+
+    # Free memory on C side: euler_number_c
+    geosclassic.delete_int_array(euler_number_c)
 
     return euler_number
 # ----------------------------------------------------------------------------
@@ -12188,20 +12503,21 @@ def imgConnectivityEulerNumberCurves(
         threshold_min=None,
         threshold_max=None,
         nthreshold=50,
-        show_progress=False,
-        nthreads=-1):
+        show_progress=None,
+        nthreads=-1,
+        verbose=0):
     """
     Computes the curves of Euler number for one variable v of the input image.
 
     For a threshold t, we consider the indicator variable I(t) defined as
-    
+
     * :math:`I(t)(x) = 1 \\iff v(x) \\leqslant t`
 
     and we compute the Euler number
-    
+
     * E(t) = #{connected components (geobodies)} + #{holes} - #{handles}
 
-    for the set {I(t)=1}; we compute also EC(t), the Euler number for the 
+    for the set {I(t)=1}; we compute also EC(t), the Euler number for the
     complementary set {IC(t)=1} where IC(t)(x) = 1 - I(t)(x)
 
     This is repeated for different threshold values t, which gives the curves
@@ -12230,13 +12546,20 @@ def imgConnectivityEulerNumberCurves(
         number of thresholds considered, the threshold values are
         `numpy.linspace(threshold_min, threshold_max, nthreshold)`
 
-    show_progress : bool, default: False
-        indicates if progress is displayed (`True`) or not (`False`)
+    show_progress : bool, optional
+        deprecated, use `verbose` instead;
+
+        - if `show_progress=False`, `verbose` is set to 1 (overwritten)
+        - if `show_progress=True`, `verbose` is set to 2 (overwritten)
+        - if `show_progress=None` (default): not used
 
     nthreads : int, default: -1
         number of thread(s) to use for C program;
         `nthreads = -n <= 0`: maximal number of threads of the system except n
         (but at least 1)
+
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
 
     Returns
     -------
@@ -12251,10 +12574,17 @@ def imgConnectivityEulerNumberCurves(
     """
     fname = 'imgConnectivityEulerNumberCurves'
 
-    # --- Check and prepare
+    # Set verbose mode according to show_progress (if given)
+    if show_progress is not None:
+        if show_progress:
+            verbose = 2
+        else:
+            verbose = 1
+
+    # Check and prepare
     if input_image.nv != 1:
-        print(f'ERROR ({fname}): input image must have one variable only')
-        return None
+        err_msg = f'{fname}: input image must have one variable only'
+        raise GeosclassicinterfaceError(err_msg)
 
     if threshold_min is None:
         threshold_min = np.nanmin(input_image.val) - 1.e-10
@@ -12263,71 +12593,83 @@ def imgConnectivityEulerNumberCurves(
         threshold_max = np.nanmax(input_image.val) + 1.e-10
 
     if threshold_min > threshold_max:
-        print(f"ERROR ({fname}): `threshold_min` is greater than `threshold_max`")
-        return None
+        err_msg = f'{fname}: `threshold_min` is greater than `threshold_max`'
+        raise GeosclassicinterfaceError(err_msg)
 
     if nthreshold < 0:
-        print(f"ERROR ({fname}): `nthreshold` is negative")
-        return None
+        err_msg = f'{fname}: `nthreshold` is negative'
+        raise GeosclassicinterfaceError(err_msg)
+
     elif nthreshold == 1:
         threshold_step = 1.0
     else:
         threshold_step = (threshold_max - threshold_min) / (nthreshold - 1)
 
     if threshold_step < geosclassic.MPDS_EPSILON:
-        print(f'ERROR ({fname}): threshold step too small')
-        return None
+        err_msg = f'{fname}: threshold step too small'
+        raise GeosclassicinterfaceError(err_msg)
 
     # Set input image "in C"
-    input_image_c = img_py2C(input_image)
+    try:
+        input_image_c = img_py2C(input_image)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert input image from python to C'
+        raise GeosclassicinterfaceError(err_msg) from exc
 
     # Allocate output variable in C
     threshold_c = geosclassic.new_real_array(nthreshold)
     euler_number_c = geosclassic.new_int_array(nthreshold)
     euler_numberC_c = geosclassic.new_int_array(nthreshold)
 
-    # --- Set number of threads
+    # Set number of threads
     if nthreads <= 0:
         nth = max(os.cpu_count() + nthreads, 1)
     else:
         nth = nthreads
 
-    # --- Compute Euler number curves (launch C code)
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    # Compute Euler number curves (launch C code)
     err = geosclassic.MPDSOMPImageConnectivity6EulerNumberCurve(
             input_image_c, nthreshold, threshold_min, threshold_step,
             threshold_c, euler_number_c, euler_numberC_c,
-            show_progress, nth)
+            verbose > 1, nth)
 
-    # --- Retrieve output "in python"
+    # Retrieve output "in python"
     if err:
+        # Free memory on C side: input_image_c
+        geosclassic.MPDSFreeImage(input_image_c)
+        geosclassic.free_MPDS_IMAGE(input_image_c)
+        # Free memory on C side: threshold_c, gamma_c, gammaC_c
+        geosclassic.delete_real_array(threshold_c)
+        geosclassic.delete_int_array(euler_number_c)
+        geosclassic.delete_int_array(euler_numberC_c)
+        # Raise error
         err_message = geosclassic.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
-        print(err_message)
-        out_array = None
-    else:
-        threshold = np.zeros(nthreshold)
-        geosclassic.mpds_get_array_from_real_vector(threshold_c, 0, threshold)
+        err_msg = f'{fname}: {err_message}'
+        raise GeosclassicinterfaceError(err_msg)
 
-        euler_number = np.zeros(nthreshold, dtype='intc') # 'intc' for C-compatibility
-        geosclassic.mpds_get_array_from_int_vector(euler_number_c, 0, euler_number)
+    threshold = np.zeros(nthreshold)
+    geosclassic.mpds_get_array_from_real_vector(threshold_c, 0, threshold)
 
-        euler_numberC = np.zeros(nthreshold, dtype='intc') # 'intc' for C-compatibility
-        geosclassic.mpds_get_array_from_int_vector(euler_numberC_c, 0, euler_numberC)
+    euler_number = np.zeros(nthreshold, dtype='intc') # 'intc' for C-compatibility
+    geosclassic.mpds_get_array_from_int_vector(euler_number_c, 0, euler_number)
 
-        out_array = np.array((threshold, euler_number, euler_numberC)).reshape(3, -1).T
+    euler_numberC = np.zeros(nthreshold, dtype='intc') # 'intc' for C-compatibility
+    geosclassic.mpds_get_array_from_int_vector(euler_numberC_c, 0, euler_numberC)
+
+    out_array = np.array((threshold, euler_number, euler_numberC)).reshape(3, -1).T
 
     # Free memory on C side: input_image_c
     geosclassic.MPDSFreeImage(input_image_c)
-    #geosclassic.MPDSFree(input_image_c)
     geosclassic.free_MPDS_IMAGE(input_image_c)
 
     # Free memory on C side: threshold_c, gamma_c, gammaC_c
     geosclassic.delete_real_array(threshold_c)
     geosclassic.delete_int_array(euler_number_c)
     geosclassic.delete_int_array(euler_numberC_c)
-    # geosclassic.MPDSFree(threshold_c)
-    # geosclassic.MPDSFree(euler_number_c)
-    # geosclassic.MPDSFree(euler_numberC_c)
 
     return out_array
 # ----------------------------------------------------------------------------

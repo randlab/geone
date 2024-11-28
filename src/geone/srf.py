@@ -25,8 +25,16 @@ import numpy as np
 import scipy.stats as stats
 from scipy.interpolate import interp1d
 from geone import covModel as gcm
-from geone import markovChain as mc 
+from geone import markovChain as mc
 from geone import multiGaussian
+
+# ============================================================================
+class SrfError(Exception):
+    """
+    Custom exception related to `srf` module.
+    """
+    pass
+# ============================================================================
 
 # ============================================================================
 # Tools for simulating categorical SRF with
@@ -35,27 +43,28 @@ from geone import multiGaussian
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-def srf_mg_mc(cov_model_T, kernel_Y,
-              dimension, spacing=None, origin=None,
-              spacing_Y=0.001,
-              categVal=None,
-              x=None, v=None,
-              t=None, yt=None,
-              algo_T='fft', params_T=None,
-              mh_iter=100, ntry_max=1,
-              nreal=1,
-              full_output=True,
-              verbose=4):
+def srf_mg_mc(
+        cov_model_T, kernel_Y,
+        dimension, spacing=None, origin=None,
+        spacing_Y=0.001,
+        categVal=None,
+        x=None, v=None,
+        t=None, yt=None,
+        algo_T='fft', params_T=None,
+        mh_iter=100, ntry_max=1,
+        nreal=1,
+        full_output=True,
+        verbose=1):
     """
     Substitution Random Function (SRF) - multi-Gaussian + Markov chain (on finite set).
 
-    This function allows to generate categorical random fields in 1D, 2D, 3D, based on 
+    This function allows to generate categorical random fields in 1D, 2D, 3D, based on
     a SRF Z defined as
-    
+
     - Z(x) = Y(T(x))
-    
+
     where
-    
+
     - T is the directing function, a multi-Gaussian random field (latent field)
     - Y is the coding process, a Markov chain on finite sets (of categories) (1D)
 
@@ -73,9 +82,9 @@ def srf_mg_mc(cov_model_T, kernel_Y,
 
     kernel_Y : 2d-array of shape (n, n)
         transition kernel for Y of a Markov chain on a set of states
-        :math:`S=\\{0, \ldots, n-1\\}`, where `n` is the number of categories 
-        (states); the element at row `i` and column `j` is the probability to have 
-        the state of index `j` at the next step given the state `i` at the current 
+        :math:`S=\\{0, \ldots, n-1\\}`, where `n` is the number of categories
+        (states); the element at row `i` and column `j` is the probability to have
+        the state of index `j` at the next step given the state `i` at the current
         step, i.e.
 
         - :math:`kernel[i][j] = P(Y_{k+1}=j\\ \\vert\\ Y_{k}=i)`
@@ -88,7 +97,7 @@ def srf_mg_mc(cov_model_T, kernel_Y,
 
     dimension : [sequence of] int(s)
         number of cells along each axis, for simulation in:
-        
+
         - 1D: `dimension=nx`
         - 2D: `dimension=(nx, ny)`
         - 3D: `dimension=(nx, ny, nz)`
@@ -99,24 +108,24 @@ def srf_mg_mc(cov_model_T, kernel_Y,
         - 1D: `spacing=sx`
         - 2D: `spacing=(sx, sy)`
         - 3D: `spacing=(sx, sy, sz)`
-        
+
         by default (`None`): 1.0 along each axis
 
     origin : [sequence of] float(s), optional
         origin of the grid ("corner of the first cell"), for simulation in:
-        
+
         - 1D: `origin=ox`
         - 2D: `origin=(ox, oy)`
         - 3D: `origin=(ox, oy, oz)`
-        
+
         by default (`None`): 0.0 along each axis
-    
+
     spacing_Y : float, default: 0.001
         positive value, resolution of the Y process, spacing along abscissa
-        between two steps in the Markov chain Y (btw. two adjacent cell in 
+        between two steps in the Markov chain Y (btw. two adjacent cell in
         1D-grid for Y)
 
-    categVal : 1d-array of shape (n,), optional 
+    categVal : 1d-array of shape (n,), optional
         values of categories (one value for each state `0, ..., n-1`);
         by default (`None`) : `categVal` is set to `[0, ..., n-1]`
 
@@ -135,10 +144,10 @@ def srf_mg_mc(cov_model_T, kernel_Y,
 
     t : 1d-array-like of floats, or float, optional
         values of T considered as conditioning point for Y(T) (additional constraint)
-    
+
     yt : 1d-array-like of floats, or float, optional
         value of Y at the conditioning point `t` (same length as `t`)
-    
+
     algo_T : str
         defines the algorithm used for generating multi-Gaussian field T:
 
@@ -149,50 +158,50 @@ def srf_mg_mc(cov_model_T, kernel_Y,
         called for <d>D (d = 1, 2, or 3): `geone.geoscalassicinterface.simulate<d>D`
 
     params_T : dict, optional
-        keyword arguments (additional parameters) to be passed to the function 
-        corresponding to what is specified by the argument `algo_T` (see the 
-        corresponding function for its keyword arguments), in particular the key 
+        keyword arguments (additional parameters) to be passed to the function
+        corresponding to what is specified by the argument `algo_T` (see the
+        corresponding function for its keyword arguments), in particular the key
         'mean' can be specified (set to value 0 if not specified)
-    
+
     mh_iter : int, default: 100
         number of iteration for Metropolis-Hasting algorithm, for conditional
         simulation only; note: used only if `x` or `t` is not `None`
-    
+
     ntry_max : int, default: 1
         number of tries per realization before giving up if something goes wrong
-    
+
     nreal : int, default: 1
         number of realization(s)
-    
+
     full_output : bool, default: True
         - if `True`: simulation(s) of Z, T, and Y are retrieved in output
         - if `False`: simulation(s) of Z only is retrieved in output
-    
-    verbose : int, default: 4
+
+    verbose : int, default: 1
         verbose mode, integer >=0, higher implies more display
 
     Returns
     -------
     Z : nd-array
         all realizations, `Z[k]` is the `k`-th realization:
-        
+
         - for 1D: `Z` of shape (nreal, nx), where nx = dimension
         - for 2D: `Z` of shape (nreal, ny, nx), where nx, ny = dimension
         - for 3D: `Z` of shape (nreal, nz, ny, nx), where nx, ny, nz = dimension
-            
+
     T : nd-array
         latent fields of all realizations, `T[k]` for the `k`-th realization:
-            
+
         - for 1D: `T` of shape (nreal, nx), where nx = dimension
         - for 2D: `T` of shape (nreal, ny, nx), where nx, ny = dimension
         - for 3D: `T` of shape (nreal, nz, ny, nx), where nx, ny, nz = dimension
 
         returned if `full_output=True`
-    
+
     Y : list of length nreal
-        markov chains of all realizations, `Y[k]` is a list of length 4 for 
+        markov chains of all realizations, `Y[k]` is a list of length 4 for
         the `k`-th realization:
-        
+
         - Y[k][0]: int, Y_nt (number of cell along t-axis)
         - Y[k][1]: float, Y_st (cell size along t-axis)
         - Y[k][2]: float, Y_ot (origin)
@@ -202,15 +211,9 @@ def srf_mg_mc(cov_model_T, kernel_Y,
     """
     fname = 'srf_mg_mc'
 
-    if full_output:
-        out = None, None, None
-    else:
-        out = None
-
     if algo_T not in ('fft', 'FFT', 'classic', 'CLASSIC'):
-        if verbose > 0:
-            print(f'ERROR ({fname}): `algo_T` invalid, should be "fft" (default) or "classic"')
-        return out
+        err_msg = f"{fname}: `algo_T` invalid, should be 'fft' (default) or 'classic'"
+        raise SrfError(err_msg)
 
     # Set space dimension (of grid) according to covariance model for T
     if isinstance(cov_model_T, gcm.CovModel1D):
@@ -220,15 +223,13 @@ def srf_mg_mc(cov_model_T, kernel_Y,
     elif isinstance(cov_model_T, gcm.CovModel3D):
         d = 3
     else:
-        if verbose > 0:
-            print(f'ERROR ({fname}): `cov_model_T` invalid, should be a class: <geone.covModel.CovModel1D>, <geone.covModel.CovModel2D>, or <geone.covModel.CovModel3D>')
-        return out
+        err_msg = f'{fname}: `cov_model_T` invalid, should be a class `geone.covModel.CovModel1D`, `geone.covModel.CovModel2D` or `geone.covModel.CovModel3D`'
+        raise SrfError(err_msg)
 
     # Check argument 'dimension'
     if hasattr(dimension, '__len__') and len(dimension) != d:
-        if verbose > 0:
-            print(f'ERROR ({fname}): `dimension` of incompatible length')
-        return out
+        err_msg = f'{fname}: `dimension` of incompatible length'
+        raise SrfError(err_msg)
 
     if d == 1:
         grid_size = dimension
@@ -243,9 +244,8 @@ def srf_mg_mc(cov_model_T, kernel_Y,
             spacing = tuple(np.ones(d))
     else:
         if hasattr(spacing, '__len__') and len(spacing) != d:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `spacing` of incompatible length')
-            return out
+            err_msg = f'{fname}: `spacing` of incompatible length'
+            raise SrfError(err_msg)
 
     # Check (or set) argument 'origin'
     if origin is None:
@@ -255,9 +255,8 @@ def srf_mg_mc(cov_model_T, kernel_Y,
             origin = tuple(np.zeros(d))
     else:
         if hasattr(origin, '__len__') and len(origin) != d:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `origin` of incompatible length')
-            return out
+            err_msg = f'{fname}: `origin` of incompatible length'
+            raise SrfError(err_msg)
 
     # if not cov_model_T.is_stationary(): # prevent calculation if covariance model is not stationary
     #     if verbose > 0:
@@ -265,13 +264,12 @@ def srf_mg_mc(cov_model_T, kernel_Y,
 
     # Check kernel for Y
     if not isinstance(kernel_Y, np.ndarray) or kernel_Y.ndim != 2 or kernel_Y.shape[0] != kernel_Y.shape[1]:
-        if verbose > 0:
-            print(f'ERROR ({fname}): `kernel_Y` is not a square matrix (2d array)')
-        return out
+        err_msg = f'{fname}: `kernel_Y` is not a square matrix (2d array)'
+        raise SrfError(err_msg)
+
     if np.any(kernel_Y < 0) or not np.all(np.isclose(kernel_Y.sum(axis=1), 1.0)):
-        if verbose > 0:
-            print(f'ERROR ({fname}): `kernel_Y` is not a transition probability matrix')
-        return out
+        err_msg = f'{fname}: `kernel_Y` is not a transition probability matrix'
+        raise SrfError(err_msg)
 
     # Number of categories (order of the kernel)
     n = kernel_Y.shape[0]
@@ -282,41 +280,39 @@ def srf_mg_mc(cov_model_T, kernel_Y,
     else:
         categVal = np.asarray(categVal)
         if categVal.ndim != 1 or categVal.shape[0] != n:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `categVal` not valid')
-            return out
+            err_msg = f'{fname}: `categVal` invalid'
+            raise SrfError(err_msg)
+
         if len(np.unique(categVal)) != len(categVal):
-            if verbose > 0:
-                print(f'ERROR ({fname}): `categVal` contains duplicated values')
-            return out
+            err_msg = f'{fname}: `categVal` contains duplicated values'
+            raise SrfError(err_msg)
 
     # Check additional constraint t (conditioning point for T), yt (corresponding value for Y)
     if t is None:
         if yt is not None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `t` is not given (`None`) but `yt` is given (not `None`)')
-            return out
+            err_msg = f'{fname}: `t` is not given (`None`) but `yt` is given (not `None`)'
+            raise SrfError(err_msg)
+
     else:
         if yt is None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `t` is given (not `None`) but `yt` is not given (`None`)')
-            return out
+            err_msg = f'{fname}: `t` is given (not `None`) but `yt` is not given (`None`)'
+            raise SrfError(err_msg)
+
         t = np.asarray(t, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         yt = np.asarray(yt, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(yt) != len(t):
-            if verbose > 0:
-                print(f'ERROR ({fname}): length of `yt` is not valid')
-            return out
+            err_msg = f'{fname}: length of `yt` is not valid'
+            raise SrfError(err_msg)
+
         # Check values
         if not np.all([yv in categVal for yv in yt]):
-            if verbose > 0:
-                print(f'ERROR ({fname}): `yt` contains an invalid value')
-            return out
+            err_msg = f'{fname}: `yt` contains an invalid value'
+            raise SrfError(err_msg)
 
     # Initialize dictionary params_T
     if params_T is None:
         params_T = {}
-    
+
     # Compute meshgrid over simulation domain if needed (see below)
     if ('mean' in params_T.keys() and callable(params_T['mean'])) or ('var' in params_T.keys() and callable(params_T['var'])):
         if d == 1:
@@ -348,9 +344,8 @@ def srf_mg_mc(cov_model_T, kernel_Y,
         else:
             mean_T = np.asarray(mean_T).reshape(-1)
             if mean_T.size not in (1, grid_size):
-                if verbose > 0:
-                    print(f'ERROR ({fname}): \'mean\' parameter for T (in `params_T`) has incompatible size')
-                return out
+                err_msg = f"{fname}: 'mean' parameter for T (in `params_T`) has incompatible size"
+                raise SrfError(err_msg)
 
     # Set var_T (as array) from params_T, if given
     var_T = None
@@ -367,47 +362,50 @@ def srf_mg_mc(cov_model_T, kernel_Y,
             else:
                 var_T = np.asarray(var_T).reshape(-1)
                 if var_T.size not in (1, grid_size):
-                    if verbose > 0:
-                        print(f'ERROR ({fname}): \'var\' parameter for T (in `params_T`) has incompatible size')
-                    return out
+                    err_msg = f"{fname}: 'var' parameter for T (in `params_T`) has incompatible size"
+                    raise SrfError(err_msg)
 
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        return out
+        if full_output:
+            if verbose > 0:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None`, `None` is returned')
+            return None, None, None
+        else:
+            if verbose > 0:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
+            return None
 
     # Note: format of data (x, v) not checked !
 
     if x is None:
         # Preparation for unconditional case
         if v is not None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `x` is not given (`None`) but `v` is given (not `None`)')
-            return out
+            err_msg = f'{fname}: `x` is not given (`None`) but `v` is given (not `None`)'
+            raise SrfError(err_msg)
+
     else:
         # Preparation for conditional case
         if v is None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `x` is given (not `None`) but `v` is not given (`None`)')
-            return out
-        #
+            err_msg = f'{fname}: `x` is given (not `None`) but `v` is not given (`None`)'
+            raise SrfError(err_msg)
+
         x = np.asarray(x, dtype='float').reshape(-1, d) # cast in d-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f'ERROR ({fname}): length of `v` is not valid')
-            return out
-        #
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise SrfError(err_msg)
+
         # Check values
         if not np.all([yv in categVal for yv in v]):
-            if verbose > 0:
-                print(f'ERROR ({fname}): `v` contains an invalid value')
-            return out
-        #
+            err_msg = f'{fname}: `v` contains an invalid value'
+            raise SrfError(err_msg)
+
         # Number of conditioning points
         npt = x.shape[0]
-        #
+
         # Get index in mean_T for each conditioning points
         x_mean_T_grid_ind = None
         if mean_T.size == 1:
@@ -440,13 +438,13 @@ def srf_mg_mc(cov_model_T, kernel_Y,
                         x_var_T_grid_ind = indc[:, 0] + dimension[0] * indc[:, 1]
                     elif d == 3:
                         x_var_T_grid_ind = indc[:, 0] + dimension[0] * (indc[:, 1] + dimension[1] * indc[:, 2])
-        #
+
         # Get covariance function for T
         cov_func_T = cov_model_T.func() # covariance function
-        #
+
         # Get evaluation of covariance function for T at 0
         cov0_T = cov_func_T(np.zeros(d))
-        #
+
         # Set kriging matrix for T (mat_T) of order npt, "over every conditioining point"
         mat_T = np.ones((npt, npt))
         for i in range(npt-1):
@@ -456,13 +454,13 @@ def srf_mg_mc(cov_model_T, kernel_Y,
             mat_T[i, (i+1):npt] = cov_h_T
             mat_T[(i+1):npt, i] = cov_h_T
             mat_T[i, i] = cov0_T
-        #
+
         mat_T[-1,-1] = cov0_T
-        #
+
         if var_T is not None:
             varUpdate = np.sqrt(var_T[x_var_T_grid_ind]/cov0_T)
             mat_T = varUpdate*(mat_T.T*varUpdate).T
-        #
+
         # Initialize
         #   - npt_ext: number of total conditioning point for Y, "point T(x) + additional constraint t"
         #   - v_T: values of T(x) (that are defined later) followed by values yt at additional constraint t"
@@ -475,10 +473,10 @@ def srf_mg_mc(cov_model_T, kernel_Y,
             npt_ext = npt + len(t)
             v_T = np.hstack((np.zeros(npt), t))
             v_ext = np.hstack((v, yt))
-        #
+
         # Set index in categVal of values v_ext
         v_ext_cat = np.array([np.where(categVal==yv)[0][0] for yv in v_ext], dtype='int')
-        #
+
         if npt_ext <= 1:
             mh_iter = 0 # unnecessary to apply Metropolis update !
 
@@ -487,13 +485,17 @@ def srf_mg_mc(cov_model_T, kernel_Y,
     #     - kernel_Y_rev (reverse transition kernel)
     #     - kernel_Y_pow (kernel raised to power 0, 1, 2, ...)
     #     - kernel_Y_rev_pow (reverse kernel raised to power 0, 1, 2, ...)
-    pinv_Y = mc.compute_mc_pinv(kernel_Y)
+    try:
+        pinv_Y = mc.compute_mc_pinv(kernel_Y)
+    except Exception as exc:
+        err_msg = f'{fname}: computing invariant distribution for Y failed'
+        raise SrfError(err_msg) from exc
 
-    kernel_Y_rev = mc.compute_mc_kernel_rev(kernel_Y, pinv=pinv_Y, verbose=0)
-    if kernel_Y_rev is None:
-        if verbose > 0:
-            print(f'ERROR ({fname}): kernel not reversible')
-        return out
+    try:
+        kernel_Y_rev = mc.compute_mc_kernel_rev(kernel_Y, pinv=pinv_Y)
+    except Exception as exc:
+        err_msg = f'{fname}: kernel for Y not reversible'
+        raise SrfError(err_msg) from exc
 
     m_pow = 1
     kernel_Y_pow = np.zeros((m_pow, n, n))
@@ -528,9 +530,8 @@ def srf_mg_mc(cov_model_T, kernel_Y,
         # check if Prob(Y[t[inds[i+1]]]=yt[inds[i+1]], Y[t[inds[i]]]=yt[inds[i]]) = kernel^(inds[i+1]-inds[i])[yval_cat[inds[i]], yval_cat[inds[i+1]]] > 0, for all i
         if np.any(np.isclose([kernel_Y_pow[yind[inds[i+1]]-yind[inds[i]], int(yval_cat[inds[i]]), int(yval_cat[inds[i+1]])] for i in range(len(t)-1)], 0)):
         # if np.any([kernel_Y_pow[yind[inds[i+1]]-yind[inds[i]], int(yval_cat[inds[i]]), int(yval_cat[inds[i+1]])] < 1.e-20 for i in range(len(t)-1)]):
-            if verbose > 0:
-                print(f'ERROR ({fname}): invalid additional constraint on Markov chain Y wrt. kernel')
-            return out
+            err_msg = f'{fname}: invalid additional constraint on Markov chain Y wrt. kernel'
+            raise SrfError(err_msg)
 
     # Set (again if given) default parameter 'mean' and 'var' for T
     params_T['mean'] = mean_T
@@ -539,6 +540,7 @@ def srf_mg_mc(cov_model_T, kernel_Y,
     # Set default parameter 'verbose' for params_T
     if 'verbose' not in params_T.keys():
         params_T['verbose'] = 0
+        # params_T['verbose'] = verbose
 
     # Initialization for output
     Z = []
@@ -548,28 +550,34 @@ def srf_mg_mc(cov_model_T, kernel_Y,
 
     for ireal in range(nreal):
         # Generate ireal-th realization
-        if verbose > 2:
-            print('SRF_MG_MC: simulation {} of {}...'.format(ireal+1, nreal))
+        if verbose > 1:
+            print(f'{fname}: simulation {ireal+1} of {nreal}...')
         for ntry in range(ntry_max):
             sim_ok = True
-            if verbose > 3 and ntry > 0:
-                print('   ... new trial ({} of {}) for simulation {} of {}...'.format(ntry+1, ntry_max, ireal+1, nreal))
+            if verbose > 2 and ntry > 0:
+                print(f'   ... new trial ({ntry+1} of {ntry_max}) for simulation {ireal+1} of {nreal}...')
             if x is None:
                 # Unconditional case
                 # ------------------
                 # Generate T (one real)
-                sim_T = multiGaussian.multiGaussianRun(cov_model_T, dimension, spacing, origin,
-                                                       mode='simulation', algo=algo_T, output_mode='array',
-                                                       **params_T, nreal=1)
+                try:
+                    sim_T = multiGaussian.multiGaussianRun(
+                            cov_model_T, dimension, spacing, origin,
+                            mode='simulation', algo=algo_T, output_mode='array',
+                            **params_T, nreal=1)
+                except:
+                    sim_ok = False
+                    if verbose > 2:
+                        print('   ... simulation of T failed')
+                    continue
+                # except Exception as exc:
+                #     err_msg = f'{fname}: simulation of T failed'
+                #     raise SrfError(err_msg) from exc
+
                 # -> nd-array of shape
                 #      (1, dimension) (for T in 1D)
                 #      (1, dimension[1], dimension[0]) (for T in 2D)
                 #      (1, dimension[2], dimension[1], dimension[0]) (for T in 3D)
-                if sim_T is None:
-                    sim_ok = False
-                    if verbose > 3:
-                        print('   ... simulation of T failed')
-                    continue
 
                 # Set origin and dimension for Y
                 min_T = np.min(sim_T)
@@ -595,14 +603,23 @@ def srf_mg_mc(cov_model_T, kernel_Y,
                     yind, yval = None, None
 
                 # Generate Y conditional to possible additional constraint (t, yt) (one real)
-                mc_Y = mc.simulate_mc(kernel_Y, dimension_Y, categVal=categVal, data_ind=yind, data_val=yval, pinv=pinv_Y, kernel_rev=kernel_Y_rev, kernel_pow=kernel_Y_pow, nreal=1, verbose=0)
-                # -> 2d-array of shape (1, dimension_Y)
-                if mc_Y is None:
+                try:
+                    mc_Y = mc.simulate_mc(
+                            kernel_Y, dimension_Y,
+                            categVal=categVal, data_ind=yind, data_val=yval,
+                            pinv=pinv_Y, kernel_rev=kernel_Y_rev, kernel_pow=kernel_Y_pow,
+                            nreal=1)
+                except:
                     sim_ok = False
-                    if verbose > 3:
-                        print('   ...  Markov chain Y failed')
+                    if verbose > 2:
+                        print('   ...  simulation of Markov chain Y failed')
                     continue
-            #
+                # except Exception as exc:
+                #     err_msg = f'{fname}: simulation of Markov chain Y failed'
+                #     raise SrfError(err_msg) from exc
+
+                # -> 2d-array of shape (1, dimension_Y)
+
             else:
                 # Conditional case
                 # ----------------
@@ -629,14 +646,14 @@ def srf_mg_mc(cov_model_T, kernel_Y,
 
                 if not sim_ok:
                     sim_ok = False
-                    if verbose > 3:
-                        print('    ... unable to solve kriging system (for T, initialization)')
+                    if verbose > 2:
+                        print('    ... cannot solve kriging system (for T, initialization)')
                     continue
 
                 # Update simulated values v_T at x using Metropolis-Hasting (MH) algorithm
                 for nit in range(mh_iter):
-                    if verbose > 4:
-                        print('   ... sim {} of {}: MH iter {} of {}...'.format(ireal+1, nreal, nit+1, mh_iter))
+                    if verbose > 3:
+                        print(f'   ... sim {ireal+1} of {nreal}: MH iter {nit+1} of {mh_iter}...')
                     ind = np.random.permutation(npt)
                     for k in ind:
                         # Sequence of indexes without k
@@ -651,8 +668,8 @@ def srf_mg_mc(cov_model_T, kernel_Y,
                                 )
                         except:
                             sim_ok = False
-                            if verbose > 3:
-                                print('   ... unable to solve kriging system (for T)')
+                            if verbose > 2:
+                                print('   ... cannot solve kriging system (for T)')
                             break
                         #
                         # Mean (kriged) value at x[k]
@@ -782,18 +799,24 @@ def srf_mg_mc(cov_model_T, kernel_Y,
                     continue
 
                 # Generate T conditional to (x, v_T[0:npt]) (one real)
-                sim_T = multiGaussian.multiGaussianRun(cov_model_T, dimension, spacing, origin, x=x, v=v_T[:npt],
-                                                       mode='simulation', algo=algo_T, output_mode='array',
-                                                       **params_T, nreal=1)
+                try:
+                    sim_T = multiGaussian.multiGaussianRun(
+                            cov_model_T, dimension, spacing, origin, x=x, v=v_T[:npt],
+                            mode='simulation', algo=algo_T, output_mode='array',
+                            **params_T, nreal=1)
+                except:
+                    sim_ok = False
+                    if verbose > 2:
+                        print('   ... conditional simulation of T failed')
+                    continue
+                # except Exception as exc:
+                #     err_msg = f'{fname}: conditional simulation of T failed'
+                #     raise SrfError(err_msg) from exc
+
                 # -> nd-array of shape
                 #      (1, dimension) (for T in 1D)
                 #      (1, dimension[1], dimension[0]) (for T in 2D)
                 #      (1, dimension[2], dimension[1], dimension[0]) (for T in 3D)
-                if sim_T is None:
-                    sim_ok = False
-                    if verbose > 3:
-                        print('   ... conditional simulation of T failed')
-                    continue
 
                 # Set origin and dimension for Y
                 min_T = np.min(sim_T)
@@ -814,13 +837,22 @@ def srf_mg_mc(cov_model_T, kernel_Y,
                 yind = yind - 1 * np.all((yind == yind_f, yind > 0), axis=0)
 
                 # Generate Y conditional to (v_T, v_ext) (one real)
-                mc_Y = mc.simulate_mc(kernel_Y, dimension_Y, categVal=categVal, data_ind=yind, data_val=v_ext, pinv=pinv_Y, kernel_rev=kernel_Y_rev, kernel_pow=kernel_Y_pow, nreal=1, verbose=0)
-                # -> 2d-array of shape (1, dimension_Y)
-                if mc_Y is None:
+                try:
+                    mc_Y = mc.simulate_mc(
+                            kernel_Y, dimension_Y,
+                            categVal=categVal, data_ind=yind, data_val=v_ext,
+                            pinv=pinv_Y, kernel_rev=kernel_Y_rev, kernel_pow=kernel_Y_pow,
+                            nreal=1)
+                except:
                     sim_ok = False
-                    if verbose > 3:
-                        print('   ... conditional Markov chain Y failed')
+                    if verbose > 2:
+                        print('   ... conditional simulation of Markov chain Y failed')
                     continue
+                # except Exception as exc:
+                #     err_msg = f'{fname}: conditional simulation of Markov chain Y failed'
+                #     raise SrfError(err_msg) from exc
+
+                # -> 2d-array of shape (1, dimension_Y)
 
             # Generate Z (one real)
             # Compute
@@ -839,8 +871,8 @@ def srf_mg_mc(cov_model_T, kernel_Y,
                 break
 
     # Get Z
-    if verbose > 1 and len(Z) < nreal:
-        print('WARNING ({fname}): some realization failed (missing)')
+    if verbose > 0 and len(Z) < nreal:
+        print(f'{fname}: WARNING: some realization failed (missing)')
     Z = np.asarray(Z).reshape(len(Z), *np.atleast_1d(dimension)[::-1])
 
     if full_output:
@@ -857,31 +889,32 @@ def srf_mg_mc(cov_model_T, kernel_Y,
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-def srf_mg_mg(cov_model_T, cov_model_Y,
-              dimension, spacing=None, origin=None,
-              spacing_Y=0.001,
-              x=None, v=None,
-              t=None, yt=None,
-              vmin=None, vmax=None,
-              algo_T='fft', params_T=None,
-              algo_Y='fft', params_Y=None,
-              target_distrib=None,
-              initial_distrib=None,
-              mh_iter=100,
-              ntry_max=1,
-              nreal=1,
-              full_output=True,
-              verbose=4):
+def srf_mg_mg(
+        cov_model_T, cov_model_Y,
+        dimension, spacing=None, origin=None,
+        spacing_Y=0.001,
+        x=None, v=None,
+        t=None, yt=None,
+        vmin=None, vmax=None,
+        algo_T='fft', params_T=None,
+        algo_Y='fft', params_Y=None,
+        target_distrib=None,
+        initial_distrib=None,
+        mh_iter=100,
+        ntry_max=1,
+        nreal=1,
+        full_output=True,
+        verbose=1):
     """
     Substitution Random Function (SRF) - multi-Gaussian + multi-Gaussian.
 
-    This function allows to generate continuous random fields in 1D, 2D, 3D, based on 
+    This function allows to generate continuous random fields in 1D, 2D, 3D, based on
     a SRF Z defined as
-    
+
     - Z(x) = Y(T(x))
-    
+
     where
-    
+
     - T is the directing function, a multi-Gaussian random field (latent field)
     - Y is the coding process, a multi-Gaussian random process (1D)
 
@@ -901,7 +934,7 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
 
     dimension : [sequence of] int(s)
         number of cells along each axis, for simulation in:
-        
+
         - 1D: `dimension=nx`
         - 2D: `dimension=(nx, ny)`
         - 3D: `dimension=(nx, ny, nz)`
@@ -912,21 +945,21 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
         - 1D: `spacing=sx`
         - 2D: `spacing=(sx, sy)`
         - 3D: `spacing=(sx, sy, sz)`
-        
+
         by default (`None`): 1.0 along each axis
 
     origin : [sequence of] float(s), optional
         origin of the grid ("corner of the first cell"), for simulation in:
-        
+
         - 1D: `origin=ox`
         - 2D: `origin=(ox, oy)`
         - 3D: `origin=(ox, oy, oz)`
-        
+
         by default (`None`): 0.0 along each axis
-    
+
     spacing_Y : float, default: 0.001
         positive value, resolution of the Y process, spacing along abscissa
-        between two cells in the field Y (btw. two adjacent cell in 1D-grid 
+        between two cells in the field Y (btw. two adjacent cell in 1D-grid
         for Y)
 
     x : array-like of floats, optional
@@ -944,7 +977,7 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
 
     t : 1d-array-like of floats, or float, optional
         values of T considered as conditioning point for Y(T) (additional constraint)
-    
+
     yt : 1d-array-like of floats, or float, optional
         value of Y at the conditioning point `t` (same length as `t`)
 
@@ -964,9 +997,9 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
         called for <d>D (d = 1, 2, or 3): `geone.geoscalassicinterface.simulate<d>D`
 
     params_T : dict, optional
-        keyword arguments (additional parameters) to be passed to the function 
-        corresponding to what is specified by the argument `algo_T` (see the 
-        corresponding function for its keyword arguments), in particular the key 
+        keyword arguments (additional parameters) to be passed to the function
+        corresponding to what is specified by the argument `algo_T` (see the
+        corresponding function for its keyword arguments), in particular the key
         'mean' can be specified (set to value 0 if not specified)
 
     algo_Y : str
@@ -979,30 +1012,30 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
         called: :func:`geoscalassicinterface.simulate1D`
 
     params_Y : dict, optional
-        keyword arguments (additional parameters) to be passed to the function 
-        corresponding to what is specified by the argument `algo_Y` (see the 
-        corresponding function for its keyword arguments), in particular the key 
-        'mean' can be specified (if not specified, set to the mean value of `v` 
+        keyword arguments (additional parameters) to be passed to the function
+        corresponding to what is specified by the argument `algo_Y` (see the
+        corresponding function for its keyword arguments), in particular the key
+        'mean' can be specified (if not specified, set to the mean value of `v`
         if `v` is not `None`, set to 0 otherwise)
 
     target_distrib : class
-        target distribution for the value of a single realization of Z, with 
+        target distribution for the value of a single realization of Z, with
         attributes:
-        
+
         - target_distrib.cdf : (`func`) cdf
         - target_distrib.ppf : (`func`) inverse cdf
 
         See `initial_distrib` below.
-        
+
     initial_distrib : class
         initial distribution for the value of a single realization of Z, with
         attributes:
-        
+
         - initial_distrib.cdf : (`func`) cdf
         - initial_distrib.ppf : (`func`) inverse cdf
 
         The procedure is the following:
-        
+
         1. conditioning data value `v` (if present) are transormed:
             * `v_tilde = initial_distrib.ppf(target_distrib.cdf(v))`
         2. SRF realization of `z_tilde` (conditionally to `v_tilde` if present) \
@@ -1011,7 +1044,7 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
             * `z = target_distrib.ppf(initial_distrib.cdf(z_tilde))`
 
         By default:
-        
+
         - `target_distrib = None`
         - `initial_distrib = None`
 
@@ -1039,42 +1072,42 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
     mh_iter : int, default: 100
         number of iteration for Metropolis-Hasting algorithm, for conditional
         simulation only; note: used only if `x` or `t` is not `None`
-    
+
     ntry_max : int, default: 1
         number of tries per realization before giving up if something goes wrong
-    
+
     nreal : int, default: 1
         number of realization(s)
-    
+
     full_output : bool, default: True
         - if `True`: simulation(s) of Z, T, and Y are retrieved in output
         - if `False`: simulation(s) of Z only is retrieved in output
-    
-    verbose : int, default: 4
+
+    verbose : int, default: 1
         verbose mode, integer >=0, higher implies more display
 
     Returns
     -------
     Z : nd-array
         all realizations, `Z[k]` is the `k`-th realization:
-        
+
         - for 1D: `Z` of shape (nreal, nx), where nx = dimension
         - for 2D: `Z` of shape (nreal, ny, nx), where nx, ny = dimension
         - for 3D: `Z` of shape (nreal, nz, ny, nx), where nx, ny, nz = dimension
-            
+
     T : nd-array
         latent fields of all realizations, `T[k]` for the `k`-th realization:
-            
+
         - for 1D: `T` of shape (nreal, nx), where nx = dimension
         - for 2D: `T` of shape (nreal, ny, nx), where nx, ny = dimension
         - for 3D: `T` of shape (nreal, nz, ny, nx), where nx, ny, nz = dimension
 
         returned if `full_output=True`
-    
+
     Y : list of length nreal
-        1D random fields of all realizations, `Y[k]` is a list of length 4 for 
+        1D random fields of all realizations, `Y[k]` is a list of length 4 for
         the `k`-th realization:
-        
+
         - Y[k][0]: int, Y_nt (number of cell along t-axis)
         - Y[k][1]: float, Y_st (cell size along t-axis)
         - Y[k][2]: float, Y_ot (origin)
@@ -1084,20 +1117,13 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
     """
     fname = 'srf_mg_mg'
 
-    if full_output:
-        out = None, None, None
-    else:
-        out = None
-
     if algo_T not in ('fft', 'FFT', 'classic', 'CLASSIC'):
-        if verbose > 0:
-            print(f'ERROR ({fname}): `algo_T` invalid, should be "fft" (default) or "classic"')
-        return out
+        err_msg = f"{fname}: `algo_T` invalid, should be 'fft' (default) or 'classic'"
+        raise SrfError(err_msg)
 
     if algo_Y not in ('fft', 'FFT', 'classic', 'CLASSIC'):
-        if verbose > 0:
-            print(f'ERROR ({fname}): `algo_Y` invalid, should be "fft" (default) or "classic"')
-        return out
+        err_msg = f"{fname}: `algo_Y` invalid, should be 'fft' (default) or 'classic'"
+        raise SrfError(err_msg)
 
     # Set space dimension (of grid) according to covariance model for T
     if isinstance(cov_model_T, gcm.CovModel1D):
@@ -1107,15 +1133,13 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
     elif isinstance(cov_model_T, gcm.CovModel3D):
         d = 3
     else:
-        if verbose > 0:
-            print(f'ERROR ({fname}): `cov_model_T` invalid, should be a class: <geone.covModel.CovModel1D>, <geone.covModel.CovModel2D>, or <geone.covModel.CovModel3D>')
-        return out
+        err_msg = f'{fname}: `cov_model_T` invalid, should be a class `geone.covModel.CovModel1D`, `geone.covModel.CovModel2D` or `geone.covModel.CovModel3D`'
+        raise SrfError(err_msg)
 
     # Check argument 'dimension'
     if hasattr(dimension, '__len__') and len(dimension) != d:
-        if verbose > 0:
-            print(f'ERROR ({fname}): `dimension` of incompatible length')
-        return out
+        err_msg = f'{fname}: `dimension` of incompatible length'
+        raise SrfError(err_msg)
 
     if d == 1:
         grid_size = dimension
@@ -1130,9 +1154,8 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
             spacing = tuple(np.ones(d))
     else:
         if hasattr(spacing, '__len__') and len(spacing) != d:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `spacing` of incompatible length')
-            return out
+            err_msg = f'{fname}: `spacing` of incompatible length'
+            raise SrfError(err_msg)
 
     # Check (or set) argument 'origin'
     if origin is None:
@@ -1142,9 +1165,8 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
             origin = tuple(np.zeros(d))
     else:
         if hasattr(origin, '__len__') and len(origin) != d:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `origin` of incompatible length')
-            return out
+            err_msg = f'{fname}: `origin` of incompatible length'
+            raise SrfError(err_msg)
 
     # if not cov_model_T.is_stationary(): # prevent calculation if covariance model is not stationary
     #     if verbose > 0:
@@ -1152,31 +1174,29 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
 
     # Check covariance model for Y
     if not isinstance(cov_model_Y, gcm.CovModel1D):
-        if verbose > 0:
-            print(f'ERROR ({fname}): `cov_model_Y` is not valid')
-        return out
+        err_msg = f'{fname}: `cov_model_Y` invalid'
+        raise SrfError(err_msg)
+
     # elif not cov_model_Y.is_stationary(): # prevent calculation if covariance model is not stationary
-    #     if verbose > 0:
-    #         print(f'ERROR ({fname}): `cov_model_Y` is not stationary')
-    #     return out
+    #     err_msg = f'{fname}: `cov_model_Y` is not stationary'
+    #     raise SrfError(err_msg)
 
     # Check additional constraint t (conditioning point for T), yt (corresponding value for Y)
     if t is None:
         if yt is not None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `t` is not given (`None`) but `yt` is given (not `None`)')
-            return out
+            err_msg = f'{fname}: `t` is not given (`None`) but `yt` is given (not `None`)'
+            raise SrfError(err_msg)
+
     else:
         if yt is None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `t` is given (not `None`) but `yt` is not given (`None`)')
-            return out
+            err_msg = f'{fname}: `t` is given (not `None`) but `yt` is not given (`None`)'
+            raise SrfError(err_msg)
+
         t = np.asarray(t, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         yt = np.asarray(yt, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(yt) != len(t):
-            if verbose > 0:
-                print(f'ERROR ({fname}): length of `yt` is not valid')
-            return out
+            err_msg = f'{fname}: length of `yt` is not valid'
+            raise SrfError(err_msg)
 
     # Initialize dictionary params_T
     if params_T is None:
@@ -1213,9 +1233,8 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
         else:
             mean_T = np.asarray(mean_T).reshape(-1)
             if mean_T.size not in (1, grid_size):
-                if verbose > 0:
-                    print(f'ERROR ({fname}): \'mean\' parameter for T (in `params_T`) has incompatible size')
-                return out
+                err_msg = f"{fname}: 'mean' parameter for T (in `params_T`) has incompatible size"
+                raise SrfError(err_msg)
 
     # Set var_T (as array) from params_T, if given
     var_T = None
@@ -1232,9 +1251,8 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
             else:
                 var_T = np.asarray(var_T).reshape(-1)
                 if var_T.size not in (1, grid_size):
-                    if verbose > 0:
-                        print(f'ERROR ({fname}): \'var\' parameter for T (in `params_T`) has incompatible size')
-                    return out
+                    err_msg = f"{fname}: 'var' parameter for T (in `params_T`) has incompatible size"
+                    raise SrfError(err_msg)
 
     # Initialize dictionary params_Y
     if params_Y is None:
@@ -1245,61 +1263,66 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
     if 'mean' in params_Y.keys():
         mean_Y = params_Y['mean']
         if callable(mean_Y):
-            if verbose > 0:
-                print(f'ERROR ({fname}): \'mean\' parameter for Y (in `params_Y`) must be a unique value (float) if given')
-            return out
+            err_msg = f"{fname}: 'mean' parameter for Y (in `params_Y`) must be a unique value (float) if given"
+            raise SrfError(err_msg)
+
         else:
             mean_Y = np.asarray(mean_Y, dtype='float').reshape(-1)
             if mean_Y.size != 1:
-                if verbose > 0:
-                    print(f'ERROR ({fname}): \'mean\' parameter for Y (in `params_Y`) must be a unique value (float) if given')
-                return out
+                err_msg = f"{fname}: 'mean' parameter for Y (in `params_Y`) must be a unique value (float) if given"
+                raise SrfError(err_msg)
+
             mean_Y = mean_Y[0]
 
     # Check var_Y from params_Y
     if 'var' in params_Y.keys() and params_Y['var'] is not None:
-        if verbose > 0:
-            print(f'ERROR ({fname}): \'var\' parameter for Y (in `params_Y`) must be `None`')
-        return out
+        err_msg = f"{fname}: 'var' parameter for Y (in `params_Y`) must be `None`"
+        raise SrfError(err_msg)
 
     # Check input for distribution transform
     if target_distrib is None:
-        if initial_distrib is not None and verbose > 1:
-            print(f'WARNING ({fname}): target distribution not handled (`initial_distrib` ignored) because `target_distrib` is not given (`None`)')
+        if initial_distrib is not None and verbose > 0:
+            print(f'{fname}: WARNING: target distribution not handled (`initial_distrib` ignored) because `target_distrib` is not given (`None`)')
     else:
         if mean_T.size != 1:
-            if verbose > 0:
-                print(f'ERROR ({fname}): target distribution cannot be handled with non-stationary mean for T (in `params_T`)')
-            return out
+            err_msg = f'{fname}: target distribution cannot be handled with non-stationary mean for T (in `params_T`)'
+            raise SrfError(err_msg)
+
         if x is not None:
             if initial_distrib is None:
                 if 'mean' not in params_Y.keys():
-                    if verbose > 0:
-                        print(f'ERROR ({fname}): target distribution cannot be handled (unable to set `initial_distrib`: \'mean\' for Y must be specified (in `params_Y`)')
-                    return out
+                    err_msg = f"{fname}: target distribution cannot be handled (cannot set `initial_distrib`: 'mean' for Y must be specified (in `params_Y`)"
+                    raise SrfError(err_msg)
+
                 else:
                     if t is not None:
                         ind = np.where(t==mean_T[0])[0]
                     else:
                         ind = []
                     if len(ind) == 0:
-                        if verbose > 0:
-                            print(f'ERROR ({fname}): target distribution cannot be handled (unable to set `initial_distrib`: value of mean(T) should be specified in `t`)')
-                        return out
+                        err_msg = f'{fname}: target distribution cannot be handled (cannot set `initial_distrib`: value of mean(T) should be specified in `t`)'
+                        raise SrfError(err_msg)
 
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        return out
+        if full_output:
+            if verbose > 0:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None`, `None` is returned')
+            return None, None, None
+        else:
+            if verbose > 0:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
+            return None
 
     # Note: format of data (x, v) not checked !
 
     if x is None:
         if v is not None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `x` is not given (`None`) but `v` is given (not `None`)')
-            return out
+            err_msg = f'{fname}: `x` is not given (`None`) but `v` is given (not `None`)'
+            raise SrfError(err_msg)
+
         # Preparation for unconditional case
         # Set mean_Y
         if mean_Y is None:
@@ -1339,20 +1362,18 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
     else:
         # Preparation for conditional case
         if v is None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `x` is given (not `None`) but `v` is not given (`None`)')
-            return out
-        #
+            err_msg = f'{fname}: `x` is given (not `None`) but `v` is not given (`None`)'
+            raise SrfError(err_msg)
+
         x = np.asarray(x, dtype='float').reshape(-1, d) # cast in d-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f'ERROR ({fname}): length of `v` is not valid')
-            return out
-        #
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise SrfError(err_msg)
+
         # Number of conditioning points
         npt = x.shape[0]
-        #
+
         # Get index in mean_T for each conditioning points
         x_mean_T_grid_ind = None
         if mean_T.size == 1:
@@ -1367,7 +1388,7 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
                 x_mean_T_grid_ind = indc[:, 0] + dimension[0] * indc[:, 1]
             elif d == 3:
                 x_mean_T_grid_ind = indc[:, 0] + dimension[0] * (indc[:, 1] + dimension[1] * indc[:, 2])
-        #
+
         # Get index in var_T (if not None) for each conditioning points
         if var_T is not None:
             if var_T.size == 1:
@@ -1385,19 +1406,19 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
                         x_var_T_grid_ind = indc[:, 0] + dimension[0] * indc[:, 1]
                     elif d == 3:
                         x_var_T_grid_ind = indc[:, 0] + dimension[0] * (indc[:, 1] + dimension[1] * indc[:, 2])
-        #
+
         # Get covariance function for T and Y
         cov_func_T = cov_model_T.func() # covariance function
         cov_func_Y = cov_model_Y.func() # covariance function
-        #
+
         # Get evaluation of covariance function for T and Y at 0
         cov0_T = cov_func_T(np.zeros(d))
         cov0_Y = cov_func_Y(np.zeros(1))
-        #
+
         # Set mean_Y
         if mean_Y is None:
             mean_Y = np.mean(v)
-        #
+
         # Preparation for distribution transform
         if target_distrib is None:
             # no distribution transform
@@ -1421,11 +1442,11 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
                         )
                 else:
                     distrib_transf = 0
-        #
+
         if distrib_transf:
             # Transform the conditioning data value
             v = initial_distrib.ppf(target_distrib.cdf(v))
-        #
+
         # Set kriging matrix for T (mat_T) of order npt, "over every conditioining point"
         mat_T = np.ones((npt, npt))
         for i in range(npt-1):
@@ -1435,13 +1456,13 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
             mat_T[i, (i+1):npt] = cov_h_T
             mat_T[(i+1):npt, i] = cov_h_T
             mat_T[i, i] = cov0_T
-        #
+
         mat_T[-1,-1] = cov0_T
-        #
+
         if var_T is not None:
             varUpdate = np.sqrt(var_T[x_var_T_grid_ind]/cov0_T)
             mat_T = varUpdate*(mat_T.T*varUpdate).T
-        #
+
         # Initialize
         #   - npt_ext: number of total conditioning point for Y, "point T(x) + additional constraint t"
         #   - v_T: values of T(x) (that are defined later) followed by values yt at additional constraint t"
@@ -1465,11 +1486,11 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
                 mat_Y[k, (k+1):] = cov_h_Y
                 mat_Y[(k+1):, k] = cov_h_Y
                 #mat_Y[k, k] = cov0_Y
-            #
+
             #mat_Y[-1,-1] = cov0_Y
         for i in range(npt_ext):
             mat_Y[i, i] = cov0_Y
-        #
+
         if npt_ext <= 1:
             mh_iter = 0 # unnecessary to apply Metropolis update !
 
@@ -1481,8 +1502,10 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
     # Set default parameter 'verbose' for params_T and params_Y
     if 'verbose' not in params_T.keys():
         params_T['verbose'] = 0
+        # params_T['verbose'] = verbose
     if 'verbose' not in params_Y.keys():
         params_Y['verbose'] = 0
+        # params_Y['verbose'] = verbose
 
     # Initialization for output
     Z = []
@@ -1492,29 +1515,35 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
 
     for ireal in range(nreal):
         # Generate ireal-th realization
-        if verbose > 2:
-            print('SRF_MG_MG: simulation {} of {}...'.format(ireal+1, nreal))
+        if verbose > 1:
+            print(f'{fname}: simulation {ireal+1} of {nreal}...')
         for ntry in range(ntry_max):
             sim_ok = True
             Y_cond_aggregation = False
-            if verbose > 3 and ntry > 0:
-                print('   ... new trial ({} of {}) for simulation {} of {}...'.format(ntry+1, ntry_max, ireal+1, nreal))
+            if verbose > 2 and ntry > 0:
+                print(f'   ... new trial ({ntry+1} of {ntry_max}) for simulation {ireal+1} of {nreal}...')
             if x is None:
                 # Unconditional case
                 # ------------------
                 # Generate T (one real)
-                sim_T = multiGaussian.multiGaussianRun(cov_model_T, dimension, spacing, origin,
-                                                       mode='simulation', algo=algo_T, output_mode='array',
-                                                       **params_T, nreal=1)
+                try:
+                    sim_T = multiGaussian.multiGaussianRun(
+                            cov_model_T, dimension, spacing, origin,
+                            mode='simulation', algo=algo_T, output_mode='array',
+                            **params_T, nreal=1)
+                except:
+                    sim_ok = False
+                    if verbose > 2:
+                        print('   ... simulation of T failed')
+                    continue
+                # except Exception as exc:
+                #     err_msg = f'{fname}: simulation of T failed'
+                #     raise SrfError(err_msg) from exc
+
                 # -> nd-array of shape
                 #      (1, dimension) (for T in 1D)
                 #      (1, dimension[1], dimension[0]) (for T in 2D)
                 #      (1, dimension[2], dimension[1], dimension[0]) (for T in 3D)
-                if sim_T is None:
-                    sim_ok = False
-                    if verbose > 3:
-                        print('   ... simulation of T failed')
-                    continue
 
                 # Set origin and dimension for Y
                 min_T = np.min(sim_T)
@@ -1528,17 +1557,22 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
                 origin_Y = min_T - 0.5*(dimension_Y*spacing_Y - (max_T - min_T))
 
                 # Generate Y conditional to possible additional constraint (t, yt) (one real)
-                sim_Y = multiGaussian.multiGaussianRun(cov_model_Y, dimension_Y, spacing_Y, origin_Y, x=t, v=yt,
-                                                       mode='simulation', algo=algo_Y, output_mode='array',
-                                                       **params_Y, nreal=1)
-                # -> 2d-array of shape (1, dimension_Y)
-
-                if sim_Y is None:
+                try:
+                    sim_Y = multiGaussian.multiGaussianRun(
+                            cov_model_Y, dimension_Y, spacing_Y, origin_Y, x=t, v=yt,
+                            mode='simulation', algo=algo_Y, output_mode='array',
+                            **params_Y, nreal=1)
+                except:
                     sim_ok = False
-                    if verbose > 3:
+                    if verbose > 2:
                         print('   ... simulation of Y failed')
                     continue
-                #
+                # except Exception as exc:
+                #     err_msg = f'{fname}: simulation of Y failed'
+                #     raise SrfError(err_msg) from exc
+
+                # -> 2d-array of shape (1, dimension_Y)
+
                 if distrib_transf:
                     if compute_initial_distrib:
                         # Compute initial_distrib
@@ -1588,8 +1622,8 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
 
                 if not sim_ok:
                     sim_ok = False
-                    if verbose > 3:
-                        print('    ... unable to solve kriging system (for T, initialization)')
+                    if verbose > 2:
+                        print('    ... cannot solve kriging system (for T, initialization)')
                     continue
 
                 # Updated kriging matrix for Y (mat_Y) according to value in v_T[0:npt]
@@ -1613,8 +1647,8 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
 
                 # Update simulated values v_T at x using Metropolis-Hasting (MH) algorithm
                 for nit in range(mh_iter):
-                    if verbose > 4:
-                        print('   ... sim {} of {}: MH iter {} of {}...'.format(ireal+1, nreal, nit+1, mh_iter))
+                    if verbose > 3:
+                        print(f'   ... sim {ireal+1} of {nreal}: MH iter {nit+1} of {mh_iter}...')
                     ind = np.random.permutation(npt)
                     for k in ind:
                         # Sequence of indexes without k
@@ -1629,8 +1663,8 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
                                 )
                         except:
                             sim_ok = False
-                            if verbose > 3:
-                                print('   ... unable to solve kriging system (for T)')
+                            if verbose > 2:
+                                print('   ... cannot solve kriging system (for T)')
                             break
                         #
                         # Mean (kriged) value at x[k]
@@ -1656,8 +1690,8 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
                                 )
                         except:
                             sim_ok = False
-                            if verbose > 3:
-                                print('   ... unable to solve kriging system (for Y)')
+                            if verbose > 2:
+                                print('   ... cannot solve kriging system (for Y)')
                             break
                         # Mean (kriged) values at v_T[k] and v_T_k_new
                         mu_Y_k = mean_Y + (v_ext[indmat_ext] - mean_Y).dot(w) # mu_k of shape(2, )
@@ -1683,18 +1717,24 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
                     continue
 
                 # Generate T conditional to (x, v_T[0:npt]) (one real)
-                sim_T = multiGaussian.multiGaussianRun(cov_model_T, dimension, spacing, origin, x=x, v=v_T[:npt],
-                                                       mode='simulation', algo=algo_T, output_mode='array',
-                                                       **params_T, nreal=1)
+                try:
+                    sim_T = multiGaussian.multiGaussianRun(
+                            cov_model_T, dimension, spacing, origin, x=x, v=v_T[:npt],
+                            mode='simulation', algo=algo_T, output_mode='array',
+                            **params_T, nreal=1)
+                except:
+                    sim_ok = False
+                    if verbose > 2:
+                        print('   ... conditional simulation of T failed')
+                    continue
+                # except Exception as exc:
+                #     err_msg = f'{fname}: conditional simulation of T failed'
+                #     raise SrfError(err_msg) from exc
+
                 # -> nd-array of shape
                 #      (1, dimension) (for T in 1D)
                 #      (1, dimension[1], dimension[0]) (for T in 2D)
                 #      (1, dimension[2], dimension[1], dimension[0]) (for T in 3D)
-                if sim_T is None:
-                    sim_ok = False
-                    if verbose > 3:
-                        print('   ... conditional simulation of T failed')
-                    continue
 
                 # Set origin and dimension for Y
                 min_T = np.min(sim_T)
@@ -1723,15 +1763,21 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
                     v_ext_unique = np.array([v_ext[indc_inv==j].mean() for j in range(len(indc_unique))])
 
                 # Generate Y conditional to (v_T, v_ext) (one real)
-                sim_Y = multiGaussian.multiGaussianRun(cov_model_Y, dimension_Y, spacing_Y, origin_Y, x=v_T_unique, v=v_ext_unique,
-                                                       mode='simulation', algo=algo_Y, output_mode='array',
-                                                       **params_Y, nreal=1)
-                # -> 2d-array of shape (1, dimension_Y)
-                if sim_Y is None:
+                try:
+                    sim_Y = multiGaussian.multiGaussianRun(
+                            cov_model_Y, dimension_Y, spacing_Y, origin_Y, x=v_T_unique, v=v_ext_unique,
+                            mode='simulation', algo=algo_Y, output_mode='array',
+                            **params_Y, nreal=1)
+                except:
                     sim_ok = False
-                    if verbose > 3:
+                    if verbose > 2:
                         print('   ... conditional simulation of Y failed')
                     continue
+                # except Exception as exc:
+                #     err_msg = f'{fname}: conditional simulation of Y failed'
+                #     raise SrfError(err_msg) from exc
+
+                # -> 2d-array of shape (1, dimension_Y)
 
                 if distrib_transf:
                     # Back-transform sim_Y value
@@ -1748,18 +1794,18 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
             #Z_real = sim_Y[0][np.floor((sim_T.reshape(-1) - origin_Y)/spacing_Y).astype(int)]
             if vmin is not None and Z_real.min() < vmin:
                 sim_ok = False
-                if verbose > 3:
+                if verbose > 2:
                     print('   ... specified minimal value not honoured')
                 continue
             if vmax is not None and Z_real.max() > vmax:
                 sim_ok = False
-                if verbose > 3:
+                if verbose > 2:
                     print('   ... specified maximal value not honoured')
                 continue
 
             if sim_ok:
-                if Y_cond_aggregation and verbose > 2:
-                    print(f'WARNING {fname}: conditioning points for Y falling in a same grid cell have been aggregated (mean) (real index {ireal})')
+                if Y_cond_aggregation and verbose > 0:
+                    print(f'{fname}: WARNING: conditioning points for Y falling in a same grid cell have been aggregated (mean) (real index {ireal})')
                 Z.append(Z_real)
                 if full_output:
                     T.append(sim_T[0])
@@ -1767,8 +1813,8 @@ def srf_mg_mg(cov_model_T, cov_model_Y,
                 break
 
     # Get Z
-    if verbose > 1 and len(Z) < nreal:
-        print(f'WARNING {fname}: some realization failed (missing)')
+    if verbose > 0 and len(Z) < nreal:
+        print(f'{fname}: WARNING: some realization failed (missing)')
     Z = np.asarray(Z).reshape(len(Z), *np.atleast_1d(dimension)[::-1])
 
     if full_output:
@@ -1790,15 +1836,22 @@ class Distrib (object):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def compute_distrib_Z_given_Y_of_mean_T(z, cov_model_Y, mean_Y=0., y_mean_T=0., cov_T_0=1.0, fstd=4.5, nint=2001, assume_sorted=False):
+def compute_distrib_Z_given_Y_of_mean_T(
+        z, cov_model_Y,
+        mean_Y=0.,
+        y_mean_T=0.,
+        cov_T_0=1.0,
+        fstd=4.5,
+        nint=2001,
+        assume_sorted=False):
     """
     Computes the distribution of Z given Y(mean(T)), for a SRF Z = Y(T).
-    
-    With a SRF Z = Y(T), compute the pdf, cdf and ppf (inverse cdf) of 
+
+    With a SRF Z = Y(T), compute the pdf, cdf and ppf (inverse cdf) of
     Z given Y(mean(T))=y_mean_T (applicable for a (large) ensemble of realizations).
-    
+
     The cdf is given by the equation (26) in the reference below. This equation
-    requires expectations wrt. :math:`\\mathcal{N}(0, c\\_T\\_0)`, which are approximated 
+    requires expectations wrt. :math:`\\mathcal{N}(0, c\\_T\\_0)`, which are approximated
     using `nint` values in the interval :math:`\pm fstd \\cdot \\sqrt{c\\_T\\_0}`.
 
     Parameters
@@ -1824,14 +1877,14 @@ def compute_distrib_Z_given_Y_of_mean_T(z, cov_model_Y, mean_Y=0., y_mean_T=0., 
 
     nint : int, defualt: 2001
         positive integer used for computing approximation (see above)
-        
+
     assume_sorted : bool, default: False
         if `True`: `z` has to be an array of monotonically increasing values
 
     Returns
     -------
     distrib : :class:`srf.Distrib`
-        distribution, where each attribute is a function (obtained by 
+        distribution, where each attribute is a function (obtained by
         interpolation of its approximated evaluation at `z`):
 
         - distrib.pdf: (func) pdf f_{Z|Y(mean(T))=y_mean_T}
@@ -1861,6 +1914,9 @@ def compute_distrib_Z_given_Y_of_mean_T(z, cov_model_Y, mean_Y=0., y_mean_T=0., 
 
     # Approximation is computed, using 'nint' values of h in the interval
     # +/-'fstd'*np.sqrt(2.0*c_T(0)) for the mean wrt. N(0, c_T(0))
+
+    # fname = 'compute_distrib_Z_given_Y_of_mean_T'
+
     std_T_0 = np.sqrt(cov_T_0)
     a = fstd*std_T_0
     h = np.linspace(-a, a, nint)
@@ -1889,30 +1945,31 @@ def compute_distrib_Z_given_Y_of_mean_T(z, cov_model_Y, mean_Y=0., y_mean_T=0., 
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
-                dimension, spacing=None, origin=None,
-                spacing_Y=(0.001, 0.001),
-                x=None, v=None,
-                t=None, yt=None,
-                vmin=None, vmax=None,
-                algo_T1='fft', params_T1=None,
-                algo_T2='fft', params_T2=None,
-                algo_Y='fft', params_Y=None,
-                mh_iter=100,
-                ntry_max=1,
-                nreal=1,
-                full_output=True,
-                verbose=4):
+def srf_bimg_mg(
+        cov_model_T1, cov_model_T2, cov_model_Y,
+        dimension, spacing=None, origin=None,
+        spacing_Y=(0.001, 0.001),
+        x=None, v=None,
+        t=None, yt=None,
+        vmin=None, vmax=None,
+        algo_T1='fft', params_T1=None,
+        algo_T2='fft', params_T2=None,
+        algo_Y='fft', params_Y=None,
+        mh_iter=100,
+        ntry_max=1,
+        nreal=1,
+        full_output=True,
+        verbose=1):
     """
     Substitution Random Function (SRF) - multi-Gaussian + multi-Gaussian.
 
-    This function allows to generate continuous random fields in 1D, 2D, 3D, based on 
+    This function allows to generate continuous random fields in 1D, 2D, 3D, based on
     a SRF Z defined as
-    
+
     - Z(x) = Y(T1(x), T2(x))
-    
+
     where
-    
+
     - T1, T1 are the directing functions (independent), two multi-Gaussian random fields \
     (latent fields)
     - Y is the coding process, a 2D multi-Gaussian random field
@@ -1940,7 +1997,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 
     dimension : [sequence of] int(s)
         number of cells along each axis, for simulation in:
-        
+
         - 1D: `dimension=nx`
         - 2D: `dimension=(nx, ny)`
         - 3D: `dimension=(nx, ny, nz)`
@@ -1951,16 +2008,16 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
         - 1D: `spacing=sx`
         - 2D: `spacing=(sx, sy)`
         - 3D: `spacing=(sx, sy, sz)`
-        
+
         by default (`None`): 1.0 along each axis
 
     origin : [sequence of] float(s), optional
         origin of the grid ("corner of the first cell"), for simulation in:
-        
+
         - 1D: `origin=ox`
         - 2D: `origin=(ox, oy)`
         - 3D: `origin=(ox, oy, oz)`
-        
+
         by default (`None`): 0.0 along each axis
 
     spacing_Y : sequence of 2 floats, default: (0.001, 0.001)
@@ -1985,7 +2042,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
         values of (T1, T2) considered as conditioning point for Y(T) (additional constraint)m
         each row corresponding to one point;
         note: if only one point, a sequence of 2 floats is accepted
-    
+
     yt : 1d-array-like of floats, or float, optional
         value of Y at the conditioning point `t`
 
@@ -2007,9 +2064,9 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
         by `params_T1['mean']`
 
     params_T1 : dict, optional
-        keyword arguments (additional parameters) to be passed to the function 
-        corresponding to what is specified by the argument `algo_T1` (see the 
-        corresponding function for its keyword arguments), in particular the key 
+        keyword arguments (additional parameters) to be passed to the function
+        corresponding to what is specified by the argument `algo_T1` (see the
+        corresponding function for its keyword arguments), in particular the key
         'mean' can be specified (set to value 0 if not specified)
 
     algo_T2 : str
@@ -2024,11 +2081,11 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
         by `params_T2['mean']`
 
     params_T2 : dict, optional
-        keyword arguments (additional parameters) to be passed to the function 
-        corresponding to what is specified by the argument `algo_T2` (see the 
-        corresponding function for its keyword arguments), in particular the key 
+        keyword arguments (additional parameters) to be passed to the function
+        corresponding to what is specified by the argument `algo_T2` (see the
+        corresponding function for its keyword arguments), in particular the key
         'mean' can be specified (set to value 0 if not specified)
-        
+
     algo_Y : str
         defines the algorithm used for generating 2D multi-Gaussian field Y:
 
@@ -2039,50 +2096,50 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
         called: :func:`geoscalassicinterface.simulate2D`
 
     params_Y : dict, optional
-        keyword arguments (additional parameters) to be passed to the function 
-        corresponding to what is specified by the argument `algo_Y` (see the 
-        corresponding function for its keyword arguments), in particular the key 
-        'mean' can be specified (if not specified, set to the mean value of `v` 
+        keyword arguments (additional parameters) to be passed to the function
+        corresponding to what is specified by the argument `algo_Y` (see the
+        corresponding function for its keyword arguments), in particular the key
+        'mean' can be specified (if not specified, set to the mean value of `v`
         if `v` is not `None`, set to 0 otherwise)
 
     mh_iter : int, default: 100
         number of iteration for Metropolis-Hasting algorithm, for conditional
         simulation only; note: used only if `x` or `t` is not `None`
-    
+
     ntry_max : int, default: 1
         number of tries per realization before giving up if something goes wrong
-    
+
     nreal : int, default: 1
         number of realization(s)
-    
+
     full_output : bool, default: True
         - if `True`: simulation(s) of Z, T1, T2, and Y are retrieved in output
         - if `False`: simulation(s) of Z only is retrieved in output
-    
-    verbose : int, default: 4
+
+    verbose : int, default: 1
         verbose mode, integer >=0, higher implies more display
 
     Returns
     -------
     Z : nd-array
         all realizations, `Z[k]` is the `k`-th realization:
-        
+
         - for 1D: `Z` of shape (nreal, nx), where nx = dimension
         - for 2D: `Z` of shape (nreal, ny, nx), where nx, ny = dimension
         - for 3D: `Z` of shape (nreal, nz, ny, nx), where nx, ny, nz = dimension
-            
+
     T1 : nd-array
         latent fields of all realizations, `T1[k]` for the `k`-th realization:
-            
+
         - for 1D: `T1` of shape (nreal, nx), where nx = dimension
         - for 2D: `T1` of shape (nreal, ny, nx), where nx, ny = dimension
         - for 3D: `T1` of shape (nreal, nz, ny, nx), where nx, ny, nz = dimension
 
         returned if `full_output=True`
-    
+
     T2 : nd-array
         latent fields of all realizations, `T2[k]` for the `k`-th realization:
-            
+
         - for 1D: `T2` of shape (nreal, nx), where nx = dimension
         - for 2D: `T2` of shape (nreal, ny, nx), where nx, ny = dimension
         - for 3D: `T2` of shape (nreal, nz, ny, nx), where nx, ny, nz = dimension
@@ -2090,9 +2147,9 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
         returned if `full_output=True`
 
     Y : list of length nreal
-        2D random fields of all realizations, `Y[k]` is a list of length 4 for 
+        2D random fields of all realizations, `Y[k]` is a list of length 4 for
         the `k`-th realization:
-        
+
         - Y[k][0]: 1d-array of shape (2,): (Y_nx, Y_ny)
         - Y[k][1]: 1d-array of shape (2,): (Y_sx, Y_sy)
         - Y[k][2]: 1d-array of shape (2,): (Y_ox, Y_oy)
@@ -2102,25 +2159,17 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
     """
     fname = 'srf_bimg_mg'
 
-    if full_output:
-        out = None, None, None, None
-    else:
-        out = None
-
     if algo_T1 not in ('fft', 'FFT', 'classic', 'CLASSIC', 'deterministic', 'DETERMINISTIC'):
-        if verbose > 0:
-            print(f'ERROR ({fname}): `algo_T1` invalid, should be "fft" (default) or "classic" or "deterministic"')
-        return out
+        err_msg = f"{fname}: `algo_T1` invalid, should be 'fft' (default) or 'classic'"
+        raise SrfError(err_msg)
 
     if algo_T2 not in ('fft', 'FFT', 'classic', 'CLASSIC', 'deterministic', 'DETERMINISTIC'):
-        if verbose > 0:
-            print(f'ERROR ({fname}): `algo_T2` invalid, should be "fft" (default) or "classic" or "deterministic"')
-        return out
+        err_msg = f"{fname}: `algo_T2` invalid, should be 'fft' (default) or 'classic'"
+        raise SrfError(err_msg)
 
     if algo_Y not in ('fft', 'FFT', 'classic', 'CLASSIC'):
-        if verbose > 0:
-            print(f'ERROR ({fname}): `algo_Y` invalid, should be "fft" (default) or "classic"')
-        return out
+        err_msg = f"{fname}: `algo_Y` invalid, should be 'fft' (default) or 'classic'"
+        raise SrfError(err_msg)
 
     # Ignore covariance model if 'algo' is deterministic for T1, T2
     if algo_T1 in ('deterministic', 'DETERMINISTIC'):
@@ -2133,9 +2182,9 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
     d = 0
     if cov_model_T1 is None:
         if algo_T1 not in ('deterministic', 'DETERMINISTIC'):
-            if verbose > 0:
-                print(f'ERROR ({fname}): `cov_model_T1` is `None`, then `algo_T1` must be "deterministic"')
-            return out
+            err_msg = f"{fname}: `cov_model_T1` is `None`, then `algo_T1` must be 'deterministic'"
+            raise SrfError(err_msg)
+
     elif isinstance(cov_model_T1, gcm.CovModel1D):
         d = 1
     elif isinstance(cov_model_T1, gcm.CovModel2D):
@@ -2143,23 +2192,21 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
     elif isinstance(cov_model_T1, gcm.CovModel3D):
         d = 3
     else:
-        if verbose > 0:
-            print(f'ERROR ({fname}): `cov_model_T1` invalid, should be a class: <geone.covModel.CovModel1D>, <geone.covModel.CovModel2D>, or <geone.covModel.CovModel3D>')
-        return out
+        err_msg = f'{fname}: `cov_model_T1` invalid, should be a class `geone.covModel.CovModel1D`, `geone.covModel.CovModel2D` or `geone.covModel.CovModel3D`'
+        raise SrfError(err_msg)
 
     if cov_model_T2 is None:
         if algo_T2 not in ('deterministic', 'DETERMINISTIC'):
-            if verbose > 0:
-                print(f'ERROR ({fname}): `cov_model_T2` is `None`, then `algo_T2` must be "deterministic"')
-            return out
+            err_msg = f"{fname}: `cov_model_T2` is `None`, then `algo_T2` must be 'deterministic'"
+            raise SrfError(err_msg)
+
         # if d == 0:
-        #     if verbose > 0:
-        #         print(f'ERROR ({fname}): `cov_model_T1` and `cov_model_T2`` are `None`, at least one covariance model is required')
-        #     return out
+        #     err_msg = f'{fname}: `cov_model_T1` and `cov_model_T2` are `None`, at least one covariance model is required'
+        #     raise SrfError(err_msg)
+
     elif (d == 1 and not isinstance(cov_model_T2, gcm.CovModel1D)) or (d == 2 and not isinstance(cov_model_T2, gcm.CovModel2D)) or (d == 3 and not isinstance(cov_model_T2, gcm.CovModel3D)):
-        if verbose > 0:
-            print(f'ERROR ({fname}): `cov_model_T1` and `cov_model_T2` not compatible (dimension differs)')
-        return out
+        err_msg = f'{fname}: `cov_model_T1` and `cov_model_T2` not compatible (dimensions differ)'
+        raise SrfError(err_msg)
 
     if d == 0:
         # Set space dimension (of grid) according to 'dimension'
@@ -2170,9 +2217,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 
     # Check argument 'dimension'
     if hasattr(dimension, '__len__') and len(dimension) != d:
-        if verbose > 0:
-            print(f'ERROR ({fname}): `dimension` of incompatible length')
-        return out
+        err_msg = f'{fname}: `dimension` of incompatible length'
+        raise SrfError(err_msg)
 
     if d == 1:
         grid_size = dimension
@@ -2187,9 +2233,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
             spacing = tuple(np.ones(d))
     else:
         if hasattr(spacing, '__len__') and len(spacing) != d:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `spacing` of incompatible length')
-            return out
+            err_msg = f'{fname}: `spacing` of incompatible length'
+            raise SrfError(err_msg)
 
     # Check (or set) argument 'origin'
     if origin is None:
@@ -2199,9 +2244,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
             origin = tuple(np.zeros(d))
     else:
         if hasattr(origin, '__len__') and len(origin) != d:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `origin` of incompatible length')
-            return out
+            err_msg = f'{fname}: `origin` of incompatible length'
+            raise SrfError(err_msg)
 
     # if not cov_model_T1.is_stationary(): # prevent calculation if covariance model is not stationary
     #     if verbose > 0:
@@ -2213,31 +2257,29 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 
     # Check covariance model for Y
     if not isinstance(cov_model_Y, gcm.CovModel2D):
-        if verbose > 0:
-            print(f'ERROR ({fname}): `cov_model_Y` is not valid')
-        return out
+        err_msg = f'{fname}: `cov_model_Y` invalid'
+        raise SrfError(err_msg)
+
     # elif not cov_model_Y.is_stationary(): # prevent calculation if covariance model is not stationary
-    #     if verbose > 0:
-    #         print(f'ERROR ({fname}): `cov_model_Y` is not stationary')
-    #     return out
+    #     err_msg = f'{fname}: `cov_model_Y` is not stationary'
+    #     raise SrfError(err_msg)
 
     # Check additional constraint t (conditioning point for (T1, T2)), yt (corresponding value for Y)
     if t is None:
         if yt is not None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `t` is not given (`None`) but `yt` is given (not `None`)')
-            return out
+            err_msg = f'{fname}: `t` is not given (`None`) but `yt` is given (not `None`)'
+            raise SrfError(err_msg)
+
     else:
         if yt is None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `t` is given (not `None`) but `yt` is not given (`None`)')
-            return out
+            err_msg = f'{fname}: `t` is given (not `None`) but `yt` is not given (`None`)'
+            raise SrfError(err_msg)
+
         t = np.asarray(t, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         yt = np.asarray(yt, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(yt) != len(t):
-            if verbose > 0:
-                print(f'ERROR ({fname}): length of `yt` is not valid')
-            return out
+            err_msg = f'{fname}: length of `yt` is not valid'
+            raise SrfError(err_msg)
 
     # Initialize dictionaries params_T1, params_T2
     if params_T1 is None:
@@ -2277,9 +2319,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
         else:
             mean_T1 = np.asarray(mean_T1).reshape(-1)
             if mean_T1.size not in (1, grid_size):
-                if verbose > 0:
-                    print(f'ERROR ({fname}): \'mean\' parameter for T1 (in `params_T1`) has incompatible size')
-                return out
+                err_msg = f"{fname}: 'mean' parameter for T1 (in `params_T1`) has incompatible size"
+                raise SrfError(err_msg)
 
     # Set var_T1 (as array) from params_T1, if given
     var_T1 = None
@@ -2296,9 +2337,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
             else:
                 var_T1 = np.asarray(var_T1).reshape(-1)
                 if var_T1.size not in (1, grid_size):
-                    if verbose > 0:
-                        print(f'ERROR ({fname}): \'var\' parameter for T1 (in `params_T1`) has incompatible size')
-                    return out
+                    err_msg = f"{fname}: 'var' parameter for T1 (in `params_T1`) has incompatible size"
+                    raise SrfError(err_msg)
 
     # Set mean_T2 (as array) from params_T2
     if 'mean' not in params_T2.keys():
@@ -2317,9 +2357,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
         else:
             mean_T2 = np.asarray(mean_T2).reshape(-1)
             if mean_T2.size not in (1, grid_size):
-                if verbose > 0:
-                    print(f'ERROR ({fname}): \'mean\' parameter for T2 (in `params_T2`) has incompatible size')
-                return out
+                err_msg = f"{fname}: 'mean' parameter for T2 (in `params_T2`) has incompatible size"
+                raise SrfError(err_msg)
 
     # Set var_T2 (as array) from params_T2, if given
     var_T2 = None
@@ -2336,9 +2375,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
             else:
                 var_T2 = np.asarray(var_T2).reshape(-1)
                 if var_T2.size not in (1, grid_size):
-                    if verbose > 0:
-                        print(f'ERROR ({fname}): \'var\' parameter for T2 (in `params_T2`) has incompatible size')
-                    return out
+                    err_msg = f"{fname}: 'var' parameter for T2 (in `params_T2`) has incompatible size"
+                    raise SrfError(err_msg)
 
     # Initialize dictionary params_Y
     if params_Y is None:
@@ -2349,36 +2387,42 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
     if 'mean' in params_Y.keys():
         mean_Y = params_Y['mean']
         if callable(mean_Y):
-            if verbose > 0:
-                print(f'ERROR ({fname}): \'mean\' parameter for Y (in `params_Y`) must be a unique value (float) if given')
-            return out
+            err_msg = f"{fname}: 'mean' parameter for Y (in `params_Y`) must be a unique value (float) if given"
+            raise SrfError(err_msg)
+
         else:
             mean_Y = np.asarray(mean_Y, dtype='float').reshape(-1)
             if mean_Y.size != 1:
-                if verbose > 0:
-                    print(f'ERROR ({fname}): \'mean\' parameter for Y (in `params_Y`) must be a unique value (float) if given')
-                return out
+                err_msg = f"{fname}: 'mean' parameter for Y (in `params_Y`) must be a unique value (float) if given"
+                raise SrfError(err_msg)
+
             mean_Y = mean_Y[0]
 
     # Check var_Y from params_Y
     if 'var' in params_Y.keys() and params_Y['var'] is not None:
-        if verbose > 0:
-            print(f'ERROR ({fname}): \'var\' parameter for Y (in `params_Y`) must be `None`')
-        return out
+        err_msg = f"{fname}: 'var' parameter for Y (in `params_Y`) must be `None`"
+        raise SrfError(err_msg)
 
     # Number of realization(s)
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        return out
+        if full_output:
+            if verbose > 0:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None`, `None` is returned')
+            return None, None, None
+        else:
+            if verbose > 0:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
+            return None
 
     # Note: format of data (x, v) not checked !
 
     if x is None:
         if v is not None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `x` is not given (`None`) but `v` is given (not `None`)')
-            return out
+            err_msg = f'{fname}: `x` is not given (`None`) but `v` is given (not `None`)'
+            raise SrfError(err_msg)
+
         # Preparation for unconditional case
         # Set mean_Y
         if mean_Y is None:
@@ -2387,20 +2431,18 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
     else:
         # Preparation for conditional case
         if v is None:
-            if verbose > 0:
-                print(f'ERROR ({fname}): `x` is given (not `None`) but `v` is not given (`None`)')
-            return out
-        #
+            err_msg = f'{fname}: `x` is given (not `None`) but `v` is not given (`None`)'
+            raise SrfError(err_msg)
+
         x = np.asarray(x, dtype='float').reshape(-1, d) # cast in d-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
-            if verbose > 0:
-                print(f'ERROR ({fname}): length of `v` is not valid')
-            return out
-        #
+            err_msg = f'{fname}: length of `v` is not valid'
+            raise SrfError(err_msg)
+
         # Number of conditioning points
         npt = x.shape[0]
-        #
+
         # Get index in mean_T1 for each conditioning points
         x_mean_T1_grid_ind = None
         if mean_T1.size == 1:
@@ -2415,7 +2457,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                 x_mean_T1_grid_ind = indc[:, 0] + dimension[0] * indc[:, 1]
             elif d == 3:
                 x_mean_T1_grid_ind = indc[:, 0] + dimension[0] * (indc[:, 1] + dimension[1] * indc[:, 2])
-        #
+
         # Get index in var_T1 (if not None) for each conditioning points
         if var_T1 is not None:
             if var_T1.size == 1:
@@ -2433,7 +2475,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                         x_var_T1_grid_ind = indc[:, 0] + dimension[0] * indc[:, 1]
                     elif d == 3:
                         x_var_T1_grid_ind = indc[:, 0] + dimension[0] * (indc[:, 1] + dimension[1] * indc[:, 2])
-        #
+
         # Get index in mean_T2 for each conditioning points
         x_mean_T2_grid_ind = None
         if mean_T2.size == 1:
@@ -2448,7 +2490,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                 x_mean_T2_grid_ind = indc[:, 0] + dimension[0] * indc[:, 1]
             elif d == 3:
                 x_mean_T2_grid_ind = indc[:, 0] + dimension[0] * (indc[:, 1] + dimension[1] * indc[:, 2])
-        #
+
         # Get index in var_T2 (if not None) for each conditioning points
         if var_T2 is not None:
             if var_T2.size == 1:
@@ -2466,7 +2508,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                         x_var_T2_grid_ind = indc[:, 0] + dimension[0] * indc[:, 1]
                     elif d == 3:
                         x_var_T2_grid_ind = indc[:, 0] + dimension[0] * (indc[:, 1] + dimension[1] * indc[:, 2])
-        #
+
         # Get covariance function for T1, T2 and Y, and their evaluation at 0
         if cov_model_T1 is not None:
             cov_func_T1 = cov_model_T1.func() # covariance function
@@ -2476,11 +2518,11 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
             cov0_T2 = cov_func_T2(np.zeros(d))
         cov_func_Y = cov_model_Y.func() # covariance function
         cov0_Y = cov_func_Y(np.zeros(2))
-        #
+
         # Set mean_Y
         if mean_Y is None:
             mean_Y = np.mean(v)
-        #
+
         if cov_model_T1 is not None:
             # Set kriging matrix for T1 (mat_T1) of order npt, "over every conditioining point"
             mat_T1 = np.ones((npt, npt))
@@ -2491,13 +2533,13 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                 mat_T1[i, (i+1):npt] = cov_h_T1
                 mat_T1[(i+1):npt, i] = cov_h_T1
                 mat_T1[i, i] = cov0_T1
-            #
+
             mat_T1[-1,-1] = cov0_T1
-            #
+
             if var_T1 is not None:
                 varUpdate = np.sqrt(var_T1[x_var_T1_grid_ind]/cov0_T1)
                 mat_T1 = varUpdate*(mat_T1.T*varUpdate).T
-        #
+
         if cov_model_T2 is not None:
             # Set kriging matrix for T2 (mat_T2) of order npt, "over every conditioining point"
             mat_T2 = np.ones((npt, npt))
@@ -2508,13 +2550,13 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                 mat_T2[i, (i+1):npt] = cov_h_T2
                 mat_T2[(i+1):npt, i] = cov_h_T2
                 mat_T2[i, i] = cov0_T2
-            #
+
             mat_T2[-1,-1] = cov0_T2
-            #
+
             if var_T2 is not None:
                 varUpdate = np.sqrt(var_T2[x_var_T2_grid_ind]/cov0_T2)
                 mat_T2 = varUpdate*(mat_T2.T*varUpdate).T
-        #
+
         # Initialize
         #   - npt_ext: number of total conditioning point for Y, "point (T1(x), T2(x)) + additional constraint t"
         #   - v_T: values of (T1(x), T2(x)) (that are defined later) followed by values yt at additional constraint t"
@@ -2538,7 +2580,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                 mat_Y[k, (k+1):] = cov_h_Y
                 mat_Y[(k+1):, k] = cov_h_Y
                 #mat_Y[k, k] = cov0_Y
-            #
+
             #mat_Y[-1,-1] = cov0_Y
         for i in range(npt_ext):
             mat_Y[i, i] = cov0_Y
@@ -2568,10 +2610,13 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
     # Set default parameter 'verbose' for params_T1, params_T2 and params_Y
     if 'verbose' not in params_T1.keys():
         params_T1['verbose'] = 0
+        # params_T1['verbose'] = verbose
     if 'verbose' not in params_T2.keys():
         params_T2['verbose'] = 0
+        # params_T2['verbose'] = verbose
     if 'verbose' not in params_Y.keys():
         params_Y['verbose'] = 0
+        # params_Y['verbose'] = verbose
 
     # Initialization for output
     Z = []
@@ -2582,49 +2627,60 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 
     for ireal in range(nreal):
         # Generate ireal-th realization
-        if verbose > 2:
-            print('SRF_BIMG_MG: simulation {} of {}...'.format(ireal+1, nreal))
+        if verbose > 1:
+            print(f'{fname}: simulation {ireal+1} of {nreal}...')
         for ntry in range(ntry_max):
             sim_ok = True
             Y_cond_aggregation = False
-            if verbose > 3 and ntry > 0:
-                print('   ... new trial ({} of {}) for simulation {} of {}...'.format(ntry+1, ntry_max, ireal+1, nreal))
+            if verbose > 2 and ntry > 0:
+                print(f'   ... new trial ({ntry+1} of {ntry_max}) for simulation {ireal+1} of {nreal}...')
             if x is None:
                 # Unconditional case
                 # ------------------
                 # Generate T1 (one real)
                 if cov_model_T1 is not None:
-                    sim_T1 = multiGaussian.multiGaussianRun(cov_model_T1, dimension, spacing, origin,
-                                                            mode='simulation', algo=algo_T1, output_mode='array',
-                                                            **params_T1, nreal=1)
+                    try:
+                        sim_T1 = multiGaussian.multiGaussianRun(
+                                cov_model_T1, dimension, spacing, origin,
+                                mode='simulation', algo=algo_T1, output_mode='array',
+                                **params_T1, nreal=1)
+                    except:
+                        sim_ok = False
+                        if verbose > 2:
+                            print('   ... simulation of T1 failed')
+                        continue
+                    # except Exception as exc:
+                    #     err_msg = f'{fname}: simulation of T1 failed'
+                    #     raise SrfError(err_msg) from exc
+
                 else:
                     sim_T1 = params_T1['mean'].reshape(1,*dimension[::-1])
                 # -> sim_T1: nd-array of shape
                 #      (1, dimension) (for T1 in 1D)
                 #      (1, dimension[1], dimension[0]) (for T1 in 2D)
                 #      (1, dimension[2], dimension[1], dimension[0]) (for T1 in 3D)
-                if sim_T1 is None:
-                    sim_ok = False
-                    if verbose > 3:
-                        print('   ... simulation of T1 failed')
-                    continue
-                #
+
                 # Generate T2 (one real)
                 if cov_model_T2 is not None:
-                    sim_T2 = multiGaussian.multiGaussianRun(cov_model_T2, dimension, spacing, origin,
-                                                            mode='simulation', algo=algo_T2, output_mode='array',
-                                                            **params_T2, nreal=1)
+                    try:
+                        sim_T2 = multiGaussian.multiGaussianRun(
+                                cov_model_T2, dimension, spacing, origin,
+                                mode='simulation', algo=algo_T2, output_mode='array',
+                                **params_T2, nreal=1)
+                    except:
+                        sim_ok = False
+                        if verbose > 2:
+                            print('   ... simulation of T2 failed')
+                        continue
+                    # except Exception as exc:
+                    #     err_msg = f'{fname}: simulation of T2 failed'
+                    #     raise SrfError(err_msg) from exc
                 else:
                     sim_T2 = params_T2['mean'].reshape(1,*dimension[::-1])
                 # -> sim_T2: nd-array of shape
                 #      (1, dimension) (for T2 in 1D)
                 #      (1, dimension[1], dimension[0]) (for T2 in 2D)
                 #      (1, dimension[2], dimension[1], dimension[0]) (for T2 in 3D)
-                if sim_T2 is None:
-                    sim_ok = False
-                    if verbose > 3:
-                        print('   ... simulation of T2 failed')
-                    continue
 
                 # Set origin and dimension for Y
                 origin_Y = [0.0, 0.0]
@@ -2651,17 +2707,22 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                 origin_Y[1] = min_T2 - 0.5*(dimension_Y[1]*spacing_Y[1] - (max_T2 - min_T2))
 
                 # Generate Y conditional to possible additional constraint (t, yt) (one real)
-                sim_Y = multiGaussian.multiGaussianRun(cov_model_Y, dimension_Y, spacing_Y, origin_Y, x=t, v=yt,
-                                                       mode='simulation', algo=algo_Y, output_mode='array',
-                                                       **params_Y, nreal=1)
-                # -> 3d-array of shape (1, dimension_Y[1], dimension_Y[0])
-
-                if sim_Y is None:
+                try:
+                    sim_Y = multiGaussian.multiGaussianRun(
+                            cov_model_Y, dimension_Y, spacing_Y, origin_Y, x=t, v=yt,
+                            mode='simulation', algo=algo_Y, output_mode='array',
+                            **params_Y, nreal=1)
+                except:
                     sim_ok = False
-                    if verbose > 3:
+                    if verbose > 2:
                         print('   ... simulation of Y failed')
                     continue
-            #
+                # except Exception as exc:
+                #     err_msg = f'{fname}: simulation of Y failed'
+                #     raise SrfError(err_msg) from exc
+
+                # -> 3d-array of shape (1, dimension_Y[1], dimension_Y[0])
+
             else:
                 # Conditional case
                 # ----------------
@@ -2691,8 +2752,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 
                 if not sim_ok:
                     sim_ok = False
-                    if verbose > 3:
-                        print('    ... unable to solve kriging system (for T1, initialization)')
+                    if verbose > 2:
+                        print('    ... cannot solve kriging system (for T1, initialization)')
                     continue
 
                 # Initialize: unconditional simulation of T2 at x (values in v_T[:,1])
@@ -2721,8 +2782,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 
                 if not sim_ok:
                     sim_ok = False
-                    if verbose > 3:
-                        print('    ... unable to solve kriging system (for T2, initialization)')
+                    if verbose > 2:
+                        print('    ... cannot solve kriging system (for T2, initialization)')
                     continue
 
                 # Updated kriging matrix for Y (mat_Y) according to value in v_T[0:npt]
@@ -2747,8 +2808,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                 # Update simulated values v_T at x using Metropolis-Hasting (MH) algorithm
                 v_T_k_new = np.zeros(2)
                 for nit in range(mh_iter):
-                    if verbose > 4:
-                        print('   ... sim {} of {}: MH iter {} of {}...'.format(ireal+1, nreal, nit+1, mh_iter))
+                    if verbose > 3:
+                        print(f'   ... sim {ireal+1} of {nreal}: MH iter {nit+1} of {mh_iter}...')
                     ind = np.random.permutation(npt)
                     for k in ind:
                         # Sequence of indexes without k
@@ -2764,8 +2825,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                                     )
                             except:
                                 sim_ok = False
-                                if verbose > 3:
-                                    print('   ... unable to solve kriging system (for T1)')
+                                if verbose > 2:
+                                    print('   ... cannot solve kriging system (for T1)')
                                 break
                             #
                             # Mean (kriged) value at x[k]
@@ -2786,8 +2847,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                                     )
                             except:
                                 sim_ok = False
-                                if verbose > 3:
-                                    print('   ... unable to solve kriging system (for T2)')
+                                if verbose > 2:
+                                    print('   ... cannot solve kriging system (for T2)')
                                 break
                             #
                             # Mean (kriged) value at x[k]
@@ -2815,8 +2876,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                                 )
                         except:
                             sim_ok = False
-                            if verbose > 3:
-                                print('   ... unable to solve kriging system (for Y)')
+                            if verbose > 2:
+                                print('   ... cannot solve kriging system (for Y)')
                             break
                         # Mean (kriged) values at v_T[k] and v_T_k_new
                         mu_Y_k = mean_Y + (v_ext[indmat_ext] - mean_Y).dot(w) # mu_k of shape(2, )
@@ -2843,37 +2904,47 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 
                 # Generate T1 conditional to (x, v_T[0:npt, 0]) (one real)
                 if cov_model_T1 is not None:
-                    sim_T1 = multiGaussian.multiGaussianRun(cov_model_T1, dimension, spacing, origin, x=x, v=v_T[:npt, 0],
-                                                           mode='simulation', algo=algo_T1, output_mode='array',
-                                                           **params_T1, nreal=1)
+                    try:
+                        sim_T1 = multiGaussian.multiGaussianRun(
+                                cov_model_T1, dimension, spacing, origin, x=x, v=v_T[:npt, 0],
+                                mode='simulation', algo=algo_T1, output_mode='array',
+                                **params_T1, nreal=1)
+                    except:
+                        sim_ok = False
+                        if verbose > 2:
+                            print('   ... conditional simulation of T1 failed')
+                        continue
+                    # except Exception as exc:
+                    #     err_msg = f'{fname}: conditional simulation of T1 failed'
+                    #     raise SrfError(err_msg) from exc
                 else:
                     sim_T1 = params_T1['mean'].reshape(1,*dimension[::-1])
                 # -> sim_T1: nd-array of shape
                 #      (1, dimension) (for T1 in 1D)
                 #      (1, dimension[1], dimension[0]) (for T1 in 2D)
                 #      (1, dimension[2], dimension[1], dimension[0]) (for T1 in 3D)
-                if sim_T1 is None:
-                    sim_ok = False
-                    if verbose > 3:
-                        print('   ... conditional simulation of T1 failed')
-                    continue
-                #
+
                 # Generate T2 conditional to (x, v_T[0:npt, 1]) (one real)
                 if cov_model_T2 is not None:
-                    sim_T2 = multiGaussian.multiGaussianRun(cov_model_T2, dimension, spacing, origin, x=x, v=v_T[:npt, 1],
-                                                           mode='simulation', algo=algo_T2, output_mode='array',
-                                                           **params_T2, nreal=1)
+                    try:
+                        sim_T2 = multiGaussian.multiGaussianRun(
+                                cov_model_T2, dimension, spacing, origin, x=x, v=v_T[:npt, 1],
+                                mode='simulation', algo=algo_T2, output_mode='array',
+                                **params_T2, nreal=1)
+                    except:
+                        sim_ok = False
+                        if verbose > 2:
+                            print('   ... conditional simulation of T2 failed')
+                        continue
+                    # except Exception as exc:
+                    #     err_msg = f'{fname}: conditional simulation of T2 failed'
+                    #     raise SrfError(err_msg) from exc
                 else:
                     sim_T2 = params_T2['mean'].reshape(1,*dimension[::-1])
                 # -> sim_T2: nd-array of shape
                 #      (1, dimension) (for T2 in 1D)
                 #      (1, dimension[1], dimension[0]) (for T2 in 2D)
                 #      (1, dimension[2], dimension[1], dimension[0]) (for T2 in 3D)
-                if sim_T2 is None:
-                    sim_ok = False
-                    if verbose > 3:
-                        print('   ... conditional simulation of T2 failed')
-                    continue
 
                 # Set origin and dimension for Y
                 origin_Y = [0.0, 0.0]
@@ -2917,15 +2988,21 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                     v_ext_unique = np.array([v_ext[indc_inv==j].mean() for j in range(len(indc_unique))])
 
                 # Generate Y conditional to (v_T, v_ext) (one real)
-                sim_Y = multiGaussian.multiGaussianRun(cov_model_Y, dimension_Y, spacing_Y, origin_Y, x=v_T_unique, v=v_ext_unique,
-                                                       mode='simulation', algo=algo_Y, output_mode='array',
-                                                       **params_Y, nreal=1)
-                # -> 3d-array of shape (1, dimension_Y[1], dimension_Y[0])
-                if sim_Y is None:
+                try:
+                    sim_Y = multiGaussian.multiGaussianRun(
+                            cov_model_Y, dimension_Y, spacing_Y, origin_Y, x=v_T_unique, v=v_ext_unique,
+                            mode='simulation', algo=algo_Y, output_mode='array',
+                            **params_Y, nreal=1)
+                except:
                     sim_ok = False
-                    if verbose > 3:
-                        print('   ... simulation of Y failed')
+                    if verbose > 2:
+                        print('   ... conditional simulation of Y failed')
                     continue
+                # except Exception as exc:
+                #     err_msg = f'{fname}: conditional simulation of Y failed'
+                #     raise SrfError(err_msg) from exc
+
+                # -> 3d-array of shape (1, dimension_Y[1], dimension_Y[0])
 
             # Generate Z (one real)
             # Compute
@@ -2941,18 +3018,18 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
             #Z_real = np.array([sim_Y[0, j, i] for i, j in zip(np.floor((sim_T1.reshape(-1) - origin_Y[0])/spacing_Y[0]).astype(int), np.floor((sim_T2.reshape(-1) - origin_Y[1])/spacing_Y[1]).astype(int))])
             if vmin is not None and Z_real.min() < vmin:
                 sim_ok = False
-                if verbose > 3:
+                if verbose > 2:
                     print('   ... specified minimal value not honoured')
                 continue
             if vmax is not None and Z_real.max() > vmax:
                 sim_ok = False
-                if verbose > 3:
+                if verbose > 2:
                     print('   ... specified maximal value not honoured')
                 continue
 
             if sim_ok:
-                if Y_cond_aggregation and verbose > 2:
-                    print(f'WARNING {fname}: conditioning points for Y falling in a same grid cell have been aggregated (mean) (real index {ireal})')
+                if Y_cond_aggregation and verbose > 0:
+                    print(f'{fname}: WARNING: conditioning points for Y falling in a same grid cell have been aggregated (mean) (real index {ireal})')
                 Z.append(Z_real)
                 if full_output:
                     T1.append(sim_T1[0])
@@ -2961,8 +3038,8 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
                 break
 
     # Get Z
-    if verbose > 1 and len(Z) < nreal:
-        print(f'WARNING {fname}: some realization failed (missing)')
+    if verbose > 0 and len(Z) < nreal:
+        print(f'{fname}: WARNING: some realization failed (missing)')
     Z = np.asarray(Z).reshape(len(Z), *np.atleast_1d(dimension)[::-1])
 
     if full_output:
@@ -2999,7 +3076,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 #     Displays (in the current figure) the details of one realization of a 1D SRF.
 
 #     Three following plots are displayed:
-    
+
 #     - result for Z (resulting SRF)
 #     - result for T (latent field, directing function)
 #     - result for Y (coding process), and some statistics
@@ -3047,7 +3124,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 #     Displays (in the current figure) the details of one realization of a 1D SRF.
 
 #     The following plots are displayed:
-    
+
 #     - result for Z (resulting SRF)
 #     - result for T (latent field, directing function)
 #     - result for Y (coding process), and some statistics
@@ -3065,7 +3142,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 #         each variable is one realization
 
 #     Y : list, optional
-#         list containing the realizations of Y (coding process), `Y[k]` is a list of 
+#         list containing the realizations of Y (coding process), `Y[k]` is a list of
 #         length of length 4 for the k-th realization of `Y`, with:
 
 #         - Y[k][0]: int, Y_nt (number of cell along t-axis)
@@ -3076,7 +3153,7 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 #     x : array of floats, optional
 #         data points locations (float coordinates);
 #         2d-array of floats of two columns, each row being the location
-#         of one conditioning point; 
+#         of one conditioning point;
 #         note: if only one point, a 1d-array of 2 floats is accepted
 
 #     v : 1d-array-like of floats, optional
@@ -3084,32 +3161,32 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 
 #     t : 1d-array-like of floats, or float, optional
 #         values of T considered as conditioning point for Y(T) (additional constraint)
-    
+
 #     yt : 1d-array-like of floats, or float, optional
 #         value of Y at the conditioning point `t` (same length as `t`)
-    
+
 #     im_Z_display : dict, optional
-#         additional parameters for displaying im_Z (on 1st plot), 
+#         additional parameters for displaying im_Z (on 1st plot),
 #         passed to the function :func:`imgplt.drawImage2D`
 
 #     im_T_display : dict, optional
 #         additional parameters for displaying im_T (on 2nd plot)
 #         passed to the function :func:`imgplt.drawImage2D`
 
-#     plot_dens_Z : bool, default: True 
+#     plot_dens_Z : bool, default: True
 #         indicates if density of Z is displayed (on 3rd plot)
 
-#     plot_dens_T : bool, default: True 
+#     plot_dens_T : bool, default: True
 #         indicates if density of T is displayed (on 3rd plot)
 
 #     quant_Z: 1d-array of floats or float, optional
 #         probability values in [0, 1] for quantiles of T to be displayed
-#         (on 3rd plot), e.g. 
+#         (on 3rd plot), e.g.
 #         `numpy.array([0., 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 1.])`
 
 #     quant_T: 1d-array of floats or float, optional
 #         probability values in [0, 1] for quantiles of T to be displayed
-#         (on 3rd plot), e.g. 
+#         (on 3rd plot), e.g.
 #         `numpy.array([0., 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 1.])`
 
 #     col_stat_Z : color, default: 'green'
@@ -3123,50 +3200,50 @@ def srf_bimg_mg(cov_model_T1, cov_model_T2, cov_model_Y,
 #     col_x_in_im_Z : color, default: 'red'
 #         color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
 #         plotting x locations in map of T (on 1st plot)
-        
+
 #     marker_x_in_im_Z : marker, default: 'x'
 #         marker used for plotting x location in map of T (on 1st plot)
-    
+
 #     markersize_x_in_im_Z : int, default: 75
 #         marker size used for plotting x location in map of T (on 1st plot)
 
 #     col_x_in_im_T : color, default: 'red'
 #         color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
 #         plotting x locations in map of T (on 2nd plot)
-        
+
 #     marker_x_in_im_T : marker, default: 'x'
 #         marker used for plotting x location in map of T (on 2nd plot)
-    
+
 #     markersize_x_in_im_T : int, default: 75
 #         marker size used for plotting x location in map of T (on 2nd plot)
 
 #     col_x_in_Y : color, default: 'purple'
 #         color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
 #         plotting t locations in map of Y (on 3rd plot)
-        
+
 #     marker_x_in_im_Y : marker, default: 'x'
 #         marker used for t locations in map of Y (on 3rd plot)
-    
+
 #     markersize_x_in_im_Y : int, default: 75
 #         marker size used for t locations in map of Y (on 3rd plot)
 
 #     col_x_in_Y : color, default: 'red'
 #         color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
 #         plotting T(x) locations in map of Y (on 3rd plot)
-        
+
 #     marker_x_in_im_Y : marker, default: 'x'
 #         marker used for T(x) locations in map of Y (on 3rd plot)
-    
+
 #     markersize_x_in_im_Y : int, default: 75
 #         marker size used for T(x) locations in map of Y (on 3rd plot)
 
 #     col_t_in_Y : color, default: 'purple'
 #         color (3-tuple (RGB code), 4-tuple (RGBA code) or str), used for
 #         plotting t locations in map of Y (on 3rd plot)
-        
+
 #     marker_t_in_im_Y : marker, default: '.'
 #         marker used for t locations in map of Y (on 3rd plot)
-    
+
 #     markersize_t_in_im_Y : int, default: 100
 #         marker size used for t locations in map of Y (on 3rd plot)
 

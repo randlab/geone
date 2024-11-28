@@ -21,7 +21,13 @@ from matplotlib.backend_bases import MouseButton
 from geone import img
 
 # -----------------------------------------------------------------------------
-def add_path_by_drawing(path_list, close=False, show_instructions=True, last_point_marker='o', last_point_color='red', **kwargs):
+def add_path_by_drawing(
+        path_list,
+        close=False,
+        show_instructions=True,
+        last_point_marker='o',
+        last_point_color='red',
+        **kwargs):
     """
     Add paths in a list, by interatively drawing on a plot.
 
@@ -34,9 +40,9 @@ def add_path_by_drawing(path_list, close=False, show_instructions=True, last_poi
 
     - left click: add the nex point (or first one)
     - right click: remove the last point
-    
+
     When pressing a key:
-    
+
     - key n/N: terminate the current path, and start a new path
     - key ENTER (or other): terminate the current path and exits
 
@@ -71,6 +77,8 @@ def add_path_by_drawing(path_list, close=False, show_instructions=True, last_poi
     * An interactive maplotlib backend must be used, so that this function works \
     properly
     """
+    # fname = 'add_path_by_drawing'
+
     ax = plt.gca()
     obj_drawn = []
     x, y = [], []
@@ -198,6 +206,8 @@ def is_in_polygon(x, vertices, wrap=None, **kwargs):
         note: if `x` is of shape (m, 2), then `out` is a 1D array of shape (m, ),
         and if `x` is of shape (2, ) (one point), `out` is bool
     """
+    # fname = 'is_in_polygon'
+
     # Set wrap (and adjust vertices) if needed
     if wrap is None:
         wrap = ~np.isclose(np.sqrt(((vertices[-1] - vertices[0])**2).sum()), 0.0)
@@ -257,7 +267,7 @@ def is_in_polygon_mp(x, vertices, wrap=None, nproc=-1, **kwargs):
 
     The number of processes used (in parallel) is n, and determined by the
     parameter `nproc` (int, optional) as follows:
-    
+
     - if `nproc > 0`: n = `nproc`,
     - if `nproc <= 0`: n = max(nmax+`nproc`, 1), where nmax is the total \
     number of cpu(s) of the system (retrieved by `multiprocessing.cpu_count()`), \
@@ -265,6 +275,8 @@ def is_in_polygon_mp(x, vertices, wrap=None, nproc=-1, **kwargs):
 
     See function :func:`tools.is_in_polygon`.
     """
+    # fname = 'is_in_polygon_mp'
+
     # Set wrap (and adjust vertices) if needed
     if wrap is None:
         wrap = ~np.isclose(np.sqrt(((vertices[-1] - vertices[0])**2).sum()), 0.0)
@@ -309,13 +321,15 @@ def is_in_polygon_mp(x, vertices, wrap=None, nproc=-1, **kwargs):
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
-def rasterize_polygon_2d(vertices,
-                         nx=None, ny=None,
-                         sx=None, sy=None,
-                         ox=None, oy=None,
-                         xmin_ext=0.0, xmax_ext=0.0,
-                         ymin_ext=0.0, ymax_ext=0.0,
-                         wrap=None, **kwargs):
+def rasterize_polygon_2d(
+        vertices,
+        nx=None, ny=None,
+        sx=None, sy=None,
+        ox=None, oy=None,
+        xmin_ext=0.0, xmax_ext=0.0,
+        ymin_ext=0.0, ymax_ext=0.0,
+        wrap=None,
+        **kwargs):
     """
     Rasterizes a polygon (close line) in a 2D grid.
 
@@ -326,11 +340,11 @@ def rasterize_polygon_2d(vertices,
     The grid geometry of the output image is set by the given parameters or
     computed from the vertices, as in function :func:`img.imageFromPoints`,
     i.e. for the x axis (similar for y):
-    
+
     - `ox` (origin), `nx` (number of cells) and `sx` (resolution, cell size)
     - or only `nx`: `ox` and `sx` automatically computed
     - or only `sx`: `ox` and `nx` automatically computed
-    
+
     In the two last cases, the parameters `xmin_ext`, `xmax_ext`, are used and
     the approximate limit of the grid along x axis is set to x0, x1, where
 
@@ -396,6 +410,8 @@ def rasterize_polygon_2d(vertices,
         output image (see above);
         note: the image grid is defined in 3D with `nz=1`, `sz=1.0`, `oz=-0.5`
     """
+    # fname = 'rasterize_polygon_2d'
+
     # Define grid geometry (image with no variable)
     im = img.imageFromPoints(vertices,
                              nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
@@ -410,13 +426,16 @@ def rasterize_polygon_2d(vertices,
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
-def rasterize_polygon_2d_mp(vertices,
-                            nx=None, ny=None,
-                            sx=None, sy=None,
-                            ox=None, oy=None,
-                            xmin_ext=0.0, xmax_ext=0.0,
-                            ymin_ext=0.0, ymax_ext=0.0,
-                            wrap=None, nproc=-1, **kwargs):
+def rasterize_polygon_2d_mp(
+        vertices,
+        nx=None, ny=None,
+        sx=None, sy=None,
+        ox=None, oy=None,
+        xmin_ext=0.0, xmax_ext=0.0,
+        ymin_ext=0.0, ymax_ext=0.0,
+        wrap=None,
+        nproc=-1,
+        **kwargs):
     """
     Computes the same as the function :func:`tools.rasterize_polygon_2d`, using multiprocessing.
 
@@ -425,7 +444,7 @@ def rasterize_polygon_2d_mp(vertices,
 
     The number of processes used (in parallel) is n, and determined by the
     parameter `nproc` (int, optional) as follows:
-    
+
     - if `nproc > 0`: n = `nproc`,
     - if `nproc <= 0`: n = max(nmax+`nproc`, 1), where nmax is the total \
     number of cpu(s) of the system (retrieved by `multiprocessing.cpu_count()`), \
@@ -433,6 +452,8 @@ def rasterize_polygon_2d_mp(vertices,
 
     See function :func:`tools.rasterize_polygon_2d`.
     """
+    # fname = 'rasterize_polygon_2d_mp'
+
     # Define grid geometry (image with no variable)
     im = img.imageFromPoints(vertices,
                              nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
@@ -449,9 +470,14 @@ def rasterize_polygon_2d_mp(vertices,
 # -----------------------------------------------------------------------------
 def curv_coord_2d_from_center_line(
         x, cl_position, im_cl_dist,
-        cl_u=None, gradx=None, grady=None,
-        dg=None, gradtol=1.e-5, path_len_max=10000,
-        return_path=False):
+        cl_u=None,
+        gradx=None,
+        grady=None,
+        dg=None,
+        gradtol=1.e-5,
+        path_len_max=10000,
+        return_path=False,
+        verbose=1):
     """
     Computes curvilinear coordinates in 2D from a center line, for points given in standard coordinates.
 
@@ -460,10 +486,10 @@ def curv_coord_2d_from_center_line(
 
     - u = (u1, u2) (in 2D) in curvilinear system
     - x = (x1, x2) (in 2D) in standard system
-    
+
     The curvilinear coordinates system (u) is defined according to a center line
     in a 2D grid as follows:
-    
+
     - considering the distance map (geone image `im_cl_dist`) of L2 distance \
     to the center line (`cl_position`)
     - the path from x to the point I on the center line is computed, descending \
@@ -483,12 +509,12 @@ def curv_coord_2d_from_center_line(
 
     cl_position : 2D array of shape (n, 2)
         position of the points of the center line (in standard system);
-        note: the distance between two successive points of the center line give
+        note: the distance between two successive points of the center line gives
         the resolution of the u1 coordinate
 
     im_cl_dist : :class:`geone.img.Img`
         image of the distance to the center line:
-        
+
         - its grid is the "support" of standard coordinate system and it \
         should contain all the points `x`
         - the center line (`cl_position`) should "separate" the image grid \
@@ -526,6 +552,9 @@ def curv_coord_2d_from_center_line(
         I of the centerline (descending the gradient of the distance map) is
         (are) retrieved
 
+    verbose : int, default: 1
+        verbose mode, integer >=0, higher implies more display
+
     Returns
     -------
     u : 2D array or 1D array (same shape as `x`)
@@ -543,6 +572,8 @@ def curv_coord_2d_from_center_line(
         `x` to the center line;
         returned if `returned_path=True`
     """
+    fname = 'curv_coord_2d_from_center_line'
+
     if cl_u is None:
         cl_u = np.insert(np.cumsum(np.sqrt(((cl_position[1:,:] - cl_position[:-1,:])**2).sum(axis=1))), 0, 0.0)
 
@@ -611,8 +642,10 @@ def curv_coord_2d_from_center_line(
         try:
             k = np.where(d_cur == d_cur.min())[0][0]
         except:
-            k = len(cl_position[-2])
-            print('WARNING: closest point on center line not found...')
+            # k = len(cl_position[-2])
+            k = len(cl_position) - 2
+            if verbose > 0:
+                print(f'{fname}: WARNING: closest point on center line not found (last segment selected)')
         u1 = cl_u[k]
 
         s = np.sign(np.linalg.det(np.vstack((cl_position[k+1] - cl_position[k], x[i] - x_cur))))
@@ -637,9 +670,14 @@ def curv_coord_2d_from_center_line(
 # -----------------------------------------------------------------------------
 def curv_coord_2d_from_center_line_mp(
         x, cl_position, im_cl_dist,
-        cl_u=None, gradx=None, grady=None,
-        dg=None, gradtol=1.e-5, path_len_max=10000,
-        return_path=False, nproc=-1):
+        cl_u=None,
+        gradx=None,
+        grady=None,
+        dg=None,
+        gradtol=1.e-5,
+        path_len_max=10000,
+        return_path=False,
+        nproc=-1):
     """
     Computes the same as the function :func:`tools.curv_coord_2d_from_center_line`, using multiprocessing.
 
@@ -656,6 +694,8 @@ def curv_coord_2d_from_center_line_mp(
 
     See function :func:`tools.curv_coord_2d_from_center_line`.
     """
+    # fname = 'curv_coord_2d_from_center_line_mp'
+
     # Initialization
     xx = np.atleast_2d(x)
 
@@ -669,7 +709,7 @@ def curv_coord_2d_from_center_line_mp(
     q, r = np.divmod(xx.shape[0], n)
     ids_proc = [i*q + min(i, r) for i in range(n+1)]
 
-    kwargs = dict(cl_u=cl_u, gradx=gradx, grady=grady, dg=dg, gradtol=gradtol, path_len_max=path_len_max, return_path=return_path)
+    kwargs = dict(cl_u=cl_u, gradx=gradx, grady=grady, dg=dg, gradtol=gradtol, path_len_max=path_len_max, return_path=return_path, verbose=0)
     # Set pool of n workers
     pool = multiprocessing.Pool(n)
     out_pool = []

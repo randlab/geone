@@ -23,17 +23,25 @@ from geone.blockdata import BlockData
 version = [deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER]
 
 # ============================================================================
+class DeesseinterfaceError(Exception):
+    """
+    Custom exception related to `deesseinterface` module.
+    """
+    pass
+# ============================================================================
+
+# ============================================================================
 class SearchNeighborhoodParameters(object):
     """
     Class defining search neighborhood parameters (for deesse).
 
     **Attributes**
-    --------------    
+    --------------
     radiusMode : str {'large_default', 'ti_range_default', 'ti_range', \
                     'ti_range_xy', 'ti_range_xz', 'ti_range_yz', 'ti_range_xyz', \
                     'manual'}, default: 'large_default'
         radius mode, defining how the search radii `rx`, `ry`, `rz` are set:
-        
+
         - 'large_default': \
         large radii set according to the size of the SG and the TI(s), and \
         the use of homothethy and/or rotation for the simulation \
@@ -114,13 +122,13 @@ class SearchNeighborhoodParameters(object):
     az : float, default: 0.0
         anisotropy (inverse unit distance) along z axis direction
 
-    angle1 : float, default: 0.0    
+    angle1 : float, default: 0.0
         1st angle (azimuth) in degrees for rotation
 
-    angle2 : float, default: 0.0    
+    angle2 : float, default: 0.0
         2nd angle (dip) in degrees for rotation
 
-    angle3 : float, default: 0.0    
+    angle3 : float, default: 0.0
         3rd angle (plunge) in degrees for rotation
 
     power : float, default: 0.0
@@ -138,9 +146,11 @@ class SearchNeighborhoodParameters(object):
                  power=0.0):
         """
         Inits an instance of the class.
-        
+
         **Parameters** : see "Attributes" in the class definition above.
         """
+        # fname = 'SearchNeighborhoodParameters'
+
         self.radiusMode = radiusMode
         self.rx = rx
         self.ry = ry
@@ -187,14 +197,14 @@ class SoftProbability(object):
         - 1: global probability constraints
         - 2: local probability constraints using support
         - 3: local probability constraints based on rejection
-    
+
     nclass : int, default: 0
         number of classes of values;
         used if `probabilityConstraintUsage>0`
-    
+
     classInterval : list of 2D array-like of floats with two columns, optional
         definition of the classes of values by intervals:
-    
+
         - `classInterval[i]` : array `a` of shape (n_i, 2), defining the \
         i-th class as the union of intervals as \
         `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
@@ -207,7 +217,7 @@ class SoftProbability(object):
 
     localPdf : 4D array-like of floats of shape (nclass, nz, ny, nx), optional
         probability for each class:
-        
+
         - `localPdf[i]` is the "map defined on the simulation grid (SG)" of \
         of dimension nx x ny x nz (number of cell along each axis)
 
@@ -238,7 +248,7 @@ class SoftProbability(object):
         symmetric target interval))
         - 5: MLikRopt (Mean Likelihood Ratio (over each class indicator, \
         optimal target interval))
-        
+
         used if `probabilityConstraintUsage` in [1, 2]
 
     rejectionMode : int, default: 0
@@ -266,10 +276,10 @@ class SoftProbability(object):
 
     probabilityConstraintThresholdType : int, default: 0
         defines the type of (acceptance) threhsold for pdfs' comparison:
-        
+
         - 0: constant threshold
         - 1: dynamic threshold
-        
+
         used if `probabilityConstraintUsage` in [1, 2]
 
     constantThreshold : float, default: 1.e-3
@@ -301,7 +311,7 @@ class SoftProbability(object):
                  dynamicThresholdParameters=None):
         """
         Inits an instance of the class.
-        
+
         **Parameters** : see "Attributes" in the class definition above.
         """
         fname = 'SoftProbability'
@@ -319,8 +329,8 @@ class SoftProbability(object):
             try:
                 self.globalPdf = np.asarray(globalPdf, dtype=float).reshape(nclass)
             except:
-                print(f'ERROR ({fname}): parameter `globalPdf`...')
-                return None
+                err_msg = f'{fname}: parameter `globalPdf`...'
+                raise DeesseinterfaceError(err_msg)
 
         if localPdf is None:
             self.localPdf = None
@@ -535,8 +545,8 @@ class Connectivity(object):
         self.tiAsRefFlag = tiAsRefFlag
 
         if not tiAsRefFlag and refConnectivityImage is None:
-            print(f'ERROR ({fname}): parameter `refConnectivityImage`...')
-            return None
+            err_msg = f'{fname}: parameter `refConnectivityImage`...'
+            raise DeesseinterfaceError(err_msg)
 
         self.refConnectivityImage = refConnectivityImage
         self.refConnectivityVarIndex = refConnectivityVarIndex
@@ -611,7 +621,7 @@ class PyramidGeneralParameters(object):
                      3 nodes)
         * kx[.] = 2: classical gaussian pyramid
         * kx[.] > 2: generalized gaussian pyramid
-        
+
 
     kx : sequence of ints of length `npyramidLevel`, optional
         reduction step along y axis for each level:
@@ -634,7 +644,7 @@ class PyramidGeneralParameters(object):
     pyramidSimulationMode : str {'hierarchical', 'hierarchical_using_expansion'}, \
                                 default: 'hierarchical_using_expansion'
         simulation mode for pyramids:
-        
+
         - 'hierarchical':
             (a) spreading conditioning data through the pyramid by simulation at \
             each level, from fine to coarse resolution, conditioned to the level \
@@ -658,7 +668,7 @@ class PyramidGeneralParameters(object):
         - if `pyramidSimulationMode='hierarchical'` or
             `pyramidSimulationMode='hierarchical_using_expansion'`:
             array of size `4 * npyramidLevel + 1` with entries:
-            
+
             * faCond[0], faSim[0], fbCond[0], fbSim[0]
             * ...
             * faCond[n-1], faSim[n-1], fbCond[n-1], fbSim[n-1]
@@ -667,7 +677,7 @@ class PyramidGeneralParameters(object):
             i.e. (4*n+1) positive numbers where n = `npyramidLevel`, with the
             following meaning; the maximal number of neighboring nodes (according
             to each variable) is multiplied by
-            
+
             (a) faCond[j] and faSim[j] for the conditioning level (level j) \
             and the simulated level (level j+1) resp. during step (a) above
             (b) fbCond[j] and fbSim[j] for the conditioning level (level j+1) \
@@ -676,9 +686,9 @@ class PyramidGeneralParameters(object):
 
         - if `pyramidSimulationMode=all_level_one_by_one'`:
             array of size `npyramidLevel + 1` with entries:
-    
+
             * f[0],..., f[npyramidLevel-1], f[npyramidLevel]
-    
+
             i.e. `npyramidLevel + 1` positive numbers, with the following
             meaning; the maximal number of neighboring nodes (according to each
             variable) is multiplied by f[j] for the j-th pyramid level
@@ -686,7 +696,7 @@ class PyramidGeneralParameters(object):
     factorDistanceThreshold : 1D array-like of floats, optional
         factors for adpating the distance (acceptance) threshold (similar to
         `factorNneighboringNode`)
-        
+
     factorMaxScanFraction : sequence of floats of length `npyramidLevel + 1`, optional
         factors for adpating the maximal scan fraction: the maximal scan
         fraction (according to each TI) is multiplied by `factorMaxScanFraction[j]`
@@ -708,7 +718,7 @@ class PyramidGeneralParameters(object):
 
         The parameters `nx`, `ny`, `nz` are used to set default values for
         attributes `kx`, `ky`, `kz` respectively.
-        As default (i.e. if `kx` is `None`): if `nx>1`, then every component 
+        As default (i.e. if `kx` is `None`): if `nx>1`, then every component
         of `kx` will be set to 2, otherwise to 0. Similarly for `ky`, `kz`.
 
         For other **Parameters** : see "Attributes" in the class definition above.
@@ -719,8 +729,8 @@ class PyramidGeneralParameters(object):
 
         # pyramidSimulationMode
         if pyramidSimulationMode not in ('hierarchical', 'hierarchical_using_expansion', 'all_level_one_by_one'):
-            print(f'ERROR ({fname}): unknown `pyramidSimulationMode`')
-            return None
+            err_msg = f'{fname}: unknown `pyramidSimulationMode`'
+            raise DeesseinterfaceError(err_msg)
 
         self.pyramidSimulationMode = pyramidSimulationMode
 
@@ -732,8 +742,8 @@ class PyramidGeneralParameters(object):
                 try:
                     self.kx = np.asarray(kx, dtype='int').reshape(npyramidLevel)
                 except:
-                    print(f'ERROR ({fname}): parameter `kx`...')
-                    return None
+                    err_msg = f'{fname}: parameter `kx`...'
+                    raise DeesseinterfaceError(err_msg)
 
             if ky is None:
                 self.ky = np.array([2 * int (ny>1) for i in range(npyramidLevel)])
@@ -741,8 +751,8 @@ class PyramidGeneralParameters(object):
                 try:
                     self.ky = np.asarray(ky, dtype='int').reshape(npyramidLevel)
                 except:
-                    print(f'ERROR ({fname}): parameter `ky`...')
-                    return None
+                    err_msg = f'{fname}: parameter `ky`...'
+                    raise DeesseinterfaceError(err_msg)
 
             if kz is None:
                 self.kz = np.array([2 * int (nz>1) for i in range(npyramidLevel)])
@@ -750,8 +760,8 @@ class PyramidGeneralParameters(object):
                 try:
                     self.kz = np.asarray(kz, dtype='int').reshape(npyramidLevel)
                 except:
-                    print(f'ERROR ({fname}): parameter `kz`...')
-                    return None
+                    err_msg = f'{fname}: parameter `kz`...'
+                    raise DeesseinterfaceError(err_msg)
 
             # factorNneighboringNode, factorDistanceThreshold
             if pyramidSimulationMode in ('hierarchical', 'hierarchical_using_expansion'):
@@ -767,8 +777,8 @@ class PyramidGeneralParameters(object):
                     try:
                         self.factorNneighboringNode = np.asarray(factorNneighboringNode, dtype=float).reshape(n)
                     except:
-                        print(f'ERROR ({fname}): parameter `factorNneighboringNode`...')
-                        return None
+                        err_msg = f'{fname}: parameter `factorNneighboringNode`...'
+                        raise DeesseinterfaceError(err_msg)
 
                 if factorDistanceThreshold is None:
                     factorDistanceThreshold = np.ones(n)
@@ -777,8 +787,8 @@ class PyramidGeneralParameters(object):
                     try:
                         self.factorDistanceThreshold = np.asarray(factorDistanceThreshold, dtype=float).reshape(n)
                     except:
-                        print(f'ERROR ({fname}): parameter `factorDistanceThreshold`...')
-                        return None
+                        err_msg = f'{fname}: parameter `factorDistanceThreshold`...'
+                        raise DeesseinterfaceError(err_msg)
 
             else: # pyramidSimulationMode == 'all_level_one_by_one'
                 n = npyramidLevel + 1
@@ -789,8 +799,8 @@ class PyramidGeneralParameters(object):
                     try:
                         self.factorNneighboringNode = np.asarray(factorNneighboringNode, dtype=float).reshape(n)
                     except:
-                        print(f'ERROR ({fname}): parameter `factorNneighboringNode`...')
-                        return None
+                        err_msg = f'{fname}: parameter `factorNneighboringNode`...'
+                        raise DeesseinterfaceError(err_msg)
 
                 if factorDistanceThreshold is None:
                     factorDistanceThreshold = np.ones(n)
@@ -799,8 +809,8 @@ class PyramidGeneralParameters(object):
                     try:
                         self.factorDistanceThreshold = np.asarray(factorDistanceThreshold, dtype=float).reshape(n)
                     except:
-                        print(f'ERROR ({fname}): parameter `factorDistanceThreshold`...')
-                        return None
+                        err_msg = f'{fname}: parameter `factorDistanceThreshold`...'
+                        raise DeesseinterfaceError(err_msg)
 
             # factorMaxScanFraction
             n = npyramidLevel + 1
@@ -815,8 +825,8 @@ class PyramidGeneralParameters(object):
                 try:
                     self.factorMaxScanFraction = np.asarray(factorMaxScanFraction, dtype=float).reshape(n)
                 except:
-                    print(f'ERROR ({fname}): parameter `factorMaxScanFraction`...')
-                    return None
+                    err_msg = f'{fname}: parameter `factorMaxScanFraction`...'
+                    raise DeesseinterfaceError(err_msg)
 
         else: # npyramidLevel <= 0
             self.kx = None
@@ -886,7 +896,7 @@ class PyramidParameters(object):
 
     classInterval : list of 2D array-like of floats with two columns, optional
         definition of the classes of values by intervals:
-        
+
         - `classInterval[i]` : array `a` of shape (n_i, 2), defining the \
         i-th class as the union of intervals as \
         `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
@@ -906,7 +916,7 @@ class PyramidParameters(object):
         Notes:
 
         - the name of the output variables are set to \
-        '<vname>_ind<i>_lev<k>_real<n>' where          
+        '<vname>_ind<i>_lev<k>_real<n>' where
             - <vname> is the name of the "original" variable,
             - <i> is a pyramid index for that variable which starts at 0 (more \
             than one index can be required if the pyramid type is set to \
@@ -935,8 +945,8 @@ class PyramidParameters(object):
         self.nlevel = nlevel
 
         if pyramidType not in ('none', 'continuous', 'categorical_auto', 'categorical_custom', 'categorical_to_continuous'):
-            print(f'ERROR ({fname}): unknown `pyramidType`')
-            return None
+            err_msg = f'{fname}: unknown `pyramidType`'
+            raise DeesseinterfaceError(err_msg)
 
         self.pyramidType = pyramidType
 
@@ -949,8 +959,8 @@ class PyramidParameters(object):
             try:
                 self.outputLevelFlag = np.asarray(outputLevelFlag, dtype='bool').reshape(nlevel)
             except:
-                print(f'ERROR ({fname}): parameter `outputLevelFlag`...')
-                return None
+                err_msg = f'{fname}: parameter `outputLevelFlag`...'
+                raise DeesseinterfaceError(err_msg)
 
     # ------------------------------------------------------------------------
     def __repr__(self):
@@ -1027,11 +1037,11 @@ class DeesseInput(object):
 
     outputVarFlag : sequence of bools of length `nv`, optional
         flags indicating which variable(s) is (are) saved in output
-        
+
     outputPathIndexFlag : bool, default: False
         indicates if path index maps are retrieved in output;
         path index map: index in the simulation path
-        
+
     outputErrorFlag : bool, default: False
         indicates if error maps are retrieved in output;
         error map: error for the retained candidate
@@ -1068,7 +1078,7 @@ class DeesseInput(object):
     pdfTI : array-like of floats, optional
         array of shape (nTI, nz, ny, nx) (reshaped if needed), probability for
         TI selection:
-        
+
         - `pdfTI[i]` is the "map defined on the SG" of the probability to \
         select the i-th TI
 
@@ -1092,7 +1102,7 @@ class DeesseInput(object):
 
     homothetyUsage : int, default: 0
         defines the usage of homothety:
-        
+
         - 0: no homothety
         - 1: homothety without tolerance
         - 2: homothety with tolerance
@@ -1104,7 +1114,7 @@ class DeesseInput(object):
 
     homothetyXRatio : array-like of floats, or float, optional
         homothety ratio according to X axis:
-        
+
         -if `homothetyUsage=1`:
             - if `homothetyXLocal=True`: \
             3D array of shape (nz, ny, nx): values in the SG
@@ -1122,19 +1132,19 @@ class DeesseInput(object):
 
     homothetyYLocal :
         as `homothetyXLocal`, but for the Y axis
-    
+
     homothetyYRatio :
         as `homothetyXRatio`, but for the Y axis
 
     homothetyZLocal :
         as `homothetyXLocal`, but for the Z axis
-    
+
     homothetyZRatio :
         as `homothetyXRatio`, but for the Z axis
 
     rotationUsage : int, default: 0
         defines the usage of rotation:
-        
+
         - 0: no rotation
         - 1: rotation without tolerance
         - 2: rotation with tolerance
@@ -1200,7 +1210,7 @@ class DeesseInput(object):
                 with
                     * min_cd, max_cd, the min and max of the conditioning values
                     * min_ti, max_ti, the min and max of the TI values
-                
+
                 if new_max_ti-new_min_ti <= (1+expMax)*(ti_max-ti_min), then \
                 the TI values are linearly rescaled from [ti_min, ti_max] to \
                 [new_ti_min, new_ti_max], and a warning is displayed (no error \
@@ -1221,7 +1231,7 @@ class DeesseInput(object):
     nneighboringNode : [sequence of] int(s), optional
         maximal number of neighbors in the search pattern, for each variable
         (sequence of length `nv`)
-        
+
     maxPropInequalityNode : [sequence of] double(s), optional
         maximal proportion of nodes with inequality data in the search pattern,
         for each variable
@@ -1287,7 +1297,7 @@ class DeesseInput(object):
 
     simType : str {'sim_one_by_one', 'sim_variable_vector'}, default: 'sim_one_by_one'
         simulation type:
-        
+
         - 'sim_one_by_one': successive simulation of one variable \
         at one node in the simulation grid (4D path)
         - 'sim_variable_vector': successive simulation of all variable(s) \
@@ -1329,7 +1339,7 @@ class DeesseInput(object):
 
     simPathUnilateralOrder : sequence of ints, optional
         used if `simPathType='unilateral'`:
-        
+
         - if `simType='sim_one_by_one'`: `simPathUnilateralOrder` is of \
         length 4, example: [0, -2, 1, 0] means that the path will visit \
         all nodes: randomly in xv-sections, with increasing z-coordinate, \
@@ -1338,7 +1348,7 @@ class DeesseInput(object):
         length 3, example: [-1, 0, 2] means that the path will visit \
         all nodes: randomly in y-sections, with decreasing x-coordinate, \
         and then increasing z-coordinate
-        
+
     distanceThreshold : [sequence of] float(s), optional
         distance (acceptance) for each variable
         (sequence of length `nv`)
@@ -1358,7 +1368,7 @@ class DeesseInput(object):
     maxScanFraction : [sequence of] double(s), optional
         maximal scan fraction of each TI
         (sequence of length `nTI`)
-        
+
     pyramidGeneralParameters : :class:`PyramidGeneralParameters`, optional
         general pyramid parameters
 
@@ -1369,7 +1379,7 @@ class DeesseInput(object):
     pyramidDataImage : sequence of :class:`geone.img.Img`, optional
         list of data image(s); image(s) used as conditioning data in pyramid
         (in additional levels); for each image:
-        
+
         - the variables are identified by their name: \
         the name should be set to '<vname>_ind<j>_lev<k>', where
             - <vname> is the name of the "original" variable,
@@ -1450,7 +1460,7 @@ class DeesseInput(object):
     -----
     In output simulated images (obtained by running DeeSse), the names of the
     output variables are set to '<vname>_real<n>', where
-    
+
     - <vname> is the name of the variable,
     - <n> is the realization index (starting from 0) \
     [<n> is written on 5 digits, with leading zeros]
@@ -1542,13 +1552,13 @@ class DeesseInput(object):
         self.oz = float(oz)
         self.nv = int(nv)
         if varname is None:
-            self.varname = ["V{:d}".format(i) for i in range(nv)]
+            self.varname = ['V{i:d}' for i in range(nv)]
         else:
             try:
                 self.varname = list(np.asarray(varname).reshape(nv))
             except:
-                print(f'ERROR ({fname}): parameter `varname`...')
-                return None
+                err_msg = f'{fname}: parameter `varname`...'
+                raise DeesseinterfaceError(err_msg)
 
         # dimension
         dim = int(nx>1) + int(ny>1) + int(nz>1)
@@ -1560,8 +1570,8 @@ class DeesseInput(object):
             try:
                 self.outputVarFlag = np.asarray(outputVarFlag, dtype='bool').reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `outputVarFlag`...')
-                return None
+                err_msg = f'{fname}: parameter `outputVarFlag`...'
+                raise DeesseinterfaceError(err_msg)
 
         # output maps
         self.outputPathIndexFlag = outputPathIndexFlag
@@ -1585,8 +1595,8 @@ class DeesseInput(object):
 
         # TI, simGridAsTiFlag, nTI
         if TI is None and simGridAsTiFlag is None:
-            print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag` (both None)...')
-            return None
+            err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid (both `None`)...'
+            raise DeesseinterfaceError(err_msg)
 
         if TI is not None:
             self.TI = np.asarray(TI).reshape(-1)
@@ -1601,17 +1611,17 @@ class DeesseInput(object):
             self.simGridAsTiFlag = np.array([False for i in range(len(self.TI))], dtype='bool') # set dtype='bool' in case of len(self.TI)=0
 
         if len(self.TI) != len(self.simGridAsTiFlag):
-            print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag` (not same length)...')
-            return None
+            err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid (not same length)...'
+            raise DeesseinterfaceError(err_msg)
 
         for f, t in zip(self.simGridAsTiFlag, self.TI):
             if (not f and t is None) or (f and t is not None):
-                print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag`...')
-                return None
+                err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid...'
+                raise DeesseinterfaceError(err_msg)
 
         if nTI is not None and nTI != len(self.TI):
-            print(f'ERROR ({fname}): invalid `nTI`...')
-            return None
+            err_msg = f'{fname}: `nTI` invalid...'
+            raise DeesseinterfaceError(err_msg)
 
         nTI = len(self.TI)
         self.nTI = nTI
@@ -1627,8 +1637,8 @@ class DeesseInput(object):
                 try:
                     self.pdfTI = np.asarray(pdfTI, dtype=float).reshape(nTI, nz, ny, nx)
                 except:
-                    print(f'ERROR ({fname}): parameter `pdfTI`...')
-                    return None
+                    err_msg = f'{fname}: parameter `pdfTI`...'
+                    raise DeesseinterfaceError(err_msg)
 
         # conditioning data image
         if dataImage is None:
@@ -1649,8 +1659,8 @@ class DeesseInput(object):
             try:
                 self.mask = np.asarray(mask).reshape(nz, ny, nx)
             except:
-                print(f'ERROR ({fname}): parameter `mask`...')
-                return None
+                err_msg = f'{fname}: parameter `mask`...'
+                raise DeesseinterfaceError(err_msg)
 
         # homothety
         if homothetyUsage == 1:
@@ -1661,8 +1671,9 @@ class DeesseInput(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyXRatio is None:
                     self.homothetyXRatio = np.array([1.])
@@ -1670,8 +1681,8 @@ class DeesseInput(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if homothetyYLocal:
                 if homothetyYRatio is None:
@@ -1680,8 +1691,9 @@ class DeesseInput(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyYRatio is None:
                     self.homothetyYRatio = np.array([1.])
@@ -1689,8 +1701,8 @@ class DeesseInput(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if homothetyZLocal:
                 if homothetyZRatio is None:
@@ -1699,8 +1711,9 @@ class DeesseInput(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyZRatio is None:
                     self.homothetyZRatio = np.array([1.])
@@ -1708,8 +1721,8 @@ class DeesseInput(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
         elif homothetyUsage == 2:
             if homothetyXLocal:
@@ -1719,8 +1732,9 @@ class DeesseInput(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyXRatio is None:
                     self.homothetyXRatio = np.array([1., 1.])
@@ -1728,8 +1742,8 @@ class DeesseInput(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if homothetyYLocal:
                 if homothetyYRatio is None:
@@ -1738,8 +1752,9 @@ class DeesseInput(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyYRatio is None:
                     self.homothetyYRatio = np.array([1., 1.])
@@ -1747,8 +1762,8 @@ class DeesseInput(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if homothetyZLocal:
                 if homothetyZRatio is None:
@@ -1757,8 +1772,9 @@ class DeesseInput(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyZRatio is None:
                     self.homothetyZRatio = np.array([1., 1.])
@@ -1766,8 +1782,8 @@ class DeesseInput(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
         elif homothetyUsage == 0:
             self.homothetyXRatio = None
@@ -1775,8 +1791,8 @@ class DeesseInput(object):
             self.homothetyZRatio = None
 
         else:
-            print(f'ERROR ({fname}): invalid `homothetyUsage`')
-            return None
+            err_msg = f'{fname}: `homothetyUsage` invalid'
+            raise DeesseinterfaceError(err_msg)
 
         self.homothetyUsage = homothetyUsage
         self.homothetyXLocal = homothetyXLocal
@@ -1792,8 +1808,9 @@ class DeesseInput(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationAzimuth is None:
                     self.rotationAzimuth = np.array([0.])
@@ -1801,8 +1818,8 @@ class DeesseInput(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if rotationDipLocal:
                 if rotationDip is None:
@@ -1811,8 +1828,9 @@ class DeesseInput(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationDip`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationDip`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationDip is None:
                     self.rotationDip = np.array([0.])
@@ -1820,8 +1838,8 @@ class DeesseInput(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationDip`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationDip`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if rotationPlungeLocal:
                 if rotationPlunge is None:
@@ -1830,8 +1848,9 @@ class DeesseInput(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationPlunge is None:
                     self.rotationPlunge = np.array([0.])
@@ -1839,8 +1858,8 @@ class DeesseInput(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        raise DeesseinterfaceError(err_msg)
 
         elif rotationUsage == 2:
             if rotationAzimuthLocal:
@@ -1850,8 +1869,9 @@ class DeesseInput(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationAzimuth is None:
                     self.rotationAzimuth = np.array([0., 0.])
@@ -1859,8 +1879,8 @@ class DeesseInput(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if rotationDipLocal:
                 if rotationDip is None:
@@ -1869,8 +1889,9 @@ class DeesseInput(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationDip`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationDip`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationDip is None:
                     self.rotationDip = np.array([0., 0.])
@@ -1878,8 +1899,8 @@ class DeesseInput(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationDip`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationDip`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if rotationPlungeLocal:
                 if rotationPlunge is None:
@@ -1888,8 +1909,9 @@ class DeesseInput(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationPlunge is None:
                     self.rotationPlunge = np.array([0., 0.])
@@ -1897,8 +1919,8 @@ class DeesseInput(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        raise DeesseinterfaceError(err_msg)
 
         elif rotationUsage == 0:
             self.rotationAzimuth = None
@@ -1906,8 +1928,8 @@ class DeesseInput(object):
             self.rotationPlunge = None
 
         else:
-            print(f'ERROR ({fname}): invalid `rotationUsage`')
-            return None
+            err_msg = f'{fname}: `rotationUsage` invalid'
+            raise DeesseinterfaceError(err_msg)
 
         self.rotationUsage = rotationUsage
         self.rotationAzimuthLocal = rotationAzimuthLocal
@@ -1931,8 +1953,8 @@ class DeesseInput(object):
             try:
                 self.searchNeighborhoodParameters = np.asarray(searchNeighborhoodParameters).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `searchNeighborhoodParameters`...')
-                return None
+                err_msg = f'{fname}: parameter `searchNeighborhoodParameters`...'
+                raise DeesseinterfaceError(err_msg)
 
         if nneighboringNode is None:
             if dim == 3: # 3D simulation
@@ -1948,8 +1970,8 @@ class DeesseInput(object):
             try:
                 self.nneighboringNode = np.asarray(nneighboringNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `nneighboringNode`...')
-                return None
+                err_msg = f'{fname}: parameter `nneighboringNode`...'
+                raise DeesseinterfaceError(err_msg)
 
         if maxPropInequalityNode is None:
             self.maxPropInequalityNode = np.array([0.25 for i in range(nv)])
@@ -1957,8 +1979,8 @@ class DeesseInput(object):
             try:
                 self.maxPropInequalityNode = np.asarray(maxPropInequalityNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `maxPropInequalityNode`...')
-                return None
+                err_msg = f'{fname}: parameter `maxPropInequalityNode`...'
+                raise DeesseinterfaceError(err_msg)
 
         if neighboringNodeDensity is None:
             self.neighboringNodeDensity = np.array([1. for i in range(nv)])
@@ -1966,8 +1988,8 @@ class DeesseInput(object):
             try:
                 self.neighboringNodeDensity = np.asarray(neighboringNodeDensity, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `neighboringNodeDensity`...')
-                return None
+                err_msg = f'{fname}: parameter `neighboringNodeDensity`...'
+                raise DeesseinterfaceError(err_msg)
 
         # rescaling
         if rescalingMode is None:
@@ -1976,8 +1998,8 @@ class DeesseInput(object):
             try:
                 self.rescalingMode = list(np.asarray(rescalingMode).reshape(nv))
             except:
-                print(f'ERROR ({fname}): parameter `rescalingMode`...')
-                return None
+                err_msg = f'{fname}: parameter `rescalingMode`...'
+                raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMin is None:
             self.rescalingTargetMin = np.array([0.0 for i in range(nv)], dtype=float)
@@ -1985,8 +2007,8 @@ class DeesseInput(object):
             try:
                 self.rescalingTargetMin = np.asarray(rescalingTargetMin, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `rescalingTargetMin`...')
-                return None
+                err_msg = f'{fname}: parameter `rescalingTargetMin`...'
+                raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMax is None:
             self.rescalingTargetMax = np.array([0.0 for i in range(nv)], dtype=float)
@@ -1994,8 +2016,8 @@ class DeesseInput(object):
             try:
                 self.rescalingTargetMax = np.asarray(rescalingTargetMax, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `rescalingTargetMax`...')
-                return None
+                err_msg = f'{fname}: parameter `rescalingTargetMax`...'
+                raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMean is None:
             self.rescalingTargetMean = np.array([0.0 for i in range(nv)], dtype=float)
@@ -2003,8 +2025,8 @@ class DeesseInput(object):
             try:
                 self.rescalingTargetMean = np.asarray(rescalingTargetMean, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `rescalingTargetMean`...')
-                return None
+                err_msg = f'{fname}: parameter `rescalingTargetMean`...'
+                raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetLength is None:
             self.rescalingTargetLength = np.array([0.0 for i in range(nv)], dtype=float)
@@ -2012,8 +2034,8 @@ class DeesseInput(object):
             try:
                 self.rescalingTargetLength = np.asarray(rescalingTargetLength, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `rescalingTargetLength`...')
-                return None
+                err_msg = f'{fname}: parameter `rescalingTargetLength`...'
+                raise DeesseinterfaceError(err_msg)
 
         # distance, ...
         if relativeDistanceFlag is None:
@@ -2022,8 +2044,8 @@ class DeesseInput(object):
             try:
                 self.relativeDistanceFlag = np.asarray(relativeDistanceFlag, dtype='bool').reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `relativeDistanceFlag`...')
-                return None
+                err_msg = f'{fname}: parameter `relativeDistanceFlag`...'
+                raise DeesseinterfaceError(err_msg)
 
         if powerLpDistance is None:
             self.powerLpDistance = np.array([1. for i in range(nv)])
@@ -2031,8 +2053,8 @@ class DeesseInput(object):
             try:
                 self.powerLpDistance = np.asarray(powerLpDistance, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `powerLpDistance`...')
-                return None
+                err_msg = f'{fname}: parameter `powerLpDistance`...'
+                raise DeesseinterfaceError(err_msg)
 
         self.powerLpDistanceInv = 1./self.powerLpDistance
 
@@ -2051,12 +2073,13 @@ class DeesseInput(object):
                         elif self.distanceType[i] == 'continuous':
                             self.distanceType[i] = 1
                         else:
-                            print(f'ERROR ({fname}): parameter `distanceType`...')
-                            return None
+                            err_msg = f'{fname}: parameter `distanceType`...'
+                            raise DeesseinterfaceError(err_msg)
+
                 self.distanceType = np.asarray(self.distanceType).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `distanceType`...')
-                return None
+                err_msg = f'{fname}: parameter `distanceType`...'
+                raise DeesseinterfaceError(err_msg)
 
         # conditioning weight
         if conditioningWeightFactor is None:
@@ -2065,13 +2088,13 @@ class DeesseInput(object):
             try:
                 self.conditioningWeightFactor = np.asarray(conditioningWeightFactor, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `conditioningWeightFactor`...')
-                return None
+                err_msg = f'{fname}: parameter `conditioningWeightFactor`...'
+                raise DeesseinterfaceError(err_msg)
 
         # simulation type and simulation path type
         if simType not in ('sim_one_by_one', 'sim_variable_vector'):
-            print('ERRROR: (DeesseInput) field "simType"...')
-            return None
+            err_msg = f'{fname}: parameter `simType`...'
+            raise DeesseinterfaceError(err_msg)
 
         self.simType = simType
 
@@ -2080,8 +2103,8 @@ class DeesseInput(object):
                 'random_hd_distance_pdf', 'random_hd_distance_sort',
                 'random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort',
                 'unilateral'):
-            print('ERRROR: (DeesseInput) field "simPathType"...')
-            return None
+            err_msg = f'{fname}: parameter `simPathType`...'
+            raise DeesseinterfaceError(err_msg)
 
         self.simPathType = simPathType
 
@@ -2105,8 +2128,9 @@ class DeesseInput(object):
                 try:
                     self.simPathUnilateralOrder = np.asarray(simPathUnilateralOrder).reshape(length)
                 except:
-                    print(f'ERROR ({fname}): parameter `simPathUnilateralOrder`...')
-                    return None
+                    err_msg = f'{fname}: parameter `simPathUnilateralOrder`...'
+                    raise DeesseinterfaceError(err_msg)
+
         else:
             self.simPathUnilateralOrder = None
 
@@ -2117,8 +2141,8 @@ class DeesseInput(object):
             try:
                 self.distanceThreshold = np.asarray(distanceThreshold, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `distanceThreshold`...')
-                return None
+                err_msg = f'{fname}: parameter `distanceThreshold`...'
+                raise DeesseinterfaceError(err_msg)
 
         # soft probability
         if softProbability is None:
@@ -2127,8 +2151,8 @@ class DeesseInput(object):
             try:
                 self.softProbability = np.asarray(softProbability).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `softProbability`...')
-                return None
+                err_msg = f'{fname}: parameter `softProbability`...'
+                raise DeesseinterfaceError(err_msg)
 
         # connectivity
         if connectivity is None:
@@ -2137,8 +2161,8 @@ class DeesseInput(object):
             try:
                 self.connectivity = np.asarray(connectivity).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `connectivity`...')
-                return None
+                err_msg = f'{fname}: parameter `connectivity`...'
+                raise DeesseinterfaceError(err_msg)
 
         # block data
         if blockData is None:
@@ -2147,8 +2171,8 @@ class DeesseInput(object):
             try:
                 self.blockData = np.asarray(blockData).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `blockData`...')
-                return None
+                err_msg = f'{fname}: parameter `blockData`...'
+                raise DeesseinterfaceError(err_msg)
 
         # maximal scan fraction
         if maxScanFraction is None:
@@ -2162,8 +2186,8 @@ class DeesseInput(object):
             try:
                 self.maxScanFraction = np.asarray(maxScanFraction).reshape(nTI)
             except:
-                print(f'ERROR ({fname}): parameter `maxScanFraction`...')
-                return None
+                err_msg = f'{fname}: parameter `maxScanFraction`...'
+                raise DeesseinterfaceError(err_msg)
 
         # pyramids
         if pyramidGeneralParameters is None:
@@ -2177,8 +2201,8 @@ class DeesseInput(object):
             try:
                 self.pyramidParameters = np.asarray(pyramidParameters).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `pyramidParameters`...')
-                return None
+                err_msg = f'{fname}: parameter `pyramidParameters`...'
+                raise DeesseinterfaceError(err_msg)
 
         if pyramidDataImage is None:
             self.pyramidDataImage = None
@@ -2205,8 +2229,8 @@ class DeesseInput(object):
             try:
                 self.postProcessingNneighboringNode = np.asarray(postProcessingNneighboringNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `postProcessingNneighboringNode`...')
-                return None
+                err_msg = f'{fname}: parameter `postProcessingNneighboringNode`...'
+                raise DeesseinterfaceError(err_msg)
 
         if postProcessingNeighboringNodeDensity is None:
             if dim <= 1:
@@ -2219,8 +2243,8 @@ class DeesseInput(object):
             try:
                 self.postProcessingNeighboringNodeDensity = np.asarray(postProcessingNeighboringNodeDensity, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `postProcessingNeighboringNodeDensity`...')
-                return None
+                err_msg = f'{fname}: parameter `postProcessingNeighboringNodeDensity`...'
+                raise DeesseinterfaceError(err_msg)
 
         if postProcessingDistanceThreshold is None:
             self.postProcessingDistanceThreshold = np.zeros(nv)
@@ -2239,8 +2263,8 @@ class DeesseInput(object):
             try:
                 self.postProcessingDistanceThreshold = np.asarray(postProcessingDistanceThreshold, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `postProcessingDistanceThreshold`...')
-                return None
+                err_msg = f'{fname}: parameter `postProcessingDistanceThreshold`...'
+                raise DeesseinterfaceError(err_msg)
 
         if postProcessingMaxScanFraction is None:
             self.postProcessingMaxScanFraction = np.array([min(deesse.MPDS_POST_PROCESSING_MAX_SCAN_FRACTION_DEFAULT, self.maxScanFraction[i]) for i in range(nTI)], dtype=float)
@@ -2249,8 +2273,8 @@ class DeesseInput(object):
             try:
                 self.postProcessingMaxScanFraction = np.asarray(postProcessingMaxScanFraction, dtype=float).reshape(nTI)
             except:
-                print(f'ERROR ({fname}): parameter `postProcessingMaxScanFraction`...')
-                return None
+                err_msg = f'{fname}: parameter `postProcessingMaxScanFraction`...'
+                raise DeesseinterfaceError(err_msg)
 
         self.postProcessingTolerance = postProcessingTolerance
 
@@ -2300,8 +2324,12 @@ def img_py2C(im_py):
 
     err = deesse.MPDSMallocImage(im_c, im_py.nxyz(), im_py.nv)
     if err:
-        print(f'ERROR ({fname}): can not convert image from python to C')
-        return None
+        # Free memory on C side
+        deesse.MPDSFreeImage(im_c)
+        deesse.free_MPDS_IMAGE(im_c)
+        # Raise error
+        err_msg = f'{fname}: cannot convert image from python to C'
+        raise DeesseinterfaceError(err_msg)
 
     im_c.grid.nx = im_py.nx
     im_c.grid.ny = im_py.ny
@@ -2349,6 +2377,8 @@ def img_C2py(im_c):
     im_py : :class:`geone.img.Img`
         image in python
     """
+    # fname = 'img_C2py'
+
     nxyz = im_c.grid.nx * im_c.grid.ny * im_c.grid.nz
     nxyzv = nxyz * im_c.nvar
 
@@ -2386,8 +2416,8 @@ def ps_py2C(ps_py):
     fname = 'ps_py2C'
 
     if ps_py.nv < 4:
-        print(f'ERROR ({fname}): point set (python) have less than 4 variables')
-        return None
+        err_msg = f'{fname}: point set (python) have less than 4 variables'
+        raise DeesseinterfaceError(err_msg)
 
     nvar = ps_py.nv - 3
 
@@ -2396,8 +2426,12 @@ def ps_py2C(ps_py):
 
     err = deesse.MPDSMallocPointSet(ps_c, ps_py.npt, nvar)
     if err:
-        print(f'ERROR ({fname}): can not convert point set from python to C')
-        return None
+        # Free memory on C side
+        deesse.MPDSFreePointSet(ps_c)
+        deesse.free_MPDS_POINTSET(ps_c)
+        # Raise error
+        err_msg = f'{fname}: cannot convert point set from python to C'
+        raise DeesseinterfaceError(err_msg)
 
     ps_c.npoint = ps_py.npt
     ps_c.nvar = nvar
@@ -2432,6 +2466,8 @@ def ps_C2py(ps_c):
     ps_py : :class:`geone.img.PointSet`
         point set in python
     """
+    # fname = 'ps_C2py'
+
     varname = ['X', 'Y', 'Z'] + [deesse.mpds_get_varname(ps_c.varName, i) for i in range(ps_c.nvar)]
 
     v = np.zeros(ps_c.npoint*ps_c.nvar)
@@ -2480,6 +2516,8 @@ def classInterval2classOfValues(classInterval):
     cv : \(MPDS_CLASSOFVALUES \*\)
         classOfValues (C)
     """
+    # fname = 'classInterval2classOfValues'
+
     cv = deesse.malloc_MPDS_CLASSOFVALUES()
     deesse.MPDSInitClassOfValues(cv)
 
@@ -2520,6 +2558,8 @@ def classOfValues2classInterval(classOfValues):
         i-th class as the union of intervals as \
         `[a[0, 0], a[0, 1][ U ... U [a[n_i-1, 0], a[n_i-1, 1][`
     """
+    # fname = 'classOfValues2classInterval'
+
     nclass = classOfValues.nclass
 
     ninterval = np.zeros(nclass, dtype='intc')
@@ -2572,8 +2612,11 @@ def search_neighborhood_parameters_py2C(sn_py):
     try:
         sn_c.radiusMode = radiusMode_dict[sn_py.radiusMode]
     except:
-        print(f'ERROR ({fname}): radius mode (search neighborhood parameters) unknown')
-        return None
+        # Free memory on C side
+        deesse.MPDSFreeSearchNeighborhoodParameters(sn_c)
+        deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(sn_c)
+        err_msg = f'{fname}: radius mode (search neighborhood parameters) unknown'
+        raise DeesseinterfaceError(err_msg)
 
     sn_c.rx = sn_py.rx
     sn_c.ry = sn_py.ry
@@ -2591,8 +2634,11 @@ def search_neighborhood_parameters_py2C(sn_py):
     try:
         sn_c.anisotropyRatioMode = anisotropyRatioMode_dict[sn_py.anisotropyRatioMode]
     except:
-        print(f'ERROR ({fname}): anisotropy ratio mode (search neighborhood parameters) unknown')
-        return None
+        # Free memory on C side
+        deesse.MPDSFreeSearchNeighborhoodParameters(sn_c)
+        deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(sn_c)
+        err_msg = f'{fname}: anisotropy ratio mode (search neighborhood parameters) unknown'
+        raise DeesseinterfaceError(err_msg)
 
     sn_c.ax = sn_py.ax
     sn_c.ay = sn_py.ay
@@ -2639,8 +2685,8 @@ def search_neighborhood_parameters_C2py(sn_c):
     try:
         radiusMode = radiusMode_dict[sn_c.radiusMode]
     except:
-        print(f'ERROR ({fname}): radius mode (search neighborhood parameters) unknown')
-        return None
+        err_msg = f'{fname}: radius mode (search neighborhood parameters) unknown'
+        raise DeesseinterfaceError(err_msg)
 
     rx = sn_c.rx
     ry = sn_c.ry
@@ -2658,8 +2704,8 @@ def search_neighborhood_parameters_C2py(sn_c):
     try:
         anisotropyRatioMode = anisotropyRatioMode_dict[sn_c.anisotropyRatioMode]
     except:
-        print(f'ERROR ({fname}): anisotropy ratio mode (search neighborhood parameters) unknown')
-        return None
+        err_msg = f'{fname}: anisotropy ratio mode (search neighborhood parameters) unknown'
+        raise DeesseinterfaceError(err_msg)
 
     ax = sn_c.ax
     ay = sn_c.ay
@@ -2723,8 +2769,11 @@ def set_simAndPathParameters_C(
     elif simType == 'sim_variable_vector':
         sapp_c.simType = deesse.SIM_VARIABLE_VECTOR
     else:
-        print(f'ERROR ({fname}): simulation type unknown')
-        return None
+        # Free memory on C side
+        deesse.MPDSFreeSimAndPathParameters(sapp_c)
+        deesse.free_MPDS_SIMANDPATHPARAMETERS(sapp_c)
+        err_msg = f'{fname}: simulation type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     if simPathType == 'random':
         sapp_c.pathType = deesse.PATH_RANDOM
@@ -2750,8 +2799,11 @@ def set_simAndPathParameters_C(
             sapp_c.unilateralOrder, 0,
             np.asarray(simPathUnilateralOrder, dtype='intc').reshape(len(simPathUnilateralOrder)))
     else:
-        print(f'ERROR ({fname}): simulation path type unknown')
-        return None
+        # Free memory on C side
+        deesse.MPDSFreeSimAndPathParameters(sapp_c)
+        deesse.free_MPDS_SIMANDPATHPARAMETERS(sapp_c)
+        err_msg = f'{fname}: simulation path type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     return sapp_c
 # ----------------------------------------------------------------------------
@@ -2784,10 +2836,10 @@ def softProbability_py2C(
 
     sy : float
         cell size along y axis
-        
+
     sz : float
         cell size along z axis
-        
+
     ox : float
         origin of the grid along x axis (x coordinate of cell border)
 
@@ -2802,7 +2854,7 @@ def softProbability_py2C(
     sp_c : \(MPDS_SOFTPROBABILITY \*\)
         soft probability parameters in C
     """
-    #fname = 'softProbability_py2C'
+    fname = 'softProbability_py2C'
 
     sp_c = deesse.malloc_MPDS_SOFTPROBABILITY()
     deesse.MPDSInitSoftProbability(sp_c)
@@ -2828,7 +2880,14 @@ def softProbability_py2C(
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=sp_py.nclass, val=sp_py.localPdf)
-        sp_c.localPdfImage = img_py2C(im)
+        try:
+            sp_c.localPdfImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            deesse.MPDSFreeSoftProbability(sp_c)
+            deesse.free_MPDS_SOFTPROBABILITY(sp_c)
+            err_msg = f'{fname}: cannot convert local pdf image from python to C'
+            raise DeesseinterfaceError(err_msg) from exc
 
     if sp_py.probabilityConstraintUsage == 2:
         # ... localPdfSupportRadius
@@ -2882,6 +2941,8 @@ def softProbability_C2py(sp_c):
     sp_py :class:`SoftProbability`
         soft probability parameters in python
     """
+    # fname = 'softProbability_C2py'
+
     # ... probabilityConstraintUsage
     probabilityConstraintUsage = sp_c.probabilityConstraintUsage
     if probabilityConstraintUsage == 0:
@@ -3000,8 +3061,11 @@ def connectivity_py2C(co_py):
     try:
         co_c.connectivityType = connectivityType_dict[co_py.connectivityType]
     except:
-        print(f'ERROR ({fname}): connectivity type unknown')
-        return None
+        # Free memory on C side
+        deesse.MPDSFreeConnectivity(co_c)
+        deesse.free_MPDS_CONNECTIVITY(co_c)
+        err_msg = f'{fname}: connectivity type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # ... varName
     deesse.mpds_allocate_and_set_connectivity_varname(co_c, co_py.varname)
@@ -3019,7 +3083,14 @@ def connectivity_py2C(co_py):
         # ... refConnectivityImage
         im = img.copyImg(co_py.refConnectivityImage)
         im.extract_var([co_py.refConnectivityVarIndex])
-        co_c.refConnectivityImage = img_py2C(im)
+        try:
+            co_c.refConnectivityImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            deesse.MPDSFreeConnectivity(co_c)
+            deesse.free_MPDS_CONNECTIVITY(co_c)
+            err_msg = f"{fname}: cannot convert connectivity parameters from python to C ('refConnectivityImage')"
+            raise DeesseinterfaceError(err_msg) from exc
 
     # ... deactivationDistance
     co_c.deactivationDistance = co_py.deactivationDistance
@@ -3073,8 +3144,8 @@ def connectivity_C2py(co_c):
     try:
         connectivityType = connectivityType_dict[co_c.connectivityType]
     except:
-        print(f'ERROR ({fname}): connectivity type unknown')
-        return None
+        err_msg = f'{fname}: connectivity type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # ... varName
     varname = co_c.varName
@@ -3128,6 +3199,8 @@ def blockData_py2C(bd_py):
     bd_c : \(MPDS_BLOCKDATA \*\)
         block data parameters in C
     """
+    # fname = 'blockData_py2C'
+
     bd_c = deesse.malloc_MPDS_BLOCKDATA()
     deesse.MPDSInitBlockData(bd_c)
 
@@ -3196,6 +3269,8 @@ def blockData_C2py(bd_c):
     bd_py :class:`BlockData`
         block data parameters in python
     """
+    # fname = 'blockData_C2py'
+
     # ... blockDataUsage
     blockDataUsage = bd_c.blockDataUsage
     if blockDataUsage == 0:
@@ -3281,6 +3356,8 @@ def pyramidGeneralParameters_py2C(pgp_py):
     pgp_c : \(MPDS_PYRAMIDGENERALPARAMETERS \*\)
         pyramid general parameters in C
     """
+    # fname = 'pyramidGeneralParameters_py2C'
+
     pgp_c = deesse.malloc_MPDS_PYRAMIDGENERALPARAMETERS()
     deesse.MPDSInitPyramidGeneralParameters(pgp_c)
 
@@ -3304,19 +3381,19 @@ def pyramidGeneralParameters_py2C(pgp_py):
         # ... kx
         pgp_c.kx = deesse.new_int_array(nl)
         deesse.mpds_set_int_vector_from_array(
-            pgp_c.kx, 0,
+                pgp_c.kx, 0,
                 np.asarray(pgp_py.kx, dtype='intc').reshape(nl))
 
         # ... ky
         pgp_c.ky = deesse.new_int_array(nl)
         deesse.mpds_set_int_vector_from_array(
-            pgp_c.ky, 0,
+                pgp_c.ky, 0,
                 np.asarray(pgp_py.ky, dtype='intc').reshape(nl))
 
         # ... kz
         pgp_c.kz = deesse.new_int_array(nl)
         deesse.mpds_set_int_vector_from_array(
-            pgp_c.kz, 0,
+                pgp_c.kz, 0,
                 np.asarray(pgp_py.kz, dtype='intc').reshape(nl))
 
         # ... factorNneighboringNode and factorDistanceThreshold ...
@@ -3328,19 +3405,19 @@ def pyramidGeneralParameters_py2C(pgp_py):
         # ... factorNneighboringNode
         pgp_c.factorNneighboringNode = deesse.new_double_array(nn)
         deesse.mpds_set_double_vector_from_array(
-            pgp_c.factorNneighboringNode, 0,
+                pgp_c.factorNneighboringNode, 0,
                 np.asarray(pgp_py.factorNneighboringNode).reshape(nn))
 
         # ... factorDistanceThreshold
         pgp_c.factorDistanceThreshold = deesse.new_real_array(nn)
         deesse.mpds_set_real_vector_from_array(
-            pgp_c.factorDistanceThreshold, 0,
+                pgp_c.factorDistanceThreshold, 0,
                 np.asarray(pgp_py.factorDistanceThreshold).reshape(nn))
 
         # ... factorMaxScanFraction
         pgp_c.factorMaxScanFraction = deesse.new_double_array(nl+1)
         deesse.mpds_set_double_vector_from_array(
-            pgp_c.factorMaxScanFraction, 0,
+                pgp_c.factorMaxScanFraction, 0,
                 np.asarray(pgp_py.factorMaxScanFraction).reshape(nl+1))
 
     return pgp_c
@@ -3361,6 +3438,8 @@ def pyramidGeneralParameters_C2py(pgp_c):
     pgp_py :class:`PyramidGeneralParameters`
         pyramid general parameters in python
     """
+    # fname = 'pyramidGeneralParameters_C2py'
+
     # ... npyramidLevel
     npyramidLevel = pgp_c.npyramidLevel
     if npyramidLevel == 0:
@@ -3471,8 +3550,11 @@ def pyramidParameters_py2C(pp_py):
     try:
         pp_c.pyramidType = pyramidType_dict[pp_py.pyramidType]
     except:
-        print(f'ERROR ({fname}): pyramid type unknown')
-        return None
+        # Free memory on C side
+        deesse.MPDSFreePyramidParameters(pp_c)
+        deesse.free_MPDS_PYRAMIDPARAMETERS(pp_c)
+        err_msg = f'{fname}: pyramid type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     if pp_py.pyramidType == 'categorical_custom':
         # ... classOfValues
@@ -3524,8 +3606,8 @@ def pyramidParameters_C2py(pp_c):
     try:
         pyramidType = pyramidType_dict[pp_c.pyramidType]
     except:
-        print(f'ERROR ({fname}): pyramid type unknown')
-        return None
+        err_msg = f'{fname}: pyramid type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     if pyramidType == 'categorical_custom':
         # ... classInterval
@@ -3596,19 +3678,18 @@ def deesse_input_py2C(deesse_input):
     # mpds_siminput.simName
     # (mpds_siminput.simName not used, but must be set (could be '')!
     if not isinstance(deesse_input.simName, str):
-        print(f'ERROR ({fname}): simName is not a string')
         # Free memory on C side
         deesse.MPDSFreeSimInput(mpds_siminput)
-        #deesse.MPDSFree(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
-        return None
+        err_msg = f'{fname}: simName is not a string'
+        raise DeesseinterfaceError(err_msg)
+
     if len(deesse_input.simName) >= deesse.MPDS_VARNAME_LENGTH:
-        print(f'ERROR ({fname}): simName is too long')
         # Free memory on C side
         deesse.MPDSFreeSimInput(mpds_siminput)
-        #deesse.MPDSFree(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
-        return None
+        err_msg = f'{fname}: simName is too long'
+        raise DeesseinterfaceError(err_msg)
 
     deesse.mpds_allocate_and_set_simname(mpds_siminput, deesse_input.simName)
     # mpds_siminput.simName = deesse_input.simName #  works too
@@ -3622,13 +3703,20 @@ def deesse_input_py2C(deesse_input):
              varname=deesse_input.varname)
 
     # ... convert im from python to C
-    mpds_siminput.simImage = img_py2C(im)
-    if mpds_siminput.simImage is None:
+    try:
+        mpds_siminput.simImage = img_py2C(im)
+    except Exception as exc:
         # Free memory on C side
         deesse.MPDSFreeSimInput(mpds_siminput)
-        #deesse.MPDSFree(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
-        return None
+        err_msg = f'{fname}: cannot initialize simImage in C'
+        raise DeesseinterfaceError(err_msg) from exc
+
+    # if mpds_siminput.simImage is None:
+    #     # Free memory on C side
+    #     deesse.MPDSFreeSimInput(mpds_siminput)
+    #     deesse.free_MPDS_SIMINPUT(mpds_siminput)
+    #     return None
 
     # mpds_siminput.nvar
     mpds_siminput.nvar = nv
@@ -3694,7 +3782,15 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.trainImage = deesse.new_MPDS_IMAGE_array(nTI)
     for i, ti in enumerate(deesse_input.TI):
         if ti is not None:
-            im_c = img_py2C(ti)
+            try:
+                im_c = img_py2C(ti)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert TI from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
+
             deesse.MPDS_IMAGE_array_setitem(mpds_siminput.trainImage, i, im_c)
             # deesse.free_MPDS_IMAGE(im_c)
             #
@@ -3706,7 +3802,14 @@ def deesse_input_py2C(deesse_input):
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=nTI, val=deesse_input.pdfTI)
-        mpds_siminput.pdfTrainImage = img_py2C(im)
+        try:
+            mpds_siminput.pdfTrainImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            deesse.MPDSFreeSimInput(mpds_siminput)
+            deesse.free_MPDS_SIMINPUT(mpds_siminput)
+            err_msg = f'{fname}: cannot convert pdfTI from python to C'
+            raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_siminput.ndataImage and mpds_siminput.dataImage
     if deesse_input.dataImage is None:
@@ -3716,7 +3819,15 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.ndataImage = n
         mpds_siminput.dataImage = deesse.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(deesse_input.dataImage):
-            im_c = img_py2C(dataIm)
+            try:
+                im_c = img_py2C(dataIm)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert dataImage from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
+
             deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImage, i, im_c)
             # deesse.free_MPDS_IMAGE(im_c)
             #
@@ -3730,7 +3841,15 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.ndataPointSet = n
         mpds_siminput.dataPointSet = deesse.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(deesse_input.dataPointSet):
-            ps_c = ps_py2C(dataPS)
+            try:
+                ps_c = ps_py2C(dataPS)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert dataPointSet from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
+
             deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSet, i, ps_c)
             # deesse.free_MPDS_POINTSET(ps_c)
             #
@@ -3745,7 +3864,14 @@ def deesse_input_py2C(deesse_input):
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=1, val=deesse_input.mask)
-        mpds_siminput.maskImage = img_py2C(im)
+        try:
+            mpds_siminput.maskImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            deesse.MPDSFreeSimInput(mpds_siminput)
+            deesse.free_MPDS_SIMINPUT(mpds_siminput)
+            err_msg = f'{fname}: cannot convert mask from python to C'
+            raise DeesseinterfaceError(err_msg) from exc
 
     # Homothety:
     #   mpds_siminput.homothetyUsage
@@ -3760,7 +3886,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.homothetyXRatio)
-            mpds_siminput.homothetyXRatioImage = img_py2C(im)
+            try:
+                mpds_siminput.homothetyXRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert homothetyXRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.homothetyXRatioImageFlag = deesse.FALSE
@@ -3774,7 +3907,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.homothetyYRatio)
-            mpds_siminput.homothetyYRatioImage = img_py2C(im)
+            try:
+                mpds_siminput.homothetyYRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert homothetyYRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.homothetyYRatioImageFlag = deesse.FALSE
@@ -3788,7 +3928,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.homothetyZRatio)
-            mpds_siminput.homothetyZRatioImage = img_py2C(im)
+            try:
+                mpds_siminput.homothetyZRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert homothetyZRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.homothetyZRatioImageFlag = deesse.FALSE
@@ -3803,7 +3950,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.homothetyXRatio)
-            mpds_siminput.homothetyXRatioImage = img_py2C(im)
+            try:
+                mpds_siminput.homothetyXRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert homothetyXRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.homothetyXRatioImageFlag = deesse.FALSE
@@ -3817,7 +3971,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.homothetyYRatio)
-            mpds_siminput.homothetyYRatioImage = img_py2C(im)
+            try:
+                mpds_siminput.homothetyYRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert homothetyYRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.homothetyYRatioImageFlag = deesse.FALSE
@@ -3831,7 +3992,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.homothetyZRatio)
-            mpds_siminput.homothetyZRatioImage = img_py2C(im)
+            try:
+                mpds_siminput.homothetyZRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert homothetyZRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.homothetyZRatioImageFlag = deesse.FALSE
@@ -3852,7 +4020,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.rotationAzimuth)
-            mpds_siminput.rotationAzimuthImage = img_py2C(im)
+            try:
+                mpds_siminput.rotationAzimuthImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert rotationAzimuth image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.rotationAzimuthImageFlag = deesse.FALSE
@@ -3866,7 +4041,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.rotationDip)
-            mpds_siminput.rotationDipImage = img_py2C(im)
+            try:
+                mpds_siminput.rotationDipImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert rotationDip image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.rotationDipImageFlag = deesse.FALSE
@@ -3880,7 +4062,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=deesse_input.rotationPlunge)
-            mpds_siminput.rotationPlungeImage = img_py2C(im)
+            try:
+                mpds_siminput.rotationPlungeImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert rotationPlunge image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.rotationPlungeImageFlag = deesse.FALSE
@@ -3895,7 +4084,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.rotationAzimuth)
-            mpds_siminput.rotationAzimuthImage = img_py2C(im)
+            try:
+                mpds_siminput.rotationAzimuthImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert rotationAzimuth image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.rotationAzimuthImageFlag = deesse.FALSE
@@ -3909,7 +4105,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.rotationDip)
-            mpds_siminput.rotationDipImage = img_py2C(im)
+            try:
+                mpds_siminput.rotationDipImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert rotationDip image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.rotationDipImageFlag = deesse.FALSE
@@ -3923,7 +4126,14 @@ def deesse_input_py2C(deesse_input):
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=deesse_input.rotationPlunge)
-            mpds_siminput.rotationPlungeImage = img_py2C(im)
+            try:
+                mpds_siminput.rotationPlungeImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert rotationPlunge image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_siminput.rotationPlungeImageFlag = deesse.FALSE
@@ -3943,24 +4153,24 @@ def deesse_input_py2C(deesse_input):
     try:
         mpds_siminput.normalizingType = normalizingType_dict[deesse_input.normalizingType]
     except:
-        print(f'ERROR ({fname}): normalizing type unknown')
         # Free memory on C side
         deesse.MPDSFreeSimInput(mpds_siminput)
-        #deesse.MPDSFree(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
-        return None
+        err_msg = f'{fname}: normalizing type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # mpds_siminput.searchNeighborhoodParameters
     mpds_siminput.searchNeighborhoodParameters = deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nv)
     for i, sn in enumerate(deesse_input.searchNeighborhoodParameters):
-        sn_c = search_neighborhood_parameters_py2C(sn)
-        if sn_c is None:
-            print(f'ERROR ({fname}): can not convert search neighborhood parameters from python to C')
+        try:
+            sn_c = search_neighborhood_parameters_py2C(sn)
+        except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
-            #deesse.MPDSFree(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
-            return None
+            err_msg = f'{fname}: cannot convert search neighborhood parameters from python to C'
+            raise DeesseinterfaceError(err_msg) from exc
+
         deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(
             mpds_siminput.searchNeighborhoodParameters, i, sn_c)
         # deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(sn_c)
@@ -3994,12 +4204,11 @@ def deesse_input_py2C(deesse_input):
         if m in rescalingMode_dict.keys():
             deesse.MPDS_RESCALINGMODE_array_setitem(mpds_siminput.rescalingMode, i, rescalingMode_dict[m])
         else:
-            print(f'ERROR ({fname}): rescaling mode unknown')
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
-            #deesse.MPDSFree(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
-            return None
+            err_msg = f'{fname}: rescaling mode unknown'
+            raise DeesseinterfaceError(err_msg)
 
     # mpds_simInput.rescalingTargetMin
     mpds_siminput.rescalingTargetMin = deesse.new_real_array(nv)
@@ -4054,19 +4263,19 @@ def deesse_input_py2C(deesse_input):
         np.asarray(deesse_input.conditioningWeightFactor).reshape(nv))
 
     # mpds_siminput.simAndPathParameters
-    mpds_siminput.simAndPathParameters = set_simAndPathParameters_C(
-        deesse_input.simType,
-        deesse_input.simPathType,
-        deesse_input.simPathStrength,
-        deesse_input.simPathPower,
-        deesse_input.simPathUnilateralOrder)
-    if mpds_siminput.simAndPathParameters is None:
-        print(f'ERROR ({fname}): can not set "simAndPathParameters" in C')
+    try:
+        mpds_siminput.simAndPathParameters = set_simAndPathParameters_C(
+                deesse_input.simType,
+                deesse_input.simPathType,
+                deesse_input.simPathStrength,
+                deesse_input.simPathPower,
+                deesse_input.simPathUnilateralOrder)
+    except Exception as exc:
         # Free memory on C side
         deesse.MPDSFreeSimInput(mpds_siminput)
-        #deesse.MPDSFree(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
-        return None
+        err_msg = f'{fname}: cannot set "simAndPathParameters" in C'
+        raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_siminput.distanceThreshold
     mpds_siminput.distanceThreshold = deesse.new_real_array(nv)
@@ -4079,17 +4288,18 @@ def deesse_input_py2C(deesse_input):
 
     # ... for each variable ...
     for i, sp in enumerate(deesse_input.softProbability):
-        sp_c = softProbability_py2C(sp,
-                                    nx, ny, nz,
-                                    sx, sy, sz,
-                                    ox, oy, oz)
-        if sp_c is None:
-            print(f'ERROR ({fname}): can not set soft probability parameters in C')
+        try:
+            sp_c = softProbability_py2C(sp,
+                                        nx, ny, nz,
+                                        sx, sy, sz,
+                                        ox, oy, oz)
+        except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
-            #deesse.MPDSFree(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
-            return None
+            err_msg = f'{fname}: cannot set soft probability parameters in C'
+            raise DeesseinterfaceError(err_msg) from exc
+
         deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_siminput.softProbability, i, sp_c)
         # deesse.free_MPDS_SOFTPROBABILITY(sp_c)
 
@@ -4097,14 +4307,15 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.connectivity = deesse.new_MPDS_CONNECTIVITY_array(nv)
 
     for i, co in enumerate(deesse_input.connectivity):
-        co_c = connectivity_py2C(co)
-        if co_c is None:
-            print(f'ERROR ({fname}): can not set connectivity parameters in C')
+        try:
+            co_c = connectivity_py2C(co)
+        except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
-            #deesse.MPDSFree(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
-            return None
+            err_msg = f'{fname}: cannot set connectivity parameters in C'
+            raise DeesseinterfaceError(err_msg) from exc
+
         deesse.MPDS_CONNECTIVITY_array_setitem(mpds_siminput.connectivity, i, co_c)
         # deesse.free_MPDS_CONNECTIVITY(co_c)
 
@@ -4112,14 +4323,15 @@ def deesse_input_py2C(deesse_input):
     mpds_siminput.blockData = deesse.new_MPDS_BLOCKDATA_array(nv)
     # ... for each variable ...
     for i, bd in enumerate(deesse_input.blockData):
-        bd_c = blockData_py2C(bd)
-        if bd_c is None:
-            print(f'ERROR ({fname}): can not set block data parameters in C')
+        try:
+            bd_c = blockData_py2C(bd)
+        except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
-            #deesse.MPDSFree(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
-            return None
+            err_msg = f'{fname}: cannot set block data parameters in C'
+            raise DeesseinterfaceError(err_msg) from exc
+
         deesse.MPDS_BLOCKDATA_array_setitem(mpds_siminput.blockData, i, bd_c)
         # deesse.free_MPDS_BLOCKDATA(bd_c)
 
@@ -4130,28 +4342,28 @@ def deesse_input_py2C(deesse_input):
             np.asarray(deesse_input.maxScanFraction).reshape(nTI))
 
     # mpds_siminput.pyramidGeneralParameters ...
-    mpds_siminput.pyramidGeneralParameters = pyramidGeneralParameters_py2C(deesse_input.pyramidGeneralParameters)
-    if mpds_siminput.pyramidGeneralParameters is None:
-        print(f'ERROR ({fname}): can not set pyramid general parameters in C')
+    try:
+        mpds_siminput.pyramidGeneralParameters = pyramidGeneralParameters_py2C(deesse_input.pyramidGeneralParameters)
+    except Exception as exc:
         # Free memory on C side
         deesse.MPDSFreeSimInput(mpds_siminput)
-        #deesse.MPDSFree(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
-        return None
+        err_msg = f'{fname}: cannot set pyramid general parameters in C'
+        raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_siminput.pyramidParameters ...
     mpds_siminput.pyramidParameters = deesse.new_MPDS_PYRAMIDPARAMETERS_array(nv)
 
     # ... for each variable ...
     for i, pp in enumerate(deesse_input.pyramidParameters):
-        pp_c = pyramidParameters_py2C(pp)
-        if pp_c is None:
-            print(f'ERROR ({fname}): can not set pyramid parameters in C')
+        try:
+            pp_c = pyramidParameters_py2C(pp)
+        except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
-            #deesse.MPDSFree(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
-            return None
+            err_msg = f'{fname}: cannot set pyramid parameters in C'
+            raise DeesseinterfaceError(err_msg) from exc
 
         deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(mpds_siminput.pyramidParameters, i, pp_c)
         # deesse.free_MPDS_PYRAMIDPARAMETERS(pp_c)
@@ -4164,7 +4376,15 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.ndataImageInPyramid = n
         mpds_siminput.dataImageInPyramid = deesse.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(deesse_input.pyramidDataImage):
-            im_c = img_py2C(dataIm)
+            try:
+                im_c = img_py2C(dataIm)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert pyramidDataImage from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
+
             deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImageInPyramid, i, im_c)
             # deesse.free_MPDS_IMAGE(im_c)
             #
@@ -4178,7 +4398,15 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.ndataPointSetInPyramid = n
         mpds_siminput.dataPointSetInPyramid = deesse.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(deesse_input.pyramidDataPointSet):
-            ps_c = ps_py2C(dataPS)
+            try:
+                ps_c = ps_py2C(dataPS)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeSimInput(mpds_siminput)
+                deesse.free_MPDS_SIMINPUT(mpds_siminput)
+                err_msg = f'{fname}: cannot convert pyramidDataPointSet from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
+
             deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSetInPyramid, i, ps_c)
             # deesse.free_MPDSPOINTSET(ps_c)
             #
@@ -4462,8 +4690,8 @@ def deesse_input_C2py(mpds_siminput):
     try:
         normalizingType = normalizingType_dict[mpds_siminput.normalizingType]
     except:
-        print(f'ERROR ({fname}): normalizing type unknown')
-        return None
+        err_msg = f'{fname}: normalizing type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # searchNeighborhoodParameters
     searchNeighborhoodParameters = np.array(nv*[None])
@@ -4471,8 +4699,9 @@ def deesse_input_C2py(mpds_siminput):
         sn_c = deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_getitem(mpds_siminput.searchNeighborhoodParameters, i)
         sn = search_neighborhood_parameters_C2py(sn_c)
         if sn is None:
-            print(f'ERROR ({fname}): can not convert search neighborhood parameters from C to python')
-            return None
+            err_msg = f'{fname}: cannot convert search neighborhood parameters from C to python'
+            raise DeesseinterfaceError(err_msg)
+
         searchNeighborhoodParameters[i] = sn
 
     # nneighboringNode
@@ -4503,8 +4732,8 @@ def deesse_input_C2py(mpds_siminput):
             rs = rescalingMode_dict[rs_c]
             rescalingMode[i] = rs
         except:
-            print(f'ERROR ({fname}): rescaling mode unknown')
-            return None
+            err_msg = f'{fname}: rescaling mode unknown'
+            raise DeesseinterfaceError(err_msg)
 
     # rescalingTargetMin
     rescalingTargetMin = np.zeros(nv, dtype=float)
@@ -4557,8 +4786,8 @@ def deesse_input_C2py(mpds_siminput):
     elif simType_c == deesse.SIM_VARIABLE_VECTOR:
         simType = 'sim_variable_vector'
     else:
-        print(f'ERROR ({fname}): simulation type unknown')
-        return None
+        err_msg = f'{fname}: simulation type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # simPathType
     simPathType = None
@@ -4589,8 +4818,8 @@ def deesse_input_C2py(mpds_siminput):
         deesse.mpds_get_array_from_int_vector(mpds_siminput.simAndPathParameters.unilateralOrder, 0, simPathUnilateralOrder)
         simPathUnilateralOrder = simPathUnilateralOrder.astype('int')
     else:
-        print(f'ERROR ({fname}): simulation path type unknown')
-        return None
+        err_msg = f'{fname}: simulation path type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # distanceThreshold
     distanceThreshold = np.zeros(nv, dtype=float)
@@ -4602,8 +4831,9 @@ def deesse_input_C2py(mpds_siminput):
         sp_c = deesse.MPDS_SOFTPROBABILITY_array_getitem(mpds_siminput.softProbability, i)
         sp = softProbability_C2py(sp_c)
         if sp is None:
-            print(f'ERROR ({fname}): can not convert soft probability from C to python')
-            return None
+            err_msg = f'{fname}: cannot convert soft probability from C to python'
+            raise DeesseinterfaceError(err_msg)
+
         softProbability[i] = sp
 
     # connectivity
@@ -4612,8 +4842,9 @@ def deesse_input_C2py(mpds_siminput):
         co_c = deesse.MPDS_CONNECTIVITY_array_getitem(mpds_siminput.connectivity, i)
         co = connectivity_C2py(co_c)
         if co is None:
-            print(f'ERROR ({fname}): can not convert connectivity parameters from C to python')
-            return None
+            err_msg = f'{fname}: cannot convert connectivity parameters from C to python'
+            raise DeesseinterfaceError(err_msg)
+
         connectivity[i] = co
 
     # blockData
@@ -4622,8 +4853,9 @@ def deesse_input_C2py(mpds_siminput):
         bd_c = deesse.MPDS_BLOCKDATA_array_getitem(mpds_siminput.blockData, i)
         bd = blockData_C2py(bd_c)
         if bd is None:
-            print(f'ERROR ({fname}): can not convert block data parameters from C to python')
-            return None
+            err_msg = f'{fname}: cannot convert block data parameters from C to python'
+            raise DeesseinterfaceError(err_msg)
+
         blockData[i] = bd
 
     # maxScanFraction
@@ -4634,8 +4866,8 @@ def deesse_input_C2py(mpds_siminput):
     # pyramidGeneralParameters
     pyramidGeneralParameters = pyramidGeneralParameters_C2py(mpds_siminput.pyramidGeneralParameters)
     if pyramidGeneralParameters is None:
-        print(f'ERROR ({fname}): can not convert pyramid general parameters from C to python')
-        return None
+        err_msg = f'{fname}: cannot convert pyramid general parameters from C to python'
+        raise DeesseinterfaceError(err_msg)
 
     # pyramidParameters
     pyramidParameters = np.array(nv*[None])
@@ -4643,8 +4875,9 @@ def deesse_input_C2py(mpds_siminput):
         pp_c = deesse.MPDS_PYRAMIDPARAMETERS_array_getitem(mpds_siminput.pyramidParameters, i)
         pp = pyramidParameters_C2py(pp_c)
         if pp is None:
-            print(f'ERROR ({fname}): can not convert pyramid parameters from C to python')
-            return None
+            err_msg = f'{fname}: cannot convert pyramid parameters from C to python'
+            raise DeesseinterfaceError(err_msg)
+
         pyramidParameters[i] = pp
 
     # pyramidDataImage
@@ -4789,7 +5022,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
     -------
     deesse_output : dict
         deesse output in python, dictionary
-        
+
         `{'sim':sim,
         'sim_var_original_index':sim_var_original_index,
         'sim_pyramid':sim_pyramid,
@@ -4803,7 +5036,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
         'warnings':warnings}`
 
         with (`nreal=mpds_simoutput->nreal`, the number of realization(s)):
-        
+
         - sim: 1D array of :class:`geone.img.Img` of shape (nreal,)
             * `sim[i]`: i-th realisation, \
             k-th variable stored refers to the original variable \
@@ -4817,17 +5050,17 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
             (given in deesse_input) of the k-th variable stored in \
             in `sim[i]` for any i (array of length `sim[*].nv`, \
             get from `mpds_simoutput->originalVarIndex`)
-            
+
             note: `sim_var_original_index=None`
             if `mpds_simoutput->originalVarIndex=NULL`
 
         - sim_pyramid : list, optional
             realizations in pyramid levels (depends on input parameters given in
             deesse_input); if pyramid was used and output in pyramid required:
-            
+
             * `sim_pyramid[j]` : 1D array of `nreal` `:class:`geone.img.Img` \
             (or None):
-                
+
                 - `sim_pyramid[j][i]`: i-th realisation in pyramid level of \
                 index j+1, k-th variable stored refers to \
                 the original variable `sim_pyramid_var_original_index[j][k]` \
@@ -4841,15 +5074,15 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
             index of original variable for realizations in pyramid levels \
             (depends on input parameters given in deesse_input); if pyramid was \
             used and output in pyramid required:
-            
+
             * `sim_pyramid_var_original_index[j]` : 1D array of ints (or None):
-                
+
                 - `sim_pyramid_var_original_index[j][k]`: index of the \
                 original variable (given in deesse_input) of the k-th variable \
                 stored in `sim_pyramid[j][i]`, for any i \
                 (array of length sim_pyramid[j][*].nv, get from \
                 `mpds_simoutput->originalVarIndexPyramidLevel[j]`)
-                
+
             note: `sim_pyramid_var_original_index[j]=None` if
             `mpds_simoutput->originalVarIndexPyramidLevel[j]=NULL`
 
@@ -4857,9 +5090,9 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
             pyramid index of original variable for realizations in pyramid levels
             (depends on input parameters given in deesse_input); if pyramid was
             used and output in pyramid required:
-            
+
             * `sim_pyramid_var_pyramid_index[j]` : 1D array of ints (or None):
-                
+
                 - `sim_pyramid_var_pyramid_index[j][k]`: pyramid index of \
                 original variable (given in deesse_input) of the k-th variable \
                 stored in `sim_pyramid[j][i]`, for any i \
@@ -4872,7 +5105,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
         - path : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
             * `path[i]`: path index map for the i-th realisation \
             (`mpds_simoutput->outputPathIndexImage[0]`)
-            
+
             note: `path=None` if `mpds_simoutput->outputPathIndexImage=NULL`
 
         - error : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
@@ -4899,6 +5132,8 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
         - warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
+    # fname = 'deesse_output_C2py'
+
     # Initialization
     sim, sim_var_original_index = None, None
     sim_pyramid, sim_pyramid_var_original_index, sim_pyramid_var_pyramid_index = None, None, None
@@ -5090,7 +5325,11 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2):
+def deesseRun(
+        deesse_input,
+        add_data_point_to_mask=True,
+        nthreads=-1,
+        verbose=2):
     """
     Launches deesse.
 
@@ -5115,17 +5354,19 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
 
     verbose : int, default: 2
         verbose mode, higher implies more printing (info):
-        
+
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings
-        - 3 (or >2): version, progress, and warning(s) encountered
+        - 1: warnings
+        - 2: warnings + basic info
+        - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     deesse_output : dict
         deesse output in python, dictionary
-        
+
         `{'sim':sim,
         'sim_var_original_index':sim_var_original_index,
         'sim_pyramid':sim_pyramid,
@@ -5139,7 +5380,7 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
         'warnings':warnings}`
 
         with `nreal=deesse_input.nrealization`:
-        
+
         - sim: 1D array of :class:`geone.img.Img` of shape (nreal,)
             * `sim[i]`: i-th realisation, \
             k-th variable stored refers to the original variable \
@@ -5153,17 +5394,17 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
             (given in deesse_input) of the k-th variable stored in \
             in `sim[i]` for any i (array of length `sim[*].nv`, \
             get from `mpds_simoutput->originalVarIndex`)
-            
+
             note: `sim_var_original_index=None`
             if `mpds_simoutput->originalVarIndex=NULL`
 
         - sim_pyramid : list, optional
             realizations in pyramid levels (depends on input parameters given in
             deesse_input); if pyramid was used and output in pyramid required:
-            
+
             * `sim_pyramid[j]` : 1D array of `nreal` `:class:`geone.img.Img` \
             (or None):
-                
+
                 - `sim_pyramid[j][i]`: i-th realisation in pyramid level of \
                 index j+1, k-th variable stored refers to \
                 the original variable `sim_pyramid_var_original_index[j][k]` \
@@ -5177,15 +5418,15 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
             index of original variable for realizations in pyramid levels \
             (depends on input parameters given in deesse_input); if pyramid was \
             used and output in pyramid required:
-            
+
             * `sim_pyramid_var_original_index[j]` : 1D array of ints (or None):
-                
+
                 - `sim_pyramid_var_original_index[j][k]`: index of the \
                 original variable (given in deesse_input) of the k-th variable \
                 stored in `sim_pyramid[j][i]`, for any i \
                 (array of length sim_pyramid[j][*].nv, get from \
                 `mpds_simoutput->originalVarIndexPyramidLevel[j]`)
-                
+
             note: `sim_pyramid_var_original_index[j]=None` if
             `mpds_simoutput->originalVarIndexPyramidLevel[j]=NULL`
 
@@ -5193,9 +5434,9 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
             pyramid index of original variable for realizations in pyramid levels
             (depends on input parameters given in deesse_input); if pyramid was
             used and output in pyramid required:
-            
+
             * `sim_pyramid_var_pyramid_index[j]` : 1D array of ints (or None):
-                
+
                 - `sim_pyramid_var_pyramid_index[j][k]`: pyramid index of \
                 original variable (given in deesse_input) of the k-th variable \
                 stored in `sim_pyramid[j][i]`, for any i \
@@ -5208,7 +5449,7 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
         - path : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
             * `path[i]`: path index map for the i-th realisation \
             (`mpds_simoutput->outputPathIndexImage[0]`)
-            
+
             note: `path=None` if `mpds_simoutput->outputPathIndexImage=NULL`
 
         - error : 1D array of :class:`geone.img.Img` of shape (nreal,), optional
@@ -5238,15 +5479,17 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
     fname = 'deesseRun'
 
     if not deesse_input.ok:
-        if verbose > 0:
-            print(f'ERROR ({fname}): check deesse input')
-        return None
+        err_msg = f'{fname}: check deesse input'
+        raise DeesseinterfaceError(err_msg)
 
     # Set number of threads
     if nthreads <= 0:
         nth = max(os.cpu_count() + nthreads, 1)
     else:
         nth = nthreads
+
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
 
     if deesse_input.mask is not None and add_data_point_to_mask and deesse_input.dataPointSet is not None:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -5261,21 +5504,21 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
             deesse_input.mask = 1.0*np.any((im_tmp.val[0], deesse_input.mask), axis=0)
             del (im_tmp)
 
-    if verbose >= 2:
-        print('DeeSse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
+    if verbose > 1:
+        print('{}: DeeSse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
 
     # Convert deesse input from python to C
     try:
         mpds_siminput = deesse_input_py2C(deesse_input)
-    except:
-        print(f'ERROR ({fname}): unable to convert deesse input from python to C...')
-        return None
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert deesse input from python to C'
+        raise DeesseinterfaceError(err_msg) from exc
 
-    if mpds_siminput is None:
-        print(f'ERROR ({fname}): unable to convert deesse input from python to C...')
-        return None
+    # if mpds_siminput is None:
+    #     err_msg = f'{fname}: cannot convert deesse input from python to C'
+    #     raise DeesseinterfaceError(err_msg)
 
     # Allocate mpds_simoutput
     mpds_simoutput = deesse.malloc_MPDS_SIMOUTPUT()
@@ -5301,28 +5544,31 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
 
     # Launch deesse
     # err = deesse.MPDSSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor )
-    err = deesse.MPDSOMPSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth )
+    err = deesse.MPDSOMPSim(mpds_siminput, mpds_simoutput, mpds_progressMonitor, mpds_updateProgressMonitor, nth)
 
     # Free memory on C side: deesse input
     deesse.MPDSFreeSimInput(mpds_siminput)
-    #deesse.MPDSFree(mpds_siminput)
     deesse.free_MPDS_SIMINPUT(mpds_siminput)
 
     if err:
+        # Free memory on C side: simulation output
+        deesse.MPDSFreeSimOutput(mpds_simoutput)
+        deesse.free_MPDS_SIMOUTPUT(mpds_simoutput)
+        # Free memory on C side: progress monitor
+        deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
         err_message = deesse.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
-        print(err_message)
-        deesse_output = None
-    else:
-        deesse_output = deesse_output_C2py(mpds_simoutput, mpds_progressMonitor)
+        err_msg = f'{fname}: {err_message}'
+        raise DeesseinterfaceError(err_msg)
+
+    deesse_output = deesse_output_C2py(mpds_simoutput, mpds_progressMonitor)
 
     # Free memory on C side: simulation output
     deesse.MPDSFreeSimOutput(mpds_simoutput)
-    #deesse.MPDSFree (mpds_simoutput)
     deesse.free_MPDS_SIMOUTPUT(mpds_simoutput)
 
     # Free memory on C side: progress monitor
-    #deesse.MPDSFree(mpds_progressMonitor)
     deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if deesse_input.mask is not None and add_data_point_to_mask and deesse_input.dataPointSet is not None:
@@ -5330,20 +5576,25 @@ def deesseRun(deesse_input, add_data_point_to_mask=True, nthreads=-1, verbose=2)
         for im in deesse_output['sim']:
             im.val[:, mask_original==0.0] = np.nan
 
-    if verbose >= 2 and deesse_output:
-        print('DeeSse run complete')
+    if verbose > 1 and deesse_output:
+        print(f'{fname}: DeeSse run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and deesse_output and deesse_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(deesse_output['nwarning']))
+    if verbose > 0 and deesse_output and deesse_output['nwarning']:
+        print(f"{fname}: warnings encountered ({deesse_output['nwarning']} times in all):")
         for i, warning_message in enumerate(deesse_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return deesse_output
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseRun_mp(deesse_input, add_data_point_to_mask=True, nproc=None, nthreads_per_proc=None, verbose=2):
+def deesseRun_mp(
+        deesse_input,
+        add_data_point_to_mask=True,
+        nproc=None,
+        nthreads_per_proc=None,
+        verbose=2):
     """
     Computes the same as the function :func:`deesseinterface.deesseRun`, using multiprocessing.
 
@@ -5381,13 +5632,12 @@ def deesseRun_mp(deesse_input, add_data_point_to_mask=True, nproc=None, nthreads
     fname = 'deesseRun_mp'
 
     if not deesse_input.ok:
-        if verbose > 0:
-            print(f'ERROR ({fname}): check deesse input')
-        return None
+        err_msg = f'{fname}: check deesse input'
+        raise DeesseinterfaceError(err_msg)
 
     if deesse_input.nrealization <= 1:
-        if verbose > 0:
-            print('NOTE: number of realization does not exceed 1: launching deesseRun...')
+        if verbose > 1:
+            print(f'{fname}: number of realization does not exceed 1: launching deesseRun...')
         nthreads = nthreads_per_proc
         if nthreads is None:
             nthreads = -1
@@ -5400,19 +5650,19 @@ def deesseRun_mp(deesse_input, add_data_point_to_mask=True, nproc=None, nthreads
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), deesse_input.nrealization), 1)
-        if verbose > 0 and nproc != nproc_tmp:
-            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+        if verbose > 1 and nproc != nproc_tmp:
+            print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
         nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
-        if verbose > 0 and nth != nthreads_per_proc:
-            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+        if verbose > 1 and nth != nthreads_per_proc:
+            print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
     if deesse_input.mask is not None and add_data_point_to_mask and deesse_input.dataPointSet is not None:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -5436,8 +5686,8 @@ def deesseRun_mp(deesse_input, add_data_point_to_mask=True, nproc=None, nthreads
     q, r = np.divmod(deesse_input.nrealization, nproc)
     real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
-    if verbose >= 2:
-        print('DeeSse running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
+    if verbose > 1:
+        print('{}: DeeSse running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, nproc, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
 
@@ -5453,10 +5703,11 @@ def deesseRun_mp(deesse_input, add_data_point_to_mask=True, nproc=None, nthreads
         input.nrealization = real_index_proc[i+1] - real_index_proc[i]
         input.seed = init_seed + int(real_index_proc[i]) * input.seedIncrement
         input.outputReportFileName = input.outputReportFileName + f'.{i}'
-        if i==0:
-            verb = min(verbose, 1) # allow to print error for process i
-        else:
-            verb = 0
+        verb = 0
+        # if i==0:
+        #     verb = min(verbose, 1) # allow to print warnings for process i
+        # else:
+        #     verb = 0
         # Launch deesse (i-th process)
         out_pool.append(pool.apply_async(deesseRun, args=(input, False, nth, verb)))
 
@@ -5591,14 +5842,14 @@ def deesseRun_mp(deesse_input, add_data_point_to_mask=True, nproc=None, nthreads
         'nwarning':nwarning, 'warnings':warnings
         }
 
-    if verbose >= 2 and deesse_output:
-        print('DeeSse run complete (all process(es))')
+    if verbose > 1 and deesse_output:
+        print(f'{fname}: DeeSse run complete (all process(es))')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and deesse_output and deesse_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(deesse_output['nwarning']))
+    if verbose > 0 and deesse_output and deesse_output['nwarning']:
+        print(f"{fname}: warnings encountered ({deesse_output['nwarning']} times in all):")
         for i, warning_message in enumerate(deesse_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return deesse_output
 # ----------------------------------------------------------------------------
@@ -5633,7 +5884,7 @@ def exportDeesseInput(
     endofline : str, default: '\\\\n'
         end of line character
 
-    verbose : int, default: 2
+    verbose : int, default: 1
         verbose mode for comments in the written main input file:
 
         - 0: no comment
@@ -5643,9 +5894,8 @@ def exportDeesseInput(
     fname = 'exportDeesseInput'
 
     if not deesse_input.ok:
-        if verbose > 0:
-            print(f'ERROR ({fname}): check deesse input')
-        return None
+        err_msg = f'{fname}: check deesse input'
+        raise DeesseinterfaceError(err_msg)
 
     # Create ouptut directory if needed
     if not os.path.isdir(dirname):
@@ -5654,24 +5904,28 @@ def exportDeesseInput(
     # Convert deesse input from python to C
     try:
         mpds_siminput = deesse_input_py2C(deesse_input)
-    except:
-        print(f'ERROR ({fname}): unable to convert deesse input from python to C...')
-        return None
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert deesse input from python to C'
+        raise DeesseinterfaceError(err_msg) from exc
 
-    if mpds_siminput is None:
-        print(f'ERROR ({fname}): unable to convert deesse input from python to C...')
-        return None
+    # if mpds_siminput is None:
+    #     err_msg = f'{fname}: cannot convert deesse input from python to C'
+    #     raise DeesseinterfaceError(err_msg)
 
-    err = deesse.MPDSExportSimInput( mpds_siminput, dirname, fileprefix, endofline, verbose)
+    err = deesse.MPDSExportSimInput(mpds_siminput, dirname, fileprefix, endofline, verbose)
 
     if err:
+        # Free memory on C side: deesse input
+        deesse.MPDSFreeSimInput(mpds_siminput)
+        deesse.free_MPDS_SIMINPUT(mpds_siminput)
+        # Raise error
         err_message = deesse.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
-        print(err_message)
+        err_msg = f'{fname}: {err_message}'
+        raise DeesseinterfaceError(err_msg)
 
     # Free memory on C side: deesse input
     deesse.MPDSFreeSimInput(mpds_siminput)
-    #deesse.MPDSFree(mpds_siminput)
     deesse.free_MPDS_SIMINPUT(mpds_siminput)
 # ----------------------------------------------------------------------------
 
@@ -5703,13 +5957,13 @@ def importDeesseInput(filename, dirname='.'):
 
     # Check directory
     if not os.path.isdir(dirname):
-        print(f'ERROR ({fname}): directory does not exist')
-        return None
+        err_msg = f'{fname}: directory does not exist'
+        raise DeesseinterfaceError(err_msg)
 
     # Check file
     if not os.path.isfile(os.path.join(dirname, filename)):
-        print(f'ERROR ({fname}): input file does not exist')
-        return None
+        err_msg = f'{fname}: input file does not exist'
+        raise DeesseinterfaceError(err_msg)
 
     # Get current working directory
     cwd = os.getcwd()
@@ -5731,13 +5985,18 @@ def importDeesseInput(filename, dirname='.'):
         deesse_input = deesse_input_C2py(mpds_siminput)
 
     except:
-        deesse_input = None
+        # Free memory on C side: deesse input
+        deesse.delete_MPDS_SIMINPUTp(mpds_siminputp)
+        # Raise error
+        err_msg = f'{fname}: cannot import deesse input from ASCII files'
+        raise DeesseinterfaceError(err_msg)
 
-    if deesse_input is None:
-        print(f'ERROR ({fname}): unable to import deesse input from ASCII files...')
+    finally:
+        # Change directory (to initial working directory)
+        os.chdir(cwd)
 
-    # Change directory (to initial working directory)
-    os.chdir(cwd)
+    # Free memory on C side: deesse input
+    deesse.delete_MPDS_SIMINPUTp(mpds_siminputp)
 
     return deesse_input
 # ----------------------------------------------------------------------------
@@ -5753,7 +6012,8 @@ def imgPyramidImage(
         w0y=None,
         w0z=None,
         minWeight=None,
-        nthreads=-1):
+        nthreads=-1,
+        verbose=0):
     """
     Computes the Gaussian (pyramid) reduction or expansion of the input image.
 
@@ -5784,8 +6044,8 @@ def imgPyramidImage(
         * `kx = 1`: same dimension in output (with weighted average over 3 nodes)
         * `kx = 2`: classical gaussian pyramid
         * `kx > 2`: generalized gaussian pyramid
-        
-        by defaut (`None`): the reduction step `kx` is set to 2 if the input image 
+
+        by defaut (`None`): the reduction step `kx` is set to 2 if the input image
         grid has more than one cell along x axis, and to 0 otherwise
 
     ky : int, optional
@@ -5833,6 +6093,9 @@ def imgPyramidImage(
         `nthreads = -n <= 0`: maximal number of threads of the system except n
         (but at least 1)
 
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
     Returns
     -------
     output_image : :class:`geone.img.Img`
@@ -5840,12 +6103,12 @@ def imgPyramidImage(
     """
     fname = 'imgPyramidImage'
 
-    # --- Check
+    # Check
     if operation not in ('reduce', 'expand'):
-        print(f"ERROR ({fname}): unknown `operation`")
-        return None
+        err_msg = f'{fname}: unknown `operation`'
+        raise DeesseinterfaceError(err_msg)
 
-    # --- Prepare parameters
+    # Prepare parameters
     if kx is None:
         if input_image.nx == 1:
             kx = 0
@@ -5894,44 +6157,62 @@ def imgPyramidImage(
         minWeight = float(minWeight) # ensure float type
 
     # Set input image "in C"
-    input_image_c = img_py2C(input_image)
+    try:
+        input_image_c = img_py2C(input_image)
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert input image from python to C'
+        raise DeesseinterfaceError(err_msg) from exc
 
     # Allocate output image "in C"
     output_image_c = deesse.malloc_MPDS_IMAGE()
     deesse.MPDSInitImage(output_image_c)
 
-    # --- Set number of threads
+    # Set number of threads
     if nthreads <= 0:
         nth = max(os.cpu_count() + nthreads, 1)
     else:
         nth = nthreads
 
-    # --- Compute pyramid (launch C code)
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    # Compute pyramid (launch C code)
     if operation == 'reduce':
         err = deesse.MPDSOMPImagePyramidReduce(input_image_c, output_image_c, kx, ky, kz, w0x, w0y, w0z, minWeight, nth)
     elif operation == 'expand':
         err = deesse.MPDSOMPImagePyramidExpand(input_image_c, output_image_c, kx, ky, kz, w0x, w0y, w0z, minWeight, nth)
     else:
-        print(f"ERROR ({fname}): `operation` not valid")
-        return None
+        # Free memory on C side: input_image_c
+        deesse.MPDSFreeImage(input_image_c)
+        deesse.free_MPDS_IMAGE(input_image_c)
+        # Free memory on C side: output_image_c
+        deesse.MPDSFreeImage(output_image_c)
+        deesse.free_MPDS_IMAGE(output_image_c)
+        # Raise error
+        err_msg = f'{fname}: `operation` invalid'
+        raise DeesseinterfaceError(err_msg)
 
-    # --- Retrieve output image "in python"
+    # Retrieve output image "in python"
     if err:
+        # Free memory on C side: input_image_c
+        deesse.MPDSFreeImage(input_image_c)
+        deesse.free_MPDS_IMAGE(input_image_c)
+        # Free memory on C side: output_image_c
+        deesse.MPDSFreeImage(output_image_c)
+        deesse.free_MPDS_IMAGE(output_image_c)
+        # Raise error
         err_message = deesse.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
-        print(err_message)
-        output_image = None
-    else:
-        output_image = img_C2py(output_image_c)
+        err_msg = f'{fname}: {err_message}'
+        raise DeesseinterfaceError(err_msg)
+
+    output_image = img_C2py(output_image_c)
 
     # Free memory on C side: input_image_c
     deesse.MPDSFreeImage(input_image_c)
-    #deesse.MPDSFree (input_image_c)
     deesse.free_MPDS_IMAGE(input_image_c)
-
     # Free memory on C side: output_image_c
     deesse.MPDSFreeImage(output_image_c)
-    #deesse.MPDSFree (output_image_c)
     deesse.free_MPDS_IMAGE(output_image_c)
 
     return output_image
@@ -5944,7 +6225,8 @@ def imgCategoricalToContinuous(
         xConnectFlag=None,
         yConnectFlag=None,
         zConnectFlag=None,
-        nthreads=-1):
+        nthreads=-1,
+        verbose=0):
     """
     Transforms variable(s) of an image from "categorical" to "continuous".
 
@@ -5952,7 +6234,7 @@ def imgCategoricalToContinuous(
     input image, into "continuous" variable(s) (with values in [0, 1]), and
     returns the corresponding output image. The transformation for a variable
     with n categories is done such that:
-    
+
     - each category in input will correspond to a distinct output value \
     in {i/(n-1), i=0, ..., n-1}
     - the output values are set such that "closer values correspond to better \
@@ -5972,7 +6254,7 @@ def imgCategoricalToContinuous(
     xConnectFlag : bool, optional
         flag indicating if the connction (contact btw.) categories are
         taken into account along x axis (`True`) or not (`False`);
-        by default (`None`): set to `True` provided that the number of cells of 
+        by default (`None`): set to `True` provided that the number of cells of
         the input image along x axis is greater than 1 (set to `False` otherwise)
 
     yConnectFlag : bool, optional
@@ -5986,6 +6268,9 @@ def imgCategoricalToContinuous(
         `nthreads = -n <= 0`: maximal number of threads of the system except n
         (but at least 1)
 
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
     Returns
     -------
     output_image : :class:`geone.img.Img`
@@ -5993,16 +6278,17 @@ def imgCategoricalToContinuous(
     """
     fname = 'imgCategoricalToContinuous'
 
-    # --- Check
+    # Check
     if varInd is not None:
         varInd = np.atleast_1d(varInd).reshape(-1)
         if np.sum([iv in range(input_image.nv) for iv in varInd]) != len(varInd):
-            print(f'ERROR ({fname}): invalid index-es')
-            return None
+            err_msg = f'{fname}: invalid index-es'
+            raise DeesseinterfaceError(err_msg)
+
     else:
         varInd = np.arange(input_image.nv)
 
-    # --- Prepare parameters
+    # Prepare parameters
     if xConnectFlag is None:
         if input_image.nx == 1:
             xConnectFlag = False
@@ -6027,16 +6313,18 @@ def imgCategoricalToContinuous(
     # Initialize value index
     val_index = np.zeros(input_image.nxyz(), dtype='intc')
 
-    # --- Initialize vector in C
+    # Initialize vector in C
     val_index_c = deesse.new_int_array(int(val_index.size))
 
-    # --- Set number of threads
+    # Set number of threads
     if nthreads <= 0:
         nth = max(os.cpu_count() + nthreads, 1)
     else:
         nth = nthreads
 
-    ok = True # to intercept error during for loop...
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
     for ind in varInd:
         # Get vector of values of the variale of index ind from input image
         vptr = input_image.val[ind].reshape(-1)
@@ -6050,46 +6338,49 @@ def imgCategoricalToContinuous(
 
         n = len(unique_val)
 
-        # --- Set vectors in C
+        # Set vectors in C
         deesse.mpds_set_int_vector_from_array(val_index_c, 0, val_index)
 
         to_new_index_c = deesse.new_int_array(n)
         to_initial_index_c = deesse.new_int_array(n)
 
-        # --- Compute index correspondence (launch C code)
+        # Compute index correspondence (launch C code)
         err = deesse.MPDSOMPGetImageOneVarNewValueIndexOrder(
-            input_image.nx, input_image.ny, input_image.nz,
-            n, val_index_c,
-            to_new_index_c, to_initial_index_c,
-            int(xConnectFlag), int(yConnectFlag), int(zConnectFlag),
-            nth)
+                input_image.nx, input_image.ny, input_image.nz,
+                n, val_index_c,
+                to_new_index_c, to_initial_index_c,
+                int(xConnectFlag), int(yConnectFlag), int(zConnectFlag),
+                nth)
 
-        # --- Retrieve vector to_new_index and to_initial_index "in python"
+        # Retrieve vector to_new_index and to_initial_index "in python"
         if err:
+            # Free memory on C side
+            deesse.delete_int_array(to_new_index_c)
+            deesse.delete_int_array(to_initial_index_c)
+            # Free memory on C side
+            deesse.delete_int_array(val_index_c)
+            # Raise error
             err_message = deesse.mpds_get_error_message(-err)
             err_message = err_message.replace('\n', '')
-            print(err_message)
-            ok = False
-        else:
-            to_new_index = np.zeros(n, dtype='intc') # 'intc' for C-compatibility
-            deesse.mpds_get_array_from_int_vector (to_new_index_c, 0, to_new_index)
+            err_msg = f'{fname}: {err_message}'
+            raise DeesseinterfaceError(err_msg)
 
-            # not used!
-            # to_initial_index = np.zeros(n, dtype='intc') # 'intc' for C-compatibility
-            # deesse.mpds_get_array_from_int_vector (to_initial_index_c, 0, to_initial_index)
+        to_new_index = np.zeros(n, dtype='intc') # 'intc' for C-compatibility
+        deesse.mpds_get_array_from_int_vector (to_new_index_c, 0, to_new_index)
 
-            # set new values
-            r = 1./max(n-1, 1)
-            vptr = output_image.val[ind].reshape(-1) # pointer !
-            for i in range(n):
-                vptr[val_index==i] = r * to_new_index[i]
+        # not used!
+        # to_initial_index = np.zeros(n, dtype='intc') # 'intc' for C-compatibility
+        # deesse.mpds_get_array_from_int_vector (to_initial_index_c, 0, to_initial_index)
+
+        # set new values
+        r = 1./max(n-1, 1)
+        vptr = output_image.val[ind].reshape(-1) # pointer !
+        for i in range(n):
+            vptr[val_index==i] = r * to_new_index[i]
 
         # Free memory on C side
         deesse.delete_int_array(to_new_index_c)
         deesse.delete_int_array(to_initial_index_c)
-
-        if not ok:
-            break
 
     # Free memory on C side
     deesse.delete_int_array(val_index_c)
@@ -6142,7 +6433,7 @@ class DeesseXInputSectionPath(object):
         (resp. axis) given in the string '<t_i>'
 
         Notes:
-        
+
         - the order can matter (depending on `sectionPathMode`)
         - the mode involving only two 1D axis as section (i.e. 'section_x_y' to \
         'section_z_y') can be used for a two-dimensional simulation grid
@@ -6222,14 +6513,14 @@ class DeesseXInputSectionPath(object):
         - if `minSpaceX > 0`: use as it in step (b)
         - if `minSpaceX = 0`: ignore (skip) step (b,ii) for x direction
         - if `minSpaceX < 0`: this parameter is automatically computed,
-        
+
         and defined as the "range" in the x direction computed
         from the training image(s) used in section(s) including
         the x direction
 
     minSpaceY : float, optional
         same as `minSpaceX`, but in y direction
-        
+
     minSpaceZ : float, optional
         same as `minSpaceX`, but in z direction
 
@@ -6336,8 +6627,8 @@ class DeesseXInputSectionPath(object):
         )
 
         if sectionMode not in sectionMode_avail:
-            print(f'ERROR ({fname}): unknown `sectionMode`')
-            return None
+            err_msg = f'{fname}: unknown `sectionMode`'
+            raise DeesseinterfaceError(err_msg)
 
         self.sectionMode = sectionMode
 
@@ -6349,8 +6640,8 @@ class DeesseXInputSectionPath(object):
             'section_path_manual'
         )
         if sectionPathMode not in sectionPathMode_avail:
-            print(f'ERROR ({fname}): unknown `sectionPathMode`')
-            return None
+            err_msg = f'{fname}: unknown `sectionPathMode`'
+            raise DeesseinterfaceError(err_msg)
 
         self.sectionPathMode = sectionPathMode
 
@@ -6386,13 +6677,15 @@ class DeesseXInputSectionPath(object):
                 try:
                     self.sectionType = np.asarray(sectionType, dtype='int').reshape(nsection)
                 except:
-                    print(f'ERROR ({fname}): parameter `sectionType`...')
-                    return None
+                    err_msg = f'{fname}: parameter `sectionType`...'
+                    raise DeesseinterfaceError(err_msg)
+
                 try:
                     self.sectionLoc = np.asarray(sectionLoc, dtype='int').reshape(nsection)
                 except:
-                    print(f'ERROR ({fname}): parameter `sectionLoc`...')
-                    return None
+                    err_msg = f'{fname}: parameter `sectionLoc`...'
+                    raise DeesseinterfaceError(err_msg)
+
             else:
                 self.sectionType = None
                 self.sectionLoc = None
@@ -6455,7 +6748,7 @@ class DeesseXInputSection(object):
 
     sectionType : str or int, optional
         type of section, possible values:
-        
+
         - 'xy' or 'XY' or 0: 2D section parallel to the plane xy
         - 'xz' or 'XZ' or 1: 2D section parallel to the plane xz
         - 'yz' or 'YZ' or 2: 2D section parallel to the plane yz
@@ -6547,7 +6840,7 @@ class DeesseXInputSection(object):
 
     softProbability : [sequence of] :class:`SoftProbability`, optional
         as in :class:`DeesseInput`
-        
+
     maxScanFraction : [sequence of] double(s), optional
         as in :class:`DeesseInput`
 
@@ -6649,20 +6942,21 @@ class DeesseXInputSection(object):
                         elif self.distanceType[i] == 'continuous':
                             self.distanceType[i] = 1
                         else:
-                            print(f'ERROR ({fname}): parameter `distanceType`...')
-                            return None
+                            err_msg = f'{fname}: parameter `distanceType`...'
+                            raise DeesseinterfaceError(err_msg)
+
                 self.distanceType = np.asarray(self.distanceType).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `distanceType`...')
-                return None
+                err_msg = f'{fname}: parameter `distanceType`...'
+                raise DeesseinterfaceError(err_msg)
 
         # dimension
         dim = int(nx>1) + int(ny>1) + int(nz>1)
 
         # section type
         if sectionType is None:
-            print(f'ERROR ({fname}): parameter `sectionType`...')
-            return None
+            err_msg = f'{fname}: parameter `sectionType`...'
+            raise DeesseinterfaceError(err_msg)
 
         if isinstance(sectionType, str):
             if sectionType == 'xy' or sectionType == 'XY':
@@ -6678,20 +6972,20 @@ class DeesseXInputSection(object):
             elif sectionType == 'x' or sectionType == 'X':
                 self.sectionType = 5
             else:
-                print(f'ERROR ({fname}): parameter `sectionType`...')
-                return None
+                err_msg = f'{fname}: parameter `sectionType`...'
+                raise DeesseinterfaceError(err_msg)
 
         elif isinstance(sectionType, int):
             self.sectionType = sectionType
 
         else:
-            print(f'ERROR ({fname}): parameter `sectionType`...')
-            return None
+            err_msg = f'{fname}: parameter `sectionType`...'
+            raise DeesseinterfaceError(err_msg)
 
         # TI, simGridAsTiFlag, nTI
         if TI is None and simGridAsTiFlag is None:
-            print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag` (both None)...')
-            return None
+            err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid (both `None`)...'
+            raise DeesseinterfaceError(err_msg)
 
         if TI is not None:
             self.TI = np.asarray(TI).reshape(-1)
@@ -6706,17 +7000,17 @@ class DeesseXInputSection(object):
             self.simGridAsTiFlag = np.array([False for i in range(len(self.TI))], dtype='bool') # set dtype='bool' in case of len(self.TI)=0
 
         if len(self.TI) != len(self.simGridAsTiFlag):
-            print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag` (not same length)...')
-            return None
+            err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid (not same length)...'
+            raise DeesseinterfaceError(err_msg)
 
         for f, t in zip(self.simGridAsTiFlag, self.TI):
             if (not f and t is None) or (f and t is not None):
-                print(f'ERROR ({fname}): invalid `TI` / `simGridAsTiFlag`...')
-                return None
+                err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid...'
+                raise DeesseinterfaceError(err_msg)
 
         if nTI is not None and nTI != len(self.TI):
-            print(f'ERROR ({fname}): invalid `nTI`...')
-            return None
+            err_msg = f'{fname}: `nTI` invalid...'
+            raise DeesseinterfaceError(err_msg)
 
         nTI = len(self.TI)
         self.nTI = nTI
@@ -6732,8 +7026,8 @@ class DeesseXInputSection(object):
                 try:
                     self.pdfTI = np.asarray(pdfTI, dtype=float).reshape(nTI, nz, ny, nx)
                 except:
-                    print(f'ERROR ({fname}): parameter `pdfTI`...')
-                    return None
+                    err_msg = f'{fname}: parameter `pdfTI`...'
+                    raise DeesseinterfaceError(err_msg)
 
         # homothety
         if homothetyUsage == 1:
@@ -6744,8 +7038,9 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyXRatio is None:
                     self.homothetyXRatio = np.array([1.])
@@ -6753,8 +7048,8 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if homothetyYLocal:
                 if homothetyYRatio is None:
@@ -6763,8 +7058,9 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyYRatio is None:
                     self.homothetyYRatio = np.array([1.])
@@ -6772,8 +7068,8 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if homothetyZLocal:
                 if homothetyZRatio is None:
@@ -6782,8 +7078,9 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyZRatio is None:
                     self.homothetyZRatio = np.array([1.])
@@ -6791,8 +7088,8 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
         elif homothetyUsage == 2:
             if homothetyXLocal:
@@ -6802,8 +7099,9 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyXRatio is None:
                     self.homothetyXRatio = np.array([1., 1.])
@@ -6811,8 +7109,8 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyXRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if homothetyYLocal:
                 if homothetyYRatio is None:
@@ -6821,8 +7119,9 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyYRatio is None:
                     self.homothetyYRatio = np.array([1., 1.])
@@ -6830,8 +7129,8 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyYRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if homothetyZLocal:
                 if homothetyZRatio is None:
@@ -6840,8 +7139,9 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if homothetyZRatio is None:
                     self.homothetyZRatio = np.array([1., 1.])
@@ -6849,8 +7149,8 @@ class DeesseXInputSection(object):
                     try:
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `homothetyZRatio`...')
-                        return None
+                        err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        raise DeesseinterfaceError(err_msg)
 
         elif homothetyUsage == 0:
             self.homothetyXRatio = None
@@ -6858,8 +7158,8 @@ class DeesseXInputSection(object):
             self.homothetyZRatio = None
 
         else:
-            print(f'ERROR ({fname}): invalid `homothetyUsage`')
-            return None
+            err_msg = f'{fname}: `homothetyUsage` invalid'
+            raise DeesseinterfaceError(err_msg)
 
         self.homothetyUsage = homothetyUsage
         self.homothetyXLocal = homothetyXLocal
@@ -6875,8 +7175,9 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationAzimuth is None:
                     self.rotationAzimuth = np.array([0.])
@@ -6884,8 +7185,8 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if rotationDipLocal:
                 if rotationDip is None:
@@ -6894,8 +7195,9 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationDip`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationDip`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationDip is None:
                     self.rotationDip = np.array([0.])
@@ -6903,8 +7205,8 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationDip`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationDip`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if rotationPlungeLocal:
                 if rotationPlunge is None:
@@ -6913,8 +7215,9 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationPlunge is None:
                     self.rotationPlunge = np.array([0.])
@@ -6922,8 +7225,8 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(1)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        raise DeesseinterfaceError(err_msg)
 
         elif rotationUsage == 2:
             if rotationAzimuthLocal:
@@ -6933,8 +7236,9 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationAzimuth is None:
                     self.rotationAzimuth = np.array([0., 0.])
@@ -6942,8 +7246,8 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationAzimuth`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if rotationDipLocal:
                 if rotationDip is None:
@@ -6952,8 +7256,9 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationDip`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationDip`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationDip is None:
                     self.rotationDip = np.array([0., 0.])
@@ -6961,8 +7266,8 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationDip`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationDip`...'
+                        raise DeesseinterfaceError(err_msg)
 
             if rotationPlungeLocal:
                 if rotationPlunge is None:
@@ -6971,8 +7276,9 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2, nz, ny, nx)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        raise DeesseinterfaceError(err_msg)
+
             else:
                 if rotationPlunge is None:
                     self.rotationPlunge = np.array([0., 0.])
@@ -6980,8 +7286,8 @@ class DeesseXInputSection(object):
                     try:
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2)
                     except:
-                        print(f'ERROR ({fname}): parameter `rotationPlunge`...')
-                        return None
+                        err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        raise DeesseinterfaceError(err_msg)
 
         elif rotationUsage == 0:
             self.rotationAzimuth = None
@@ -6989,8 +7295,8 @@ class DeesseXInputSection(object):
             self.rotationPlunge = None
 
         else:
-            print(f'ERROR ({fname}): invalid `rotationUsage`')
-            return None
+            err_msg = f'{fname}: `rotationUsage` invalid'
+            raise DeesseinterfaceError(err_msg)
 
         self.rotationUsage = rotationUsage
         self.rotationAzimuthLocal = rotationAzimuthLocal
@@ -7004,8 +7310,8 @@ class DeesseXInputSection(object):
             try:
                 self.searchNeighborhoodParameters = np.asarray(searchNeighborhoodParameters).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `searchNeighborhoodParameters`...')
-                return None
+                err_msg = f'{fname}: parameter `searchNeighborhoodParameters`...'
+                raise DeesseinterfaceError(err_msg)
 
         if nneighboringNode is None:
             if dim == 3: # 3D simulation
@@ -7021,8 +7327,8 @@ class DeesseXInputSection(object):
             try:
                 self.nneighboringNode = np.asarray(nneighboringNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `nneighboringNode`...')
-                return None
+                err_msg = f'{fname}: parameter `nneighboringNode`...'
+                raise DeesseinterfaceError(err_msg)
 
         if maxPropInequalityNode is None:
             self.maxPropInequalityNode = np.array([0.25 for i in range(nv)])
@@ -7030,8 +7336,8 @@ class DeesseXInputSection(object):
             try:
                 self.maxPropInequalityNode = np.asarray(maxPropInequalityNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `maxPropInequalityNode`...')
-                return None
+                err_msg = f'{fname}: parameter `maxPropInequalityNode`...'
+                raise DeesseinterfaceError(err_msg)
 
         if neighboringNodeDensity is None:
             self.neighboringNodeDensity = np.array([1. for i in range(nv)])
@@ -7039,13 +7345,13 @@ class DeesseXInputSection(object):
             try:
                 self.neighboringNodeDensity = np.asarray(neighboringNodeDensity, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `neighboringNodeDensity`...')
-                return None
+                err_msg = f'{fname}: parameter `neighboringNodeDensity`...'
+                raise DeesseinterfaceError(err_msg)
 
         # simulation type and simulation path type
         if simType not in ('sim_one_by_one', 'sim_variable_vector'):
-            print(f'ERROR ({fname}): parameter `simType`"...')
-            return None
+            err_msg = f'{fname}: parameter `simType`...'
+            raise DeesseinterfaceError(err_msg)
 
         self.simType = simType
 
@@ -7054,8 +7360,8 @@ class DeesseXInputSection(object):
                 'random_hd_distance_pdf', 'random_hd_distance_sort',
                 'random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort',
                 'unilateral'):
-            print(f'ERROR ({fname}): parameter `simPathType`...')
-            return None
+            err_msg = f'{fname}: parameter `simPathType`...'
+            raise DeesseinterfaceError(err_msg)
 
         self.simPathType = simPathType
 
@@ -7079,8 +7385,9 @@ class DeesseXInputSection(object):
                 try:
                     self.simPathUnilateralOrder = np.asarray(simPathUnilateralOrder).reshape(length)
                 except:
-                    print(f'ERROR ({fname}): parameter `simPathUnilateralOrder`...')
-                    return None
+                    err_msg = f'{fname}: parameter `simPathUnilateralOrder`...'
+                    raise DeesseinterfaceError(err_msg)
+
         else:
             self.simPathUnilateralOrder = None
 
@@ -7091,8 +7398,8 @@ class DeesseXInputSection(object):
             try:
                 self.distanceThreshold = np.asarray(distanceThreshold, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `distanceThreshold`...')
-                return None
+                err_msg = f'{fname}: parameter `distanceThreshold`...'
+                raise DeesseinterfaceError(err_msg)
 
         # soft probability
         if softProbability is None:
@@ -7101,8 +7408,8 @@ class DeesseXInputSection(object):
             try:
                 self.softProbability = np.asarray(softProbability).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `softProbability`...')
-                return None
+                err_msg = f'{fname}: parameter `softProbability`...'
+                raise DeesseinterfaceError(err_msg)
 
         # maximal scan fraction
         if maxScanFraction is None:
@@ -7116,8 +7423,8 @@ class DeesseXInputSection(object):
             try:
                 self.maxScanFraction = np.asarray(maxScanFraction).reshape(nTI)
             except:
-                print(f'ERROR ({fname}): parameter `maxScanFraction`...')
-                return None
+                err_msg = f'{fname}: parameter `maxScanFraction`...'
+                raise DeesseinterfaceError(err_msg)
 
         # pyramids
         if pyramidGeneralParameters is None:
@@ -7131,8 +7438,8 @@ class DeesseXInputSection(object):
             try:
                 self.pyramidParameters = np.asarray(pyramidParameters).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `pyramidParameters`...')
-                return None
+                err_msg = f'{fname}: parameter `pyramidParameters`...'
+                raise DeesseinterfaceError(err_msg)
 
         # tolerance and post-processing
         self.tolerance = tolerance
@@ -7149,8 +7456,8 @@ class DeesseXInputSection(object):
             try:
                 self.postProcessingNneighboringNode = np.asarray(postProcessingNneighboringNode).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `postProcessingNneighboringNode`...')
-                return None
+                err_msg = f'{fname}: parameter `postProcessingNneighboringNode`...'
+                raise DeesseinterfaceError(err_msg)
 
         if postProcessingNeighboringNodeDensity is None:
             if dim <= 1:
@@ -7163,8 +7470,8 @@ class DeesseXInputSection(object):
             try:
                 self.postProcessingNeighboringNodeDensity = np.asarray(postProcessingNeighboringNodeDensity, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `postProcessingNeighboringNodeDensity`...')
-                return None
+                err_msg = f'{fname}: parameter `postProcessingNeighboringNodeDensity`...'
+                raise DeesseinterfaceError(err_msg)
 
         if postProcessingDistanceThreshold is None:
             self.postProcessingDistanceThreshold = np.zeros(nv)
@@ -7183,8 +7490,8 @@ class DeesseXInputSection(object):
             try:
                 self.postProcessingDistanceThreshold = np.asarray(postProcessingDistanceThreshold, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `postProcessingDistanceThreshold`...')
-                return None
+                err_msg = f'{fname}: parameter `postProcessingDistanceThreshold`...'
+                raise DeesseinterfaceError(err_msg)
 
         if postProcessingMaxScanFraction is None:
             self.postProcessingMaxScanFraction = np.array([min(deesse.MPDS_POST_PROCESSING_MAX_SCAN_FRACTION_DEFAULT, self.maxScanFraction[i]) for i in range(nTI)], dtype=float)
@@ -7193,8 +7500,8 @@ class DeesseXInputSection(object):
             try:
                 self.postProcessingMaxScanFraction = np.asarray(postProcessingMaxScanFraction, dtype=float).reshape(nTI)
             except:
-                print(f'ERROR ({fname}): parameter `postProcessingMaxScanFraction`...')
-                return None
+                err_msg = f'{fname}: parameter `postProcessingMaxScanFraction`...'
+                raise DeesseinterfaceError(err_msg)
 
         self.postProcessingTolerance = postProcessingTolerance
 
@@ -7346,7 +7653,7 @@ class DeesseXInput(object):
     -----
     In output simulated images (obtained by running DeeSseX), the names of the
     output variables are set to '<vname>_real<n>', where
-    
+
     - <vname> is the name of the variable,
     - <n> is the realization index (starting from 0) \
     [<n> is written on 5 digits, with leading zeros]
@@ -7406,13 +7713,13 @@ class DeesseXInput(object):
         self.oz = float(oz)
         self.nv = int(nv)
         if varname is None:
-            self.varname = ["V{:d}".format(i) for i in range(nv)]
+            self.varname = ['V{i:d}' for i in range(nv)]
         else:
             try:
                 self.varname = list(np.asarray(varname).reshape(nv))
             except:
-                print(f'ERROR ({fname}): parameter `varname`...')
-                return None
+                err_msg = f'{fname}: parameter `varname`...'
+                raise DeesseinterfaceError(err_msg)
 
         # outputVarFlag
         if outputVarFlag is None:
@@ -7421,8 +7728,8 @@ class DeesseXInput(object):
             try:
                 self.outputVarFlag = np.asarray(outputVarFlag, dtype='bool').reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `outputVarFlag`...')
-                return None
+                err_msg = f'{fname}: parameter `outputVarFlag`...'
+                raise DeesseinterfaceError(err_msg)
 
         # output maps
         self.outputSectionTypeFlag = outputSectionTypeFlag
@@ -7457,8 +7764,8 @@ class DeesseXInput(object):
             try:
                 self.mask = np.asarray(mask).reshape(nz, ny, nx)
             except:
-                print(f'ERROR ({fname}): parameter `mask`...')
-                return None
+                err_msg = f'{fname}: parameter `mask`...'
+                raise DeesseinterfaceError(err_msg)
 
         # expMax
         self.expMax = expMax
@@ -7477,8 +7784,8 @@ class DeesseXInput(object):
             try:
                 self.rescalingMode = list(np.asarray(rescalingMode).reshape(nv))
             except:
-                print(f'ERROR ({fname}): parameter `rescalingMode`...')
-                return None
+                err_msg = f'{fname}: parameter `rescalingMode`...'
+                raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMin is None:
             self.rescalingTargetMin = np.array([0.0 for i in range(nv)], dtype=float)
@@ -7486,8 +7793,8 @@ class DeesseXInput(object):
             try:
                 self.rescalingTargetMin = np.asarray(rescalingTargetMin, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `rescalingTargetMin`...')
-                return None
+                err_msg = f'{fname}: parameter `rescalingTargetMin`...'
+                raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMax is None:
             self.rescalingTargetMax = np.array([0.0 for i in range(nv)], dtype=float)
@@ -7495,8 +7802,8 @@ class DeesseXInput(object):
             try:
                 self.rescalingTargetMax = np.asarray(rescalingTargetMax, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `rescalingTargetMax`...')
-                return None
+                err_msg = f'{fname}: parameter `rescalingTargetMax`...'
+                raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMean is None:
             self.rescalingTargetMean = np.array([0.0 for i in range(nv)], dtype=float)
@@ -7504,8 +7811,8 @@ class DeesseXInput(object):
             try:
                 self.rescalingTargetMean = np.asarray(rescalingTargetMean, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `rescalingTargetMean`...')
-                return None
+                err_msg = f'{fname}: parameter `rescalingTargetMean`...'
+                raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetLength is None:
             self.rescalingTargetLength = np.array([0.0 for i in range(nv)], dtype=float)
@@ -7513,8 +7820,8 @@ class DeesseXInput(object):
             try:
                 self.rescalingTargetLength = np.asarray(rescalingTargetLength, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `rescalingTargetLength`...')
-                return None
+                err_msg = f'{fname}: parameter `rescalingTargetLength`...'
+                raise DeesseinterfaceError(err_msg)
 
         # distance, ...
         if relativeDistanceFlag is None:
@@ -7523,8 +7830,8 @@ class DeesseXInput(object):
             try:
                 self.relativeDistanceFlag = np.asarray(relativeDistanceFlag, dtype='bool').reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `relativeDistanceFlag`...')
-                return None
+                err_msg = f'{fname}: parameter `relativeDistanceFlag`...'
+                raise DeesseinterfaceError(err_msg)
 
         if powerLpDistance is None:
             self.powerLpDistance = np.array([1. for i in range(nv)])
@@ -7532,8 +7839,8 @@ class DeesseXInput(object):
             try:
                 self.powerLpDistance = np.asarray(powerLpDistance, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `powerLpDistance`...')
-                return None
+                err_msg = f'{fname}: parameter `powerLpDistance`...'
+                raise DeesseinterfaceError(err_msg)
 
         self.powerLpDistanceInv = 1./self.powerLpDistance
 
@@ -7552,12 +7859,13 @@ class DeesseXInput(object):
                         elif self.distanceType[i] == 'continuous':
                             self.distanceType[i] = 1
                         else:
-                            print(f'ERROR ({fname}): parameter `distanceType`...')
-                            return None
+                            err_msg = f'{fname}: parameter `distanceType`...'
+                            raise DeesseinterfaceError(err_msg)
+
                 self.distanceType = np.asarray(self.distanceType).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `distanceType`...')
-                return None
+                err_msg = f'{fname}: parameter `distanceType`...'
+                raise DeesseinterfaceError(err_msg)
 
         # conditioning weight
         if conditioningWeightFactor is None:
@@ -7566,20 +7874,20 @@ class DeesseXInput(object):
             try:
                 self.conditioningWeightFactor = np.asarray(conditioningWeightFactor, dtype=float).reshape(nv)
             except:
-                print(f'ERROR ({fname}): parameter `conditioningWeightFactor`...')
-                return None
+                err_msg = f'{fname}: parameter `conditioningWeightFactor`...'
+                raise DeesseinterfaceError(err_msg)
 
         # sectionPath_parameters
         if sectionPath_parameters is None:
-            print(f'ERROR ({fname}): parameter `sectionPath_parameters` (must be specified)...')
-            return None
+            err_msg = f'{fname}: parameter `sectionPath_parameters` (must be specified)...'
+            raise DeesseinterfaceError(err_msg)
 
         self.sectionPath_parameters = sectionPath_parameters
 
         # section_parameters
         if section_parameters is None:
-            print(f'ERROR ({fname}): parameter `section_parameters` (must be specified)...')
-            return None
+            err_msg = f'{fname}: parameter `section_parameters` (must be specified)...'
+            raise DeesseinterfaceError(err_msg)
 
         self.section_parameters = np.asarray(section_parameters).reshape(-1)
 
@@ -7621,7 +7929,7 @@ def deesseX_input_sectionPath_py2C(sectionPath_parameters):
     Returns
     -------
     mpds_xsectionParameters : \(MPDS_XSECTIONPARAMETERS \*\)
-        section path parameters (strategy of simulation) in C 
+        section path parameters (strategy of simulation) in C
     """
     fname = 'deesseX_input_sectionPath_py2C'
 
@@ -7664,8 +7972,12 @@ def deesseX_input_sectionPath_py2C(sectionPath_parameters):
     try:
         mpds_xsectionParameters.XSectionMode = sectionMode_dict[sectionPath_parameters.sectionMode]
     except:
-        print(f'ERROR ({fname}): section mode unknown')
-        return None
+        # Free memory on C side
+        deesse.MPDSFreeXSectionParameters(mpds_xsectionParameters)
+        deesse.free_MPDS_XSECTIONPARAMETERS(mpds_xsectionParameters)
+        # Raise error
+        err_msg = f'{fname}: section mode unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # XSectionPathMode and other relevant fields
     if sectionPath_parameters.sectionPathMode == 'section_path_random':
@@ -7698,8 +8010,12 @@ def deesseX_input_sectionPath_py2C(sectionPath_parameters):
                 mpds_xsectionParameters.sectionLoc, 0,
                 np.asarray(sectionPath_parameters.sectionLoc, dtype='intc').reshape(ns))
     else:
-        print(f'ERROR ({fname}): section path type unknown')
-        return None
+        # Free memory on C side
+        deesse.MPDSFreeXSectionParameters(mpds_xsectionParameters)
+        deesse.free_MPDS_XSECTIONPARAMETERS(mpds_xsectionParameters)
+        # Raise error
+        err_msg = f'{fname}: section path type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     return mpds_xsectionParameters
 # ----------------------------------------------------------------------------
@@ -7758,8 +8074,8 @@ def deesseX_input_sectionPath_C2py(mpds_xsectionParameters):
     try:
         sectionMode = sectionMode_dict[mpds_xsectionParameters.XSectionMode]
     except:
-        print(f'ERROR ({fname}): section mode unknown')
-        return None
+        err_msg = f'{fname}: section mode unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # ... sectionPathMode other relevant fields
     # ... ... default parameters
@@ -7797,8 +8113,8 @@ def deesseX_input_sectionPath_C2py(mpds_xsectionParameters):
             sectionLoc = sectionLoc.astype('int')
 
     else:
-        print(f'ERROR ({fname}): section path type unknown')
-        return None
+        err_msg = f'{fname}: section path type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     sectionPath_parameters = DeesseXInputSectionPath(
         sectionMode=sectionMode,
@@ -7847,10 +8163,10 @@ def deesseX_input_section_py2C(
 
     sy : float
         cell size along y axis
-        
+
     sz : float
         cell size along z axis
-        
+
     ox : float
         origin of the grid along x axis (x coordinate of cell border)
 
@@ -7859,7 +8175,7 @@ def deesseX_input_section_py2C(
 
     oz : float
         origin of the grid along z axis (z coordinate of cell border)
-    
+
     nv : int
         number of variable(s) / attribute(s)
 
@@ -7899,7 +8215,16 @@ def deesseX_input_section_py2C(
     mpds_xsubsiminput.trainImage = deesse.new_MPDS_IMAGE_array(nTI)
     for i, ti in enumerate(section_parameters.TI):
         if ti is not None:
-            im_c = img_py2C(ti)
+            try:
+                im_c = img_py2C(ti)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert TI from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
+
             deesse.MPDS_IMAGE_array_setitem(mpds_xsubsiminput.trainImage, i, im_c)
             # deesse.free_MPDS_IMAGE(im_c)
             #
@@ -7911,7 +8236,15 @@ def deesseX_input_section_py2C(
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=nTI, val=section_parameters.pdfTI)
-        mpds_xsubsiminput.pdfTrainImage = img_py2C(im)
+        try:
+            mpds_xsubsiminput.pdfTrainImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+            deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+            # Raise error
+            err_msg = f'{fname}: cannot convert pdfTI from python to C'
+            raise DeesseinterfaceError(err_msg) from exc
 
     # Homothety:
     #   mpds_xsubsiminput.homothetyUsage
@@ -7926,7 +8259,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=section_parameters.homothetyXRatio)
-            mpds_xsubsiminput.homothetyXRatioImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.homothetyXRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert homothetyXRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.homothetyXRatioImageFlag = deesse.FALSE
@@ -7940,7 +8281,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=section_parameters.homothetyYRatio)
-            mpds_xsubsiminput.homothetyYRatioImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.homothetyYRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert homothetyYRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.homothetyYRatioImageFlag = deesse.FALSE
@@ -7954,7 +8303,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=section_parameters.homothetyZRatio)
-            mpds_xsubsiminput.homothetyZRatioImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.homothetyZRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert homothetyZRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.homothetyZRatioImageFlag = deesse.FALSE
@@ -7969,7 +8326,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=section_parameters.homothetyXRatio)
-            mpds_xsubsiminput.homothetyXRatioImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.homothetyXRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert homothetyXRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.homothetyXRatioImageFlag = deesse.FALSE
@@ -7983,7 +8348,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=section_parameters.homothetyYRatio)
-            mpds_xsubsiminput.homothetyYRatioImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.homothetyYRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert homothetyYRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.homothetyYRatioImageFlag = deesse.FALSE
@@ -7997,7 +8370,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=section_parameters.homothetyZRatio)
-            mpds_xsubsiminput.homothetyZRatioImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.homothetyZRatioImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert homothetyZRatio image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.homothetyZRatioImageFlag = deesse.FALSE
@@ -8018,7 +8399,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=section_parameters.rotationAzimuth)
-            mpds_xsubsiminput.rotationAzimuthImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.rotationAzimuthImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert rotationAzimuth image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.rotationAzimuthImageFlag = deesse.FALSE
@@ -8032,7 +8421,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=section_parameters.rotationDip)
-            mpds_xsubsiminput.rotationDipImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.rotationDipImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert rotationDip image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.rotationDipImageFlag = deesse.FALSE
@@ -8046,7 +8443,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=1, val=section_parameters.rotationPlunge)
-            mpds_xsubsiminput.rotationPlungeImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.rotationPlungeImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert rotationPlunge image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.rotationPlungeImageFlag = deesse.FALSE
@@ -8061,7 +8466,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=section_parameters.rotationAzimuth)
-            mpds_xsubsiminput.rotationAzimuthImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.rotationAzimuthImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert rotationAzimuth image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.rotationAzimuthImageFlag = deesse.FALSE
@@ -8075,7 +8488,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=section_parameters.rotationDip)
-            mpds_xsubsiminput.rotationDipImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.rotationDipImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert rotationDip image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.rotationDipImageFlag = deesse.FALSE
@@ -8089,7 +8510,15 @@ def deesseX_input_section_py2C(
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
                      nv=2, val=section_parameters.rotationPlunge)
-            mpds_xsubsiminput.rotationPlungeImage = img_py2C(im)
+            try:
+                mpds_xsubsiminput.rotationPlungeImage = img_py2C(im)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+                deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert rotationPlunge image from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
 
         else:
             mpds_xsubsiminput.rotationPlungeImageFlag = deesse.FALSE
@@ -8100,10 +8529,16 @@ def deesseX_input_section_py2C(
     # mpds_xsubsiminput.searchNeighborhoodParameters
     mpds_xsubsiminput.searchNeighborhoodParameters = deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nv)
     for i, sn in enumerate(section_parameters.searchNeighborhoodParameters):
-        sn_c = search_neighborhood_parameters_py2C(sn)
-        if sn_c is None:
-            print(f'ERROR ({fname}): can not convert search neighborhood parameters from python to C')
-            return None
+        try:
+            sn_c = search_neighborhood_parameters_py2C(sn)
+        except Exception as exc:
+            # Free memory on C side
+            deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+            deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+            # Raise error
+            err_msg = f'{fname}: cannot convert search neighborhood parameters from python to C'
+            raise DeesseinterfaceError(err_msg) from exc
+
         deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(
             mpds_xsubsiminput.searchNeighborhoodParameters, i, sn_c)
         # deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(sn_c)
@@ -8127,15 +8562,20 @@ def deesseX_input_section_py2C(
         np.asarray(section_parameters.neighboringNodeDensity).reshape(nv))
 
     # mpds_xsubsiminput.simAndPathParameters
-    mpds_xsubsiminput.simAndPathParameters = set_simAndPathParameters_C(
-        section_parameters.simType,
-        section_parameters.simPathType,
-        section_parameters.simPathStrength,
-        section_parameters.simPathPower,
-        section_parameters.simPathUnilateralOrder)
-    if mpds_xsubsiminput.simAndPathParameters is None:
-        print(f'ERROR ({fname}): can not set "simAndPathParameters" in C')
-        return None
+    try:
+        mpds_xsubsiminput.simAndPathParameters = set_simAndPathParameters_C(
+                section_parameters.simType,
+                section_parameters.simPathType,
+                section_parameters.simPathStrength,
+                section_parameters.simPathPower,
+                section_parameters.simPathUnilateralOrder)
+    except Exception as exc:
+        # Free memory on C side
+        deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+        deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+        # Raise error
+        err_msg = f'{fname}: cannot set "simAndPathParameters" in C'
+        raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsubsiminput.distanceThreshold
     mpds_xsubsiminput.distanceThreshold = deesse.new_real_array(nv)
@@ -8148,13 +8588,19 @@ def deesseX_input_section_py2C(
 
     # ... for each variable ...
     for i, sp in enumerate(section_parameters.softProbability):
-        sp_c = softProbability_py2C(sp,
-                                    nx, ny, nz,
-                                    sx, sy, sz,
-                                    ox, oy, oz)
-        if sp_c is None:
-            print(f'ERROR ({fname}): can not set soft probability parameters in C')
-            return None
+        try:
+            sp_c = softProbability_py2C(sp,
+                                        nx, ny, nz,
+                                        sx, sy, sz,
+                                        ox, oy, oz)
+        except Exception as exc:
+            # Free memory on C side
+            deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+            deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+            # Raise error
+            err_msg = f'{fname}: cannot set soft probability parameters in C'
+            raise DeesseinterfaceError(err_msg) from exc
+
         deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_xsubsiminput.softProbability, i, sp_c)
         # deesse.free_MPDS_SOFTPROBABILITY(sp_c)
 
@@ -8165,20 +8611,30 @@ def deesseX_input_section_py2C(
             np.asarray(section_parameters.maxScanFraction).reshape(nTI))
 
     # mpds_xsubsiminput.pyramidGeneralParameters ...
-    mpds_xsubsiminput.pyramidGeneralParameters = pyramidGeneralParameters_py2C(section_parameters.pyramidGeneralParameters)
-    if mpds_xsubsiminput.pyramidGeneralParameters is None:
-        print(f'ERROR ({fname}): can not set pyramid general parameters in C')
-        return None
+    try:
+        mpds_xsubsiminput.pyramidGeneralParameters = pyramidGeneralParameters_py2C(section_parameters.pyramidGeneralParameters)
+    except Exception as exc:
+        # Free memory on C side
+        deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+        deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+        # Raise error
+        err_msg = f'{fname}: cannot set pyramid general parameters in C'
+        raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsubsiminput.pyramidParameters ...
     mpds_xsubsiminput.pyramidParameters = deesse.new_MPDS_PYRAMIDPARAMETERS_array(nv)
 
     # ... for each variable ...
     for i, pp in enumerate(section_parameters.pyramidParameters):
-        pp_c = pyramidParameters_py2C(pp)
-        if pp_c is None:
-            print(f'ERROR ({fname}): can not set pyramid parameters in C')
-            return None
+        try:
+            pp_c = pyramidParameters_py2C(pp)
+        except Exception as exc:
+            # Free memory on C side
+            deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
+            deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
+            # Raise error
+            err_msg = f'{fname}: cannot set pyramid parameters in C'
+            raise DeesseinterfaceError(err_msg) from exc
 
         deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(mpds_xsubsiminput.pyramidParameters, i, pp_c)
         # deesse.free_MPDS_PYRAMIDPARAMETERS(pp_c)
@@ -8411,8 +8867,9 @@ def deesseX_input_section_C2py(
         sn_c = deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_getitem(mpds_xsubsiminput.searchNeighborhoodParameters, i)
         sn = search_neighborhood_parameters_C2py(sn_c)
         if sn is None:
-            print(f'ERROR ({fname}): can not convert search neighborhood parameters from C to python')
-            return None
+            err_msg = f'{fname}: cannot convert search neighborhood parameters from C to python'
+            raise DeesseinterfaceError(err_msg)
+
         searchNeighborhoodParameters[i] = sn
 
     # nneighboringNode
@@ -8437,8 +8894,8 @@ def deesseX_input_section_C2py(
     elif simType_c == deesse.SIM_VARIABLE_VECTOR:
         simType = 'sim_variable_vector'
     else:
-        print(f'ERROR ({fname}): simulation type unknown')
-        return None
+        err_msg = f'{fname}: simulation type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # simPathType
     simPathType = None
@@ -8469,8 +8926,8 @@ def deesseX_input_section_C2py(
         deesse.mpds_get_array_from_int_vector(mpds_xsubsiminput.simAndPathParameters.unilateralOrder, 0, simPathUnilateralOrder)
         simPathUnilateralOrder = simPathUnilateralOrder.astype('int')
     else:
-        print(f'ERROR ({fname}): simulation path type unknown')
-        return None
+        err_msg = f'{fname}: simulation path type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # distanceThreshold
     distanceThreshold = np.zeros(nv, dtype=float)
@@ -8482,8 +8939,9 @@ def deesseX_input_section_C2py(
         sp_c = deesse.MPDS_SOFTPROBABILITY_array_getitem(mpds_xsubsiminput.softProbability, i)
         sp = softProbability_C2py(sp_c)
         if sp is None:
-            print(f'ERROR ({fname}): can not convert soft probability from C to python')
-            return None
+            err_msg = f'{fname}: cannot convert soft probability from C to python'
+            raise DeesseinterfaceError(err_msg)
+
         softProbability[i] = sp
 
     # maxScanFraction
@@ -8494,8 +8952,8 @@ def deesseX_input_section_C2py(
     # pyramidGeneralParameters
     pyramidGeneralParameters = pyramidGeneralParameters_C2py(mpds_xsubsiminput.pyramidGeneralParameters)
     if pyramidGeneralParameters is None:
-        print(f'ERROR ({fname}): can not convert pyramid general parameters from C to python')
-        return None
+        err_msg = f'{fname}: cannot convert pyramid general parameters from C to python'
+        raise DeesseinterfaceError(err_msg)
 
     # pyramidParameters
     pyramidParameters = np.array(nv*[None])
@@ -8503,8 +8961,9 @@ def deesseX_input_section_C2py(
         pp_c = deesse.MPDS_PYRAMIDPARAMETERS_array_getitem(mpds_xsubsiminput.pyramidParameters, i)
         pp = pyramidParameters_C2py(pp_c)
         if pp is None:
-            print(f'ERROR ({fname}): can not convert pyramid parameters from C to python')
-            return None
+            err_msg = f'{fname}: cannot convert pyramid parameters from C to python'
+            raise DeesseinterfaceError(err_msg)
+
         pyramidParameters[i] = pp
 
     # tolerance
@@ -8623,19 +9082,20 @@ def deesseX_input_py2C(deesseX_input):
     # mpds_xsiminput.simName
     # (mpds_xsiminput.simName not used, but must be set (could be '')!
     if not isinstance(deesseX_input.simName, str):
-        print(f'ERROR ({fname}): simName is not a string')
         # Free memory on C side
         deesse.MPDSFreeXSimInput(mpds_xsiminput)
-        #deesse.MPDSFree(mpds_xsiminput)
         deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-        return None
+        # Raise error
+        err_msg = f'{fname}: simName is not a string'
+        raise DeesseinterfaceError(err_msg)
+
     if len(deesseX_input.simName) >= deesse.MPDS_VARNAME_LENGTH:
-        print(f'ERROR ({fname}): simName is too long')
         # Free memory on C side
         deesse.MPDSFreeXSimInput(mpds_xsiminput)
-        #deesse.MPDSFree(mpds_xsiminput)
         deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-        return None
+        # Raise error
+        err_msg = f'{fname}: simName is too long'
+        raise DeesseinterfaceError(err_msg)
 
     deesse.mpds_x_allocate_and_set_simname(mpds_xsiminput, deesseX_input.simName)
     # mpds_xsiminput.simName = deesseX_input.simName #  works too
@@ -8649,7 +9109,15 @@ def deesseX_input_py2C(deesseX_input):
              varname=deesseX_input.varname)
 
     # ... convert im from python to C
-    mpds_xsiminput.simImage = img_py2C(im)
+    try:
+        mpds_xsiminput.simImage = img_py2C(im)
+    except Exception as exc:
+        # Free memory on C side
+        deesse.MPDSFreeXSimInput(mpds_xsiminput)
+        deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
+        # Raise error
+        err_msg = f'{fname}: cannot initialize simImage in C'
+        raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsiminput.nvar
     mpds_xsiminput.nvar = nv
@@ -8695,7 +9163,16 @@ def deesseX_input_py2C(deesseX_input):
         mpds_xsiminput.ndataImage = n
         mpds_xsiminput.dataImage = deesse.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(deesseX_input.dataImage):
-            im_c = img_py2C(dataIm)
+            try:
+                im_c = img_py2C(dataIm)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSimInput(mpds_xsiminput)
+                deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert dataImage from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
+
             deesse.MPDS_IMAGE_array_setitem(mpds_xsiminput.dataImage, i, im_c)
             # deesse.free_MPDS_IMAGE(im_c)
             #
@@ -8709,7 +9186,16 @@ def deesseX_input_py2C(deesseX_input):
         mpds_xsiminput.ndataPointSet = n
         mpds_xsiminput.dataPointSet = deesse.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(deesseX_input.dataPointSet):
-            ps_c = ps_py2C(dataPS)
+            try:
+                ps_c = ps_py2C(dataPS)
+            except Exception as exc:
+                # Free memory on C side
+                deesse.MPDSFreeXSimInput(mpds_xsiminput)
+                deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
+                # Raise error
+                err_msg = f'{fname}: cannot convert dataPointSet from python to C'
+                raise DeesseinterfaceError(err_msg) from exc
+
             deesse.MPDS_POINTSET_array_setitem(mpds_xsiminput.dataPointSet, i, ps_c)
             # deesse.free_MPDS_POINTSET(ps_c)
             #
@@ -8724,7 +9210,15 @@ def deesseX_input_py2C(deesseX_input):
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
                  nv=1, val=deesseX_input.mask)
-        mpds_xsiminput.maskImage = img_py2C(im)
+        try:
+            mpds_xsiminput.maskImage = img_py2C(im)
+        except Exception as exc:
+            # Free memory on C side
+            deesse.MPDSFreeXSimInput(mpds_xsiminput)
+            deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
+            # Raise error
+            err_msg = f'{fname}: cannot convert mask from python to C'
+            raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsiminput.trainValueRangeExtensionMax
     mpds_xsiminput.trainValueRangeExtensionMax = deesseX_input.expMax
@@ -8738,12 +9232,12 @@ def deesseX_input_py2C(deesseX_input):
     try:
         mpds_xsiminput.normalizingType = normalizingType_dict[deesseX_input.normalizingType]
     except:
-        print(f'ERROR ({fname}): normalizing type unknown')
         # Free memory on C side
         deesse.MPDSFreeXSimInput(mpds_xsiminput)
-        #deesse.MPDSFree(mpds_xsiminput)
         deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-        return None
+        # Raise error
+        err_msg = f'{fname}: normalizing type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # mpds_xsimInput.rescalingMode
     rescalingMode_dict = {
@@ -8756,12 +9250,12 @@ def deesseX_input_py2C(deesseX_input):
         if m in rescalingMode_dict.keys():
             deesse.MPDS_RESCALINGMODE_array_setitem(mpds_xsiminput.rescalingMode, i, rescalingMode_dict[m])
         else:
-            print(f'ERROR ({fname}): rescaling mode unknown')
             # Free memory on C side
             deesse.MPDSFreeXSimInput(mpds_xsiminput)
-            #deesse.MPDSFree(mpds_xsiminput)
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-            return None
+            # Raise error
+            err_msg = f'{fname}: rescaling mode unknown'
+            raise DeesseinterfaceError(err_msg)
 
     # mpds_xsimInput.rescalingTargetMin
     mpds_xsiminput.rescalingTargetMin = deesse.new_real_array(nv)
@@ -8815,7 +9309,15 @@ def deesseX_input_py2C(deesseX_input):
         np.asarray(deesseX_input.conditioningWeightFactor).reshape(nv))
 
     # mpds_xsiminput.XSectionParameters
-    mpds_xsiminput.XSectionParameters = deesseX_input_sectionPath_py2C(deesseX_input.sectionPath_parameters)
+    try:
+        mpds_xsiminput.XSectionParameters = deesseX_input_sectionPath_py2C(deesseX_input.sectionPath_parameters)
+    except Exception as exc:
+        # Free memory on C side
+        deesse.MPDSFreeXSimInput(mpds_xsiminput)
+        deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
+        # Raise error
+        err_msg = f'{fname}: cannot set XSectionParameters from python to C'
+        raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsiminput.XSectionParameters = deesse.malloc_MPDS_XSECTIONPARAMETERS()
     # deesse.MPDSInitXSectionParameters(mpds_xsiminput.XSectionParameters)
@@ -8856,12 +9358,12 @@ def deesseX_input_py2C(deesseX_input):
     # try:
     #     mpds_xsiminput.XSectionParameters.XSectionMode = sectionMode_dict[deesseX_input.sectionPath_parameters.sectionMode]
     # except:
-    #     print(f'ERROR ({fname}): section mode unknown')
     #     # Free memory on C side
     #     deesse.MPDSFreeXSimInput(mpds_xsiminput)
-    #     #deesse.MPDSFree(mpds_xsiminput)
     #     deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-    #     return None
+    #     # Raise error
+    #     err_msg = f'{fname}: section mode unknown'
+    #     raise DeesseinterfaceError(err_msg)
     #
     # # ... XSectionPathMode and other relevant fields
     # if deesseX_input.sectionPath_parameters.sectionPathMode == 'section_path_random':
@@ -8894,83 +9396,97 @@ def deesseX_input_py2C(deesseX_input):
     #             mpds_siminput.XSectionParameters.sectionLoc, 0,
     #             np.asarray(deesseX_input.sectionPath_parameters.sectionLoc, dtype='intc').reshape(ns))
     # else:
-    #     print(f'ERROR ({fname}): section path type unknown')
     #     # Free memory on C side
     #     deesse.MPDSFreeXSimInput(mpds_xsiminput)
-    #     #deesse.MPDSFree(mpds_xsiminput)
     #     deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-    #     return None
+    #     # Raise error
+    #     err_msg = f'{fname}: section path type unknown'
+    #     raise DeesseinterfaceError(err_msg)
 
     # mpds_xsiminput.XSubSimInput_<*> ...
     for sect_param in deesseX_input.section_parameters:
         if sect_param.nx != nx:
-            print(f'ERROR ({fname}): nx in (one) section parameters invalid')
             # Free memory on C side
             deesse.MPDSFreeXSimInput(mpds_xsiminput)
-            #deesse.MPDSFree(mpds_xsiminput)
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-            return None
+            # Raise error
+            err_msg = f'{fname}: nx in (one) section parameters invalid'
+            raise DeesseinterfaceError(err_msg)
+
         if sect_param.ny != ny:
-            print(f'ERROR ({fname}): ny in (one) section parameters invalid')
             # Free memory on C side
             deesse.MPDSFreeXSimInput(mpds_xsiminput)
-            #deesse.MPDSFree(mpds_xsiminput)
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-            return None
+            # Raise error
+            err_msg = f'{fname}: ny in (one) section parameters invalid'
+            raise DeesseinterfaceError(err_msg)
+
         if sect_param.nz != nz:
-            print(f'ERROR ({fname}): nz in (one) section parameters invalid')
             # Free memory on C side
             deesse.MPDSFreeXSimInput(mpds_xsiminput)
-            #deesse.MPDSFree(mpds_xsiminput)
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-            return None
+            # Raise error
+            err_msg = f'{fname}: nz in (one) section parameters invalid'
+            raise DeesseinterfaceError(err_msg)
+
         if sect_param.nv != nv:
-            print(f'ERROR ({fname}): nv in (one) section parameters invalid')
             # Free memory on C side
             deesse.MPDSFreeXSimInput(mpds_xsiminput)
-            #deesse.MPDSFree(mpds_xsiminput)
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-            return None
+            # Raise error
+            err_msg = f'{fname}: nv in (one) section parameters invalid'
+            raise DeesseinterfaceError(err_msg)
+
         if not np.all(deesseX_input.distanceType == sect_param.distanceType):
-            print(f"ERROR ({fname}): distanceType (one) section parameters invalid")
             # Free memory on C side
             deesse.MPDSFreeXSimInput(mpds_xsiminput)
-            #deesse.MPDSFree(mpds_xsiminput)
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-            return None
+            # Raise error
+            err_msg = f'{fname}: distanceType (one) section parameters invalid'
+            raise DeesseinterfaceError(err_msg)
+
         # for d1, d2 in zip(deesseX_input.distanceType, sect_param.distanceType):
         #     if d1 != d2:
-        #         print("ERROR: 'distanceType' (one) section parameters invalid")
         #         # Free memory on C side
         #         deesse.MPDSFreeXSimInput(mpds_xsiminput)
-        #         #deesse.MPDSFree(mpds_xsiminput)
         #         deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-        #         return None
-        if sect_param.sectionType == 0:
-            mpds_xsiminput.XSubSimInput_xy = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                        nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
-        elif sect_param.sectionType == 1:
-            mpds_xsiminput.XSubSimInput_xz = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                        nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
-        elif sect_param.sectionType == 2:
-            mpds_xsiminput.XSubSimInput_yz = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                        nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
-        elif sect_param.sectionType == 3:
-            mpds_xsiminput.XSubSimInput_z = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                       nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
-        elif sect_param.sectionType == 4:
-            mpds_xsiminput.XSubSimInput_y = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                       nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
-        elif sect_param.sectionType == 5:
-            mpds_xsiminput.XSubSimInput_x = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                       nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
-        else:
-            print(f'ERROR ({fname}): section type in section parameters unknown')
+        #         err_msg = f'{fname}: distanceType (one) section parameters invalid'
+        #         raise DeesseinterfaceError(err_msg)
+
+        try:
+            if sect_param.sectionType == 0:
+                mpds_xsiminput.XSubSimInput_xy = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+            elif sect_param.sectionType == 1:
+                mpds_xsiminput.XSubSimInput_xz = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+            elif sect_param.sectionType == 2:
+                mpds_xsiminput.XSubSimInput_yz = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+            elif sect_param.sectionType == 3:
+                mpds_xsiminput.XSubSimInput_z = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                           nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+            elif sect_param.sectionType == 4:
+                mpds_xsiminput.XSubSimInput_y = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                           nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+            elif sect_param.sectionType == 5:
+                mpds_xsiminput.XSubSimInput_x = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
+                                                                           nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+            else:
+                # Free memory on C side
+                deesse.MPDSFreeXSimInput(mpds_xsiminput)
+                deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
+                # Raise error
+                err_msg = f'{fname}: section type in section parameters unknown'
+                raise DeesseinterfaceError(err_msg)
+
+        except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeXSimInput(mpds_xsiminput)
-            #deesse.MPDSFree(mpds_xsiminput)
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
-            return None
+            # Raise error
+            err_msg = f'{fname}: cannot set XSubSimInput in C'
+            raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsiminput.seed
     mpds_xsiminput.seed = int(deesseX_input.seed)
@@ -9076,8 +9592,8 @@ def deesseX_input_C2py(mpds_xsiminput):
     try:
         normalizingType = normalizingType_dict[mpds_xsiminput.normalizingType]
     except:
-        print(f'ERROR ({fname}): normalizing type unknown')
-        return None
+        err_msg = f'{fname}: normalizing type unknown'
+        raise DeesseinterfaceError(err_msg)
 
     # rescalingMode
     rescalingMode_dict = {
@@ -9092,8 +9608,8 @@ def deesseX_input_C2py(mpds_xsiminput):
             rs = rescalingMode_dict[rs_c]
             rescalingMode[i] = rs
         except:
-            print(f'ERROR ({fname}): rescaling mode unknown')
-            return None
+            err_msg = f'{fname}: rescaling mode unknown'
+            raise DeesseinterfaceError(err_msg)
 
     # rescalingTargetMin
     rescalingTargetMin = np.zeros(nv, dtype=float)
@@ -9298,7 +9814,7 @@ def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
     -------
     deesseX_output : dict
         deesseX output in python, dictionary
-        
+
         `{'sim':sim,
         'sim_var_original_index':sim_var_original_index,
         'simSectionType':simSectionType,
@@ -9307,7 +9823,7 @@ def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
         'warnings':warnings}`
 
         with (`nreal=mpds_xsimoutput->nreal`, the number of realization(s)):
-        
+
         - sim: 1D array of :class:`geone.img.Img` of shape (nreal,)
             * `sim[i]`: i-th realisation, \
             k-th variable stored refers to the original variable \
@@ -9453,7 +9969,10 @@ def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseXRun(deesseX_input, nthreads=-1, verbose=2):
+def deesseXRun(
+        deesseX_input,
+        nthreads=-1,
+        verbose=2):
     """
     Launches deesseX.
 
@@ -9471,15 +9990,17 @@ def deesseXRun(deesseX_input, nthreads=-1, verbose=2):
         verbose mode, higher implies more printing (info):
 
         - 0: no display
-        - 1: only errors
-        - 2: errors and warnings
-        - 3 (or >2): version, progress, and warning(s) encountered
+        - 1: warnings
+        - 2: warnings + basic info
+        - 3 (or >2): all information
+
+        note that if an error occurred, it is raised
 
     Returns
     -------
     deesseX_output : dict
         deesseX output in python, dictionary
-        
+
         `{'sim':sim,
         'sim_var_original_index':sim_var_original_index,
         'simSectionType':simSectionType,
@@ -9488,7 +10009,7 @@ def deesseXRun(deesseX_input, nthreads=-1, verbose=2):
         'warnings':warnings}`
 
         with `nreal=deesseX_input.nrealization`:
-        
+
         - sim: 1D array of :class:`geone.img.Img` of shape (nreal,)
             * `sim[i]`: i-th realisation, \
             k-th variable stored refers to the original variable \
@@ -9537,16 +10058,15 @@ def deesseXRun(deesseX_input, nthreads=-1, verbose=2):
         nwarning : int
             total number of warning(s) encountered (same warnings can be counted
             several times)
-            
+
         warnings : list of strs
             list of distinct warnings encountered (can be empty)
     """
     fname = 'deesseXRun'
 
     if not deesseX_input.ok:
-        if verbose > 0:
-            print(f'ERROR ({fname}): check deesseX input')
-        return None
+        err_msg = f'{fname}: check deesseX input'
+        raise DeesseinterfaceError(err_msg)
 
     # Set number of threads
     if nthreads <= 0:
@@ -9554,21 +10074,24 @@ def deesseXRun(deesseX_input, nthreads=-1, verbose=2):
     else:
         nth = nthreads
 
-    if verbose >= 2:
-        print('DeeSseX running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(deesse.MPDS_X_VERSION_NUMBER, deesse.MPDS_X_BUILD_NUMBER, nth))
+    if verbose > 0 and nth > os.cpu_count():
+        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+
+    if verbose > 1:
+        print('{}: DeeSseX running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, deesse.MPDS_X_VERSION_NUMBER, deesse.MPDS_X_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesseX...
 
     # Convert deesseX input from python to C
     try:
         mpds_xsiminput = deesseX_input_py2C(deesseX_input)
-    except:
-        print(f'ERROR ({fname}): unable to convert deesseX input from python to C...')
-        return None
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert deesseX input from python to C'
+        raise DeesseinterfaceError(err_msg) from exc
 
-    if mpds_xsiminput is None:
-        print(f'ERROR ({fname}): unable to convert deesseX input from python to C...')
-        return None
+    # if mpds_xsiminput is None:
+    #     err_msg = f'{fname}: cannot convert deesseX input from python to C'
+    #     raise DeesseinterfaceError(err_msg)
 
     # Allocate mpds_xsimoutput
     mpds_xsimoutput = deesse.malloc_MPDS_XSIMOUTPUT()
@@ -9598,40 +10121,47 @@ def deesseXRun(deesseX_input, nthreads=-1, verbose=2):
 
     # Free memory on C side: deesseX input
     deesse.MPDSFreeXSimInput(mpds_xsiminput)
-    #deesse.MPDSFree(mpds_xsiminput)
     deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
 
     if err:
+        # Free memory on C side: simulation output
+        deesse.MPDSFreeXSimOutput(mpds_xsimoutput)
+        deesse.free_MPDS_XSIMOUTPUT(mpds_xsimoutput)
+        # Free memory on C side: progress monitor
+        deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
+        # Raise error
         err_message = deesse.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
-        print(err_message)
-        deesseX_output = None
-    else:
-        deesseX_output = deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor)
+        err_msg = f'{fname}: {err_message}'
+        raise DeesseinterfaceError(err_msg)
+
+    deesseX_output = deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor)
 
     # Free memory on C side: simulation output
     deesse.MPDSFreeXSimOutput(mpds_xsimoutput)
-    #deesse.MPDSFree (mpds_xsimoutput)
     deesse.free_MPDS_XSIMOUTPUT(mpds_xsimoutput)
 
     # Free memory on C side: progress monitor
-    #deesse.MPDSFree(mpds_progressMonitor)
     deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose >= 2 and deesseX_output:
-        print('DeeSseX run complete')
+    if verbose > 1 and deesseX_output:
+        print(f'{fname}: DeeSseX run complete')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and deesseX_output and deesseX_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(deesseX_output['nwarning']))
+    if verbose > 0 and deesseX_output and deesseX_output['nwarning']:
+        print(f"{fname}: warnings encountered ({deesseX_output['nwarning']} times in all):")
         for i, warning_message in enumerate(deesseX_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return deesseX_output
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseXRun_mp(deesseX_input, nproc=None, nthreads_per_proc=None, verbose=2):
+def deesseXRun_mp(
+        deesseX_input,
+        nproc=None,
+        nthreads_per_proc=None,
+        verbose=2):
     """
     Computes the same as the function :func:`deesseinterface.deesseXRun`, using multiprocessing.
 
@@ -9669,13 +10199,12 @@ def deesseXRun_mp(deesseX_input, nproc=None, nthreads_per_proc=None, verbose=2):
     fname = 'deesseXRun_mp'
 
     if not deesseX_input.ok:
-        if verbose > 0:
-            print(f'ERROR ({fname}): check deesseX input')
-        return None
+        err_msg = f'{fname}: check deesseX input'
+        raise DeesseinterfaceError(err_msg)
 
     if deesseX_input.nrealization <= 1:
-        if verbose > 0:
-            print('NOTE: number of realization does not exceed 1: launching deesseXRun...')
+        if verbose > 1:
+            print(f'{fname}: number of realization does not exceed 1: launching deesseXRun...')
         nthreads = nthreads_per_proc
         if nthreads is None:
             nthreads = -1
@@ -9688,19 +10217,19 @@ def deesseXRun_mp(deesseX_input, nproc=None, nthreads_per_proc=None, verbose=2):
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), deesseX_input.nrealization), 1)
-        if verbose > 0 and nproc != nproc_tmp:
-            print('NOTE: number of processes has been changed (now: nproc={})'.format(nproc))
+        if verbose > 1 and nproc != nproc_tmp:
+            print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
         nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
     else:
         nth = max(int(nthreads_per_proc), 1)
-        if verbose > 0 and nth != nthreads_per_proc:
-            print('NOTE: number of threads per process has been changed (now: nthreads_per_proc={})'.format(nth))
+        if verbose > 1 and nth != nthreads_per_proc:
+            print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print('NOTE: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
     # Set the distribution of the realizations over the processes
     # Condider the Euclidean division of nreal by nproc:
@@ -9711,8 +10240,8 @@ def deesseXRun_mp(deesseX_input, nproc=None, nthreads_per_proc=None, verbose=2):
     q, r = np.divmod(deesseX_input.nrealization, nproc)
     real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
-    if verbose >= 2:
-        print('DeeSseX running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(nproc, deesse.MPDS_X_VERSION_NUMBER, deesse.MPDS_X_BUILD_NUMBER, nth))
+    if verbose > 1:
+        print('{}: DeeSseX running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, nproc, deesse.MPDS_X_VERSION_NUMBER, deesse.MPDS_X_BUILD_NUMBER, nth))
         sys.stdout.flush()
         sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesseX...
 
@@ -9728,10 +10257,11 @@ def deesseXRun_mp(deesseX_input, nproc=None, nthreads_per_proc=None, verbose=2):
         input.nrealization = real_index_proc[i+1] - real_index_proc[i]
         input.seed = init_seed + int(real_index_proc[i]) * input.seedIncrement
         input.outputReportFileName = input.outputReportFileName + f'.{i}'
-        if i==0:
-            verb = min(verbose, 1) # allow to print error for process i
-        else:
-            verb = 0
+        verb = 0
+        # if i==0:
+        #     verb = min(verbose, 1) # allow to print warnings for process i
+        # else:
+        #     verb = 0
         # Launch deesseX (i-th process)
         out_pool.append(pool.apply_async(deesseXRun, args=(input, nth, verb)))
 
@@ -9809,14 +10339,14 @@ def deesseXRun_mp(deesseX_input, nproc=None, nthreads_per_proc=None, verbose=2):
         'nwarning':nwarning, 'warnings':warnings
         }
 
-    if verbose >= 2 and deesseX_output:
-        print('DeeSseX run complete (all process(es))')
+    if verbose > 1 and deesseX_output:
+        print(f'{fname}: DeeSseX run complete (all process(es))')
 
     # Show (print) encountered warnings
-    if verbose >= 2 and deesseX_output and deesseX_output['nwarning']:
-        print('\nWarnings encountered ({} times in all):'.format(deesseX_output['nwarning']))
+    if verbose > 0 and deesseX_output and deesseX_output['nwarning']:
+        print(f"{fname}: warnings encountered ({deesseX_output['nwarning']} times in all):")
         for i, warning_message in enumerate(deesseX_output['warnings']):
-            print('#{:3d}: {}'.format(i+1, warning_message))
+            print(f'#{i+1:3d}: {warning_message}')
 
     return deesseX_output
 # ----------------------------------------------------------------------------
@@ -9827,7 +10357,7 @@ def exportDeesseXInput(
         dirname='input_ascii',
         fileprefix='dsX',
         endofline='\n',
-        verbose=2):
+        verbose=1):
     """
     Exports deesseX input in txt (ASCII) files (in the directory `dirname`).
 
@@ -9851,9 +10381,9 @@ def exportDeesseXInput(
     endofline : str, default: '\\\\n'
         end of line character
 
-    verbose : int, default: 2
+    verbose : int, default: 1
         verbose mode for comments in the written main input file:
-        
+
         - 0: no comment
         - 1: basic comments
         - 2: detailed comments
@@ -9861,9 +10391,8 @@ def exportDeesseXInput(
     fname = 'exportDeesseXInput'
 
     if not deesseX_input.ok:
-        if verbose > 0:
-            print(f'ERROR ({fname}): check deesseX input')
-        return None
+        err_msg = f'{fname}: check deesseX input'
+        raise DeesseinterfaceError(err_msg)
 
     # Create ouptut directory if needed
     if not os.path.isdir(dirname):
@@ -9872,24 +10401,28 @@ def exportDeesseXInput(
     # Convert deesseX input from python to C
     try:
         mpds_xsiminput = deesseX_input_py2C(deesseX_input)
-    except:
-        print(f'ERROR ({fname}): unable to convert deesseX input from python to C...')
-        return None
+    except Exception as exc:
+        err_msg = f'{fname}: cannot convert deesseX input from python to C'
+        raise DeesseinterfaceError(err_msg) from exc
 
-    if mpds_xsiminput is None:
-        print(f'ERROR ({fname}): unable to convert deesseX input from python to C...')
-        return None
+    # if mpds_xsiminput is None:
+    #     err_msg = f'{fname}: cannot convert deesseX input from python to C'
+    #     raise DeesseinterfaceError(err_msg)
 
     err = deesse.MPDSExportXSimInput( mpds_xsiminput, dirname, fileprefix, endofline, verbose)
 
     if err:
+        # Free memory on C side: deesseX input
+        deesse.MPDSFreeXSimInput(mpds_xsiminput)
+        deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
+        # Raise error
         err_message = deesse.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
-        print(err_message)
+        err_msg = f'{fname}: {err_message}'
+        raise DeesseinterfaceError(err_msg)
 
     # Free memory on C side: deesseX input
     deesse.MPDSFreeXSimInput(mpds_xsiminput)
-    #deesse.MPDSFree(mpds_siminput)
     deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
 # ----------------------------------------------------------------------------
 
@@ -9921,13 +10454,13 @@ def importDeesseXInput(filename, dirname='.'):
 
     # Check directory
     if not os.path.isdir(dirname):
-        print(f'ERROR ({fname}): directory does not exist')
-        return None
+        err_msg = f'{fname}: directory does not exist'
+        raise DeesseinterfaceError(err_msg)
 
     # Check file
     if not os.path.isfile(os.path.join(dirname, filename)):
-        print(f'ERROR ({fname}): input file does not exist')
-        return None
+        err_msg = f'{fname}: input file does not exist'
+        raise DeesseinterfaceError(err_msg)
 
     # Get current working directory
     cwd = os.getcwd()
@@ -9949,13 +10482,18 @@ def importDeesseXInput(filename, dirname='.'):
         deesseX_input = deesseX_input_C2py(mpds_xsiminput)
 
     except:
-        deesseX_input = None
+        # Free memory on C side: deesseX input
+        deesse.delete_MPDS_XSIMINPUTp(mpds_xsiminputp)
+        # Raise error
+        err_msg = f'{fname}: cannot import deesseX input from ASCII files'
+        raise DeesseinterfaceError(err_msg)
 
-    if deesseX_input is None:
-        print(f'ERROR ({fname}): unable to import deesseX input from ASCII files...')
+    finally:
+        # Change directory (to initial working directory)
+        os.chdir(cwd)
 
-    # Change directory (to initial working directory)
-    os.chdir(cwd)
+    # Free memory on C side: deesseX input
+    deesse.delete_MPDS_XSIMINPUTp(mpds_xsiminputp)
 
     return deesseX_input
 # ----------------------------------------------------------------------------
@@ -10047,7 +10585,7 @@ class DeesseEstimator():
 
         :return deesse_output:  (dict) {'sim':sim, 'path':path, 'error':error}
             With nreal = deesse_input.nrealization:
-            
+
             - sim : (1-dimensional array of Img (class) of size nreal)
                 * sim[i]: i-th realisation
 

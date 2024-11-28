@@ -14,11 +14,22 @@ Module for miscellaneous algorithms based on random processes.
 import numpy as np
 import scipy
 
+# ============================================================================
+class RandProcessError(Exception):
+    """
+    Custom exception related to `randProcess` module.
+    """
+    pass
+# ============================================================================
+
 # ----------------------------------------------------------------------------
-def acceptRejectSampler(n, xmin, xmax, f, c=None, g=None, g_rvs=None,
-                        return_accept_ratio=False,
-                        max_trial=None, show_progress=False,
-                        opt_kwargs=None):
+def acceptRejectSampler(
+        n, xmin, xmax, f,
+        c=None, g=None, g_rvs=None,
+        return_accept_ratio=False,
+        max_trial=None,
+        verbose=0, show_progress=None,
+        opt_kwargs=None):
     """
     Generates samples according to a given density function.
 
@@ -90,8 +101,15 @@ def acceptRejectSampler(n, xmin, xmax, f, c=None, g=None, g_rvs=None,
     return_accept_ratio : bool, default: False
         indicates if the acceptance ratio is returned
 
-    show_progress : bool, default: False
-        indicates if progress is displayed (`True`) or not (`False`)
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
+    show_progress : bool, optional
+        deprecated, use `verbose` instead;
+
+        - if `show_progress=False`, `verbose` is set to 1 (overwritten)
+        - if `show_progress=True`, `verbose` is set to 2 (overwritten)
+        - if `show_progress=None` (default): not used
 
     opt_kwargs : dict, optional
         keyword arguments to be passed to `scipy.optimize.differential_evolution`
@@ -114,12 +132,19 @@ def acceptRejectSampler(n, xmin, xmax, f, c=None, g=None, g_rvs=None,
     """
     fname = 'acceptRejectSampler'
 
+    # Set verbose mode according to show_progress (if given)
+    if show_progress is not None:
+        if show_progress:
+            verbose = 2
+        else:
+            verbose = 1
+
     xmin = np.atleast_1d(xmin)
     xmax = np.atleast_1d(xmax)
 
     if xmin.ndim != xmax.ndim or np.any(np.isnan(xmin)) or np.any(np.isnan(xmax)) or np.any(xmin >= xmax):
-        print(f'ERROR ({fname}): `xmin`, `xmax` not valid')
-        return None
+        err_msg = f'{fname}: `xmin`, `xmax` invalid'
+        raise RandProcessError(err_msg)
 
     lx = xmax - xmin
     dim = len(xmin)
@@ -140,13 +165,14 @@ def acceptRejectSampler(n, xmin, xmax, f, c=None, g=None, g_rvs=None,
 
     # Set g, g_rvs
     if (g is None and g_rvs is not None) or (g is not None and g_rvs is None):
-        print(f'ERROR ({fname}): `g` and `g_rvs` should be both specified')
-        return None
+        err_msg = f'{fname}: `g` and `g_rvs` should both be specified'
+        raise RandProcessError(err_msg)
 
     if g is None:
         if not dom_finite:
-            print(f'ERROR ({fname}): `g` and `g_rvs` must be specified when infinite domain is considered')
-            return None
+            err_msg = f'{fname}: `g` and `g_rvs` must be specified when infinite domain is considered'
+            raise RandProcessError(err_msg)
+
         # g
         g = lambda x: 1.0
         # g_rvs
@@ -159,16 +185,18 @@ def acceptRejectSampler(n, xmin, xmax, f, c=None, g=None, g_rvs=None,
 
     if c is None:
         if not dom_finite:
-            print(f'ERROR ({fname}): `c` must be specified when infinite domain is considered')
-            return None
+            err_msg = f'{fname}: `c` must be specified when infinite domain is considered'
+            raise RandProcessError(err_msg)
+
         h = lambda x: -f(x)/g(x)
         # Compute the min of h(x) with the function scipy.optimize.differential_evolution
         if opt_kwargs is None:
             opt_kwargs = {}
         res = scipy.optimize.differential_evolution(h, bounds=list(zip(xmin, xmax)), **opt_kwargs)
         if not res.success:
-            print(f'ERROR ({fname}): `scipy.optimize.differential_evolution` failed {res.message})')
-            return None
+            err_msg = f'{fname}: `scipy.optimize.differential_evolution` failed {res.message})'
+            raise RandProcessError(err_msg)
+
         # -> res.x realizes the minimum of h(x)
         # -> res.fun is the minimum of h(x)
         # Set c such that c > f(x)/g(x) for all x in the domain
@@ -180,7 +208,7 @@ def acceptRejectSampler(n, xmin, xmax, f, c=None, g=None, g_rvs=None,
     x = []
     if max_trial is None:
         max_trial = np.inf
-    if show_progress:
+    if verbose > 1:
         progress = 0
         progressOld = -1
     while naccept < n:
@@ -201,7 +229,7 @@ def acceptRejectSampler(n, xmin, xmax, f, c=None, g=None, g_rvs=None,
             continue
         x.extend(xnew)
         naccept = naccept+nn
-        if show_progress:
+        if verbose > 1:
             progress = int(100*naccept/n)
             if progress > progressOld:
                 print(f'A-R algo, progress: {progress:3d} %')
@@ -212,8 +240,8 @@ def acceptRejectSampler(n, xmin, xmax, f, c=None, g=None, g_rvs=None,
 
     x = np.asarray(x)
 
-    if naccept < n:
-        print(f'WARNING ({fname}): sample size is only {naccept}! (increase `max_trial`)')
+    if naccept < n and verbose > 0:
+        print(f'{fname}: WARNING: sample size is only {naccept}! (increase `max_trial`)')
 
     if return_accept_ratio:
         accept_ratio = naccept/ntot
@@ -268,36 +296,36 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
     xmax = np.atleast_1d(xmax)
 
     if xmin.ndim != xmax.ndim or xmin.ndim != 1:
-        print(f'ERROR ({fname}): `xmin`, `xmax` not valid (dimension or shape)')
-        return None
+        err_msg = f'{fname}: `xmin`, `xmax` not valid (dimension or shape)'
+        raise RandProcessError(err_msg)
 
     if np.any(xmin >= xmax):
-        print(f'ERROR ({fname}): `xmin`, `xmax` not valid ((component of) xmin less than or equal to xmax)')
-        return None
+        err_msg = f'{fname}: `xmin`, `xmax` not valid ((component of) xmin less than or equal to xmax)'
+        raise RandProcessError(err_msg)
 
     # dimension
     dim = len(xmin)
 
     if callable(mu):
         if ninterval is None:
-            print(f'ERROR ({fname}): `ninterval` must be specified when a function is passed for the intensity (mu)')
-            return None
+            err_msg = f'{fname}: `ninterval` must be specified when a function is passed for the intensity (`mu`)'
+            raise RandProcessError(err_msg)
 
         ninterval = np.asarray(ninterval, dtype=int)  # possibly 0-dimensional
         if ninterval.size == 1:
             ninterval = ninterval.flat[0] * np.ones(dim)
         elif ninterval.size != dim:
-            print(f'ERROR ({fname}): `ninterval` does not have an acceptable size')
-            return None
+            err_msg = f'{fname}: `ninterval` does not have an acceptable size'
+            raise RandProcessError(err_msg)
 
         if np.any(ninterval < 1):
-            print(f'ERROR ({fname}): `ninterval` has negative or zero value')
-            return None
+            err_msg = f'{fname}: `ninterval` has negative or zero value'
+            raise RandProcessError(err_msg)
 
     elif isinstance(mu, np.ndarray):
         if mu.ndim != dim:
-            print(f'ERROR ({fname}): inconsistent number of dimension for the ndarray `mu`')
-            return None
+            err_msg = f'{fname}: inconsistent number of dimension for the ndarray `mu`'
+            raise RandProcessError(err_msg)
 
         ninterval = mu.shape[::-1]
 
@@ -337,11 +365,13 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def chentsov1D(n_mean,
-               dimension, spacing=1.0, origin=0.0,
-               direction_origin=None,
-               p_min=None, p_max=None,
-               nreal=1):
+def chentsov1D(
+        n_mean,
+        dimension, spacing=1.0, origin=0.0,
+        direction_origin=None,
+        p_min=None, p_max=None,
+        nreal=1,
+        verbose=0):
     """
     Generates a Chentsov's simulation in 1D.
 
@@ -355,12 +385,12 @@ def chentsov1D(n_mean,
         - `xmax = origin + nx*dx`
 
     The simulation consists in:
-    
+
     1. Drawing random hyper-plane (i.e. points in 1D) in the space
     [`p_min`, `p_max`] following a Poisson point process with intensity:
-    
+
     * mu = `n_mean` / vol([`p_min`, `p_max`]);
-    
+
     the points are given in the parametrized form: p;
     then, for each point p, and with direction_origin = x0
     (the center of the simulation domain by default), the hyper-plane
@@ -375,9 +405,9 @@ def chentsov1D(n_mean,
     randomly) and the value -1 is set to the other part. Denoting V_i
     the value over the space (R) associated to the i-th hyper-plane
     (point), the value assigned to a grid cell of center x is set to
-    
+
     * Z(x) = 0.5 * sum_{i} (V_i(x) - V_i(x0))
-    
+
     It corresponds to the number of hyper-planes (points) cut by the
     segment [x0, x].
 
@@ -413,12 +443,15 @@ def chentsov1D(n_mean,
     nreal : int, default: 1
         number of realization(s)
 
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
     Returns
     -------
     sim : 2D array of floats of shape (nreal, nx)
         simulations of Z (see above);
         `sim[i, j]`: value of the i-th realisation at grid cell of index j
-        
+
     n : 1D array of shape (nreal,)
         numbers of hyper-planes (points) drawn, `n[i]` is the number of
         hyper-planes for the i-th realization
@@ -429,7 +462,9 @@ def chentsov1D(n_mean,
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        print('CHENTSOV1D: nreal <= 0: nothing to do!')
+        if verbose > 0:
+            print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None` is returned')
+        return None, None
 
     nx = dimension
     dx = spacing
@@ -446,8 +481,8 @@ def chentsov1D(n_mean,
             p_max = d
 
     if p_min >= p_max:
-        print(f"ERROR ({fname}): `p_min` is greater than or equal to `p_max`")
-        return None
+        err_msg = f'{fname}: `p_min` is greater than or equal to `p_max`'
+        raise RandProcessError(err_msg)
 
     # center of each grid cell of the simulation domain
     xc = ox + (0.5 + np.arange(nx)) * dx
@@ -464,7 +499,12 @@ def chentsov1D(n_mean,
 
     for k in range(nreal):
         # Draw points via Poisson process
-        pts = poissonPointProcess(mu, p_min, p_max)
+        try:
+            pts = poissonPointProcess(mu, p_min, p_max)
+        except Exception as exc:
+            err_msg = f'{fname}: Poisson point process failed'
+            raise RandProcessError(err_msg) from exc
+
         n[k] = pts.shape[0]
 
         # Defines values of Z in each grid cell
@@ -478,25 +518,27 @@ def chentsov1D(n_mean,
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def chentsov2D(n_mean,
-               dimension, spacing=(1.0, 1.0), origin=(0.0, 0.0),
-               direction_origin=None,
-               phi_min=0.0, phi_max=np.pi,
-               p_min=None, p_max=None,
-               nreal=1):
+def chentsov2D(
+        n_mean,
+        dimension, spacing=(1.0, 1.0), origin=(0.0, 0.0),
+        direction_origin=None,
+        phi_min=0.0, phi_max=np.pi,
+        p_min=None, p_max=None,
+        nreal=1,
+        verbose=0):
     """
     Generates a Chentsov's simulation in 2D.
 
     The domain of simulation is `[xmin, xmax]` x `[ymin x ymax]`,
     with `nx` and `ny` cells along x axis and y axis respectively, each cell
     being a box of size `dx` x `dy`, the lower-left corner is the origin:
-    
+
     - along x axis:
         - `nx = dimension[0]`
         - `dx = spacing[0]`
         - `xmin = origin[0]`
         - `xmax = origin[0] + nx*dx`
-    
+
     - along y axis:
         - `ny = dimension[1]`
         - `dy = spacing[1]`
@@ -509,12 +551,12 @@ def chentsov2D(n_mean,
     considering the space S x [`p_min`, `p_max`], where S is a part of
     the circle of radius 1 in the plane (by default: half circle),
     parametrized via
-    
+
     * phi -> (cos(phi), sin(phi)), with phi in [`phi_min`, `phi_max`],
 
     some points are drawn randomly in S x [`p_min`, `p_max`] following a
     Poisson point process with intensity
-    
+
     * mu = `n_mean` / vol(S x [`p_min`, `p_max`])
 
     the points are given in the parametrized form: (phi, p);
@@ -532,9 +574,9 @@ def chentsov2D(n_mean,
     value -1 is set to the other part. Denoting V_i the value over the
     space (R^2) associated to the i-th hyper-plane (line), the value
     assigned to a grid cell of center (x, y) is set to
-    
+
     * Z(x, y) = 0.5 * sum_{i} (V_i(x, y) - V_i(x0, y0))
-    
+
     It corresponds to the number of hyper-planes cut by the segment
     [(x0, y0), (x, y)].
 
@@ -579,6 +621,9 @@ def chentsov2D(n_mean,
     nreal : int, default: 1
         number of realization(s)
 
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
     Returns
     -------
     sim : 3D array of floats of shape (nreal, ny, nx)
@@ -596,7 +641,9 @@ def chentsov2D(n_mean,
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        print('CHENTSOV2D: nreal <= 0: nothing to do!')
+        if verbose > 0:
+            print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None` is returned')
+        return None, None
 
     nx, ny = dimension
     dx, dy = spacing
@@ -613,12 +660,12 @@ def chentsov2D(n_mean,
             p_max = d
 
     if p_min >= p_max:
-        print(f"ERROR ({fname}): `p_min` is greater than or equal to `p_max`")
-        return None
+        err_msg = f'{fname}: `p_min` is greater than or equal to `p_max`'
+        raise RandProcessError(err_msg)
 
     if phi_min >= phi_max:
-        print(f"ERROR ({fname}): 'phi_min' is greater than or equal to 'phi_max'")
-        return None
+        err_msg = f'{fname}: `phi_min` is greater than or equal to `phi_max`'
+        raise RandProcessError(err_msg)
 
     # center of each grid cell of the simulation domain
     yc, xc = np.meshgrid(oy + (0.5 + np.arange(ny)) * dy, ox + (0.5 + np.arange(nx)) * dx, indexing='ij')
@@ -643,7 +690,12 @@ def chentsov2D(n_mean,
 
     for k in range(nreal):
         # Draw points via Poisson process
-        pts = poissonPointProcess(mu, [phi_min, p_min], [phi_max, p_max])
+        try:
+            pts = poissonPointProcess(mu, [phi_min, p_min], [phi_max, p_max])
+        except Exception as exc:
+            err_msg = f'{fname}: Poisson point process failed'
+            raise RandProcessError(err_msg) from exc
+
         n[k] = pts.shape[0]
 
         # Defines values of Z in each grid cell
@@ -667,14 +719,16 @@ def chentsov2D(n_mean,
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def chentsov3D(n_mean,
-               dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
-               direction_origin=None,
-               phi_min=0.0, phi_max=2.0*np.pi,
-               theta_min=0.0, theta_max=0.5*np.pi,
-               p_min=None, p_max=None,
-               ninterval_theta=100,
-               nreal=1):
+def chentsov3D(
+        n_mean,
+        dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
+        direction_origin=None,
+        phi_min=0.0, phi_max=2.0*np.pi,
+        theta_min=0.0, theta_max=0.5*np.pi,
+        p_min=None, p_max=None,
+        ninterval_theta=100,
+        nreal=1,
+        verbose=0):
     """
     Generates a Chentsov's simulation in 3D.
 
@@ -689,13 +743,13 @@ def chentsov3D(n_mean,
         - `dx = spacing[0]`
         - `xmin = origin[0]`
         - `xmax = origin[0] + nx*dx`
-    
+
     - along y axis:
         - `ny = dimension[1]`
         - `dy = spacing[1]`
         - `ymin = origin[1]`
         - `ymax = origin[1] + ny*dy`
-    
+
     - along z axis:
         - `nz = dimension[0]`
         - `dz = spacing[0]`
@@ -708,22 +762,22 @@ def chentsov3D(n_mean,
     considering the space S x [`p_min`, `p_max`], where S is a part of
     the sphere of radius 1 in the 3D space (by default: half sphere),
     parametrized via
-    
+
     * (phi, theta) -> (cos(phi)cos(theta), sin(phi)cos(theta), sin(theta)), \
     with phi in [`phi_min`, `phi_max`], theta in [`theta_min`, `theta_max`]
 
     some points are drawn randomly in S x [`p_min`, `p_max`] following a
     Poisson point process with intensity
-    
+
     * mu = `n_mean` / vol(S x [`p_min`, `p_max`]);
-    
+
     the points are given in the parametrized form: (phi, theta, p);
     then, for each point (phi, theta, p), and with
     direction_origin = (x0, y0, z0) (the center of the simulation domain
     by default), the hyper-plane (plane)
-    
+
     * {(x, y, z) : dot([x-x0, y-y0, z-z0], [cos(phi)cos(theta), sin(phi)cos(theta), sin(theta)]) = p}
-    
+
     (i.e. point (x, y, z) s.t. the orthogonal projection of
     (x-x0, y-y0, z-z0) onto the direction
     (cos(phi)cos(theta), sin(phi)cos(theta), sin(theta)) is equal to p)
@@ -734,9 +788,9 @@ def chentsov3D(n_mean,
     is set to the other part. Denoting V_i the value over the space (R^3)
     associated to the i-th hyper-plane (plane), the value assigned to a
     grid cell of center (x, y) is set to
-    
+
     * Z(x, y) = 0.5 * sum_{i} (V_i(x, y) - V_i(x0, y0))
-    
+
     It corresponds to the number of hyper-planes (planes) cut by the
     segment [(x0, y0, z0), (x, y, z)].
 
@@ -794,13 +848,16 @@ def chentsov3D(n_mean,
     nreal : int, default: 1
         number of realization(s)
 
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
     Returns
     -------
     sim : 4D array of floats of shape (nreal, nz, ny, nx)
         simulations of Z (see above);
         `sim[i, iz, iy, ix]`: value of the i-th realisation at grid cell of
         index ix (resp. iy, iz) along x (resp. y, z) axis
-        
+
     n : 1D array of shape (nreal,)
         numbers of hyper-planes (planes) drawn, `n[i]` is the number of
         hyper-planes for the i-th realization
@@ -811,7 +868,9 @@ def chentsov3D(n_mean,
     nreal = int(nreal) # cast to int if needed
 
     if nreal <= 0:
-        print('CHENTSOV3D: nreal <= 0: nothing to do!')
+        if verbose > 0:
+            print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None` is returned')
+        return None, None
 
     nx, ny, nz = dimension
     dx, dy, dz = spacing
@@ -828,16 +887,16 @@ def chentsov3D(n_mean,
             p_max = d
 
     if p_min >= p_max:
-        print(f"ERROR ({fname}): `p_min` is greater than or equal to `p_max`")
-        return None
+        err_msg = f'{fname}: `p_min` is greater than or equal to `p_max`'
+        raise RandProcessError(err_msg)
 
     if phi_min >= phi_max:
-        print(f"ERROR ({fname}): `phi_min` is greater than or equal to `phi_max`")
-        return None
+        err_msg = f'{fname}: `phi_min` is greater than or equal to `phi_max`'
+        raise RandProcessError(err_msg)
 
     if theta_min >= theta_max:
-        print(f"ERROR ({fname}): `theta_min` is greater than or equal to `theta_max`")
-        return None
+        err_msg = f'{fname}: `theta_min` is greater than or equal to `theta_max`'
+        raise RandProcessError(err_msg)
 
     # center of each grid cell of the simulation domain
     zc, yc, xc = np.meshgrid(oz + (0.5 + np.arange(nz)) * dz, oy + (0.5 + np.arange(ny)) * dy, ox + (0.5 + np.arange(nx)) * dx, indexing='ij')
@@ -856,7 +915,12 @@ def chentsov3D(n_mean,
 
     for k in range(nreal):
         # Draw points via Poisson process
-        pts = poissonPointProcess(mu, [phi_min, theta_min, p_min], [phi_max, theta_max, p_max], ninterval=[1, ninterval_theta, 1])
+        try:
+            pts = poissonPointProcess(mu, [phi_min, theta_min, p_min], [phi_max, theta_max, p_max], ninterval=[1, ninterval_theta, 1])
+        except Exception as exc:
+            err_msg = f'{fname}: Poisson point process failed'
+            raise RandProcessError(err_msg) from exc
+
         n[k] = pts.shape[0]
 
         # Defines values of Z in each grid cell

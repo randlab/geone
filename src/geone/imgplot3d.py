@@ -20,6 +20,14 @@ import pyvista as pv
 
 from geone import customcolors as ccol
 
+# ============================================================================
+class Imgplot3dError(Exception):
+    """
+    Custom exception related to `imgplot3d` module.
+    """
+    pass
+# ============================================================================
+
 # ----------------------------------------------------------------------------
 def drawImage3D_surface (
         im,
@@ -54,6 +62,7 @@ def drawImage3D_surface (
         background_color=None,
         foreground_color=None,
         cpos=None,
+        verbose=1,
         **kwargs):
     """
     Displays a 3D image as surface(s) (based on `pyvista`).
@@ -111,7 +120,7 @@ def drawImage3D_surface (
         variable is used for `cmax`
 
     alpha : float, optional
-        value of the "alpha" channel (for transparency); 
+        value of the "alpha" channel (for transparency);
         by default (`None`): `alpha=1.0` is used (no transparency)
 
     excludedVal : sequence of values, or single value, optional
@@ -162,7 +171,7 @@ def drawImage3D_surface (
         by default (`None`): all category values `categVal` are displayed
 
     use_clip_plane : bool, default: False
-        if `True`: the function `pyvista.add_mesh_clip_plane` (allowing 
+        if `True`: the function `pyvista.add_mesh_clip_plane` (allowing
         interactive clipping) is used instead of `pyvista.add_mesh`
 
     show_scalar_bar : bool, default: True
@@ -176,7 +185,7 @@ def drawImage3D_surface (
 
     show_axes : bool, default: True
         indicates if axes are displayed
-        
+
     text : str, optional
         text (title) to be displayed on the figure
 
@@ -228,6 +237,9 @@ def drawImage3D_surface (
         note: in principle, (focus_point - camera_location) is orthogonal to
         viewup_vector
 
+    verbose : int, default: 1
+        verbose mode, higher implies more printing (info)
+
     kwargs : dict
         additional keyword arguments passed to `plotter.add_mesh[_clip_plane]`
         when plotting the variable, such as
@@ -255,8 +267,8 @@ def drawImage3D_surface (
         iv = im.nv + iv
 
     if iv < 0 or iv >= im.nv:
-        print(f'ERROR ({fname}): invalid `iv` index!')
-        return None
+        err_msg = f'{fname}: invalid `iv` index'
+        raise Imgplot3dError(err_msg)
 
     # Set indices to be plotted
     if ix1 is None:
@@ -269,24 +281,24 @@ def drawImage3D_surface (
         iz1 = im.nz
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
-        print("Invalid indices along x)")
-        return None
+        err_msg = f'{fname}: invalid indices along x axis'
+        raise Imgplot3dError(err_msg)
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
-        print("Invalid indices along y)")
-        return None
+        err_msg = f'{fname}: invalid indices along y axis'
+        raise Imgplot3dError(err_msg)
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
-        print("Invalid indices along z)")
-        return None
+        err_msg = f'{fname}: invalid indices along z axis'
+        raise Imgplot3dError(err_msg)
 
     # Get the color map
     if isinstance(cmap, str):
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid `cmap` string!')
-            return None
+            err_msg = f'{fname}: invalid `cmap` string'
+            raise Imgplot3dError(err_msg)
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
@@ -316,21 +328,21 @@ def drawImage3D_surface (
         if categCol is not None \
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
-            return None
+            err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            raise Imgplot3dError(err_msg)
 
         # Get array 'dval' of displayed values (at least for color bar)
         if categVal is not None:
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
-                return None
+                err_msg = f'{fname}: `categVal` contains duplicated entries'
+                raise Imgplot3dError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
-                return None
+                err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                raise Imgplot3dError(err_msg)
 
         else:
             # Possibly exclude values from zz
@@ -341,17 +353,18 @@ def drawImage3D_surface (
             # Get the unique values in zz
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
             if len(dval) > ncateg_max:
-                print(f'ERROR ({fname}): too many categories, set categ=False')
-                return None
+                err_msg = f'{fname}: too many categories, set `categ=False`'
+                raise Imgplot3dError(err_msg)
 
         if not len(dval): # len(dval) == 0
-            print(f'ERROR ({fname}): no value to be drawn!')
-            return None
+            err_msg = f'{fname}: no value to be drawn'
+            raise Imgplot3dError(err_msg)
 
         if categActive is not None:
             if len(categActive) != len(dval):
-                print(f"ERROR ({fname}): length of `categActive` not valid (should be the same as length of `categVal`)")
-                return None
+                err_msg = f'{fname}: length of `categActive` invalid (should be the same as length of `categVal`)'
+                raise Imgplot3dError(err_msg)
+
         else:
             categActive = np.ones(len(dval), dtype='bool')
 
@@ -372,11 +385,13 @@ def drawImage3D_surface (
                 # colorList = [mcolors.ColorConverter().to_rgba(categCol[i]) for i in range(len(dval))]
 
             elif categColCycle:
-                print("Warning: 'categCol' is used cyclically (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
                 colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
 
             else:
-                print("Warning: 'categCol' not used (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
@@ -396,7 +411,7 @@ def drawImage3D_surface (
         if scalar_bar_annotations == {}:
             if len(dval) <= scalar_bar_annotations_max: # avoid too many annotations (very slow and useless)
                 for i, v in enumerate(dval):
-                    scalar_bar_annotations[i+0.5]='{:.3g}'.format(v)
+                    scalar_bar_annotations[i+0.5] = f'{v:.3g}'
 
         scalar_bar_kwargs['n_labels'] = 0
         scalar_bar_kwargs['n_colors'] = len(dval)
@@ -519,6 +534,7 @@ def drawImage3D_slice (
         background_color=None,
         foreground_color=None,
         cpos=None,
+        verbose=1,
         **kwargs):
     """
     Displays a 3D image as slices(s) (based on `pyvista`).
@@ -593,7 +609,7 @@ def drawImage3D_slice (
         variable is used for `cmax`
 
     alpha : float, optional
-        value of the "alpha" channel (for transparency); 
+        value of the "alpha" channel (for transparency);
         by default (`None`): `alpha=1.0` is used (no transparency)
 
     excludedVal : sequence of values, or single value, optional
@@ -705,6 +721,9 @@ def drawImage3D_slice (
         note: in principle, (focus_point - camera_location) is orthogonal to
         viewup_vector
 
+    verbose : int, default: 1
+        verbose mode, higher implies more printing (info)
+
     kwargs : dict
         additional keyword arguments passed to `plotter.add_mesh`
         when plotting the variable, such as
@@ -732,8 +751,8 @@ def drawImage3D_slice (
         iv = im.nv + iv
 
     if iv < 0 or iv >= im.nv:
-        print(f'ERROR ({fname}): invalid `iv` index!')
-        return None
+        err_msg = f'{fname}: invalid `iv` index'
+        raise Imgplot3dError(err_msg)
 
     # Set indices to be plotted
     if ix1 is None:
@@ -746,24 +765,24 @@ def drawImage3D_slice (
         iz1 = im.nz
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
-        print("Invalid indices along x)")
-        return None
+        err_msg = f'{fname}: invalid indices along x axis'
+        raise Imgplot3dError(err_msg)
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
-        print("Invalid indices along y)")
-        return None
+        err_msg = f'{fname}: invalid indices along y axis'
+        raise Imgplot3dError(err_msg)
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
-        print("Invalid indices along z)")
-        return None
+        err_msg = f'{fname}: invalid indices along z axis'
+        raise Imgplot3dError(err_msg)
 
     # Get the color map
     if isinstance(cmap, str):
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid `cmap` string!')
-            return None
+            err_msg = f'{fname}: invalid `cmap` string'
+            raise Imgplot3dError(err_msg)
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
@@ -793,21 +812,21 @@ def drawImage3D_slice (
         if categCol is not None \
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
-            return None
+            err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            raise Imgplot3dError(err_msg)
 
         # Get array 'dval' of displayed values (at least for color bar)
         if categVal is not None:
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
-                return None
+                err_msg = f'{fname}: `categVal` contains duplicated entries'
+                raise Imgplot3dError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
-                return None
+                err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                raise Imgplot3dError(err_msg)
 
         else:
             # Possibly exclude values from zz
@@ -818,17 +837,18 @@ def drawImage3D_slice (
             # Get the unique values in zz
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
             if len(dval) > ncateg_max:
-                print(f'ERROR ({fname}): too many categories, set categ=False')
-                return None
+                err_msg = f'{fname}: too many categories, set `categ=False`'
+                raise Imgplot3dError(err_msg)
 
         if not len(dval): # len(dval) == 0
-            print(f'ERROR ({fname}): no value to be drawn!')
-            return None
+            err_msg = f'{fname}: no value to be drawn'
+            raise Imgplot3dError(err_msg)
 
         if categActive is not None:
             if len(categActive) != len(dval):
-                print(f"ERROR ({fname}): length of `categActive` not valid (should be the same as length of `categVal`)")
-                return None
+                err_msg = f'{fname}: length of `categActive` invalid (should be the same as length of `categVal`)'
+                raise Imgplot3dError(err_msg)
+
         else:
             categActive = np.ones(len(dval), dtype='bool')
 
@@ -849,11 +869,13 @@ def drawImage3D_slice (
                 # colorList = [mcolors.ColorConverter().to_rgba(categCol[i]) for i in range(len(dval))]
 
             elif categColCycle:
-                print("Warning: 'categCol' is used cyclically (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
                 colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
 
             else:
-                print("Warning: 'categCol' not used (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
@@ -873,7 +895,7 @@ def drawImage3D_slice (
         if scalar_bar_annotations == {}:
             if len(dval) <= scalar_bar_annotations_max: # avoid too many annotations (very slow and useless)
                 for i, v in enumerate(dval):
-                    scalar_bar_annotations[i+0.5]='{:.3g}'.format(v)
+                    scalar_bar_annotations[i+0.5] = f'{v:.3g}'
 
         scalar_bar_kwargs['n_labels'] = 0
         scalar_bar_kwargs['n_colors'] = len(dval)
@@ -1000,6 +1022,7 @@ def drawImage3D_empty_grid (
         background_color=None,
         foreground_color=None,
         cpos=None,
+        verbose=1,
         **kwargs):
     """
     Displays an empty grid from a 3D image.
@@ -1020,24 +1043,24 @@ def drawImage3D_empty_grid (
         iz1 = im.nz
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
-        print("Invalid indices along x)")
-        return None
+        err_msg = f'{fname}: invalid indices along x axis'
+        raise Imgplot3dError(err_msg)
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
-        print("Invalid indices along y)")
-        return None
+        err_msg = f'{fname}: invalid indices along y axis'
+        raise Imgplot3dError(err_msg)
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
-        print("Invalid indices along z)")
-        return None
+        err_msg = f'{fname}: invalid indices along z axis'
+        raise Imgplot3dError(err_msg)
 
     # Get the color map
     if isinstance(cmap, str):
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid `cmap` string!')
-            return None
+            err_msg = f'{fname}: invalid `cmap` string'
+            raise Imgplot3dError(err_msg)
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
@@ -1067,21 +1090,21 @@ def drawImage3D_empty_grid (
         if categCol is not None \
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
-            print(f"ERROR ({fname}): `categCol` must be a list or a tuple (if not None)!")
-            return None
+            err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            raise Imgplot3dError(err_msg)
 
         # Get array 'dval' of displayed values (at least for color bar)
         if categVal is not None:
             dval = np.array(categVal).reshape(-1) # force to be an 1d array
 
             if len(np.unique(dval)) != len(dval):
-                print(f"ERROR ({fname}): `categVal` contains duplicated entries!")
-                return None
+                err_msg = f'{fname}: `categVal` contains duplicated entries'
+                raise Imgplot3dError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
-                print(f"ERROR ({fname}): length of `categVal` and `categCol` differ!")
-                return None
+                err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                raise Imgplot3dError(err_msg)
 
         else:
             # Possibly exclude values from zz
@@ -1092,17 +1115,17 @@ def drawImage3D_empty_grid (
             # Get the unique values in zz
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
             if len(dval) > ncateg_max:
-                print(f'ERROR ({fname}): too many categories, set categ=False')
-                return None
+                err_msg = f'{fname}: too many categories, set `categ=False`'
+                raise Imgplot3dError(err_msg)
 
         if not len(dval): # len(dval) == 0
-            print(f'ERROR ({fname}): no value to be drawn!')
-            return None
+            err_msg = f'{fname}: no value to be drawn'
+            raise Imgplot3dError(err_msg)
 
         if categActive is not None:
             if len(categActive) != len(dval):
-                print(f"ERROR ({fname}): length of `categActive` not valid (should be the same as length of `categVal`)")
-                return None
+                err_msg = f'{fname}: length of `categActive` invalid (should be the same as length of `categVal`)'
+                raise Imgplot3dError(err_msg)
         else:
             categActive = np.ones(len(dval), dtype='bool')
 
@@ -1123,11 +1146,13 @@ def drawImage3D_empty_grid (
                 # colorList = [mcolors.ColorConverter().to_rgba(categCol[i]) for i in range(len(dval))]
 
             elif categColCycle:
-                print("Warning: 'categCol' is used cyclically (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
                 colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
 
             else:
-                print("Warning: 'categCol' not used (too few entries)")
+                if verbose > 0:
+                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
@@ -1147,7 +1172,7 @@ def drawImage3D_empty_grid (
         if scalar_bar_annotations == {}:
             if len(dval) <= scalar_bar_annotations_max: # avoid too many annotations (very slow and useless)
                 for i, v in enumerate(dval):
-                    scalar_bar_annotations[i+0.5]='{:.3g}'.format(v)
+                    scalar_bar_annotations[i+0.5] = f'{v:.3g}'
 
         scalar_bar_kwargs['n_labels'] = 0
         scalar_bar_kwargs['n_colors'] = len(dval)
@@ -1392,8 +1417,8 @@ def drawImage3D_volume (
         iv = im.nv + iv
 
     if iv < 0 or iv >= im.nv:
-        print(f'ERROR ({fname}): invalid `iv` index!')
-        return None
+        err_msg = f'{fname}: invalid `iv` index'
+        raise Imgplot3dError(err_msg)
 
     # Set indices to be plotted
     if ix1 is None:
@@ -1406,24 +1431,24 @@ def drawImage3D_volume (
         iz1 = im.nz
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
-        print("Invalid indices along x)")
-        return None
+        err_msg = f'{fname}: invalid indices along x axis'
+        raise Imgplot3dError(err_msg)
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
-        print("Invalid indices along y)")
-        return None
+        err_msg = f'{fname}: invalid indices along y axis'
+        raise Imgplot3dError(err_msg)
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
-        print("Invalid indices along z)")
-        return None
+        err_msg = f'{fname}: invalid indices along z axis'
+        raise Imgplot3dError(err_msg)
 
     # Get the color map
     if isinstance(cmap, str):
         try:
             cmap = plt.get_cmap(cmap)
         except:
-            print(f'ERROR ({fname}): invalid `cmap` string!')
-            return None
+            err_msg = f'{fname}: invalid `cmap` string'
+            raise Imgplot3dError(err_msg)
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
     if scalar_bar_annotations is None:
