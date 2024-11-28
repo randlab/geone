@@ -2,6 +2,8 @@
 
 [![Documentation Status](https://readthedocs.org/projects/geone/badge/?version=latest)](https://geone.readthedocs.io/en/latest/?badge=latest)
 
+**Current version : 1.2.17** <!-- Update manually here! see src/geone/_version.py -->
+
 GEONE is a Python3 package providing a set of tools for geostatistical modeling, including:
 
 - multiple-point statistics (MPS) simulation as "DEESSE wrapper"
