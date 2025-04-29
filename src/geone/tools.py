@@ -165,7 +165,7 @@ def add_path_by_drawing(
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
-def is_in_polygon(x, vertices, wrap=None, **kwargs):
+def is_in_polygon(x, vertices, wrap=None, return_sum_of_angles=False, **kwargs):
     """
     Checks if point(s) is (are) in a polygon given by its vertices forming a close line.
 
@@ -174,6 +174,10 @@ def is_in_polygon(x, vertices, wrap=None, **kwargs):
     the sum of signed angles between two successives vectors (and the last
     and first one). Then, the point is in the polygon if and only if this sum
     is equal to +/- 2 pi.
+
+    Note that if the sum of angles is +2 pi (resp. -2 pi), then the vertices form
+    a close line counterclockwise (resp. clockwise); this can be checked by
+    specifying a point `x` in the polygon and `return_sum_of_angles=True`.
 
     Parameters
     ----------
@@ -195,6 +199,9 @@ def is_in_polygon(x, vertices, wrap=None, **kwargs):
 
         by default (`None`): `wrap` is automatically computed
 
+    return_sum_of_angles : bool, default: False
+        if `True`, the sum of angles (computed by the method) is returned
+
     kwargs :
         keyword arguments passed to function `numpy.isclose`
 
@@ -205,6 +212,12 @@ def is_in_polygon(x, vertices, wrap=None, **kwargs):
         the polygon;
         note: if `x` is of shape (m, 2), then `out` is a 1D array of shape (m, ),
         and if `x` is of shape (2, ) (one point), `out` is bool
+
+    sum_of_angles : 1D array of floats, or float
+        returned if `return_sum_of_angles=True`; for each point in `x`, the sum
+        of angles computed by the method is returned (`nan` if the sum is not
+        computed);
+        note: `sum_of_angles` is an array of same shape as `out` or a float
     """
     # fname = 'is_in_polygon'
 
@@ -221,6 +234,8 @@ def is_in_polygon(x, vertices, wrap=None, **kwargs):
     # Initialization
     xx = np.atleast_2d(x)
     res = np.zeros(xx.shape[0], dtype='bool')
+    if return_sum_of_angles:
+        res_sum = np.full((xx.shape[0],), np.nan)
 
     xmin, ymin = vertices.min(axis=0)
     xmax, ymax = vertices.max(axis=0)
@@ -247,18 +262,25 @@ def is_in_polygon(x, vertices, wrap=None, **kwargs):
         c = b - a
         c_norm2 = (c**2).sum(axis=1)
         sign = 2*(a[:,0]*b[:,1] - a[:,1]*b[:,0] > 0) - 1
-        sum_angles = np.sum(sign*np.arccos(np.minimum(1.0, np.maximum(-1.0, (a_norm2 + b_norm2- c_norm2)/(2.0*ab_norm)))))
+        sum_angles = np.sum(sign*np.arccos(np.minimum(1.0, np.maximum(-1.0, (a_norm2 + b_norm2 - c_norm2)/(2.0*ab_norm)))))
 
         res[j] = np.isclose(np.abs(sum_angles), 2*np.pi)
+        if return_sum_of_angles:
+            res_sum[j] = sum_angles
 
     if np.asarray(x).ndim == 1:
         res = res[0]
+        if return_sum_of_angles:
+            res_sum = res_sum[0]
+
+    if return_sum_of_angles:
+        return res, res_sum
 
     return res
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
-def is_in_polygon_mp(x, vertices, wrap=None, nproc=-1, **kwargs):
+def is_in_polygon_mp(x, vertices, wrap=None, return_sum_of_angles=False, nproc=-1, **kwargs):
     """
     Computes the same as the function :func:`tools.is_in_polygon`, using multiprocessing.
 
@@ -287,6 +309,9 @@ def is_in_polygon_mp(x, vertices, wrap=None, nproc=-1, **kwargs):
     # Set wrap key in keywords arguments
     kwargs['wrap'] = True
 
+    # Set return_sum_of_angles key in keywords arguments
+    kwargs['return_sum_of_angles'] = return_sum_of_angles
+
     # Initialization
     xx = np.atleast_2d(x)
 
@@ -312,10 +337,25 @@ def is_in_polygon_mp(x, vertices, wrap=None, nproc=-1, **kwargs):
     pool.join()  # then, wait for the worker processes to exit.
 
     # Get result from each process
-    res = np.hstack([w.get() for w in out_pool])
+    if return_sum_of_angles:
+        res = []
+        res_sum = []
+        for w in out_pool:
+            r, s = w.get()
+            res.append(r)
+            res_sum.append(s)
+        res = np.hstack(res)
+        res_sum = np.hstack(res_sum)
+    else:
+        res = np.hstack([w.get() for w in out_pool])
 
     if np.asarray(x).ndim == 1:
         res = res[0]
+        if return_sum_of_angles:
+            res_sum = res_sum[0]
+
+    if return_sum_of_angles:
+        return res, res_sum
 
     return res
 # -----------------------------------------------------------------------------
@@ -363,20 +403,20 @@ def rasterize_polygon_2d(
     nx : int, optional
         number of grid cells along x axis; see above for possible inputs
 
-    ny : int
+    ny : int, optional
         number of grid cells along y axis; see above for possible inputs
 
-    sx : float
+    sx : float, optional
         cell size along x axis; see above for possible inputs
 
-    sy : float
+    sy : float, optional
         cell size along y axis; see above for possible inputs
 
-    ox : float
+    ox : float, optional
         origin of the grid along x axis (x coordinate of cell border);
         see above for possible
 
-    oy : float
+    oy : float, optional
         origin of the grid along y axis (y coordinate of cell border);
         see above for possible
 
@@ -559,6 +599,7 @@ def curv_coord_2d_from_center_line(
     -------
     u : 2D array or 1D array (same shape as `x`)
         coordinates in curvilinear system of the input point(s) `x` (see above)
+
     x_path : list of 2D arrays (or 2D array), optional
         path(s) from the initial point(s) to the point(s) I of the centerline
         (descending the gradient of the distance map):

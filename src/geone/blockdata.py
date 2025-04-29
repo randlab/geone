@@ -58,6 +58,8 @@ class BlockData(object):
     activatePropMax : sequence of floats of length `nblock`, optional
         maximal proportion of informed nodes in the block, above which the block
         data constraint is deactivated, for each block (used if `blockDataUsage=1`)
+
+    **Methods**
     """
     def __init__(self,
                  blockDataUsage=0,

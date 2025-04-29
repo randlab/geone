@@ -928,7 +928,10 @@ def drawImage2Drgb(im, nancol=(1.0, 0.0, 0.0)):
     ind_isnan = np.any(np.isnan(vv), axis=1)
     vv[ind_isnan, :] = nancolf
 
-    plt.imshow(vv.reshape(im.ny, im.nx, -1), origin='lower')
+    min0, max0 = im.ox, im.xmax()
+    min1, max1 = im.oy, im.ymax()
+
+    plt.imshow(vv.reshape(im.ny, im.nx, -1), origin='lower', extent=[min0, max0, min1, max1])
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------

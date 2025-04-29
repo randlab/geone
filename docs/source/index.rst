@@ -8,7 +8,7 @@ GEONE's documentation
 
 .. Update manually here! see ../../src/geone/_version.py
 
-**Current version : 1.2.17**
+**Current version : 1.2.18**
 
 GEONE is a Python3 package providing a set of tools for geostatistical modeling, including:
 
@@ -36,8 +36,8 @@ Github repository of GEONE : `<https://github.com/randlab/geone>`_.
 Authors
 =======
 
-GEONE is developed by 
-`Julien Straubhaar <https://www.unine.ch/philippe.renard/home/the-team/julien-straubhaar.html>`_ 
+GEONE is developed by
+`Julien Straubhaar <https://www.unine.ch/philippe.renard/home/the-team/julien-straubhaar.html>`_
 and `Philippe Renard <https://www.unine.ch/philippe.renard/home/the-team/philippe-renard.html>`_.
 
 License

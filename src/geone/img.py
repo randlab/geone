@@ -82,6 +82,8 @@ class Img(object):
 
     name : str
         name of the image
+
+    **Methods**
     """
     #
     # Methods
@@ -398,19 +400,19 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_spacing(self, sx, sy, sz):
+    def set_spacing(self, sx=1.0, sy=1.0, sz=1.0):
         """
         Sets spacing, i.e. cell size along each axis.
 
         Parameters
         ----------
-        sx : float
+        sx : float, default: 1.0
             cell size along x axis
 
-        sy : float
+        sy : float, default: 1.0
             cell size along y axis
 
-        sz : float
+        sz : float, default: 1.0
             cell size along z axis
         """
         # fname = 'set_spacing'
@@ -421,7 +423,7 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_origin(self, ox, oy, oz):
+    def set_origin(self, ox=0.0, oy=0.0, oz=0.0):
         """
         Sets grid origin (bottom-lower-left corner).
 
@@ -446,9 +448,9 @@ class Img(object):
     # ------------------------------------------------------------------------
     def set_grid(
             self,
-            nx, ny, nz,
-            sx, sy, sz,
-            ox, oy, oz,
+            nx=1,   ny=1,   nz=1,
+            sx=1.0, sy=1.0, sz=1.0,
+            ox=0.0, oy=0.0, oz=0.0,
             newval=np.nan):
         """
         Sets grid geometry (dimension, cell size, and origin).
@@ -1456,6 +1458,8 @@ class PointSet(object):
 
     name : str
         name of the point set
+
+    **Methods**
     """
     #
     # Methods
@@ -2129,14 +2133,14 @@ class Img_interp_func(object):
     iz : int or `None` (default)
         same as `ix`, but for z axis
 
-    angle_var: bool, default: False
+    angle_var : bool, default: False
         - if `True`: variable to be interpolated are considered as angles, and the \
         interpolation is done by first interpolating the cosine and the sine of \
         the angle values and then by retrieving the corresponding angle (by \
         using the function `numpy.arctan2`)
         - if `False`: values are interpolated directly
 
-    angle_deg: bool, default: True
+    angle_deg : bool, default: True
         used if `angle_var=True`:
 
         - if `True`: the variable values are angles in degrees
@@ -2184,6 +2188,8 @@ class Img_interp_func(object):
         >>>     method='linear', bounds_error=False, fill_value=np.nan)
         >>> v2 = interp2(points) # gives same values except for points beyond
         >>>                      # the domain of the image grid
+
+    **Methods**
     """
     def __init__(self,
                  im,

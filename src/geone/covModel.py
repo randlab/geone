@@ -728,6 +728,8 @@ class CovModel1D(object):
             ('gaussian', {'w':10., 'r':100.0}), # elementary contribution
             ('nugget', {'w':0.5})               # elementary contribution
             ], name='gau+nug')                  # name (optional)
+
+    **Methods**
     """
     #
     # Methods
@@ -1434,6 +1436,8 @@ class CovModel2D(object):
                 ('nugget', {'w':0.5})                        # elementary contribution
                 ], alpha=-30.0,                              # angle
                 name='')                                     # name (optional)
+
+    **Methods**
     """
     #
     # The 2x2 matrix m for changing the coordinates system from Ox'y' to Oxy is:
@@ -2604,6 +2608,8 @@ class CovModel3D(object):
                 ('nugget', {'w':0.5})                            # elementary contribution
                 ], alpha=-30.0, beta=-40.0, gamma=20.0,          # angles
                 name='')                                         # name (optional)
+
+    **Methods**
     """
     #
     # The 3x3 matrix m for changing the coordinates system from Ox'''y'''z'''

@@ -24,7 +24,6 @@ Two-point statistics tools
 Miscellaneous algorithms
 ========================
 - Other algorithms based on random processes
-- Other algorithms based on random processes
     - accept-reject sampler in one or multi-dimension
     - Poisson point process in one or multi-dimension
     - Chentsov simulation in 1D, 2D, 3D

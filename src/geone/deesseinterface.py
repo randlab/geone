@@ -36,7 +36,7 @@ class SearchNeighborhoodParameters(object):
     Class defining search neighborhood parameters (for deesse).
 
     **Attributes**
-    --------------
+
     radiusMode : str {'large_default', 'ti_range_default', 'ti_range', \
                     'ti_range_xy', 'ti_range_xz', 'ti_range_yz', 'ti_range_xyz', \
                     'manual'}, default: 'large_default'
@@ -135,7 +135,6 @@ class SearchNeighborhoodParameters(object):
         power for computing weight according to distance
 
     **Methods**
-    -----------
     """
     def __init__(self,
                  radiusMode='large_default',
@@ -189,7 +188,7 @@ class SoftProbability(object):
     Class defining probability constraints for one variable (for deesse).
 
     **Attributes**
-    --------------
+
     probabilityConstraintUsage : int, default: 0
         defines the usage of probability constraints:
 
@@ -293,7 +292,6 @@ class SoftProbability(object):
         `probabilityConstraintThresholdType=1`
 
     **Methods**
-    -----------
     """
     def __init__(self,
                  probabilityConstraintUsage=0,
@@ -433,7 +431,7 @@ class Connectivity(object):
     Class defining connectivity constraints for one variable (for deesse).
 
     **Attributes**
-    --------------
+
     connectivityConstraintUsage : int, default: 0
         defines the usage of connectivity constraints:
 
@@ -512,7 +510,6 @@ class Connectivity(object):
         used if `connectivityConstraintUsage=3`
 
     **Methods**
-    -----------
     """
     def __init__(self,
                  connectivityConstraintUsage=0,
@@ -604,7 +601,7 @@ class PyramidGeneralParameters(object):
     Class defining "pyramid general parameters" (for all variables) (for deesse).
 
     **Attributes**
-    --------------
+
     npyramidLevel : int, default: 0
         number of pyramid level(s) (in addition to original simulation grid),
         integer greater than or equal to zero; if positive, pyramid is used and
@@ -703,7 +700,6 @@ class PyramidGeneralParameters(object):
         for the j-th pyramid level
 
     **Methods**
-    -----------
     """
     def __init__(self,
                  npyramidLevel=0,
@@ -863,7 +859,7 @@ class PyramidParameters(object):
     Class defining "pyramid parameters" for one variable (for deesse).
 
     **Attributes**
-    --------------
+
     nlevel : int, default: 0
         number of pyramid level(s) (in addition to original simulation grid)
 
@@ -927,7 +923,6 @@ class PyramidParameters(object):
         during the simulation in every level)
 
     **Methods**
-    -----------
     """
     def __init__(self,
                  nlevel=0,
@@ -991,7 +986,7 @@ class DeesseInput(object):
     Class defining main input parameters for deesse.
 
     **Attributes**
-    --------------
+
     simName : str, default: 'deesse_py'
         simulation name (useless)
 
@@ -1466,7 +1461,6 @@ class DeesseInput(object):
     [<n> is written on 5 digits, with leading zeros]
 
     **Methods**
-    -----------
     """
     def __init__(self,
                  simName='deesse_py',
@@ -6396,7 +6390,7 @@ class DeesseXInputSectionPath(object):
     Class defining main input parameters for cross-simulation (deesseX).
 
     **Attributes**
-    --------------
+
     sectionMode: str {'section_xy_xz_yz', \
                       'section_xy_yz_xz', \
                       'section_xz_xy_yz', \
@@ -6575,7 +6569,6 @@ class DeesseXInputSectionPath(object):
             simulation grid along x, y, z axis respectively
 
     **Methods**
-    -----------
     """
     def __init__(self,
                  sectionMode='section_xz_yz',
@@ -6725,7 +6718,7 @@ class DeesseXInputSection(object):
     Class input parameters for one section type (deesseX).
 
     **Attributes**
-    --------------
+
     nx : int, default: 0
         number of cells along x axis in the entire simulation grid (SG);
         should be consistent with the "parent" class :class:`DeesseXInput`
@@ -6876,7 +6869,6 @@ class DeesseXInputSection(object):
         as in :class:`DeesseInput`
 
     **Methods**
-    -----------
     """
     def __init__(self,
                  nx=0, ny=0, nz=0,
@@ -7526,7 +7518,7 @@ class DeesseXInput(object):
     Class defining main input parameters for deesseX (cross-simulation/X-simulation).
 
     **Attributes**
-    --------------
+
     simName : str, default: 'deesseX_py'
         simulation name (useless)
 
@@ -7659,7 +7651,6 @@ class DeesseXInput(object):
     [<n> is written on 5 digits, with leading zeros]
 
     **Methods**
-    -----------
     """
     def __init__(self,
                  simName='deesseX_py',

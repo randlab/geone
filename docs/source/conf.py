@@ -22,11 +22,12 @@ from geone import __version__
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'geone'
-copyright = '2024, Julien Straubhaar and Philippe Renard'
+copyright = '2025, Julien Straubhaar and Philippe Renard'
 author = 'Julien Straubhaar and Philippe Renard'
 
+# The short X.Y version
+version = '.'.join(__version__.split('.')[:2])
 # The full version, including alpha/beta/rc tags
-# version = '0.1'
 release = __version__
 
 # -- General configuration ---------------------------------------------------
@@ -55,6 +56,7 @@ extensions = [
 
 # Settings
 autosummary_generate = True
+autosummary_imported_members = True
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = True #False
@@ -69,6 +71,7 @@ napoleon_use_rtype = True
 napoleon_preprocess_types = False
 napoleon_type_aliases = None
 napoleon_attr_annotations = True
+# numpydoc_show_class_members = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

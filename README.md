@@ -2,7 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/geone/badge/?version=latest)](https://geone.readthedocs.io/en/latest/?badge=latest)
 
-**Current version : 1.2.17** <!-- Update manually here! see src/geone/_version.py -->
+**Current version : 1.2.18** <!-- Update manually here! see src/geone/_version.py -->
 
 GEONE is a Python3 package providing a set of tools for geostatistical modeling, including:
 
@@ -34,7 +34,7 @@ GEONE is available:
 
 ### Installation from [PyPI](https://pypi.org/project/geone)
 
-In a terminal type 
+In a terminal type
 ```
 pip install geone
 ```
@@ -53,7 +53,7 @@ pip install .
 
 Alternatively:
 
-- Instead of `git clone ...`, you can download GEONE from the [Github repository](https://github.com/randlab/geone): click on the green button "code" and choose "Download ZIP". 
+- Instead of `git clone ...`, you can download GEONE from the [Github repository](https://github.com/randlab/geone): click on the green button "code" and choose "Download ZIP".
 - Then, unzip the archive on your computer
 - Finally, in a terminal, go into the unzipped directory, and type `pip install .`
 
@@ -77,7 +77,7 @@ The following python packages are used by GEONE (tested on python 3.11.5):
 numpy version **less than 2.** is required
 
 ### Removing GEONE
-In a terminal type 
+In a terminal type
 
 `pip uninstall -y geone`
 
@@ -101,7 +101,7 @@ In a terminal type
 - C. R. Dietrich and G. N. Newsam (1993) A fast and exact method for multidimensional gaussian stochastic simulations. Water Resources Research 29(8):2861-2869, [doi:10.1029/93WR01070](https://dx.doi.org/10.1029/93WR01070)
 - A. T. A. Wood and G. Chan (1994) Simulation of stationary gaussian processes in [0,1]^d. Journal of Computational and Graphical Statistics 3(4):409-432, [doi:10.2307/1390903](https://dx.doi.org/10.2307/1390903)
 
-### Other references 
+### Other references
 - C. Lantuéjoul (2002) Geostatistical Simulation, Models and Algorithms. Springer Verlag, Berlin, 256 p.
 - P. Renard, D. Allard (2013), Connectivity metrics for subsurface flow and transport. Advances in Water Resources 51:168-196, `doi:10.1016/j.advwatres.2011.12.001 <https://doi.org/10.1016/j.advwatres.2011.12.001>`_
 - J. Straubhaar, P. Renard (2024), Exploring substitution random functions composed of stationary multi-Gaussian processes. Stochastic Environmental Research and Risk Assessment, `doi:10.1007/s00477-024-02662-x <https://doi.org/10.1007/s00477-024-02662-x>`_
