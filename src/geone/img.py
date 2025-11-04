@@ -6468,7 +6468,8 @@ def writeImageVtk(
         name of the file
 
     missing_value : float, optional
-        `numpy.nan` value will be replaced by `missing_value` before writing
+        `numpy.nan` value will be replaced by `missing_value` if provided.
+        Otherwise, `numpy.nan` will be used.
 
     fmt : str, default: '%.10g'
         format for single variable value, `fmt` is a string of the form
@@ -6513,15 +6514,18 @@ def writeImageVtk(
                  im.nxyz(),
                  '/'.join(im.varname), data_type, im.nv)
 
+    # Save data into a separate array, otherwise the img will be modified
+    data = np.copy(im.val)
+    
     # Replace np.nan by missing_value
     if missing_value is not None:
-        np.putmask(im.val, np.isnan(im.val), missing_value)
+        np.putmask(data, np.isnan(data), missing_value)
 
     # Open the file in write binary mode
     with open(filename,'wb') as ff:
         ff.write(shead.encode())
         # Write variable values
-        np.savetxt(ff, im.val.reshape(im.nv, -1).T, delimiter=' ', fmt=fmt)
+        np.savetxt(ff, data.reshape(im.nv, -1).T, delimiter=' ', fmt=fmt)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
