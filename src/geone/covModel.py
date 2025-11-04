@@ -40,7 +40,7 @@ class CovModelError(Exception):
 
 # ============================================================================
 # Definition of 1D elementary covariance models:
-#   - nugget, spherical, exponential, gaussian, linear, cubic, sinus_cardinal
+#   - nugget, spherical, exponential, gaussian, triangular, cubic, sinus_cardinal
 #       parameters: w, r
 #   - gamma, exponential_generalized, power (non-stationary)
 #       parameters: w, r, s (power)
@@ -156,9 +156,9 @@ def cov_gau(h, w=1.0, r=1.0):
     # fname = 'cov_gau'
     return w * np.exp(-3. * (h/r)**2)
 
-def cov_lin(h, w=1.0, r=1.0):
+def cov_tri(h, w=1.0, r=1.0):
     """
-    1D-linear covariance model.
+    1D-triangular covariance model.
 
     Function `v = w * f(|h|/r)`, where
 
@@ -181,7 +181,7 @@ def cov_lin(h, w=1.0, r=1.0):
     v : 1D array of floats, or float
         evaluation of the covariance model at `h` (see above)
     """
-    # fname = 'cov_lin'
+    # fname = 'cov_tri'
     t = np.minimum(np.abs(h)/r, 1.) # "parallel or element-wise minimum"
     return w * (1.0 - t)
 
@@ -452,7 +452,7 @@ def cov_matern_get_r_param(nu, r_eff):
 # (type and dictionary of parameters)
 # ============================================================================
 # ----------------------------------------------------------------------------
-def check_elem_cov_model(elem, dim, verbose=0):
+def check_elem_cov_model(elem, verbose=0):
     """
     Checks type and dictionary of parameters for an elementary covariance.
 
@@ -469,17 +469,17 @@ def check_elem_cov_model(elem, dim, verbose=0):
         * t : str
             type of elementary covariance model, can be
 
-            - 'nugget'         (see function :func:`covModel.cov_nug`)
-            - 'spherical'      (see function :func:`covModel.cov_sph`)
-            - 'exponential'    (see function :func:`covModel.cov_exp`)
-            - 'gaussian'       (see function :func:`covModel.cov_gau`)
-            - 'linear'         (see function :func:`covModel.cov_lin`)
-            - 'cubic'          (see function :func:`covModel.cov_cub`)
-            - 'sinus_cardinal' (see function :func:`covModel.cov_sinc`)
-            - 'gamma'          (see function :func:`covModel.cov_gamma`)
-            - 'power'          (see function :func:`covModel.cov_pow`)
-            - 'exponential_generalized' (see function :func:`covModel.cov_exp_gen`)
-            - 'matern'         (see function :func:`covModel.cov_matern`)
+            - 'nugget'         (see function :func:`cov_nug`)
+            - 'spherical'      (see function :func:`cov_sph`)
+            - 'exponential'    (see function :func:`cov_exp`)
+            - 'gaussian'       (see function :func:`cov_gau`)
+            - 'triangular'     (see function :func:`cov_tri`)
+            - 'cubic'          (see function :func:`cov_cub`)
+            - 'sinus_cardinal' (see function :func:`cov_sinc`)
+            - 'gamma'          (see function :func:`cov_gamma`)
+            - 'power'          (see function :func:`cov_pow`)
+            - 'exponential_generalized' (see function :func:`cov_exp_gen`)
+            - 'matern'         (see function :func:`cov_matern`)
 
         * d : dict
             dictionary of required parameters to be passed to the elementary
@@ -488,11 +488,11 @@ def check_elem_cov_model(elem, dim, verbose=0):
             - `t = 'nugget'`:
                 - `w`, [sequence of] numerical value(s)
 
-            - `t in ('spherical', 'exponential', 'gaussian', 'linear', 'cubic', 'sinus_cardinal')`:
+            - `t in ('spherical', 'exponential', 'gaussian', 'triangular', 'cubic', 'sinus_cardinal')`:
                 - `w`, [sequence of] numerical value(s)
                 - `r`, [sequence of] numerical value(s)
 
-            - `t in ('spherical', 'exponential', 'gaussian', 'linear', 'cubic', 'sinus_cardinal')`:
+            - `t in ('spherical', 'exponential', 'gaussian', 'triangular', 'cubic', 'sinus_cardinal')`:
                 - `w`, [sequence of] numerical value(s)
                 - `r`, [sequence of] numerical value(s)
 
@@ -546,7 +546,7 @@ def check_elem_cov_model(elem, dim, verbose=0):
                 err_mes_list.append(f"ERROR ({fname}): covariance type `'{t}'`: unknown parameter `{p}`")
                 ok = False
 
-    elif t in ('spherical', 'exponential', 'gaussian', 'linear', 'cubic', 'sinus_cardinal'):
+    elif t in ('spherical', 'exponential', 'gaussian', 'triangular', 'cubic', 'sinus_cardinal'):
         # Check required parameters
         if 'w' not in d.keys():
             err_mes_list.append(f"ERROR ({fname}): covariance type `'{t}'`: parameter 'w' is required")
@@ -669,17 +669,17 @@ class CovModel1D(object):
         - t : str
             type of elementary covariance model, can be
 
-            - 'nugget'         (see function :func:`covModel.cov_nug`)
-            - 'spherical'      (see function :func:`covModel.cov_sph`)
-            - 'exponential'    (see function :func:`covModel.cov_exp`)
-            - 'gaussian'       (see function :func:`covModel.cov_gau`)
-            - 'linear'         (see function :func:`covModel.cov_lin`)
-            - 'cubic'          (see function :func:`covModel.cov_cub`)
-            - 'sinus_cardinal' (see function :func:`covModel.cov_sinc`)
-            - 'gamma'          (see function :func:`covModel.cov_gamma`)
-            - 'power'          (see function :func:`covModel.cov_pow`)
-            - 'exponential_generalized' (see function :func:`covModel.cov_exp_gen`)
-            - 'matern'         (see function :func:`covModel.cov_matern`)
+            - 'nugget'         (see function :func:`cov_nug`)
+            - 'spherical'      (see function :func:`cov_sph`)
+            - 'exponential'    (see function :func:`cov_exp`)
+            - 'gaussian'       (see function :func:`cov_gau`)
+            - 'triangular'     (see function :func:`cov_tri`)
+            - 'cubic'          (see function :func:`cov_cub`)
+            - 'sinus_cardinal' (see function :func:`cov_sinc`)
+            - 'gamma'          (see function :func:`cov_gamma`)
+            - 'power'          (see function :func:`cov_pow`)
+            - 'exponential_generalized' (see function :func:`cov_exp_gen`)
+            - 'matern'         (see function :func:`cov_matern`)
 
         - d : dict
             dictionary of required parameters to be passed to the elementary
@@ -761,7 +761,8 @@ class CovModel1D(object):
     #
     def __init__(self,
                  elem=[],
-                 name=None):
+                 name=None,
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -772,19 +773,21 @@ class CovModel1D(object):
 
         name : str, optional
             name of the model
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'CovModel1D'
 
         self.elem = elem
         for el in self.elem:
-            ok, err_mes_list = check_elem_cov_model(el, 1, verbose=0)
+            ok, err_mes_list = check_elem_cov_model(el, verbose=0)
             if not ok:
                 err_msg = f'{fname}: elementary contribution not valid\n ... ' + '\n ... '.join(err_mes_list)
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
-                # print(f'ERROR ({fname}): elementary contribution not valid')
-                # for s in err_mes_list:
-                #     print(f'   {s}')
-                # return None
+
         if name is None:
             if len(elem) == 1:
                 name = 'cov1D-' + elem[0][0]
@@ -860,7 +863,7 @@ class CovModel1D(object):
         self._is_range_stationary = None
         self._is_stationary = None
 
-    def multiply_w(self, factor, elem_ind=None):
+    def multiply_w(self, factor, elem_ind=None, logger=None):
         """
         Multiplies parameter `w` of the (given) elementary contribution(s) by the given factor.
 
@@ -878,6 +881,10 @@ class CovModel1D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'multiply_w'
 
@@ -888,6 +895,7 @@ class CovModel1D(object):
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
                 err_msg = f'{fname}: `elem_ind` invalid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
         for i in elem_ind:
@@ -898,7 +906,56 @@ class CovModel1D(object):
         self._is_weight_stationary = None
         self._is_stationary = None
 
-    def multiply_r(self, factor, elem_ind=None):
+    def add_w(self, a, elem_ind=None, logger=None):
+        """
+        Add `a`to parameter `w` of the (given) elementary contribution(s).
+
+        The covariance model is updated and relevant private attributes
+        (beginning with "_") are reset.
+
+        Parameters
+        ----------
+        a : array of floats or float
+            term(s) to add, if array, its shape must be compatible with the
+            dimension of the grid on which the covariance model is used (for
+            Gaussian interpolation or simulation)
+
+        elem_ind : 1D array-like of ints, or int, optional
+            indexe(s) of the elementary contribution (attribute `elem`) to be
+            modified; by default (`None`): indexes of any elementary contribution
+            are selected
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
+        """
+        fname = 'add_w'
+
+        if elem_ind is None:
+            elem_ind = np.arange(len(self.elem))
+        else:
+            elem_ind = np.atleast_1d(elem_ind).reshape(-1)
+            n = len(self.elem)
+            if np.any((elem_ind > n - 1, elem_ind < -n)):
+                err_msg = f'{fname}: `elem_ind` invalid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+        for i in elem_ind:
+            if 'w' in self.elem[i][1].keys():
+                new_w = self.elem[i][1]['w'] + a
+                if new_w < 0:
+                    err_msg = f'{fname}: new `w` is negative'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+                self.elem[i][1]['w'] = new_w
+
+        self._sill = None
+        self._is_weight_stationary = None
+        self._is_stationary = None
+
+    def multiply_r(self, factor, elem_ind=None, logger=None):
         """
         Multiplies parameter `r` of the (given) elementary contribution(s) by the given factor.
 
@@ -916,6 +973,10 @@ class CovModel1D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'multiply_r'
 
@@ -926,6 +987,7 @@ class CovModel1D(object):
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
                 err_msg = f'{fname}: `elem_ind` invalid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
         for i in elem_ind:
@@ -1065,8 +1127,9 @@ class CovModel1D(object):
             if not self.is_weight_stationary(recompute):
                 self._sill = None
                 return self._sill
-            # print('Computing sill...')
+
             self._sill = sum([d['w'] for t, d in self.elem if 'w' in d])
+
         return self._sill
 
     def r(self, recompute=False):
@@ -1101,14 +1164,14 @@ class CovModel1D(object):
             if not self.is_range_stationary(recompute):
                 self._r = None
                 return self._r
-            # print('Computing effective range (max)...')
+
             r = 0.
             for t, d in self.elem:
                 if t in (
                         'spherical',
                         'exponential',
                         'gaussian',
-                        'linear',
+                        'triangular',
                         'cubic',
                         'sinus_cardinal',
                         'gamma',
@@ -1116,9 +1179,12 @@ class CovModel1D(object):
                         'exponential_generalized',
                         ):
                     r = max(r, d['r'])
+
                 elif t == 'matern':
                     r = max(r, cov_matern_get_effective_range(d['nu'], d['r']))
+
             self._r = r
+
         return self._r
 
     def func(self):
@@ -1164,8 +1230,8 @@ class CovModel1D(object):
                 elif t == 'gaussian':
                     s = s + cov_gau(h, **d)
 
-                elif t == 'linear':
-                    s = s + cov_lin(h, **d)
+                elif t == 'triangular':
+                    s = s + cov_tri(h, **d)
 
                 elif t == 'cubic':
                     s = s + cov_cub(h, **d)
@@ -1232,8 +1298,8 @@ class CovModel1D(object):
                 elif t == 'gaussian':
                     s = s + d['w'] - cov_gau(h, **d)
 
-                elif t == 'linear':
-                    s = s + d['w'] - cov_lin(h, **d)
+                elif t == 'triangular':
+                    s = s + d['w'] - cov_tri(h, **d)
 
                 elif t == 'cubic':
                     s = s + d['w'] - cov_cub(h, **d)
@@ -1361,17 +1427,17 @@ class CovModel2D(object):
         - t : str
             type of elementary covariance model, can be
 
-            - 'nugget'         (see function :func:`covModel.cov_nug`)
-            - 'spherical'      (see function :func:`covModel.cov_sph`)
-            - 'exponential'    (see function :func:`covModel.cov_exp`)
-            - 'gaussian'       (see function :func:`covModel.cov_gau`)
-            - 'linear'         (see function :func:`covModel.cov_lin`)
-            - 'cubic'          (see function :func:`covModel.cov_cub`)
-            - 'sinus_cardinal' (see function :func:`covModel.cov_sinc`)
-            - 'gamma'          (see function :func:`covModel.cov_gamma`)
-            - 'power'          (see function :func:`covModel.cov_pow`)
-            - 'exponential_generalized' (see function :func:`covModel.cov_exp_gen`)
-            - 'matern'         (see function :func:`covModel.cov_matern`)
+            - 'nugget'         (see function :func:`cov_nug`)
+            - 'spherical'      (see function :func:`cov_sph`)
+            - 'exponential'    (see function :func:`cov_exp`)
+            - 'gaussian'       (see function :func:`cov_gau`)
+            - 'triangular'     (see function :func:`cov_tri`)
+            - 'cubic'          (see function :func:`cov_cub`)
+            - 'sinus_cardinal' (see function :func:`cov_sinc`)
+            - 'gamma'          (see function :func:`cov_gamma`)
+            - 'power'          (see function :func:`cov_pow`)
+            - 'exponential_generalized' (see function :func:`cov_exp_gen`)
+            - 'matern'         (see function :func:`cov_matern`)
 
         - d : dict
             dictionary of required parameters to be passed to the elementary
@@ -1486,7 +1552,8 @@ class CovModel2D(object):
     def __init__(self,
                  elem=[],
                  alpha=0.0,
-                 name=None):
+                 name=None,
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -1500,19 +1567,21 @@ class CovModel2D(object):
 
         name : str, optional
             name of the model
+            
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'CovModel2D'
 
         self.elem = elem
         for el in self.elem:
-            ok, err_mes_list = check_elem_cov_model(el, 2, verbose=0)
+            ok, err_mes_list = check_elem_cov_model(el, verbose=0)
             if not ok:
                 err_msg = f'{fname}: elementary contribution not valid\n ... ' + '\n ... '.join(err_mes_list)
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
-                # print(f'ERROR ({fname}): elementary contribution not valid')
-                # for s in err_mes_list:
-                #     print(f'   {s}')
-                # return None
+
         self.alpha = alpha
         if name is None:
             if len(elem) == 1:
@@ -1521,6 +1590,7 @@ class CovModel2D(object):
                 name = 'cov2D-multi-contribution'
             else:
                 name = 'cov2D-zero'
+
         self.name = name
         self._r = None  # initialize "internal" variable _r for effective range
         self._sill = None  # initialize "internal" variable _sill for sill (sum of weight(s))
@@ -1617,7 +1687,7 @@ class CovModel2D(object):
         self._is_orientation_stationary = None
         self._is_stationary = None
 
-    def multiply_w(self, factor, elem_ind=None):
+    def multiply_w(self, factor, elem_ind=None, logger=None):
         """
         Multiplies parameter `w` of the (given) elementary contribution(s) by the given factor.
 
@@ -1635,6 +1705,10 @@ class CovModel2D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
+            
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'multiply_w'
 
@@ -1645,6 +1719,7 @@ class CovModel2D(object):
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
                 err_msg = f'{fname}: `elem_ind` invalid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
         for i in elem_ind:
@@ -1655,7 +1730,56 @@ class CovModel2D(object):
         self._is_weight_stationary = None
         self._is_stationary = None
 
-    def multiply_r(self, factor, r_ind=None, elem_ind=None):
+    def add_w(self, a, elem_ind=None, logger=None):
+        """
+        Add `a`to parameter `w` of the (given) elementary contribution(s).
+
+        The covariance model is updated and relevant private attributes
+        (beginning with "_") are reset.
+
+        Parameters
+        ----------
+        a : array of floats or float
+            term(s) to add, if array, its shape must be compatible with the
+            dimension of the grid on which the covariance model is used (for
+            Gaussian interpolation or simulation)
+
+        elem_ind : 1D array-like of ints, or int, optional
+            indexe(s) of the elementary contribution (attribute `elem`) to be
+            modified; by default (`None`): indexes of any elementary contribution
+            are selected
+            
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
+        """
+        fname = 'add_w'
+
+        if elem_ind is None:
+            elem_ind = np.arange(len(self.elem))
+        else:
+            elem_ind = np.atleast_1d(elem_ind).reshape(-1)
+            n = len(self.elem)
+            if np.any((elem_ind > n - 1, elem_ind < -n)):
+                err_msg = f'{fname}: `elem_ind` invalid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+        for i in elem_ind:
+            if 'w' in self.elem[i][1].keys():
+                new_w = self.elem[i][1]['w'] + a
+                if new_w < 0:
+                    err_msg = f'{fname}: new `w` is negative'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+                self.elem[i][1]['w'] = new_w
+
+        self._sill = None
+        self._is_weight_stationary = None
+        self._is_stationary = None
+
+    def multiply_r(self, factor, r_ind=None, elem_ind=None, logger=None):
         """
         Multiplies (given index(es) of) parameter `r` of the (given) elementary contribution(s) by the given factor.
 
@@ -1678,6 +1802,10 @@ class CovModel2D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
+            
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'multiply_r'
 
@@ -1687,6 +1815,7 @@ class CovModel2D(object):
             r_ind = np.atleast_1d(r_ind).reshape(-1)
             if np.any((r_ind > 1, r_ind < -2)):
                 err_msg = f'{fname}: `r_ind` invalid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
         if elem_ind is None:
@@ -1696,6 +1825,7 @@ class CovModel2D(object):
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
                 err_msg = f'{fname}: `elem_ind` invalid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
         for i in elem_ind:
@@ -1839,8 +1969,9 @@ class CovModel2D(object):
             if not self.is_weight_stationary(recompute):
                 self._sill = None
                 return self._sill
-            # print('Computing sill...')
+
             self._sill = sum([d['w'] for t, d in self.elem if 'w' in d])
+
         return self._sill
 
     def mrot(self, recompute=False):
@@ -1873,11 +2004,9 @@ class CovModel2D(object):
             if not self.is_orientation_stationary(recompute):
                 self._mrot = None
                 return self._mrot
-            # # print('Computing rotation matrix...')
-            # a = self.alpha * np.pi/180.0
-            # ca, sa = np.cos(a), np.sin(a)
-            # self._mrot = np.array([[ca, sa], [-sa, ca]])
+
             self._mrot = rotationMatrix2D(self.alpha)
+
         return self._mrot
 
     def r12(self, recompute=False):
@@ -1913,14 +2042,14 @@ class CovModel2D(object):
             if not self.is_range_stationary(recompute):
                 self._r = None
                 return self._r
-            # print('Computing effective range (max)...')
+
             r = np.array([0., 0.])
             for t, d in self.elem:
                 if t in (
                         'spherical',
                         'exponential',
                         'gaussian',
-                        'linear',
+                        'triangular',
                         'cubic',
                         'sinus_cardinal',
                         'gamma',
@@ -1928,10 +2057,13 @@ class CovModel2D(object):
                         'exponential_generalized',
                         ):
                     r = np.maximum(r, d['r']) # element-wise maximum
+
                 elif t == 'matern':
                     for i, ri in enumerate(d['r']):
                         r[i] = max(r[i], cov_matern_get_effective_range(d['nu'], ri))
+
             self._r = r
+
         return self._r
 
     def rxy(self, recompute=False):
@@ -2021,8 +2153,8 @@ class CovModel2D(object):
                 elif t == 'gaussian':
                     s = s + cov_gau(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
-                elif t == 'linear':
-                    s = s + cov_lin(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+                elif t == 'triangular':
+                    s = s + cov_tri(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
                 elif t == 'cubic':
                     s = s + cov_cub(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
@@ -2098,8 +2230,8 @@ class CovModel2D(object):
                 elif t == 'gaussian':
                     s = s + d['w'] - cov_gau(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
-                elif t == 'linear':
-                    s = s + d['w'] - cov_lin(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+                elif t == 'triangular':
+                    s = s + d['w'] - cov_tri(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
                 elif t == 'cubic':
                     s = s + d['w'] - cov_cub(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
@@ -2198,7 +2330,8 @@ class CovModel2D(object):
             show_ylabel=True,
             grid=True,
             show_suptitle=True,
-            figsize=None):
+            figsize=None,
+            logger=None):
         """
         Plots the covariance or variogram model.
 
@@ -2286,6 +2419,10 @@ class CovModel2D(object):
             size of the new "1x2" figure, if both map and curves are plotted
             (`plot_map=True` and `plot_curves=True`)
 
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
+
         Notes
         -----
         No plot is displayed if the model is not stationary.
@@ -2362,7 +2499,7 @@ class CovModel2D(object):
         if plot_map:
             # Plot map and system Ox'y'
             # ... map
-            imgplt.drawImage2D(im, cmap=cmap)
+            imgplt.drawImage2D(im, cmap=cmap, logger=logger)
             # ... system Ox'y'
             hm1 = 0.9*min(hxmax, hymax)
             hm2 = 0.9*max(hxmax, hymax)
@@ -2413,6 +2550,7 @@ class CovModel2D(object):
             show_xlabel=True,
             show_ylabel=True,
             grid=True,
+            logger=None,
             **kwargs):
         """
         Plots the covariance or variogram curve along one main axis (in the current figure axis).
@@ -2445,6 +2583,10 @@ class CovModel2D(object):
 
         grid : bool, default: True
             indicates if a grid is plotted
+            
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
 
         kwargs : dict
             keyword arguments passed to the funtion `matplotlib.pyplot.plot`
@@ -2460,6 +2602,7 @@ class CovModel2D(object):
             return None
         if main_axis not in (1, 2):
             err_msg = f'{fname}: `main_axis` invalid (should be 1 or 2)'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
         # In kwargs:
@@ -2525,17 +2668,17 @@ class CovModel3D(object):
         - t : str
             type of elementary covariance model, can be
 
-            - 'nugget'         (see function :func:`covModel.cov_nug`)
-            - 'spherical'      (see function :func:`covModel.cov_sph`)
-            - 'exponential'    (see function :func:`covModel.cov_exp`)
-            - 'gaussian'       (see function :func:`covModel.cov_gau`)
-            - 'linear'         (see function :func:`covModel.cov_lin`)
-            - 'cubic'          (see function :func:`covModel.cov_cub`)
-            - 'sinus_cardinal' (see function :func:`covModel.cov_sinc`)
-            - 'gamma'          (see function :func:`covModel.cov_gamma`)
-            - 'power'          (see function :func:`covModel.cov_pow`)
-            - 'exponential_generalized' (see function :func:`covModel.cov_exp_gen`)
-            - 'matern'         (see function :func:`covModel.cov_matern`)
+            - 'nugget'         (see function :func:`cov_nug`)
+            - 'spherical'      (see function :func:`cov_sph`)
+            - 'exponential'    (see function :func:`cov_exp`)
+            - 'gaussian'       (see function :func:`cov_gau`)
+            - 'triangular'     (see function :func:`cov_tri`)
+            - 'cubic'          (see function :func:`cov_cub`)
+            - 'sinus_cardinal' (see function :func:`cov_sinc`)
+            - 'gamma'          (see function :func:`cov_gamma`)
+            - 'power'          (see function :func:`cov_pow`)
+            - 'exponential_generalized' (see function :func:`cov_exp_gen`)
+            - 'matern'         (see function :func:`cov_matern`)
 
         - d : dict
             dictionary of required parameters to be passed to the elementary
@@ -2561,8 +2704,8 @@ class CovModel3D(object):
 
         .. math::
             m = \\left(\\begin{array}{rrr}
-                    \\cos\\alpha \\cdot \\cos\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\sin\\alpha \\cdot \\cos\\beta & - \\cos\\alpha \\cdot \\sin\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\ \
-                  - \\sin\\alpha \\cdot \\cos\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\cos\\alpha \\cdot \\cos\\beta &   \\sin\\alpha \\cdot \\sin\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\ \
+                    \\cos\\alpha \\cdot \\cos\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\sin\\alpha \\cdot \\cos\\beta & - \\cos\\alpha \\cdot \\sin\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\\ \
+                  - \\sin\\alpha \\cdot \\cos\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\cos\\alpha \\cdot \\cos\\beta &   \\sin\\alpha \\cdot \\sin\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\\ \
                                                                            \\cos\\beta \\cdot \\sin\\gamma &                    - \\sin\\beta &                                                          \\cos\\beta \\cdot \\cos\\gamma
                 \\end{array}\\right)
 
@@ -2670,8 +2813,11 @@ class CovModel3D(object):
     #
     def __init__(self,
                  elem=[],
-                 alpha=0.0, beta=0.0, gamma=0.0,
-                 name=None):
+                 alpha=0.0, 
+                 beta=0.0, 
+                 gamma=0.0,
+                 name=None,
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -2691,19 +2837,21 @@ class CovModel3D(object):
 
         name : str, optional
             name of the model
+            
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'CovModel3D'
 
         self.elem = elem
         for el in self.elem:
-            ok, err_mes_list = check_elem_cov_model(el, 3, verbose=0)
+            ok, err_mes_list = check_elem_cov_model(el, verbose=0)
             if not ok:
                 err_msg = f'{fname}: elementary contribution not valid\n ... ' + '\n ... '.join(err_mes_list)
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
-                # print(f'ERROR ({fname}): elementary contribution not valid')
-                # for s in err_mes_list:
-                #     print(f'   {s}')
-                # return None
+
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
@@ -2855,7 +3003,7 @@ class CovModel3D(object):
         self._is_orientation_stationary = None
         self._is_stationary = None
 
-    def multiply_w(self, factor, elem_ind=None):
+    def multiply_w(self, factor, elem_ind=None, logger=None):
         """
         Multiplies parameter `w` of the (given) elementary contribution(s) by the given factor.
 
@@ -2873,6 +3021,10 @@ class CovModel3D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
+            
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'multiply_w'
 
@@ -2883,6 +3035,7 @@ class CovModel3D(object):
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
                 err_msg = f'{fname}: `elem_ind` invalid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
         for i in elem_ind:
@@ -2893,7 +3046,56 @@ class CovModel3D(object):
         self._is_weight_stationary = None
         self._is_stationary = None
 
-    def multiply_r(self, factor, r_ind=None, elem_ind=None):
+    def add_w(self, a, elem_ind=None, logger=None):
+        """
+        Add `a`to parameter `w` of the (given) elementary contribution(s).
+
+        The covariance model is updated and relevant private attributes
+        (beginning with "_") are reset.
+
+        Parameters
+        ----------
+        a : array of floats or float
+            term(s) to add, if array, its shape must be compatible with the
+            dimension of the grid on which the covariance model is used (for
+            Gaussian interpolation or simulation)
+
+        elem_ind : 1D array-like of ints, or int, optional
+            indexe(s) of the elementary contribution (attribute `elem`) to be
+            modified; by default (`None`): indexes of any elementary contribution
+            are selected
+            
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
+        """
+        fname = 'add_w'
+
+        if elem_ind is None:
+            elem_ind = np.arange(len(self.elem))
+        else:
+            elem_ind = np.atleast_1d(elem_ind).reshape(-1)
+            n = len(self.elem)
+            if np.any((elem_ind > n - 1, elem_ind < -n)):
+                err_msg = f'{fname}: `elem_ind` invalid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+        for i in elem_ind:
+            if 'w' in self.elem[i][1].keys():
+                new_w = self.elem[i][1]['w'] + a
+                if new_w < 0:
+                    err_msg = f'{fname}: new `w` is negative'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+                self.elem[i][1]['w'] = new_w
+
+        self._sill = None
+        self._is_weight_stationary = None
+        self._is_stationary = None
+
+    def multiply_r(self, factor, r_ind=None, elem_ind=None, logger=None):
         """
         Multiplies (given index(es) of) parameter `r` of the (given) elementary contribution(s) by the given factor.
 
@@ -2916,6 +3118,10 @@ class CovModel3D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
+            
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'multiply_r'
 
@@ -2925,6 +3131,7 @@ class CovModel3D(object):
             r_ind = np.atleast_1d(r_ind).reshape(-1)
             if np.any((r_ind > 2, r_ind < -3)):
                 err_msg = f'{fname}: `r_ind` invalid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
         if elem_ind is None:
@@ -2934,6 +3141,7 @@ class CovModel3D(object):
             n = len(self.elem)
             if np.any((elem_ind > n - 1, elem_ind < -n)):
                 err_msg = f'{fname}: `elem_ind` invalid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
         for i in elem_ind:
@@ -3077,8 +3285,9 @@ class CovModel3D(object):
             if not self.is_weight_stationary(recompute):
                 self._sill = None
                 return self._sill
-            # print('Computing sill...')
+
             self._sill = sum([d['w'] for t, d in self.elem if 'w' in d])
+
         return self._sill
 
     def mrot(self, recompute=False):
@@ -3111,19 +3320,9 @@ class CovModel3D(object):
             if not self.is_orientation_stationary(recompute):
                 self._mrot = None
                 return self._mrot
-            # # print('Computing rotation matrix...')
-            # t = np.pi/180.0
-            # a = self.alpha * t
-            # b = self.beta * t
-            # c = self.gamma * t
-            # ca, sa = np.cos(a), np.sin(a)
-            # cb, sb = np.cos(b), np.sin(b)
-            # cc, sc = np.cos(c), np.sin(c)
-            # self._mrot = np.array(
-            #                 [[  ca * cc + sa * sb * sc,  sa * cb,  - ca * sc + sa * sb * cc],
-            #                  [- sa * cc + ca * sb * sc,  ca * cb,    sa * sc + ca * sb * cc],
-            #                  [                 cb * sc,     - sb,                   cb * cc]])
+
             self._mrot = rotationMatrix3D(self.alpha, self.beta, self.gamma)
+
         return self._mrot
 
     def r123(self, recompute=False):
@@ -3159,14 +3358,14 @@ class CovModel3D(object):
             if not self.is_range_stationary(recompute):
                 self._r = None
                 return self._r
-            # print('Computing effective range (max)...')
+
             r = np.array([0., 0., 0.])
             for t, d in self.elem:
                 if t in (
                         'spherical',
                         'exponential',
                         'gaussian',
-                        'linear',
+                        'triangular',
                         'cubic',
                         'sinus_cardinal',
                         'gamma',
@@ -3174,10 +3373,13 @@ class CovModel3D(object):
                         'exponential_generalized',
                         ):
                     r = np.maximum(r, d['r']) # element-wise maximum
+
                 elif t == 'matern':
                     for i, ri in enumerate(d['r']):
                         r[i] = max(r[i], cov_matern_get_effective_range(d['nu'], ri))
+
             self._r = r
+
         return self._r
 
     def rxyz(self, recompute=False):
@@ -3267,8 +3469,8 @@ class CovModel3D(object):
                 elif t == 'gaussian':
                     s = s + cov_gau(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
-                elif t == 'linear':
-                    s = s + cov_lin(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+                elif t == 'triangular':
+                    s = s + cov_tri(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
                 elif t == 'cubic':
                     s = s + cov_cub(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
@@ -3344,8 +3546,8 @@ class CovModel3D(object):
                 elif t == 'gaussian':
                     s = s + d['w'] - cov_gau(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
-                elif t == 'linear':
-                    s = s + d['w'] - cov_lin(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
+                elif t == 'triangular':
+                    s = s + d['w'] - cov_tri(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
 
                 elif t == 'cubic':
                     s = s + d['w'] - cov_cub(np.sqrt(np.sum((hnew/d['r'])**2, axis=1)), **dnew)
@@ -3439,11 +3641,12 @@ class CovModel3D(object):
             color2='blue',
             extent=None,
             ncell=(101, 101, 101),
+            logger=None,
             **kwargs):
         """
         Plots the covariance or variogram model in 3D (volume).
 
-        The plot is done using the function :func:`imgplot3d.drawImage3D_volume`
+        The plot is done using the function :func:`geone.imgplot3d.drawImage3D_volume`
         (based on `pyvista`).
 
         Parameters
@@ -3480,6 +3683,10 @@ class CovModel3D(object):
         ncell : sequence of 3 ints, default: (101, 101, 101)
             `ncell=(nx, ny, nz)` 3 ints defining the number of the cells in the
             plot along each direction (in "original" coordinates system)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
 
         kwargs : dict
             keyword arguments passed to the funtion
@@ -3545,7 +3752,7 @@ class CovModel3D(object):
             plotter_show = True
 
         # plot slices in 3D
-        imgplt3.drawImage3D_volume(im, plotter=plotter, **kwargs)
+        imgplt3.drawImage3D_volume(im, plotter=plotter, logger=logger, **kwargs)
         # add main axis x''' (cyl1), y''' (cyl2), z''' (cyl3)
         height = min(hxmax-hxmin, hymax-hymin, hzmax-hzmin)
         radius = 0.005*height
@@ -3568,11 +3775,12 @@ class CovModel3D(object):
             color2='blue',
             extent=None,
             ncell=(101, 101, 101),
+            logger=None,
             **kwargs):
         """
         Plots the covariance or variogram model in 3D (slices).
 
-        The plot is done using the function :func:`imgplot3d.drawImage3D_slice`
+        The plot is done using the function :func:`geone.imgplot3d.drawImage3D_slice`
         (based on `pyvista`).
 
         If 'slice_normal_custom' is not an item of `kwargs`, it is added by
@@ -3613,6 +3821,10 @@ class CovModel3D(object):
         ncell : sequence of 3 ints, default: (101, 101, 101)
             `ncell=(nx, ny, nz)` 3 ints defining the number of the cells in the
             plot along each direction (in "original" coordinates system)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
 
         kwargs : dict
             keyword arguments passed to the funtion
@@ -3681,7 +3893,7 @@ class CovModel3D(object):
             plotter_show = True
 
         # plot slices in 3D
-        imgplt3.drawImage3D_slice(im, plotter=plotter, **kwargs)
+        imgplt3.drawImage3D_slice(im, plotter=plotter, logger=logger, **kwargs)
         # add main axis x''' (cyl1), y''' (cyl2), z''' (cyl3)
         height = min(hxmax-hxmin, hymax-hymin, hzmax-hzmin)
         radius = 0.005*height
@@ -3859,6 +4071,7 @@ class CovModel3D(object):
             show_xlabel=True,
             show_ylabel=True,
             grid=True,
+            logger=None,
             **kwargs):
         """
         Plots the covariance or variogram curve along one main axis (in the current figure axis).
@@ -3892,6 +4105,10 @@ class CovModel3D(object):
 
         grid : bool, default: True
             indicates if a grid is plotted
+            
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
 
         kwargs : dict
             keyword arguments passed to the funtion `matplotlib.pyplot.plot`
@@ -3907,6 +4124,7 @@ class CovModel3D(object):
             return None
         if main_axis not in (1, 2, 3):
             err_msg = f'{fname}: `main_axis` invalid (should be 1, 2 or 3)'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
         # In kwargs:
@@ -4042,7 +4260,7 @@ def covModel1D_to_covModel3D(cov_model_1d):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def covModel2D_to_covModel3D(cov_model_2d, r_ind=(0, 0, 1), alpha=0.0, beta=0.0, gamma=0.0):
+def covModel2D_to_covModel3D(cov_model_2d, r_ind=(0, 0, 1), alpha=0.0, beta=0.0, gamma=0.0, logger=None):
     """
     Converts a covariance model in 2D to a covariance model in 3D.
 
@@ -4069,6 +4287,10 @@ def covModel2D_to_covModel3D(cov_model_2d, r_ind=(0, 0, 1), alpha=0.0, beta=0.0,
     gamma : float, default: 0.0
         attribute `gamma` of the 3D model
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     cov_model_3d : :class:`CovModel3D`
@@ -4079,10 +4301,12 @@ def covModel2D_to_covModel3D(cov_model_2d, r_ind=(0, 0, 1), alpha=0.0, beta=0.0,
     r_ind = np.atleast_1d(r_ind).reshape(-1)
     if r_ind.size != 3:
         err_msg = f'{fname}: `r_ind` invalid (should be of length 3)'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     if np.any((r_ind > 1, r_ind < -2)):
         err_msg = f'{fname}: `r_ind` invalid  (index)'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     cov_model_3d = CovModel3D()
@@ -4113,7 +4337,7 @@ def rotationMatrix2D(alpha=0.0):
     .. math::
         m = \\left(\\begin{array}{cc}
                 \\cos\\alpha & \\sin\\alpha\\\\
-                -\\sin\\alpha & \\cos\\alpha
+               -\\sin\\alpha & \\cos\\alpha
             \\end{array}\\right)
 
     i.e. the columns of m are the new axes expressed in the system Oxy.
@@ -4159,9 +4383,9 @@ def rotationMatrix3D(alpha=0.0, beta=0.0, gamma=0.0):
 
     .. math::
         m = \\left(\\begin{array}{rrr}
-                \\cos\\alpha \\cdot \\cos\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\sin\\alpha \\cdot \\cos\\beta & - \\cos\\alpha \\cdot \\sin\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\ \
-                - \\sin\\alpha \\cdot \\cos\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\cos\\alpha \\cdot \\cos\\beta &   \\sin\\alpha \\cdot \\sin\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\ \
-                                                                        \\cos\\beta \\cdot \\sin\\gamma &                    - \\sin\\beta &                                                          \\cos\\beta \\cdot \\cos\\gamma
+                \\cos\\alpha \\cdot \\cos\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\sin\\alpha \\cdot \\cos\\beta & - \\cos\\alpha \\cdot \\sin\\gamma + \\sin\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\\ \
+              - \\sin\\alpha \\cdot \\cos\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\sin\\gamma &  \\cos\\alpha \\cdot \\cos\\beta &   \\sin\\alpha \\cdot \\sin\\gamma + \\cos\\alpha \\cdot \\sin\\beta \\cdot \\cos\\gamma \\\\ \
+                                                                       \\cos\\beta \\cdot \\sin\\gamma &                    - \\sin\\beta &                                                          \\cos\\beta \\cdot \\cos\\gamma
             \\end{array}\\right)
 
     i.e. the columns of m are the new axes expressed in the system Oxyz.
@@ -4367,6 +4591,7 @@ def variogramCloud1D(
         coord_factor_loc_func=None,
         loc_m=1,
         make_plot=True,
+        logger=None,
         **kwargs):
     """
     Computes the omni-directional variogram cloud for a data set in 1D, 2D or 3D.
@@ -4395,8 +4620,8 @@ def variogramCloud1D(
     x : 2D array of floats of shape (n, d)
         data points locations, with n the number of data points and d the space
         dimension (1, 2, or 3), each row of `x` is the coordinatates of one data
-        point; note: for data in 1D (`d=1`), 1D array of shape (n,) is accepted
-        for n data points
+        point; note: for data in 1D (`d=1`), 1D array of shape `(n,)` is accepted
+        for `n` data points
 
     v : 1D array of floats of shape (n,)
         data points values, with n the number of data points, `v[i]` is the data
@@ -4433,6 +4658,10 @@ def variogramCloud1D(
         indicates if the variogram cloud is plotted (in the current figure axis,
         using the function `plot_variogramCloud1D`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `plot_variogramCloud1D`
         (if `make_plot=True`)
@@ -4452,10 +4681,11 @@ def variogramCloud1D(
     """
     fname = 'variogramCloud1D'
 
+    x = np.asarray(x)
     # Get dimension (d) from x
-    if np.asarray(x).ndim == 1:
+    if x.ndim == 1:
         # x is a 1-dimensional array
-        x = np.asarray(x).reshape(-1, 1)
+        x = x.reshape(-1, 1)
         d = 1
     else:
         # x is a 2-dimensional array
@@ -4465,8 +4695,10 @@ def variogramCloud1D(
     n = x.shape[0]
 
     # Check length of v
+    v = np.asarray(v).reshape(-1)
     if len(v) != n:
         err_msg = f'{fname}: length of `v` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Set types of local transformations
@@ -4593,6 +4825,7 @@ def variogramExp1D(
         cla_length=None,
         variogramCloud=None,
         make_plot=True,
+        logger=None,
         **kwargs):
     """
     Computes the exprimental omni-directional variogram for a data set in 1D, 2D or 3D.
@@ -4611,8 +4844,8 @@ def variogramExp1D(
     x : 2D array of floats of shape (n, d)
         data points locations, with n the number of data points and d the space
         dimension (1, 2, or 3), each row of x is the coordinatates of one data
-        point; note: for data in 1D (`d=1`), 1D array of shape (n,) is accepted
-        for n data points
+        point; note: for data in 1D (`d=1`), 1D array of shape `(n,)` is accepted
+        for `n` data points
 
     v : 1D array of floats of shape (n,)
         data points values, with n the number of data points, `v[i]` is the data
@@ -4684,6 +4917,10 @@ def variogramExp1D(
         indicates if the experimental variogram is plotted (in the current figure
         axis, using the function `plot_variogramExp1D`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `plot_variogramExp1D`
         (if `make_plot=True`)
@@ -4709,10 +4946,14 @@ def variogramExp1D(
         try:
             h, g, npair = variogramCloud1D(
                     x, v, hmax=hmax,
-                    w_factor_loc_func=w_factor_loc_func, coord_factor_loc_func=coord_factor_loc_func, loc_m=loc_m,
-                    make_plot=False)
+                    w_factor_loc_func=w_factor_loc_func, 
+                    coord_factor_loc_func=coord_factor_loc_func, 
+                    loc_m=loc_m,
+                    make_plot=False,
+                    logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot compute variogram cloud (1D)'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg) from exc
 
     else:
@@ -4730,6 +4971,7 @@ def variogramExp1D(
     else:
         if ncla == 0:
             err_msg = f'{fname}: `ncla` invalid (must be greater than 0)'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
         length = np.max(h) / ncla
@@ -4741,6 +4983,7 @@ def variogramExp1D(
             cla_length = np.repeat(cla_length, ncla)
         elif len(cla_length) != ncla:
             err_msg = f'{fname}: `cla_length` invalid'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
     else:
@@ -4777,6 +5020,7 @@ def covModel1D_fit(
         loc_m=1,
         variogramCloud=None,
         make_plot=True,
+        logger=None,
         **kwargs):
     """
     Fits a covariance model in 1D, from data in 1D, 2D, or 3D.
@@ -4792,8 +5036,8 @@ def covModel1D_fit(
     x : 2D array of floats of shape (n, d)
         data points locations, with n the number of data points and d the space
         dimension (1, 2, or 3), each row of x is the coordinatates of one data
-        point; note: for data in 1D (`d=1`), 1D array of shape (n,) is accepted
-        for n data points
+        point; note: for data in 1D (`d=1`), 1D array of shape `(n,)` is accepted
+        for `n` data points
 
     v : 1D array of floats of shape (n,)
         data points values, with n the number of data points, `v[i]` is the data
@@ -4841,6 +5085,10 @@ def covModel1D_fit(
         indicates if the fitted covariance model is plotted (using the method
         `plot_model` with default parameters)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `scipy.optimize.curve_fit`
 
@@ -4879,15 +5127,18 @@ def covModel1D_fit(
     # Check cov_model
     if not isinstance(cov_model, CovModel1D):
         err_msg = f'{fname}: `cov_model` is not a covariance model in 1D'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # if cov_model.__class__.__name__ != 'CovModel1D':
     #     err_msg = f'{fname}: `cov_model` is not a covariance model in 1D'
+    #     if logger: logger.error(err_msg)
     #     raise CovModelError(err_msg)
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
         err_msg = f'{fname}: `cov_model` is not stationary: fit cannot be applied'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Work on a (deep) copy of cov_model
@@ -4912,10 +5163,14 @@ def covModel1D_fit(
         try:
             h, g, npair = variogramCloud1D(
                     x, v, hmax=hmax,
-                    w_factor_loc_func=w_factor_loc_func, coord_factor_loc_func=coord_factor_loc_func, loc_m=loc_m,
-                    make_plot=False) # npair won't be used
+                    w_factor_loc_func=w_factor_loc_func, 
+                    coord_factor_loc_func=coord_factor_loc_func, 
+                    loc_m=loc_m,
+                    make_plot=False,
+                    logger=logger) # npair won't be used
         except Exception as exc:
             err_msg = f'{fname}: cannot compute variogram cloud (1D)'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg) from exc
 
     else:
@@ -4923,6 +5178,7 @@ def covModel1D_fit(
 
     if npair == 0:
         err_msg = f'{fname}: no pair of points (in variogram cloud) for fitting'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
         # print('No point to fit!')
         # return cov_model_opt, np.nan * np.ones(nparam)
@@ -4976,6 +5232,7 @@ def covModel1D_fit(
     else:
         if len(kwargs['p0']) != nparam:
             err_msg = f'{fname}: length of `p0` and number of parameters to fit differ'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
     # Fit with curve_fit
@@ -4983,9 +5240,8 @@ def covModel1D_fit(
         popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
     except:
         err_msg = f'{fname}: fitting covariance model failed'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
-        # print('Curve fit failed!')
-        # return cov_model_opt, np.nan * np.ones(nparam)
 
     if make_plot:
         cov_model_opt.plot_model(vario=True, hmax=np.max(h), label='vario opt.')
@@ -5016,6 +5272,7 @@ def variogramCloud2D(
         color0='red',
         color1='green',
         figsize=None,
+        logger=None,
         **kwargs):
     """
     Computes the two directional variogram clouds (wrt. main axes) for a data set in 2D.
@@ -5035,12 +5292,12 @@ def variogramCloud2D(
     h(i, j) = (h1(i, j), h2(i, j)). Let `tol_dist` = (tol_dist1, tol_dist2),
     `tol_angle` = (tol_angle1, tol_angle2), and `hmax` = (h1max, h2max)
     (see parameters below); if distance from h(i, j) to
-    the 1st (resp. 2nd) main axis, i.e. \|h2(i, j)\| (resp. \|h1(i, j)\|) does not
+    the 1st (resp. 2nd) main axis, i.e. \\|h2(i, j)\\| (resp. \\|h1(i, j)\\|) does not
     exceed tol_dist1 (resp. toldist2), and if the angle between the lag h(i, j)
     and the 1st (resp. 2nd) main axis does not exceed tol_angle1 (resp.
     tol_angle2), and if the distance along the 1st (resp. 2nd) axis, i.e.
-    \|h1(i, j)\| (resp. \|h2(i, j)\|) does not exceed h1max (resp. h2max), then, the
-    point (\|h1(i, j)\|, g(i, j)) (resp. (\|h2(i, j)\|, g(i, j))) is integrated in
+    \\|h1(i, j)\\| (resp. \\|h2(i, j)\\|) does not exceed h1max (resp. h2max), then, the
+    point (\\|h1(i, j)\\|, g(i, j)) (resp. (\\|h2(i, j)\\|, g(i, j))) is integrated in
     the directional variogram cloud along the 1st (resp. 2nd) main axis.
 
     Moreover, the parameter `alpha_loc_func` allows to account for main axes
@@ -5138,6 +5395,10 @@ def variogramCloud2D(
     figsize : 2-tuple, optional
         size of the new "2x2" figure (if `make_plot=True`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `plot_variogramCloud1D`
         (if `make_plot=True`)
@@ -5170,6 +5431,7 @@ def variogramCloud2D(
     # Check length of v
     if len(v) != n:
         err_msg = f'{fname}: length of `v` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Set hmax as an array of shape (2,)
@@ -5179,6 +5441,7 @@ def variogramCloud2D(
         hmax = np.array([hmax[0], hmax[0]])
     elif hmax.size != 2:
         err_msg = f'{fname}: size of `hmax` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Set tol_dist as an array of shape (2,)
@@ -5187,6 +5450,7 @@ def variogramCloud2D(
         tol_dist = np.array([tol_dist[0], tol_dist[0]])
     elif tol_dist.size != 2:
         err_msg = f'{fname}: size of `tol_dist` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     for i in range(2):
@@ -5202,6 +5466,7 @@ def variogramCloud2D(
         tol_angle = np.array([tol_angle[0], tol_angle[0]])
     elif tol_angle.size != 2:
         err_msg = f'{fname}: size of `tol_angle` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     tol_angle[np.isnan(tol_angle)] = 45.0
@@ -5436,6 +5701,7 @@ def variogramExp2D(
         color0='red',
         color1='green',
         figsize=None,
+        logger=None,
         **kwargs):
     """
     Computes the two experimental directional variograms (wrt. main axes) for a data set in 2D.
@@ -5584,6 +5850,10 @@ def variogramExp2D(
     figsize : 2-tuple, optional
         size of the new "2x2" figure (if `make_plot=True`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `plot_variogramExp1D`
         (if `make_plot=True`)
@@ -5617,11 +5887,16 @@ def variogramExp2D(
         try:
             vc = variogramCloud2D(
                     x, v, alpha=alpha, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
-                    alpha_loc_func=alpha_loc_func, w_factor_loc_func=w_factor_loc_func,
-                    coord1_factor_loc_func=coord1_factor_loc_func, coord2_factor_loc_func=coord2_factor_loc_func, loc_m=loc_m,
-                    make_plot=False)
+                    alpha_loc_func=alpha_loc_func, 
+                    w_factor_loc_func=w_factor_loc_func,
+                    coord1_factor_loc_func=coord1_factor_loc_func, 
+                    coord2_factor_loc_func=coord2_factor_loc_func, 
+                    loc_m=loc_m,
+                    make_plot=False,
+                    logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot compute variogram cloud (2D)'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg) from exc
 
     else:
@@ -5633,10 +5908,13 @@ def variogramExp2D(
     for j in (0, 1):
         try:
             ve[j] = variogramExp1D(
-                    None, None, hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
-                    ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], make_plot=False)
+                        None, None, 
+                        hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
+                        ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], 
+                        variogramCloud=vc[j], make_plot=False, logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot compute experimental variogram in one direction'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg) from exc
 
     (hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1) = ve
@@ -5710,6 +5988,7 @@ def variogramExp2D_rose(
         phi_ncla=12,
         set_polar_subplot=True,
         figsize=None,
+        logger=None,
         **kwargs):
     """
     Computes and shows an experimental variogram rose for a data set in 2D.
@@ -5748,6 +6027,10 @@ def variogramExp2D_rose(
     figsize : 2-tuple, optional
         size of the figure (if `set_polar_subplot=True`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion
         `matplotlib.pyplot.pcolormesh` (cmap, etc.)
@@ -5760,6 +6043,7 @@ def variogramExp2D_rose(
     # Check length of v
     if len(v) != n:
         err_msg = f'{fname}: length of `v` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Compute lag vector (h) and gamma value (g) for pair of points with distance less than or equal to hmax
@@ -5845,6 +6129,7 @@ def covModel2D_fit(
         make_plot=True,
         figsize=None,
         verbose=0,
+        logger=None,
         **kwargs):
     """
     Fits a covariance model in 2D (for data in 2D).
@@ -5919,6 +6204,10 @@ def covModel2D_fit(
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `scipy.optimize.curve_fit`
 
@@ -5960,15 +6249,18 @@ def covModel2D_fit(
     # Check cov_model
     if not isinstance(cov_model, CovModel2D):
         err_msg = f'{fname}: `cov_model` is not a covariance model in 2D'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # if cov_model.__class__.__name__ != 'CovModel2D':
     #     err_msg = f'{fname}: `cov_model` is not a covariance model in 2D'
+    #     if logger: logger.error(err_msg)
     #     raise CovModelError(err_msg)
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
         err_msg = f'{fname}: `cov_model` is not stationary: fit cannot be applied'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Work on a (deep) copy of cov_model
@@ -6006,10 +6298,14 @@ def covModel2D_fit(
         hmax = np.array([hmax[0], hmax[0]])
     elif hmax.size != 2:
         err_msg = f'{fname}: size of `hmax` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     if alpha_to_fit and hmax[0] != hmax[1] and verbose > 0:
-        print(f'{fname}: WARNING: as angle is flagged for fitting, all the components of `hmax` should be equal')
+        if logger:
+            logger.warning(f'{fname}: as angle is flagged for fitting, all the components of `hmax` should be equal')
+        else:
+            print(f'{fname}: WARNING: as angle is flagged for fitting, all the components of `hmax` should be equal')
 
     if not alpha_to_fit and cov_model_opt.alpha != 0.0:
         alpha_copy = cov_model_opt.alpha
@@ -6221,11 +6517,10 @@ def covModel2D_fit(
 
     if npair == 0:
         err_msg = f'{fname}: no pair of points (in variogram cloud) for fitting'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
-        # print('No point to fit!')
-        # return cov_model_opt, np.nan * np.ones(nparam)
 
-    # Defines the function to optimize in a format compatible with curve_fit from scipy.optimize
+    # Define the function to optimize in a format compatible with curve_fit from scipy.optimize
     def func(d, *p):
         """
         Function whose p is the vector of parameters to optimize.
@@ -6281,6 +6576,7 @@ def covModel2D_fit(
     else:
         if len(kwargs['p0']) != nparam:
             err_msg = f'{fname}: length of `p0` and number of parameters to fit differ'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
     # Fit with curve_fit
@@ -6291,12 +6587,8 @@ def covModel2D_fit(
             cov_model_opt.alpha = alpha_copy
     except:
         err_msg = f'{fname}: fitting covariance model failed'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
-        # print('Curve fit failed!')
-        # if rotate_coord_sys:
-        #     # Restore alpha
-        #     cov_model_opt.alpha = alpha_copy
-        # return cov_model_opt, np.nan * np.ones(nparam)
 
     if make_plot:
         cov_model_opt.plot_model(vario=True, figsize=figsize)
@@ -6334,6 +6626,7 @@ def variogramCloud3D(
         color1='green',
         color2='blue',
         figsize=None,
+        logger=None,
         **kwargs):
     """
     Computes the three directional variogram clouds (wrt. main axes) for a data set in 3D.
@@ -6357,10 +6650,10 @@ def variogramCloud3D(
     to the 1st (resp. 2nd, 3rd) main axis does not exceed tol_dist1 (resp.
     toldist2, toldist3), and if the angle between the lag h(i, j) and the 1st (resp.
     2nd, 3rd) main axis does not exceed tol_angle1 (resp. tol_angle2, tol_angle3),
-    and if the distance along the 1st (resp. 2nd, 3rd) axis, i.e. \|h1(i, j)\|
-    (resp. \|h2(i, j)\|, \|h3(i,j)\|) does not exceed h1max (resp. h2max, h3max), then,
-    the point (\|h1(i, j)\|, g(i, j)) (resp. (\|h2(i, j)\|, g(i, j)),
-    (\|h3(i, j)\|, g(i, j))) is integrated in the directional variogram cloud along
+    and if the distance along the 1st (resp. 2nd, 3rd) axis, i.e. \\|h1(i, j)\\|
+    (resp. \\|h2(i, j)\\|, \\|h3(i,j)\\|) does not exceed h1max (resp. h2max, h3max), then,
+    the point (\\|h1(i, j)\\|, g(i, j)) (resp. (\\|h2(i, j)\\|, g(i, j)),
+    (\\|h3(i, j)\\|, g(i, j))) is integrated in the directional variogram cloud along
     the 1st (resp. 2nd, 3rd) main axis.
 
     Moreover, the parameters `alpha_loc_func`, `beta_loc_func`, `gamma_loc_func`
@@ -6486,6 +6779,10 @@ def variogramCloud3D(
     figsize : 2-tuple, optional
         size of the new "2x2" figure (if `make_plot=True`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `plot_variogramCloud1D`
         (if `make_plot=True`)
@@ -6527,6 +6824,7 @@ def variogramCloud3D(
     # Check length of v
     if len(v) != n:
         err_msg = f'{fname}: length of `v` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Set hmax as an array of shape (3,)
@@ -6536,6 +6834,7 @@ def variogramCloud3D(
         hmax = np.array([hmax[0], hmax[0], hmax[0]])
     elif hmax.size != 3:
         err_msg = f'{fname}: size of `hmax` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Set tol_dist as an array of shape (3,)
@@ -6544,6 +6843,7 @@ def variogramCloud3D(
         tol_dist = np.array([tol_dist[0], tol_dist[0], tol_dist[0]])
     elif tol_dist.size != 3:
         err_msg = f'{fname}: size of `tol_dist` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     for i in range(3):
@@ -6559,6 +6859,7 @@ def variogramCloud3D(
         tol_angle = np.array([tol_angle[0], tol_angle[0], tol_angle[0]])
     elif tol_angle.size != 3:
         err_msg = f'{fname}: size of `tol_angle` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     tol_angle[np.isnan(tol_angle)] = 45.0
@@ -6974,7 +7275,9 @@ def variogramExp3D(
         color0='red',
         color1='green',
         color2='blue',
-        figsize=None, **kwargs):
+        figsize=None, 
+        logger=None,
+        **kwargs):
     """
     Computes the three experimental directional variograms (wrt. main axes) for a data set in 3D.
 
@@ -7150,6 +7453,10 @@ def variogramExp3D(
     figsize : 2-tuple, optional
         size of the new "2x3" figure (if `make_plot=True`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `plot_variogramExp1D`
         (if `make_plot=True`)
@@ -7193,12 +7500,19 @@ def variogramExp3D(
         try:
             vc = variogramCloud3D(
                     x, v, alpha=alpha, beta=beta, gamma=gamma, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
-                    alpha_loc_func=alpha_loc_func, beta_loc_func=beta_loc_func, gamma_loc_func=gamma_loc_func,
+                    alpha_loc_func=alpha_loc_func, 
+                    beta_loc_func=beta_loc_func, 
+                    gamma_loc_func=gamma_loc_func,
                     w_factor_loc_func=w_factor_loc_func,
-                    coord1_factor_loc_func=coord1_factor_loc_func, coord2_factor_loc_func=coord2_factor_loc_func, coord3_factor_loc_func=coord3_factor_loc_func, loc_m=loc_m,
-                    make_plot=False)
+                    coord1_factor_loc_func=coord1_factor_loc_func, 
+                    coord2_factor_loc_func=coord2_factor_loc_func, 
+                    coord3_factor_loc_func=coord3_factor_loc_func, 
+                    loc_m=loc_m,
+                    make_plot=False,
+                    logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot compute variogram cloud (3D)'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg) from exc
 
     else:
@@ -7210,10 +7524,13 @@ def variogramExp3D(
     for j in (0, 1, 2):
         try:
             ve[j] = variogramExp1D(
-                    None, None, hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
-                    ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], make_plot=False)
+                        None, None, 
+                        hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
+                        ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], 
+                        make_plot=False, logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot compute experimental variogram in one direction'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg) from exc
 
     (hexp0, gexp0, cexp0), (hexp1, gexp1, cexp1), (hexp2, gexp2, cexp2) = ve
@@ -7307,6 +7624,7 @@ def variogramCloud3D_omni_wrt_2_first_axes(
         color01='orange',
         color2='blue',
         figsize=None,
+        logger=None,
         **kwargs):
     """
     Computes two variogram clouds for a data set in 3D.
@@ -7338,9 +7656,9 @@ def variogramCloud3D_omni_wrt_2_first_axes(
     lag h(i, j) and the the plane spanned by the first two main axes (resp. the
     3rd main axis) does not exceed tol_angle12 (resp. tol_angle3),
     and if the distance :math:`\\sqrt{h1(i, j)^2+h2(i, j)^2}` in the plane spanned
-    by the first two main axes (resp. the distance \|h3(i,j)\| along the 3rd main
+    by the first two main axes (resp. the distance \\|h3(i,j)\\| along the 3rd main
     axis) does not exceed h12max (resp. h3max), then, the point
-    (:math:`\\sqrt{h1(i, j)^2+h2(i, j)^2}`, g(i, j)) (resp. (\|h3(i, j)\|, g(i, j)))
+    (:math:`\\sqrt{h1(i, j)^2+h2(i, j)^2}`, g(i, j)) (resp. (\\|h3(i, j)\\|, g(i, j)))
     is integrated in the omni-directional variogram cloud wrt. the first two main axes
     (resp. the directional variogram cloud wrt. the 3rd main axis).
 
@@ -7465,6 +7783,10 @@ def variogramCloud3D_omni_wrt_2_first_axes(
     figsize : 2-tuple, optional
         size of the new "2x2" figure (if `make_plot=True`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `plot_variogramCloud1D`
         (if `make_plot=True`)
@@ -7497,6 +7819,7 @@ def variogramCloud3D_omni_wrt_2_first_axes(
     # Check length of v
     if len(v) != n:
         err_msg = f'{fname}: length of `v` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Set hmax as an array of shape (2,)
@@ -7506,6 +7829,7 @@ def variogramCloud3D_omni_wrt_2_first_axes(
         hmax = np.array([hmax[0], hmax[0]])
     elif hmax.size != 2:
         err_msg = f'{fname}: size of `hmax` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Set tol_dist as an array of shape (2,)
@@ -7514,6 +7838,7 @@ def variogramCloud3D_omni_wrt_2_first_axes(
         tol_dist = np.array([tol_dist[0], tol_dist[0]])
     elif tol_dist.size != 2:
         err_msg = f'{fname}: size of `tol_dist` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     for i in range(2):
@@ -7529,6 +7854,7 @@ def variogramCloud3D_omni_wrt_2_first_axes(
         tol_angle = np.array([tol_angle[0], tol_angle[0]])
     elif tol_angle.size != 2:
         err_msg = f'{fname}: size of `tol_angle` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     tol_angle[np.isnan(tol_angle)] = 45.0
@@ -7924,7 +8250,9 @@ def variogramExp3D_omni_wrt_2_first_axes(
         make_plot=True,
         color01='orange',
         color2='blue',
-        figsize=None, **kwargs):
+        figsize=None, 
+        logger=None,
+        **kwargs):
     """
     Computes two experimental variograms for a data set in 3D.
 
@@ -8102,6 +8430,10 @@ def variogramExp3D_omni_wrt_2_first_axes(
     figsize : 2-tuple, optional
         size of the new "2x2" figure (if `make_plot=True`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `plot_variogramExp1D`
         (if `make_plot=True`)
@@ -8135,12 +8467,19 @@ def variogramExp3D_omni_wrt_2_first_axes(
         try:
             vc = variogramCloud3D_omni_wrt_2_first_axes(
                     x, v, alpha=alpha, beta=beta, gamma=gamma, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
-                    alpha_loc_func=alpha_loc_func, beta_loc_func=beta_loc_func, gamma_loc_func=gamma_loc_func,
+                    alpha_loc_func=alpha_loc_func, 
+                    beta_loc_func=beta_loc_func, 
+                    gamma_loc_func=gamma_loc_func,
                     w_factor_loc_func=w_factor_loc_func,
-                    coord1_factor_loc_func=coord1_factor_loc_func, coord2_factor_loc_func=coord2_factor_loc_func, coord3_factor_loc_func=coord3_factor_loc_func, loc_m=loc_m,
-                    make_plot=False)
+                    coord1_factor_loc_func=coord1_factor_loc_func, 
+                    coord2_factor_loc_func=coord2_factor_loc_func, 
+                    coord3_factor_loc_func=coord3_factor_loc_func, 
+                    loc_m=loc_m,
+                    make_plot=False,
+                    logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot compute variogram cloud (3D)'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg) from exc
 
     else:
@@ -8152,10 +8491,13 @@ def variogramExp3D_omni_wrt_2_first_axes(
     for j in (0, 1):
         try:
             ve[j] = variogramExp1D(
-                    None, None, hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
-                    ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], make_plot=False)
+                        None, None, 
+                        hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
+                        ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], 
+                        make_plot=False, logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot compute experimental variogram in one direction'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg) from exc
 
     (hexp01, gexp01, cexp01), (hexp2, gexp2, cexp2) = ve
@@ -8235,6 +8577,7 @@ def covModel3D_fit(
         loc_m=1,
         make_plot=True,
         verbose=0,
+        logger=None,
         **kwargs):
     """
     Fits a covariance model in 3D (for data in 3D).
@@ -8330,6 +8673,10 @@ def covModel3D_fit(
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the funtion `scipy.optimize.curve_fit`
 
@@ -8370,14 +8717,17 @@ def covModel3D_fit(
     # Check cov_model
     if not isinstance(cov_model, CovModel3D):
         err_msg = f'{fname}: `cov_model` is not a covariance model in 3D'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
     # if cov_model.__class__.__name__ != 'CovModel3D':
     #     err_msg = f'{fname}: `cov_model` is not a covariance model in 1D'
+    #     if logger: logger.error(err_msg)
     #     raise CovModelError(err_msg)
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
         err_msg = f'{fname}: `cov_model` is not stationary: fit cannot be applied'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Work on a (deep) copy of cov_model
@@ -8394,6 +8744,7 @@ def covModel3D_fit(
                     if np.isnan(val[0]):
                         if not np.isnan(val[1]):
                             err_msg = f"{fname}: with `link_range12=True`, range ('r') along the first two main axes must both be defined (to the same value) or both to be optimized"
+                            if logger: logger.error(err_msg)
                             raise CovModelError(err_msg)
 
                         ielem_to_fit.append(i)
@@ -8402,10 +8753,12 @@ def covModel3D_fit(
                     else:
                         if np.isnan(val[1]):
                             err_msg = f"{fname}: with `link_range12=True`, range ('r') along the first two main axes must both be defined (to the same value) or both to be optimized"
+                            if logger: logger.error(err_msg)
                             raise CovModelError(err_msg)
 
                         if val[0] != val[1]:
                             err_msg = f"{fname}: with `link_range12=True`, range ('r') defined along the first two main axes must have the same value"
+                            if logger: logger.error(err_msg)
                             raise CovModelError(err_msg)
 
                     if np.isnan(val[2]):
@@ -8440,26 +8793,40 @@ def covModel3D_fit(
         hmax = np.array([hmax[0], hmax[0], hmax[0]])
     elif hmax.size != 3:
         err_msg = f'{fname}: size of `hmax` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     if link_range12 and hmax[0] != hmax[1]:
         err_msg = f'{fname}: with `link_range12=True`, the first two entries of `hmax` must be the same ones'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     a = alpha_to_fit + beta_to_fit + gamma_to_fit
     if a == 1:
         if alpha_to_fit:
             if hmax[0] != hmax[1] and verbose > 0:
-                print(f'{fname}: WARNING: as alpha angle (only) is flagged for fitting, `hmax[0]` and `hmax[1]` should be equal')
+                if logger:
+                    logger.warning(f'{fname}: as alpha angle (only) is flagged for fitting, `hmax[0]` and `hmax[1]` should be equal')
+                else:
+                    print(f'{fname}: WARNING: as alpha angle (only) is flagged for fitting, `hmax[0]` and `hmax[1]` should be equal')
         elif beta_to_fit:
             if hmax[1] != hmax[2] and verbose > 0:
-                print(f'{fname}: WARNING: as beta angle (only) is flagged for fitting, `hmax[1]` and `hmax[2]` should be equal')
+                if logger:
+                    logger.warning(f'{fname}: as beta angle (only) is flagged for fitting, `hmax[1]` and `hmax[2]` should be equal')
+                else:
+                    print(f'{fname}: WARNING: as beta angle (only) is flagged for fitting, `hmax[1]` and `hmax[2]` should be equal')
         elif gamma_to_fit:
             if hmax[0] != hmax[2] and verbose > 0:
-                print(f'{fname}: WARNING: as beta angle (only) is flagged for fitting, `hmax[0]` and `hmax[2]` should be equal')
+                if logger:
+                    logger.warning(f'{fname}: as beta angle (only) is flagged for fitting, `hmax[0]` and `hmax[2]` should be equal')
+                else:
+                    print(f'{fname}: WARNING: as beta angle (only) is flagged for fitting, `hmax[0]` and `hmax[2]` should be equal')
     elif a > 0:
         if hmax[0] != hmax[2] or hmax[0] != hmax[1] or hmax[1] != hmax[2] and verbose > 0:
-            print(f'{fname}: WARNING: as (at least two) angles are flagged for fitting, all the components of `hmax` should be equal')
+            if logger:
+                logger.warning(f'{fname}: as (at least two) angles are flagged for fitting, all the components of `hmax` should be equal')
+            else:
+                print(f'{fname}: WARNING: as (at least two) angles are flagged for fitting, all the components of `hmax` should be equal')
 
     if not alpha_to_fit and not beta_to_fit and not gamma_to_fit \
             and (cov_model_opt.alpha != 0.0 or cov_model_opt.beta != 0.0 or cov_model_opt.gamma != 0.0):
@@ -8941,11 +9308,10 @@ def covModel3D_fit(
 
     if npair == 0:
         err_msg = f'{fname}: no pair of points (in variogram cloud) for fitting'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
-        # print('No point to fit!')
-        # return cov_model_opt, np.nan * np.ones(nparam)
 
-    # Defines the function to optimize in a format compatible with curve_fit from scipy.optimize
+    # Define the function to optimize in a format compatible with curve_fit from scipy.optimize
     def func(d, *p):
         """
         Function whose p is the vector of parameters to optimize.
@@ -9009,6 +9375,7 @@ def covModel3D_fit(
     else:
         if len(kwargs['p0']) != nparam:
             err_msg = f'{fname}: length of `p0` and number of parameters to fit differ'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
     # Fit with curve_fit
@@ -9021,14 +9388,8 @@ def covModel3D_fit(
             cov_model_opt.gamma = gamma_copy
     except:
         err_msg = f'{fname}: fitting covariance model failed'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
-        # print('Curve fit failed!')
-        # if rotate_coord_sys:
-        #     # Restore alpha, beta, gamma
-        #     cov_model_opt.alpha = alpha_copy
-        #     cov_model_opt.beta = beta_copy
-        #     cov_model_opt.gamma = gamma_copy
-        # return cov_model_opt, np.nan * np.ones(nparam)
 
     if make_plot:
         # plt.suptitle(textwrap.TextWrapper(width=50).fill(s))
@@ -9038,786 +9399,640 @@ def covModel3D_fit(
     return cov_model_opt, popt
 # ----------------------------------------------------------------------------
 
-# # ----------------------------------------------------------------------------
-# def covModel3D_fit(
-#         x, v, cov_model,
-#         hmax=None,
-#         alpha_loc_func=None,
-#         beta_loc_func=None,
-#         gamma_loc_func=None,
-#         w_factor_loc_func=None,
-#         coord1_factor_loc_func=None,
-#         coord2_factor_loc_func=None,
-#         coord3_factor_loc_func=None,
-#         loc_m=1,
-#         make_plot=True,
-#         verbose=0,
-#         **kwargs):
-#     """
-#     Fits a covariance model in 3D (for data in 3D).
-#
-#     The parameter `cov_model` is a covariance model in 3D where all the
-#     parameters to be fitted are set to `numpy.nan`. The fit is done according to
-#     the variogram cloud, by using the function `scipy.optimize.curve_fit`.
-#
-#     Parameters
-#     ----------
-#     x : 2D array of floats of shape (n, 3)
-#         data points locations, with n the number of data points, each row of `x`
-#         is the coordinatates of one data point
-#
-#     v : 1D array of floats of shape (n,)
-#         data points values, with n the number of data points, `v[i]` is the data
-#         value at location `x[i]`
-#
-#     cov_model : :class:`CovModel3D`
-#         covariance model to otpimize (parameters set to `numpy.nan` are optimized)
-#
-#     hmax : sequence of 3 floats, or float, optional
-#         the pairs of data points with lag h (in rotated coordinates system if
-#         applied) satisfying
-#
-#         .. math::
-#             (h[0]/hmax[0])^2 + (h[1]/hmax[1])^2 + (h[2]/hmax[2])^2 \\leqslant 1
-#
-#         are taking into account in the variogram cloud
-#         note: if `hmax` is specified as a float or `None` (default), the entry is
-#         duplicated, and `None`, `numpy.nan` are converted to `numpy.inf` (no
-#         restriction)
-#
-#     alpha_loc_func : function (`callable`), optional
-#         function returning azimuth angle, defining the main axes, as function of
-#         a given location in 3D, i.e. the main axes are defined locally
-#
-#     beta_loc_func : function (`callable`), optional
-#         function returning dip angle, defining the main axes, as function of
-#         a given location in 3D, i.e. the main axes are defined locally
-#
-#     gamma_loc_func : function (`callable`), optional
-#         function returning plunge angle, defining the main axes, as function of
-#         a given location in 3D, i.e. the main axes are defined locally
-#
-#     w_factor_loc_func : function (`callable`), optional
-#         function returning a multiplier for the "weight" as function of a given
-#         location in 3D, i.e. "g" values (i.e. ordinate axis component in the two
-#         variograms) are multiplied
-#
-#     coord1_factor_loc_func : function (`callable`), optional
-#         function returning a multiplier for the "lag" along the 1st (local) main
-#         axis as function of a given location in 3D, i.e. "h1" values (i.e.
-#         abscissa axis component in the 1st variogram) are multiplied
-#         (the condition wrt `hmax`, is checked after)
-#
-#     coord2_factor_loc_func : function (`callable`), optional
-#         function returning a multiplier for the "lag" along the 2nd (local) main
-#         axis as function of a given location in 3D, i.e. "h2" values (i.e.
-#         abscissa axis component in the 2nd variogram) are multiplied
-#         (the condition wrt `hmax`, is checked after)
-#
-#     coord3_factor_loc_func : function (`callable`), optional
-#         function returning a multiplier for the "lag" along the 3rd (local) main
-#         axis as function of a given location in 3D, i.e. "h3" values (i.e.
-#         abscissa axis component in the 3rd variogram) are multiplied
-#         (the condition wrt `hmax`, is checked after)
-#
-#     loc_m : int, default: 1
-#         integer (greater than or equal to 0) defining how the function(s)
-#         `*_loc_func` (above) are evaluated for a pair of two locations x1, x2
-#         (data point locations):
-#
-#         - if `loc_m>0` the segment from x1 to x2 is divided in `loc_m` intervals \
-#         of same length and the mean of the evaluations of the function at the \
-#         (`loc_m` + 1) interval bounds is computed
-#         - if `loc_m=0`, the evaluation at x1 is considered
-#
-#     make_plot : bool, default: True
-#         indicates if the fitted covariance model is plotted (in a new "1x2"
-#         figure, using the method `plot_model` with default parameters)
-#
-#     figsize : 2-tuple, optional
-#         size of the new "1x2" figure (if `make_plot=True`)
-#
-#     verbose : int, default: 0
-#         verbose mode, higher implies more printing (info)
-#
-#     kwargs : dict
-#         keyword arguments passed to the funtion `scipy.optimize.curve_fit`
-#
-#     Returns
-#     -------
-#     cov_model_opt: :class:`CovModel3D`
-#         optimized covariance model
-#     popt: 1D array
-#         values of the optimal parameters, corresponding to the parameters of the
-#         input covariance model (`cov_model`) set to `numpy.nan`, in the order of
-#         appearance (vector of optimized parameters returned by
-#         `scipy.optimize.curve_fit`)
-#
-#     Examples
-#     --------
-#     The following allows to fit a covariance model made up of a gaussian
-#     elementary model and a nugget effect (nugget elementary model), where the
-#     azimuth angle (defining the main axes), the weight and ranges of the gaussian
-#     elementary model and the weight of the nugget effect are fitted (optimized)
-#     in intervals given by the keyword argument `bounds`. The arguments `x`, `v`
-#     are the data points and values, and the fitted covariance model is not plotted
-#     (`make_plot=False`)
-#
-#         >>> # covariance model to optimize
-#         >>> cov_model = CovModel3D(elem=[
-#         >>>     ('gaussian', {'w':np.nan, 'r':[np.nan, np.nan, np.nan]}), # el. contrib.
-#         >>>     ('nugget', {'w':np.nan})                                  # el. contrib.
-#         >>>     ], alpha=np.nan, beta=0.0, gamma=0.0,      # azimuth, dip, plunge angles
-#         >>>     name='')
-#         >>> covModel3D_fit(x, v, cov_model_to_optimize,
-#         >>>                bounds=([ 0.0,   0.0,   0.0,   0.0,  0.0, -90.0],  # lower b.
-#         >>>                        [10.0, 100.0, 100.0, 100.0, 10.0,  90.0]), # upper b.
-#         >>>                                                      # for parameters to fit
-#         >>>                make_plot=False)
-#     """
-#     fname = 'covModel3D_fit'
-#
-#     # Check cov_model
-#     if not isinstance(cov_model, CovModel3D):
-#         err_msg = f'{fname}: `cov_model` is not a covariance model in 3D'
-#         raise CovModelError(err_msg)
-#     # if cov_model.__class__.__name__ != 'CovModel3D':
-#     #     err_msg = f'{fname}: `cov_model` is not a covariance model in 1D'
-#     #     raise CovModelError(err_msg)
-#
-#     # Prevent calculation if covariance model is not stationary
-#     if not cov_model.is_stationary():
-#         err_msg = f'{fname}: `cov_model` is not stationary: fit cannot be applied'
-#         raise CovModelError(err_msg)
-#
-#     # Work on a (deep) copy of cov_model
-#     cov_model_opt = copy.deepcopy(cov_model)
-#
-#     # Get index of element, key of parameters and index of range to fit
-#     ielem_to_fit=[]
-#     key_to_fit=[]
-#     ir_to_fit=[] # if key is equal to 'r' (range), set the index of the range to fit, otherwise set np.nan
-#     for i, el in enumerate(cov_model_opt.elem):
-#         for k, val in el[1].items():
-#             if k == 'r':
-#                 for j in (0, 1, 2):
-#                     if np.isnan(val[j]):
-#                         ielem_to_fit.append(i)
-#                         key_to_fit.append(k)
-#                         ir_to_fit.append(j)
-#             elif np.isnan(val):
-#                 ielem_to_fit.append(i)
-#                 key_to_fit.append(k)
-#                 ir_to_fit.append(np.nan)
-#
-#     # Is angle alpha, beta, gamma must be fit ?
-#     alpha_to_fit = np.isnan(cov_model_opt.alpha)
-#     beta_to_fit  = np.isnan(cov_model_opt.beta)
-#     gamma_to_fit = np.isnan(cov_model_opt.gamma)
-#
-#     nparam = len(ielem_to_fit) + int(alpha_to_fit) + int(beta_to_fit) + int(gamma_to_fit)
-#     if nparam == 0:
-#         # print('No parameter to fit!')
-#         return cov_model_opt, np.array([])
-#
-#     # Set hmax as an array of shape (2,)
-#     hmax = np.atleast_1d(hmax).astype('float').reshape(-1) # None are converted to nan
-#     hmax[np.isnan(hmax)] = np.inf # convert nan to inf
-#     if hmax.size == 1:
-#         hmax = np.array([hmax[0], hmax[0], hmax[0]])
-#     elif hmax.size != 3:
-#         err_msg = f'{fname}: size of `hmax` is not valid'
-#         raise CovModelError(err_msg)
-#
-#     a = alpha_to_fit + beta_to_fit + gamma_to_fit
-#     if a == 1:
-#         if alpha_to_fit:
-#             if hmax[0] != hmax[1] and verbose > 0:
-#                 print(f'{fname}: WARNING: as alpha angle (only) is flagged for fitting, `hmax[0]` and `hmax[1]` should be equal')
-#         elif beta_to_fit:
-#             if hmax[1] != hmax[2] and verbose > 0:
-#                 print(f'{fname}: WARNING: as beta angle (only) is flagged for fitting, `hmax[1]` and `hmax[2]` should be equal')
-#         elif gamma_to_fit:
-#             if hmax[0] != hmax[2] and verbose > 0:
-#                 print(f'{fname}: WARNING: as beta angle (only) is flagged for fitting, `hmax[0]` and `hmax[2]` should be equal')
-#     elif a > 0:
-#         if hmax[0] != hmax[2] or hmax[0] != hmax[1] or hmax[1] != hmax[2] and verbose > 0:
-#             print(f'{fname}: WARNING: as (at least two) angles are flagged for fitting, all the components of `hmax` should be equal')
-#
-#     if not alpha_to_fit and not beta_to_fit and not gamma_to_fit \
-#             and (cov_model_opt.alpha != 0.0 or cov_model_opt.beta != 0.0 or cov_model_opt.gamma != 0.0):
-#         alpha_copy = cov_model_opt.alpha
-#         beta_copy = cov_model_opt.beta
-#         gamma_copy = cov_model_opt.gamma
-#         rotate_coord_sys = True
-#         mrot = cov_model_opt.mrot()
-#         cov_model_opt.alpha = 0.0 # set (temporarily) to 0.0
-#         cov_model_opt.beta = 0.0 # set (temporarily) to 0.0
-#         cov_model_opt.gamma = 0.0 # set (temporarily) to 0.0
-#     else:
-#         rotate_coord_sys = False
-#
-#     # Set types of local transformations
-#     #    alpha_loc: True / False: is local angle alpha used ?
-#     #    beta_loc : True / False: is local angle beta used ?
-#     #    gamma_loc: True / False: is local angle gamma used ?
-#     #    rotation_loc: True / False: is local rotation used ?
-#     #    w_loc:     True / False: is local w (weight / sill) used ?
-#     #    coord_loc: integer
-#     #               0: no transformation
-#     #               1: transformation for 1st coordinate only
-#     #               2: transformation for 2nd coordinate only
-#     #               3: distinct transformations for 1st and 2nd coordinates, no transformation for 3rd coordinate
-#     #               4: transformation for 3rd coordinate only
-#     #               5: distinct transformations for 1st and 3rd coordinates, no transformation for 2nd coordinate
-#     #               6: distinct transformations for 2nd and 3rd coordinates, no transformation for 1st coordinate
-#     #               7: distinct transformations for 1st, 2nd and 3rd coordinates
-#     #               8: same transformation for 1st, 2nd and 3rd coordinates
-#     #               9: same transformation for 1st and 2nd coordinates, no transformation for 3rd coordinate
-#     #              10: same transformation for 1st and 3rd coordinates, no transformation for 2nd coordinate
-#     #              11: same transformation for 2nd and 3rd coordinates, no transformation for 1st coordinate
-#     #              12: same transformation for 1st and 2nd coordinates, distinct transformation for 3rd coordinate
-#     #              13: same transformation for 1st and 3rd coordinates, distinct transformation for 2nd coordinate
-#     #              14: same transformation for 2nd and 3rd coordinates, distinct transformation for 1st coordinate
-#     alpha_loc = False
-#     beta_loc = False
-#     gamma_loc = False
-#     rotation_loc = False
-#     w_loc = False
-#     coord_loc = 0
-#     if alpha_loc_func is not None:
-#         alpha_loc = True
-#         rotation_loc = True
-#     if beta_loc_func is not None:
-#         beta_loc = True
-#         rotation_loc = True
-#     if gamma_loc_func is not None:
-#         gamma_loc = True
-#         rotation_loc = True
-#
-#     if rotation_loc:
-#         # factor to transform angle in degree into radian
-#         t_angle = np.pi/180.0
-#
-#     if w_factor_loc_func is not None:
-#         w_loc = True
-#
-#     if coord1_factor_loc_func is not None:
-#         coord_loc = coord_loc + 1
-#     if coord2_factor_loc_func is not None:
-#         coord_loc = coord_loc + 2
-#     if coord3_factor_loc_func is not None:
-#         coord_loc = coord_loc + 4
-#     if coord_loc == 3:
-#         if coord1_factor_loc_func == coord2_factor_loc_func:
-#             coord_loc = 9
-#     elif coord_loc == 5:
-#         if coord1_factor_loc_func == coord3_factor_loc_func:
-#             coord_loc = 10
-#     elif coord_loc == 6:
-#         if coord2_factor_loc_func == coord3_factor_loc_func:
-#             coord_loc = 11
-#     elif coord_loc == 7:
-#         if coord1_factor_loc_func == coord2_factor_loc_func and coord1_factor_loc_func == coord3_factor_loc_func:
-#             coord_loc = 8
-#         elif coord1_factor_loc_func == coord2_factor_loc_func:
-#             coord_loc = 12
-#         elif coord1_factor_loc_func == coord3_factor_loc_func:
-#             coord_loc = 13
-#         elif coord2_factor_loc_func == coord3_factor_loc_func:
-#             coord_loc = 14
-#
-#     if alpha_loc or beta_loc or gamma_loc or w_loc or coord_loc > 0:
-#         transform_flag = True
-#     else:
-#         transform_flag = False
-#
-#     # Compute lag vector (h) and gamma value (g) for pair of points with distance less than or equal to hmax
-#     n = x.shape[0] # number of points
-#     if np.all(np.isinf(hmax)):
-#         # Consider all pairs of points
-#         npair = int(0.5*(n-1)*n)
-#         h = np.zeros((npair, 3))
-#         g = np.zeros(npair)
-#         j = 0
-#         if transform_flag:
-#             wf = 1.0 # default weight factor
-#             if loc_m > 0:
-#                 for i in range(n-1):
-#                     jj = n-1-i
-#                     d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
-#                     dx = d/loc_m
-#                     ddx = np.asarray([x[i]+np.outer(np.arange(loc_m+1), dxk) for dxk in dx]) # 3-dimensional array (n-1-i) x (loc_m+1) x dim
-#                     if rotate_coord_sys:
-#                         # Rotate according to new system
-#                         d = d.dot(mrot)
-#                     if rotation_loc:
-#                         if alpha_loc:
-#                             a = t_angle * alpha_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
-#                             # a = t_angle * np.asarray([alpha_loc_func(ddxk) for ddxk in ddx])
-#                             ca, sa = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
-#                         else:
-#                             ca, sa = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         if beta_loc:
-#                             a = t_angle * beta_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
-#                             # a = t_angle * np.asarray([beta_loc_func(ddxk) for ddxk in ddx])
-#                             cb, sb = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
-#                         else:
-#                             cb, sb = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         if gamma_loc:
-#                             a = t_angle * gamma_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
-#                             # a = t_angle * np.asarray([gamma_loc_func(ddxk) for ddxk in ddx])
-#                             cc, sc = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
-#                         else:
-#                             cc, sc = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         d = np.asarray([dk.dot(np.array(
-#                                         [[  cak * cck + sak * sbk * sck,  sak * cbk, - cak * sck + sak * sbk * cck],
-#                                          [- sak * cck + cak * sbk * sck,  cak * cbk,   sak * sck + cak * sbk * cck],
-#                                          [                    cbk * sck,      - sbk,                     cbk * cck]]))
-#                                      for (cak, sak, cbk, sbk, cck, sck, dk) in zip (ca, sa, cb, sb, cc, sc, d)])
-#                         # d = np.asarray([np.array(
-#                         #                 [[  cak * cck + sak * sbk * sck,  - sak * cck + cak * sbk * sck,  cbk * sck],
-#                         #                  [                    sak * cbk,                      cak * cbk,      - sbk],
-#                         #                  [- cak * sck + sak * sbk * cck,    sak * sck + cak * sbk * cck,  cbk * cck]]).dot(dk)
-#                         #              for (cak, sak, cbk, sbk, cck, sck, dk) in zip (ca, sa, cb, sb, cc, sc, d)])
-#                     if coord_loc == 1:
-#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
-#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
-#                     elif coord_loc == 2:
-#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
-#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
-#                     elif coord_loc == 3:
-#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
-#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
-#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
-#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
-#                     elif coord_loc == 4:
-#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
-#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
-#                     elif coord_loc == 5:
-#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
-#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
-#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
-#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
-#                     elif coord_loc == 6:
-#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
-#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
-#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
-#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
-#                     elif coord_loc == 7:
-#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
-#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
-#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
-#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
-#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
-#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
-#                     elif coord_loc == 8:
-#                         d = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d.T).T
-#                         # d = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d.T).T
-#                     elif coord_loc == 9:
-#                         d[:, (0, 1)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 1)].T).T
-#                         # d[:, (0, 1)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 1)].T).T
-#                     elif coord_loc == 10:
-#                         d[:, (0, 2)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 2)].T).T
-#                         # d[:, (0, 2)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 2)].T).T
-#                     elif coord_loc == 11:
-#                         d[:, (1, 2)] = (np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (1, 2)].T).T
-#                         # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
-#                     elif coord_loc == 12:
-#                         d[:, (0, 1)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 1)].T).T
-#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
-#                         # d[:, (0, 1)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 1)].T).T
-#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
-#                     elif coord_loc == 13:
-#                         d[:, (0, 2)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 2)].T).T
-#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
-#                         # d[:, (0, 2)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 2)].T).T
-#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
-#                     elif coord_loc == 14:
-#                         d[:, (1, 2)] = (np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (1, 2)].T).T
-#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
-#                         # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
-#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
-#                     h[j:(j+jj),:] = d
-#                     if w_loc:
-#                         wf = np.mean(w_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)
-#                         # wf = np.asarray([np.mean(w_factor_loc_func(ddxk)) for ddxk in ddx])
-#                     g[j:(j+jj)] = wf * 0.5*(v[i] - v[(i+1):])**2
-#                     j = j+jj
-#             else:
-#                 for i in range(n-1):
-#                     jj = n-1-i
-#                     d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
-#                     if rotate_coord_sys:
-#                         # Rotate according to new system
-#                         d = d.dot(mrot)
-#                     if rotation_loc:
-#                         if alpha_loc:
-#                             a = t_angle * alpha_loc_func(x[i])[0]
-#                             ca, sa = np.cos(a), np.sin(a)
-#                         else:
-#                             ca, sa = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         if beta_loc:
-#                             a = t_angle * beta_loc_func(x[i])[0]
-#                             cb, sb = np.cos(a), np.sin(a)
-#                         else:
-#                             cb, sb = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         if gamma_loc:
-#                             a = t_angle * gamma_loc_func(x[i])[0]
-#                             cc, sc = np.cos(a), np.sin(a)
-#                         else:
-#                             cc, sc = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         d = d.dot(np.array(
-#                                 [[  ca * cc + sa * sb * sc,  sa * cb, - ca * sc + sa * sb * cc],
-#                                  [- sa * cc + ca * sb * sc,  ca * cb,   sa * sc + ca * sb * cc],
-#                                  [                 cb * sc,     - sb,                  cb * cc]]))
-#                     if coord_loc == 1:
-#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
-#                     elif coord_loc == 2:
-#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
-#                     elif coord_loc == 3:
-#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
-#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
-#                     elif coord_loc == 4:
-#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
-#                     elif coord_loc == 5:
-#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
-#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
-#                     elif coord_loc == 6:
-#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
-#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
-#                     elif coord_loc == 7:
-#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
-#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
-#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
-#                     elif coord_loc == 8:
-#                         d = coord1_factor_loc_func(x[i])[0]*d
-#                     elif coord_loc == 9:
-#                         d[:, (0, 1)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 1)]
-#                     elif coord_loc == 10:
-#                         d[:, (0, 2)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 2)]
-#                     elif coord_loc == 11:
-#                         d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
-#                     elif coord_loc == 12:
-#                         d[:, (0, 1)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 1)]
-#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
-#                     elif coord_loc == 13:
-#                         d[:, (0, 2)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 2)]
-#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
-#                     elif coord_loc == 14:
-#                         d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
-#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
-#                     h[j:(j+jj),:] = d
-#                     if w_loc:
-#                         wf = w_factor_loc_func(x[i])[0]
-#                     g[j:(j+jj)] = wf * 0.5*(v[i] - v[(i+1):])**2
-#                     j = j+jj
-#         else:
-#             if rotate_coord_sys:
-#                 # Rotate according to new system
-#                 x = x.dot(mrot)
-#             for i in range(n-1):
-#                 jj = n-1-i
-#                 d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
-#                 h[j:(j+jj),:] = d
-#                 g[j:(j+jj)] = 0.5*(v[i] - v[(i+1):])**2
-#                 j = j+jj
-#     else:
-#         # Consider only pairs of points according to parameter hmax, i.e.
-#         #   pairs with lag h (in rotated coordinates system if applied) satisfying
-#         #   (h[0]/hmax[0])**2 + (h[1]/hmax[1])**2 + (h[2]/hmax[2])**2 <= 1
-#         h, g = [], []
-#         npair = 0
-#         if transform_flag:
-#             wf = 1.0 # default weight factor
-#             if loc_m > 0:
-#                 for i in range(n-1):
-#                     jj = n-1-i
-#                     d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
-#                     dx = d/loc_m
-#                     ddx = np.asarray([x[i]+np.outer(np.arange(loc_m+1), dxk) for dxk in dx]) # 3-dimensional array (n-1-i) x (loc_m+1) x dim
-#                     if rotate_coord_sys:
-#                         # Rotate according to new system
-#                         d = d.dot(mrot)
-#                     if rotation_loc:
-#                         if alpha_loc:
-#                             a = t_angle * alpha_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
-#                             # a = t_angle * np.asarray([alpha_loc_func(ddxk) for ddxk in ddx])
-#                             ca, sa = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
-#                         else:
-#                             ca, sa = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         if beta_loc:
-#                             a = t_angle * beta_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
-#                             # a = t_angle * np.asarray([beta_loc_func(ddxk) for ddxk in ddx])
-#                             cb, sb = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
-#                         else:
-#                             cb, sb = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         if gamma_loc:
-#                             a = t_angle * gamma_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1) # 2-dimensional array (n-1-i) x (loc_m+1)
-#                             # a = t_angle * np.asarray([gamma_loc_func(ddxk) for ddxk in ddx])
-#                             cc, sc = np.mean(np.cos(a), axis=1), np.mean(np.sin(a), axis=1)
-#                         else:
-#                             cc, sc = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         d = np.asarray([dk.dot(np.array(
-#                                         [[  cak * cck + sak * sbk * sck,  sak * cbk, - cak * sck + sak * sbk * cck],
-#                                          [- sak * cck + cak * sbk * sck,  cak * cbk,   sak * sck + cak * sbk * cck],
-#                                          [                    cbk * sck,      - sbk,                     cbk * cck]]))
-#                                      for (cak, sak, cbk, sbk, cck, sck, dk) in zip (ca, sa, cb, sb, cc, sc, d)])
-#                         # d = np.asarray([np.array(
-#                         #                 [[  cak * cck + sak * sbk * sck,  - sak * cck + cak * sbk * sck,  cbk * sck],
-#                         #                  [                    sak * cbk,                      cak * cbk,      - sbk],
-#                         #                  [- cak * sck + sak * sbk * cck,    sak * sck + cak * sbk * cck,  cbk * cck]]).dot(dk)
-#                         #              for (cak, sak, cbk, sbk, cck, sck, dk) in zip (ca, sa, cb, sb, cc, sc, d)])
-#                     if coord_loc == 1:
-#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
-#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
-#                     elif coord_loc == 2:
-#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
-#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
-#                     elif coord_loc == 3:
-#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
-#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
-#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
-#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
-#                     elif coord_loc == 4:
-#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
-#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
-#                     elif coord_loc == 5:
-#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
-#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
-#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
-#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
-#                     elif coord_loc == 6:
-#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
-#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
-#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
-#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
-#                     elif coord_loc == 7:
-#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
-#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
-#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
-#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
-#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
-#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
-#                     elif coord_loc == 8:
-#                         d = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d.T).T
-#                         # d = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d.T).T
-#                     elif coord_loc == 9:
-#                         d[:, (0, 1)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 1)].T).T
-#                         # d[:, (0, 1)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 1)].T).T
-#                     elif coord_loc == 10:
-#                         d[:, (0, 2)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 2)].T).T
-#                         # d[:, (0, 2)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 2)].T).T
-#                     elif coord_loc == 11:
-#                         d[:, (1, 2)] = (np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (1, 2)].T).T
-#                         # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
-#                     elif coord_loc == 12:
-#                         d[:, (0, 1)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 1)].T).T
-#                         d[:, 2] = np.mean(coord3_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 2]
-#                         # d[:, (0, 1)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 1)].T).T
-#                         # d[:, 2] = np.asarray([np.mean(coord3_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 2]
-#                     elif coord_loc == 13:
-#                         d[:, (0, 2)] = (np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (0, 2)].T).T
-#                         d[:, 1] = np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 1]
-#                         # d[:, (0, 2)] = (np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (0, 2)].T).T
-#                         # d[:, 1] = np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 1]
-#                     elif coord_loc == 14:
-#                         d[:, (1, 2)] = (np.mean(coord2_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, (1, 2)].T).T
-#                         d[:, 0] = np.mean(coord1_factor_loc_func(ddx.reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)*d[:, 0]
-#                         # d[:, (1, 2)] = (np.asarray([np.mean(coord2_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, (1, 2)].T).T
-#                         # d[:, 0] = np.asarray([np.mean(coord1_factor_loc_func(ddxk)) for ddxk in ddx])*d[:, 0]
-#                     ind = np.where(np.sum((d/hmax)**2, axis=1) <= 1.0)[0]
-#                     if len(ind) == 0:
-#                         continue
-#                     h.append(d[ind])
-#                     if w_loc:
-#                         wf = np.mean(w_factor_loc_func(ddx[ind].reshape(-1, 3)).reshape(-1, loc_m+1), axis=1)
-#                         # wf = np.asarray([np.mean(w_factor_loc_func(ddxk)) for ddxk in ddx[ind]])
-#                     g.append(wf * 0.5*(v[i] - v[i+1+ind])**2)
-#                     npair = npair + len(ind)
-#             else:
-#                 for i in range(n-1):
-#                     jj = n-1-i
-#                     d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
-#                     if rotate_coord_sys:
-#                         # Rotate according to new system
-#                         d = d.dot(mrot)
-#                     if rotation_loc:
-#                         if alpha_loc:
-#                             a = t_angle * alpha_loc_func(x[i])[0]
-#                             ca, sa = np.cos(a), np.sin(a)
-#                         else:
-#                             ca, sa = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         if beta_loc:
-#                             a = t_angle * beta_loc_func(x[i])[0]
-#                             cb, sb = np.cos(a), np.sin(a)
-#                         else:
-#                             cb, sb = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         if gamma_loc:
-#                             a = t_angle * gamma_loc_func(x[i])[0]
-#                             cc, sc = np.cos(a), np.sin(a)
-#                         else:
-#                             cc, sc = np.ones(d.shape[0]), np.zeros(d.shape[0])
-#                         d = d.dot(np.array(
-#                                 [[  ca * cc + sa * sb * sc,  sa * cb, - ca * sc + sa * sb * cc],
-#                                  [- sa * cc + ca * sb * sc,  ca * cb,   sa * sc + ca * sb * cc],
-#                                  [                 cb * sc,     - sb,                  cb * cc]]))
-#                     if coord_loc == 1:
-#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
-#                     elif coord_loc == 2:
-#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
-#                     elif coord_loc == 3:
-#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
-#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
-#                     elif coord_loc == 4:
-#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
-#                     elif coord_loc == 5:
-#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
-#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
-#                     elif coord_loc == 6:
-#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
-#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
-#                     elif coord_loc == 7:
-#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
-#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
-#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
-#                     elif coord_loc == 8:
-#                         d = coord1_factor_loc_func(x[i])[0]*d
-#                     elif coord_loc == 9:
-#                         d[:, (0, 1)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 1)]
-#                     elif coord_loc == 10:
-#                         d[:, (0, 2)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 2)]
-#                     elif coord_loc == 11:
-#                         d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
-#                     elif coord_loc == 12:
-#                         d[:, (0, 1)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 1)]
-#                         d[:, 2] = coord3_factor_loc_func(x[i])[0]*d[:, 2]
-#                     elif coord_loc == 13:
-#                         d[:, (0, 2)] = coord1_factor_loc_func(x[i])[0]*d[:, (0, 2)]
-#                         d[:, 1] = coord2_factor_loc_func(x[i])[0]*d[:, 1]
-#                     elif coord_loc == 14:
-#                         d[:, (1, 2)] = coord2_factor_loc_func(x[i])[0]*d[:, (1, 2)]
-#                         d[:, 0] = coord1_factor_loc_func(x[i])[0]*d[:, 0]
-#                     ind = np.where(np.sum((d/hmax)**2, axis=1) <= 1.0)[0]
-#                     if len(ind) == 0:
-#                         continue
-#                     h.append(d[ind])
-#                     if w_loc:
-#                         wf = w_factor_loc_func(x[i])[0]
-#                     g.append(wf * 0.5*(v[i] - v[i+1+ind])**2)
-#                     npair = npair + len(ind)
-#         else:
-#             if rotate_coord_sys:
-#                 # Rotate according to new system
-#                 x = x.dot(mrot)
-#             for i in range(n-1):
-#                 d = x[(i+1):] - x[i] # 2-dimensional array (n-1-i) x dim
-#                 ind = np.where(np.sum((d/hmax)**2, axis=1) <= 1.0)[0]
-#                 if len(ind) == 0:
-#                     continue
-#                 h.append(d[ind])
-#                 g.append(0.5*(v[i] - v[i+1+ind])**2)
-#                 npair = npair + len(ind)
-#         if npair > 0:
-#             h = np.vstack(h)
-#             g = np.hstack(g)
-#
-#     if npair == 0:
-#         err_msg = f'{fname}: no pair of points (in variogram cloud) for fitting'
-#         raise CovModelError(err_msg)
-#         # print('No point to fit!')
-#         # return cov_model_opt, np.nan * np.ones(nparam)
-#
-#     # Defines the function to optimize in a format compatible with curve_fit from scipy.optimize
-#     def func(d, *p):
-#         """
-#         Function whose p is the vector of parameters to optimize.
-#
-#         Parameters
-#         ----------
-#         d : 1D array
-#             xdata, i.e. lags (h) from the variogram cloud where the current
-#             covariance model is evaluated
-#
-#         p : 1D array
-#             current values of the parameters (floats) to optimize in the
-#             covariance model (parameters to optimized are identified with
-#             ielem_to_fit, key_to_fit, computed above)
-#
-#         Returns
-#         -------
-#         v: 1D array
-#             evaluations of the current variogram model at `d`
-#         """
-#         for i, (iel, k, j) in enumerate(zip(ielem_to_fit, key_to_fit, ir_to_fit)):
-#             if k == 'r':
-#                 cov_model_opt.elem[iel][1]['r'][j] = p[i]
-#             else:
-#                 cov_model_opt.elem[iel][1][k] = p[i]
-#         if alpha_to_fit:
-#             cov_model_opt.alpha = p[-1-int(beta_to_fit)-int(gamma_to_fit)]
-#             cov_model_opt._mrot = None # reset attribute _mrot !
-#         if beta_to_fit:
-#             cov_model_opt.beta = p[-1-int(gamma_to_fit)]
-#             cov_model_opt._mrot = None # reset attribute _mrot !
-#         if gamma_to_fit:
-#             cov_model_opt.gamma = p[-1]
-#             cov_model_opt._mrot = None # reset attribute _mrot !
-#         return cov_model_opt(d, vario=True)
-#
-#     # Optimize parameters with curve_fit: initial vector of parameters (p0) must be given
-#     #   because number of parameter to fit in function func is not known in its expression
-#     bounds = None
-#     if 'bounds' in kwargs.keys():
-#         bounds = kwargs['bounds']
-#
-#     if 'p0' not in kwargs.keys():
-#         # add default p0 in kwargs
-#         p0 = np.ones(nparam)
-#         if bounds is not None:
-#             # adjust p0 to given bounds
-#             for i in range(nparam):
-#                 if np.isinf(bounds[0][i]):
-#                     if np.isinf(bounds[1][i]):
-#                         p0[i] = 1.
-#                     else:
-#                         p0[i] = bounds[1][i]
-#                 elif np.isinf(bounds[1][i]):
-#                     p0[i] = bounds[0][i]
-#                 else:
-#                     p0[i] = 0.5*(bounds[0][i]+bounds[1][i])
-#         kwargs['p0'] = p0
-#     else:
-#         if len(kwargs['p0']) != nparam:
-#             err_msg = f'{fname}: length of `p0` and number of parameters to fit differ'
-#             raise CovModelError(err_msg)
-#
-#     # Fit with curve_fit
-#     try:
-#         popt, pcov = scipy.optimize.curve_fit(func, h, g, **kwargs)
-#         if rotate_coord_sys:
-#             # Restore alpha, beta, gamma
-#             cov_model_opt.alpha = alpha_copy
-#             cov_model_opt.beta = beta_copy
-#             cov_model_opt.gamma = gamma_copy
-#     except:
-#         err_msg = f'{fname}: fitting covariance model failed'
-#         raise CovModelError(err_msg)
-#         # print('Curve fit failed!')
-#         # if rotate_coord_sys:
-#         #     # Restore alpha, beta, gamma
-#         #     cov_model_opt.alpha = alpha_copy
-#         #     cov_model_opt.beta = beta_copy
-#         #     cov_model_opt.gamma = gamma_copy
-#         # return cov_model_opt, np.nan * np.ones(nparam)
-#
-#     if make_plot:
-#         # plt.suptitle(textwrap.TextWrapper(width=50).fill(s))
-#         s = [f'Vario opt.: alpha={cov_model_opt.alpha}, beta={cov_model_opt.beta}, gamma={cov_model_opt.gamma}'] + [f'{el}' for el in cov_model_opt.elem]
-#         cov_model_opt.plot_model3d_volume(vario=True, text='\n'.join(s), text_kwargs={'font_size':12})
-#
-#     return cov_model_opt, popt
-# # ----------------------------------------------------------------------------
+# ============================================================================
+# Utility function
+# ============================================================================
+# ----------------------------------------------------------------------------
+def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=1.e-5, logger=None):
+    """
+    Computes a central value and an error standard deviation from an ensemble of values.
+
+    Given an ensemble of values `v`, a lower bound `v_min` and/or an upper 
+    bound `v_max`, the central value `v_mean` is set to:
+    
+    - the mean of values `v` that are within the bounds
+    - or, if no value is within the bounds: the mean of the two bounds if \
+    both bounds are given, or the value of the unique given bound plus \
+    (resp. minus) `def_shift` if only the lower bound (`v_min`) (resp. \
+    upper bound (`v_max`)) is given, or zero if no bound is given
+
+    Then, the error standard deviation `v_err_std` is set such that
+    the Gaussian distribution of mean `v_mean` and standard deviation 
+    `v_err_std` has a probability `p/2` at least to be between `v_mean` and 
+    the lower bound (`v_min`), resp. between `v_mean` and the upper bound
+    `v_max`. If no bound is given, `v_err_std` is set to the standard deviation 
+    of the values `v`.
+    
+    Parameters
+    ----------
+    v : 1D array-like of floats
+        values
+    
+    v_min : float, default: numpy.nan
+        lower bound (if not given or `numpy.nan`: no lower bound)
+    
+    v_max : float, default: numpy.nan
+        upper bound (if not given or `numpy.nan`: no upper bound)
+    
+    p : float, default: 0.95
+        probability used to set the output error standard deviation 
+        (see above)
+
+    def_shift : float, default: 1.e-5
+        shift used to set the output central value if no value is within
+        the bounds and only one bound is given (see above)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+    
+    Returns
+    -------
+    v_mean : float
+        central value (see above)
+    
+    v_err_std : float
+        error standard deviation (see above)
+    """
+    fname = 'values_to_mean_and_err_std'
+
+    if v is None:
+        err_msg = f'{fname}: `v` is None'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+    if len(v) == 0:
+        err_msg = f'{fname}: `v` has no value'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    if v_min is None or np.isnan(v_min):
+        v_min = -np.inf
+
+    if v_max is None or np.isnan(v_max):
+        v_max = np.inf    
+    
+    if v_min >= v_max:
+        err_msg = f'{fname}: `v_min` should be less than `v_max`'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+    
+    t = scipy.stats.norm.ppf((1.0+p)/2.0)
+
+    if np.isinf(v_min):
+        if np.isinf(v_max):
+            # no lower bound, no upper bound
+            v_mean = np.mean(v)
+            v_err_std = np.std(v)
+
+        else:
+            # only upper bound
+            ind = v <= v_max
+            if len(ind):
+                v_mean = np.mean(v[ind])
+            else:
+                v_mean = v_max - def_shift
+            v_err_std = (v_max - v_mean) / t
+
+    else:
+        if np.isinf(v_max):
+            # only lower bound
+            ind = v >= v_min
+            if len(ind):
+                v_mean = np.mean(v[ind])
+            else:
+                v_mean = v_min + def_shift
+            v_err_std = (v_mean - v_min) / t
+
+        else:
+            # lower bound and upper bound
+            ind = np.all((v >= v_min, v <= v_max), axis=0)
+            if len(ind):
+                v_mean = np.mean(v[ind])
+            else:
+                v_mean = 0.5 *(v_min + v_max)
+            v_err_std = min(v_mean - v_min, v_max - v_mean) / t
+
+    return v_mean, v_err_std
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def eval_at_points_1D(f, pts, nx, sx, ox, return_float_if_unique=True, logger=None):
+    """
+    Evaluates `f` at points - 1D.
+
+    Parameters
+    ----------
+    f : function (callable), or array-like of floats, or float
+        function or value(s) in grid in input:
+
+        - if a function: function of 1 argument that returns a value for each location \
+        given by their coordinate in argument
+        - if array-like: its size must be equal to the number of grid cells \
+        (the array is reshaped if needed), values at grid cells; note the shape of the \
+        array is `(nx,)`
+        - if a float: same value at every grid cell
+            
+    pts : 2D array of floats of shape (n, 1)
+        points at which the input fuction or value(s) has to be interpolated
+
+    nx : int
+        number of grid cells along x axis
+
+    sx : float
+        cell size along x axis
+
+    ox : float
+        origin of the grid along x axis (x coordinate of cell border)
+
+        Note: `(ox, )` is the "bottom-lower-left" corner of the grid
+    
+    return_float_if_unique : bool, default: True
+        if `True` and if all output values are identical, then a float 
+        (the unique output value) is returned; 
+        otherwise: an array of shape `(n,)` is returned
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+    
+    Returns
+    -------
+    f_pts : array of floats, or float
+        array of output values at point `pts` of shape `(n,)`;
+        if `return_float_if_unique=True` and if all output values are identical, 
+        then a float (the unique output value) is returned
+    """
+    fname = 'eval_at_points_1D'
+
+    if f is None:
+        f_pts = None
+
+    elif callable(f):
+        f_pts = f(pts[:, 0])
+        if return_float_if_unique and np.allclose(f_pts, f_pts[0]):
+            f_pts = f_pts[0]
+
+    else:
+        f_grid = np.asarray(f, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if f_grid.size == 1:
+            if return_float_if_unique:
+                f_pts = f_grid[0]
+            else:
+                f_pts = f_grid[0] * np.ones(pts.shape[0])
+        
+        elif f_grid.size == nx:
+            f_pts = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1.0, 1.0, ox, 0.0, 0.0, nv=1, val=f_grid, logger=logger), iy=0, iz=0, logger=logger)(pts)
+            if return_float_if_unique and np.allclose(f_pts, f_pts[0]):
+                f_pts = f_pts[0]
+        else:
+            err_msg = f'{fname}: size of `f` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+            
+    return f_pts
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def eval_at_points_2D(f, pts, nx, ny, sx, sy, ox, oy, return_float_if_unique=True, logger=None):
+    """
+    Evaluates `f` at points - 2D.
+
+    Parameters
+    ----------
+    f : function (callable), or array-like of floats, or float
+        function or value(s) in grid in input:
+
+        - if a function: function of 2 arguments that returns a value for each location \
+        given by their coordinates in argument
+        - if array-like: its size must be equal to the number of grid cells \
+        (the array is reshaped if needed), values at grid cells; note the shape of the \
+        array is `(ny, nx)`
+        - if a float: same value at every grid cell
+            
+    pts : 2D array of floats of shape (n, 2)
+        points at which the input fuction or value(s) has to be interpolated
+
+    nx : int
+        number of grid cells along x axis
+
+    ny : int
+        number of grid cells along y axis
+
+    sx : float
+        cell size along x axis
+
+    sy : float
+        cell size along y axis
+
+    ox : float
+        origin of the grid along x axis (x coordinate of cell border)
+
+    oy : float
+        origin of the grid along y axis (y coordinate of cell border)
+
+        Note: `(ox, oy)` is the "bottom-lower-left" corner of the grid
+    
+    return_float_if_unique : bool, default: True
+        if `True` and if all output values are identical, then a float 
+        (the unique output value) is returned; 
+        otherwise: an array of shape `(n,)` is returned
+    
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Returns
+    -------
+    f_pts : array of floats, or float
+        array of output values at point `pts` of shape `(n,)`;
+        if `return_float_if_unique=True` and if all output values are identical, 
+        then a float (the unique output value) is returned
+    """
+    fname = 'eval_at_points_2D'
+
+    if f is None:
+        f_pts = None
+
+    elif callable(f):
+        f_pts = f(*pts.T)
+        if return_float_if_unique and np.allclose(f_pts, f_pts[0]):
+            f_pts = f_pts[0]
+
+    else:
+        f_grid = np.asarray(f, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if f_grid.size == 1:
+            if return_float_if_unique:
+                f_pts = f_grid[0]
+            else:
+                f_pts = f_grid[0] * np.ones(pts.shape[0])
+        
+        elif f_grid.size == nx*ny:
+            f_pts = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1.0, ox, oy, 0.0, nv=1, val=f_grid, logger=logger), iz=0, logger=logger)(pts)
+            if return_float_if_unique and np.allclose(f_pts, f_pts[0]):
+                f_pts = f_pts[0]
+        else:
+            err_msg = f'{fname}: size of `f` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+            
+    return f_pts
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def eval_at_points_3D(f, pts, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=None):
+    """
+    Evaluates `f` at points - 3D.
+
+    Parameters
+    ----------
+    f : function (callable), or array-like of floats, or float
+        function or value(s) in grid in input:
+
+        - if a function: function of 3 arguments that returns a value for each location \
+        given by their coordinates in argument
+        - if array-like: its size must be equal to the number of grid cells \
+        (the array is reshaped if needed), values at grid cells; note the shape of the \
+        array is `(nz, ny, nx)`
+        - if a float: same value at every grid cell
+            
+    pts : 2D array of floats of shape (n, 3)
+        points at which the input fuction or value(s) has to be interpolated
+
+    nx : int
+        number of grid cells along x axis
+
+    ny : int
+        number of grid cells along y axis
+
+    nz : int
+        number of grid cells along z axis
+
+    sx : float
+        cell size along x axis
+
+    sy : float
+        cell size along y axis
+
+    sz : float
+        cell size along z axis
+
+    ox : float
+        origin of the grid along x axis (x coordinate of cell border)
+
+    oy : float
+        origin of the grid along y axis (y coordinate of cell border)
+
+    oz : float
+        origin of the grid along z axis (z coordinate of cell border)
+
+        Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
+    
+    return_float_if_unique : bool, default: True
+        if `True` and if all output values are identical, then a float 
+        (the unique output value) is returned; 
+        otherwise: an array of shape `(n,)` is returned
+    
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Returns
+    -------
+    f_pts : array of floats, or float
+        array of output values at point `pts` of shape `(n,)`;
+        if `return_float_if_unique=True` and if all output values are identical, 
+        then a float (the unique output value) is returned
+    """
+    fname = 'eval_at_points_3D'
+
+    if f is None:
+        f_pts = None
+
+    elif callable(f):
+        f_pts = f(*pts.T)
+        if return_float_if_unique and np.allclose(f_pts, f_pts[0]):
+            f_pts = f_pts[0]
+
+    else:
+        f_grid = np.asarray(f, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if f_grid.size == 1:
+            if return_float_if_unique:
+                f_pts = f_grid[0]
+            else:
+                f_pts = f_grid[0] * np.ones(pts.shape[0])
+        
+        elif f_grid.size == nx*ny*nz:
+            f_pts = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=f_grid, logger=logger), logger=logger)(pts)
+            if return_float_if_unique and np.allclose(f_pts, f_pts[0]):
+                f_pts = f_pts[0]
+        else:
+            err_msg = f'{fname}: size of `f` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+            
+    return f_pts
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def eval_in_grid_1D(f, nx, sx, ox, return_float_if_unique=True, logger=None):
+    """
+    Evaluates `f` in grid - 1D.
+
+    Parameters
+    ----------
+    f : function (callable), or array-like of floats, or float
+        function or value(s) in grid in input:
+
+        - if a function: function of 1 argument that returns a value for each location \
+        given by their coordinate in argument
+        - if array-like: its size must be equal to the number of grid cells \
+        (the array is reshaped if needed), values at grid cells; note the shape of the \
+        array is `(nx,)`
+        - if a float: same value at every grid cell
+            
+    nx : int
+        number of grid cells along x axis
+
+    sx : float
+        cell size along x axis
+
+    ox : float
+        origin of the grid along x axis (x coordinate of cell border)
+
+        Note: `(ox, )` is the "bottom-lower-left" corner of the grid
+       
+    return_float_if_unique : bool, default: True
+        if `True` and if all output values are identical, then a float 
+        (the unique output value) is returned; 
+        otherwise: an array of shape `(nx,)` is returned
+    
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Returns
+    -------
+    f_grid : array of floats, or float
+        array of output values in the grid (cell centers), of shape `(nx,)`,
+        `f_grid[ix]` is the value at the grid cell of index `ix` along x-axis;
+        if `return_float_if_unique=True` and if all output values are identical, 
+        then a float (the unique output value) is returned
+    """
+    fname = 'eval_in_grid_1D'
+
+    if f is None:
+        f_grid = None
+
+    elif callable(f):
+        xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+        f_grid = f(xi)
+        if return_float_if_unique and np.allclose(f_grid, f_grid[0]):
+            f_grid = f_grid[0]
+
+    else:
+        f_grid = np.asarray(f, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if f_grid.size == 1:
+            if return_float_if_unique:
+                f_grid = f_grid[0]
+            else:
+                f_grid = f_grid[0] * np.ones(nx)
+        elif f_grid.size == nx:
+            f_grid = f_grid.reshape(-1)
+            if return_float_if_unique and np.allclose(f_grid, f_grid[0]):
+                f_grid = f_grid[0]
+        else:
+            err_msg = f'{fname}: size of `f` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+            
+    return f_grid
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def eval_in_grid_2D(f, nx, ny, sx, sy, ox, oy, return_float_if_unique=True, logger=None):
+    """
+    Evaluates `f` in grid - 2D.
+
+    Parameters
+    ----------
+    f : function (callable), or array-like of floats, or float
+        function or value(s) in grid in input:
+
+        - if a function: function of 2 arguments that returns a value for each location \
+        given by their coordinates in argument
+        - if array-like: its size must be equal to the number of grid cells \
+        (the array is reshaped if needed), values at grid cells; note the shape of the \
+        array is `(ny, nx)`
+        - if a float: same value at every grid cell
+            
+    nx : int
+        number of grid cells along x axis
+
+    ny : int
+        number of grid cells along y axis
+
+    sx : float
+        cell size along x axis
+
+    sy : float
+        cell size along y axis
+
+    ox : float
+        origin of the grid along x axis (x coordinate of cell border)
+
+    oy : float
+        origin of the grid along y axis (y coordinate of cell border)
+
+        Note: `(ox, oy)` is the "bottom-lower-left" corner of the grid
+    
+    return_float_if_unique : bool, default: True
+        if `True` and if all output values are identical, then a float 
+        (the unique output value) is returned; 
+        otherwise: an array of shape `(ny, nx)` is returned
+    
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Returns
+    -------
+    f_grid : array of floats, or float
+        array of output values in the grid (cell centers), of shape `(ny, nx)`,
+        `f_grid[iy, ix]` is the value at the grid cell of 
+        indices `ix` along x-axis, `iy` along y-axis;
+        if `return_float_if_unique=True` and if all output values are identical, 
+        then a float (the unique output value) is returned
+    """
+    fname = 'eval_in_grid_2D'
+
+    if f is None:
+        f_grid = None
+
+    elif callable(f):
+        xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+        yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+        yyi, xxi = np.meshgrid(yi, xi, indexing='ij')
+        f_grid = f(xxi, yyi)
+        if return_float_if_unique and np.allclose(f_grid, f_grid[0, 0]):
+            f_grid = f_grid[0, 0]
+
+    else:
+        f_grid = np.asarray(f, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if f_grid.size == 1:
+            if return_float_if_unique:
+                f_grid = f_grid[0]
+            else:
+                f_grid = f_grid[0] * np.ones((ny, nx))
+        elif f_grid.size == nx*ny:
+            f_grid = f_grid.reshape(ny, nx)
+            if return_float_if_unique and np.allclose(f_grid, f_grid[0, 0]):
+                f_grid = f_grid[0, 0]
+        else:
+            err_msg = f'{fname}: size of `f` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+            
+    return f_grid
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def eval_in_grid_3D(f, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=None):
+    """
+    Evaluates `f` in grid - 3D.
+
+    Parameters
+    ----------
+    f : function (callable), or array-like of floats, or float
+        function or value(s) in grid in input:
+
+        - if a function: function of 3 arguments that returns a value for each location \
+        given by their coordinates in argument
+        - if array-like: its size must be equal to the number of grid cells \
+        (the array is reshaped if needed), values at grid cells; note the shape of the \
+        array is `(nz, ny, nx)`
+        - if a float: same value at every grid cell
+   
+    nx : int
+        number of grid cells along x axis
+
+    ny : int
+        number of grid cells along y axis
+
+    nz : int
+        number of grid cells along z axis
+
+    sx : float
+        cell size along x axis
+
+    sy : float
+        cell size along y axis
+
+    sz : float
+        cell size along z axis
+
+    ox : float
+        origin of the grid along x axis (x coordinate of cell border)
+
+    oy : float
+        origin of the grid along y axis (y coordinate of cell border)
+
+    oz : float
+        origin of the grid along z axis (z coordinate of cell border)
+
+        Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
+    
+    return_float_if_unique : bool, default: True
+        if `True` and if all output values are identical, then a float 
+        (the unique output value) is returned; 
+        otherwise: an array of shape `(nz, ny, nx)` is returned
+    
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Returns
+    -------
+    f_grid : array of floats, or float
+        array of output values in the grid (cell centers), of shape `(nz, ny, nx)`,
+        `f_grid[iz, iy, ix]` is the value at the grid cell of 
+        indices `ix` along x-axis, `iy` along y-axis, `iz` along z-axis;
+        if `return_float_if_unique=True` and if all output values are identical, 
+        then a float (the unique output value) is returned
+    """
+    fname = 'eval_in_grid_3D'
+
+    if f is None:
+        f_grid = None
+
+    elif callable(f):
+        xi = ox + sx*(0.5+np.arange(nx)) # x-coordinate of cell center
+        yi = oy + sy*(0.5+np.arange(ny)) # y-coordinate of cell center
+        zi = oz + sz*(0.5+np.arange(nz)) # z-coordinate of cell center
+        zzi, yyi, xxi = np.meshgrid(zi, yi, xi, indexing='ij')
+        f_grid = f(xxi, yyi, zzi)
+        if return_float_if_unique and np.allclose(f_grid, f_grid[0, 0, 0]):
+            f_grid = f_grid[0, 0, 0]
+
+    else:
+        f_grid = np.asarray(f, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if f_grid.size == 1:
+            if return_float_if_unique:
+                f_grid = f_grid[0]
+            else:
+                f_grid = f_grid[0] * np.ones((nz, ny, nx))
+        elif f_grid.size == nx*ny*nz:
+            f_grid = f_grid.reshape(nz, ny, nx)
+            if return_float_if_unique and np.allclose(f_grid, f_grid[0, 0, 0]):
+                f_grid = f_grid[0, 0, 0]
+        else:
+            err_msg = f'{fname}: size of `f` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+            
+    return f_grid
+# ----------------------------------------------------------------------------
 
 # ============================================================================
 # Simple and ordinary kriging and cross validation by leave-one-out (loo)
@@ -9825,7 +10040,8 @@ def covModel3D_fit(
 # ----------------------------------------------------------------------------
 def krige(
         x, v, xu, cov_model,
-        method='simple_kriging',
+        v_err_std=0.0,
+        method='ordinary_kriging',
         mean_x=None,
         mean_xu=None,
         var_x=None,
@@ -9833,10 +10049,14 @@ def krige(
         alpha_xu=None,
         beta_xu=None,
         gamma_xu=None,
+        cov_model_non_stationarity_xu_list=None,
         use_unique_neighborhood=False,
-        dmax=None,
+        searchRadius=None,
+        searchRadiusRelative=1.2,
         nneighborMax=12,
-        verbose=0):
+        pid=None,
+        verbose=0,
+        logger=None):
     """
     Interpolates data by kriging at given location(s).
 
@@ -9848,8 +10068,8 @@ def krige(
     x : 2D array of floats of shape (n, d)
         data points locations, with n the number of data points and d the space
         dimension (1, 2, or 3), each row of `x` is the coordinatates of one data
-        point; note: for data in 1D (`d=1`), 1D array of shape (n,) is accepted
-        for n data points
+        point; note: for data in 1D (`d=1`), 1D array of shape `(n,)` is accepted
+        for `n` data points
 
     v : 1D array of floats of shape (n,)
         data points values, with n the number of data points, `v[i]` is the data
@@ -9859,8 +10079,8 @@ def krige(
         points locations where the interpolation has to be done, with nu the
         number of points and d the space dimension (1, 2, or 3, same as for `x`),
         each row of `xu` is the coordinatates of one point;
-        note: for data in 1D (`d=1`), 1D array of shape (nu,) is accepted for nu
-        points
+        note: for data in 1D (`d=1`), 1D array of shape `(nu,)` is accepted 
+        for `nu` points
 
     cov_model : :class:`CovModel1D` or :class:`CovModel2D` or :class:`CovModel3D`
         covariance model in 1D, 2D, or 3D, in same dimension as dimension of
@@ -9875,12 +10095,21 @@ def krige(
         - :class:`CovModel1D` interpreted as an omni-directional covariance model \
         whatever dimension of points (d);
 
-        Note: the covariance model must be stationary, however, non-stationary
-        orientation can be handled by specifying `alpha_xu`, `beta_xu`, `gamma_xu`
+        note: the covariance model must be stationary, however, non stationarity is
+        handled: 
 
-    method : str {'simple_kriging', 'ordinary_kriging'}, default: 'simple_kriging'
+        - local rotation by specifying `alpha_xu` (in 2D or 3D), `beta_xu` (in 3D), `gamma_xu` (in 3D)
+        - other non-stationarities by specifying `cov_model_non_stationarity_xu_list` (see below)
+
+    v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
+        standard deviation of error at data points, with n the number of data points; 
+        if `v_err_std` is a float, the same value is used for all data points; 
+        this means that at location x[i], the data value is considered as in a Gaussian 
+        distribution of mean `v[i]` and standard deviation `v_err_std[i]`
+
+    method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
         type of kriging;
-        note: if `method='ordinary_kriging'`, the parameters `dmax`, `nneighborMax`,
+        note: if `method='ordinary_kriging'`, the parameters
         `mean_x`, `mean_xu`, `var_x`, `var_xu` are not used
 
     mean_x : 1D array-like of floats, or float, optional
@@ -9941,21 +10170,67 @@ def krige(
 
         note: `gamma_xu` is ignored if the covariance model is in 1D or 2D
 
+    cov_model_non_stationarity_xu_list : list, optional
+        list to set non-stationarities in covariance model; each entry must be
+        a tuple (or list) `cm_ns` of length 2 or 3 with:
+
+        - `cm_ns[0]`: str: the name of the method of `cov_model` to be applied
+        - `cm_ns[1]`: 1D array-like of floats, or float: \
+        used to set the main parameter passed to the method:
+            - if array-like: its size must be equal to `nu`, \
+            (the array is reshaped if needed), values at points `xu`
+            - if a float: same value at all points `xu`
+        - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
+
+        Examples (with the parameter `arg` is set from `val`)
+        
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
+            this multipies the weight contribution of every elementary contribution of the 
+            covariance model
+        - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
+            this multipies the weight contribution of the elementary contribution of index 0 of the 
+            covariance model
+        - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
+            this multipies the range in all direction of every elementary contribution of the
+            covariance model
+        - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
+            this multipies the range in the first main direction (index 0) of every elementary 
+            contribution of the covariance model
+        - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
+            this multipies the range in the first main direction (index 0) of the elementary 
+            contribution of index 0 of the covariance model
+
     use_unique_neighborhood : bool, default: False
         indicates if a unique neighborhood is used:
 
         - if True: all data points are taken into account, and the kriging matrix \
-        is computed once; the parameters `dmax`, `nneighborMax` are not used, \
-        and  `alpha_xu`, `beta_xu`, `gamma_xu` must be `None` or constant
-        - if False: only data points within a search disk (ellipsoid) are taken \
-        into account according to `dmax`, `nneighborMax`
+        is computed once; the parameters `searchRadius`, `searchRadiusRelative`, \
+        `nneighborMax` are not used, \
+        and  `alpha_xu`, `beta_xu`, `gamma_xu` must be `None` or constant \
+        and any non-stationarity set in `cov_model_non_stationarity_xu_list` must be constant \
+        (i.e. `cm_ns[1]` must be constant for each entry `cm_ns` in `cov_model_non_stationarity_xu_list`)
+        - if False: only data points within a search neighborhood (ellipsoid) are \
+        taken into account according to `searchRadius`, `searchRadiusRelative`, `nneighborMax`
 
-    dmax : float, optional
-        radius of the search disk (ellipsoid) centered at the estimated point,
-        i.e. the data points at distance to the estimated point greater than
-        `dmax` are not taken into account in the kriging system;
-        by default (`dmax=None`): `dmax` is set to the range (max) of the
-        covariance model
+    searchRadius : float, optional
+        if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
+        with same radii along each axis), i.e. the data points at distance to the 
+        estimated point greater than `searchRadius` are not taken into account 
+        in the kriging system; if `searchRadius` is not `None`, then 
+        `searchRadiusRelative` is not used;
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        define the search ellipsoid;
+
+    searchRadiusRelative : float, default: 1.2
+        used only if `searchRadius` is `None`;
+        indicates how the search ellipsoid is limited (should be positive): let
+        r_i be the ranges of the covariance model along its main axes, when
+        estimating/simulating a cell x, a cell y is taken into account iff it is
+        within the ellipsoid centered at x of half axes equal to
+        `searchRadiusRelative` * r_i; 
+        (note that the distances to the central node are computed in the axes 
+        sytem supporting the covariance model and accounting for anisotropy given 
+        by the ranges)
 
     nneighborMax : int, default: 12
         maximal number of neighbors (data points) taken into account in the
@@ -9964,65 +10239,124 @@ def krige(
         note: if `nneighborMax=None` or `nneighborMax<0`, then `nneighborMax` is
         set to the number of data points
 
+    pid : int, optional
+        process id of the caller (used with multiprocessing)
+
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
     vu : 1D array of shape (nu,)
         kriging estimates at points `xu`;
         note: `vu[j]=numpy.nan` if there is no data point in the neighborhood
-        of `xu[j]` (see parameters `dmax`, `nneighborMax`)
+        of `xu[j]` (see parameters `searchRadius`, `searchRadiusRelative`, `nneighborMax`)
 
     vu_std : 1D array of shape (nu,)
         kriging standard deviations at points `xu`;
         note: `vu_std[j]=numpy.nan` if there is no data point in the neighborhood
-        of `xu[j]` (see parameters `dmax`, `nneighborMax`)
+        of `xu[j]` (see parameters `searchRadius`, `searchRadiusRelative`, `nneighborMax`)
     """
     fname = 'krige'
+    if pid is not None:
+        fname = f'{fname} [pid={pid}]'
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+        err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use the other paramters for non-stationary covariance)'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
-    # Get dimension (d) from x
-    if np.asarray(x).ndim == 1:
-        # x is a 1-dimensional array
-        x = np.asarray(x).reshape(-1, 1)
-        d = 1
+    # Get dimension from x (d) and number of data points (n) and size of v
+    if x is None:
+        n = 0
+        d = 0
+        if v is not None:
+            err_msg = f'{fname}: `x` is None but `v` is not None'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+    
     else:
-        # x is a 2-dimensional array
-        d = x.shape[1]
+        x = np.asarray(x)
+        # Get dimension (d) from x
+        if x.ndim == 1:
+            # x is a 1-dimensional array
+            x = x.reshape(-1, 1)
+            d = 1
+        else:
+            # x is a 2-dimensional array
+            d = x.shape[1]
 
-    # Get dimension (du) from xu
-    if np.asarray(xu).ndim == 1:
-        # xu is a 1-dimensional array
-        xu = np.asarray(xu).reshape(-1, 1)
-        du = 1
+        n = x.shape[0]
+
+        # Check size of v
+        if v is None:
+            err_msg = f'{fname}: `x` is not None but `v` is None'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v = np.asarray(v).reshape(-1)
+        if v.size != n:
+            err_msg = f'{fname}: size of `v` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Set variance of data error (from standard deviation)
+    if v_err_std is None:
+        v_err_std = 0.0
+    v_err_var = np.asarray(v_err_std, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+    if v_err_var.size == 1:
+        v_err_var = v_err_var[0] * np.ones(n)
+    elif v_err_var.size != n:
+        err_msg = f'{fname}: size of `v_err_std` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    v_err_var = v_err_var * v_err_var
+
+    # Get dimension from xu (du) and number of unknown points (nu)
+    if xu is None:
+        nu = 0
+        du = 0
     else:
-        # xu is a 2-dimensional array
-        du = xu.shape[1]
+        xu = np.asarray(xu)
+        # Get dimension (du) from xu
+        if xu.ndim == 1:
+            # xu is a 1-dimensional array
+            xu = xu.reshape(-1, 1)
+            du = 1
+        else:
+            # xu is a 2-dimensional array
+            du = xu.shape[1]
 
-    # Number of data points
-    n = x.shape[0]
-    # Number of unknown points
-    nu = xu.shape[0]
+        nu = xu.shape[0]
 
-    if n == 0 or nu == 0:
-        err_msg = f'{fname}: size (number of points) of `x` or `xu` is 0'
-        raise CovModelError(err_msg)
+    if nu == 0:
+        vu, vu_std = np.array([], dtype='float'), np.array([], dtype='float')
+        return vu, vu_std
 
-    # Check size of v
-    v = np.asarray(v).reshape(-1)
-    if v.size != n:
-        err_msg = f'{fname}: size of `v` is not valid'
-        raise CovModelError(err_msg)
+    # Here: nu > 0
 
-    # Check dimension of x and xu
-    if d != du:
-        err_msg = f'{fname}: `x` and `xu` do not have the same dimension'
-        raise CovModelError(err_msg)
+    if n > 0:
+        # Check dimension of x and xu
+        if d != du:
+            err_msg = f'{fname}: `x` and `xu` do not have the same dimension'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    else: # n == 0
+        d = du # set d to du if no data point
+
+    # Check that all data points (locations) are distinct
+    for i in range(1, n):
+        if np.any(np.isclose(np.sum((x[:i]-x[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x` contains duplicated entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
 
     # Check dimension of cov_model and set if used as omni-directional model
     if isinstance(cov_model, CovModel1D):
@@ -10030,11 +10364,12 @@ def krige(
     else:
         if cov_model.__class__.__name__ != f'CovModel{d}D':
             err_msg = f'{fname}: `cov_model` dimension is incompatible with dimension of points'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
         omni_dir = False
 
-    # Covariance function
+    # Covariance function and value at 0
     cov_func = cov_model.func() # covariance function
     if omni_dir:
         # covariance model in 1D is used
@@ -10045,28 +10380,43 @@ def krige(
     # Method and mean, var
     if method == 'simple_kriging':
         ordinary_kriging = False
-        if mean_x is None:
-            mean_x = np.mean(v) * np.ones(n)
+        if n == 0:
+            mean_x = np.array([], dtype='float')
         else:
-            mean_x = np.asarray(mean_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-            if mean_x.size == 1:
-                mean_x = mean_x * np.ones(n)
-            elif mean_x.size != n:
-                err_msg = f'{fname}: size of `mean_x` is not valid'
-                raise CovModelError(err_msg)
-
+            if mean_x is None:
+                mean_x = np.mean(v) * np.ones(n)
+            else:
+                mean_x = np.asarray(mean_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                if mean_x.size == 1:
+                    mean_x = mean_x * np.ones(n)
+                elif mean_x.size != n:
+                    err_msg = f'{fname}: size of `mean_x` is not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                
         if mean_xu is None:
-            mean_xu = mean_x[0] * np.ones(nu)
+            if n == 0:
+                mean_xu = np.zeros(nu)
+            else:
+                mean_xu = np.mean(v) * np.ones(nu)
         else:
             mean_xu = np.asarray(mean_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if mean_xu.size == 1:
                 mean_xu = mean_xu * np.ones(nu)
             elif mean_xu.size != nu:
                 err_msg = f'{fname}: size of `mean_xu` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
+
+        if n == 0:
+            if var_xu is None:
+                var_x = None
+            else:
+                var_x = np.array([], dtype='float')
 
         if (var_x is None and var_xu is not None) or (var_x is not None and var_xu is None):
             err_msg = f'{fname}: `var_x` and `var_xu` must both be specified'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
         if var_x is not None:
@@ -10075,27 +10425,273 @@ def krige(
                 var_x = var_x * np.ones(n)
             elif var_x.size != n:
                 err_msg = f'{fname}: size of `var_x` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
             varUpdate_x = np.sqrt(var_x/cov0)
+
         if var_xu is not None:
             var_xu = np.asarray(var_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if var_xu.size == 1:
                 var_xu = var_xu * np.ones(nu)
             elif var_xu.size != nu:
                 err_msg = f'{fname}: size of `var_xu` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
             varUpdate_xu = np.sqrt(var_xu/cov0)
 
     elif method == 'ordinary_kriging':
+        if verbose > 0:
+            if mean_x is not None:
+                if logger:
+                    logger.warning(f"{fname}: `mean_x` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `mean_x` is ignored with `method='ordinary_kriging'`")
+            if mean_xu is not None:
+                if logger:
+                    logger.warning(f"{fname}: `mean_xu` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `mean_xu` is ignored with `method='ordinary_kriging'`")
+            if var_x is not None:
+                if logger:
+                    logger.warning(f"{fname}: `var_x` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `var_x` is ignored with `method='ordinary_kriging'`")
+            if var_xu is not None:
+                if logger:
+                    logger.warning(f"{fname}: `var_xu` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `var_xu` is ignored with `method='ordinary_kriging'`")
+
         ordinary_kriging = True
         mean_x, mean_xu, var_x, var_xu = None, None, None, None
+
     else:
         err_msg = f'{fname}: `method` invalid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
-    # Rotation given by alpha, beta, gamma
+    if n == 0:
+        # Treat the special case with no data point
+        if method == 'simple_kriging':
+            vu = mean_xu
+
+            if var_xu is not None:
+                if cov_model_non_stationarity_xu_list is not None:
+                    if not isinstance(cov_model_non_stationarity_xu_list, list):
+                        err_msg = f'{fname}: `cov_model_non_stationarity_xu_list` must be a list if not `None`'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                    for i, cm_ns_xu in enumerate(cov_model_non_stationarity_xu_list):
+                        if not hasattr(cm_ns_xu, '__len__') or len(cm_ns_xu) not in (2, 3):
+                            err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_xu_list` not valid: should be a tuple or list of length 2 or 3 containing: method name (str), val[, kwds (dict)]'
+                            if logger: logger.error(err_msg)
+                            raise CovModelError(err_msg)
+                        method_name = cm_ns_xu[0]
+                        if method_name == 'multiply_w':
+                            err_msg = f'{fname}: covariance model with non stationary sill (method `multiply_w`) cannot be used if `var_xu` is not `None`'
+                            if logger: logger.error(err_msg)
+                            raise CovModelError(err_msg)
+                
+                vu_std = np.sqrt(cov0) * varUpdate_xu
+
+            elif cov_model_non_stationarity_xu_list is not None:
+                if not isinstance(cov_model_non_stationarity_xu_list, list):
+                    err_msg = f'{fname}: `cov_model_non_stationarity_xu_list` must be a list if not `None`'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                
+                # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
+                cov_model = copyCovModel(cov_model) 
+                cov_model_has_changed = False
+                adapt_cov_model_ind = []
+                for i, cm_ns_xu in enumerate(cov_model_non_stationarity_xu_list):
+                    if not hasattr(cm_ns_xu, '__len__') or len(cm_ns_xu) not in (2, 3):
+                        err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_xu_list` not valid: should be a tuple or list of length 2 or 3 containing: method name (str), val[, kwds (dict)]'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                    if cm_ns_xu[0] != 'multiply_w':
+                        continue
+                    val = np.asarray(cm_ns_xu[1], dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if val.size != 1:
+                        if val.size != nu:
+                            err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_xu_list`, `(method_name, val[, kwds])`: size of `val` not valid'
+                            if logger: logger.error(err_msg)
+                            raise CovModelError(err_msg)
+                        if np.allclose(val, val[0]):
+                            val = val[:1] # of size 1
+                        else:
+                            adapt_cov_model_ind.append(i)
+                    if val.size == 1:
+                        if len(cm_ns_xu) == 3:
+                            kwds = cm_ns_xu[2]
+                        else:
+                            kwds = {}
+                        try:
+                            cov_model.multiply_w(val[0], logger=logger, **kwds)
+                        except:
+                            err_msg = f'{fname}: cannot apply non-stationarity (at points) for covariance model (check parameter `cov_model_non_stationarity_xu_list`)'
+                            if logger: logger.error(err_msg)
+                            raise CovModelError(err_msg)
+                        cov_model_has_changed = True
+
+                if cov_model_has_changed:
+                    # Update - Covariance function and value at 0
+                    cov_func = cov_model.func() # covariance function
+                    if omni_dir:
+                        # covariance model in 1D is used
+                        cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                    else:
+                        cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+                if len(adapt_cov_model_ind):
+                    cov_model_base = copyCovModel(cov_model)
+                    vu_std = np.zeros(nu)
+                    for k in range(nu):
+                        cov_model = copyCovModel(cov_model_base)
+                        for i in adapt_cov_model_ind:
+                            cm_ns_xu = cov_model_non_stationarity_xu_list[i]
+                            val = cm_ns_xu[1]
+                            if len(cm_ns_xu) == 3:
+                                kwds = cm_ns_xu[2]
+                            else:
+                                kwds = {}
+                            try:
+                                cov_model.multiply_w(val[k], logger=logger, **kwds)
+                            except:
+                                err_msg = f'{fname}: cannot apply non-stationarity (at one point) for covariance model (check parameter `cov_model_non_stationarity_xu_list`)'
+                                if logger: logger.error(err_msg)
+                                raise CovModelError(err_msg)
+
+                        cov_func = cov_model.func() # update covariance function
+                        if omni_dir:
+                            # covariance model in 1D is used
+                            cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                        else:
+                            cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+                        
+                        vu_std[k] = np.sqrt(cov0)
+                
+                else:
+                    vu_std = np.sqrt(cov0) * np.ones(nu)
+
+            else:
+                vu_std = np.sqrt(cov0) * np.ones(nu)
+
+        else: #if method == 'ordinary_kriging':               
+            vu = np.zeros(nu)
+
+            if cov_model_non_stationarity_xu_list is not None:
+                if not isinstance(cov_model_non_stationarity_xu_list, list):
+                    err_msg = f'{fname}: `cov_model_non_stationarity_xu_list` must be a list if not `None`'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                
+                # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
+                cov_model = copyCovModel(cov_model) 
+                cov_model_has_changed = False
+                adapt_cov_model_ind = []
+                for i, cm_ns_xu in enumerate(cov_model_non_stationarity_xu_list):
+                    if not hasattr(cm_ns_xu, '__len__') or len(cm_ns_xu) not in (2, 3):
+                        err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_xu_list` not valid: should be a tuple or list of length 2 or 3 containing: method name (str), val[, kwds (dict)]'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                    if cm_ns_xu[0] != 'multiply_w':
+                        continue
+                    val = np.asarray(cm_ns_xu[1], dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if val.size != 1:
+                        if val.size != nu:
+                            err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_xu_list`, `(method_name, val[, kwds])`: size of `val` not valid'
+                            if logger: logger.error(err_msg)
+                            raise CovModelError(err_msg)
+                        if np.allclose(val, val[0]):
+                            val = val[:1] # of size 1
+                        else:
+                            adapt_cov_model_ind.append(i)
+                    if val.size == 1:
+                        if len(cm_ns_xu) == 3:
+                            kwds = cm_ns_xu[2]
+                        else:
+                            kwds = {}
+                        try:
+                            cov_model.multiply_w(val[0], logger=logger, **kwds)
+                        except:
+                            err_msg = f'{fname}: cannot apply non-stationarity (at points) for covariance model (check parameter `cov_model_non_stationarity_xu_list`)'
+                            if logger: logger.error(err_msg)
+                            raise CovModelError(err_msg)
+                        cov_model_has_changed = True
+
+                if cov_model_has_changed:
+                    # Update - Covariance function and value at 0
+                    cov_func = cov_model.func() # covariance function
+                    if omni_dir:
+                        # covariance model in 1D is used
+                        cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                    else:
+                        cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+                if len(adapt_cov_model_ind):
+                    cov_model_base = copyCovModel(cov_model)
+                    vu_std = np.zeros(nu)
+                    for k in range(nu):
+                        cov_model = copyCovModel(cov_model_base)
+                        for i in adapt_cov_model_ind:
+                            cm_ns_xu = cov_model_non_stationarity_xu_list[i]
+                            val = cm_ns_xu[1]
+                            if len(cm_ns_xu) == 3:
+                                kwds = cm_ns_xu[2]
+                            else:
+                                kwds = {}
+                            try:
+                                cov_model.multiply_w(val[k], logger=logger, **kwds)
+                            except:
+                                err_msg = f'{fname}: cannot apply non-stationarity (at one point) for covariance model (check parameter `cov_model_non_stationarity_xu_list`)'
+                                if logger: logger.error(err_msg)
+                                raise CovModelError(err_msg)
+
+                        cov_func = cov_model.func() # update covariance function
+                        if omni_dir:
+                            # covariance model in 1D is used
+                            cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                        else:
+                            cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+                        
+                        vu_std[k] = np.sqrt(cov0)
+                
+                else:
+                    vu_std = np.sqrt(cov0) * np.ones(nu)
+
+            else:
+                vu_std = np.sqrt(cov0) * np.ones(nu)
+
+        return vu, vu_std
+
+    # Here: n > 0 and nu > 0
+
+    # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
+    cov_model = copyCovModel(cov_model) 
+    cov_model_has_changed = False
+
+    # Rotation given by alpha_xu, beta_xu, gamma_xu
+    if alpha_xu is not None:
+        if omni_dir:
+            err_msg = f'{fname}: `alpha_xu` cannot be used with 1D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    if beta_xu is not None:
+        if omni_dir or d < 3:
+            err_msg = f'{fname}: `beta_xu` cannot be used with 1D or 2D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+    
+    if gamma_xu is not None:
+        if omni_dir or d < 3:
+            err_msg = f'{fname}: `gamma_xu` cannot be used with 1D or 2D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
     if omni_dir:
         rot = False
     else:
@@ -10113,11 +10709,20 @@ def krige(
                         rot = True
                         rot_mat_unique = True
                 elif alpha_xu.size == nu:
-                    rot_mat = rotationMatrix2D(alpha_xu).transpose(2, 0, 1) # rot_mat[i] : rotation matrix for xu[i]
-                    rot = True
-                    rot_mat_unique = False
+                    if np.allclose(alpha_xu, alpha_xu[0]):
+                        if np.isclose(alpha_xu[0], 0.0):
+                            rot = False
+                        else:
+                            rot_mat = rotationMatrix2D(alpha_xu[0]) # rot_mat : rotation matrix for any xu[i]
+                            rot = True
+                            rot_mat_unique = True
+                    else:
+                        rot_mat = rotationMatrix2D(alpha_xu).transpose(2, 0, 1) # rot_mat[i] : rotation matrix for xu[i]
+                        rot = True
+                        rot_mat_unique = False
                 else:
                     err_msg = f'{fname}: size of `alpha_xu` is not valid'
+                    if logger: logger.error(err_msg)
                     raise CovModelError(err_msg)
 
         else: # d == 3
@@ -10131,32 +10736,37 @@ def krige(
                         alpha_xu = alpha_xu * np.ones(nu)
                     elif alpha_xu.size != nu:
                         err_msg = f'{fname}: size of `alpha_xu` is not valid'
+                        if logger: logger.error(err_msg)
                         raise CovModelError(err_msg)
-
                 else:
                     alpha_xu = np.zeros(nu)
+
                 if beta_xu is not None:
                     beta_xu = np.asarray(beta_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
                     if beta_xu.size == 1:
                         beta_xu = beta_xu * np.ones(nu)
                     elif beta_xu.size != nu:
                         err_msg = f'{fname}: size of `beta_xu` is not valid'
+                        if logger: logger.error(err_msg)
                         raise CovModelError(err_msg)
-
                 else:
                     beta_xu = np.zeros(nu)
+
                 if gamma_xu is not None:
                     gamma_xu = np.asarray(gamma_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
                     if gamma_xu.size == 1:
                         gamma_xu = gamma_xu * np.ones(nu)
                     elif gamma_xu.size != nu:
                         err_msg = f'{fname}: size of `gamma_xu` is not valid'
+                        if logger: logger.error(err_msg)
                         raise CovModelError(err_msg)
-
                 else:
                     gamma_xu = np.zeros(nu)
-                if np.unique(np.array((alpha_xu, beta_xu, gamma_xu)).T, axis=0).shape[0] == 1:
-                    if alpha_xu[0] == 0.0 and beta_xu[0] == 0.0 and gamma_xu[0] == 0.0:
+
+                # if np.unique(np.array((alpha_xu, beta_xu, gamma_xu)).T, axis=0).shape[0] == 1:
+                if np.allclose(np.vstack((alpha_xu, beta_xu, gamma_xu)).T, np.array([alpha_xu[0], beta_xu[0], gamma_xu[0]])):
+                    # if alpha_xu[0] == 0.0 and beta_xu[0] == 0.0 and gamma_xu[0] == 0.0:
+                    if np.isclose(alpha_xu[0], 0.0) and np.isclose(beta_xu[0], 0.0) and np.isclose(gamma_xu[0], 0.0):
                         rot = False
                     else:
                         rot_mat = rotationMatrix3D(alpha_xu[0], beta_xu[0], gamma_xu[0]) # rot_mat : rotation matrix for any xu[i]
@@ -10167,35 +10777,98 @@ def krige(
                     rot = True
                     rot_mat_unique = False
 
-    if rot and rot_mat_unique:
-        # apply rotation to data points x and points xu
-        x = x.dot(rot_mat)
-        xu = xu.dot(rot_mat)
-        rot = False # no need rotation further
+    if rot:
+        if d == 2:
+            cov_model.set_alpha(0.0)
+            cov_model_has_changed = True
+        elif d == 3:
+            cov_model.set_alpha(0.0)
+            cov_model.set_beta(0.0)
+            cov_model.set_gamma(0.0)
+            cov_model_has_changed = True
+        if rot_mat_unique:
+            # apply rotation to data points x and points xu
+            x = x.dot(rot_mat)
+            xu = xu.dot(rot_mat)
+            rot = False # no need rotation further
 
     # here: rot = True means that local rotation are applied
 
-    # Check that all data points (locations) are distinct
-    for i in range(1, n):
-        if np.any(np.isclose(np.sum((x[:i]-x[i])**2, axis=1), 0.0)):
-            err_msg = f'{fname}: `x` contains duplicated entries'
+    # Prepare non-stationarities for integration in covariance model
+    adapt_cov_model_ind = []
+    recompute_cov0 = False
+    recompute_dmax_ax = False
+    if cov_model_non_stationarity_xu_list is not None:
+        if not isinstance(cov_model_non_stationarity_xu_list, list):
+            err_msg = f'{fname}: `cov_model_non_stationarity_xu_list` must be a list if not `None`'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
+        for i, cm_ns_xu in enumerate(cov_model_non_stationarity_xu_list):
+            if not hasattr(cm_ns_xu, '__len__') or len(cm_ns_xu) not in (2, 3):
+                err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_xu_list` not valid: should be a tuple or list of length 2 or 3 containing: method name (str), val[, kwds (dict)]'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+            val = np.asarray(cm_ns_xu[1], dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if val.size != 1:
+                if val.size != nu:
+                    err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_xu_list`, `(method_name, val[, kwds])`: size of `val` not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                if np.allclose(val, val[0]):
+                    val = val[:1] # of size 1
+                else:
+                    adapt_cov_model_ind.append(i)
+                    if cm_ns_xu[0] == 'multiply_w':
+                        recompute_cov0 = True
+                    elif cm_ns_xu[0] == 'multiply_r':
+                        recompute_dmax_ax = True
+            if val.size == 1:
+                method_name = cm_ns_xu[0]
+                if len(cm_ns_xu) == 3:
+                    kwds = cm_ns_xu[2]
+                else:
+                    kwds = {}
+                try:
+                    eval(f'cov_model.{method_name}')(val[0], logger=logger, **kwds)
+                except:
+                    err_msg = f'{fname}: cannot apply non-stationarity (at points) for covariance model (check parameter `cov_model_non_stationarity_xu_list`)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                cov_model_has_changed = True
 
+    adapt_cov_model = len(adapt_cov_model_ind) > 0
+
+    if cov_model_has_changed:
+        # Update - Covariance function and value at 0
+        cov_func = cov_model.func() # covariance function
+        if omni_dir:
+            # covariance model in 1D is used
+            cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+        else:
+            cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+    
+    # Do kriging
     if use_unique_neighborhood:
         if rot:
             err_msg = f'{fname}: unique search neighborhood cannot be used with local rotation'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        if adapt_cov_model:
+            err_msg = f'{fname}: unique search neighborhood cannot be used with non-stationary for covariance'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
         # Set kriging matrix (mat) of order nmat
         if ordinary_kriging:
             nmat = n+1
             mat = np.ones((nmat, nmat))
-            mat[-2,-2] = cov0
+            mat[-2,-2] = cov0 + v_err_var[n-1]
             mat[-1,-1] = 0.0
         else:
             nmat = n
             mat = np.ones((nmat, nmat))
-            mat[-1,-1] = cov0
+            mat[-1,-1] = cov0 + v_err_var[n-1]
         for i in range(n-1):
             # lag between x[i] and x[j], j=i+1, ..., n-1
             h = x[(i+1):] - x[i]
@@ -10205,7 +10878,7 @@ def krige(
             cov_h = cov_func(h)
             mat[i, (i+1):n] = cov_h
             mat[(i+1):n, i] = cov_h
-            mat[i, i] = cov0
+            mat[i, i] = cov0 + v_err_var[i]
 
         # Set right hand side of all kriging systems (b),
         #   - matrix of dimension nmat x nu
@@ -10236,103 +10909,189 @@ def krige(
 
         # Kriged standard deviation at unknown points
         vu_std = np.sqrt(np.maximum(0.0, cov0 - np.array([np.dot(w[:,i], b[:,i]) for i in range(nu)])))
+
     else:
         # Limited search neighborhood
-        if dmax is None:
-            if d == 1 or omni_dir:
-                dmax = cov_model.r()
-            elif d == 2:
-                dmax = cov_model.r12().max()
-            elif d == 3:
-                dmax = cov_model.r123().max()
-        dmax2 = dmax*dmax
+        if searchRadius is not None:
+            if searchRadius <= 0.0:
+                err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+            
+            if omni_dir:
+                dmax_ax = np.array([searchRadius], dtype='float')
+            else:
+                dmax_ax = searchRadius * np.ones(d)
 
+            recompute_dmax_ax = False
+
+        else:
+            # use searchRadiusRelative
+            if searchRadiusRelative <= 0.0:
+                err_msg = f'{fname}: search radius relative (factor) not valid (negative)'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+            
+            if omni_dir:
+                dmax_ax = np.array([cov_model.r()])
+            elif d == 2:
+                dmax_ax = cov_model.r12()
+            elif d == 3:
+                dmax_ax = cov_model.r123()
+
+            dmax_ax = searchRadiusRelative * dmax_ax
+
+        dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+        # Preparation if covariance model will be adapted
+        if adapt_cov_model:
+            cov_model_base = copyCovModel(cov_model)
+
+        # Maximum number of neighbors
         if nneighborMax is None or nneighborMax > n or nneighborMax < 0:
             nneighborMax = n
 
         mat = np.ones((nneighborMax+1, nneighborMax+1)) # allocate kriging matrix
         b = np.ones(nneighborMax+1) # allocate second member
 
+        # Allocate memory for output
         vu = np.zeros(nu)
         vu_std = np.zeros(nu)
 
         if verbose > 0:
             progress_old = 0
+
         for j, x0 in enumerate(xu):
             if verbose > 0:
                 progress = int(j/nu*100.0)
                 if progress > progress_old:
-                    print(f'{fname}: {progress:3d}%')
+                    if logger:
+                        logger.info(f'{fname}: {progress:3d}%')
+                    else:
+                        print(f'{fname}: {progress:3d}%')
                     progress_old = progress
-            h = x - x0
-            d2 = np.sum(h**2, axis=1)
-            ind = np.where(d2 < dmax2)[0]
+
+            if adapt_cov_model:
+                cov_model = copyCovModel(cov_model_base)
+                for i in adapt_cov_model_ind:
+                    cm_ns_xu = cov_model_non_stationarity_xu_list[i]
+                    method_name = cm_ns_xu[0]
+                    val = cm_ns_xu[1]
+                    if len(cm_ns_xu) == 3:
+                        kwds = cm_ns_xu[2]
+                    else:
+                        kwds = {}
+                    try:
+                        eval(f'cov_model.{method_name}')(val[j], logger=logger, **kwds)
+                    except:
+                        err_msg = f'{fname}: cannot apply non-stationarity (at one point) for covariance model (check parameter `cov_model_non_stationarity_xu_list`)'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+
+                cov_func = cov_model.func() # update covariance function
+                if recompute_cov0:
+                    if omni_dir:
+                        # covariance model in 1D is used
+                        cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                    else:
+                        cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+                if recompute_dmax_ax:
+                    if omni_dir:
+                        dmax_ax = np.array([cov_model.r()])
+                    elif d == 2:
+                        dmax_ax = cov_model.r12()
+                    elif d == 3:
+                        dmax_ax = cov_model.r123()
+
+                    dmax_ax = searchRadiusRelative * dmax_ax
+                    dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+            h = x0 - x
+            if rot:
+                h = h.dot(rot_mat[j])
+            d2 = np.sum(dmax_ax_inv2 * h**2, axis=1)
+            ind = np.where(d2 < 1.0)[0]
             if len(ind) > nneighborMax:
                 ind_s = np.argsort(d2[ind])
                 ind = ind[ind_s[:nneighborMax]]
             nn = len(ind)
             if nn == 0:
-                vu[j] = np.nan
-                vu_std[j] = np.nan
-                continue
-            xneigh = x[ind]
-            vneigh = v[ind]
-            if ordinary_kriging:
-                nmat = nn+1
+                # vu[j] = np.nan
+                # vu_std[j] = np.nan
+                # Kriged values at xu[j]
+                if mean_x is not None:
+                    vu[j] = mean_xu[j]
+                else:
+                    vu[j] = np.mean(v)
+
+                # Kriged standard deviation at xu[j]
+                vu_std[j] = np.sqrt(cov0)
+
             else:
-                nmat = nn
-            # Set kriging matrix (mat) of order nmat
-            for i in range(nn-1):
-                # lag between xneigh[i] and xneigh[j], j=i+1, ..., nn-1
-                h = xneigh[(i+1):] - xneigh[i]
+                xneigh = x[ind]
+                vneigh = v[ind]
+                v_err_var_neigh = v_err_var[ind]
+
+                # Set right hand side of the kriging system (b)
+                h = h[ind]
                 if omni_dir:
                     # compute norm of lag
                     h = np.sqrt(np.sum(h**2, axis=1))
-                elif rot:
-                    h = h.dot(rot_mat[j])
-                cov_h = cov_func(h)
-                mat[i, (i+1):nn] = cov_h
-                mat[(i+1):nn, i] = cov_h
-                mat[i, i] = cov0
+                b[:nn] = cov_func(h)
 
-            # Set right hand side of the kriging system (b)
-            h = x0 - xneigh
-            if omni_dir:
-                # compute norm of lag
-                h = np.sqrt(np.sum(h**2, axis=1))
-            elif rot:
-                h = h.dot(rot_mat[j])
-            b[:nn] = cov_func(h)
-
-            mat[nn-1,nn-1] = cov0
-            if ordinary_kriging:
-                mat[:, nn] = 1.0
-                mat[nn, :] = 1.0
-                mat[nn,nn] = 0.0
-                b[nn] = 1.0
-
-            # Solve the kriging system
-            w = np.linalg.solve(mat[:nmat,:nmat], b[:nmat])
-
-            # Kriged values at xu[j]
-            if mean_x is not None:
-                # simple kriging
-                if var_x is not None:
-                    vu[j] = mean_xu[j] + varUpdate_xu[j]*(1.0/varUpdate_x[ind]*(vneigh-mean_x[ind])).dot(w)
+                if ordinary_kriging:
+                    nmat = nn+1
                 else:
-                    vu[j] = mean_xu[j] + (vneigh-mean_x[ind]).dot(w)
-            else:
-                # ordinary kriging
-                vu[j] = vneigh.dot(w[:nn])
+                    nmat = nn
 
-            # Kriged standard deviation at xu[j]
-            vu_std[j] = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                # Set kriging matrix (mat) of order nmat
+                for i in range(nn-1):
+                    # lag between xneigh[i] and xneigh[j], j=i+1, ..., nn-1
+                    h = xneigh[(i+1):] - xneigh[i]
+                    if omni_dir:
+                        # compute norm of lag
+                        h = np.sqrt(np.sum(h**2, axis=1))
+                    elif rot:
+                        h = h.dot(rot_mat[j])
+                    cov_h = cov_func(h)
+                    mat[i, (i+1):nn] = cov_h
+                    mat[(i+1):nn, i] = cov_h
+                    mat[i, i] = cov0 + v_err_var_neigh[i]
+
+                mat[nn-1,nn-1] = cov0 + v_err_var_neigh[nn-1]
+
+                if ordinary_kriging:
+                    mat[:, nn] = 1.0
+                    mat[nn, :] = 1.0
+                    mat[nn,nn] = 0.0
+                    b[nn] = 1.0
+
+                # Solve the kriging system
+                w = np.linalg.solve(mat[:nmat,:nmat], b[:nmat])
+
+                # Kriged values at xu[j]
+                if mean_x is not None:
+                    # simple kriging
+                    if var_x is not None:
+                        vu[j] = mean_xu[j] + varUpdate_xu[j]*(1.0/varUpdate_x[ind]*(vneigh-mean_x[ind])).dot(w)
+                    else:
+                        vu[j] = mean_xu[j] + (vneigh-mean_x[ind]).dot(w)
+                else:
+                    # ordinary kriging
+                    vu[j] = vneigh.dot(w[:nn])
+
+                # Kriged standard deviation at xu[j]
+                vu_std[j] = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
 
     if var_x is not None:
         vu_std = varUpdate_xu * vu_std
 
     if verbose > 0:
-        print(f'{fname}: {100:3d}%')
+        if logger:
+            logger.info(f'{fname}: {100:3d}%')
+        else:
+            print(f'{fname}: {100:3d}%')
 
     return vu, vu_std
 # ----------------------------------------------------------------------------
@@ -10340,6 +11099,7 @@ def krige(
 # ----------------------------------------------------------------------------
 def cross_valid_loo(
         x, v, cov_model,
+        v_err_std=0.0,
         significance=0.05,
         dmin=None,
         mean_x=None,
@@ -10347,17 +11107,14 @@ def cross_valid_loo(
         alpha_x=None,
         beta_x=None,
         gamma_x=None,
-        w_multiplier_x=None,
-        r_multiplier_x=None,
-        r1_multiplier_x=None,
-        r2_multiplier_x=None,
-        r3_multiplier_x=None,
+        cov_model_non_stationarity_x_list=None,
         interpolator=krige,
         interpolator_kwargs=None,
         print_result=True,
         make_plot=True,
         figsize=None,
-        nbins=None):
+        nbins=None,
+        logger=None):
     """
     Performs cross-validation by leave-one-out error.
 
@@ -10380,7 +11137,7 @@ def cross_valid_loo(
     and is equal to
 
     .. math::
-        crps[i] = vsd[i] \\left[1/\\sqrt{\\pi} - 2\\varphi(w[i]) - w[i](2\Phi(w[i])-1)\\right]
+        crps[i] = vsd[i] \\left[1/\\sqrt{\\pi} - 2\\varphi(w[i]) - w[i](2\\Phi(w[i])-1)\\right]
 
     where :math:`w[i] = (v[i] - vm[i])/vsd[i]`, and :math:`\\varphi`, :math:`\\Phi`
     are respectively the pdf and cdf of the standard nomral distribution
@@ -10421,7 +11178,7 @@ def cross_valid_loo(
     where :math:`Z\\sim\\mathcal{N}(0,1/n)`
     - 2. chi-square test for sum of squares of normalized error, sserrn: \
     the test computes the p-value: :math:`P(X \\geqslant sserrn)`, where \
-    :math:`X\sim\\chi^2_n` (chi-square with n degrees of freedom);
+    :math:`X\\sim\\chi^2_n` (chi-square with n degrees of freedom);
 
     A low p-value (e.g. below a significance level alpha=0.05) means that the
     model should be rejected (falsely rejected with probability alpha):
@@ -10438,8 +11195,8 @@ def cross_valid_loo(
     x : 2D array of floats of shape (n, d)
         data points locations, with n the number of data points and d the space
         dimension (1, 2, or 3), each row of `x` is the coordinatates of one data
-        point; note: for data in 1D (`d=1`), 1D array of shape (n,) is accepted
-        for n data points
+        point; note: for data in 1D (`d=1`), 1D array of shape `(n,)` is accepted
+        for `n` data points
 
     v : 1D array of floats of shape (n,)
         data points values, with n the number of data points, `v[i]` is the data
@@ -10457,6 +11214,12 @@ def cross_valid_loo(
 
         - :class:`CovModel1D` interpreted as an omni-directional covariance model \
         whatever dimension of points (d);
+
+    v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
+        standard deviation of error at data points, with n the number of data points; 
+        if `v_err_std` is a float, the same value is used for all data points; 
+        this means that at location x[i], the data value is considered as in a Gaussian 
+        distribution of mean `v[i]` and standard deviation `v_err_std[i]`
 
     dmin : float, optional
         minimal distance between the data point to be estimated and the other
@@ -10507,51 +11270,35 @@ def cross_valid_loo(
 
         note: `gamma_x` is ignored if the covariance model is in 1D or 2D
 
-    w_multiplier_x : 1D array-like of floats, or float, optional
-        multiplier for weight (sill) at points `x`
+    cov_model_non_stationarity_x_list : list, optional
+        list to set non-stationarities in covariance model; each entry must be
+        a tuple (or list) `cm_ns` of length 2 or 3 with:
 
-        - if `w_multiplier_x` is a float, the same value is considered \
-        for any point
-        - if `w_multiplier_x=None` (default): `w_multiplier_x=1.0` is used \
-        for any point
+        - `cm_ns[0]`: str: the name of the method of `cov_model` to be applied
+        - `cm_ns[1]`: 1D array-like of floats, or float: \
+        used to set the main parameter passed to the method:
+            - if array-like: its size must be equal to `nu`, \
+            (the array is reshaped if needed), values at points `x`
+            - if a float: same value at all points `x`
+        - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
-    r_multiplier_x : 1D array-like of floats, or float, optional
-        multiplier for range (all directions) at points `x`
-
-        -if `r_multiplier_x` is a float, the same value is considered \
-        for any point
-        - if `r_multiplier_x=None` (default): `r_multiplier_x=1.0` is used \
-        for any point
-
-    r1_multiplier_x : 1D array-like of floats, or float, optional
-        multiplier for range along the 1st main axis at points `x`
-
-        - if `r1_multiplier_x` is a float, the same value is considered \
-        for any point
-        - if `r1_multiplier_x=None` (default): `r1_multiplier_x=1.0` is used \
-        for any point
-
-        note: `r1_multiplier_x` is ignored if the covariance model is in 1D
-
-    r2_multiplier_x : 1D array-like of floats, or float, optional
-        multiplier for range along the 2nd main axis at points `x`
-
-        - if `r2_multiplier_x` is a float, the same value is considered \
-        for any point
-        - if `r2_multiplier_x=None` (default): `r2_multiplier_x=1.0` is used \
-        for any point
-
-        note: `r2_multiplier_x` is ignored if the covariance model is in 1D
-
-    r3_multiplier_x : 1D array-like of floats, or float, optional
-        multiplier for range along the 3rd main axis at points `x`
-
-        - if `r3_multiplier_x` is a float, the same value is considered \
-        for any point
-        - if `r3_multiplier_x=None` (default): `r3_multiplier_x=1.0` is used \
-        for any point
-
-        note: `r3_multiplier_x` is ignored if the covariance model is in 1D or 2D
+        Examples (with the parameter `arg` is set from `val`)
+        
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
+            this multipies the weight contribution of every elementary contribution of the 
+            covariance model
+        - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
+            this multipies the weight contribution of the elementary contribution of index 0 of the 
+            covariance model
+        - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
+            this multipies the range in all direction of every elementary contribution of the
+            covariance model
+        - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
+            this multipies the range in the first main direction (index 0) of every elementary 
+            contribution of the covariance model
+        - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
+            this multipies the range in the first main direction (index 0) of the elementary 
+            contribution of index 0 of the covariance model
 
     significance : float, default: 0.05
         significance level for the two statisic tests, a float between 0 and 1,
@@ -10579,6 +11326,10 @@ def cross_valid_loo(
 
     nbins : int, optional
         number of bins in plotted histogram
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -10613,12 +11364,14 @@ def cross_valid_loo(
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
         err_msg = f'{fname}: `cov_model` is not stationary: cross validation cannot be applied'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
+    x = np.asarray(x)
     # Get dimension (d) from x
-    if np.asarray(x).ndim == 1:
+    if x.ndim == 1:
         # x is a 1-dimensional array
-        x = np.asarray(x).reshape(-1, 1)
+        x = x.reshape(-1, 1)
         d = 1
     else:
         # x is a 2-dimensional array
@@ -10631,6 +11384,7 @@ def cross_valid_loo(
     v = np.asarray(v).reshape(-1)
     if v.size != n:
         err_msg = f'{fname}: size of `v` is not valid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     # Check dimension of cov_model and set if used as omni-directional model
@@ -10639,6 +11393,7 @@ def cross_valid_loo(
     else:
         if cov_model.__class__.__name__ != f'CovModel{d}D':
             err_msg = f'{fname}: `cov_model` dimension is incompatible with dimension of points'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
         omni_dir = False
@@ -10647,297 +11402,202 @@ def cross_valid_loo(
     if interpolator_kwargs is None:
         interpolator_kwargs = {}
 
-    # Prepare mean_x, var_x, alpha_x, beta_x, gamma_x
-    # for integration in keyword arguments of the function krige
-    adapt_kwds = False
+    # Preparation of integration in keyword arguments of the function krige
     if interpolator == krige:
+        adapt_kwds_v_err_std = False
+        v_err_std = np.asarray(v_err_std, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+        if v_err_std.size == 1:
+            interpolator_kwargs['v_err_std'] = v_err_std[0]
+        elif v_err_std.size != n:
+            err_msg = f'{fname}: size of `v_err_std` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)        
+        else:
+            adapt_kwds_v_err_std = True
+
+        adapt_kwds_mean_x = False
         if mean_x is not None:
             mean_x = np.asarray(mean_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if mean_x.size == 1:
-                mean_x = mean_x * np.ones(n)
+                interpolator_kwargs['mean_x'] = mean_x[0]
+                interpolator_kwargs['mean_xu'] = mean_x[0]
             elif mean_x.size != n:
                 err_msg = f'{fname}: size of `mean_x` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
+            else:
+                adapt_kwds_mean_x = True
 
-            adapt_kwds = True
+        adapt_kwds_var_x = False
         if var_x is not None:
             var_x = np.asarray(var_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if var_x.size == 1:
-                var_x = var_x * np.ones(n)
+                interpolator_kwargs['var_x'] = var_x[0]
+                interpolator_kwargs['var_xu'] = var_x[0]
             elif var_x.size != n:
                 err_msg = f'{fname}: size of `var_x` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
+            else:
+                adapt_kwds_var_x = True
 
-            adapt_kwds = True
+        adapt_kwds_alpha_x = False
         if alpha_x is not None:
             alpha_x = np.asarray(alpha_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if alpha_x.size == 1:
-                alpha_x = alpha_x * np.ones(n)
+                interpolator_kwargs['alpha_xu'] = alpha_x[0]
             elif alpha_x.size != n:
                 err_msg = f'{fname}: size of `alpha_x` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
+            else:
+                adapt_kwds_alpha_x = True
 
-            adapt_kwds = True
+        adapt_kwds_beta_x = False
         if beta_x is not None:
             beta_x = np.asarray(beta_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if beta_x.size == 1:
-                beta_x = beta_x * np.ones(n)
+                interpolator_kwargs['beta_xu'] = beta_x[0]
             elif beta_x.size != n:
                 err_msg = f'{fname}: size of `beta_x` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
+            else:
+                adapt_kwds_beta_x = True
 
-            adapt_kwds = True
+        adapt_kwds_gamma_x = False
         if gamma_x is not None:
             gamma_x = np.asarray(gamma_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if gamma_x.size == 1:
-                gamma_x = gamma_x * np.ones(n)
+                interpolator_kwargs['gamma_xu'] = gamma_x[0]
             elif gamma_x.size != n:
                 err_msg = f'{fname}: size of `gamma_x` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
+            else:
+                adapt_kwds_gamma_x = True
 
-            adapt_kwds = True
-
-    # Prepare w_multiplier_x, r_multiplier_x, r1_multiplier_x, r2_multiplier_x, r3_multiplier_x
-    # for integration in covariance model for the function krige
-    adapt_cov_model = False
-    if interpolator == krige:
-        if w_multiplier_x is not None:
-            w_multiplier_x = np.asarray(w_multiplier_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-            if w_multiplier_x.size == 1:
-                w_multiplier_x = w_multiplier_x * np.ones(n)
-            elif w_multiplier_x.size != n:
-                err_msg = f'{fname}: size of `w_multiplier_x` is not valid'
+        adapt_kwds_cov_model_non_stationarity_x_list = False
+        if cov_model_non_stationarity_x_list is not None:
+            interpolator_kwargs['cov_model_non_stationarity_xu_list'] = []
+            adapt_kwds_cov_model_non_stationarity_x_list_ind = []
+            if not isinstance(cov_model_non_stationarity_x_list, list):
+                err_msg = f'{fname}: `cov_model_non_stationarity_x_list` must be a list if not `None`'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
+            for i, cm_ns_x in enumerate(cov_model_non_stationarity_x_list):
+                if not hasattr(cm_ns_x, '__len__') or len(cm_ns_x) not in (2, 3):
+                    err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_x_list` not valid: should be a tuple or list of length 2 or 3 containing: method name (str), val[, kwds (dict)]'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                val = np.asarray(cm_ns_x[1], dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                if val.size != 1:
+                    if val.size != n:
+                        err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_x_list`, `(method_name, val[, kwds])`: size of `val` not valid'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                    if np.allclose(val, val[0]):
+                        val = val[:1] # of size 1
+                    else:
+                        adapt_kwds_cov_model_non_stationarity_x_list_ind.append(i)
+                if len(cm_ns_x) == 3:
+                    interpolator_kwargs['cov_model_non_stationarity_xu_list'].append([cm_ns_x[0], val[0], cm_ns_x[2]])
+                else:
+                    interpolator_kwargs['cov_model_non_stationarity_xu_list'].append([cm_ns_x[0], val[0]])
+    
+            adapt_kwds_cov_model_non_stationarity_x_list = len(adapt_kwds_cov_model_non_stationarity_x_list_ind) > 0
 
-            adapt_cov_model = True
-        if r_multiplier_x is not None:
-            r_multiplier_x = np.asarray(r_multiplier_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-            if r_multiplier_x.size == 1:
-                r_multiplier_x = r_multiplier_x * np.ones(n)
-            elif r_multiplier_x.size != n:
-                err_msg = f'{fname}: size of `r_multiplier_x` is not valid'
-                raise CovModelError(err_msg)
+    adapt_kwds =       adapt_kwds_v_err_std \
+                    or adapt_kwds_mean_x \
+                    or adapt_kwds_var_x \
+                    or adapt_kwds_alpha_x \
+                    or adapt_kwds_beta_x \
+                    or adapt_kwds_gamma_x \
+                    or adapt_kwds_cov_model_non_stationarity_x_list
 
-            adapt_cov_model = True
-        if r1_multiplier_x is not None:
-            if omni_dir:
-                err_msg = f'{fname}: `r1_multiplier_x` cannot be used with 1D covariance model (use `r_multiplier_x`)'
-                raise CovModelError(err_msg)
-
-            r1_multiplier_x = np.asarray(r1_multiplier_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-            if r1_multiplier_x.size == 1:
-                r1_multiplier_x = r1_multiplier_x * np.ones(n)
-            elif r1_multiplier_x.size != n:
-                err_msg = f'{fname}: size of `r1_multiplier_x` is not valid'
-                raise CovModelError(err_msg)
-
-            adapt_cov_model = True
-        if r2_multiplier_x is not None:
-            if omni_dir:
-                err_msg = f'{fname}: `r2_multiplier_x` cannot be used with 1D covariance model'
-                raise CovModelError(err_msg)
-
-            r2_multiplier_x = np.asarray(r2_multiplier_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-            if r2_multiplier_x.size == 1:
-                r2_multiplier_x = r2_multiplier_x * np.ones(n)
-            elif r2_multiplier_x.size != n:
-                err_msg = f'{fname}: size of `r2_multiplier_x` is not valid'
-                raise CovModelError(err_msg)
-
-            adapt_cov_model = True
-        if r3_multiplier_x is not None:
-            if omni_dir:
-                err_msg = f'{fname}: `r3_multiplier_x` cannot be used with 1D covariance model'
-                raise CovModelError(err_msg)
-
-            elif d == 2:
-                err_msg = f'{fname}: `r3_multiplier_x` cannot be used with 2D covariance model'
-                raise CovModelError(err_msg)
-
-            r3_multiplier_x = np.asarray(r3_multiplier_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-            if r3_multiplier_x.size == 1:
-                r3_multiplier_x = r3_multiplier_x * np.ones(n)
-            elif r3_multiplier_x.size != n:
-                err_msg = f'{fname}: size of `r3_multiplier_x` is not valid'
-                raise CovModelError(err_msg)
-
-            adapt_cov_model = True
-
-    # Do loo
+    # Do loo cross-validation
     v_est, v_std = np.zeros(n), np.zeros(n)
     ind = np.arange(n)
     if dmin is not None and dmin > 0.0:
         dmin2 = dmin**2
         if adapt_kwds:
-            if adapt_cov_model:
-                # adapt_kwds = True and adapt_cov_model = True
-                for i in range(n):
-                    indx = np.sum((x-x[i])**2, axis=1) >= dmin2
-                    if np.all(~indx):
-                        err_msg = f'{fname}: `dmin` is too large: no more point for evaluation'
-                        raise CovModelError(err_msg)
+            # adapt_kwds = True
+            for i in range(n):
+                indx = np.sum((x-x[i])**2, axis=1) >= dmin2
+                if np.all(~indx):
+                    err_msg = f'{fname}: `dmin` is too large: no more point for evaluation'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
 
-                    # adapt kwds
-                    if mean_x is not None:
-                        interpolator_kwargs['mean_x'] = mean_x[indx]
-                        interpolator_kwargs['mean_xu'] = mean_x[i]
-                    if var_x is not None:
-                        interpolator_kwargs['var_x'] = var_x[indx]
-                        interpolator_kwargs['var_xu'] = var_x[i]
-                    if alpha_x is not None:
-                        interpolator_kwargs['alpha_xu'] = alpha_x[i]
-                    if beta_x is not None:
-                        interpolator_kwargs['beta_xu'] = beta_x[i]
-                    if gamma_x is not None:
-                        interpolator_kwargs['gamma_xu'] = gamma_x[i]
-                    # adapt cov_model
-                    cov_model_cp = copyCovModel(cov_model)
-                    if w_multiplier_x is not None:
-                        cov_model_cp.multiply_w(w_multiplier_x[i])
-                    if r_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r_multiplier_x[i])
-                    if r1_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r1_multiplier_x[i], r_ind=0)
-                    if r2_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r2_multiplier_x[i], r_ind=1)
-                    if r3_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r3_multiplier_x[i], r_ind=2)
-                    # interpolation
-                    v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model_cp, **interpolator_kwargs)
-            else:
-                # adapt_kwds = True and adapt_cov_model = False
-                for i in range(n):
-                    indx = np.sum((x-x[i])**2, axis=1) >= dmin2
-                    if np.all(~indx):
-                        err_msg = f'{fname}: `dmin` is too large: no more point for evaluation'
-                        raise CovModelError(err_msg)
+                # adapt kwds
+                if adapt_kwds_v_err_std:
+                    interpolator_kwargs['v_err_std'] = v_err_std[indx]
+                if adapt_kwds_mean_x:
+                    interpolator_kwargs['mean_x'] = mean_x[indx]
+                    interpolator_kwargs['mean_xu'] = mean_x[i]
+                if adapt_kwds_var_x:
+                    interpolator_kwargs['var_x'] = var_x[indx]
+                    interpolator_kwargs['var_xu'] = var_x[i]
+                if adapt_kwds_alpha_x:
+                    interpolator_kwargs['alpha_xu'] = alpha_x[i]
+                if adapt_kwds_beta_x:
+                    interpolator_kwargs['beta_xu'] = beta_x[i]
+                if adapt_kwds_gamma_x:
+                    interpolator_kwargs['gamma_xu'] = gamma_x[i]
+                if adapt_kwds_cov_model_non_stationarity_x_list:
+                    for k in adapt_kwds_cov_model_non_stationarity_x_list_ind:
+                        interpolator_kwargs['cov_model_non_stationarity_xu_list'][k][1] = cov_model_non_stationarity_x_list[k][1][i]
 
-                    # adapt kwds
-                    if mean_x is not None:
-                        interpolator_kwargs['mean_x'] = mean_x[indx]
-                        interpolator_kwargs['mean_xu'] = mean_x[i]
-                    if var_x is not None:
-                        interpolator_kwargs['var_x'] = var_x[indx]
-                        interpolator_kwargs['var_xu'] = var_x[i]
-                    if alpha_x is not None:
-                        interpolator_kwargs['alpha_xu'] = alpha_x[i]
-                    if beta_x is not None:
-                        interpolator_kwargs['beta_xu'] = beta_x[i]
-                    if gamma_x is not None:
-                        interpolator_kwargs['gamma_xu'] = gamma_x[i]
-                    # interpolation
-                    v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
+                # interpolation
+                v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
+
         else:
-            if adapt_cov_model:
-                # adapt_kwds = False and adapt_cov_model = True
-                for i in range(n):
-                    indx = np.sum((x-x[i])**2, axis=1) >= dmin2
-                    if np.all(~indx):
-                        err_msg = f'{fname}: `dmin` is too large: no more point for evaluation'
-                        raise CovModelError(err_msg)
+            # adapt_kwds = False
+            for i in range(n):
+                indx = np.sum((x-x[i])**2, axis=1) >= dmin2
+                if np.all(~indx):
+                    err_msg = f'{fname}: `dmin` is too large: no more point for evaluation'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
 
-                    # adapt cov_model
-                    cov_model_cp = copyCovModel(cov_model)
-                    if w_multiplier_x is not None:
-                        cov_model_cp.multiply_w(w_multiplier_x[i])
-                    if r_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r_multiplier_x[i])
-                    if r1_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r1_multiplier_x[i], r_ind=0)
-                    if r2_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r2_multiplier_x[i], r_ind=1)
-                    if r3_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r3_multiplier_x[i], r_ind=2)
-                    # interpolation
-                    v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model_cp, **interpolator_kwargs)
-            else:
-                # adapt_kwds = False and adapt_cov_model = False
-                for i in range(n):
-                    indx = np.sum((x-x[i])**2, axis=1) >= dmin2
-                    if np.all(~indx):
-                        err_msg = f'{fname}: `dmin` is too large: no more point for evaluation'
-                        raise CovModelError(err_msg)
-
-                    # interpolation
-                    v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
+                # interpolation
+                v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
+    
     else:
         if adapt_kwds:
-            if adapt_cov_model:
-                # adapt_kwds = True and adapt_cov_model = True
-                for i in range(n):
-                    indx = np.delete(ind, i)
-                    # adapt kwds
-                    if mean_x is not None:
-                        interpolator_kwargs['mean_x'] = mean_x[indx]
-                        interpolator_kwargs['mean_xu'] = mean_x[i]
-                    if var_x is not None:
-                        interpolator_kwargs['var_x'] = var_x[indx]
-                        interpolator_kwargs['var_xu'] = var_x[i]
-                    if alpha_x is not None:
-                        interpolator_kwargs['alpha_xu'] = alpha_x[i]
-                    if beta_x is not None:
-                        interpolator_kwargs['beta_xu'] = beta_x[i]
-                    if gamma_x is not None:
-                        interpolator_kwargs['gamma_xu'] = gamma_x[i]
-                    # adapt cov_model
-                    cov_model_cp = copyCovModel(cov_model)
-                    if w_multiplier_x is not None:
-                        cov_model_cp.multiply_w(w_multiplier_x[i])
-                    if r_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r_multiplier_x[i])
-                    if r1_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r1_multiplier_x[i], r_ind=0)
-                    if r2_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r2_multiplier_x[i], r_ind=1)
-                    if r3_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r3_multiplier_x[i], r_ind=2)
-                    # interpolation
-                    v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model_cp, **interpolator_kwargs)
-            else:
-                # adapt_kwds = True and adapt_cov_model = False
-                for i in range(n):
-                    indx = np.delete(ind, i)
-                    # adapt kwds
-                    if mean_x is not None:
-                        interpolator_kwargs['mean_x'] = mean_x[indx]
-                        interpolator_kwargs['mean_xu'] = mean_x[i]
-                    if var_x is not None:
-                        interpolator_kwargs['var_x'] = var_x[indx]
-                        interpolator_kwargs['var_xu'] = var_x[i]
-                    if alpha_x is not None:
-                        interpolator_kwargs['alpha_xu'] = alpha_x[i]
-                    if beta_x is not None:
-                        interpolator_kwargs['beta_xu'] = beta_x[i]
-                    if gamma_x is not None:
-                        interpolator_kwargs['gamma_xu'] = gamma_x[i]
-                    # interpolation
-                    v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
+            # adapt_kwds = True
+            for i in range(n):
+                indx = np.delete(ind, i)
+
+                # adapt kwds
+                if adapt_kwds_v_err_std:
+                    interpolator_kwargs['v_err_std'] = v_err_std[indx]
+                if adapt_kwds_mean_x:
+                    interpolator_kwargs['mean_x'] = mean_x[indx]
+                    interpolator_kwargs['mean_xu'] = mean_x[i]
+                if adapt_kwds_var_x:
+                    interpolator_kwargs['var_x'] = var_x[indx]
+                    interpolator_kwargs['var_xu'] = var_x[i]
+                if adapt_kwds_alpha_x:
+                    interpolator_kwargs['alpha_xu'] = alpha_x[i]
+                if adapt_kwds_beta_x:
+                    interpolator_kwargs['beta_xu'] = beta_x[i]
+                if adapt_kwds_gamma_x:
+                    interpolator_kwargs['gamma_xu'] = gamma_x[i]
+                if adapt_kwds_cov_model_non_stationarity_x_list:
+                    for k in adapt_kwds_cov_model_non_stationarity_x_list_ind:
+                        interpolator_kwargs['cov_model_non_stationarity_xu_list'][k][1] = cov_model_non_stationarity_x_list[k][1][i]
+
+                # interpolation
+                v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
+
         else:
-            if adapt_cov_model:
-                # adapt_kwds = False and adapt_cov_model = True
-                for i in range(n):
-                    indx = np.delete(ind, i)
-                    # adapt cov_model
-                    cov_model_cp = copyCovModel(cov_model)
-                    if w_multiplier_x is not None:
-                        cov_model_cp.multiply_w(w_multiplier_x[i])
-                    if r_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r_multiplier_x[i])
-                    if r1_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r1_multiplier_x[i], r_ind=0)
-                    if r2_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r2_multiplier_x[i], r_ind=1)
-                    if r3_multiplier_x is not None:
-                        cov_model_cp.multiply_r(r3_multiplier_x[i], r_ind=2)
-                    # interpolation
-                    v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model_cp, **interpolator_kwargs)
-            else:
-                # adapt_kwds = False and adapt_cov_model = False
-                # STANDARD LOO
-                for i in range(n):
-                    indx = np.delete(ind, i)
-                    # interpolation
-                    v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
+            # adapt_kwds = False
+            for i in range(n):
+                indx = np.delete(ind, i)
+
+                # interpolation
+                v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
 
     # Normalized error
     errn = (v_est - v) / v_std
@@ -10964,34 +11624,65 @@ def cross_valid_loo(
     success = pvalue > significance
 
     if print_result:
-        # CRPS
-        print('----- CRPS (negative; the larger, the better) -----')
-        print(f'   mean = {np.mean(crps):.4g}')
-        print(f'   def. = {crps_def:.4g}')
-        # Result of test 1
-        print('----- 1) "Normal law test for mean of normalized error" -----')
-        print(f'   p-value = {pvalue[0]:.4g}')
-        print(f'   success = {success[0]} (wrt significance level {significance})')
-        if success[0]:
-            print(f'      (-> model has no reason to be rejected)')
-        else:
-            print(f'      -> model should be REJECTED')
+        if logger:
+            # CRPS
+            logger.info('----- CRPS (negative; the larger, the better) -----')
+            logger.info(f'   mean = {np.mean(crps):.4g}')
+            logger.info(f'   def. = {crps_def:.4g}')
+            # Result of test 1
+            logger.info('----- 1) "Normal law test for mean of normalized error" -----')
+            logger.info(f'   p-value = {pvalue[0]:.4g}')
+            logger.info(f'   success = {success[0]} (wrt significance level {significance})')
+            if success[0]:
+                logger.info(f'      (-> model has no reason to be rejected)')
+            else:
+                logger.info(f'      -> model should be REJECTED')
 
-        # Result of test 1
-        print('----- 2) "Chi-square test for sum of squares of normalized error" -----')
-        print(f'   p-value = {pvalue[1]:.4g}')
-        print(f'   success = {success[1]} (wrt significance level {significance})')
-        if success[1]:
-            print(f'      (-> model has no reason to be rejected)')
-        else:
-            print(f'      -> model should be REJECTED')
+            # Result of test 1
+            logger.info('----- 2) "Chi-square test for sum of squares of normalized error" -----')
+            logger.info(f'   p-value = {pvalue[1]:.4g}')
+            logger.info(f'   success = {success[1]} (wrt significance level {significance})')
+            if success[1]:
+                logger.info(f'      (-> model has no reason to be rejected)')
+            else:
+                logger.info(f'      -> model should be REJECTED')
 
-        # Some indicators
-        print('----- Statistics of normalized error -----')
-        print(f'   mean     = {np.mean(errn):.4g} (should be close to 0)')
-        print(f'   std      = {np.std(errn):.4g} (should be close to 1)')
-        print(f'   skewness = {stats.skew(errn):.4g} (should be close to 0)')
-        print(f'   excess kurtosis = {stats.kurtosis(errn):.4g} (should be close to 0)')
+            # Some indicators
+            logger.info('----- Statistics of normalized error -----')
+            logger.info(f'   mean     = {np.mean(errn):.4g} (should be close to 0)')
+            logger.info(f'   std      = {np.std(errn):.4g} (should be close to 1)')
+            logger.info(f'   skewness = {stats.skew(errn):.4g} (should be close to 0)')
+            logger.info(f'   excess kurtosis = {stats.kurtosis(errn):.4g} (should be close to 0)')
+
+        else:
+            # CRPS
+            print('----- CRPS (negative; the larger, the better) -----')
+            print(f'   mean = {np.mean(crps):.4g}')
+            print(f'   def. = {crps_def:.4g}')
+            # Result of test 1
+            print('----- 1) "Normal law test for mean of normalized error" -----')
+            print(f'   p-value = {pvalue[0]:.4g}')
+            print(f'   success = {success[0]} (wrt significance level {significance})')
+            if success[0]:
+                print(f'      (-> model has no reason to be rejected)')
+            else:
+                print(f'      -> model should be REJECTED')
+
+            # Result of test 1
+            print('----- 2) "Chi-square test for sum of squares of normalized error" -----')
+            print(f'   p-value = {pvalue[1]:.4g}')
+            print(f'   success = {success[1]} (wrt significance level {significance})')
+            if success[1]:
+                print(f'      (-> model has no reason to be rejected)')
+            else:
+                print(f'      -> model should be REJECTED')
+
+            # Some indicators
+            print('----- Statistics of normalized error -----')
+            print(f'   mean     = {np.mean(errn):.4g} (should be close to 0)')
+            print(f'   std      = {np.std(errn):.4g} (should be close to 1)')
+            print(f'   skewness = {stats.skew(errn):.4g} (should be close to 0)')
+            print(f'   excess kurtosis = {stats.kurtosis(errn):.4g} (should be close to 0)')
 
     if make_plot:
         _, ax = plt.subplots(2,2, figsize=figsize)
@@ -11072,7 +11763,8 @@ def cross_valid_loo(
 # ============================================================================
 # ----------------------------------------------------------------------------
 def sgs(x, v, xu, cov_model,
-        method='simple_kriging',
+        v_err_std=0.0,
+        method='ordinary_kriging',
         mean_x=None,
         mean_xu=None,
         var_x=None,
@@ -11080,15 +11772,19 @@ def sgs(x, v, xu, cov_model,
         alpha_xu=None,
         beta_xu=None,
         gamma_xu=None,
-        dmax=None,
+        cov_model_non_stationarity_xu_list=None,
+        searchRadius=None,
+        searchRadiusRelative=1.2,
         nneighborMax=12,
         nreal=1,
         seed=None,
-        verbose=0):
+        pid=None,
+        verbose=0,
+        logger=None):
     """
     Performs Sequential Gaussian Simulation (SGS) at given location(s).
 
-    This function does SGS at locations `xu`, starting from data points locations
+    This function does SGS at locations `xu`, given data points locations
     `x` with values `v`.
 
     Parameters
@@ -11096,8 +11792,8 @@ def sgs(x, v, xu, cov_model,
     x : 2D array of floats of shape (n, d)
         data points locations, with n the number of data points and d the space
         dimension (1, 2, or 3), each row of `x` is the coordinatates of one data
-        point; note: for data in 1D (`d=1`), 1D array of shape (n,) is accepted
-        for n data points
+        point; note: for data in 1D (`d=1`), 1D array of shape `(n,)` is accepted
+        for `n` data points
 
     v : 1D array of floats of shape (n,)
         data points values, with n the number of data points, `v[i]` is the data
@@ -11107,8 +11803,8 @@ def sgs(x, v, xu, cov_model,
         points locations where the interpolation has to be done, with nu the
         number of points and d the space dimension (1, 2, or 3, same as for `x`),
         each row of `xu` is the coordinatates of one point;
-        note: for data in 1D (`d=1`), 1D array of shape (nu,) is accepted for nu
-        points
+        note: for data in 1D (`d=1`), 1D array of shape `(nu,)` is accepted 
+        for `nu` points
 
     cov_model : :class:`CovModel1D` or :class:`CovModel2D` or :class:`CovModel3D`
         covariance model in 1D, 2D, or 3D, in same dimension as dimension of
@@ -11123,12 +11819,21 @@ def sgs(x, v, xu, cov_model,
         - :class:`CovModel1D` interpreted as an omni-directional covariance model \
         whatever dimension of points (d);
 
-        Note: the covariance model must be stationary, however, non-stationary
-        orientation can be handled by specifying `alpha_xu`, `beta_xu`, `gamma_xu`
+        note: the covariance model must be stationary, however, non stationarity is
+        handled: 
 
-    method : str {'simple_kriging', 'ordinary_kriging'}, default: 'simple_kriging'
+        - local rotation by specifying `alpha_xu` (in 2D or 3D), `beta_xu` (in 3D), `gamma_xu` (in 3D)
+        - other non-stationarities by specifying `cov_model_non_stationarity_xu_list` (see below)
+
+    v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
+        standard deviation of error at data points, with n the number of data points; 
+        if `v_err_std` is a float, the same value is used for all data points; 
+        this means that at location x[i], the data value is considered as in a Gaussian 
+        distribution of mean `v[i]` and standard deviation `v_err_std[i]`
+
+    method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
         type of kriging;
-        note: if `method='ordinary_kriging'`, the parameters `dmax`, `nneighborMax`,
+        note: if `method='ordinary_kriging'`, the parameters
         `mean_x`, `mean_xu`, `var_x`, `var_xu` are not used
 
     mean_x : 1D array-like of floats, or float, optional
@@ -11189,12 +11894,55 @@ def sgs(x, v, xu, cov_model,
 
         note: `gamma_xu` is ignored if the covariance model is in 1D or 2D
 
-    dmax : float, optional
-        radius of the search disk (ellipsoid) centered at the estimated point,
-        i.e. the data points at distance to the estimated point greater than
-        `dmax` are not taken into account in the kriging system;
-        by default (`dmax=None`): `dmax` is set to the range (max) of the
-        covariance model
+    cov_model_non_stationarity_xu_list : list, optional
+        list to set non-stationarities in covariance model; each entry must be
+        a tuple (or list) `cm_ns` of length 2 or 3 with:
+
+        - `cm_ns[0]`: str: the name of the method of `cov_model` to be applied
+        - `cm_ns[1]`: 1D array-like of floats, or float: \
+        used to set the main parameter passed to the method:
+            - if array-like: its size must be equal to `nu`, \
+            (the array is reshaped if needed), values at points `xu`
+            - if a float: same value at all points `xu`
+        - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
+
+        Examples (with the parameter `arg` is set from `val`)
+        
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
+            this multipies the weight contribution of every elementary contribution of the 
+            covariance model
+        - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
+            this multipies the weight contribution of the elementary contribution of index 0 of the 
+            covariance model
+        - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
+            this multipies the range in all direction of every elementary contribution of the
+            covariance model
+        - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
+            this multipies the range in the first main direction (index 0) of every elementary 
+            contribution of the covariance model
+        - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
+            this multipies the range in the first main direction (index 0) of the elementary 
+            contribution of index 0 of the covariance model
+
+    searchRadius : float, optional
+        if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
+        with same radii along each axis), i.e. the data points at distance to the 
+        estimated point greater than `searchRadius` are not taken into account 
+        in the kriging system; if `searchRadius` is not `None`, then 
+        `searchRadiusRelative` is not used;
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        define the search ellipsoid;
+
+    searchRadiusRelative : float, default: 1.2
+        used only if `searchRadius` is `None`;
+        indicates how the search ellipsoid is limited (should be positive): let
+        r_i be the ranges of the covariance model along its main axes, when
+        estimating/simulating a cell x, a cell y is taken into account iff it is
+        within the ellipsoid centered at x of half axes equal to
+        `searchRadiusRelative` * r_i; 
+        (note that the distances to the central node are computed in the axes 
+        sytem supporting the covariance model and accounting for anisotropy given 
+        by the ranges)
 
     nneighborMax : int, default: 12
         maximal number of neighbors (data points) taken into account in the
@@ -11207,8 +11955,15 @@ def sgs(x, v, xu, cov_model,
     seed : int, optional
         seed for initializing random number generator
 
+    pid : int, optional
+        process id of the caller (used with multiprocessing)
+
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -11217,49 +11972,111 @@ def sgs(x, v, xu, cov_model,
         - vu[i, j] value of the i-th realization at point `xu[j]`
     """
     fname = 'sgs'
+    if pid is not None:
+        fname = f'{fname} [pid={pid}]'
 
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
-        err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+        err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use the other paramters for non-stationary covariance)'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
-    # Get dimension (d) from x
-    if np.asarray(x).ndim == 1:
-        # x is a 1-dimensional array
-        x = np.asarray(x).reshape(-1, 1)
-        d = 1
+    # Get dimension from x (d) and number of data points (n) and size of v
+    if x is None:
+        n = 0
+        d = 0
+        if v is not None:
+            err_msg = f'{fname}: `x` is None but `v` is not None'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+    
     else:
-        # x is a 2-dimensional array
-        d = x.shape[1]
+        x = np.asarray(x)
+        # Get dimension (d) from x
+        if x.ndim == 1:
+            # x is a 1-dimensional array
+            x = x.reshape(-1, 1)
+            d = 1
+        else:
+            # x is a 2-dimensional array
+            d = x.shape[1]
 
-    # Get dimension (du) from xu
-    if np.asarray(xu).ndim == 1:
-        # xu is a 1-dimensional array
-        xu = np.asarray(xu).reshape(-1, 1)
-        du = 1
+        n = x.shape[0]
+
+        # Check size of v
+        if v is None:
+            err_msg = f'{fname}: `x` is not None but `v` is None'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v = np.asarray(v).reshape(-1)
+        if v.size != n:
+            err_msg = f'{fname}: size of `v` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Set variance of data error (from standard deviation)
+    if v_err_std is None:
+        v_err_std = 0.0
+    v_err_var = np.asarray(v_err_std, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+    if v_err_var.size == 1:
+        v_err_var = v_err_var[0] * np.ones(n)
+    elif v_err_var.size != n:
+        err_msg = f'{fname}: size of `v_err_std` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    v_err_var = v_err_var * v_err_var
+
+    # Get dimension from xu (du) and number of unknown points (nu)
+    if xu is None:
+        nu = 0
+        du = 0
     else:
-        # xu is a 2-dimensional array
-        du = xu.shape[1]
+        xu = np.asarray(xu)
+        # Get dimension (du) from xu
+        if xu.ndim == 1:
+            # xu is a 1-dimensional array
+            xu = xu.reshape(-1, 1)
+            du = 1
+        else:
+            # xu is a 2-dimensional array
+            du = xu.shape[1]
 
-    # Number of data points
-    n = x.shape[0]
-    # Number of unknown points
-    nu = xu.shape[0]
+        nu = xu.shape[0]
 
-    if n == 0 or nu == 0:
-        err_msg = f'{fname}: size (number of points) of `x` or `xu` is 0'
-        raise CovModelError(err_msg)
+    if nu == 0:
+        vu = np.empty((nreal, 0), dtype='float')
+        return vu
 
-    # Check size of v
-    v = np.asarray(v).reshape(-1)
-    if v.size != n:
-        err_msg = f'{fname}: size of `v` is not valid'
-        raise CovModelError(err_msg)
+    # Here: nu > 0
 
-    # Check dimension of x and xu
-    if d != du:
-        err_msg = f'{fname}: `x` and `xu` do not have the same dimension'
-        raise CovModelError(err_msg)
+    if n > 0:
+        # Check dimension of x and xu
+        if d != du:
+            err_msg = f'{fname}: `x` and `xu` do not have the same dimension'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    else: # n == 0
+        d = du # set d to du if no data point
+        x = np.empty((0, d), dtype='float') # set x to an empty array with shape (0, d)
+        v = np.array([], dtype='float')
+
+    # Check that all data points (locations) are distinct
+    for i in range(1, n):
+        if np.any(np.isclose(np.sum((x[:i]-x[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x` contains duplicated entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Identify points in xu that are in x
+    ind_x_in_xu = -1 * np.ones(nu, dtype='int')
+    if n > 0:
+        for j in range(nu):
+            ind = np.isclose(np.sum((x-xu[j])**2, axis=1), 0.0)
+            if np.any(ind):
+                ind_x_in_xu[j] = np.where(ind)[0][0]
 
     # Check dimension of cov_model and set if used as omni-directional model
     if isinstance(cov_model, CovModel1D):
@@ -11267,6 +12084,7 @@ def sgs(x, v, xu, cov_model,
     else:
         if cov_model.__class__.__name__ != f'CovModel{d}D':
             err_msg = f'{fname}: `cov_model` dimension is incompatible with dimension of points'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
         omni_dir = False
@@ -11282,28 +12100,43 @@ def sgs(x, v, xu, cov_model,
     # Method and mean, var
     if method == 'simple_kriging':
         ordinary_kriging = False
-        if mean_x is None:
-            mean_x = np.mean(v) * np.ones(n)
+        if n == 0:
+            mean_x = np.array([], dtype='float')
         else:
-            mean_x = np.asarray(mean_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-            if mean_x.size == 1:
-                mean_x = mean_x * np.ones(n)
-            elif mean_x.size != n:
-                err_msg = f'{fname}: size of `mean_x` is not valid'
-                raise CovModelError(err_msg)
-
+            if mean_x is None:
+                mean_x = np.mean(v) * np.ones(n)
+            else:
+                mean_x = np.asarray(mean_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                if mean_x.size == 1:
+                    mean_x = mean_x * np.ones(n)
+                elif mean_x.size != n:
+                    err_msg = f'{fname}: size of `mean_x` is not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                
         if mean_xu is None:
-            mean_xu = mean_x[0] * np.ones(nu)
+            if n == 0:
+                mean_xu = np.zeros(nu)
+            else:
+                mean_xu = np.mean(v) * np.ones(nu)
         else:
             mean_xu = np.asarray(mean_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if mean_xu.size == 1:
                 mean_xu = mean_xu * np.ones(nu)
             elif mean_xu.size != nu:
                 err_msg = f'{fname}: size of `mean_xu` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
+
+        if n == 0:
+            if var_xu is None:
+                var_x = None
+            else:
+                var_x = np.array([], dtype='float')
 
         if (var_x is None and var_xu is not None) or (var_x is not None and var_xu is None):
             err_msg = f'{fname}: `var_x` and `var_xu` must both be specified'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
         if var_x is not None:
@@ -11312,27 +12145,76 @@ def sgs(x, v, xu, cov_model,
                 var_x = var_x * np.ones(n)
             elif var_x.size != n:
                 err_msg = f'{fname}: size of `var_x` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
             varUpdate_x = np.sqrt(var_x/cov0)
+
         if var_xu is not None:
             var_xu = np.asarray(var_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
             if var_xu.size == 1:
                 var_xu = var_xu * np.ones(nu)
             elif var_xu.size != nu:
                 err_msg = f'{fname}: size of `var_xu` is not valid'
+                if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
             varUpdate_xu = np.sqrt(var_xu/cov0)
 
     elif method == 'ordinary_kriging':
+        if verbose > 0:
+            if mean_x is not None:
+                if logger:
+                    logger.warning(f"{fname}: `mean_x` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `mean_x` is ignored with `method='ordinary_kriging'`")
+            if mean_xu is not None:
+                if logger:
+                    logger.warning(f"{fname}: `mean_xu` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `mean_xu` is ignored with `method='ordinary_kriging'`")
+            if var_x is not None:
+                if logger:
+                    logger.warning(f"{fname}: `var_x` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `var_x` is ignored with `method='ordinary_kriging'`")
+            if var_xu is not None:
+                if logger:
+                    logger.warning(f"{fname}: `var_xu` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `var_xu` is ignored with `method='ordinary_kriging'`")
+
         ordinary_kriging = True
         mean_x, mean_xu, var_x, var_xu = None, None, None, None
+
     else:
         err_msg = f'{fname}: `method` invalid'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
-    # Rotation given by alpha, beta, gamma
+    # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
+    cov_model = copyCovModel(cov_model) 
+    cov_model_has_changed = False
+
+    # Rotation given by alpha_xu, beta_xu, gamma_xu
+    if alpha_xu is not None:
+        if omni_dir:
+            err_msg = f'{fname}: `alpha_xu` cannot be used with 1D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    if beta_xu is not None:
+        if omni_dir or d < 3:
+            err_msg = f'{fname}: `beta_xu` cannot be used with 1D or 2D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+    
+    if gamma_xu is not None:
+        if omni_dir or d < 3:
+            err_msg = f'{fname}: `gamma_xu` cannot be used with 1D or 2D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        
     if omni_dir:
         rot = False
     else:
@@ -11350,11 +12232,20 @@ def sgs(x, v, xu, cov_model,
                         rot = True
                         rot_mat_unique = True
                 elif alpha_xu.size == nu:
-                    rot_mat = rotationMatrix2D(alpha_xu).transpose(2, 0, 1) # rot_mat[i] : rotation matrix for xu[i]
-                    rot = True
-                    rot_mat_unique = False
+                    if np.allclose(alpha_xu, alpha_xu[0]):
+                        if np.isclose(alpha_xu[0], 0.0):
+                            rot = False
+                        else:
+                            rot_mat = rotationMatrix2D(alpha_xu[0]) # rot_mat : rotation matrix for any xu[i]
+                            rot = True
+                            rot_mat_unique = True
+                    else:
+                        rot_mat = rotationMatrix2D(alpha_xu).transpose(2, 0, 1) # rot_mat[i] : rotation matrix for xu[i]
+                        rot = True
+                        rot_mat_unique = False
                 else:
                     err_msg = f'{fname}: size of `alpha_xu` is not valid'
+                    if logger: logger.error(err_msg)
                     raise CovModelError(err_msg)
 
         else: # d == 3
@@ -11368,32 +12259,35 @@ def sgs(x, v, xu, cov_model,
                         alpha_xu = alpha_xu * np.ones(nu)
                     elif alpha_xu.size != nu:
                         err_msg = f'{fname}: size of `alpha_xu` is not valid'
+                        if logger: logger.error(err_msg)
                         raise CovModelError(err_msg)
-
                 else:
                     alpha_xu = np.zeros(nu)
+
                 if beta_xu is not None:
                     beta_xu = np.asarray(beta_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
                     if beta_xu.size == 1:
                         beta_xu = beta_xu * np.ones(nu)
                     elif beta_xu.size != nu:
                         err_msg = f'{fname}: size of `beta_xu` is not valid'
+                        if logger: logger.error(err_msg)
                         raise CovModelError(err_msg)
-
                 else:
                     beta_xu = np.zeros(nu)
+
                 if gamma_xu is not None:
                     gamma_xu = np.asarray(gamma_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
                     if gamma_xu.size == 1:
                         gamma_xu = gamma_xu * np.ones(nu)
                     elif gamma_xu.size != nu:
                         err_msg = f'{fname}: size of `gamma_xu` is not valid'
+                        if logger: logger.error(err_msg)
                         raise CovModelError(err_msg)
-
                 else:
                     gamma_xu = np.zeros(nu)
-                if np.unique(np.array((alpha_xu, beta_xu, gamma_xu)).T, axis=0).shape[0] == 1:
-                    if alpha_xu[0] == 0.0 and beta_xu[0] == 0.0 and gamma_xu[0] == 0.0:
+
+                if np.allclose(np.vstack((alpha_xu, beta_xu, gamma_xu)).T, np.array([alpha_xu[0], beta_xu[0], gamma_xu[0]])):
+                    if np.isclose(alpha_xu[0], 0.0) and np.isclose(beta_xu[0], 0.0) and np.isclose(gamma_xu[0], 0.0):
                         rot = False
                     else:
                         rot_mat = rotationMatrix3D(alpha_xu[0], beta_xu[0], gamma_xu[0]) # rot_mat : rotation matrix for any xu[i]
@@ -11404,72 +12298,139 @@ def sgs(x, v, xu, cov_model,
                     rot = True
                     rot_mat_unique = False
 
-    if rot and rot_mat_unique:
-        # apply rotation to data points x and points xu
-        x = x.dot(rot_mat)
-        xu = xu.dot(rot_mat)
-        rot = False # no need rotation further
+    if rot:
+        if d == 2:
+            cov_model.set_alpha(0.0)
+            cov_model_has_changed = True
+        elif d == 3:
+            cov_model.set_alpha(0.0)
+            cov_model.set_beta(0.0)
+            cov_model.set_gamma(0.0)
+            cov_model_has_changed = True
+        if rot_mat_unique:
+            # apply rotation to data points x and points xu
+            x = x.dot(rot_mat)
+            xu = xu.dot(rot_mat)
+            rot = False # no need rotation further
 
     # here: rot = True means that local rotation are applied
 
-    # Check that all data points (locations) are distinct
-    for i in range(1, n):
-        if np.any(np.isclose(np.sum((x[:i]-x[i])**2, axis=1), 0.0)):
-            err_msg = f'{fname}: `x` contains duplicated entries'
+    # Prepare non-stationarities for integration in covariance model
+    adapt_cov_model_ind = []
+    recompute_cov0 = False
+    recompute_dmax_ax = False
+    if cov_model_non_stationarity_xu_list is not None:
+        if not isinstance(cov_model_non_stationarity_xu_list, list):
+            err_msg = f'{fname}: `cov_model_non_stationarity_xu_list` must be a list if not `None`'
+            if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
+        for i, cm_ns_xu in enumerate(cov_model_non_stationarity_xu_list):
+            if not hasattr(cm_ns_xu, '__len__') or len(cm_ns_xu) not in (2, 3):
+                err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_xu_list` not valid: should be a tuple or list of length 2 or 3 containing: method name (str), val[, kwds (dict)]'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+            val = np.asarray(cm_ns_xu[1], dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if val.size != 1:
+                if val.size != nu:
+                    err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_xu_list`, `(method_name, val[, kwds])`: size of `val` not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                if np.allclose(val, val[0]):
+                    val = val[:1] # of size 1
+                else:
+                    adapt_cov_model_ind.append(i)
+                    if cm_ns_xu[0] == 'multiply_w':
+                        recompute_cov0 = True
+                    elif cm_ns_xu[0] == 'multiply_r':
+                        recompute_dmax_ax = True
+            if val.size == 1:
+                method_name = cm_ns_xu[0]
+                if len(cm_ns_xu) == 3:
+                    kwds = cm_ns_xu[2]
+                else:
+                    kwds = {}
+                try:
+                    eval(f'cov_model.{method_name}')(val[0], logger=logger, **kwds)
+                except:
+                    err_msg = f'{fname}: cannot apply non-stationarity (at points) for covariance model (check parameter `cov_model_non_stationarity_xu_list`)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                cov_model_has_changed = True
 
-    # Identify points in xu that are in x
-    ind_xu = []
-    ind_xu_in_x = []
-    for j in range(nu):
-        ind = np.isclose(np.sum((x-xu[j])**2, axis=1), 0.0)
-        if np.any(ind):
-            ind_xu.append(j)
-            ind_xu_in_x.append(np.where(ind)[0][0])
+    adapt_cov_model = len(adapt_cov_model_ind) > 0
 
-    # Remove from xu the points present in x (keeping trace of them)
-    nu_new = nu - len(ind_xu)
-    ind_xu_new = np.setdiff1d(np.arange(nu), ind_xu)
-    xu_new = xu[ind_xu_new]
+    if cov_model_has_changed:
+        # Update - Covariance function and value at 0
+        cov_func = cov_model.func() # covariance function
+        if omni_dir:
+            # covariance model in 1D is used
+            cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+        else:
+            cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+    
+    # Limited search neighborhood
+    if searchRadius is not None:
+        if searchRadius <= 0.0:
+            err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        
+        if omni_dir:
+            dmax_ax = np.array([searchRadius], dtype='float')
+        else:
+            dmax_ax = searchRadius * np.ones(d)
+
+    else:
+        # use searchRadiusRelative
+        if searchRadiusRelative <= 0.0:
+            err_msg = f'{fname}: search radius relative (factor) not valid (negative)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        
+        if d == 1 or omni_dir:
+            dmax_ax = np.array([cov_model.r()])
+        elif d == 2:
+            dmax_ax = cov_model.r12()
+        elif d == 3:
+            dmax_ax = cov_model.r123()
+
+        dmax_ax = searchRadiusRelative * dmax_ax
+
+    dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+    # Preparation if covariance model will be adapted
+    if adapt_cov_model:
+        cov_model_base = copyCovModel(cov_model)
+
+    # Maximum number of neighbors
+    if nneighborMax is None or nneighborMax < 0:
+        err_msg = f'{fname}: `nneighborMax` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    mat = np.ones((nneighborMax+1, nneighborMax+1)) # allocate kriging matrix
+    b = np.ones(nneighborMax+1) # allocate second member
 
     # Allocate memory for output
     vu = np.zeros((nreal, nu))
 
-    # Set value in all simulations (output) at points xu present in x
-    vu[:, ind_xu] = v[ind_xu_in_x]
-
-    x_all = np.zeros((n+nu_new, d))
-    v_all = np.zeros(n+nu_new)
-    x_all[:n, :] = x
-    v_all[:n] = v
+    # Set all points together (data points and points to be simulated)
+    x_all = np.vstack((x, xu))
+    v_all = np.hstack((v, np.zeros(nu)))
+    v_err_var_all = np.hstack((v_err_var, np.zeros(nu)))
     if mean_x is not None:
-        mean_all = np.zeros(n+nu_new)
-        mean_all[:n] = mean_x
-        mean_xu_new = mean_xu[ind_xu_new]
-        # mean_all = np.hstack((mean_x, mean_xu[ind_xu_new]))
+        mean_all = np.hstack((mean_x, mean_xu))
     if var_x is not None:
-        varUpdate_all = np.zeros(n+nu_new)
-        varUpdate_all[:n] = varUpdate_x
-        varUpdate_xu_new = varUpdate_xu[ind_xu_new]
-        # varUpdate_all = np.hstack((varUpdate_x, varUpdate_xu[ind_xu_new]))
-    if rot:
-        rot_mat_new = rot_mat[ind_xu_new]
+        varUpdate_all = np.hstack((varUpdate_x, varUpdate_xu))
 
-    # Limited search neighborhood
-    if dmax is None:
-        if d == 1 or omni_dir:
-            dmax = cov_model.r()
-        elif d == 2:
-            dmax = cov_model.r12().max()
-        elif d == 3:
-            dmax = cov_model.r123().max()
-    dmax2 = dmax*dmax
+    # Set mu0 : used as mean when mean_x is None and there is no data in the neighborhood during the simulation ...
+    if n == 0:
+        mu0 = 0.0
+    else:
+        mu0 = np.mean(v)
 
-    if nneighborMax is None or nneighborMax > n:
-        nneighborMax = n
-
-    mat = np.ones((nneighborMax+1, nneighborMax+1)) # allocate kriging matrix
-    b = np.ones(nneighborMax+1) # allocate second member
+    # Array indicating if a point in x_all can be selected for kriging
+    ind_sel = np.zeros(n+nu, dtype='bool')
 
     if seed is None:
         seed = np.random.randint(1, 1000000)
@@ -11477,95 +12438,163 @@ def sgs(x, v, xu, cov_model,
 
     if verbose > 0:
         progress_old = 0
+
     for k in range(nreal):
         # Initialize random number generator
         np.random.seed(seed+k)
+
+        # Initialize ind_sel
+        ind_sel[:n] = True  # all data points can be selected
+        ind_sel[n:] = False # no simulated points can be selected at the beginning
+
         # set path
-        ind_u = np.random.permutation(nu_new)
-        x_all[n:, :] = xu_new[ind_u]
-        if mean_x is not None:
-            mean_all[n:] = mean_xu_new[ind_u]
-        if var_x is not None:
-            varUpdate_all[n:] = varUpdate_xu_new[ind_u]
-        for j, x0 in enumerate(x_all[n:]):
+        ind_u = np.random.permutation(nu)
+
+        for j, jind in enumerate(ind_u):
+            # Simulation at x0 = xu[jind] = xu[ind_u[j]]
             if verbose > 0:
-                progress = int((j+k*nu_new)/(nreal*nu_new)*100.0)
+                progress = int((j+k*nu)/(nreal*nu)*100.0)
                 if progress > progress_old:
-                    print(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                    if logger:
+                        logger.info(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                    else:
+                        print(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
                     progress_old = progress
-            h = x_all[:(n+j)] - x0
-            d2 = np.sum(h**2, axis=1)
-            ind = np.where(d2 < dmax2)[0]
+            
+            if adapt_cov_model:
+                cov_model = copyCovModel(cov_model_base)
+                for i in adapt_cov_model_ind:
+                    cm_ns_xu = cov_model_non_stationarity_xu_list[i]
+                    method_name = cm_ns_xu[0]
+                    val = cm_ns_xu[1]
+                    if len(cm_ns_xu) == 3:
+                        kwds = cm_ns_xu[2]
+                    else:
+                        kwds = {}
+                    try:
+                        eval(f'cov_model.{method_name}')(val[jind], logger=logger, **kwds)
+                    except:
+                        err_msg = f'{fname}: cannot apply non-stationarity (at one point) for covariance model (check parameter `cov_model_non_stationarity_xu_list`)'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+
+                cov_func = cov_model.func() # update covariance function
+                if recompute_cov0:
+                    if omni_dir:
+                        # covariance model in 1D is used
+                        cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                    else:
+                        cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+                if recompute_dmax_ax:
+                    if omni_dir:
+                        dmax_ax = np.array([cov_model.r()])
+                    elif d == 2:
+                        dmax_ax = cov_model.r12()
+                    elif d == 3:
+                        dmax_ax = cov_model.r123()
+
+                    dmax_ax = searchRadiusRelative * dmax_ax
+                    dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+            x0 = xu[jind]
+            h = x0 - x_all[ind_sel]
+            if rot:
+                h = h.dot(rot_mat[jind])
+            d2 = np.sum(dmax_ax_inv2 * h**2, axis=1)
+            ind = np.where(d2 < 1.0)[0]
             if len(ind) > nneighborMax:
                 ind_s = np.argsort(d2[ind])
                 ind = ind[ind_s[:nneighborMax]]
+            h = h[ind] # lag between x0 and x_all[ind] (used below for right hand side of the kriging system)
+            ind = ind_sel.nonzero()[0][ind] # indices in x_all
             nn = len(ind)
+
             if nn == 0:
-                v_all[n+j] = np.nan
-                continue
-            xneigh = x_all[ind]
-            vneigh = v_all[ind]
-            if ordinary_kriging:
-                nmat = nn+1
+                # Mean and std (by kriging) at xu[jind]
+                if mean_x is not None:
+                    mu = mean_all[n+jind]
+                else:
+                    mu = mu0
+                
+                std = np.sqrt(cov0)
+                if var_x is not None:
+                    std = varUpdate_all[n+jind]*std
+
             else:
-                nmat = nn
-            # Set kriging matrix (mat) of order nmat
-            for i in range(nn-1):
-                # lag between xneigh[i] and xneigh[j], j=i+1, ..., nn-1
-                h = xneigh[(i+1):] - xneigh[i]
+                xneigh = x_all[ind]
+                vneigh = v_all[ind]
+                v_err_var_neigh = v_err_var_all[ind]
+
+                # Set right hand side of the kriging system (b)
                 if omni_dir:
                     # compute norm of lag
                     h = np.sqrt(np.sum(h**2, axis=1))
-                elif rot:
-                    h = h.dot(rot_mat_new[ind_u[j]])
-                cov_h = cov_func(h)
-                mat[i, (i+1):nn] = cov_h
-                mat[(i+1):nn, i] = cov_h
-                mat[i, i] = cov0
+                b[:nn] = cov_func(h)
 
-            # Set right hand side of the kriging system (b)
-            h = x0 - xneigh
-            if omni_dir:
-                # compute norm of lag
-                h = np.sqrt(np.sum(h**2, axis=1))
-            elif rot:
-                h = h.dot(rot_mat_new[ind_u[j]])
-            b[:nn] = cov_func(h)
-
-            mat[nn-1,nn-1] = cov0
-            if ordinary_kriging:
-                mat[:, nn] = 1.0
-                mat[nn, :] = 1.0
-                mat[nn,nn] = 0.0
-                b[nn] = 1.0
-
-            # Solve the kriging system
-            #print(j, ind, xneigh, x0, mat[:nmat,:nmat])
-            w = np.linalg.solve(mat[:nmat,:nmat], b[:nmat])
-
-            # Mean and std (by kriging) at xu_new[ind_u[j]]
-            if mean_x is not None:
-                # simple kriging
-                std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
-                if var_x is not None:
-                    mu = mean_all[n+j] + varUpdate_all[n+j]*(1.0/varUpdate_all[ind]*(vneigh-mean_all[ind])).dot(w)
-                    std = varUpdate_all[n+j]*std
+                if ordinary_kriging:
+                    nmat = nn+1
                 else:
-                    mu = mean_all[n+j] + (vneigh-mean_all[ind]).dot(w)
-            else:
-                # ordinary kriging
-                std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
-                mu = vneigh.dot(w[:nn])
+                    nmat = nn
+
+                # Set kriging matrix (mat) of order nmat
+                for i in range(nn-1):
+                    # lag between xneigh[i] and xneigh[j], j=i+1, ..., nn-1
+                    h = xneigh[(i+1):] - xneigh[i]
+                    if omni_dir:
+                        # compute norm of lag
+                        h = np.sqrt(np.sum(h**2, axis=1))
+                    elif rot:
+                        h = h.dot(rot_mat[jind])
+                    cov_h = cov_func(h)
+                    mat[i, (i+1):nn] = cov_h
+                    mat[(i+1):nn, i] = cov_h
+                    mat[i, i] = cov0 + v_err_var_neigh[i]
+
+                mat[nn-1,nn-1] = cov0 + v_err_var_neigh[nn-1]
+
+                if ordinary_kriging:
+                    mat[:, nn] = 1.0
+                    mat[nn, :] = 1.0
+                    mat[nn,nn] = 0.0
+                    b[nn] = 1.0
+
+                # Solve the kriging system
+                w = np.linalg.solve(mat[:nmat,:nmat], b[:nmat])
+
+                # Mean and std (by kriging) at xu[jind]
+                if mean_x is not None:
+                    # simple kriging
+                    std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                    if var_x is not None:
+                        mu = mean_all[n+jind] + varUpdate_all[n+jind]*(1.0/varUpdate_all[ind]*(vneigh-mean_all[ind])).dot(w)
+                        std = varUpdate_all[n+jind]*std
+                    else:
+                        mu = mean_all[n+jind] + (vneigh-mean_all[ind]).dot(w)
+                else:
+                    # ordinary kriging
+                    std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                    mu = vneigh.dot(w[:nn])
 
             # Draw value in N(mu, std^2)
-            v_all[n+j] = np.random.normal(loc=mu, scale=std)
+            v_all[n+jind] = np.random.normal(loc=mu, scale=std)
 
+            if ind_x_in_xu[jind] >= 0:
+                # Simulated location is a conditioning data location, then 
+                # this conditioning data can no longer be selected for the next
+                # simulated locations (the current simulated point will be used)
+                ind_sel[ind_x_in_xu[jind]] = False
+
+            ind_sel[n+jind] = True # the current simulated point can now be selected
+            
         # Store k-th realization
-        for j in range(nu_new):
-            vu[k, ind_xu_new[ind_u[j]]] = v_all[n+j]
+        vu[k, :] = v_all[n:]
 
     if verbose > 0:
-        print(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
+        if logger:
+            logger.info(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
+        else:
+            print(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
 
     return vu
 # ----------------------------------------------------------------------------
@@ -11573,7 +12602,8 @@ def sgs(x, v, xu, cov_model,
 # ----------------------------------------------------------------------------
 def sgs_mp(
         x, v, xu, cov_model,
-        method='simple_kriging',
+        v_err_std=0.0,
+        method='ordinary_kriging',
         mean_x=None,
         mean_xu=None,
         var_x=None,
@@ -11581,72 +12611,98 @@ def sgs_mp(
         alpha_xu=None,
         beta_xu=None,
         gamma_xu=None,
-        dmax=None,
+        cov_model_non_stationarity_xu_list=None,
+        searchRadius=None,
+        searchRadiusRelative=1.2,
         nneighborMax=12,
         nreal=1,
         seed=None,
         verbose=0,
-        nproc=-1):
+        nproc=-1,
+        logger=None):
     """
-    Computes the same as the function :func:`covModel.sgs`, using multiprocessing.
+    Computes the same as the function :func:`sgs`, using multiprocessing.
 
     All the parameters except `nproc` are the same as those of the function
-    :func:`covModel.sgs`.
+    :func:`sgs`.
 
-    The number of processes used (in parallel) is n, and determined by the
-    parameter `nproc` (int, optional) as follows:
-
-    - if `nproc > 0`: n = `nproc`,
-    - if `nproc <= 0`: n = max(nmax+`nproc`, 1), where nmax is the total \
-    number of cpu(s) of the system (retrieved by `multiprocessing.cpu_count()`), \
-    i.e. all cpus except `-nproc` is used (but at least one)
-
-    Then, n parallel processes are launched [parallel calls of the
-    function `sgs`]; the set of realizations (specified by `nreal`) is
+    This function launches parallel processes [parallel calls of the
+    function :func:`sgs`]; the set of realizations (specified by `nreal`) is
     distributed in a balanced way over the processes.
 
-    Note that, if `nreal` < n, then n is reduced to `nreal`.
+    The number of processes used (in parallel) is determined by the parameter `nproc` 
+    (int, default: -1); a negative number (or zero), -n <= 0, can be specified 
+    to use the total number of cpu(s) of the system except n; `nproc` is finally
+    at maximum equal to `nreal` but at least 1 by applying:
+        
+    - if `nproc >= 1`, then `nproc = max(min(nproc, nreal), 1)` is used
+    - if `nproc = -n <= 0`, then `nproc = max(min(nmax-n, nreal), 1)` is used, \
+    where nmax is the total number of cpu(s) of the system (retrieved by \
+    `multiprocessing.cpu_count()`)
 
-    Specifying a `seed` guarantees reproducible results whatever the number
+    Note: if `nproc=None`, `nproc=-1` is used.
+
+    Note: specifying a `seed` guarantees reproducible results whatever the number
     of processes used.
 
-    See function :func:`covModel.sgs` for details.
+    See function :func:`sgs` for details.
     """
     fname = 'sgs_mp'
 
-    # Set number of processes (n)
-    if nproc > 0:
-        n = nproc
+    # Set number of process(es): nproc
+    if nproc is None:
+        nproc = -1
+    
+    if nproc <= 0:
+        nproc = max(min(multiprocessing.cpu_count() + nproc, nreal), 1)
     else:
-        n = min(multiprocessing.cpu_count()+nproc, 1)
-
-    if nreal < n:
-        n = nreal
-
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), nreal), 1)
+        if verbose > 1 and nproc != nproc_tmp:
+            if logger:
+                logger.info(f'{fname}: number of processes has been changed (now: nproc={nproc})')
+            else:
+                print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
+    
     # Set index for distributing realizations
-    q, r = np.divmod(nreal, n)
-    ids_proc = [i*q + min(i, r) for i in range(n+1)]
+    q, r = np.divmod(nreal, nproc)
+    ids_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
     if verbose > 0:
-        print(f'{fname}: running sgs on {n} processes...')
+        if logger:
+            logger.info(f'{fname}: running `sgs` on {nproc} processes...')
+        else:
+            print(f'{fname}: running `sgs` on {nproc} processes...')
 
     # Set seed (base)
     if seed is None:
         seed = np.random.randint(1, 1000000)
     seed = int(seed)
 
-    # Set pool of n workers
-    pool = multiprocessing.Pool(n)
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
     out_pool = []
-    for i in range(n):
+    for i in range(nproc):
         # Set i-th process
         kwargs = dict(
+                    v_err_std=v_err_std,
                     method=method,
-                    mean_x=mean_x, mean_xu=mean_xu, var_x=var_x, var_xu=var_xu,
-                    alpha_xu=alpha_xu, beta_xu=beta_xu, gamma_xu=gamma_xu,
-                    dmax=dmax, nneighborMax=nneighborMax,
-                    nreal=ids_proc[i+1]-ids_proc[i], seed=seed+ids_proc[i],
-                    verbose=verbose*(i>0))
+                    mean_x=mean_x, 
+                    mean_xu=mean_xu, 
+                    var_x=var_x, 
+                    var_xu=var_xu,
+                    alpha_xu=alpha_xu, 
+                    beta_xu=beta_xu, 
+                    gamma_xu=gamma_xu,
+                    cov_model_non_stationarity_xu_list=cov_model_non_stationarity_xu_list,
+                    searchRadius=searchRadius,
+                    searchRadiusRelative=searchRadiusRelative, 
+                    nneighborMax=nneighborMax,
+                    nreal=ids_proc[i+1]-ids_proc[i], 
+                    seed=seed+ids_proc[i],
+                    pid=i,
+                    verbose=verbose*(i==0),
+                    logger=logger)
         out_pool.append(pool.apply_async(sgs, args=(x, v, xu, cov_model), kwds=kwargs))
 
     # Properly end working process
@@ -11657,6 +12713,7 @@ def sgs_mp(
     out = [w.get() for w in out_pool]
     if np.any([x is None for x in out]):
         err_msg = f'{fname}: an error occured on a process (worker)'
+        if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
     vu = np.vstack(out)
@@ -11664,243 +12721,2745 @@ def sgs_mp(
     return vu
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
+def sgs_at_inequality_data_points(
+        x, v, x_ineq, cov_model,
+        v_err_std=0.0,
+        v_ineq_min=None, v_ineq_max=None,
+        method='ordinary_kriging',
+        mean_x=None,
+        mean_x_ineq=None,
+        var_x=None,
+        var_x_ineq=None,
+        alpha_x_ineq=None,
+        beta_x_ineq=None,
+        gamma_x_ineq=None,
+        cov_model_non_stationarity_x_ineq_list=None,
+        searchRadius=None,
+        searchRadiusRelative=1.2,
+        nneighborMax=12,
+        nGibbsSamplerPath=50,
+        nreal=1,
+        seed=None,
+        pid=None,
+        verbose=0,
+        logger=None):
+    """
+    Performs Sequential Gaussian Simulation (SGS) at inequality data point(s).
+
+    This function does SGS at locations `x_ineq`, given data points locations
+    `x` with values `v`.
+
+    Parameters
+    ----------
+    x : 2D array of floats of shape (n, d)
+        data points locations, with n the number of data points and d the space
+        dimension (1, 2, or 3), each row of `x` is the coordinatates of one data
+        point; note: for data in 1D (`d=1`), 1D array of shape `(n,)` is accepted
+        for `n` data points
+
+    v : 1D array of floats of shape (n,)
+        data points values, with n the number of data points, `v[i]` is the data
+        value at location `x[i]`
+
+    x_ineq : 2D array of floats of shape (n_ineq, d)
+        points locations where the interpolation has to be done, with n_ineq the
+        number of points and d the space dimension (1, 2, or 3, same as for `x`),
+        each row of `x_ineq` is the coordinatates of one point;
+        note: for data in 1D (`d=1`), 1D array of shape `(n_ineq,)` is accepted 
+        for `n_ineq` points
+
+    cov_model : :class:`CovModel1D` or :class:`CovModel2D` or :class:`CovModel3D`
+        covariance model in 1D, 2D, or 3D, in same dimension as dimension of
+        points (d), i.e.:
+
+        - :class:`CovModel1D` for data in 1D (d=1)
+        - :class:`CovModel2D` for data in 2D (d=2)
+        - :class:`CovModel3D` for data in 3D (d=3)
+
+        or
+
+        - :class:`CovModel1D` interpreted as an omni-directional covariance model \
+        whatever dimension of points (d);
+
+        note: the covariance model must be stationary, however, non stationarity is
+        handled: 
+
+        - local rotation by specifying `alpha_x_ineq` (in 2D or 3D), `beta_x_ineq` (in 3D), `gamma_x_ineq` (in 3D)
+        - other non-stationarities by specifying `cov_model_non_stationarity_x_ineq_list` (see below)
+
+    v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
+        standard deviation of error at data points, with n the number of data points; 
+        if `v_err_std` is a float, the same value is used for all data points; 
+        this means that at location x[i], the data value is considered as in a Gaussian 
+        distribution of mean `v[i]` and standard deviation `v_err_std[i]`
+
+    v_ineq_min : 1D array of floats of shape (n_ineq,), or float, optional
+        minimal value (lower bound) for inequality data points, with n_ineq the 
+        number of inequality data points (`v_ineq_min[i]` is the value for the 
+        location `x_ineq[i]`); if `v_ineq_min` is a float, the same value 
+        is used for all inequality data points; if `v_ineq_min=None` (default),
+        no minimal value is considered for any inequality data point;
+        note: `v_ineq_min[i]` set to `np.nan` or `-np.inf` means that there is 
+        no minimal value for point `x_ineq[i]`
+        
+    v_ineq_max : 1D array of floats of shape (n_ineq,), or float, optional
+        maximal value (upper bound) for inequality data points, with n_ineq the 
+        number of inequality data points (`v_ineq_max[i]` is the value for the 
+        location `x_ineq[i]`); if `v_ineq_max` is a float, the same value 
+        is used for all inequality data points; if `v_ineq_max=None` (default),
+        no maximal value is considered for any inequality data point;
+        note: `v_ineq_max[i]` set to `np.nan` or `np.inf` means that there is 
+        no maximal value for point `x_ineq[i]`
+
+    method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
+        type of kriging;
+        note: if `method='ordinary_kriging'`, the parameters
+        `mean_x`, `mean_x_ineq`, `var_x`, `var_x_ineq` are not used
+
+    mean_x : 1D array-like of floats, or float, optional
+        kriging mean value at data points `x`
+
+        - if `mean_x` is a float, the same value is considered for any point
+        - if `mean_x=None` (default): the mean of data values, i.e. mean of `v`, \
+        is considered for any point
+
+        note: if `method=ordinary_kriging`, parameter `mean_x` is ignored
+
+    mean_x_ineq : 1D array-like of floats, or float, optional
+        kriging mean value at points `x_ineq`
+
+        - if `mean_x_ineq` is a float, the same value is considered for any point
+        - if `mean_x_ineq=None` (default): the value `mean_x` (assumed to be a single \
+        float) is considered for any point
+
+        note: if `method=ordinary_kriging`, parameter `mean_x_ineq` is ignored
+
+    var_x : 1D array-like of floats, or float, optional
+        kriging variance value at data points `x`
+
+        - if `var_x` is a float, the same value is considered for any point
+        - if `var_x=None` (default): not used  (use of covariance model only)
+
+        note: if `method=ordinary_kriging`, parameter `var_x` is ignored
+
+    var_x_ineq : 1D array-like of floats, or float, optional
+        kriging variance value at points `x_ineq`
+
+        - if `var_x_ineq` is a float, the same value is considered for any point
+        - if `var_x_ineq=None` (default): not used  (use of covariance model only)
+
+        note: if `method=ordinary_kriging`, parameter `var_x_ineq` is ignored
+
+    alpha_x_ineq : 1D array-like of floats, or float, optional
+        azimuth angle in degrees at points `x_ineq`
+
+        - if `alpha_x_ineq` is a float, the same value is considered for any point
+        - if `alpha_x_ineq=None` (default): `alpha_x_ineq=0.0` is used for any point
+
+        note: `alpha_x_ineq` is ignored if the covariance model is in 1D
+
+    beta_x_ineq : 1D array-like of floats, or float, optional
+        dip angle in degrees at points `x_ineq`
+
+        - if `beta_x_ineq` is a float, the same value is considered for any point
+        - if `beta_x_ineq=None` (default): `beta_x_ineq=0.0` is used for any point
+
+        note: `beta_x_ineq` is ignored if the covariance model is in 1D or 2D
+
+    gamma_x_ineq : 1D array-like of floats, or float, optional
+        dip angle in degrees at points `x_ineq`
+
+        - if `gamma_x_ineq` is a float, the same value is considered for any point
+        - if `gamma_x_ineq=None` (default): `gamma_x_ineq=0.0` is used for any point
+
+        note: `gamma_x_ineq` is ignored if the covariance model is in 1D or 2D
+
+    cov_model_non_stationarity_x_ineq_list : list, optional
+        list to set non-stationarities in covariance model; each entry must be
+        a tuple (or list) `cm_ns` of length 2 or 3 with:
+
+        - `cm_ns[0]`: str: the name of the method of `cov_model` to be applied
+        - `cm_ns[1]`: 1D array-like of floats, or float: \
+        used to set the main parameter passed to the method:
+            - if array-like: its size must be equal to `n_ineq`, \
+            (the array is reshaped if needed), values at points `x_ineq`
+            - if a float: same value at all points `x_ineq`
+        - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
+
+        Examples (with the parameter `arg` is set from `val`)
+        
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
+            this multipies the weight contribution of every elementary contribution of the 
+            covariance model
+        - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
+            this multipies the weight contribution of the elementary contribution of index 0 of the 
+            covariance model
+        - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
+            this multipies the range in all direction of every elementary contribution of the
+            covariance model
+        - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
+            this multipies the range in the first main direction (index 0) of every elementary 
+            contribution of the covariance model
+        - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
+            this multipies the range in the first main direction (index 0) of the elementary 
+            contribution of index 0 of the covariance model
+
+    searchRadius : float, optional
+        if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
+        with same radii along each axis), i.e. the data points at distance to the 
+        estimated point greater than `searchRadius` are not taken into account 
+        in the kriging system; if `searchRadius` is not `None`, then 
+        `searchRadiusRelative` is not used;
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        define the search ellipsoid;
+
+    searchRadiusRelative : float, default: 1.2
+        used only if `searchRadius` is `None`;
+        indicates how the search ellipsoid is limited (should be positive): let
+        r_i be the ranges of the covariance model along its main axes, when
+        estimating/simulating a cell x, a cell y is taken into account iff it is
+        within the ellipsoid centered at x of half axes equal to
+        `searchRadiusRelative` * r_i; 
+        (note that the distances to the central node are computed in the axes 
+        sytem supporting the covariance model and accounting for anisotropy given 
+        by the ranges)
+
+    nneighborMax : int, default: 12
+        maximal number of neighbors (data points) taken into account in the
+        kriging system; the data points the closest to the estimated points are
+        taken into account
+
+    nGibbsSamplerPath : int, default: 50
+        number of Gibbs sampler paths for simulating values at inequality data points
+        
+    nreal : int, default: 1
+        number of realization(s)
+
+    seed : int, optional
+        seed for initializing random number generator
+
+    pid : int, optional
+        process id of the caller (used with multiprocessing)
+
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Returns
+    -------
+    v_ineq : 2D array of shape (nreal, n_ineq)
+        simulated values at points `x_ineq`
+        - v_ineq[i, j] value of the i-th realization at point `x_ineq[j]`
+    """
+    fname = 'sgs_at_inequality_data_points'
+    if pid is not None:
+        fname = f'{fname} [pid={pid}]'
+
+    # Prevent calculation if covariance model is not stationary
+    if not cov_model.is_stationary():
+        err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use the other paramters for non-stationary covariance)'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # Get dimension from x (d) and number of data points (n) and size of v
+    if x is None:
+        n = 0
+        d = 0
+        if v is not None:
+            err_msg = f'{fname}: `x` is None but `v` is not None'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+    
+    else:
+        x = np.asarray(x)
+        # Get dimension (d) from x
+        if x.ndim == 1:
+            # x is a 1-dimensional array
+            x = x.reshape(-1, 1)
+            d = 1
+        else:
+            # x is a 2-dimensional array
+            d = x.shape[1]
+
+        n = x.shape[0]
+
+        # Check size of v
+        if v is None:
+            err_msg = f'{fname}: `x` is not None but `v` is None'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v = np.asarray(v).reshape(-1)
+        if v.size != n:
+            err_msg = f'{fname}: size of `v` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Set variance of data error (from standard deviation)
+    if v_err_std is None:
+        v_err_std = 0.0
+    v_err_var = np.asarray(v_err_std, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+    if v_err_var.size == 1:
+        v_err_var = v_err_var[0] * np.ones(n)
+    elif v_err_var.size != n:
+        err_msg = f'{fname}: size of `v_err_std` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    v_err_var = v_err_var * v_err_var
+
+    # Get dimension from x_ineq (d_ineq) and number of unknown points (n_ineq)
+    if x_ineq is None:
+        n_ineq = 0
+        d_ineq = 0
+    else:
+        x_ineq = np.asarray(x_ineq)
+        # Get dimension (d_ineq) from x_ineq
+        if x_ineq.ndim == 1:
+            # x_ineq is a 1-dimensional array
+            x_ineq = x_ineq.reshape(-1, 1)
+            d_ineq = 1
+        else:
+            # x_ineq is a 2-dimensional array
+            d_ineq = x_ineq.shape[1]
+
+        n_ineq = x_ineq.shape[0]
+
+    if n_ineq == 0:
+        v_ineq = np.empty((nreal, 0), dtype='float')
+        return v_ineq
+
+    # Here: n_ineq > 0
+
+    if n > 0:
+        # Check dimension of x and x_ineq
+        if d != d_ineq:
+            err_msg = f'{fname}: `x` and `x_ineq` do not have the same dimension'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    else: # n == 0
+        d = d_ineq # set d to d_ineq if no data point
+        x = np.empty((0, d), dtype='float') # set x to an empty array with shape (0, d)
+        v = np.array([], dtype='float')
+
+    # Check that all data points (locations) are distinct
+    for i in range(1, n):
+        if np.any(np.isclose(np.sum((x[:i]-x[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x` contains duplicated entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Check that all inequality data points (locations) are distinct
+    for i in range(1, n_ineq):
+        if np.any(np.isclose(np.sum((x_ineq[:i]-x_ineq[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x_ineq` contains duplicated entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Check that all data points and inequality data points (locations) are distinct
+    for i in range(1, n):
+        if np.any(np.isclose(np.sum((x_ineq-x[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x` and `x_ineq` contains same entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Check (and set) v_ineq_min
+    if v_ineq_min is None:
+        v_ineq_min = np.full((n_ineq, ), -np.inf)
+    else:        
+        v_ineq_min = np.asarray(v_ineq_min).reshape(-1)
+        if v_ineq_min.size == 1:
+            v_ineq_min = v_ineq_min * np.ones(n_ineq)
+        elif v_ineq_min.size != n_ineq:
+            err_msg = f'{fname}: size of `v_ineq_min` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v_ineq_min[np.isnan(v_ineq_min)] = -np.inf
+    
+    # Check (and set) v_ineq_max
+    if v_ineq_max is None:
+        v_ineq_max = np.full((n_ineq, ), np.inf)
+    else:        
+        v_ineq_max = np.asarray(v_ineq_max).reshape(-1)
+        if v_ineq_max.size == 1:
+            v_ineq_max = v_ineq_max * np.ones(n_ineq)
+        elif v_ineq_max.size != n_ineq:
+            err_msg = f'{fname}: size of `v_ineq_max` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v_ineq_max[np.isnan(v_ineq_max)] = np.inf
+
+    # Check consistency of v_ineq_min and v_ineq_max
+    if np.any(v_ineq_max <= v_ineq_min):
+        err_msg = f'{fname}: `v_ineq_min` and `v_ineq_max` are not consistent'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # Check dimension of cov_model and set if used as omni-directional model
+    if isinstance(cov_model, CovModel1D):
+        omni_dir = True
+    else:
+        if cov_model.__class__.__name__ != f'CovModel{d}D':
+            err_msg = f'{fname}: `cov_model` dimension is incompatible with dimension of points'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        omni_dir = False
+
+    # Covariance function
+    cov_func = cov_model.func() # covariance function
+    if omni_dir:
+        # covariance model in 1D is used
+        cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+    else:
+        cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+    # Method and mean, var
+    if method == 'simple_kriging':
+        ordinary_kriging = False
+        if n == 0:
+            mean_x = np.array([], dtype='float')
+        else:
+            if mean_x is None:
+                mean_x = np.mean(v) * np.ones(n)
+            else:
+                mean_x = np.asarray(mean_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                if mean_x.size == 1:
+                    mean_x = mean_x * np.ones(n)
+                elif mean_x.size != n:
+                    err_msg = f'{fname}: size of `mean_x` is not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+        if mean_x_ineq is None:
+            if n == 0:
+                mean_x_ineq = np.zeros(n_ineq)
+            else:
+                mean_x_ineq = np.mean(v) * np.ones(n_ineq)
+        else:
+            mean_x_ineq = np.asarray(mean_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if mean_x_ineq.size == 1:
+                mean_x_ineq = mean_x_ineq * np.ones(n_ineq)
+            elif mean_x_ineq.size != n_ineq:
+                err_msg = f'{fname}: size of `mean_x_ineq` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+        if n == 0:
+            if var_x_ineq is None:
+                var_x = None
+            else:
+                var_x = np.array([], dtype='float')
+
+        if (var_x is None and var_x_ineq is not None) or (var_x is not None and var_x_ineq is None):
+            err_msg = f'{fname}: `var_x` and `var_x_ineq` must both be specified'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        if var_x is not None:
+            var_x = np.asarray(var_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if var_x.size == 1:
+                var_x = var_x * np.ones(n)
+            elif var_x.size != n:
+                err_msg = f'{fname}: size of `var_x` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            varUpdate_x = np.sqrt(var_x/cov0)
+
+        if var_x_ineq is not None:
+            var_x_ineq = np.asarray(var_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if var_x_ineq.size == 1:
+                var_x_ineq = var_x_ineq * np.ones(n_ineq)
+            elif var_x_ineq.size != n_ineq:
+                err_msg = f'{fname}: size of `var_x_ineq` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            varUpdate_x_ineq = np.sqrt(var_x_ineq/cov0)
+
+    elif method == 'ordinary_kriging':
+        if verbose > 0:
+            if mean_x is not None:
+                if logger:
+                    logger.warning(f"{fname}: `mean_x` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `mean_x` is ignored with `method='ordinary_kriging'`")
+            if mean_x_ineq is not None:
+                if logger:
+                    logger.warning(f"{fname}: `mean_x_ineq` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `mean_x_ineq` is ignored with `method='ordinary_kriging'`")
+            if var_x is not None:
+                if logger:
+                    logger.warning(f"{fname}: `var_x` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `var_x` is ignored with `method='ordinary_kriging'`")
+            if var_x_ineq is not None:
+                if logger:
+                    logger.warning(f"{fname}: `var_x_ineq` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `var_x_ineq` is ignored with `method='ordinary_kriging'`")
+
+        ordinary_kriging = True
+        mean_x, mean_x_ineq, var_x, var_x_ineq = None, None, None, None
+
+    else:
+        err_msg = f'{fname}: `method` invalid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
+    cov_model = copyCovModel(cov_model) 
+    cov_model_has_changed = False
+
+    # Rotation given by alpha_x_ineq, beta_x_ineq, gamma_x_ineq
+    if alpha_x_ineq is not None:
+        if omni_dir:
+            err_msg = f'{fname}: `alpha_x_ineq` cannot be used with 1D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    if beta_x_ineq is not None:
+        if omni_dir or d < 3:
+            err_msg = f'{fname}: `beta_x_ineq` cannot be used with 1D or 2D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+    
+    if gamma_x_ineq is not None:
+        if omni_dir or d < 3:
+            err_msg = f'{fname}: `gamma_x_ineq` cannot be used with 1D or 2D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    if omni_dir:
+        rot = False
+    else:
+        if d == 2:
+            # 2D - check only alpha
+            if alpha_x_ineq is None:
+                rot = False
+            else:
+                alpha_x_ineq = np.asarray(alpha_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                if alpha_x_ineq.size == 1:
+                    if alpha_x_ineq[0] == 0.0:
+                        rot = False
+                    else:
+                        rot_mat = rotationMatrix2D(alpha_x_ineq[0]) # rot_mat : rotation matrix for any x_ineq[i]
+                        rot = True
+                        rot_mat_unique = True
+                elif alpha_x_ineq.size == n_ineq:
+                    if np.allclose(alpha_x_ineq, alpha_x_ineq[0]):
+                        if np.isclose(alpha_x_ineq[0], 0.0):
+                            rot = False
+                        else:
+                            rot_mat = rotationMatrix2D(alpha_x_ineq[0]) # rot_mat : rotation matrix for any x_ineq[i]
+                            rot = True
+                            rot_mat_unique = True
+                    else:
+                        rot_mat = rotationMatrix2D(alpha_x_ineq).transpose(2, 0, 1) # rot_mat[i] : rotation matrix for xineq[i]
+                        rot = True
+                        rot_mat_unique = False
+                else:
+                    err_msg = f'{fname}: size of `alpha_x_ineq` is not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+        else: # d == 3
+            # 3D
+            if alpha_x_ineq is None and beta_x_ineq is None and gamma_x_ineq is None:
+                rot = False
+            else:
+                if alpha_x_ineq is not None:
+                    alpha_x_ineq = np.asarray(alpha_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if alpha_x_ineq.size == 1:
+                        alpha_x_ineq = alpha_x_ineq * np.ones(n_ineq)
+                    elif alpha_x_ineq.size != n_ineq:
+                        err_msg = f'{fname}: size of `alpha_x_ineq` is not valid'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                else:
+                    alpha_x_ineq = np.zeros(n_ineq)
+
+                if beta_x_ineq is not None:
+                    beta_x_ineq = np.asarray(beta_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if beta_x_ineq.size == 1:
+                        beta_x_ineq = beta_x_ineq * np.ones(n_ineq)
+                    elif beta_x_ineq.size != n_ineq:
+                        err_msg = f'{fname}: size of `beta_x_ineq` is not valid'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                else:
+                    beta_x_ineq = np.zeros(n_ineq)
+
+                if gamma_x_ineq is not None:
+                    gamma_x_ineq = np.asarray(gamma_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if gamma_x_ineq.size == 1:
+                        gamma_x_ineq = gamma_x_ineq * np.ones(n_ineq)
+                    elif gamma_x_ineq.size != n_ineq:
+                        err_msg = f'{fname}: size of `gamma_x_ineq` is not valid'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                else:
+                    gamma_x_ineq = np.zeros(n_ineq)
+                
+                if np.allclose(np.vstack((alpha_x_ineq, beta_x_ineq, gamma_x_ineq)).T, np.array([alpha_x_ineq[0], beta_x_ineq[0], gamma_x_ineq[0]])):
+                    if np.isclose(alpha_x_ineq[0], 0.0) and np.isclose(beta_x_ineq[0], 0.0) and np.isclose(gamma_x_ineq[0], 0.0):
+                        rot = False
+                    else:
+                        rot_mat = rotationMatrix3D(alpha_x_ineq[0], beta_x_ineq[0], gamma_x_ineq[0]) # rot_mat : rotation matrix for any x_ineq[i]
+                        rot = True
+                        rot_mat_unique = True
+                else:
+                    rot_mat = rotationMatrix3D(alpha_x_ineq, beta_x_ineq, gamma_x_ineq).transpose(2, 0, 1) # rot_mat[i] : rotation matrix for x_ineq[i]
+                    rot = True
+                    rot_mat_unique = False
+
+    if rot:
+        if d == 2:
+            cov_model.set_alpha(0.0)
+            cov_model_has_changed = True
+        elif d == 3:
+            cov_model.set_alpha(0.0)
+            cov_model.set_beta(0.0)
+            cov_model.set_gamma(0.0)
+            cov_model_has_changed = True
+        if rot_mat_unique:
+            # apply rotation to data points x and points x_ineq
+            x = x.dot(rot_mat)
+            x_ineq = x_ineq.dot(rot_mat)
+            rot = False # no need rotation further
+
+    # here: rot = True means that local rotation are applied
+
+    # Prepare non-stationarities for integration in covariance model
+    adapt_cov_model_ind = []
+    recompute_cov0 = False
+    recompute_dmax_ax = False
+    if cov_model_non_stationarity_x_ineq_list is not None:
+        if not isinstance(cov_model_non_stationarity_x_ineq_list, list):
+            err_msg = f'{fname}: `cov_model_non_stationarity_x_ineq_list` must be a list if not `None`'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        for i, cm_ns_x_ineq in enumerate(cov_model_non_stationarity_x_ineq_list):
+            if not hasattr(cm_ns_x_ineq, '__len__') or len(cm_ns_x_ineq) not in (2, 3):
+                err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_x_ineq_list` not valid: should be a tuple or list of length 2 or 3 containing: method name (str), val[, kwds (dict)]'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+            val = np.asarray(cm_ns_x_ineq[1], dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if val.size != 1:
+                if val.size != n_ineq:
+                    err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_x_ineq_list`, `(method_name, val[, kwds])`: size of `val` not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                if np.allclose(val, val[0]):
+                    val = val[:1] # of size 1
+                else:
+                    adapt_cov_model_ind.append(i)
+                    if cm_ns_x_ineq[0] == 'multiply_w':
+                        recompute_cov0 = True
+                    elif cm_ns_x_ineq[0] == 'multiply_r':
+                        recompute_dmax_ax = True
+            if val.size == 1:
+                method_name = cm_ns_x_ineq[0]
+                if len(cm_ns_x_ineq) == 3:
+                    kwds = cm_ns_x_ineq[2]
+                else:
+                    kwds = {}
+                try:
+                    eval(f'cov_model.{method_name}')(val[0], logger=logger, **kwds)
+                except:
+                    err_msg = f'{fname}: cannot apply non-stationarity (at points) for covariance model (check parameter `cov_model_non_stationarity_x_ineq_list`)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                cov_model_has_changed = True
+
+    adapt_cov_model = len(adapt_cov_model_ind) > 0
+
+    if cov_model_has_changed:
+        # Update - Covariance function and value at 0
+        cov_func = cov_model.func() # covariance function
+        if omni_dir:
+            # covariance model in 1D is used
+            cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+        else:
+            cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+    
+    # Limited search neighborhood
+    if searchRadius is not None:
+        if searchRadius <= 0.0:
+            err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        
+        if omni_dir:
+            dmax_ax = np.array([searchRadius], dtype='float')
+        else:
+            dmax_ax = searchRadius * np.ones(d)
+
+    else:
+        # use searchRadiusRelative
+        if searchRadiusRelative <= 0.0:
+            err_msg = f'{fname}: search radius relative (factor) not valid (negative)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        
+        if d == 1 or omni_dir:
+            dmax_ax = np.array([cov_model.r()])
+        elif d == 2:
+            dmax_ax = cov_model.r12()
+        elif d == 3:
+            dmax_ax = cov_model.r123()
+
+        dmax_ax = searchRadiusRelative * dmax_ax
+
+    dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+    # Preparation if covariance model will be adapted
+    if adapt_cov_model:
+        cov_model_base = copyCovModel(cov_model)
+
+    # Maximum number of neighbors
+    if nneighborMax is None or nneighborMax < 0:
+        err_msg = f'{fname}: `nneighborMax` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    mat = np.ones((nneighborMax+1, nneighborMax+1)) # allocate kriging matrix
+    b = np.ones(nneighborMax+1) # allocate second member
+
+     # Min value for std
+    std_min = 1.e-10
+    eps = 1.e-8
+
+    # Set all points together (data points and inequality data points)
+    x_all = np.vstack((x, x_ineq))
+    # v_all = np.hstack((v, np.zeros(n_ineq)))
+    v_err_var_all = np.hstack((v_err_var, np.zeros(n_ineq)))
+
+    # Precompute solution of kriging for 2nd, 3rd, ... paths (Gibbs sampler)
+    # ----------------------------------------------------------------------
+    if verbose > 0:
+        if logger:
+            logger.info(f'{fname}: precomputing solution of kriging systems for all Gibbs sampler paths from the 2nd path...')
+        else:
+            print(f'{fname}: precomputing solution of kriging systems for all Gibbs sampler paths from the 2nd path...')
+
+    ind_sel = np.ones(n+n_ineq, dtype='bool')
+
+    ind_list = []
+    w_list = []
+    std_list = []
+
+    for j, x0 in enumerate(x_all[n:]):
+        # x0 is the location x_ineq[j]
+        ind_sel[n+j] = False
+
+        if adapt_cov_model:
+            cov_model = copyCovModel(cov_model_base)
+            for i in adapt_cov_model_ind:
+                cm_ns_x_ineq = cov_model_non_stationarity_x_ineq_list[i]
+                method_name = cm_ns_x_ineq[0]
+                val = cm_ns_x_ineq[1]
+                if len(cm_ns_x_ineq) == 3:
+                    kwds = cm_ns_x_ineq[2]
+                else:
+                    kwds = {}
+                try:
+                    eval(f'cov_model.{method_name}')(val[j], logger=logger, **kwds)
+                except:
+                    err_msg = f'{fname}: cannot apply non-stationarity (at one point) for covariance model (check parameter `cov_model_non_stationarity_x_ineq_list`)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+            cov_func = cov_model.func() # update covariance function
+            if recompute_cov0:
+                if omni_dir:
+                    # covariance model in 1D is used
+                    cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                else:
+                    cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+            if recompute_dmax_ax:
+                if omni_dir:
+                    dmax_ax = np.array([cov_model.r()])
+                elif d == 2:
+                    dmax_ax = cov_model.r12()
+                elif d == 3:
+                    dmax_ax = cov_model.r123()
+
+                dmax_ax = searchRadiusRelative * dmax_ax
+                dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+        
+        h = x0 - x_all
+        if rot:
+            h = h.dot(rot_mat[j])
+        d2 = np.sum(dmax_ax_inv2 * h**2, axis=1)
+        ind = np.where(np.vstack((d2 < 1.0, ind_sel)).all(axis=0))[0]
+        if len(ind) > nneighborMax:
+            ind_s = np.argsort(d2[ind])
+            ind = ind[ind_s[:nneighborMax]]
+        
+        nn = len(ind)
+        if nn == 0:
+            w = np.zeros(0)
+
+            std = np.sqrt(cov0)
+            if var_x is not None:
+                std = varUpdate_x_ineq[j]*std
+        else:
+            xneigh = x_all[ind]
+            v_err_var_neigh = v_err_var_all[ind]
+
+            # Set right hand side of the kriging system (b)
+            h = h[ind]
+            if omni_dir:
+                # compute norm of lag
+                h = np.sqrt(np.sum(h**2, axis=1))
+            b[:nn] = cov_func(h)
+
+            if ordinary_kriging:
+                nmat = nn+1
+            else:
+                nmat = nn
+
+            # Set kriging matrix (mat) of order nmat
+            for i in range(nn-1):
+                # lag between xneigh[i] and xneigh[j], j=i+1, ..., nn-1
+                h = xneigh[(i+1):] - xneigh[i]
+                if omni_dir:
+                    # compute norm of lag
+                    h = np.sqrt(np.sum(h**2, axis=1))
+                elif rot:
+                    h = h.dot(rot_mat[j])
+                cov_h = cov_func(h)
+                mat[i, (i+1):nn] = cov_h
+                mat[(i+1):nn, i] = cov_h
+                mat[i, i] = cov0 + v_err_var_neigh[i]
+
+            mat[nn-1,nn-1] = cov0 + v_err_var_neigh[nn-1]
+
+            if ordinary_kriging:
+                mat[:, nn] = 1.0
+                mat[nn, :] = 1.0
+                mat[nn,nn] = 0.0
+                b[nn] = 1.0
+
+            # Solve the kriging system
+            w = np.linalg.solve(mat[:nmat,:nmat], b[:nmat])
+
+            # Std (by kriging) at x_ineq[j]
+            if mean_x is not None:
+                # simple kriging
+                std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                if var_x is not None:
+                    std = varUpdate_x_ineq[j]*std
+            else:
+                # ordinary kriging
+                std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+
+            if np.isnan(std):
+                std = np.sqrt(cov0)
+                if var_x is not None:
+                    std = varUpdate_all[n+ind_ineq[j]]*std
+            
+            if np.isclose(std, 0):
+                std = std_min
+
+        ind_list.append(ind)
+        w_list.append(w)
+        std_list.append(std)
+
+        ind_sel[n+j] = True
+
+    # Allocate memory for output
+    v_ineq = np.zeros((nreal, n_ineq))
+
+    # Set all points together (data points and inequality data points)
+    # x_all = np.vstack((x, x_ineq))
+    v_all = np.hstack((v, np.zeros(n_ineq)))
+    # v_err_var_all = np.hstack((v_err_var, np.zeros(n_ineq)))
+    if mean_x is not None:
+        mean_all = np.hstack((mean_x, mean_x_ineq))
+    if var_x is not None:
+        varUpdate_all = np.hstack((varUpdate_x, varUpdate_x_ineq))
+
+    # Set mu0 : used as mean when mean_x is None and there is no data in the neighborhood during the simulation ...
+    if n == 0:
+        mu0 = 0.0
+    else:
+        mu0 = np.mean(v)
+
+    # Array indicating if a point in x_all can be selected for kriging
+    ind_sel = np.zeros(n+n_ineq, dtype='bool')
+    
+    if seed is None:
+        seed = np.random.randint(1, 1000000)
+    seed = int(seed)
+
+    if verbose > 0:
+        progress_old = 0
+
+    for k in range(nreal):
+        # Initialize random number generator
+        np.random.seed(seed+k)
+
+        # Initialize ind_sel
+        ind_sel[:n] = True  # all data points can be selected
+        ind_sel[n:] = False # no simulated points can be selected at the beginning
+
+        # Firt path (Gibbs sampler)
+        # -------------------------
+        # set path
+        ind_ineq = np.random.permutation(n_ineq)
+        
+        nGibbs = 0 
+        for j, jind in enumerate(ind_ineq):
+            # Simulation at x0 = x_ineq[jind] = x_ineq[ind_ineq[j]]
+            if verbose > 0:
+                progress = int((j+n_ineq*(k*nGibbsSamplerPath+nGibbs))/(nreal*n_ineq*nGibbsSamplerPath)*100.0)
+                if progress > progress_old:
+                    if logger:
+                        logger.info(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                    else:
+                        print(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                    progress_old = progress
+
+            if adapt_cov_model:
+                cov_model = copyCovModel(cov_model_base)
+                for i in adapt_cov_model_ind:
+                    cm_ns_x_ineq = cov_model_non_stationarity_x_ineq_list[i]
+                    method_name = cm_ns_x_ineq[0]
+                    val = cm_ns_x_ineq[1]
+                    if len(cm_ns_x_ineq) == 3:
+                        kwds = cm_ns_x_ineq[2]
+                    else:
+                        kwds = {}
+                    try:
+                        eval(f'cov_model.{method_name}')(val[jind], logger=logger, **kwds)
+                    except:
+                        err_msg = f'{fname}: cannot apply non-stationarity (at one point) for covariance model (check parameter `cov_model_non_stationarity_x_ineq_list`)'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+
+                cov_func = cov_model.func() # update covariance function
+                if recompute_cov0:
+                    if omni_dir:
+                        # covariance model in 1D is used
+                        cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                    else:
+                        cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+                if recompute_dmax_ax:
+                    if omni_dir:
+                        dmax_ax = np.array([cov_model.r()])
+                    elif d == 2:
+                        dmax_ax = cov_model.r12()
+                    elif d == 3:
+                        dmax_ax = cov_model.r123()
+
+                    dmax_ax = searchRadiusRelative * dmax_ax
+                    dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+            x0 = x_ineq[jind]
+            h = x0 - x_all[ind_sel]
+            if rot:
+                h = h.dot(rot_mat[jind])
+            d2 = np.sum(dmax_ax_inv2 * h**2, axis=1)
+            ind = np.where(d2 < 1.0)[0]
+            if len(ind) > nneighborMax:
+                ind_s = np.argsort(d2[ind])
+                ind = ind[ind_s[:nneighborMax]]
+            h = h[ind] # lag between x0 and x_all[ind] (used below for right hand side of the kriging system)
+            ind = ind_sel.nonzero()[0][ind] # indices in x_all
+            nn = len(ind)
+
+            if nn == 0:
+                # Mean and std (by kriging) at x_ineq[jind]
+                if mean_x is not None:
+                    mu = mean_all[n+jind]
+                else:
+                    mu = mu0
+
+                std = np.sqrt(cov0)
+                if var_x is not None:
+                    std = varUpdate_all[n+jind]*std
+
+            else:
+                xneigh = x_all[ind]
+                vneigh = v_all[ind]
+                v_err_var_neigh = v_err_var_all[ind]
+
+                # Set right hand side of the kriging system (b)
+                if omni_dir:
+                    # compute norm of lag
+                    h = np.sqrt(np.sum(h**2, axis=1))
+                b[:nn] = cov_func(h)
+
+                if ordinary_kriging:
+                    nmat = nn+1
+                else:
+                    nmat = nn
+
+                # Set kriging matrix (mat) of order nmat
+                for i in range(nn-1):
+                    # lag between xneigh[i] and xneigh[j], j=i+1, ..., nn-1
+                    h = xneigh[(i+1):] - xneigh[i]
+                    if omni_dir:
+                        # compute norm of lag
+                        h = np.sqrt(np.sum(h**2, axis=1))
+                    elif rot:
+                        h = h.dot(rot_mat[jind])
+                    cov_h = cov_func(h)
+                    mat[i, (i+1):nn] = cov_h
+                    mat[(i+1):nn, i] = cov_h
+                    mat[i, i] = cov0 + v_err_var_neigh[i]
+
+                mat[nn-1,nn-1] = cov0 + v_err_var_neigh[nn-1]
+
+                if ordinary_kriging:
+                    mat[:, nn] = 1.0
+                    mat[nn, :] = 1.0
+                    mat[nn,nn] = 0.0
+                    b[nn] = 1.0
+
+                # Solve the kriging system
+                w = np.linalg.solve(mat[:nmat,:nmat], b[:nmat])
+
+                # Mean and std (by kriging) at x0
+                if mean_x is not None:
+                    # simple kriging
+                    std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                    if var_x is not None:
+                        mu = mean_all[n+jind] + varUpdate_all[n+jind]*(1.0/varUpdate_all[ind]*(vneigh-mean_all[ind])).dot(w)
+                        std = varUpdate_all[n+jind]*std
+                    else:
+                        mu = mean_all[n+jind] + (vneigh-mean_all[ind]).dot(w)
+                else:
+                    # ordinary kriging
+                    std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                    mu = vneigh.dot(w[:nn])
+
+                if np.isnan(mu) or np.isinf(mu):
+                    if mean_x is not None:
+                        mu = mean_all[n+jind]
+                    else:
+                        mu = mu0
+
+                if np.isnan(std) or np.isinf(std):
+                    std = np.sqrt(cov0)
+                    if var_x is not None:
+                        std = varUpdate_all[n+jind]*std
+                
+                if np.isclose(std, 0):
+                    std = std_min
+
+            # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+            # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+            # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+            tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
+            tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
+            t = tmin + np.random.random() * (tmax - tmin)
+            v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
+
+            ind_sel[n+jind] = True
+
+        # Next paths (Gibbs sampler)
+        # --------------------------
+        for nGibbs in range(1, nGibbsSamplerPath):
+            # set path
+            ind_ineq = np.random.permutation(n_ineq)
+
+            for j, jind in enumerate(ind_ineq):
+                # Simulation at x0 = x_ineq[jind] = x_ineq[ind_ineq[j]]
+                if verbose > 0:
+                    progress = int((j+n_ineq*(k*nGibbsSamplerPath+nGibbs))/(nreal*n_ineq*nGibbsSamplerPath)*100.0)
+                    if progress > progress_old:
+                        if logger:
+                            logger.info(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                        else:
+                            print(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                        progress_old = progress
+
+                ind = ind_list[jind]
+                nn = len(ind)
+
+                if nn == 0:
+                    # Mean and std (by kriging) at x_ineq[jind]
+                    if mean_x is not None:
+                        mu = mean_all[n+jind]
+                    else:
+                        mu = mu0
+
+                    # std = np.sqrt(cov0)
+                    # if var_x is not None:
+                    #     std = varUpdate_all[n+jind]*std
+
+                else:
+                    vneigh = v_all[ind]
+                    w = w_list[jind]
+                    std = std_list[jind]
+
+                    # Mean (by kriging) at x_ineq[jind]
+                    if mean_x is not None:
+                        # simple kriging
+                        if var_x is not None:
+                            mu = mean_all[n+jind] + varUpdate_all[n+jind]*(1.0/varUpdate_all[ind]*(vneigh-mean_all[ind])).dot(w)
+                        else:
+                            mu = mean_all[n+jind] + (vneigh-mean_all[ind]).dot(w)
+                    else:
+                        # ordinary kriging
+                        mu = vneigh.dot(w[:nn])
+
+                    if np.isnan(mu) or np.isinf(mu):
+                        if mean_x is not None:
+                            mu = mean_all[n+jind]
+                        else:
+                            mu = mu0
+
+                # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+                # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+                # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+                tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
+                tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
+                t = tmin + np.random.random() * (tmax - tmin)
+                v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
+
+        # Store k-th realization
+        v_ineq[k, :] = v_all[n:]
+        # for j in range(n_ineq):
+        #     v_ineq[k, j] = v_all[n+j]
+
+    if verbose > 0:
+        if logger:
+            logger.info(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
+        else:
+            print(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
+
+    return v_ineq
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def sgs_at_inequality_data_points_mp(
+        x, v, x_ineq, cov_model,
+        v_err_std=0.0,
+        v_ineq_min=None, v_ineq_max=None,
+        method='ordinary_kriging',
+        mean_x=None,
+        mean_x_ineq=None,
+        var_x=None,
+        var_x_ineq=None,
+        alpha_x_ineq=None,
+        beta_x_ineq=None,
+        gamma_x_ineq=None,
+        cov_model_non_stationarity_x_ineq_list=None,
+        searchRadius=None,
+        searchRadiusRelative=1.2,
+        nneighborMax=12,
+        nGibbsSamplerPath=50,
+        nreal=1,
+        seed=None,
+        verbose=0,
+        nproc=-1,
+        logger=None):
+    """
+    Computes the same as the function :func:`sgs_at_inequality_data_points`, using multiprocessing.
+
+    All the parameters except `nproc` are the same as those of the function
+    :func:`sgs_at_inequality_data_points`.
+
+    This function launches parallel processes [parallel calls of the
+    function :func:`sgs_at_inequality_data_points`]; the set of realizations 
+    (specified by `nreal`) is distributed in a balanced way over the processes.
+
+    The number of processes used (in parallel) is determined by the parameter `nproc` 
+    (int, default: -1); a negative number (or zero), -n <= 0, can be specified 
+    to use the total number of cpu(s) of the system except n; `nproc` is finally
+    at maximum equal to `nreal` but at least 1 by applying:
+        
+    - if `nproc >= 1`, then `nproc = max(min(nproc, nreal), 1)` is used
+    - if `nproc = -n <= 0`, then `nproc = max(min(nmax-n, nreal), 1)` is used, \
+    where nmax is the total number of cpu(s) of the system (retrieved by \
+    `multiprocessing.cpu_count()`)
+
+    Note: if `nproc=None`, `nproc=-1` is used.
+
+    Note: specifying a `seed` guarantees reproducible results whatever the number
+    of processes used.
+
+    See function :func:`sgs_at_inequality_data_points` for details.
+    """
+    fname = 'sgs_at_inequality_data_points_mp'
+
+    # Set number of process(es): nproc
+    if nproc is None:
+        nproc = -1
+    
+    if nproc <= 0:
+        nproc = max(min(multiprocessing.cpu_count() + nproc, nreal), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), nreal), 1)
+        if verbose > 1 and nproc != nproc_tmp:
+            if logger:
+                logger.info(f'{fname}: number of processes has been changed (now: nproc={nproc})')
+            else:
+                print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
+    
+    # Set index for distributing realizations
+    q, r = np.divmod(nreal, nproc)
+    ids_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose > 0:
+        if logger:
+            logger.info(f'{fname}: running `sgs_at_inequality_data_points` on {nproc} processes...')
+        else:
+            print(f'{fname}: running `sgs_at_inequality_data_points` on {nproc} processes...')
+
+    # Set seed (base)
+    if seed is None:
+        seed = np.random.randint(1, 1000000)
+    seed = int(seed)
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i in range(nproc):
+        # Set i-th process
+        kwargs = dict(
+                    v_err_std=v_err_std,
+                    v_ineq_min=v_ineq_min, 
+                    v_ineq_max=v_ineq_max,
+                    method=method,
+                    mean_x=mean_x, 
+                    mean_x_ineq=mean_x_ineq, 
+                    var_x=var_x, 
+                    var_x_ineq=var_x_ineq,
+                    alpha_x_ineq=alpha_x_ineq, 
+                    beta_x_ineq=beta_x_ineq, 
+                    gamma_x_ineq=gamma_x_ineq,
+                    cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
+                    searchRadius=searchRadius, 
+                    searchRadiusRelative=searchRadiusRelative, 
+                    nneighborMax=nneighborMax,
+                    nGibbsSamplerPath=nGibbsSamplerPath,
+                    nreal=ids_proc[i+1]-ids_proc[i], 
+                    seed=seed+ids_proc[i],
+                    pid=i,
+                    verbose=verbose*(i==0),
+                    logger=logger)
+        out_pool.append(pool.apply_async(sgs_at_inequality_data_points, args=(x, v, x_ineq, cov_model), kwds=kwargs))
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    out = [w.get() for w in out_pool]
+    if np.any([x is None for x in out]):
+        err_msg = f'{fname}: an error occured on a process (worker)'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    v_ineq = np.vstack(out)
+
+    return v_ineq
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def sgs_at_inequality_data_points_slow(
+        x, v, x_ineq, cov_model,
+        v_err_std=0.0,
+        v_ineq_min=None, v_ineq_max=None,
+        method='ordinary_kriging',
+        mean_x=None,
+        mean_x_ineq=None,
+        var_x=None,
+        var_x_ineq=None,
+        alpha_x_ineq=None,
+        beta_x_ineq=None,
+        gamma_x_ineq=None,
+        cov_model_non_stationarity_x_ineq_list=None,
+        searchRadius=None,
+        searchRadiusRelative=1.2,
+        nneighborMax=12,
+        nGibbsSamplerPath=50,
+        nreal=1,
+        seed=None,
+        pid=None,
+        verbose=0,
+        logger=None):
+    """
+    Performs Sequential Gaussian Simulation (SGS) at inequality data point(s).
+
+    This function does SGS at locations `x_ineq`, given data points locations
+    `x` with values `v`.
+
+    Parameters
+    ----------
+    x : 2D array of floats of shape (n, d)
+        data points locations, with n the number of data points and d the space
+        dimension (1, 2, or 3), each row of `x` is the coordinatates of one data
+        point; note: for data in 1D (`d=1`), 1D array of shape `(n,)` is accepted
+        for `n` data points
+
+    v : 1D array of floats of shape (n,)
+        data points values, with n the number of data points, `v[i]` is the data
+        value at location `x[i]`
+
+    x_ineq : 2D array of floats of shape (n_ineq, d)
+        points locations where the interpolation has to be done, with n_ineq the
+        number of points and d the space dimension (1, 2, or 3, same as for `x`),
+        each row of `x_ineq` is the coordinatates of one point;
+        note: for data in 1D (`d=1`), 1D array of shape `(n_ineq,)` is accepted 
+        for `n_ineq` points
+
+    cov_model : :class:`CovModel1D` or :class:`CovModel2D` or :class:`CovModel3D`
+        covariance model in 1D, 2D, or 3D, in same dimension as dimension of
+        points (d), i.e.:
+
+        - :class:`CovModel1D` for data in 1D (d=1)
+        - :class:`CovModel2D` for data in 2D (d=2)
+        - :class:`CovModel3D` for data in 3D (d=3)
+
+        or
+
+        - :class:`CovModel1D` interpreted as an omni-directional covariance model \
+        whatever dimension of points (d);
+
+        note: the covariance model must be stationary, however, non stationarity is
+        handled: 
+
+        - local rotation by specifying `alpha_x_ineq` (in 2D or 3D), `beta_x_ineq` (in 3D), `gamma_x_ineq` (in 3D)
+        - other non-stationarities by specifying `cov_model_non_stationarity_x_ineq_list` (see below)
+
+    v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
+        standard deviation of error at data points, with n the number of data points; 
+        if `v_err_std` is a float, the same value is used for all data points; 
+        this means that at location x[i], the data value is considered as in a Gaussian 
+        distribution of mean `v[i]` and standard deviation `v_err_std[i]`
+
+    v_ineq_min : 1D array of floats of shape (n_ineq,), or float, optional
+        minimal value (lower bound) for inequality data points, with n_ineq the 
+        number of inequality data points (`v_ineq_min[i]` is the value for the 
+        location `x_ineq[i]`); if `v_ineq_min` is a float, the same value 
+        is used for all inequality data points; if `v_ineq_min=None` (default),
+        no minimal value is considered for any inequality data point;
+        note: `v_ineq_min[i]` set to `np.nan` or `-np.inf` means that there is 
+        no minimal value for point `x_ineq[i]`
+        
+    v_ineq_max : 1D array of floats of shape (n_ineq,), or float, optional
+        maximal value (upper bound) for inequality data points, with n_ineq the 
+        number of inequality data points (`v_ineq_max[i]` is the value for the 
+        location `x_ineq[i]`); if `v_ineq_max` is a float, the same value 
+        is used for all inequality data points; if `v_ineq_max=None` (default),
+        no maximal value is considered for any inequality data point;
+        note: `v_ineq_max[i]` set to `np.nan` or `np.inf` means that there is 
+        no maximal value for point `x_ineq[i]`
+
+    method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
+        type of kriging;
+        note: if `method='ordinary_kriging'`, the parameters
+        `mean_x`, `mean_x_ineq`, `var_x`, `var_x_ineq` are not used
+
+    mean_x : 1D array-like of floats, or float, optional
+        kriging mean value at data points `x`
+
+        - if `mean_x` is a float, the same value is considered for any point
+        - if `mean_x=None` (default): the mean of data values, i.e. mean of `v`, \
+        is considered for any point
+
+        note: if `method=ordinary_kriging`, parameter `mean_x` is ignored
+
+    mean_x_ineq : 1D array-like of floats, or float, optional
+        kriging mean value at points `x_ineq`
+
+        - if `mean_x_ineq` is a float, the same value is considered for any point
+        - if `mean_x_ineq=None` (default): the value `mean_x` (assumed to be a single \
+        float) is considered for any point
+
+        note: if `method=ordinary_kriging`, parameter `mean_x_ineq` is ignored
+
+    var_x : 1D array-like of floats, or float, optional
+        kriging variance value at data points `x`
+
+        - if `var_x` is a float, the same value is considered for any point
+        - if `var_x=None` (default): not used  (use of covariance model only)
+
+        note: if `method=ordinary_kriging`, parameter `var_x` is ignored
+
+    var_x_ineq : 1D array-like of floats, or float, optional
+        kriging variance value at points `x_ineq`
+
+        - if `var_x_ineq` is a float, the same value is considered for any point
+        - if `var_x_ineq=None` (default): not used  (use of covariance model only)
+
+        note: if `method=ordinary_kriging`, parameter `var_x_ineq` is ignored
+
+    alpha_x_ineq : 1D array-like of floats, or float, optional
+        azimuth angle in degrees at points `x_ineq`
+
+        - if `alpha_x_ineq` is a float, the same value is considered for any point
+        - if `alpha_x_ineq=None` (default): `alpha_x_ineq=0.0` is used for any point
+
+        note: `alpha_x_ineq` is ignored if the covariance model is in 1D
+
+    beta_x_ineq : 1D array-like of floats, or float, optional
+        dip angle in degrees at points `x_ineq`
+
+        - if `beta_x_ineq` is a float, the same value is considered for any point
+        - if `beta_x_ineq=None` (default): `beta_x_ineq=0.0` is used for any point
+
+        note: `beta_x_ineq` is ignored if the covariance model is in 1D or 2D
+
+    gamma_x_ineq : 1D array-like of floats, or float, optional
+        dip angle in degrees at points `x_ineq`
+
+        - if `gamma_x_ineq` is a float, the same value is considered for any point
+        - if `gamma_x_ineq=None` (default): `gamma_x_ineq=0.0` is used for any point
+
+        note: `gamma_x_ineq` is ignored if the covariance model is in 1D or 2D
+
+    cov_model_non_stationarity_x_ineq_list : list, optional
+        list to set non-stationarities in covariance model; each entry must be
+        a tuple (or list) `cm_ns` of length 2 or 3 with:
+
+        - `cm_ns[0]`: str: the name of the method of `cov_model` to be applied
+        - `cm_ns[1]`: 1D array-like of floats, or float: \
+        used to set the main parameter passed to the method:
+            - if array-like: its size must be equal to `n_ineq`, \
+            (the array is reshaped if needed), values at points `x_ineq`
+            - if a float: same value at all points `x_ineq`
+        - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
+
+        Examples (with the parameter `arg` is set from `val`)
+        
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
+            this multipies the weight contribution of every elementary contribution of the 
+            covariance model
+        - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
+            this multipies the weight contribution of the elementary contribution of index 0 of the 
+            covariance model
+        - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
+            this multipies the range in all direction of every elementary contribution of the
+            covariance model
+        - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
+            this multipies the range in the first main direction (index 0) of every elementary 
+            contribution of the covariance model
+        - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
+            this multipies the range in the first main direction (index 0) of the elementary 
+            contribution of index 0 of the covariance model
+
+    searchRadius : float, optional
+        if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
+        with same radii along each axis), i.e. the data points at distance to the 
+        estimated point greater than `searchRadius` are not taken into account 
+        in the kriging system; if `searchRadius` is not `None`, then 
+        `searchRadiusRelative` is not used;
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        define the search ellipsoid;
+
+    searchRadiusRelative : float, default: 1.2
+        used only if `searchRadius` is `None`;
+        indicates how the search ellipsoid is limited (should be positive): let
+        r_i be the ranges of the covariance model along its main axes, when
+        estimating/simulating a cell x, a cell y is taken into account iff it is
+        within the ellipsoid centered at x of half axes equal to
+        `searchRadiusRelative` * r_i; 
+        (note that the distances to the central node are computed in the axes 
+        sytem supporting the covariance model and accounting for anisotropy given 
+        by the ranges)
+
+    nneighborMax : int, default: 12
+        maximal number of neighbors (data points) taken into account in the
+        kriging system; the data points the closest to the estimated points are
+        taken into account
+
+    nGibbsSamplerPath : int, default: 50
+        number of Gibbs sampler paths for simulating values at inequality data points
+
+    nreal : int, default: 1
+        number of realization(s)
+
+    seed : int, optional
+        seed for initializing random number generator
+
+    pid : int, optional
+        process id of the caller (used with multiprocessing)
+
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Returns
+    -------
+    v_ineq : 2D array of shape (nreal, n_ineq)
+        simulated values at points `x_ineq`
+        - v_ineq[i, j] value of the i-th realization at point `x_ineq[j]`
+    """
+    fname = 'sgs_at_inequality_data_points_slow'
+    if pid is not None:
+        fname = f'{fname} [pid={pid}]'
+
+    # Prevent calculation if covariance model is not stationary
+    if not cov_model.is_stationary():
+        err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use the other paramters for non-stationary covariance)'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # Get dimension from x (d) and number of data points (n) and size of v
+    if x is None:
+        n = 0
+        d = 0
+        if v is not None:
+            err_msg = f'{fname}: `x` is None but `v` is not None'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+    
+    else:
+        x = np.asarray(x)
+        # Get dimension (d) from x
+        if x.ndim == 1:
+            # x is a 1-dimensional array
+            x = x.reshape(-1, 1)
+            d = 1
+        else:
+            # x is a 2-dimensional array
+            d = x.shape[1]
+
+        n = x.shape[0]
+
+        # Check size of v
+        if v is None:
+            err_msg = f'{fname}: `x` is not None but `v` is None'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v = np.asarray(v).reshape(-1)
+        if v.size != n:
+            err_msg = f'{fname}: size of `v` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Set variance of data error (from standard deviation)
+    if v_err_std is None:
+        v_err_std = 0.0
+    v_err_var = np.asarray(v_err_std, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+    if v_err_var.size == 1:
+        v_err_var = v_err_var[0] * np.ones(n)
+    elif v_err_var.size != n:
+        err_msg = f'{fname}: size of `v_err_std` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    v_err_var = v_err_var * v_err_var
+
+    # Get dimension from x_ineq (d_ineq) and number of unknown points (n_ineq)
+    if x_ineq is None:
+        n_ineq = 0
+        d_ineq = 0
+    else:
+        x_ineq = np.asarray(x_ineq)
+        # Get dimension (d_ineq) from x_ineq
+        if x_ineq.ndim == 1:
+            # x_ineq is a 1-dimensional array
+            x_ineq = x_ineq.reshape(-1, 1)
+            d_ineq = 1
+        else:
+            # x_ineq is a 2-dimensional array
+            d_ineq = x_ineq.shape[1]
+
+        n_ineq = x_ineq.shape[0]
+
+    if n_ineq == 0:
+        v_ineq = np.empty((nreal, 0), dtype='float')
+        return v_ineq
+
+    # Here: n_ineq > 0
+
+    if n > 0:
+        # Check dimension of x and x_ineq
+        if d != d_ineq:
+            err_msg = f'{fname}: `x` and `x_ineq` do not have the same dimension'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    else: # n == 0
+        d = d_ineq # set d to d_ineq if no data point
+        x = np.empty((0, d), dtype='float') # set x to an empty array with shape (0, d)
+        v = np.array([], dtype='float')
+
+    # Check that all data points (locations) are distinct
+    for i in range(1, n):
+        if np.any(np.isclose(np.sum((x[:i]-x[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x` contains duplicated entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Check that all inequality data points (locations) are distinct
+    for i in range(1, n_ineq):
+        if np.any(np.isclose(np.sum((x_ineq[:i]-x_ineq[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x_ineq` contains duplicated entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Check that all data points and inequality data points (locations) are distinct
+    for i in range(1, n):
+        if np.any(np.isclose(np.sum((x_ineq-x[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x` and `x_ineq` contains same entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Check (and set) v_ineq_min
+    if v_ineq_min is None:
+        v_ineq_min = np.full((n_ineq, ), -np.inf)
+    else:        
+        v_ineq_min = np.asarray(v_ineq_min).reshape(-1)
+        if v_ineq_min.size == 1:
+            v_ineq_min = v_ineq_min * np.ones(n_ineq)
+        elif v_ineq_min.size != n_ineq:
+            err_msg = f'{fname}: size of `v_ineq_min` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v_ineq_min[np.isnan(v_ineq_min)] = -np.inf
+    
+    # Check (and set) v_ineq_max
+    if v_ineq_max is None:
+        v_ineq_max = np.full((n_ineq, ), np.inf)
+    else:        
+        v_ineq_max = np.asarray(v_ineq_max).reshape(-1)
+        if v_ineq_max.size == 1:
+            v_ineq_max = v_ineq_max * np.ones(n_ineq)
+        elif v_ineq_max.size != n_ineq:
+            err_msg = f'{fname}: size of `v_ineq_max` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v_ineq_max[np.isnan(v_ineq_max)] = np.inf
+
+    # Check consistency of v_ineq_min and v_ineq_max
+    if np.any(v_ineq_max <= v_ineq_min):
+        err_msg = f'{fname}: `v_ineq_min` and `v_ineq_max` are not consistent'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # Check dimension of cov_model and set if used as omni-directional model
+    if isinstance(cov_model, CovModel1D):
+        omni_dir = True
+    else:
+        if cov_model.__class__.__name__ != f'CovModel{d}D':
+            err_msg = f'{fname}: `cov_model` dimension is incompatible with dimension of points'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        omni_dir = False
+
+    # Covariance function
+    cov_func = cov_model.func() # covariance function
+    if omni_dir:
+        # covariance model in 1D is used
+        cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+    else:
+        cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+    # Method and mean, var
+    if method == 'simple_kriging':
+        ordinary_kriging = False
+        if n == 0:
+            mean_x = np.array([], dtype='float')
+        else:
+            if mean_x is None:
+                mean_x = np.mean(v) * np.ones(n)
+            else:
+                mean_x = np.asarray(mean_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                if mean_x.size == 1:
+                    mean_x = mean_x * np.ones(n)
+                elif mean_x.size != n:
+                    err_msg = f'{fname}: size of `mean_x` is not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+        if mean_x_ineq is None:
+            if n == 0:
+                mean_x_ineq = np.zeros(n_ineq)
+            else:
+                mean_x_ineq = np.mean(v) * np.ones(n_ineq)
+        else:
+            mean_x_ineq = np.asarray(mean_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if mean_x_ineq.size == 1:
+                mean_x_ineq = mean_x_ineq * np.ones(n_ineq)
+            elif mean_x_ineq.size != n_ineq:
+                err_msg = f'{fname}: size of `mean_x_ineq` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+        if n == 0:
+            if var_x_ineq is None:
+                var_x = None
+            else:
+                var_x = np.array([], dtype='float')
+
+        if (var_x is None and var_x_ineq is not None) or (var_x is not None and var_x_ineq is None):
+            err_msg = f'{fname}: `var_x` and `var_x_ineq` must both be specified'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        if var_x is not None:
+            var_x = np.asarray(var_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if var_x.size == 1:
+                var_x = var_x * np.ones(n)
+            elif var_x.size != n:
+                err_msg = f'{fname}: size of `var_x` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            varUpdate_x = np.sqrt(var_x/cov0)
+
+        if var_x_ineq is not None:
+            var_x_ineq = np.asarray(var_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if var_x_ineq.size == 1:
+                var_x_ineq = var_x_ineq * np.ones(n_ineq)
+            elif var_x_ineq.size != n_ineq:
+                err_msg = f'{fname}: size of `var_x_ineq` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            varUpdate_x_ineq = np.sqrt(var_x_ineq/cov0)
+
+    elif method == 'ordinary_kriging':
+        if verbose > 0:
+            if mean_x is not None:
+                if logger:
+                    logger.warning(f"{fname}: `mean_x` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `mean_x` is ignored with `method='ordinary_kriging'`")
+            if mean_x_ineq is not None:
+                if logger:
+                    logger.warning(f"{fname}: `mean_x_ineq` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `mean_x_ineq` is ignored with `method='ordinary_kriging'`")
+            if var_x is not None:
+                if logger:
+                    logger.warning(f"{fname}: `var_x` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `var_x` is ignored with `method='ordinary_kriging'`")
+            if var_x_ineq is not None:
+                if logger:
+                    logger.warning(f"{fname}: `var_x_ineq` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `var_x_ineq` is ignored with `method='ordinary_kriging'`")
+
+        ordinary_kriging = True
+        mean_x, mean_x_ineq, var_x, var_x_ineq = None, None, None, None
+
+    else:
+        err_msg = f'{fname}: `method` invalid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
+    cov_model = copyCovModel(cov_model) 
+    cov_model_has_changed = False
+
+    # Rotation given by alpha_x_ineq, beta_x_ineq, gamma_x_ineq
+    if alpha_x_ineq is not None:
+        if omni_dir:
+            err_msg = f'{fname}: `alpha_x_ineq` cannot be used with 1D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    if beta_x_ineq is not None:
+        if omni_dir or d < 3:
+            err_msg = f'{fname}: `beta_x_ineq` cannot be used with 1D or 2D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+    
+    if gamma_x_ineq is not None:
+        if omni_dir or d < 3:
+            err_msg = f'{fname}: `gamma_x_ineq` cannot be used with 1D or 2D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    if omni_dir:
+        rot = False
+    else:
+        if d == 2:
+            # 2D - check only alpha
+            if alpha_x_ineq is None:
+                rot = False
+            else:
+                alpha_x_ineq = np.asarray(alpha_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                if alpha_x_ineq.size == 1:
+                    if alpha_x_ineq[0] == 0.0:
+                        rot = False
+                    else:
+                        rot_mat = rotationMatrix2D(alpha_x_ineq[0]) # rot_mat : rotation matrix for any x_ineq[i]
+                        rot = True
+                        rot_mat_unique = True
+                elif alpha_x_ineq.size == n_ineq:
+                    if np.allclose(alpha_x_ineq, alpha_x_ineq[0]):
+                        if np.isclose(alpha_x_ineq[0], 0.0):
+                            rot = False
+                        else:
+                            rot_mat = rotationMatrix2D(alpha_x_ineq[0]) # rot_mat : rotation matrix for any x_ineq[i]
+                            rot = True
+                            rot_mat_unique = True
+                    else:
+                        rot_mat = rotationMatrix2D(alpha_x_ineq).transpose(2, 0, 1) # rot_mat[i] : rotation matrix for xineq[i]
+                        rot = True
+                        rot_mat_unique = False
+                else:
+                    err_msg = f'{fname}: size of `alpha_x_ineq` is not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+        else: # d == 3
+            # 3D
+            if alpha_x_ineq is None and beta_x_ineq is None and gamma_x_ineq is None:
+                rot = False
+            else:
+                if alpha_x_ineq is not None:
+                    alpha_x_ineq = np.asarray(alpha_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if alpha_x_ineq.size == 1:
+                        alpha_x_ineq = alpha_x_ineq * np.ones(n_ineq)
+                    elif alpha_x_ineq.size != n_ineq:
+                        err_msg = f'{fname}: size of `alpha_x_ineq` is not valid'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                else:
+                    alpha_x_ineq = np.zeros(n_ineq)
+
+                if beta_x_ineq is not None:
+                    beta_x_ineq = np.asarray(beta_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if beta_x_ineq.size == 1:
+                        beta_x_ineq = beta_x_ineq * np.ones(n_ineq)
+                    elif beta_x_ineq.size != n_ineq:
+                        err_msg = f'{fname}: size of `beta_x_ineq` is not valid'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                else:
+                    beta_x_ineq = np.zeros(n_ineq)
+
+                if gamma_x_ineq is not None:
+                    gamma_x_ineq = np.asarray(gamma_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if gamma_x_ineq.size == 1:
+                        gamma_x_ineq = gamma_x_ineq * np.ones(n_ineq)
+                    elif gamma_x_ineq.size != n_ineq:
+                        err_msg = f'{fname}: size of `gamma_x_ineq` is not valid'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                else:
+                    gamma_x_ineq = np.zeros(n_ineq)
+                
+                if np.allclose(np.vstack((alpha_x_ineq, beta_x_ineq, gamma_x_ineq)).T, np.array([alpha_x_ineq[0], beta_x_ineq[0], gamma_x_ineq[0]])):
+                    if np.isclose(alpha_x_ineq[0], 0.0) and np.isclose(beta_x_ineq[0], 0.0) and np.isclose(gamma_x_ineq[0], 0.0):
+                        rot = False
+                    else:
+                        rot_mat = rotationMatrix3D(alpha_x_ineq[0], beta_x_ineq[0], gamma_x_ineq[0]) # rot_mat : rotation matrix for any x_ineq[i]
+                        rot = True
+                        rot_mat_unique = True
+                else:
+                    rot_mat = rotationMatrix3D(alpha_x_ineq, beta_x_ineq, gamma_x_ineq).transpose(2, 0, 1) # rot_mat[i] : rotation matrix for x_ineq[i]
+                    rot = True
+                    rot_mat_unique = False
+
+    if rot:
+        if d == 2:
+            cov_model.set_alpha(0.0)
+            cov_model_has_changed = True
+        elif d == 3:
+            cov_model.set_alpha(0.0)
+            cov_model.set_beta(0.0)
+            cov_model.set_gamma(0.0)
+            cov_model_has_changed = True
+        if rot_mat_unique:
+            # apply rotation to data points x and points x_ineq
+            x = x.dot(rot_mat)
+            x_ineq = x_ineq.dot(rot_mat)
+            rot = False # no need rotation further
+
+    # here: rot = True means that local rotation are applied
+
+    # Prepare non-stationarities for integration in covariance model
+    adapt_cov_model_ind = []
+    recompute_cov0 = False
+    recompute_dmax_ax = False
+    if cov_model_non_stationarity_x_ineq_list is not None:
+        if not isinstance(cov_model_non_stationarity_x_ineq_list, list):
+            err_msg = f'{fname}: `cov_model_non_stationarity_x_ineq_list` must be a list if not `None`'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        for i, cm_ns_x_ineq in enumerate(cov_model_non_stationarity_x_ineq_list):
+            if not hasattr(cm_ns_x_ineq, '__len__') or len(cm_ns_x_ineq) not in (2, 3):
+                err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_x_ineq_list` not valid: should be a tuple or list of length 2 or 3 containing: method name (str), val[, kwds (dict)]'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+            val = np.asarray(cm_ns_x_ineq[1], dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if val.size != 1:
+                if val.size != n_ineq:
+                    err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_x_ineq_list`, `(method_name, val[, kwds])`: size of `val` not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                if np.allclose(val, val[0]):
+                    val = val[:1] # of size 1
+                else:
+                    adapt_cov_model_ind.append(i)
+                    if cm_ns_x_ineq[0] == 'multiply_w':
+                        recompute_cov0 = True
+                    elif cm_ns_x_ineq[0] == 'multiply_r':
+                        recompute_dmax_ax = True
+            if val.size == 1:
+                method_name = cm_ns_x_ineq[0]
+                if len(cm_ns_x_ineq) == 3:
+                    kwds = cm_ns_x_ineq[2]
+                else:
+                    kwds = {}
+                try:
+                    eval(f'cov_model.{method_name}')(val[0], logger=logger, **kwds)
+                except:
+                    err_msg = f'{fname}: cannot apply non-stationarity (at points) for covariance model (check parameter `cov_model_non_stationarity_x_ineq_list`)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                cov_model_has_changed = True
+
+    adapt_cov_model = len(adapt_cov_model_ind) > 0
+
+    if cov_model_has_changed:
+        # Update - Covariance function and value at 0
+        cov_func = cov_model.func() # covariance function
+        if omni_dir:
+            # covariance model in 1D is used
+            cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+        else:
+            cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+    
+    # Limited search neighborhood
+    if searchRadius is not None:
+        if searchRadius <= 0.0:
+            err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        
+        if omni_dir:
+            dmax_ax = np.array([searchRadius], dtype='float')
+        else:
+            dmax_ax = searchRadius * np.ones(d)
+
+    else:
+        # use searchRadiusRelative
+        if searchRadiusRelative <= 0.0:
+            err_msg = f'{fname}: search radius relative (factor) not valid (negative)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        
+        if d == 1 or omni_dir:
+            dmax_ax = np.array([cov_model.r()])
+        elif d == 2:
+            dmax_ax = cov_model.r12()
+        elif d == 3:
+            dmax_ax = cov_model.r123()
+
+        dmax_ax = searchRadiusRelative * dmax_ax
+
+    dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+    # Preparation if covariance model will be adapted
+    if adapt_cov_model:
+        cov_model_base = copyCovModel(cov_model)
+
+    # Maximum number of neighbors
+    if nneighborMax is None or nneighborMax < 0:
+        err_msg = f'{fname}: `nneighborMax` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    mat = np.ones((nneighborMax+1, nneighborMax+1)) # allocate kriging matrix
+    b = np.ones(nneighborMax+1) # allocate second member
+
+     # Min value for std
+    std_min = 1.e-10
+    eps = 1.e-8
+
+    # Allocate memory for output
+    v_ineq = np.zeros((nreal, n_ineq))
+
+    # Set all points together (data points and inequality data points)
+    x_all = np.vstack((x, x_ineq))
+    v_all = np.hstack((v, np.zeros(n_ineq)))
+    v_err_var_all = np.hstack((v_err_var, np.zeros(n_ineq)))
+    if mean_x is not None:
+        mean_all = np.hstack((mean_x, mean_x_ineq))
+    if var_x is not None:
+        varUpdate_all = np.hstack((varUpdate_x, varUpdate_x_ineq))
+
+    # Set mu0 : used as mean when mean_x is None and there is no data in the neighborhood during the simulation ...
+    if n == 0:
+        mu0 = 0.0
+    else:
+        mu0 = np.mean(v)
+
+    # Array indicating if a point in x_all can be selected for kriging
+    ind_sel = np.zeros(n+n_ineq, dtype='bool')
+
+    if seed is None:
+        seed = np.random.randint(1, 1000000)
+    seed = int(seed)
+
+    if verbose > 0:
+        progress_old = 0
+
+    for k in range(nreal):
+        # Initialize random number generator
+        np.random.seed(seed+k)
+
+        # Initialize ind_sel
+        ind_sel[:n] = True  # all data points can be selected
+        ind_sel[n:] = False # no simulated points can be selected at the beginning
+     
+        for nGibbs in range(nGibbsSamplerPath):
+            # set path
+            ind_ineq = np.random.permutation(n_ineq)
+
+            for j, jind in enumerate(ind_ineq):
+                # Simulation at x0 = x_ineq[jind] = x_ineq[ind_ineq[j]]
+                ind_sel[n+jind] = False
+
+                if verbose > 0:
+                    progress = int((j+n_ineq*(k*nGibbsSamplerPath+nGibbs))/(nreal*n_ineq*nGibbsSamplerPath)*100.0)
+                    if progress > progress_old:
+                        if logger:
+                            logger.info(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                        else:
+                            print(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                        progress_old = progress
+
+                if adapt_cov_model:
+                    cov_model = copyCovModel(cov_model_base)
+                    for i in adapt_cov_model_ind:
+                        cm_ns_x_ineq = cov_model_non_stationarity_x_ineq_list[i]
+                        method_name = cm_ns_x_ineq[0]
+                        val = cm_ns_x_ineq[1]
+                        if len(cm_ns_x_ineq) == 3:
+                            kwds = cm_ns_x_ineq[2]
+                        else:
+                            kwds = {}
+                        try:
+                            eval(f'cov_model.{method_name}')(val[jind], logger=logger, **kwds)
+                        except:
+                            err_msg = f'{fname}: cannot apply non-stationarity (at one point) for covariance model (check parameter `cov_model_non_stationarity_x_ineq_list`)'
+                            if logger: logger.error(err_msg)
+                            raise CovModelError(err_msg)
+
+                    cov_func = cov_model.func() # update covariance function
+                    if recompute_cov0:
+                        if omni_dir:
+                            # covariance model in 1D is used
+                            cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                        else:
+                            cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+                    if recompute_dmax_ax:
+                        if omni_dir:
+                            dmax_ax = np.array([cov_model.r()])
+                        elif d == 2:
+                            dmax_ax = cov_model.r12()
+                        elif d == 3:
+                            dmax_ax = cov_model.r123()
+
+                        dmax_ax = searchRadiusRelative * dmax_ax
+                        dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+                x0 = x_ineq[jind]
+                h = x0 - x_all[ind_sel]
+                if rot:
+                    h = h.dot(rot_mat[jind])
+                d2 = np.sum(dmax_ax_inv2 * h**2, axis=1)
+                ind = np.where(d2 < 1.0)[0]
+                if len(ind) > nneighborMax:
+                    ind_s = np.argsort(d2[ind])
+                    ind = ind[ind_s[:nneighborMax]]
+                h = h[ind] # lag between x0 and x_all[ind] (used below for right hand side of the kriging system)
+                ind = ind_sel.nonzero()[0][ind] # indices in x_all
+                nn = len(ind)
+
+                if nn == 0:
+                    # Mean and std (by kriging) at x_ineq[jind]
+                    if mean_x is not None:
+                        mu = mean_all[n+jind]
+                    else:
+                        mu = mu0
+                    
+                    std = np.sqrt(cov0)
+                    if var_x is not None:
+                        std = varUpdate_all[n+jind]*std
+
+                else:
+                    xneigh = x_all[ind]
+                    vneigh = v_all[ind]
+                    v_err_var_neigh = v_err_var_all[ind]
+
+                    # Set right hand side of the kriging system (b)
+                    if omni_dir:
+                        # compute norm of lag
+                        h = np.sqrt(np.sum(h**2, axis=1))
+                    b[:nn] = cov_func(h)
+
+                    if ordinary_kriging:
+                        nmat = nn+1
+                    else:
+                        nmat = nn
+
+                    # Set kriging matrix (mat) of order nmat
+                    for i in range(nn-1):
+                        # lag between xneigh[i] and xneigh[j], j=i+1, ..., nn-1
+                        h = xneigh[(i+1):] - xneigh[i]
+                        if omni_dir:
+                            # compute norm of lag
+                            h = np.sqrt(np.sum(h**2, axis=1))
+                        elif rot:
+                            h = h.dot(rot_mat[jind])
+                        cov_h = cov_func(h)
+                        mat[i, (i+1):nn] = cov_h
+                        mat[(i+1):nn, i] = cov_h
+                        mat[i, i] = cov0 + v_err_var_neigh[i]
+
+                    mat[nn-1,nn-1] = cov0 + v_err_var_neigh[nn-1]
+
+                    if ordinary_kriging:
+                        mat[:, nn] = 1.0
+                        mat[nn, :] = 1.0
+                        mat[nn,nn] = 0.0
+                        b[nn] = 1.0
+
+                    # Solve the kriging system
+                    w = np.linalg.solve(mat[:nmat,:nmat], b[:nmat])
+
+                    # Mean and std (by kriging) at x_ineq[jind]
+                    if mean_x is not None:
+                        # simple kriging
+                        std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                        if var_x is not None:
+                            mu = mean_all[n+jind] + varUpdate_all[n+jind]*(1.0/varUpdate_all[ind]*(vneigh-mean_all[ind])).dot(w)
+                            std = varUpdate_all[n+jind]*std
+                        else:
+                            mu = mean_all[n+jind] + (vneigh-mean_all[ind]).dot(w)
+                    else:
+                        # ordinary kriging
+                        std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                        mu = vneigh.dot(w[:nn])
+
+                    if np.isnan(mu) or np.isinf(mu):
+                        if mean_x is not None:
+                            mu = mean_all[n+jind]
+                        else:
+                            mu = mu0
+
+                    if np.isnan(std) or np.isinf(std):
+                        std = np.sqrt(cov0)
+                        if var_x is not None:
+                            std = varUpdate_all[n+jind]*std
+                    
+                    if np.isclose(std, 0):
+                        std = std_min
+
+                # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+                # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+                # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+                tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
+                tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
+                t = tmin + np.random.random() * (tmax - tmin)
+                v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
+
+                ind_sel[n+jind] = True
+
+        # Store k-th realization
+        v_ineq[k, :] = v_all[n:]
+
+    if verbose > 0:
+        if logger:
+            logger.info(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
+        else:
+            print(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
+
+    return v_ineq
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def sgs_at_inequality_data_points_slow_mp(
+        x, v, x_ineq, cov_model,
+        v_err_std=0.0,
+        v_ineq_min=None, v_ineq_max=None,
+        method='ordinary_kriging',
+        mean_x=None,
+        mean_x_ineq=None,
+        var_x=None,
+        var_x_ineq=None,
+        alpha_x_ineq=None,
+        beta_x_ineq=None,
+        gamma_x_ineq=None,
+        cov_model_non_stationarity_x_ineq_list=None,
+        searchRadius=None,
+        searchRadiusRelative=1.2,
+        nneighborMax=12,
+        nGibbsSamplerPath=50,
+        nreal=1,
+        seed=None,
+        verbose=0,
+        nproc=-1,
+        logger=None):
+    """
+    Computes the same as the function :func:`sgs_at_inequality_data_points_slow`, using multiprocessing.
+
+    All the parameters except `nproc` are the same as those of the function
+    :func:`sgs_at_inequality_data_points_slow`.
+
+    This function launches parallel processes [parallel calls of the
+    function :func:`sgs_at_inequality_data_points_slow`]; the set of realizations 
+    (specified by `nreal`) is distributed in a balanced way over the processes.
+
+    The number of processes used (in parallel) is determined by the parameter `nproc` 
+    (int, default: -1); a negative number (or zero), -n <= 0, can be specified 
+    to use the total number of cpu(s) of the system except n; `nproc` is finally
+    at maximum equal to `nreal` but at least 1 by applying:
+        
+    - if `nproc >= 1`, then `nproc = max(min(nproc, nreal), 1)` is used
+    - if `nproc = -n <= 0`, then `nproc = max(min(nmax-n, nreal), 1)` is used, \
+    where nmax is the total number of cpu(s) of the system (retrieved by \
+    `multiprocessing.cpu_count()`)
+
+    Note: if `nproc=None`, `nproc=-1` is used.
+
+    Note: specifying a `seed` guarantees reproducible results whatever the number
+    of processes used.
+
+    See function :func:`sgs_at_inequality_data_points_slow` for details.
+    """
+    fname = 'sgs_at_inequality_data_points_slow_mp'
+
+    # Set number of process(es): nproc
+    if nproc is None:
+        nproc = -1
+    
+    if nproc <= 0:
+        nproc = max(min(multiprocessing.cpu_count() + nproc, nreal), 1)
+    else:
+        nproc_tmp = nproc
+        nproc = max(min(int(nproc), nreal), 1)
+        if verbose > 1 and nproc != nproc_tmp:
+            if logger:
+                logger.info(f'{fname}: number of processes has been changed (now: nproc={nproc})')
+            else:
+                print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
+    
+    # Set index for distributing realizations
+    q, r = np.divmod(nreal, nproc)
+    ids_proc = [i*q + min(i, r) for i in range(nproc+1)]
+
+    if verbose > 0:
+        if logger:
+            logger.info(f'{fname}: running `sgs_at_inequality_data_points_slow` on {nproc} processes...')
+        else:
+            print(f'{fname}: running `sgs_at_inequality_data_points_slow` on {nproc} processes...')
+
+    # Set seed (base)
+    if seed is None:
+        seed = np.random.randint(1, 1000000)
+    seed = int(seed)
+
+    # Set pool of nproc workers
+    pool = multiprocessing.Pool(nproc)
+    out_pool = []
+    for i in range(nproc):
+        # Set i-th process
+        kwargs = dict(
+                    v_err_std=v_err_std,
+                    v_ineq_min=v_ineq_min, 
+                    v_ineq_max=v_ineq_max,
+                    method=method,
+                    mean_x=mean_x, 
+                    mean_x_ineq=mean_x_ineq, 
+                    var_x=var_x, 
+                    var_x_ineq=var_x_ineq,
+                    alpha_x_ineq=alpha_x_ineq, 
+                    beta_x_ineq=beta_x_ineq, 
+                    gamma_x_ineq=gamma_x_ineq,
+                    cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
+                    searchRadius=searchRadius, 
+                    searchRadiusRelative=searchRadiusRelative, 
+                    nneighborMax=nneighborMax,
+                    nGibbsSamplerPath=nGibbsSamplerPath,
+                    nreal=ids_proc[i+1]-ids_proc[i], 
+                    seed=seed+ids_proc[i],
+                    pid=i,
+                    verbose=verbose*(i==0),
+                    logger=logger)
+        out_pool.append(pool.apply_async(sgs_at_inequality_data_points_slow, args=(x, v, x_ineq, cov_model), kwds=kwargs))
+
+    # Properly end working process
+    pool.close() # Prevents any more tasks from being submitted to the pool,
+    pool.join()  # then, wait for the worker processes to exit.
+
+    # Get result from each process
+    out = [w.get() for w in out_pool]
+    if np.any([x is None for x in out]):
+        err_msg = f'{fname}: an error occured on a process (worker)'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    v_ineq = np.vstack(out)
+
+    return v_ineq
+# ----------------------------------------------------------------------------
+
+# # ============================================================================
+# # Simple and ordinary kriging for indicator variable (categorical variables)
+# # ============================================================================
+# # To be developed : 
+# # - SIS at given points ... 
+# # - version of simulateIndicator / estimateIndicator in geosclassicinterface...
+# # 
 # # ----------------------------------------------------------------------------
-# def sgs(x, v, xu, cov_model, method='simple_kriging', mean=None, nreal=1):
+# def krige_indicator(
+#         category_values,
+#         x, v, xu, cov_model,
+#         method='ordinary_kriging',
+#         probability_x=None,
+#         probability_xu=None,
+#         alpha_xu=None,
+#         beta_xu=None,
+#         gamma_xu=None,
+#         cov_model_non_stationarity_xu_list=None,
+#         use_unique_neighborhood=False,
+#         searchRadius=None,
+#         searchRadiusRelative=1.2,
+#         nneighborMax=12,
+#         verbose=0):
 #     """
-#     Performs Sequential Gaussian Simulation (SGS) at given location(s).
-#
-#     This function does SGS at locations `xu`, starting from data points locations
-#     `x` with values `v`. A full neighborhood is used, then the total number of
-#     points in `x` and `xu` should not be too large.
-#
+#     Interpolates data by kriging at given location(s).
+
+#     This function performs kriging interpolation at locations `xu` of the values
+#     `v` measured at locations `x`.
+
 #     Parameters
 #     ----------
+#     category_values : 1D array-like
+#         sequence of category values; let `ncategory` be the number of categories,
+#         then:
+
+#         - if `ncategory=1`: the unique category value given must not be equal to \
+#         zero; it is used for a binary case with values "unique category value" \
+#         and 0, where 0 indicates the absence of the considered medium; the \
+#         conditioning data values should be equal to"unique category value" or 0
+#         - if `ncategory>=2`: it is used for a multi-category case with given \
+#         category values (distinct); the conditioning data values should be in the \
+#         `category_values`
+
 #     x : 2D array of floats of shape (n, d)
 #         data points locations, with n the number of data points and d the space
 #         dimension (1, 2, or 3), each row of `x` is the coordinatates of one data
-#         point; note: for data in 1D (`d=1`), 1D array of shape (n,) is accepted
-#         for n data points
+#         point; note: for data in 1D (`d=1`), 1D array of shape `(n,)` is accepted
+#         for `n` data points
+
 #     v : 1D array of floats of shape (n,)
 #         data points values, with n the number of data points, `v[i]` is the data
 #         value at location `x[i]`
+
 #     xu : 2D array of floats of shape (nu, d)
-#         points locations where the simulation has to be done, with nu the number
-#         of points and d the space dimension (1, 2, or 3, same as for `x`), each
-#         row of `xu` is the coordinatates of one point;
-#         note: for data in 1D (`d=1`), 1D array of shape (nu,) is accepted for nu
-#         points
-#     cov_model : :class:`CovModel1D` or :class:`CovModel2D` or :class:`CovModel3D`
-#         covariance model in 1D, 2D, or 3D, in same dimension as dimension of
-#         points (d), i.e.:
-#         - :class:`CovModel1D` for data in 1D (d=1)
-#         - :class:`CovModel2D` for data in 2D (d=2)
-#         - :class:`CovModel3D` for data in 3D (d=3)
-#         or :class:`CovModel1D interpreted as an omni-directional covariance model
-#         whatever dimension of points (d)
-#     method : str {'simple_kriging', 'ordinary_kriging'}, default: 'simple_kriging'
-#         type of kriging
-#     mean : 1D array-like of floats, or float, optional
-#         kriging mean value at data points `x` and points `xu`:
-#             - `mean[i]` corresponds to data points `x[i]`, i = 0,..., n-1
-#             - `mean[n+i]` corresponds to points `xu[i]`, i = 0,..., nu-1
-#         if `mean` is a float, the same mean is considered for any point;
-#         if `mean=None` (default), the mean of data values, i.e. mean of `v`, is
-#         considered for any point
-#         note: if `method=ordinary_kriging`, parameter `mean` is ignored
-#     nreal : int, default: 1
-#         number of realization(s)
-#
+#         points locations where the interpolation has to be done, with nu the
+#         number of points and d the space dimension (1, 2, or 3, same as for `x`),
+#         each row of `xu` is the coordinatates of one point;
+#         note: for data in 1D (`d=1`), 1D array of shape `(nu,)` is accepted 
+#         for `nu` points
+
+#     cov_model : [sequence of] :class:`CovModel<d>D`
+#         sequence of same length as `category_values` of covariance model in 1D,
+#         or a unique covariance model in 1D (recycled):
+#         covariance model for each category;
+#         covariance model in 1D or 2D or 3D;      
+#         note: the covariance model must be stationary, however, non stationarity is
+#         handled: 
+
+#         - local rotation by specifying `alpha` (in 2D or 3D), `beta` (in 3D), `gamma` (in 3D)
+#         - other non-stationarities by specifying `cov_model_non_stationarity_list` (see below)
+
+#     method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
+#         type of kriging;
+
+#     probability_x : 2D array-like of floats, or 1D-array of floats, optional
+#         probability (kriging mean value) of each category at data points `x`;
+#         - `probability[k, i]` : value for the k-th category at `x[i]`
+
+#         note: if 1D-array like, recycled for every category;
+
+#     probability_x : 2D array-like of floats, or 1D-array of floats, optional
+#         probability (kriging mean value) of each category at data points `xu`;
+#         - `probability[k, i]` : value for the k-th category at `xu[i]`
+
+#         note: if 1D-array like, recycled for every category;
+
+#     alpha_xu : [sequence of] 1D array-like of floats, or float, optional
+#         sequence or recycled, as `cov_model`;
+#         azimuth angle in degrees at points `xu`
+
+#         - if `alpha_xu` is a float, the same value is considered for any point
+#         - if `alpha_xu=None` (default): `alpha_xu=0.0` is used for any point
+
+#         note: `alpha_xu` is ignored if the covariance model is in 1D
+
+#     beta_xu : [sequence of] 1D array-like of floats, or float, optional
+#         sequence or recycled, as `cov_model`;
+#         dip angle in degrees at points `xu`
+
+#         - if `beta_xu` is a float, the same value is considered for any point
+#         - if `beta_xu=None` (default): `beta_xu=0.0` is used for any point
+
+#         note: `beta_xu` is ignored if the covariance model is in 1D or 2D
+
+#     gamma_xu [sequence of] : 1D array-like of floats, or float, optional
+#         sequence or recycled, as `cov_model`;
+#         dip angle in degrees at points `xu`
+
+#         - if `gamma_xu` is a float, the same value is considered for any point
+#         - if `gamma_xu=None` (default): `gamma_xu=0.0` is used for any point
+
+#         note: `gamma_xu` is ignored if the covariance model is in 1D or 2D
+
+#     cov_model_non_stationarity_xu_list [sequence of] : list, optional
+#         sequence or recycled, as `cov_model`;
+#         list to set non-stationarities in covariance model; each entry must be
+#         a tuple (or list) `cm_ns` of length 2 or 3 with:
+
+#         - `cm_ns[0]`: str: the name of the method of `cov_model` to be applied
+#         - `cm_ns[1]`: 1D array-like of floats, or float: \
+#         used to set the main parameter passed to the method:
+#             - if array-like: its size must be equal to `nu`, \
+#             (the array is reshaped if needed), values at points `xu`
+#             - if a float: same value at all points `xu`
+#         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
+
+#         Examples (with the parameter `arg` is set from `val`)
+        
+#         - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
+#             this multipies the weight contribution of every elementary contribution of the 
+#             covariance model
+#         - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
+#             this multipies the weight contribution of the elementary contribution of index 0 of the 
+#             covariance model
+#         - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
+#             this multipies the range in all direction of every elementary contribution of the
+#             covariance model
+#         - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
+#             this multipies the range in the first main direction (index 0) of every elementary 
+#             contribution of the covariance model
+#         - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
+#             this multipies the range in the first main direction (index 0) of the elementary 
+#             contribution of index 0 of the covariance model
+
+#     use_unique_neighborhood : [sequence of] bool, default: False
+#         sequence of same length as `category_values` or recycled:
+#         indicates if a unique neighborhood is used:
+
+#         - if True: all data points are taken into account, and the kriging matrix \
+#         is computed once; the parameters `searchRadius`, `searchRadiusRelative`, \
+#         `nneighborMax` are not used, \
+#         and  `alpha_xu`, `beta_xu`, `gamma_xu` must be `None` or constant \
+#         and any non-stationarity set in `cov_model_non_stationarity_xu_list` must be constant \
+#         (i.e. `cm_ns[1]` must be constant for each entry `cm_ns` in `cov_model_non_stationarity_xu_list`)
+#         - if False: only data points within a search neighborhood (ellipsoid) are \
+#         taken into account according to `searchRadius`, `searchRadiusRelative`, `nneighborMax`
+
+#     searchRadius : [sequence of] float, optional
+#         sequence of same length as `category_values` or recycled:
+#         if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
+#         with same radii along each axis), i.e. the data points at distance to the 
+#         estimated point greater than `searchRadius` are not taken into account 
+#         in the kriging system; if `searchRadius` is not `None`, then 
+#         `searchRadiusRelative` is not used;
+#         by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+#         define the search ellipsoid;
+
+#     searchRadiusRelative : [sequence of] float, default: 1.2
+#         sequence of same length as `category_values` or recycled:
+#         used only if `searchRadius` is `None`;
+#         indicates how the search ellipsoid is limited (should be positive): let
+#         r_i be the ranges of the covariance model along its main axes, when
+#         estimating/simulating a cell x, a cell y is taken into account iff it is
+#         within the ellipsoid centered at x of half axes equal to
+#         `searchRadiusRelative` * r_i; 
+#         (note that the distances to the central node are computed in the axes 
+#         sytem supporting the covariance model and accounting for anisotropy given 
+#         by the ranges)
+
+#     nneighborMax : [sequence of] int, default: 12
+#         sequence of same length as `category_values` or recycled:
+#         maximal number of neighbors (data points) taken into account in the
+#         kriging system; the data points the closest to the estimated points are
+#         taken into account;
+#         note: if `nneighborMax=None` or `nneighborMax<0`, then `nneighborMax` is
+#         set to the number of data points
+
+#     verbose : int, default: 0
+#         verbose mode, higher implies more printing (info)
+
 #     Returns
 #     -------
-#     vu : 2D array of shape (nreal, nu)
-#         simulated values at points `xu`:
-#         - vu[i, j] value of the i-th realization at point `xu[j]`
+#     vu_indicator : 2D array of shape (ncategory, nu)
+#         kriging estimates at points `xu`, for each category
 #     """
-#     fname = 'sgs'
-#
-#     # Prevent calculation if covariance model is not stationary
-#     if not cov_model.is_stationary():
-#         print(f"ERROR ({fname}): `cov_model` is not stationary: sgs cannot be applied")
-#         return None
-#
-#     # Get dimension (d) from x
-#     if np.asarray(x).ndim == 1:
-#         # x is a 1-dimensional array
-#         x = np.asarray(x).reshape(-1, 1)
-#         d = 1
+#     fname = 'krige_indicator'
+
+#     # Check category values and compute number of category (ncategory
+#     try:
+#         category_values = np.asarray(category_values, dtype='float').reshape(-1)
+#     except:
+#         err_msg = f'{fname}: `category_values` invalid'
+#         if logger: logger.error(err_msg)
+#         raise CovModelError(err_msg)
+
+#     ncategory = len(category_values)
+#     if ncategory <= 0:
+#         err_msg = f'{fname}: `category_values` is empty'
+#         if logger: logger.error(err_msg)
+#         raise CovModelError(err_msg)
+
+#     # Get dimension from x (d) and number of data points (n) and size of v
+#     if x is None:
+#         n = 0
+#         d = 0
+#         if v is not None:
+#             err_msg = f'{fname}: `x` is None but `v` is not None'
+#             if logger: logger.error(err_msg)
+#             raise CovModelError(err_msg)
+    
 #     else:
-#         # x is a 2-dimensional array
-#         d = x.shape[1]
-#
-#     # Get dimension (du) from xu
-#     if np.asarray(xu).ndim == 1:
-#         # xu is a 1-dimensional array
-#         xu = np.asarray(xu).reshape(-1, 1)
-#         du = 1
-#     else:
-#         # xu is a 2-dimensional array
-#         du = xu.shape[1]
-#
-#     # Check dimension of x and xu
-#     if d != du:
-#         print(f"ERROR ({fname}): 'x' and 'xu' do not have same dimension")
-#         return None
-#
-#     # Check dimension of cov_model and set if used as omni-directional model
-#     if cov_model.__class__.__name__ != f'CovModel{d}D':
-#         if isinstance(cov_model, CovModel1D):
-#             omni_dir = True
+#         x = np.asarray(x)
+#         # Get dimension (d) from x
+#         if x.ndim == 1:
+#             # x is a 1-dimensional array
+#             x = x.reshape(-1, 1)
+#             d = 1
 #         else:
-#             print(f"ERROR ({fname}): `cov_model` is incompatible with dimension of points")
-#             return None
+#             # x is a 2-dimensional array
+#             d = x.shape[1]
+
+#         n = x.shape[0]
+
+#         # Check size of v
+#         if v is None:
+#             err_msg = f'{fname}: `x` is not None but `v` is None'
+#             if logger: logger.error(err_msg)
+#             raise CovModelError(err_msg)
+
+#         v = np.asarray(v).reshape(-1)
+#         if v.size != n:
+#             err_msg = f'{fname}: size of `v` is not valid'
+#             if logger: logger.error(err_msg)
+#             raise CovModelError(err_msg)
+
+#         if ncategory > 1:
+#             if not np.all([vi in category_values for vi in v]):
+#                 err_msg = f'{fname}: `v` contains an invalid category value (not in `category_values`)'
+#                 if logger: logger.error(err_msg)
+#                 raise CovModelError(err_msg)
+#         else:
+#             if not np.all([vi in np.hstack((category_values, np.array([0.0]))) for vi in v]):
+#                 err_msg = f'{fname}: `v` contains an invalid category value (not in `category_values` nor 0.0)'
+#                 if logger: logger.error(err_msg)
+#                 raise CovModelError(err_msg)
+        
+#         v_indicator = np.asarray([np.eye(ncategory)[np.where(np.asarray(category_values) == vi)[0][0]] for vi in v]).T
+    
+#     # Get dimension from xu (du) and number of unknown points (nu)
+#     if xu is None:
+#         nu = 0
+#         du = 0
 #     else:
-#         omni_dir = False
-#
-#     # Number of data points
-#     n = x.shape[0]
-#     # Number of unknown points
-#     nu = xu.shape[0]
-#
-#     # Check size of v
-#     v = np.asarray(v).reshape(-1)
-#     if v.size != n:
-#         print(f"ERROR ({fname}): size of 'v' is not valid")
-#         return None
-#
-#     # Method
-#     ordinary_kriging = False
+#         xu = np.asarray(xu)
+#         # Get dimension (du) from xu
+#         if xu.ndim == 1:
+#             # xu is a 1-dimensional array
+#             xu = xu.reshape(-1, 1)
+#             du = 1
+#         else:
+#             # xu is a 2-dimensional array
+#             du = xu.shape[1]
+
+#         nu = xu.shape[0]
+
+#     if nu == 0:
+#         vu, vu_std = np.zeros((0, ncategory), dtype='float'), np.zeros((0, ncategory), dtype='float')
+#         return vu, vu_std
+
+#     # Here: nu > 0
+
+#     if n > 0:
+#         # Check dimension of x and xu
+#         if d != du:
+#             err_msg = f'{fname}: `x` and `xu` do not have the same dimension'
+#             if logger: logger.error(err_msg)
+#             raise CovModelError(err_msg)
+
+#     else: # n == 0
+#         d = du # set d to du if no data point
+
+#     # Method and probability
 #     if method == 'simple_kriging':
-#         if mean is None:
-#             if n == 0:
-#                 # no data point
-#                 mean = np.zeros(nu)
-#             else:
-#                 mean = np.mean(v) * np.ones(n + nu)
+#         if n == 0:
+#             probability_x = np.zeros(shape=(0, ncategory), dtype='float')
 #         else:
-#             mean = np.asarray(mean, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
-#             if mean.size == 1:
-#                 mean = mean * np.ones(n + nu)
-#             elif mean.size != n + nu:
-#                 print(f"ERROR ({fname}): size of 'mean' is not valid")
-#                 return None
-#             # if mean.size not in (1, n + nu):
-#             #     print(f"ERROR ({fname}): size of 'mean' is not valid")
-#             #     return None
-#     elif method == 'ordinary_kriging':
-#         mean = None
-#         # if mean is not None:
-#         #     print(f"ERROR ({fname}): 'mean' must be None with 'method' set to 'ordinary_kriging'")
-#         #     return None
-#         ordinary_kriging = True
-#         # nmat = n + 1 # order of the kriging matrix
-#     else:
-#         print(f"ERROR ({fname}): 'method' is not valid")
-#         return None
-#
-#     # Allocate memory for output
-#     vu = np.zeros((nreal, nu))
-#     if vu.size == 0:
-#         return vu
-#
-#     # Covariance function
-#     cov_func = cov_model.func() # covariance function
-#     if omni_dir:
-#         # covariance model in 1D is used
-#         cov0 = cov_func(0.) # covariance function at origin (lag=0)
-#     else:
-#         cov0 = cov_func(np.zeros(d)) # covariance function at origin (lag=0)
-#
-#     # Set (simple) kriging matrix (mat) of order nmat = n + nu:
-#     #     mat = mat_x_x,  mat_x_xu,
-#     #           mat_xu_x, mat_xu_xu,
-#     # where
-#     #     mat_x_x:    covariance matrix for location x and x, of size n x n
-#     #                 (symmetric)
-#     #     mat_x_xu:   covariance matrix for location x and xu, of size n x nu
-#     #     mat_xu_x:   covariance matrix for location xu and x, of size nu x n
-#     #                 (transpose of mat_x_xu)
-#     #     mat_xu_xu:  covariance matrix for location xu and xu, of size nu x nu
-#     #                 (symmetric)
-#     nmat = n + nu
-#     mat = np.ones((nmat, nmat))
-#     # mat_x_x
-#     for i in range(n-1):
-#         # lag between x[i] and x[j], j=i+1, ..., n-1
-#         h = x[(i+1):] - x[i]
-#         if omni_dir:
-#             # compute norm of lag
-#             h = np.sqrt(np.sum(h**2, axis=1))
-#         cov_h = cov_func(h)
-#         mat[i, (i+1):n] = cov_h
-#         mat[(i+1):n, i] = cov_h
-#         mat[i, i] = cov0
-#     mat[n-1, n-1] = cov0
-#
-#     # mat_x_xu, mat_xu_x
-#     for i in range(n):
-#         # lag between x[i] and xu[j], j=0, ..., n-1
-#         h = xu - x[i]
-#         if omni_dir:
-#             # compute norm of lag
-#             h = np.sqrt(np.sum(h**2, axis=1))
-#         cov_h = cov_func(h)
-#         mat[i, n:] = cov_h
-#         mat[n:, i] = cov_h
-#
-#     # mat_xu_xu
-#     for i in range(nu-1):
-#         # lag between xu[i] and xu[j], j=i+1, ..., nu-1
-#         h = xu[(i+1):] - xu[i]
-#         if omni_dir:
-#             # compute norm of lag
-#             h = np.sqrt(np.sum(h**2, axis=1))
-#         cov_h = cov_func(h)
-#         mat[n+i, (n+i+1):(n+nu)] = cov_h
-#         mat[(n+i+1):(n+nu), n+i] = cov_h
-#         mat[n+i, n+i] = cov0
-#     mat[-1,-1] = cov0
-#
-#     for i in range(nreal):
-#         # set index path visiting xu
-#         indu = np.random.permutation(nu)
-#
-#         ind = np.hstack((np.arange(n), n + indu))
-#         for j, k in enumerate(indu):
-#             # Simulate value at xu[k] (= xu[indu[j]])
-#             nj = n + j
-#             # Solve the kriging system
-#             if ordinary_kriging:
-#                 try:
-#                     w = np.linalg.solve(
-#                             np.vstack((np.hstack((mat[ind[:nj], :][:, ind[:nj]], np.ones((nj, 1)))), np.hstack((np.ones(nj), np.array([0.]))))), # kriging matrix
-#                             np.hstack((mat[ind[:nj], ind[nj]], np.array([1.]))) # second member
-#                         )
-#                 except:
-#                     print(f"ERROR ({fname}): cannot solve kriging system...")
-#                     return None
-#                 # Mean (kriged) value at xu[k]
-#                 mu = np.hstack((v, vu[i, indu[:j]])).dot(w[:nj])
-#                 # Standard deviation (of kriging) at xu[k]
-#                 std = np.sqrt(np.maximum(0, cov0 - np.dot(w, np.hstack((mat[ind[:nj], ind[nj]], np.array([1.]))))))
+#             if probability_x is None:
+#                 probability_x = np.repeat(np.mean(v_indicator, axis=1), n).reshape(ncategory, n)
 #             else:
-#                 try:
-#                     w = np.linalg.solve(
-#                             mat[ind[:nj], :][:, ind[:nj]], # kriging matrix
-#                             mat[ind[:nj], ind[nj]], # second member
-#                         )
-#                 except:
-#                     print(f"ERROR ({fname}): cannot solve kriging system...")
-#                     return None
-#                 # Mean (kriged) value at xu[k]
-#                 mu = mean[ind[nj]] + (np.hstack((v, vu[i, indu[:j]])) - mean[ind[:nj]]).dot(w[:nj])
-#                 # Standard deviation (of kriging) at xu[k]
-#                 std = np.sqrt(np.maximum(0, cov0 - np.dot(w, mat[ind[:nj], ind[nj]])))
-#             # Draw value in N(mu, std^2)
-#             vu[i, k] = np.random.normal(loc=mu, scale=std)
-#
-#     return vu
+#                 probability_x = np.asarray(probability_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+#                 if probability_x.size == ncategory:
+#                     probability_x = np.repeat(probability_x, n)
+#                 elif probability_x.size == n*ncategory:
+#                     probability_x = probability_x.reshape(ncategory, n)
+#                 else:
+#                     err_msg = f'{fname}: size of `probability_x` is not valid'
+#                     if logger: logger.error(err_msg)
+#                     raise CovModelError(err_msg)
+                
+#         if probability_xu is None:
+#             if n == 0:
+#                 if ncategory > 1:
+#                     probability_xu = np.full((ncategory, nu), 1.0/ncategory)
+#                 else: # ncategory == 1
+#                     probability_xu = np.full((ncategory, nu), 0.5)
+#             else:
+#                 probability_xu = np.repeat(np.mean(v_indicator, axis=1), nu).reshape(ncategory, nu)
+#         else:
+#             probability_xu = np.asarray(probability_xu, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+#             if probability_xu.size == ncategory:
+#                 probability_xu = np.repeat(probability_xu, nu)
+#             elif probability_xu.size == nu*ncategory:
+#                 probability_xu = probability_xu.reshape(ncategory, nu)
+#             else:
+#                 err_msg = f'{fname}: size of `probability_xu` is not valid'
+#                 if logger: logger.error(err_msg)
+#                 raise CovModelError(err_msg)
+            
+#     elif method == 'ordinary_kriging':
+#         if ncategory > 1:
+#             probability_xu = np.full((ncategory, nu), 1.0/ncategory)
+#         else: # ncategory == 1
+#             probability_xu = np.full((ncategory, nu), 0.5)
+#         # probability_x = np.full((ncategory,), None)
+#         # probability_xu = np.full((ncategory,), None)
+
+#     else:
+#         err_msg = f'{fname}: `method` invalid'
+#         if logger: logger.error(err_msg)
+#         raise CovModelError(err_msg)
+
+#     # cov_model, alpha_xu, beta_xu, gamm_xu, and cov_model_non_stationarity_xu_list
+#     # should be either the same for all categories or given per category
+#     cov_model = list(np.asarray(cov_model).reshape(-1))
+#     if len(cov_model) == 1:
+#         use_same_cov_model_for_all_categories = True
+#         cov_model = cov_model[0]
+#     elif len(cov_model) != ncategory:
+#         err_msg = f'{fname}: `cov_model_for_category` of invalid length'
+#         if logger: logger.error(err_msg)
+#         raise CovModelError(err_msg)
+#     else:
+#         use_same_cov_model_for_all_categories = False
+#         if alpha_xu is None:
+#             alpha_xu = ncategory * [None]
+#         if beta_xu is None:
+#             beta_xu = ncategory * [None]
+#         if gamma_xu is None:
+#             gamma_xu = ncategory * [None]
+#         if cov_model_non_stationarity_xu_list is None:
+#             cov_model_non_stationarity_xu_list = ncategory * [None]
+
+#     if isinstance(use_unique_neighborhood, bool):
+#         use_unique_neighborhood = ncategory * [use_unique_neighborhood]
+#     elif not isinstance(use_unique_neighborhood, list) or len(use_unique_neighborhood) != ncategory:
+#         err_msg = f'{fname}: `use_unique_neighborhood` should be a single entry or a list of length equal to the number of categories'
+#         if logger: logger.error(err_msg)
+#         raise CovModelError(err_msg)
+    
+#     if searchRadius is None:
+#         searchRadius = ncategory * [None]
+#     elif isinstance(searchRadius, float) or isinstance(searchRadius, int):
+#         searchRadius = ncategory * [searchRadius]
+#     elif not isinstance(searchRadius, list) or len(searchRadius) != ncategory:
+#         err_msg = f'{fname}: `searchRadius` should be `None`, a single entry or a list of length equal to the number of categories'
+#         if logger: logger.error(err_msg)
+#         raise CovModelError(err_msg)
+    
+#     if searchRadiusRelative is None:
+#         searchRadiusRelative = ncategory * [None]
+#     elif isinstance(searchRadiusRelative, float) or isinstance(searchRadiusRelative, int):
+#         searchRadiusRelative = ncategory * [searchRadiusRelative]
+#     elif not isinstance(searchRadiusRelative, list) or len(searchRadiusRelative) != ncategory:
+#         err_msg = f'{fname}: `searchRadiusRelative` should be a list of length equal to the number of categories'
+#         if logger: logger.error(err_msg)
+#         raise CovModelError(err_msg)
+    
+#     if isinstance(nneighborMax, int):
+#         nneighborMax = ncategory * [nneighborMax]          
+#     elif not isinstance(nneighborMax, list) or len(nneighborMax) != ncategory:
+#         err_msg = f'{fname}: `nneighborMax` should be a single entry or a list of length equal to the number of categories'
+#         if logger: logger.error(err_msg)
+#         raise CovModelError(err_msg)
+
+#     vu_indicator = np.zeros((ncategory, nu))
+#     # vu_std_indicator = np.zeros((ncategory, nu))
+
+#     if use_same_cov_model_for_all_categories:
+#         for i in range(ncategory):
+#             vu_indicator[i], _ = krige(
+#                     x, v_indicator[i], xu, cov_model,
+#                     method=method,
+#                     mean_x=probability_x[i],
+#                     mean_xu=probability_xu[i],
+#                     alpha_xu=alpha_xu,
+#                     beta_xu=beta_xu,
+#                     gamma_xu=gamma_xu,
+#                     cov_model_non_stationarity_xu_list=cov_model_non_stationarity_xu_list,
+#                     use_unique_neighborhood=use_unique_neighborhood[i],
+#                     searchRadius=searchRadius[i],
+#                     searchRadiusRelative=searchRadiusRelative[i],
+#                     nneighborMax=nneighborMax[i],
+#                     verbose=verbose)
+#     else:
+#         for i in range(ncategory):
+#             vu_indicator[i], _ = krige(
+#                     x, v_indicator[i], xu, cov_model[i],
+#                     method=method,
+#                     mean_x=probability_x[i],
+#                     mean_xu=probability_xu[i],
+#                     alpha_xu=alpha_xu[i],
+#                     beta_xu=beta_xu[i],
+#                     gamma_xu=gamma_xu[i],
+#                     cov_model_non_stationarity_xu_list=cov_model_non_stationarity_xu_list[i],
+#                     use_unique_neighborhood=use_unique_neighborhood[i],
+#                     searchRadius=searchRadius[i],
+#                     searchRadiusRelative=searchRadiusRelative[i],
+#                     nneighborMax=nneighborMax[i],
+#                     verbose=verbose)
+            
+#     vu_indicator = np.maximum(0., np.minimum(1., vu_indicator))
+#     vu_indicator = vu_indicator/vu_indicator.sum(axis=0)
+
+#     return vu_indicator
 # # ----------------------------------------------------------------------------
+
 # ============================================================================
+
 if __name__ == "__main__":
     print("Module 'geone.covModel' example:")
 

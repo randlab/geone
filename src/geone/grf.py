@@ -15,15 +15,15 @@ Fast Fourier Transform (FFT).
 
 References
 ----------
-- J\. W\. Cooley, J\. W\. Tukey (1965) \
+- J. W. Cooley, J. W. Tukey (1965) \
 An algorithm for machine calculation of complex Fourier series. \
 Mathematics of Computation 19(90):297-301, \
 `doi:10.2307/2003354 <https://dx.doi.org/10.2307/2003354>`_
-- C\. R\. Dietrich, G. N. Newsam (1993) \
+- C. R. Dietrich, G. N. Newsam (1993) \
 A fast and exact method for multidimensional gaussian stochastic simulations. \
 Water Resources Research 29(8):2861-2869 \
 `doi:10.1029/93WR01070 <https://dx.doi.org/10.1029/93WR01070>`_
-- A\. T\. A\. Wood, G. Chan (1994) \
+- A. T. A. Wood, G. Chan (1994) \
 Simulation of Stationary Gaussian Processes in :math:`[0, 1]^d`. \
 Journal of Computational and Graphical Statistics 3(4):409-432, \
 `doi:10.2307/1390903 <https://dx.doi.org/10.2307/1390903>`_
@@ -84,7 +84,8 @@ def grf1D(
         method=3, conditioningMethod=2,
         measureErrVar=0.0, tolInvKappa=1.e-10,
         verbose=1,
-        printInfo=None):
+        printInfo=None,
+        logger=None):
     """
     Generates Gaussian Random Fields (GRF) in 1D via Fast Fourier Transform (FFT).
 
@@ -119,9 +120,9 @@ def grf1D(
     aggregate_data_op : str {'sgs', 'krige', 'min', 'max', 'mean', 'quantile', 'most_freq', 'random'}, optional
         operation used to aggregate data points falling in the same grid cells
 
-        - if `aggregate_data_op='sgs'`: function :func:`covModel.sgs` is used \
+        - if `aggregate_data_op='sgs'`: function :func:`geone.covModel.sgs` is used \
         with the covariance model `cov_model` given in arguments
-        - if `aggregate_data_op='krige'`: function :func:`covModel.krige` is used \
+        - if `aggregate_data_op='krige'`: function :func:`geone.covModel.krige` is used \
         with the covariance model `cov_model` given in arguments
         - if `aggregate_data_op='most_freq'`: most frequent value is selected \
         (smallest one if more than one value with the maximal frequence)
@@ -179,13 +180,13 @@ def grf1D(
         By default (`None`): minimal extension is automatically computed:
 
         - based on the range of the covariance model, if `cov_model` is given as \
-        an instance of :class:`geone.CovModel.CovModel1D`)
+        an instance of :class:`geone.covModel.CovModel1D`)
         - set to `nx-1`, if `cov_model` is given as a function (`callable`)
 
     rangeFactorForExtensionMin : float, default: 1.0
         factor by which the range of the covariance model is multiplied before
         computing the default minimal extension, if `cov_model` is given as
-        an instance of :class:`geone.CovModel.CovModel1D`) and if
+        an instance of :class:`geone.covModel.CovModel1D`) and if
         `extensionMin=None` (not used otherwise)
 
     crop : bool, default: True
@@ -274,6 +275,10 @@ def grf1D(
         - if `printInfo=False`, `verbose` is set to 1 (overwritten)
         - if `printInfo=True`, `verbose` is set to 3 (overwritten)
         - if `printInfo=None` (default): not used
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -366,12 +371,14 @@ def grf1D(
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.r()
     else:
         err_msg = f'{fname}: `cov_model` invalid'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     # aggregate_data_op (default)
@@ -383,11 +390,17 @@ def grf1D(
 
     if nreal <= 0:
         if verbose > 0:
-            print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
+            if logger:
+                logger.warning(f'{fname}: `nreal` <= 0: `None` is returned')
+            else:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
         return None
 
     if verbose > 1:
-        print(f'{fname}: Preliminary computation...')
+        if logger:
+            logger.info(f'{fname}: Preliminary computation...')
+        else:
+            print(f'{fname}: Preliminary computation...')
 
     #### Preliminary computation ####
     nx = dimension
@@ -396,25 +409,30 @@ def grf1D(
 
     if method not in (1, 2, 3):
         err_msg = f'{fname}: `method` invalid'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if x is None and v is not None:
         err_msg = f'{fname}: `x` is not given (`None`) but `v` is given (not `None`)'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             err_msg = f'{fname}: `conditioningMethod` invalid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if v is None:
             err_msg = f'{fname}: `x` is given (not `None`) but `v` is not given (`None`)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             err_msg = f'{fname}: length of `v` is not valid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     mean_x = mean
@@ -432,9 +450,10 @@ def grf1D(
             elif mean.size == nx:
                 # mean = mean.reshape(nx)
                 if x is not None:
-                    mean_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=mean), iy=0, iz=0)(x)
+                    mean_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=mean, logger=logger), iy=0, iz=0, logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `mean` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     var_x = var
@@ -452,9 +471,10 @@ def grf1D(
             elif var.size == nx:
                 # var = var.reshape(nx)
                 if x is not None:
-                    var_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=var), iy=0, iz=0)(x)
+                    var_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=var, logger=logger), iy=0, iz=0, logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `var` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     # data point set from x, v
@@ -465,6 +485,7 @@ def grf1D(
             if cov_range is None:
                 # cov_model is directly the covariance function
                 err_msg = f"{fname}: `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used"
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             # Get grid cell with at least one data point:
@@ -473,14 +494,18 @@ def grf1D(
                 im_tmp = img.imageFromPoints(
                         x, values=None, varname=None,
                         nx=nx, sx=sx, ox=ox,
-                        indicator_var=True, count_var=False)
+                        indicator_var=True, 
+                        count_var=False,
+                        logger=logger)
             except Exception as exc:
                 err_msg = f'{fname}: cannot set image from points'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
             ind_agg = np.where(im_tmp.val[0])
             if len(ind_agg[0]) == 0:
                 err_msg = f'{fname}: no data point in grid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             x_agg = im_tmp.xx()[ind_agg].reshape(-1, 1)
@@ -506,9 +531,11 @@ def grf1D(
                             x, v, x_agg, cov_model, method='simple_kriging',
                             mean_x=mean_x, mean_xu=mean_x_agg,
                             var_x=var_x, var_xu=var_x_agg,
-                            verbose=0, **aggregate_data_op_kwargs)
+                            verbose=0, logger=logger,
+                            **aggregate_data_op_kwargs)
                 except Exception as exc:
                     err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
                 # all real (same values)
@@ -520,9 +547,11 @@ def grf1D(
                             mean_x=mean_x, mean_xu=mean_x_agg,
                             var_x=var_x, var_xu=var_x_agg,
                             nreal=nreal, seed=None,
-                            verbose=0, **aggregate_data_op_kwargs)
+                            verbose=0, logger=logger,
+                            **aggregate_data_op_kwargs)
                 except Exception as exc:
                     err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
             xx_agg = x_agg[:, 0]
@@ -539,13 +568,16 @@ def grf1D(
                         xx, yy, zz, v,
                         nx, 1, 1, sx, 1.0, 1.0, ox, 0.0, 0.0,
                         op=aggregate_data_op, return_inverse=True,
+                        logger=logger,
                         **aggregate_data_op_kwargs)
             except Exception as exc:
                 err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
             if len(xx_agg) == 0:
                 err_msg = f'{fname}: no data point in grid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             # next realizations of v_agg
@@ -561,13 +593,17 @@ def grf1D(
                 xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                         xx, yy, zz, v,
                         nx, 1, 1, sx, 1.0, 1.0, ox, 0.0, 0.0,
-                        op=aggregate_data_op, **aggregate_data_op_kwargs)
+                        op=aggregate_data_op, 
+                        logger=logger,
+                        **aggregate_data_op_kwargs)
             except Exception as exc:
                 err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
             if len(xx_agg) == 0:
                 err_msg = f'{fname}: no data point in grid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             # all real (same values)
@@ -576,14 +612,17 @@ def grf1D(
     if not crop:
         if x is not None: # conditional simulation
             err_msg = f'{fname}: `crop=False` cannot be used with conditional simulation'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if mean is not None and mean.size > 1:
             err_msg = f'{fname}: `crop=False` cannot be used with non-stationary mean'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if var is not None and var.size > 1:
             err_msg = f'{fname}: `crop=False` cannot be used with non-stationary variance'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     if extensionMin is None:
@@ -598,7 +637,10 @@ def grf1D(
     Nmin = nx + extensionMin
 
     if verbose > 1:
-        print(f'{fname}: Computing circulant embedding...')
+        if logger:
+            logger.info(f'{fname}: Computing circulant embedding...')
+        else:
+            print(f'{fname}: Computing circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -611,7 +653,10 @@ def grf1D(
     N = int(2**g)
 
     if verbose > 1:
-        print(f'{fname}: embedding dimension: {N}')
+        if logger:
+            logger.info(f'{fname}: embedding dimension: {N}')
+        else:
+            print(f'{fname}: embedding dimension: {N}')
 
     # ccirc: coefficient of the embedding matrix (first line), vector of size N
     L = int (N/2)
@@ -628,7 +673,10 @@ def grf1D(
     del(ind)
 
     if verbose > 1:
-        print(f'{fname}: Computing FFT of circulant matrix...')
+        if logger:
+            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+        else:
+            print(f'{fname}: Computing FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -665,7 +713,10 @@ def grf1D(
     # -------------------------
     if x is not None:
         if verbose > 1:
-            print(f'{fname}: Treatment of conditioning data...')
+            if logger:
+                logger.info(f'{fname}: Treatment of conditioning data...')
+            else:
+                print(f'{fname}: Treatment of conditioning data...')
         # Compute the part rAA of the covariance matrix
         #        +         +
         #        | rAA rAB |
@@ -676,7 +727,10 @@ def grf1D(
         # conditioning (resp. non-conditioning) index in the grid.
 
         if verbose > 1:
-            print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            if logger:
+                logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            else:
+                print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
 
         # Compute
         #    indc: node index of conditioning node,
@@ -700,6 +754,7 @@ def grf1D(
         # Test if rAA is almost singular...
         if 1./np.linalg.cond(rAA) < tolInvKappa:
             err_msg = f'{fname}: conditioning issue: condition number of matrix rAA is too big'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         # Compute:
@@ -711,7 +766,10 @@ def grf1D(
             # Method ConditioningA
             # --------------------
             if verbose > 1:
-                print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                if logger:
+                    logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                else:
+                    print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
             # Compute the parts rBA of the covariance matrix (see above)
             # rBA
@@ -721,7 +779,10 @@ def grf1D(
                 rBA[:,j] = ccirc[k]
 
             if verbose > 1:
-                print(f'{fname}: Computing rBA * rAA^(-1)...')
+                if logger:
+                    logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+                else:
+                    print(f'{fname}: Computing rBA * rAA^(-1)...')
 
             # compute rBA * rAA^(-1)
             rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -741,7 +802,10 @@ def grf1D(
             # Method ConditioningB
             # --------------------
             if verbose > 1:
-                print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                if logger:
+                    logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                else:
+                    print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
 
             # Compute index in the embedding grid for indc and indnc
             # (to allow use of fft)
@@ -820,7 +884,10 @@ def grf1D(
         # --------
         for i in range(nreal):
             if verbose > 2:
-                print(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
+                if logger:
+                    logger.info(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
+                else:
+                    print(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
 
             W = np.random.normal(size=N)
 
@@ -833,7 +900,10 @@ def grf1D(
         # --------
         for i in range(nreal):
             if verbose > 2:
-                print(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
+                if logger:
+                    logger.info(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
+                else:
+                    print(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
 
             X1 = np.zeros(N)
             X2 = np.zeros(N)
@@ -857,7 +927,10 @@ def grf1D(
         # --------
         for i in np.arange(0, nreal-1, 2):
             if verbose > 2:
-                print(f'{fname}: unconditional simulation {i+1:4d}-{i+2:4d} of {nreal:4d}...')
+                if logger:
+                    logger.info(f'{fname}: unconditional simulation {i+1:4d}-{i+2:4d} of {nreal:4d}...')
+                else:
+                    print(f'{fname}: unconditional simulation {i+1:4d}-{i+2:4d} of {nreal:4d}...')
 
             W = np.array(np.random.normal(size=N), dtype=complex)
             W.imag = np.random.normal(size=N)
@@ -869,7 +942,10 @@ def grf1D(
 
         if np.mod(nreal, 2) == 1:
             if verbose > 2:
-                print(f'{fname}: unconditional simulation {nreal:4d} of {nreal:4d}...')
+                if logger:
+                    logger.info(f'{fname}: unconditional simulation {nreal:4d} of {nreal:4d}...')
+                else:
+                    print(f'{fname}: unconditional simulation {nreal:4d} of {nreal:4d}...')
 
             W = np.random.normal(size=N)
             Z = np.fft.ifft(lamSqrt * np.fft.fft(W))
@@ -906,7 +982,10 @@ def grf1D(
             # Method ConditioningA
             # --------------------
             if verbose > 1:
-                print(f'{fname}: updating conditional simulations...')
+                if logger:
+                    logger.info(f'{fname}: updating conditional simulations...')
+                else:
+                    print(f'{fname}: updating conditional simulations...')
 
             # Update all simulations at a time,
             # use the matrix rBA * rAA^(-1) already computed
@@ -924,7 +1003,10 @@ def grf1D(
 
             for i in range(nreal):
                 if verbose > 2:
-                    print(f'{fname}: updating conditional simulation {i+1:4d} of {nreal:4d}...')
+                    if logger:
+                        logger.info(f'{fname}: updating conditional simulation {i+1:4d} of {nreal:4d}...')
+                    else:
+                        print(f'{fname}: updating conditional simulation {i+1:4d} of {nreal:4d}...')
 
                 # Compute residue
                 residu = v_agg[i] - grf[i,indc]
@@ -963,7 +1045,8 @@ def krige1D(
         measureErrVar=0.0, tolInvKappa=1.e-10,
         computeKrigSD=True,
         verbose=1,
-        printInfo=None):
+        printInfo=None,
+        logger=None):
     """
     Computes kriging estimates and standard deviations in 1D via FFT.
 
@@ -998,7 +1081,7 @@ def krige1D(
     aggregate_data_op : str {'krige', 'min', 'max', 'mean', 'quantile', 'most_freq'}, optional
         operation used to aggregate data points falling in the same grid cells
 
-        - if `aggregate_data_op='krige'`: function :func:`covModel.krige` is used \
+        - if `aggregate_data_op='krige'`: function :func:`geone.covModel.krige` is used \
         with the covariance model `cov_model` given in arguments
         - if `aggregate_data_op='most_freq'`: most frequent value is selected \
         (smallest one if more than one value with the maximal frequence)
@@ -1048,13 +1131,13 @@ def krige1D(
         By default (`None`): minimal extension is automatically computed:
 
         - based on the range of the covariance model, if `cov_model` is given as \
-        an instance of :class:`geone.CovModel.CovModel1D`)
+        an instance of :class:`geone.covModel.CovModel1D`)
         - set to `nx-1`, if `cov_model` is given as a function (`callable`)
 
     rangeFactorForExtensionMin : float, default: 1.0
         factor by which the range of the covariance model is multiplied before
         computing the default minimal extension, if `cov_model` is given as
-        an instance of :class:`geone.CovModel.CovModel1D`) and if
+        an instance of :class:`geone.covModel.CovModel1D`) and if
         `extensionMin=None` (not used otherwise)
 
     conditioningMethod : int, default: 1
@@ -1113,6 +1196,10 @@ def krige1D(
         - if `printInfo=False`, `verbose` is set to 1 (overwritten)
         - if `printInfo=True`, `verbose` is set to 3 (overwritten)
         - if `printInfo=None` (default): not used
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -1209,12 +1296,14 @@ def krige1D(
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.r()
     else:
         err_msg = f'{fname}: `cov_model` invalid'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     # aggregate_data_op (default)
@@ -1227,21 +1316,25 @@ def krige1D(
 
     if x is None and v is not None:
         err_msg = f'{fname}: `x` is not given (`None`) but `v` is given (not `None`)'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             err_msg = f'{fname}: `conditioningMethod` invalid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if v is None:
             err_msg = f'{fname}: `x` is given (not `None`) but `v` is not given (`None`)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         x = np.asarray(x, dtype='float').reshape(-1, 1) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             err_msg = f'{fname}: length of `v` is not valid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     mean_x = mean
@@ -1259,9 +1352,10 @@ def krige1D(
             elif mean.size == nx:
                 # mean = mean.reshape(nx)
                 if x is not None:
-                    mean_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=mean), iy=0, iz=0)(x)
+                    mean_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=mean, logger=logger), iy=0, iz=0, logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `mean` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     var_x = var
@@ -1279,9 +1373,10 @@ def krige1D(
             elif var.size == nx:
                 # var = var.reshape(nx)
                 if x is not None:
-                    var_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=var), iy=0, iz=0)(x)
+                    var_x = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1., 1., ox, 0., 0., nv=1, val=var, logger=logger), iy=0, iz=0, logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `var` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     if x is None:
@@ -1306,6 +1401,7 @@ def krige1D(
         if cov_range is None:
             # cov_model is directly the covariance function
             err_msg = f"{fname}: `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used"
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         # Get grid cell with at least one data point:
@@ -1314,14 +1410,18 @@ def krige1D(
             im_tmp = img.imageFromPoints(
                     x, values=None, varname=None,
                     nx=nx, sx=sx, ox=ox,
-                    indicator_var=True, count_var=False)
+                    indicator_var=True, 
+                    count_var=False,
+                    logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot set image from points'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
         ind_agg = np.where(im_tmp.val[0])
         if len(ind_agg[0]) == 0:
             err_msg = f'{fname}: no data point in grid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         x_agg = im_tmp.xx()[ind_agg].reshape(-1, 1)
@@ -1346,9 +1446,11 @@ def krige1D(
                     x, v, x_agg, cov_model, method='simple_kriging',
                     mean_x=mean_x, mean_xu=mean_x_agg,
                     var_x=var_x, var_xu=var_x_agg,
-                    verbose=0, **aggregate_data_op_kwargs)
+                    verbose=0, logger=logger,
+                    **aggregate_data_op_kwargs)
         except Exception as exc:
             err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
         xx_agg = x_agg[:, 0]
@@ -1363,13 +1465,17 @@ def krige1D(
             xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                     xx, yy, zz, v,
                     nx, 1, 1, sx, 1.0, 1.0, ox, 0.0, 0.0,
-                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+                    op=aggregate_data_op, 
+                    logger=logger,
+                    **aggregate_data_op_kwargs)
         except Exception as exc:
             err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
         if len(xx_agg) == 0:
             err_msg = f'{fname}: no data point in grid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     if extensionMin is None:
@@ -1384,7 +1490,10 @@ def krige1D(
     Nmin = nx + extensionMin
 
     if verbose > 1:
-        print(f'{fname}: Computing circulant embedding...')
+        if logger:
+            logger.info(f'{fname}: Computing circulant embedding...')
+        else:
+            print(f'{fname}: Computing circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -1397,7 +1506,10 @@ def krige1D(
     N = int(2**g)
 
     if verbose > 1:
-        print(f'{fname}: embedding dimension: {N}')
+        if logger:
+            logger.info(f'{fname}: embedding dimension: {N}')
+        else:
+            print(f'{fname}: embedding dimension: {N}')
 
     # ccirc: coefficient of the embedding matrix (first line), vector of size N
     L = int (N/2)
@@ -1414,7 +1526,10 @@ def krige1D(
     del(ind)
 
     if verbose > 1:
-        print(f'{fname}: Computing FFT of circulant matrix...')
+        if logger:
+            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+        else:
+            print(f'{fname}: Computing FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -1471,7 +1586,10 @@ def krige1D(
     # deviation below
 
     if verbose > 1:
-        print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+        if logger:
+            logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+        else:
+            print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
 
     # Compute
     #    indc: node index of conditioning node,
@@ -1495,6 +1613,7 @@ def krige1D(
     # Test if rAA is almost singular...
     if 1./np.linalg.cond(rAA) < tolInvKappa:
         err_msg = f'{fname}: conditioning issue: condition number of matrix rAA is too big'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     # Compute:
@@ -1523,7 +1642,10 @@ def krige1D(
         # Method ConditioningA
         # --------------------
         if verbose > 1:
-            print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+            if logger:
+                logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+            else:
+                print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
         # Compute the parts rBA of the covariance matrix (see above)
         # rBA
@@ -1535,7 +1657,10 @@ def krige1D(
         del(ccirc)
 
         if verbose > 1:
-            print(f'{fname}: Computing rBA * rAA^(-1)...')
+            if logger:
+                logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+            else:
+                print(f'{fname}: Computing rBA * rAA^(-1)...')
 
         # compute rBA * rAA^(-1)
         rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -1546,7 +1671,10 @@ def krige1D(
 
         # Compute kriging estimates
         if verbose > 1:
-            print(f'{fname}: computing kriging estimates...')
+            if logger:
+                logger.info(f'{fname}: computing kriging estimates...')
+            else:
+                print(f'{fname}: computing kriging estimates...')
 
         krig[indnc] = np.dot(rBArAAinv, v_agg)
         krig[indc] = v_agg
@@ -1554,7 +1682,10 @@ def krige1D(
         if computeKrigSD:
             # Compute kriging standard deviation
             if verbose > 1:
-                print(f'{fname}: computing kriging standard deviation ...')
+                if logger:
+                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                else:
+                    print(f'{fname}: computing kriging standard deviation ...')
 
             for j in range(nnc):
                 krigSD[indnc[j]] = np.dot(rBArAAinv[j,:], rBA[j,:])
@@ -1569,7 +1700,10 @@ def krige1D(
             del(ccirc)
 
         if verbose > 1:
-            print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+            if logger:
+                logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+            else:
+                print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
 
         # Compute index in the embedding grid for indc and indnc
         # (to allow use of fft)
@@ -1578,7 +1712,10 @@ def krige1D(
 
         # Compute kriging estimates
         if verbose > 1:
-            print(f'{fname}: computing kriging estimates...')
+            if logger:
+                logger.info(f'{fname}: computing kriging estimates...')
+            else:
+                print(f'{fname}: computing kriging estimates...')
 
         # Compute
         #    u = rAA^(-1) * v_agg, and then
@@ -1593,7 +1730,10 @@ def krige1D(
         if computeKrigSD:
             # Compute kriging standard deviation
             if verbose > 1:
-                print(f'{fname}: computing kriging standard deviation ...')
+                if logger:
+                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                else:
+                    print(f'{fname}: computing kriging standard deviation ...')
 
             for j in range(nnc):
                 u = ccirc[np.mod(indc - indnc[j], N)] # j-th row of rBA
@@ -1636,7 +1776,8 @@ def grf2D(
         method=3, conditioningMethod=2,
         measureErrVar=0.0, tolInvKappa=1.e-10,
         verbose=1,
-        printInfo=None):
+        printInfo=None,
+        logger=None):
     """
     Generates Gaussian Random Fields (GRF) in 2D via Fast Fourier Transform (FFT).
 
@@ -1674,9 +1815,9 @@ def grf2D(
     aggregate_data_op : str {'sgs', 'krige', 'min', 'max', 'mean', 'quantile', 'most_freq', 'random'}, optional
         operation used to aggregate data points falling in the same grid cells
 
-        - if `aggregate_data_op='sgs'`: function :func:`covModel.sgs` is used \
+        - if `aggregate_data_op='sgs'`: function :func:`geone.covModel.sgs` is used \
         with the covariance model `cov_model` given in arguments
-        - if `aggregate_data_op='krige'`: function :func:`covModel.krige` is used \
+        - if `aggregate_data_op='krige'`: function :func:`geone.covModel.krige` is used \
         with the covariance model `cov_model` given in arguments
         - if `aggregate_data_op='most_freq'`: most frequent value is selected \
         (smallest one if more than one value with the maximal frequence)
@@ -1734,16 +1875,16 @@ def grf2D(
         By default (`None`): minimal extension is automatically computed:
 
         - based on the range of the covariance model, if `cov_model` is given as \
-        an instance of :class:`geone.CovModel.CovModel1D` (or \
-        :class:`geone.CovModel.CovModel2D`)
+        an instance of :class:`geone.covModel.CovModel1D` (or \
+        :class:`geone.covModel.CovModel2D`)
         - set to (`nx-1`, `ny-1`), if `cov_model` is given as a function \
         (`callable`)
 
     rangeFactorForExtensionMin : float, default: 1.0
         factor by which the ranges of the covariance model are multiplied before
         computing the default minimal extension, if `cov_model` is given as
-        an instance of :class:`geone.CovModel.CovModel1D` (or
-        :class:`geone.CovModel.CovModel2D`) and if `extensionMin=None`
+        an instance of :class:`geone.covModel.CovModel1D` (or
+        :class:`geone.covModel.CovModel2D`) and if `extensionMin=None`
         (not used otherwise)
 
     crop : bool, default: True
@@ -1832,6 +1973,10 @@ def grf2D(
         - if `printInfo=False`, `verbose` is set to 1 (overwritten)
         - if `printInfo=True`, `verbose` is set to 3 (overwritten)
         - if `printInfo=None` (default): not used
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -1938,6 +2083,7 @@ def grf2D(
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         cov_func = cov_model.func() # covariance function
@@ -1948,12 +2094,14 @@ def grf2D(
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxy()
     else:
         err_msg = f'{fname}: `cov_model` invalid'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     # aggregate_data_op (default)
@@ -1965,11 +2113,17 @@ def grf2D(
 
     if nreal <= 0:
         if verbose > 0:
-            print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
+            if logger:
+                logger.warning(f'{fname}: `nreal` <= 0: `None` is returned')
+            else:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
         return None
 
     if verbose > 1:
-        print(f'{fname}: Preliminary computation...')
+        if logger:
+            logger.info(f'{fname}: Preliminary computation...')
+        else:
+            print(f'{fname}: Preliminary computation...')
 
     #### Preliminary computation ####
     nx, ny = dimension
@@ -1980,29 +2134,35 @@ def grf2D(
 
     if method not in (1, 2, 3):
         err_msg = f'{fname}: `method` invalid'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if method == 2:
         err_msg = f'{fname}: `method=2` not implemented'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if x is None and v is not None:
         err_msg = f'{fname}: `x` is not given (`None`) but `v` is given (not `None`)'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             err_msg = f'{fname}: `conditioningMethod` invalid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if v is None:
             err_msg = f'{fname}: `x` is given (not `None`) but `v` is not given (`None`)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             err_msg = f'{fname}: length of `v` is not valid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     mean_x = mean
@@ -2022,9 +2182,10 @@ def grf2D(
             elif mean.size == nxy:
                 mean = mean.reshape(ny, nx)
                 if x is not None:
-                    mean_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=mean), iz=0)(x)
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=mean, logger=logger), iz=0, logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `mean` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     var_x = var
@@ -2042,9 +2203,10 @@ def grf2D(
             elif var.size == nxy:
                 var = var.reshape(ny, nx)
                 if x is not None:
-                    var_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=var), iz=0)(x)
+                    var_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=var, logger=logger), iz=0, logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `var` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     # data point set from x, v
@@ -2055,6 +2217,7 @@ def grf2D(
             if cov_range is None:
                 # cov_model is directly the covariance function
                 err_msg = f"{fname}: `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used"
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             # Get grid cell with at least one data point:
@@ -2063,14 +2226,18 @@ def grf2D(
                 im_tmp = img.imageFromPoints(
                         x, values=None, varname=None,
                         nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
-                        indicator_var=True, count_var=False)
+                        indicator_var=True, 
+                        count_var=False,
+                        logger=logger)
             except Exception as exc:
                 err_msg = f'{fname}: cannot set image from points'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
             ind_agg = np.where(im_tmp.val[0])
             if len(ind_agg[0]) == 0:
                 err_msg = f'{fname}: no data point in grid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1))).T
@@ -2096,9 +2263,11 @@ def grf2D(
                             x, v, x_agg, cov_model, method='simple_kriging',
                             mean_x=mean_x, mean_xu=mean_x_agg,
                             var_x=var_x, var_xu=var_x_agg,
-                            verbose=0, **aggregate_data_op_kwargs)
+                            verbose=0, logger=logger,
+                            **aggregate_data_op_kwargs)
                 except Exception as exc:
                     err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
                 # all real (same values)
@@ -2110,9 +2279,11 @@ def grf2D(
                             mean_x=mean_x, mean_xu=mean_x_agg,
                             var_x=var_x, var_xu=var_x_agg,
                             nreal=nreal, seed=None,
-                            verbose=0, **aggregate_data_op_kwargs)
+                            verbose=0, logger=logger,
+                            **aggregate_data_op_kwargs)
                 except Exception as exc:
                     err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
             xx_agg, yy_agg = x_agg.T
@@ -2126,14 +2297,18 @@ def grf2D(
                 xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
                         xx, yy, zz, v,
                         nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                        op=aggregate_data_op, return_inverse=True,
+                        op=aggregate_data_op, 
+                        return_inverse=True,
+                        logger=logger,
                         **aggregate_data_op_kwargs)
             except Exception as exc:
                 err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
             if len(xx_agg) == 0:
                 err_msg = f'{fname}: no data point in grid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             # next realizations of v_agg
@@ -2148,13 +2323,17 @@ def grf2D(
                 xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                         xx, yy, zz, v,
                         nx, ny, 1, sx, sy, 1.0, ox, oy, 0.0,
-                        op=aggregate_data_op, **aggregate_data_op_kwargs)
+                        op=aggregate_data_op, 
+                        logger=logger,
+                        **aggregate_data_op_kwargs)
             except Exception as exc:
                 err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
             if len(xx_agg) == 0:
                 err_msg = f'{fname}: no data point in grid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             # all real (same values)
@@ -2163,14 +2342,17 @@ def grf2D(
     if not crop:
         if x is not None: # conditional simulation
             err_msg = f'{fname}: `crop=False` cannot be used with conditional simulation'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if mean is not None and mean.size > 1:
             err_msg = f'{fname}: `crop=False` cannot be used with non-stationary mean'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if var is not None and var.size > 1:
             err_msg = f'{fname}: `crop=False` cannot be used with non-stationary variance'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     if extensionMin is None:
@@ -2186,7 +2368,10 @@ def grf2D(
     N2min = ny + extensionMin[1]
 
     if verbose > 1:
-        print(f'{fname}: Computing circulant embedding...')
+        if logger:
+            logger.info(f'{fname}: Computing circulant embedding...')
+        else:
+            print(f'{fname}: Computing circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -2202,7 +2387,10 @@ def grf2D(
     N2 = int(2**g2)
 
     if verbose > 1:
-        print(f'{fname}: embedding dimension: {N1} x {N2}')
+        if logger:
+            logger.info(f'{fname}: embedding dimension: {N1} x {N2}')
+        else:
+            print(f'{fname}: embedding dimension: {N1} x {N2}')
 
     N = N1*N2
 
@@ -2228,7 +2416,10 @@ def grf2D(
     del(ind)
 
     if verbose > 1:
-        print(f'{fname}: Computing FFT of circulant matrix...')
+        if logger:
+            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+        else:
+            print(f'{fname}: Computing FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -2265,7 +2456,10 @@ def grf2D(
     # -------------------------
     if x is not None:
         if verbose > 1:
-            print(f'{fname}: Treatment of conditioning data...')
+            if logger:
+                logger.info(f'{fname}: Treatment of conditioning data...')
+            else:
+                print(f'{fname}: Treatment of conditioning data...')
         # Compute the part rAA of the covariance matrix
         #        +         +
         #        | rAA rAB |
@@ -2276,7 +2470,10 @@ def grf2D(
         # conditioning (resp. non-conditioning) index in the grid.
 
         if verbose > 1:
-            print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            if logger:
+                logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            else:
+                print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
 
         # Compute
         #    indc: node index of conditioning node,
@@ -2303,6 +2500,7 @@ def grf2D(
         # Test if rAA is almost singular...
         if 1./np.linalg.cond(rAA) < tolInvKappa:
             err_msg = f'{fname}: conditioning issue: condition number of matrix rAA is too big'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         # Compute:
@@ -2317,7 +2515,10 @@ def grf2D(
             # Method ConditioningA
             # --------------------
             if verbose > 1:
-                print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                if logger:
+                    logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                else:
+                    print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
             # Compute the parts rBA of the covariance matrix (see above)
             # rBA
@@ -2326,7 +2527,10 @@ def grf2D(
                 rBA[:,j] = ccirc[np.mod(iy[j] - ky, N2), np.mod(ix[j] - kx, N1)]
 
             if verbose > 1:
-                print(f'{fname}: Computing rBA * rAA^(-1)...')
+                if logger:
+                    logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+                else:
+                    print(f'{fname}: Computing rBA * rAA^(-1)...')
 
             # compute rBA * rAA^(-1)
             rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -2346,7 +2550,10 @@ def grf2D(
             # Method ConditioningB
             # --------------------
             if verbose > 1:
-                print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                if logger:
+                    logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                else:
+                    print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
 
             # Compute index in the embedding grid for indc and indnc
             # (to allow use of fft)
@@ -2409,7 +2616,10 @@ def grf2D(
         # --------
         for i in range(nreal):
             if verbose > 2:
-                print(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
+                if logger:
+                    logger.info(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
+                else:
+                    print(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
 
             W = np.random.normal(size=(N2, N1))
 
@@ -2421,6 +2631,7 @@ def grf2D(
         # Method B
         # --------
         err_msg = f'{fname}: (unconditional simulation) `method=2` not implemented'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     elif method == 3:
@@ -2428,7 +2639,10 @@ def grf2D(
         # --------
         for i in np.arange(0, nreal-1, 2):
             if verbose > 2:
-                print(f'{fname}: unconditional simulation {i+1:4d}-{i+2:4d} of {nreal:4d}...')
+                if logger:
+                    logger.info(f'{fname}: unconditional simulation {i+1:4d}-{i+2:4d} of {nreal:4d}...')
+                else:
+                    print(f'{fname}: unconditional simulation {i+1:4d}-{i+2:4d} of {nreal:4d}...')
 
             W = np.array(np.random.normal(size=(N2, N1)), dtype=complex)
             W.imag = np.random.normal(size=(N2, N1))
@@ -2440,7 +2654,10 @@ def grf2D(
 
         if np.mod(nreal, 2) == 1:
             if verbose > 2:
-                print(f'{fname}: unconditional simulation {nreal:4d} of {nreal:4d}...')
+                if logger:
+                    logger.info(f'{fname}: unconditional simulation {nreal:4d} of {nreal:4d}...')
+                else:
+                    print(f'{fname}: unconditional simulation {nreal:4d} of {nreal:4d}...')
 
             W = np.random.normal(size=(N2, N1))
 
@@ -2481,7 +2698,10 @@ def grf2D(
             # Method ConditioningA
             # --------------------
             if verbose > 1:
-                print(f'{fname}: updating conditional simulations...')
+                if logger:
+                    logger.info(f'{fname}: updating conditional simulations...')
+                else:
+                    print(f'{fname}: updating conditional simulations...')
 
             # Update all simulations at a time,
             # use the matrix rBA * rAA^(-1) already computed
@@ -2499,7 +2719,10 @@ def grf2D(
 
             for i in range(nreal):
                 if verbose > 2:
-                    print(f'{fname}: updating conditional simulation {i+1:4d} of {nreal:4d}...')
+                    if logger:
+                        logger.info(f'{fname}: updating conditional simulation {i+1:4d} of {nreal:4d}...')
+                    else:
+                        print(f'{fname}: updating conditional simulation {i+1:4d} of {nreal:4d}...')
 
                 # Compute residue
                 residu = v_agg[i] - grf[i, indc]
@@ -2541,7 +2764,8 @@ def krige2D(
         measureErrVar=0.0, tolInvKappa=1.e-10,
         computeKrigSD=True,
         verbose=1,
-        printInfo=None):
+        printInfo=None,
+        logger=None):
     """
     Computes kriging estimates and standard deviations in 2D via FFT.
 
@@ -2579,7 +2803,7 @@ def krige2D(
     aggregate_data_op : str {'krige', 'min', 'max', 'mean', 'quantile', 'most_freq'}, optional
         operation used to aggregate data points falling in the same grid cells
 
-        - if `aggregate_data_op='krige'`: function :func:`covModel.krige` is used \
+        - if `aggregate_data_op='krige'`: function :func:`geone.covModel.krige` is used \
         with the covariance model `cov_model` given in arguments
         - if `aggregate_data_op='most_freq'`: most frequent value is selected \
         (smallest one if more than one value with the maximal frequence)
@@ -2629,16 +2853,16 @@ def krige2D(
         By default (`None`): minimal extension is automatically computed:
 
         - based on the range of the covariance model, if `cov_model` is given as \
-        an instance of :class:`geone.CovModel.CovModel1D` (or \
-        :class:`geone.CovModel.CovModel2D`)
+        an instance of :class:`geone.covModel.CovModel1D` (or \
+        :class:`geone.covModel.CovModel2D`)
         - set to (`nx-1`, `ny-1`), if `cov_model` is given as a function \
         (`callable`)
 
     rangeFactorForExtensionMin : float, default: 1.0
         factor by which the ranges of the covariance model are multiplied before
         computing the default minimal extension, if `cov_model` is given as
-        an instance of :class:`geone.CovModel.CovModel1D` (or
-        :class:`geone.CovModel.CovModel2D`) and if `extensionMin=None`
+        an instance of :class:`geone.covModel.CovModel1D` (or
+        :class:`geone.covModel.CovModel2D`) and if `extensionMin=None`
         (not used otherwise)
 
     conditioningMethod : int, default: 1
@@ -2697,6 +2921,10 @@ def krige2D(
         - if `printInfo=False`, `verbose` is set to 1 (overwritten)
         - if `printInfo=True`, `verbose` is set to 3 (overwritten)
         - if `printInfo=None` (default): not used
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -2804,6 +3032,7 @@ def krige2D(
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         cov_func = cov_model.func() # covariance function
@@ -2814,12 +3043,14 @@ def krige2D(
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxy()
     else:
         err_msg = f'{fname}: `cov_model` invalid'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     # aggregate_data_op (default)
@@ -2834,21 +3065,25 @@ def krige2D(
 
     if x is None and v is not None:
         err_msg = f'{fname}: `x` is not given (`None`) but `v` is given (not `None`)'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             err_msg = f'{fname}: `conditioningMethod` invalid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if v is None:
             err_msg = f'{fname}: `x` is given (not `None`) but `v` is not given (`None`)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         x = np.asarray(x, dtype='float').reshape(-1, 2) # cast in 2-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             err_msg = f'{fname}: length of `v` is not valid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     mean_x = mean
@@ -2868,9 +3103,10 @@ def krige2D(
             elif mean.size == nxy:
                 mean = mean.reshape(ny, nx)
                 if x is not None:
-                    mean_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=mean), iz=0)(x)
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=mean, logger=logger), iz=0, logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `mean` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     var_x = var
@@ -2888,9 +3124,10 @@ def krige2D(
             elif var.size == nxy:
                 var = var.reshape(ny, nx)
                 if x is not None:
-                    var_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=var), iz=0)(x)
+                    var_x = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1., ox, oy, 0., nv=1, val=var, logger=logger), iz=0, logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `var` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     if x is None:
@@ -2915,6 +3152,7 @@ def krige2D(
         if cov_range is None:
             # cov_model is directly the covariance function
             err_msg = f"{fname}: `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used"
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         # Get grid cell with at least one data point:
@@ -2923,14 +3161,18 @@ def krige2D(
             im_tmp = img.imageFromPoints(
                     x, values=None, varname=None,
                     nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
-                    indicator_var=True, count_var=False)
+                    indicator_var=True, 
+                    count_var=False,
+                    logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot set image from points'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
         ind_agg = np.where(im_tmp.val[0])
         if len(ind_agg[0]) == 0:
             err_msg = f'{fname}: no data point in grid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1))).T
@@ -2955,9 +3197,11 @@ def krige2D(
                     x, v, x_agg, cov_model, method='simple_kriging',
                     mean_x=mean_x, mean_xu=mean_x_agg,
                     var_x=var_x, var_xu=var_x_agg,
-                    verbose=0, **aggregate_data_op_kwargs)
+                    verbose=0, logger=logger,
+                    **aggregate_data_op_kwargs)
         except Exception as exc:
             err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
         xx_agg, yy_agg = x_agg.T
@@ -2970,13 +3214,17 @@ def krige2D(
             xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                     xx, yy, zz, v,
                     nx, ny, 1, sx, sy, 1.0, ox, oy, 0.0,
-                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+                    op=aggregate_data_op, 
+                    logger=logger,
+                    **aggregate_data_op_kwargs)
         except Exception as exc:
             err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
         if len(xx_agg) == 0:
             err_msg = f'{fname}: no data point in grid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     if extensionMin is None:
@@ -2992,7 +3240,10 @@ def krige2D(
     N2min = ny + extensionMin[1]
 
     if verbose > 1:
-        print(f'{fname}: Computing circulant embedding...')
+        if logger:
+            logger.info(f'{fname}: Computing circulant embedding...')
+        else:
+            print(f'{fname}: Computing circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -3008,7 +3259,10 @@ def krige2D(
     N2 = int(2**g2)
 
     if verbose > 1:
-        print(f'{fname}: embedding dimension: {N1} x {N2}')
+        if logger:
+            logger.info(f'{fname}: embedding dimension: {N1} x {N2}')
+        else:
+            print(f'{fname}: embedding dimension: {N1} x {N2}')
 
     N = N1*N2
 
@@ -3034,7 +3288,10 @@ def krige2D(
     del(ind)
 
     if verbose > 1:
-        print(f'{fname}: Computing FFT of circulant matrix...')
+        if logger:
+            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+        else:
+            print(f'{fname}: Computing FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -3092,7 +3349,10 @@ def krige2D(
     # deviation below
 
     if verbose > 1:
-        print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+        if logger:
+            logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+        else:
+            print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
 
     # Compute
     #    indc: node index of conditioning node,
@@ -3119,6 +3379,7 @@ def krige2D(
     # Test if rAA is almost singular...
     if 1./np.linalg.cond(rAA) < tolInvKappa:
         err_msg = f'{fname}: conditioning issue: condition number of matrix rAA is too big'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     # Compute:
@@ -3150,7 +3411,10 @@ def krige2D(
         # Method ConditioningA
         # --------------------
         if verbose > 1:
-            print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+            if logger:
+                logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+            else:
+                print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
         # Compute the parts rBA of the covariance matrix (see above)
         # rBA
@@ -3162,7 +3426,10 @@ def krige2D(
         del(ccirc)
 
         if verbose > 1:
-            print(f'{fname}: Computing rBA * rAA^(-1)...')
+            if logger:
+                logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+            else:
+                print(f'{fname}: Computing rBA * rAA^(-1)...')
 
         # compute rBA * rAA^(-1)
         rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -3173,7 +3440,10 @@ def krige2D(
 
         # Compute kriging estimates
         if verbose > 1:
-            print(f'{fname}: computing kriging estimates...')
+            if logger:
+                logger.info(f'{fname}: computing kriging estimates...')
+            else:
+                print(f'{fname}: computing kriging estimates...')
 
         krig[indnc] = np.dot(rBArAAinv, v_agg)
         krig[indc] = v_agg
@@ -3181,7 +3451,10 @@ def krige2D(
         if computeKrigSD:
             # Compute kriging standard deviation
             if verbose > 1:
-                print(f'{fname}: computing kriging standard deviation ...')
+                if logger:
+                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                else:
+                    print(f'{fname}: computing kriging standard deviation ...')
 
             for j in range(nnc):
                 krigSD[indnc[j]] = np.dot(rBArAAinv[j,:], rBA[j,:])
@@ -3196,7 +3469,10 @@ def krige2D(
             del(ccirc)
 
         if verbose > 1:
-            print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+            if logger:
+                logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+            else:
+                print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
 
         # Compute index in the embedding grid for indc and indnc
         # (to allow use of fft)
@@ -3205,7 +3481,10 @@ def krige2D(
 
         # Compute kriging estimates
         if verbose > 1:
-            print(f'{fname}: computing kriging estimates...')
+            if logger:
+                logger.info(f'{fname}: computing kriging estimates...')
+            else:
+                print(f'{fname}: computing kriging estimates...')
 
         # Compute
         #    u = rAA^(-1) * v_agg, and then
@@ -3220,7 +3499,10 @@ def krige2D(
         if computeKrigSD:
             # Compute kriging standard deviation
             if verbose > 1:
-                print(f'{fname}: computing kriging standard deviation ...')
+                if logger:
+                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                else:
+                    print(f'{fname}: computing kriging standard deviation ...')
 
             for j in range(nnc):
                 u = ccirc[np.mod(iy - ky[j], N2), np.mod(ix - kx[j], N1)] # j-th row of rBA
@@ -3269,7 +3551,8 @@ def grf3D(
         method=3, conditioningMethod=2,
         measureErrVar=0.0, tolInvKappa=1.e-10,
         verbose=1,
-        printInfo=None):
+        printInfo=None,
+        logger=None):
     """
     Generates Gaussian Random Fields (GRF) in 3D via Fast Fourier Transform (FFT).
 
@@ -3308,9 +3591,9 @@ def grf3D(
     aggregate_data_op : str {'sgs', 'krige', 'min', 'max', 'mean', 'quantile', 'most_freq', 'random'}, optional
         operation used to aggregate data points falling in the same grid cells
 
-        - if `aggregate_data_op='sgs'`: function :func:`covModel.sgs` is used \
+        - if `aggregate_data_op='sgs'`: function :func:`geone.covModel.sgs` is used \
         with the covariance model `cov_model` given in arguments
-        - if `aggregate_data_op='krige'`: function :func:`covModel.krige` is used \
+        - if `aggregate_data_op='krige'`: function :func:`geone.covModel.krige` is used \
         with the covariance model `cov_model` given in arguments
         - if `aggregate_data_op='most_freq'`: most frequent value is selected \
         (smallest one if more than one value with the maximal frequence)
@@ -3368,16 +3651,16 @@ def grf3D(
         By default (`None`): minimal extension is automatically computed:
 
         - based on the range of the covariance model, if `cov_model` is given as \
-        an instance of :class:`geone.CovModel.CovModel1D` (or \
-        :class:`geone.CovModel.CovModel3D`)
+        an instance of :class:`geone.covModel.CovModel1D` (or \
+        :class:`geone.covModel.CovModel3D`)
         - set to (`nx-1`, `ny-1`, `nz-1`), if `cov_model` is given as a function \
         (`callable`)
 
     rangeFactorForExtensionMin : float, default: 1.0
         factor by which the ranges of the covariance model are multiplied before
         computing the default minimal extension, if `cov_model` is given as
-        an instance of :class:`geone.CovModel.CovModel1D` (or
-        :class:`geone.CovModel.CovModel3D`) and if `extensionMin=None`
+        an instance of :class:`geone.covModel.CovModel1D` (or
+        :class:`geone.covModel.CovModel3D`) and if `extensionMin=None`
         (not used otherwise)
 
     crop : bool, default: True
@@ -3466,6 +3749,10 @@ def grf3D(
         - if `printInfo=False`, `verbose` is set to 1 (overwritten)
         - if `printInfo=True`, `verbose` is set to 3 (overwritten)
         - if `printInfo=None` (default): not used
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -3573,6 +3860,7 @@ def grf3D(
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         cov_func = cov_model.func() # covariance function
@@ -3583,12 +3871,14 @@ def grf3D(
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxyz()
     else:
         err_msg = f'{fname}: `cov_model` invalid'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     # aggregate_data_op (default)
@@ -3600,11 +3890,17 @@ def grf3D(
 
     if nreal <= 0:
         if verbose > 0:
-            print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
+            if logger:
+                logger.warning(f'{fname}: `nreal` <= 0: `None` is returned')
+            else:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None` is returned')
         return None
 
     if verbose > 1:
-        print(f'{fname}: Preliminary computation...')
+        if logger:
+            logger.info(f'{fname}: Preliminary computation...')
+        else:
+            print(f'{fname}: Preliminary computation...')
 
     #### Preliminary computation ####
     nx, ny, nz = dimension
@@ -3616,29 +3912,35 @@ def grf3D(
 
     if method not in (1, 2, 3):
         err_msg = f'{fname}: `method` invalid'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if method == 2:
         err_msg = f'{fname}: `method=2` not implemented'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if x is None and v is not None:
         err_msg = f'{fname}: `x` is not given (`None`) but `v` is given (not `None`)'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             err_msg = f'{fname}: `conditioningMethod` invalid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if v is None:
             err_msg = f'{fname}: `x` is given (not `None`) but `v` is not given (`None`)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 3-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             err_msg = f'{fname}: length of `v` is not valid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     mean_x = mean
@@ -3659,9 +3961,10 @@ def grf3D(
             elif mean.size == nxyz:
                 mean = mean.reshape(nz, ny, nx)
                 if x is not None:
-                    mean_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=mean))(x)
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=mean, logger=logger), logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `mean` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     var_x = var
@@ -3680,9 +3983,10 @@ def grf3D(
             elif var.size == nxyz:
                 var = var.reshape(nz, ny, nx)
                 if x is not None:
-                    var_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=var))(x)
+                    var_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=var, logger=logger), logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `var` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     # data point set from x, v
@@ -3693,6 +3997,7 @@ def grf3D(
             if cov_range is None:
                 # cov_model is directly the covariance function
                 err_msg = f"{fname}: `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used"
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             # Get grid cell with at least one data point:
@@ -3701,14 +4006,18 @@ def grf3D(
                 im_tmp = img.imageFromPoints(
                         x, values=None, varname=None,
                         nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
-                        indicator_var=True, count_var=False)
+                        indicator_var=True, 
+                        count_var=False,
+                        logger=logger)
             except Exception as exc:
                 err_msg = f'{fname}: cannot set image from points'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
             ind_agg = np.where(im_tmp.val[0])
             if len(ind_agg[0]) == 0:
                 err_msg = f'{fname}: no data point in grid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1), im_tmp.zz()[ind_agg].reshape(-1))).T
@@ -3733,9 +4042,11 @@ def grf3D(
                             x, v, x_agg, cov_model, method='simple_kriging',
                             mean_x=mean_x, mean_xu=mean_x_agg,
                             var_x=var_x, var_xu=var_x_agg,
-                            verbose=0, **aggregate_data_op_kwargs)
+                            verbose=0, logger=logger,
+                            **aggregate_data_op_kwargs)
                 except Exception as exc:
                     err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
                 # all real (same values)
@@ -3747,9 +4058,11 @@ def grf3D(
                             mean_x=mean_x, mean_xu=mean_x_agg,
                             var_x=var_x, var_xu=var_x_agg,
                             nreal=nreal, seed=None,
-                            verbose=0, **aggregate_data_op_kwargs)
+                            verbose=0, logger=logger,
+                            **aggregate_data_op_kwargs)
                 except Exception as exc:
                     err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
             xx_agg, yy_agg, zz_agg = x_agg.T
@@ -3761,14 +4074,18 @@ def grf3D(
                 xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
                         xx, yy, zz, v,
                         nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                        op=aggregate_data_op, return_inverse=True,
+                        op=aggregate_data_op, 
+                        return_inverse=True,
+                        logger=logger,
                         **aggregate_data_op_kwargs)
             except Exception as exc:
                 err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
             if len(xx_agg) == 0:
                 err_msg = f'{fname}: no data point in grid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             # next realizations of v_agg
@@ -3782,13 +4099,17 @@ def grf3D(
                 xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                         xx, yy, zz, v,
                         nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                        op=aggregate_data_op, **aggregate_data_op_kwargs)
+                        op=aggregate_data_op, 
+                        logger=logger,
+                        **aggregate_data_op_kwargs)
             except Exception as exc:
                 err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
             if len(xx_agg) == 0:
                 err_msg = f'{fname}: no data point in grid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
             # all real (same values)
@@ -3797,14 +4118,17 @@ def grf3D(
     if not crop:
         if x is not None: # conditional simulation
             err_msg = f'{fname}: `crop=False` cannot be used with conditional simulation'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if mean is not None and mean.size > 1:
             err_msg = f'{fname}: `crop=False` cannot be used with non-stationary mean'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if var is not None and var.size > 1:
             err_msg = f'{fname}: `crop=False` cannot be used with non-stationary variance'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     if extensionMin is None:
@@ -3821,7 +4145,10 @@ def grf3D(
     N3min = nz + extensionMin[2]
 
     if verbose > 1:
-        print(f'{fname}: Computing circulant embedding...')
+        if logger:
+            logger.info(f'{fname}: Computing circulant embedding...')
+        else:
+            print(f'{fname}: Computing circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -3840,7 +4167,10 @@ def grf3D(
     N3 = int(2**g3)
 
     if verbose > 1:
-        print(f'{fname}: embedding dimension: {N1} x {N2} x {N3}')
+        if logger:
+            logger.info(f'{fname}: embedding dimension: {N1} x {N2} x {N3}')
+        else:
+            print(f'{fname}: embedding dimension: {N1} x {N2} x {N3}')
 
     N12 = N1*N2
     N = N12 * N3
@@ -3873,7 +4203,10 @@ def grf3D(
     del(ind)
 
     if verbose > 1:
-        print(f'{fname}: Computing FFT of circulant matrix...')
+        if logger:
+            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+        else:
+            print(f'{fname}: Computing FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -3910,7 +4243,10 @@ def grf3D(
     # -------------------------
     if x is not None:
         if verbose > 1:
-            print(f'{fname}: Treatment of conditioning data...')
+            if logger:
+                logger.info(f'{fname}: Treatment of conditioning data...')
+            else:
+                print(f'{fname}: Treatment of conditioning data...')
         # Compute the part rAA of the covariance matrix
         #        +         +
         #        | rAA rAB |
@@ -3921,7 +4257,10 @@ def grf3D(
         # conditioning (resp. non-conditioning) index in the grid.
 
         if verbose > 1:
-            print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            if logger:
+                logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            else:
+                print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
 
         # Compute
         #    indc: node index of conditioning node,
@@ -3948,6 +4287,7 @@ def grf3D(
         # Test if rAA is almost singular...
         if 1./np.linalg.cond(rAA) < tolInvKappa:
             err_msg = f'{fname}: conditioning issue: condition number of matrix rAA is too big'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         # Compute:
@@ -3965,7 +4305,10 @@ def grf3D(
             # Method ConditioningA
             # --------------------
             if verbose > 1:
-                print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                if logger:
+                    logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                else:
+                    print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
             # Compute the parts rBA of the covariance matrix (see above)
             # rBA
@@ -3974,7 +4317,10 @@ def grf3D(
                 rBA[:,j] = ccirc[np.mod(iz[j] - kz, N3), np.mod(iy[j] - ky, N2), np.mod(ix[j] - kx, N1)]
 
             if verbose > 1:
-                print(f'{fname}: Computing rBA * rAA^(-1)...')
+                if logger:
+                    logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+                else:
+                    print(f'{fname}: Computing rBA * rAA^(-1)...')
 
             # compute rBA * rAA^(-1)
             rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -3994,7 +4340,10 @@ def grf3D(
             # Method ConditioningB
             # --------------------
             if verbose > 1:
-                print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                if logger:
+                    logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                else:
+                    print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
 
             # Compute index in the embedding grid for indc and indnc
             # (to allow use of fft)
@@ -4057,7 +4406,10 @@ def grf3D(
         # --------
         for i in range(nreal):
             if verbose > 2:
-                print(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
+                if logger:
+                    logger.info(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
+                else:
+                    print(f'{fname}: unconditional simulation {i+1:4d} of {nreal:4d}...')
 
             W = np.random.normal(size=(N3, N2, N1))
 
@@ -4069,6 +4421,7 @@ def grf3D(
         # Method B
         # --------
         err_msg = f'{fname}: (unconditional simulation) `method=2` not implemented'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     elif method == 3:
@@ -4076,7 +4429,10 @@ def grf3D(
         # --------
         for i in np.arange(0, nreal-1, 2):
             if verbose > 2:
-                print(f'{fname}: unconditional simulation {i+1:4d}-{i+2:4d} of {nreal:4d}...')
+                if logger:
+                    logger.info(f'{fname}: unconditional simulation {i+1:4d}-{i+2:4d} of {nreal:4d}...')
+                else:
+                    print(f'{fname}: unconditional simulation {i+1:4d}-{i+2:4d} of {nreal:4d}...')
 
             W = np.array(np.random.normal(size=(N3, N2, N1)), dtype=complex)
             W.imag = np.random.normal(size=(N3, N2, N1))
@@ -4088,7 +4444,10 @@ def grf3D(
 
         if np.mod(nreal, 2) == 1:
             if verbose > 2:
-                print(f'{fname}: unconditional simulation {nreal:4d} of {nreal:4d}...')
+                if logger:
+                    logger.info(f'{fname}: unconditional simulation {nreal:4d} of {nreal:4d}...')
+                else:
+                    print(f'{fname}: unconditional simulation {nreal:4d} of {nreal:4d}...')
 
             W = np.random.normal(size=(N3, N2, N1))
 
@@ -4129,7 +4488,10 @@ def grf3D(
             # Method ConditioningA
             # --------------------
             if verbose > 1:
-                print(f'{fname}: updating conditional simulations...')
+                if logger:
+                    logger.info(f'{fname}: updating conditional simulations...')
+                else:
+                    print(f'{fname}: updating conditional simulations...')
 
             # Update all simulations at a time,
             # use the matrix rBA * rAA^(-1) already computed
@@ -4147,7 +4509,10 @@ def grf3D(
 
             for i in range(nreal):
                 if verbose > 2:
-                    print(f'{fname}: updating conditional simulation {i+1:4d} of {nreal:4d}...')
+                    if logger:
+                        logger.info(f'{fname}: updating conditional simulation {i+1:4d} of {nreal:4d}...')
+                    else:
+                        print(f'{fname}: updating conditional simulation {i+1:4d} of {nreal:4d}...')
 
                 # Compute residue
                 residu = v_agg[i] - grf[i, indc]
@@ -4189,7 +4554,8 @@ def krige3D(
         measureErrVar=0.0, tolInvKappa=1.e-10,
         computeKrigSD=True,
         verbose=1,
-        printInfo=None):
+        printInfo=None,
+        logger=None):
     """
     Computes kriging estimates and standard deviations in 3D via FFT.
 
@@ -4228,7 +4594,7 @@ def krige3D(
     aggregate_data_op : str {'krige', 'min', 'max', 'mean', 'quantile', 'most_freq'}, optional
         operation used to aggregate data points falling in the same grid cells
 
-        - if `aggregate_data_op='krige'`: function :func:`covModel.krige` is used \
+        - if `aggregate_data_op='krige'`: function :func:`geone.covModel.krige` is used \
         with the covariance model `cov_model` given in arguments
         - if `aggregate_data_op='most_freq'`: most frequent value is selected \
         (smallest one if more than one value with the maximal frequence)
@@ -4283,16 +4649,16 @@ def krige3D(
         By default (`None`): minimal extension is automatically computed:
 
         - based on the range of the covariance model, if `cov_model` is given as \
-        an instance of :class:`geone.CovModel.CovModel1D` (or \
-        :class:`geone.CovModel.CovModel3D`)
+        an instance of :class:`geone.covModel.CovModel1D` (or \
+        :class:`geone.covModel.CovModel3D`)
         - set to (`nx-1`, `ny-1`, `nz-1`), if `cov_model` is given as a function \
         (`callable`)
 
     rangeFactorForExtensionMin : float, default: 1.0
         factor by which the ranges of the covariance model are multiplied before
         computing the default minimal extension, if `cov_model` is given as
-        an instance of :class:`geone.CovModel.CovModel1D` (or
-        :class:`geone.CovModel.CovModel3D`) and if `extensionMin=None`
+        an instance of :class:`geone.covModel.CovModel1D` (or
+        :class:`geone.covModel.CovModel3D`) and if `extensionMin=None`
         (not used otherwise)
 
     conditioningMethod : int, default: 1
@@ -4351,6 +4717,10 @@ def krige3D(
         - if `printInfo=False`, `verbose` is set to 1 (overwritten)
         - if `printInfo=True`, `verbose` is set to 3 (overwritten)
         - if `printInfo=None` (default): not used
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -4459,6 +4829,7 @@ def krige3D(
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         cov_func = cov_model.func() # covariance function
@@ -4469,12 +4840,14 @@ def krige3D(
         # Prevent calculation if covariance model is not stationary
         if not cov_model.is_stationary():
             err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use `geone.geosclassicinterface` package)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         cov_func = cov_model.func() # covariance function
         cov_range = cov_model.rxyz()
     else:
         err_msg = f'{fname}: `cov_model` invalid'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     # aggregate_data_op (default)
@@ -4490,21 +4863,25 @@ def krige3D(
 
     if x is None and v is not None:
         err_msg = f'{fname}: `x` is not given (`None`) but `v` is given (not `None`)'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     if x is not None:
         if conditioningMethod not in (1, 2):
             err_msg = f'{fname}: `conditioningMethod` invalid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         if v is None:
             err_msg = f'{fname}: `x` is given (not `None`) but `v` is not given (`None`)'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         x = np.asarray(x, dtype='float').reshape(-1, 3) # cast in 3-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             err_msg = f'{fname}: length of `v` is not valid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     mean_x = mean
@@ -4525,9 +4902,10 @@ def krige3D(
             elif mean.size == nxyz:
                 mean = mean.reshape(nz, ny, nx)
                 if x is not None:
-                    mean_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=mean))(x)
+                    mean_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=mean, logger=logger), logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `mean` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     var_x = var
@@ -4546,9 +4924,10 @@ def krige3D(
             elif var.size == nxyz:
                 var = var.reshape(nz, ny, nx)
                 if x is not None:
-                    var_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=var))(x)
+                    var_x = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=var, logger=logger), logger=logger)(x)
             else:
                 err_msg = f'{fname}: size of `var` is not valid'
+                if logger: logger.error(err_msg)
                 raise GrfError(err_msg)
 
     if x is None:
@@ -4573,6 +4952,7 @@ def krige3D(
         if cov_range is None:
             # cov_model is directly the covariance function
             err_msg = f"{fname}: `cov_model` must be a model (not directly a function) when `aggregate_data_op='{aggregate_data_op}'` is used"
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         # Get grid cell with at least one data point:
@@ -4581,14 +4961,18 @@ def krige3D(
             im_tmp = img.imageFromPoints(
                     x, values=None, varname=None,
                     nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
-                    indicator_var=True, count_var=False)
+                    indicator_var=True, 
+                    count_var=False,
+                    logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot set image from points'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
         ind_agg = np.where(im_tmp.val[0])
         if len(ind_agg[0]) == 0:
             err_msg = f'{fname}: no data point in grid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
         x_agg = np.array((im_tmp.xx()[ind_agg].reshape(-1), im_tmp.yy()[ind_agg].reshape(-1), im_tmp.zz()[ind_agg].reshape(-1))).T
@@ -4612,9 +4996,11 @@ def krige3D(
                     x, v, x_agg, cov_model, method='simple_kriging',
                     mean_x=mean_x, mean_xu=mean_x_agg,
                     var_x=var_x, var_xu=var_x_agg,
-                    verbose=0, **aggregate_data_op_kwargs)
+                    verbose=0, logger=logger,
+                    **aggregate_data_op_kwargs)
         except Exception as exc:
             err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
         xx_agg, yy_agg, zz_agg = x_agg.T
@@ -4625,13 +5011,17 @@ def krige3D(
             xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                     xx, yy, zz, v,
                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                    op=aggregate_data_op, **aggregate_data_op_kwargs)
+                    op=aggregate_data_op, 
+                    logger=logger,
+                    **aggregate_data_op_kwargs)
         except Exception as exc:
             err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
         if len(xx_agg) == 0:
             err_msg = f'{fname}: no data point in grid'
+            if logger: logger.error(err_msg)
             raise GrfError(err_msg)
 
     if extensionMin is None:
@@ -4648,7 +5038,10 @@ def krige3D(
     N3min = nz + extensionMin[2]
 
     if verbose > 1:
-        print(f'{fname}: Computing circulant embedding...')
+        if logger:
+            logger.info(f'{fname}: Computing circulant embedding...')
+        else:
+            print(f'{fname}: Computing circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -4667,7 +5060,10 @@ def krige3D(
     N3 = int(2**g3)
 
     if verbose > 1:
-        print(f'{fname}: embedding dimension: {N1} x {N2} x {N3}')
+        if logger:
+            logger.info(f'{fname}: embedding dimension: {N1} x {N2} x {N3}')
+        else:
+            print(f'{fname}: embedding dimension: {N1} x {N2} x {N3}')
 
     N12 = N1*N2
     N = N12 * N3
@@ -4700,7 +5096,10 @@ def krige3D(
     del(ind)
 
     if verbose > 1:
-        print(f'{fname}: Computing FFT of circulant matrix...')
+        if logger:
+            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+        else:
+            print(f'{fname}: Computing FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -4758,7 +5157,10 @@ def krige3D(
     # deviation below
 
     if verbose > 1:
-        print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+        if logger:
+            logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+        else:
+            print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
 
     # Compute
     #    indc: node index of conditioning node,
@@ -4785,6 +5187,7 @@ def krige3D(
     # Test if rAA is almost singular...
     if 1./np.linalg.cond(rAA) < tolInvKappa:
         err_msg = f'{fname}: conditioning issue: condition number of matrix rAA is too big'
+        if logger: logger.error(err_msg)
         raise GrfError(err_msg)
 
     # Compute:
@@ -4819,7 +5222,10 @@ def krige3D(
         # Method ConditioningA
         # --------------------
         if verbose > 1:
-            print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+            if logger:
+                logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+            else:
+                print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
         # Compute the parts rBA of the covariance matrix (see above)
         # rBA
@@ -4831,7 +5237,10 @@ def krige3D(
         del(ccirc)
 
         if verbose > 1:
-            print(f'{fname}: Computing rBA * rAA^(-1)...')
+            if logger:
+                logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+            else:
+                print(f'{fname}: Computing rBA * rAA^(-1)...')
 
         # compute rBA * rAA^(-1)
         rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -4842,7 +5251,10 @@ def krige3D(
 
         # Compute kriging estimates
         if verbose > 1:
-            print(f'{fname}: computing kriging estimates...')
+            if logger:
+                logger.info(f'{fname}: computing kriging estimates...')
+            else:
+                print(f'{fname}: computing kriging estimates...')
 
         krig[indnc] = np.dot(rBArAAinv, v_agg)
         krig[indc] = v_agg
@@ -4850,7 +5262,10 @@ def krige3D(
         if computeKrigSD:
             # Compute kriging standard deviation
             if verbose > 1:
-                print(f'{fname}: computing kriging standard deviation ...')
+                if logger:
+                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                else:
+                    print(f'{fname}: computing kriging standard deviation ...')
 
             for j in range(nnc):
                 krigSD[indnc[j]] = np.dot(rBArAAinv[j,:], rBA[j,:])
@@ -4865,7 +5280,10 @@ def krige3D(
             del(ccirc)
 
         if verbose > 1:
-            print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+            if logger:
+                logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+            else:
+                print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
 
         # Compute index in the embedding grid for indc and indnc
         # (to allow use of fft)
@@ -4874,7 +5292,10 @@ def krige3D(
 
         # Compute kriging estimates
         if verbose > 1:
-            print(f'{fname}: computing kriging estimates...')
+            if logger:
+                logger.info(f'{fname}: computing kriging estimates...')
+            else:
+                print(f'{fname}: computing kriging estimates...')
 
         # Compute
         #    u = rAA^(-1) * v_agg, and then
@@ -4889,7 +5310,10 @@ def krige3D(
         if computeKrigSD:
             # Compute kriging standard deviation
             if verbose > 1:
-                print(f'{fname}: computing kriging standard deviation ...')
+                if logger:
+                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                else:
+                    print(f'{fname}: computing kriging standard deviation ...')
 
             for j in range(nnc):
                 u = ccirc[np.mod(iz - kz[j], N3), np.mod(iy - ky[j], N2), np.mod(ix - kx[j], N1)] # j-th row of rBA

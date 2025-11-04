@@ -109,5 +109,5 @@ setuptools.setup(
     # author_email="julien.straubhaar@unine.ch",
     # description="Geostatistics tools and Multiple Point Statistics",
     # url='https://github.com/randlab/geone',
-    # install_requires=['matplotlib', 'numpy>=1,<2', 'pandas', 'pyvista', 'scipy'],
+    # install_requires=['matplotlib', 'numpy', 'pandas', 'pyvista', 'scipy'],
 )

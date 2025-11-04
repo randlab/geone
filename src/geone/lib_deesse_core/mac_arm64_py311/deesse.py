@@ -78,6 +78,7 @@ MPDS_WORD_LENGTH = _deesse.MPDS_WORD_LENGTH
 MPDS_MISSING_VALUE = _deesse.MPDS_MISSING_VALUE
 MPDS_INEQUALITY_DATA_SUFFIX_FOR_MIN = _deesse.MPDS_INEQUALITY_DATA_SUFFIX_FOR_MIN
 MPDS_INEQUALITY_DATA_SUFFIX_FOR_MAX = _deesse.MPDS_INEQUALITY_DATA_SUFFIX_FOR_MAX
+MPDS_DATA_SUFFIX_FOR_ERR_STD = _deesse.MPDS_DATA_SUFFIX_FOR_ERR_STD
 MPDS_JOB_VARNAME = _deesse.MPDS_JOB_VARNAME
 MPDS_JOB_DATA_LOCATION = _deesse.MPDS_JOB_DATA_LOCATION
 MPDS_JOB_DATA_VALUE = _deesse.MPDS_JOB_DATA_VALUE
@@ -482,8 +483,8 @@ def MPDSGetNImageVarValuePdf(arg1, arg2, arg3, arg4, arg5, arg6):
 def MPDSImageEE(arg1):
     return _deesse.MPDSImageEE(arg1)
 
-def MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
-    return _deesse.MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+def MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _deesse.MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
 
 def MPDSInitImage(arg1):
     return _deesse.MPDSInitImage(arg1)
@@ -559,8 +560,8 @@ def MPDSInitPointSet(arg1):
 def MPDSMallocPointSet(arg1, arg2, arg3):
     return _deesse.MPDSMallocPointSet(arg1, arg2, arg3)
 
-def MPDSPointSetToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _deesse.MPDSPointSetToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+def MPDSPointSetToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _deesse.MPDSPointSetToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
 
 def MPDSPrintPointSet(arg1, arg2, arg3):
     return _deesse.MPDSPrintPointSet(arg1, arg2, arg3)
@@ -611,6 +612,8 @@ MPDS_WARNING_MSG_00060 = _deesse.MPDS_WARNING_MSG_00060
 MPDS_WARNING_MSG_00061 = _deesse.MPDS_WARNING_MSG_00061
 MPDS_WARNING_MSG_00062 = _deesse.MPDS_WARNING_MSG_00062
 MPDS_WARNING_MSG_00063 = _deesse.MPDS_WARNING_MSG_00063
+MPDS_WARNING_MSG_00065 = _deesse.MPDS_WARNING_MSG_00065
+MPDS_WARNING_MSG_00066 = _deesse.MPDS_WARNING_MSG_00066
 MPDS_WARNING_MSG_00070 = _deesse.MPDS_WARNING_MSG_00070
 MPDS_WARNING_MSG_00071 = _deesse.MPDS_WARNING_MSG_00071
 MPDS_WARNING_MSG_00075 = _deesse.MPDS_WARNING_MSG_00075
@@ -641,10 +644,12 @@ MPDS_WARNING_MSG_01014 = _deesse.MPDS_WARNING_MSG_01014
 MPDS_WARNING_MSG_01015 = _deesse.MPDS_WARNING_MSG_01015
 MPDS_WARNING_MSG_02001 = _deesse.MPDS_WARNING_MSG_02001
 MPDS_WARNING_MSG_02002 = _deesse.MPDS_WARNING_MSG_02002
+MPDS_WARNING_MSG_02003 = _deesse.MPDS_WARNING_MSG_02003
 MPDS_WARNING_MSG_02005 = _deesse.MPDS_WARNING_MSG_02005
 MPDS_WARNING_MSG_02012 = _deesse.MPDS_WARNING_MSG_02012
 MPDS_WARNING_MSG_02015 = _deesse.MPDS_WARNING_MSG_02015
 MPDS_WARNING_MSG_02016 = _deesse.MPDS_WARNING_MSG_02016
+MPDS_WARNING_MSG_02017 = _deesse.MPDS_WARNING_MSG_02017
 MPDS_WARNING_MSG_02020 = _deesse.MPDS_WARNING_MSG_02020
 MPDS_WARNING_MSG_05011 = _deesse.MPDS_WARNING_MSG_05011
 MPDS_WARNING_MSG_05030 = _deesse.MPDS_WARNING_MSG_05030

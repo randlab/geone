@@ -115,7 +115,8 @@ def custom_cmap(
         cover=None,
         cbad=None,
         alpha=None,
-        cmap_name='custom_cmap'):
+        cmap_name='custom_cmap',
+        logger=None):
     """
     Defines a custom color map given colors at transition values.
 
@@ -151,6 +152,10 @@ def custom_cmap(
 
     cmap_name : str, default: 'custom_cmap'
         name of the output color map
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -193,16 +198,19 @@ def custom_cmap(
         aseq = aseq.flat[0] * np.ones(len(cseq))
     elif aseq.size != len(cseq):
         err_msg = f'{fname}: length of `alpha` not compatible with `cseq`'
+        if logger: logger.error(err_msg)
         raise CustomcolorsError(err_msg)
 
     # Set vseqn: sequence of values rescaled in [0,1]
     if vseq is not None:
         if len(vseq) != len(cseq):
             err_msg = f'{fname}: length of `vseq` and length of `cseq` differ'
+            if logger: logger.error(err_msg)
             raise CustomcolorsError(err_msg)
 
         if sum(np.diff(vseq) <= 0.0 ):
             err_msg = f'{fname}: `vseq` is not an increasing sequence'
+            if logger: logger.error(err_msg)
             raise CustomcolorsError(err_msg)
 
         # Linearly rescale vseq on [0,1]

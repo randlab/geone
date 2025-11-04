@@ -291,6 +291,10 @@ class SoftProbability(object):
         used if `probabilityConstraintUsage` in [1, 2] and
         `probabilityConstraintThresholdType=1`
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     **Methods**
     """
     def __init__(self,
@@ -306,7 +310,8 @@ class SoftProbability(object):
                  deactivationDistance=4.0,
                  probabilityConstraintThresholdType=0,
                  constantThreshold=1.e-3,
-                 dynamicThresholdParameters=None):
+                 dynamicThresholdParameters=None,
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -328,6 +333,7 @@ class SoftProbability(object):
                 self.globalPdf = np.asarray(globalPdf, dtype=float).reshape(nclass)
             except:
                 err_msg = f'{fname}: parameter `globalPdf`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if localPdf is None:
@@ -509,6 +515,10 @@ class Connectivity(object):
         threshold value for connectivity patterns comparison;
         used if `connectivityConstraintUsage=3`
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     **Methods**
     """
     def __init__(self,
@@ -521,7 +531,8 @@ class Connectivity(object):
                  refConnectivityImage=None,
                  refConnectivityVarIndex=0,
                  deactivationDistance=0.0,
-                 threshold=0.01):
+                 threshold=0.01,
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -543,6 +554,7 @@ class Connectivity(object):
 
         if not tiAsRefFlag and refConnectivityImage is None:
             err_msg = f'{fname}: parameter `refConnectivityImage`...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.refConnectivityImage = refConnectivityImage
@@ -699,6 +711,10 @@ class PyramidGeneralParameters(object):
         fraction (according to each TI) is multiplied by `factorMaxScanFraction[j]`
         for the j-th pyramid level
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     **Methods**
     """
     def __init__(self,
@@ -708,7 +724,8 @@ class PyramidGeneralParameters(object):
                  pyramidSimulationMode='hierarchical_using_expansion',
                  factorNneighboringNode=None,
                  factorDistanceThreshold=None,
-                 factorMaxScanFraction=None):
+                 factorMaxScanFraction=None,
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -726,6 +743,7 @@ class PyramidGeneralParameters(object):
         # pyramidSimulationMode
         if pyramidSimulationMode not in ('hierarchical', 'hierarchical_using_expansion', 'all_level_one_by_one'):
             err_msg = f'{fname}: unknown `pyramidSimulationMode`'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.pyramidSimulationMode = pyramidSimulationMode
@@ -739,6 +757,7 @@ class PyramidGeneralParameters(object):
                     self.kx = np.asarray(kx, dtype='int').reshape(npyramidLevel)
                 except:
                     err_msg = f'{fname}: parameter `kx`...'
+                    if logger: logger.error(err_msg)
                     raise DeesseinterfaceError(err_msg)
 
             if ky is None:
@@ -748,6 +767,7 @@ class PyramidGeneralParameters(object):
                     self.ky = np.asarray(ky, dtype='int').reshape(npyramidLevel)
                 except:
                     err_msg = f'{fname}: parameter `ky`...'
+                    if logger: logger.error(err_msg)
                     raise DeesseinterfaceError(err_msg)
 
             if kz is None:
@@ -757,6 +777,7 @@ class PyramidGeneralParameters(object):
                     self.kz = np.asarray(kz, dtype='int').reshape(npyramidLevel)
                 except:
                     err_msg = f'{fname}: parameter `kz`...'
+                    if logger: logger.error(err_msg)
                     raise DeesseinterfaceError(err_msg)
 
             # factorNneighboringNode, factorDistanceThreshold
@@ -774,6 +795,7 @@ class PyramidGeneralParameters(object):
                         self.factorNneighboringNode = np.asarray(factorNneighboringNode, dtype=float).reshape(n)
                     except:
                         err_msg = f'{fname}: parameter `factorNneighboringNode`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
                 if factorDistanceThreshold is None:
@@ -784,6 +806,7 @@ class PyramidGeneralParameters(object):
                         self.factorDistanceThreshold = np.asarray(factorDistanceThreshold, dtype=float).reshape(n)
                     except:
                         err_msg = f'{fname}: parameter `factorDistanceThreshold`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else: # pyramidSimulationMode == 'all_level_one_by_one'
@@ -796,6 +819,7 @@ class PyramidGeneralParameters(object):
                         self.factorNneighboringNode = np.asarray(factorNneighboringNode, dtype=float).reshape(n)
                     except:
                         err_msg = f'{fname}: parameter `factorNneighboringNode`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
                 if factorDistanceThreshold is None:
@@ -806,6 +830,7 @@ class PyramidGeneralParameters(object):
                         self.factorDistanceThreshold = np.asarray(factorDistanceThreshold, dtype=float).reshape(n)
                     except:
                         err_msg = f'{fname}: parameter `factorDistanceThreshold`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             # factorMaxScanFraction
@@ -822,6 +847,7 @@ class PyramidGeneralParameters(object):
                     self.factorMaxScanFraction = np.asarray(factorMaxScanFraction, dtype=float).reshape(n)
                 except:
                     err_msg = f'{fname}: parameter `factorMaxScanFraction`...'
+                    if logger: logger.error(err_msg)
                     raise DeesseinterfaceError(err_msg)
 
         else: # npyramidLevel <= 0
@@ -922,6 +948,10 @@ class PyramidParameters(object):
         - the values of the output variables are the normalized values (as used \
         during the simulation in every level)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     **Methods**
     """
     def __init__(self,
@@ -929,7 +959,8 @@ class PyramidParameters(object):
                  pyramidType='none',
                  nclass=0,
                  classInterval=None,
-                 outputLevelFlag=None):
+                 outputLevelFlag=None,
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -941,6 +972,7 @@ class PyramidParameters(object):
 
         if pyramidType not in ('none', 'continuous', 'categorical_auto', 'categorical_custom', 'categorical_to_continuous'):
             err_msg = f'{fname}: unknown `pyramidType`'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.pyramidType = pyramidType
@@ -955,6 +987,7 @@ class PyramidParameters(object):
                 self.outputLevelFlag = np.asarray(outputLevelFlag, dtype='bool').reshape(nlevel)
             except:
                 err_msg = f'{fname}: parameter `outputLevelFlag`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
     # ------------------------------------------------------------------------
@@ -1451,6 +1484,10 @@ class DeesseInput(object):
     nrealization : int, default: 1
         number of realization(s)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Notes
     -----
     In output simulated images (obtained by running DeeSse), the names of the
@@ -1518,7 +1555,8 @@ class DeesseInput(object):
                  postProcessingTolerance=0.0,
                  seed=1234,
                  seedIncrement=1,
-                 nrealization=1):
+                 nrealization=1,
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -1552,6 +1590,7 @@ class DeesseInput(object):
                 self.varname = list(np.asarray(varname).reshape(nv))
             except:
                 err_msg = f'{fname}: parameter `varname`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # dimension
@@ -1565,6 +1604,7 @@ class DeesseInput(object):
                 self.outputVarFlag = np.asarray(outputVarFlag, dtype='bool').reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `outputVarFlag`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # output maps
@@ -1590,6 +1630,7 @@ class DeesseInput(object):
         # TI, simGridAsTiFlag, nTI
         if TI is None and simGridAsTiFlag is None:
             err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid (both `None`)...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         if TI is not None:
@@ -1606,15 +1647,18 @@ class DeesseInput(object):
 
         if len(self.TI) != len(self.simGridAsTiFlag):
             err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid (not same length)...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         for f, t in zip(self.simGridAsTiFlag, self.TI):
             if (not f and t is None) or (f and t is not None):
                 err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if nTI is not None and nTI != len(self.TI):
             err_msg = f'{fname}: `nTI` invalid...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         nTI = len(self.TI)
@@ -1632,6 +1676,7 @@ class DeesseInput(object):
                     self.pdfTI = np.asarray(pdfTI, dtype=float).reshape(nTI, nz, ny, nx)
                 except:
                     err_msg = f'{fname}: parameter `pdfTI`...'
+                    if logger: logger.error(err_msg)
                     raise DeesseinterfaceError(err_msg)
 
         # conditioning data image
@@ -1654,6 +1699,7 @@ class DeesseInput(object):
                 self.mask = np.asarray(mask).reshape(nz, ny, nx)
             except:
                 err_msg = f'{fname}: parameter `mask`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # homothety
@@ -1666,6 +1712,7 @@ class DeesseInput(object):
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1676,6 +1723,7 @@ class DeesseInput(object):
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if homothetyYLocal:
@@ -1686,6 +1734,7 @@ class DeesseInput(object):
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1696,6 +1745,7 @@ class DeesseInput(object):
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if homothetyZLocal:
@@ -1706,6 +1756,7 @@ class DeesseInput(object):
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1716,6 +1767,7 @@ class DeesseInput(object):
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
         elif homothetyUsage == 2:
@@ -1727,6 +1779,7 @@ class DeesseInput(object):
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1737,6 +1790,7 @@ class DeesseInput(object):
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if homothetyYLocal:
@@ -1747,6 +1801,7 @@ class DeesseInput(object):
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1757,6 +1812,7 @@ class DeesseInput(object):
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if homothetyZLocal:
@@ -1767,6 +1823,7 @@ class DeesseInput(object):
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1777,6 +1834,7 @@ class DeesseInput(object):
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
         elif homothetyUsage == 0:
@@ -1786,6 +1844,7 @@ class DeesseInput(object):
 
         else:
             err_msg = f'{fname}: `homothetyUsage` invalid'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.homothetyUsage = homothetyUsage
@@ -1803,6 +1862,7 @@ class DeesseInput(object):
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1813,6 +1873,7 @@ class DeesseInput(object):
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if rotationDipLocal:
@@ -1823,6 +1884,7 @@ class DeesseInput(object):
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationDip`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1833,6 +1895,7 @@ class DeesseInput(object):
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `rotationDip`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if rotationPlungeLocal:
@@ -1843,6 +1906,7 @@ class DeesseInput(object):
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1853,6 +1917,7 @@ class DeesseInput(object):
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
         elif rotationUsage == 2:
@@ -1864,6 +1929,7 @@ class DeesseInput(object):
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1874,6 +1940,7 @@ class DeesseInput(object):
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if rotationDipLocal:
@@ -1884,6 +1951,7 @@ class DeesseInput(object):
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationDip`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1894,6 +1962,7 @@ class DeesseInput(object):
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `rotationDip`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if rotationPlungeLocal:
@@ -1904,6 +1973,7 @@ class DeesseInput(object):
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -1914,6 +1984,7 @@ class DeesseInput(object):
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
         elif rotationUsage == 0:
@@ -1923,6 +1994,7 @@ class DeesseInput(object):
 
         else:
             err_msg = f'{fname}: `rotationUsage` invalid'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.rotationUsage = rotationUsage
@@ -1948,6 +2020,7 @@ class DeesseInput(object):
                 self.searchNeighborhoodParameters = np.asarray(searchNeighborhoodParameters).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `searchNeighborhoodParameters`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if nneighboringNode is None:
@@ -1965,6 +2038,7 @@ class DeesseInput(object):
                 self.nneighboringNode = np.asarray(nneighboringNode).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `nneighboringNode`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if maxPropInequalityNode is None:
@@ -1974,6 +2048,7 @@ class DeesseInput(object):
                 self.maxPropInequalityNode = np.asarray(maxPropInequalityNode).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `maxPropInequalityNode`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if neighboringNodeDensity is None:
@@ -1983,6 +2058,7 @@ class DeesseInput(object):
                 self.neighboringNodeDensity = np.asarray(neighboringNodeDensity, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `neighboringNodeDensity`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # rescaling
@@ -1993,6 +2069,7 @@ class DeesseInput(object):
                 self.rescalingMode = list(np.asarray(rescalingMode).reshape(nv))
             except:
                 err_msg = f'{fname}: parameter `rescalingMode`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMin is None:
@@ -2002,6 +2079,7 @@ class DeesseInput(object):
                 self.rescalingTargetMin = np.asarray(rescalingTargetMin, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `rescalingTargetMin`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMax is None:
@@ -2011,6 +2089,7 @@ class DeesseInput(object):
                 self.rescalingTargetMax = np.asarray(rescalingTargetMax, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `rescalingTargetMax`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMean is None:
@@ -2020,6 +2099,7 @@ class DeesseInput(object):
                 self.rescalingTargetMean = np.asarray(rescalingTargetMean, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `rescalingTargetMean`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetLength is None:
@@ -2029,6 +2109,7 @@ class DeesseInput(object):
                 self.rescalingTargetLength = np.asarray(rescalingTargetLength, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `rescalingTargetLength`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # distance, ...
@@ -2039,6 +2120,7 @@ class DeesseInput(object):
                 self.relativeDistanceFlag = np.asarray(relativeDistanceFlag, dtype='bool').reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `relativeDistanceFlag`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if powerLpDistance is None:
@@ -2048,6 +2130,7 @@ class DeesseInput(object):
                 self.powerLpDistance = np.asarray(powerLpDistance, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `powerLpDistance`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         self.powerLpDistanceInv = 1./self.powerLpDistance
@@ -2068,11 +2151,13 @@ class DeesseInput(object):
                             self.distanceType[i] = 1
                         else:
                             err_msg = f'{fname}: parameter `distanceType`...'
+                            if logger: logger.error(err_msg)
                             raise DeesseinterfaceError(err_msg)
 
                 self.distanceType = np.asarray(self.distanceType).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `distanceType`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # conditioning weight
@@ -2083,11 +2168,13 @@ class DeesseInput(object):
                 self.conditioningWeightFactor = np.asarray(conditioningWeightFactor, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `conditioningWeightFactor`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # simulation type and simulation path type
         if simType not in ('sim_one_by_one', 'sim_variable_vector'):
             err_msg = f'{fname}: parameter `simType`...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.simType = simType
@@ -2098,6 +2185,7 @@ class DeesseInput(object):
                 'random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort',
                 'unilateral'):
             err_msg = f'{fname}: parameter `simPathType`...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.simPathType = simPathType
@@ -2123,6 +2211,7 @@ class DeesseInput(object):
                     self.simPathUnilateralOrder = np.asarray(simPathUnilateralOrder).reshape(length)
                 except:
                     err_msg = f'{fname}: parameter `simPathUnilateralOrder`...'
+                    if logger: logger.error(err_msg)
                     raise DeesseinterfaceError(err_msg)
 
         else:
@@ -2136,26 +2225,29 @@ class DeesseInput(object):
                 self.distanceThreshold = np.asarray(distanceThreshold, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `distanceThreshold`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # soft probability
         if softProbability is None:
-            self.softProbability = np.array([SoftProbability(probabilityConstraintUsage=0) for i in range(nv)])
+            self.softProbability = np.array([SoftProbability(probabilityConstraintUsage=0, logger=logger) for i in range(nv)])
         else:
             try:
                 self.softProbability = np.asarray(softProbability).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `softProbability`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # connectivity
         if connectivity is None:
-            self.connectivity = np.array([Connectivity(connectivityConstraintUsage=0) for i in range(nv)])
+            self.connectivity = np.array([Connectivity(connectivityConstraintUsage=0, logger=logger) for i in range(nv)])
         else:
             try:
                 self.connectivity = np.asarray(connectivity).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `connectivity`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # block data
@@ -2166,6 +2258,7 @@ class DeesseInput(object):
                 self.blockData = np.asarray(blockData).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `blockData`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # maximal scan fraction
@@ -2181,21 +2274,23 @@ class DeesseInput(object):
                 self.maxScanFraction = np.asarray(maxScanFraction).reshape(nTI)
             except:
                 err_msg = f'{fname}: parameter `maxScanFraction`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # pyramids
         if pyramidGeneralParameters is None:
-            self.pyramidGeneralParameters = PyramidGeneralParameters(nx=nx, ny=ny, nz=nz)
+            self.pyramidGeneralParameters = PyramidGeneralParameters(nx=nx, ny=ny, nz=nz, logger=logger)
         else:
             self.pyramidGeneralParameters = pyramidGeneralParameters
 
         if pyramidParameters is None:
-            self.pyramidParameters = np.array([PyramidParameters() for i in range(nv)])
+            self.pyramidParameters = np.array([PyramidParameters() for _ in range(nv)])
         else:
             try:
                 self.pyramidParameters = np.asarray(pyramidParameters).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `pyramidParameters`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if pyramidDataImage is None:
@@ -2224,6 +2319,7 @@ class DeesseInput(object):
                 self.postProcessingNneighboringNode = np.asarray(postProcessingNneighboringNode).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `postProcessingNneighboringNode`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if postProcessingNeighboringNodeDensity is None:
@@ -2238,6 +2334,7 @@ class DeesseInput(object):
                 self.postProcessingNeighboringNodeDensity = np.asarray(postProcessingNeighboringNodeDensity, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `postProcessingNeighboringNodeDensity`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if postProcessingDistanceThreshold is None:
@@ -2258,6 +2355,7 @@ class DeesseInput(object):
                 self.postProcessingDistanceThreshold = np.asarray(postProcessingDistanceThreshold, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `postProcessingDistanceThreshold`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if postProcessingMaxScanFraction is None:
@@ -2268,6 +2366,7 @@ class DeesseInput(object):
                 self.postProcessingMaxScanFraction = np.asarray(postProcessingMaxScanFraction, dtype=float).reshape(nTI)
             except:
                 err_msg = f'{fname}: parameter `postProcessingMaxScanFraction`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         self.postProcessingTolerance = postProcessingTolerance
@@ -2297,7 +2396,7 @@ class DeesseInput(object):
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-def img_py2C(im_py):
+def img_py2C(im_py, logger=None):
     """
     Converts an image from python to C.
 
@@ -2306,9 +2405,13 @@ def img_py2C(im_py):
     im_py : :class:`geone.img.Img`
         image in python
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
-    im_c : \(MPDS_IMAGE \*\)
+    im_c : \\(MPDS_IMAGE \\*\\)
         image in C
     """
     fname = 'img_py2C'
@@ -2323,6 +2426,7 @@ def img_py2C(im_py):
         deesse.free_MPDS_IMAGE(im_c)
         # Raise error
         err_msg = f'{fname}: cannot convert image from python to C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     im_c.grid.nx = im_py.nx
@@ -2357,14 +2461,18 @@ def img_py2C(im_py):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def img_C2py(im_c):
+def img_C2py(im_c, logger=None):
     """
     Converts an image from C to python.
 
     Parameters
     ----------
-    im_c : \(MPDS_IMAGE \*\)
+    im_c : \\(MPDS_IMAGE \\*\\)
         image in C
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -2385,7 +2493,8 @@ def img_C2py(im_c):
     im_py = Img(nx=im_c.grid.nx, ny=im_c.grid.ny, nz=im_c.grid.nz,
                 sx=im_c.grid.sx, sy=im_c.grid.sy, sz=im_c.grid.sz,
                 ox=im_c.grid.ox, oy=im_c.grid.oy, oz=im_c.grid.oz,
-                nv=im_c.nvar, val=v, varname=varname)
+                nv=im_c.nvar, val=v, varname=varname,
+                logger=logger)
 
     np.putmask(im_py.val, im_py.val == deesse.MPDS_MISSING_VALUE, np.nan)
 
@@ -2393,7 +2502,7 @@ def img_C2py(im_c):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def ps_py2C(ps_py):
+def ps_py2C(ps_py, logger=None):
     """
     Converts an image from python to C.
 
@@ -2402,15 +2511,20 @@ def ps_py2C(ps_py):
     ps_py : :class:`geone.img.PointSet`
         point set in python
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
-    ps_c : \(MPDS_POINTSET \*\)
+    ps_c : \\(MPDS_POINTSET \\*\\)
         point set in C
     """
     fname = 'ps_py2C'
 
     if ps_py.nv < 4:
         err_msg = f'{fname}: point set (python) have less than 4 variables'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     nvar = ps_py.nv - 3
@@ -2425,6 +2539,7 @@ def ps_py2C(ps_py):
         deesse.free_MPDS_POINTSET(ps_c)
         # Raise error
         err_msg = f'{fname}: cannot convert point set from python to C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     ps_c.npoint = ps_py.npt
@@ -2452,7 +2567,7 @@ def ps_C2py(ps_c):
 
     Parameters
     ----------
-    ps_c : \(MPDS_POINTSET \*\)
+    ps_c : \\(MPDS_POINTSET \\*\\)
         point set in C
 
     Returns
@@ -2507,7 +2622,7 @@ def classInterval2classOfValues(classInterval):
 
     Returns
     -------
-    cv : \(MPDS_CLASSOFVALUES \*\)
+    cv : \\(MPDS_CLASSOFVALUES \\*\\)
         classOfValues (C)
     """
     # fname = 'classInterval2classOfValues'
@@ -2540,7 +2655,7 @@ def classOfValues2classInterval(classOfValues):
 
     Parameters
     ----------
-    cv : \(MPDS_CLASSOFVALUES \*\)
+    cv : \\(MPDS_CLASSOFVALUES \\*\\)
         classOfValues (C)
 
     Returns
@@ -2574,7 +2689,7 @@ def classOfValues2classInterval(classOfValues):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def search_neighborhood_parameters_py2C(sn_py):
+def search_neighborhood_parameters_py2C(sn_py, logger=None):
     """
     Converts search neighborhood parameters from python to C.
 
@@ -2583,9 +2698,13 @@ def search_neighborhood_parameters_py2C(sn_py):
     sn_py : :class:`SearchNeighborhoodParameters`
         search neighborhood parameters in python
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
-    sn_c : \(MPDS_SEARCHNEIGHBORHOODPARAMETERS \*\)
+    sn_c : \\(MPDS_SEARCHNEIGHBORHOODPARAMETERS \\*\\)
         search neighborhood parameters in C
     """
     fname = 'search_neighborhood_parameters_py2C'
@@ -2610,6 +2729,7 @@ def search_neighborhood_parameters_py2C(sn_py):
         deesse.MPDSFreeSearchNeighborhoodParameters(sn_c)
         deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(sn_c)
         err_msg = f'{fname}: radius mode (search neighborhood parameters) unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     sn_c.rx = sn_py.rx
@@ -2632,6 +2752,7 @@ def search_neighborhood_parameters_py2C(sn_py):
         deesse.MPDSFreeSearchNeighborhoodParameters(sn_c)
         deesse.free_MPDS_SEARCHNEIGHBORHOODPARAMETERS(sn_c)
         err_msg = f'{fname}: anisotropy ratio mode (search neighborhood parameters) unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     sn_c.ax = sn_py.ax
@@ -2650,14 +2771,18 @@ def search_neighborhood_parameters_py2C(sn_py):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def search_neighborhood_parameters_C2py(sn_c):
+def search_neighborhood_parameters_C2py(sn_c, logger=None):
     """
     Converts search neighborhood parameters from C to python.
 
     Parameters
     ----------
-    sn_c : \(MPDS_SEARCHNEIGHBORHOODPARAMETERS \*\)
+    sn_c : \\(MPDS_SEARCHNEIGHBORHOODPARAMETERS \\*\\)
         search neighborhood parameters in C
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -2680,6 +2805,7 @@ def search_neighborhood_parameters_C2py(sn_c):
         radiusMode = radiusMode_dict[sn_c.radiusMode]
     except:
         err_msg = f'{fname}: radius mode (search neighborhood parameters) unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     rx = sn_c.rx
@@ -2699,6 +2825,7 @@ def search_neighborhood_parameters_C2py(sn_c):
         anisotropyRatioMode = anisotropyRatioMode_dict[sn_c.anisotropyRatioMode]
     except:
         err_msg = f'{fname}: anisotropy ratio mode (search neighborhood parameters) unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     ax = sn_c.ax
@@ -2727,7 +2854,8 @@ def set_simAndPathParameters_C(
         simPathType,
         simPathStrength,
         simPathPower,
-        simPathUnilateralOrder):
+        simPathUnilateralOrder,
+        logger=None):
     """
     Sets simAndPathParameters (C) from relevant parameters (python).
 
@@ -2748,9 +2876,13 @@ def set_simAndPathParameters_C(
     simPathUnilateralOrder : sequence of ints, or None
         defines unilatera path
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
-    sapp_c : \(MPDS_SIMANDPATHPARAMETERS \*\)
+    sapp_c : \\(MPDS_SIMANDPATHPARAMETERS \\*\\)
         simAndPathParameters (C)
     """
     fname = 'set_simAndPathParameters_C'
@@ -2767,6 +2899,7 @@ def set_simAndPathParameters_C(
         deesse.MPDSFreeSimAndPathParameters(sapp_c)
         deesse.free_MPDS_SIMANDPATHPARAMETERS(sapp_c)
         err_msg = f'{fname}: simulation type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     if simPathType == 'random':
@@ -2797,6 +2930,7 @@ def set_simAndPathParameters_C(
         deesse.MPDSFreeSimAndPathParameters(sapp_c)
         deesse.free_MPDS_SIMANDPATHPARAMETERS(sapp_c)
         err_msg = f'{fname}: simulation path type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     return sapp_c
@@ -2807,13 +2941,14 @@ def softProbability_py2C(
         sp_py,
         nx, ny, nz,
         sx, sy, sz,
-        ox, oy, oz):
+        ox, oy, oz,
+        logger=None):
     """
     Converts soft probability parameters from python to C.
 
     Parameters
     ----------
-    sp_py :class:`SoftProbability`
+    sp_py : :class:`SoftProbability`
         soft probability parameters in python
 
     nx : int
@@ -2843,9 +2978,13 @@ def softProbability_py2C(
     oz : float
         origin of the grid along z axis (z coordinate of cell border)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
-    sp_c : \(MPDS_SOFTPROBABILITY \*\)
+    sp_c : \\(MPDS_SOFTPROBABILITY \\*\\)
         soft probability parameters in C
     """
     fname = 'softProbability_py2C'
@@ -2873,14 +3012,16 @@ def softProbability_py2C(
         im = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
-                 nv=sp_py.nclass, val=sp_py.localPdf)
+                 nv=sp_py.nclass, val=sp_py.localPdf,
+                 logger=logger)
         try:
-            sp_c.localPdfImage = img_py2C(im)
+            sp_c.localPdfImage = img_py2C(im, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSoftProbability(sp_c)
             deesse.free_MPDS_SOFTPROBABILITY(sp_c)
             err_msg = f'{fname}: cannot convert local pdf image from python to C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
     if sp_py.probabilityConstraintUsage == 2:
@@ -2921,18 +3062,22 @@ def softProbability_py2C(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def softProbability_C2py(sp_c):
+def softProbability_C2py(sp_c, logger=None):
     """
     Converts soft probability parameters from C to python.
 
     Parameters
     ----------
-    sp_c : \(MPDS_SOFTPROBABILITY \*\)
+    sp_c : \\(MPDS_SOFTPROBABILITY \\*\\)
         soft probability parameters in C
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
-    sp_py :class:`SoftProbability`
+    sp_py : :class:`SoftProbability`
         soft probability parameters in python
     """
     # fname = 'softProbability_C2py'
@@ -2968,7 +3113,7 @@ def softProbability_C2py(sp_c):
 
     elif probabilityConstraintUsage == 2 or probabilityConstraintUsage == 3:
         # ... localPdf
-        im = img_C2py(sp_c.localPdfImage)
+        im = img_C2py(sp_c.localPdfImage, logger=logger)
         localPdf = im.val
 
     if probabilityConstraintUsage == 2:
@@ -3015,25 +3160,30 @@ def softProbability_C2py(sp_c):
         deactivationDistance=deactivationDistance,
         probabilityConstraintThresholdType=probabilityConstraintThresholdType,
         constantThreshold=constantThreshold,
-        dynamicThresholdParameters=dynamicThresholdParameters
+        dynamicThresholdParameters=dynamicThresholdParameters,
+        logger=logger
     )
 
     return sp_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def connectivity_py2C(co_py):
+def connectivity_py2C(co_py, logger=None):
     """
     Converts connectivity parameters from python to C.
 
     Parameters
     ----------
-    co_py :class:`Connectivity`
+    co_py : :class:`Connectivity`
         connectivity parameters in python
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
-    co_c : \(MPDS_CONNECTIVITY \*\)
+    co_c : \\(MPDS_CONNECTIVITY \\*\\)
         connectivity parameters in C
     """
     fname = 'connectivity_py2C'
@@ -3059,6 +3209,7 @@ def connectivity_py2C(co_py):
         deesse.MPDSFreeConnectivity(co_c)
         deesse.free_MPDS_CONNECTIVITY(co_c)
         err_msg = f'{fname}: connectivity type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # ... varName
@@ -3075,15 +3226,16 @@ def connectivity_py2C(co_py):
 
     if not co_py.tiAsRefFlag:
         # ... refConnectivityImage
-        im = img.copyImg(co_py.refConnectivityImage)
-        im.extract_var([co_py.refConnectivityVarIndex])
+        im = img.copyImg(co_py.refConnectivityImage, logger=logger)
+        im.extract_var([co_py.refConnectivityVarIndex], logger=logger)
         try:
-            co_c.refConnectivityImage = img_py2C(im)
+            co_c.refConnectivityImage = img_py2C(im, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeConnectivity(co_c)
             deesse.free_MPDS_CONNECTIVITY(co_c)
             err_msg = f"{fname}: cannot convert connectivity parameters from python to C ('refConnectivityImage')"
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
     # ... deactivationDistance
@@ -3096,18 +3248,22 @@ def connectivity_py2C(co_py):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def connectivity_C2py(co_c):
+def connectivity_C2py(co_c, logger=None):
     """
     Converts connectivity parameters from C to python.
 
     Parameters
     ----------
-    co_c : \(MPDS_CONNECTIVITY \*\)
+    co_c : \\(MPDS_CONNECTIVITY \\*\\)
         connectivity parameters in C
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
-    co_py :class:`Connectivity`
+    co_py : :class:`Connectivity`
         connectivity parameters in python
     """
     fname = 'connectivity_C2py'
@@ -3139,6 +3295,7 @@ def connectivity_C2py(co_c):
         connectivityType = connectivityType_dict[co_c.connectivityType]
     except:
         err_msg = f'{fname}: connectivity type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # ... varName
@@ -3153,7 +3310,7 @@ def connectivity_C2py(co_c):
 
     if not tiAsRefFlag:
         # ... refConnectivityImage
-        refConnectivityImage = img_C2py(co_c.refConnectivityImage)
+        refConnectivityImage = img_C2py(co_c.refConnectivityImage, logger=logger)
         refConnectivityVarIndex = 0
 
     # ... deactivationDistance
@@ -3172,7 +3329,8 @@ def connectivity_C2py(co_c):
         refConnectivityImage=refConnectivityImage,
         refConnectivityVarIndex=refConnectivityVarIndex,
         deactivationDistance=deactivationDistance,
-        threshold=threshold
+        threshold=threshold,
+        logger=logger
     )
 
     return co_py
@@ -3185,12 +3343,12 @@ def blockData_py2C(bd_py):
 
     Parameters
     ----------
-    bd_py :class:`BlockData`
+    bd_py : :class:`BlockData`
         block data parameters in python
 
     Returns
     -------
-    bd_c : \(MPDS_BLOCKDATA \*\)
+    bd_c : \\(MPDS_BLOCKDATA \\*\\)
         block data parameters in C
     """
     # fname = 'blockData_py2C'
@@ -3255,12 +3413,12 @@ def blockData_C2py(bd_c):
 
     Parameters
     ----------
-    bd_c : \(MPDS_BLOCKDATA \*\)
+    bd_c : \\(MPDS_BLOCKDATA \\*\\)
         block data parameters in C
 
     Returns
     -------
-    bd_py :class:`BlockData`
+    bd_py : :class:`BlockData`
         block data parameters in python
     """
     # fname = 'blockData_C2py'
@@ -3342,12 +3500,12 @@ def pyramidGeneralParameters_py2C(pgp_py):
 
     Parameters
     ----------
-    pgp_py :class:`PyramidGeneralParameters`
+    pgp_py : :class:`PyramidGeneralParameters`
         pyramid general parameters in python
 
     Returns
     -------
-    pgp_c : \(MPDS_PYRAMIDGENERALPARAMETERS \*\)
+    pgp_c : \\(MPDS_PYRAMIDGENERALPARAMETERS \\*\\)
         pyramid general parameters in C
     """
     # fname = 'pyramidGeneralParameters_py2C'
@@ -3418,18 +3576,22 @@ def pyramidGeneralParameters_py2C(pgp_py):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def pyramidGeneralParameters_C2py(pgp_c):
+def pyramidGeneralParameters_C2py(pgp_c, logger=None):
     """
     Converts pyramid general parameters from C to python.
 
     Parameters
     ----------
-    pgp_c : \(MPDS_PYRAMIDGENERALPARAMETERS \*\)
+    pgp_c : \\(MPDS_PYRAMIDGENERALPARAMETERS \\*\\)
         pyramid general parameters in C
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
-    pgp_py :class:`PyramidGeneralParameters`
+    pgp_py : :class:`PyramidGeneralParameters`
         pyramid general parameters in python
     """
     # fname = 'pyramidGeneralParameters_C2py'
@@ -3504,25 +3666,30 @@ def pyramidGeneralParameters_C2py(pgp_c):
         pyramidSimulationMode=pyramidSimulationMode,
         factorNneighboringNode=factorNneighboringNode,
         factorDistanceThreshold=factorDistanceThreshold,
-        factorMaxScanFraction=factorMaxScanFraction
+        factorMaxScanFraction=factorMaxScanFraction,
+        logger=logger
     )
 
     return pgp_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def pyramidParameters_py2C(pp_py):
+def pyramidParameters_py2C(pp_py, logger=None):
     """
     Converts pyramid parameters from python to C.
 
     Parameters
     ----------
-    pp_py :class:`PyramidParameters`
+    pp_py : :class:`PyramidParameters`
         pyramid parameters in python
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
-    pp_c : \(MPDS_PYRAMIDPARAMETERS \*\)
+    pp_c : \\(MPDS_PYRAMIDPARAMETERS \\*\\)
         pyramid parameters in C
     """
     fname = 'pyramidParameters_py2C'
@@ -3548,6 +3715,7 @@ def pyramidParameters_py2C(pp_py):
         deesse.MPDSFreePyramidParameters(pp_c)
         deesse.free_MPDS_PYRAMIDPARAMETERS(pp_c)
         err_msg = f'{fname}: pyramid type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     if pp_py.pyramidType == 'categorical_custom':
@@ -3561,18 +3729,22 @@ def pyramidParameters_py2C(pp_py):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def pyramidParameters_C2py(pp_c):
+def pyramidParameters_C2py(pp_c, logger=None):
     """
     Converts pyramid parameters from C to python.
 
     Parameters
     ----------
-    pp_c : \(MPDS_PYRAMIDPARAMETERS \*\)
+    pp_c : \\(MPDS_PYRAMIDPARAMETERS \\*\\)
         pyramid parameters in C
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
-    pp_py :class:`PyramidParameters`
+    pp_py : :class:`PyramidParameters`
         pyramid parameters in python
     """
     fname = 'pyramidParameters_C2py'
@@ -3601,6 +3773,7 @@ def pyramidParameters_C2py(pp_c):
         pyramidType = pyramidType_dict[pp_c.pyramidType]
     except:
         err_msg = f'{fname}: pyramid type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     if pyramidType == 'categorical_custom':
@@ -3618,25 +3791,30 @@ def pyramidParameters_C2py(pp_c):
          pyramidType=pyramidType,
          nclass=nclass,
          classInterval=classInterval,
-         outputLevelFlag=outputLevelFlag
+         outputLevelFlag=outputLevelFlag,
+         logger=logger
     )
 
     return pp_py
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesse_input_py2C(deesse_input):
+def deesse_input_py2C(deesse_input, logger=None):
     """
     Converts deesse input from python to C.
 
     Parameters
     ----------
-    deesse_input :class:`DeesseInput`
+    deesse_input : :class:`DeesseInput`
         deesse input in python
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
-    mpds_siminput : \(MPDS_SIMINPUT \*\)
+    mpds_siminput : \\(MPDS_SIMINPUT \\*\\)
         deesse input in C
     """
     fname = 'deesse_input_py2C'
@@ -3676,6 +3854,7 @@ def deesse_input_py2C(deesse_input):
         deesse.MPDSFreeSimInput(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
         err_msg = f'{fname}: simName is not a string'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     if len(deesse_input.simName) >= deesse.MPDS_VARNAME_LENGTH:
@@ -3683,6 +3862,7 @@ def deesse_input_py2C(deesse_input):
         deesse.MPDSFreeSimInput(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
         err_msg = f'{fname}: simName is too long'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     deesse.mpds_allocate_and_set_simname(mpds_siminput, deesse_input.simName)
@@ -3694,16 +3874,18 @@ def deesse_input_py2C(deesse_input):
              sx=sx, sy=sy, sz=sz,
              ox=ox, oy=oy, oz=oz,
              nv=nv, val=deesse.MPDS_MISSING_VALUE,
-             varname=deesse_input.varname)
+             varname=deesse_input.varname,
+             logger=logger)
 
     # ... convert im from python to C
     try:
-        mpds_siminput.simImage = img_py2C(im)
+        mpds_siminput.simImage = img_py2C(im, logger=logger)
     except Exception as exc:
         # Free memory on C side
         deesse.MPDSFreeSimInput(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
         err_msg = f'{fname}: cannot initialize simImage in C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # if mpds_siminput.simImage is None:
@@ -3777,32 +3959,32 @@ def deesse_input_py2C(deesse_input):
     for i, ti in enumerate(deesse_input.TI):
         if ti is not None:
             try:
-                im_c = img_py2C(ti)
+                im_c = img_py2C(ti, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert TI from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
             deesse.MPDS_IMAGE_array_setitem(mpds_siminput.trainImage, i, im_c)
-            # deesse.free_MPDS_IMAGE(im_c)
-            #
-            # deesse.MPDS_IMAGE_array_setitem(mpds_siminput.trainImage, i, img_py2C(ti))
 
     # mpds_siminput.pdfTrainImage
     if nTI > 1:
         im = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
-                 nv=nTI, val=deesse_input.pdfTI)
+                 nv=nTI, val=deesse_input.pdfTI,
+                 logger=logger)
         try:
-            mpds_siminput.pdfTrainImage = img_py2C(im)
+            mpds_siminput.pdfTrainImage = img_py2C(im, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
             err_msg = f'{fname}: cannot convert pdfTI from python to C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_siminput.ndataImage and mpds_siminput.dataImage
@@ -3814,18 +3996,16 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.dataImage = deesse.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(deesse_input.dataImage):
             try:
-                im_c = img_py2C(dataIm)
+                im_c = img_py2C(dataIm, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert dataImage from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
             deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImage, i, im_c)
-            # deesse.free_MPDS_IMAGE(im_c)
-            #
-            # deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImage, i, img_py2C(dataIm))
 
     # mpds_siminput.ndataPointSet and mpds_siminput.dataPointSet
     if deesse_input.dataPointSet is None:
@@ -3836,18 +4016,16 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.dataPointSet = deesse.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(deesse_input.dataPointSet):
             try:
-                ps_c = ps_py2C(dataPS)
+                ps_c = ps_py2C(dataPS, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert dataPointSet from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
             deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSet, i, ps_c)
-            # deesse.free_MPDS_POINTSET(ps_c)
-            #
-            # deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSet, i, ps_py2C(dataPS))
 
     # mpds_siminput.maskImageFlag and mpds_siminput.maskImage
     if deesse_input.mask is None:
@@ -3857,14 +4035,16 @@ def deesse_input_py2C(deesse_input):
         im = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
-                 nv=1, val=deesse_input.mask)
+                 nv=1, val=deesse_input.mask,
+                 logger=logger)
         try:
-            mpds_siminput.maskImage = img_py2C(im)
+            mpds_siminput.maskImage = img_py2C(im, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
             err_msg = f'{fname}: cannot convert mask from python to C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
     # Homothety:
@@ -3879,14 +4059,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=deesse_input.homothetyXRatio)
+                     nv=1, val=deesse_input.homothetyXRatio,
+                     logger=logger)
             try:
-                mpds_siminput.homothetyXRatioImage = img_py2C(im)
+                mpds_siminput.homothetyXRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert homothetyXRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -3900,14 +4082,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=deesse_input.homothetyYRatio)
+                     nv=1, val=deesse_input.homothetyYRatio,
+                     logger=logger)
             try:
-                mpds_siminput.homothetyYRatioImage = img_py2C(im)
+                mpds_siminput.homothetyYRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert homothetyYRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -3921,14 +4105,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=deesse_input.homothetyZRatio)
+                     nv=1, val=deesse_input.homothetyZRatio,
+                     logger=logger)
             try:
-                mpds_siminput.homothetyZRatioImage = img_py2C(im)
+                mpds_siminput.homothetyZRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert homothetyZRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -3943,14 +4129,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=deesse_input.homothetyXRatio)
+                     nv=2, val=deesse_input.homothetyXRatio,
+                     logger=logger)
             try:
-                mpds_siminput.homothetyXRatioImage = img_py2C(im)
+                mpds_siminput.homothetyXRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert homothetyXRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -3964,14 +4152,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=deesse_input.homothetyYRatio)
+                     nv=2, val=deesse_input.homothetyYRatio,
+                     logger=logger)
             try:
-                mpds_siminput.homothetyYRatioImage = img_py2C(im)
+                mpds_siminput.homothetyYRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert homothetyYRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -3985,14 +4175,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=deesse_input.homothetyZRatio)
+                     nv=2, val=deesse_input.homothetyZRatio,
+                     logger=logger)
             try:
-                mpds_siminput.homothetyZRatioImage = img_py2C(im)
+                mpds_siminput.homothetyZRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert homothetyZRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -4013,14 +4205,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=deesse_input.rotationAzimuth)
+                     nv=1, val=deesse_input.rotationAzimuth,
+                     logger=logger)
             try:
-                mpds_siminput.rotationAzimuthImage = img_py2C(im)
+                mpds_siminput.rotationAzimuthImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert rotationAzimuth image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -4034,14 +4228,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=deesse_input.rotationDip)
+                     nv=1, val=deesse_input.rotationDip,
+                     logger=logger)
             try:
-                mpds_siminput.rotationDipImage = img_py2C(im)
+                mpds_siminput.rotationDipImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert rotationDip image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -4055,14 +4251,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=deesse_input.rotationPlunge)
+                     nv=1, val=deesse_input.rotationPlunge,
+                     logger=logger)
             try:
-                mpds_siminput.rotationPlungeImage = img_py2C(im)
+                mpds_siminput.rotationPlungeImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert rotationPlunge image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -4077,14 +4275,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=deesse_input.rotationAzimuth)
+                     nv=2, val=deesse_input.rotationAzimuth,
+                     logger=logger)
             try:
-                mpds_siminput.rotationAzimuthImage = img_py2C(im)
+                mpds_siminput.rotationAzimuthImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert rotationAzimuth image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -4098,14 +4298,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=deesse_input.rotationDip)
+                     nv=2, val=deesse_input.rotationDip,
+                     logger=logger)
             try:
-                mpds_siminput.rotationDipImage = img_py2C(im)
+                mpds_siminput.rotationDipImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert rotationDip image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -4119,14 +4321,16 @@ def deesse_input_py2C(deesse_input):
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=deesse_input.rotationPlunge)
+                     nv=2, val=deesse_input.rotationPlunge,
+                     logger=logger)
             try:
-                mpds_siminput.rotationPlungeImage = img_py2C(im)
+                mpds_siminput.rotationPlungeImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert rotationPlunge image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -4151,18 +4355,20 @@ def deesse_input_py2C(deesse_input):
         deesse.MPDSFreeSimInput(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
         err_msg = f'{fname}: normalizing type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # mpds_siminput.searchNeighborhoodParameters
     mpds_siminput.searchNeighborhoodParameters = deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nv)
     for i, sn in enumerate(deesse_input.searchNeighborhoodParameters):
         try:
-            sn_c = search_neighborhood_parameters_py2C(sn)
+            sn_c = search_neighborhood_parameters_py2C(sn, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
             err_msg = f'{fname}: cannot convert search neighborhood parameters from python to C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
         deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(
@@ -4202,6 +4408,7 @@ def deesse_input_py2C(deesse_input):
             deesse.MPDSFreeSimInput(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
             err_msg = f'{fname}: rescaling mode unknown'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
     # mpds_simInput.rescalingTargetMin
@@ -4263,12 +4470,14 @@ def deesse_input_py2C(deesse_input):
                 deesse_input.simPathType,
                 deesse_input.simPathStrength,
                 deesse_input.simPathPower,
-                deesse_input.simPathUnilateralOrder)
+                deesse_input.simPathUnilateralOrder,
+                logger=logger)
     except Exception as exc:
         # Free memory on C side
         deesse.MPDSFreeSimInput(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
         err_msg = f'{fname}: cannot set "simAndPathParameters" in C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_siminput.distanceThreshold
@@ -4286,12 +4495,14 @@ def deesse_input_py2C(deesse_input):
             sp_c = softProbability_py2C(sp,
                                         nx, ny, nz,
                                         sx, sy, sz,
-                                        ox, oy, oz)
+                                        ox, oy, oz,
+                                        logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
             err_msg = f'{fname}: cannot set soft probability parameters in C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
         deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_siminput.softProbability, i, sp_c)
@@ -4302,12 +4513,13 @@ def deesse_input_py2C(deesse_input):
 
     for i, co in enumerate(deesse_input.connectivity):
         try:
-            co_c = connectivity_py2C(co)
+            co_c = connectivity_py2C(co, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
             err_msg = f'{fname}: cannot set connectivity parameters in C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
         deesse.MPDS_CONNECTIVITY_array_setitem(mpds_siminput.connectivity, i, co_c)
@@ -4324,6 +4536,7 @@ def deesse_input_py2C(deesse_input):
             deesse.MPDSFreeSimInput(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
             err_msg = f'{fname}: cannot set block data parameters in C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
         deesse.MPDS_BLOCKDATA_array_setitem(mpds_siminput.blockData, i, bd_c)
@@ -4343,6 +4556,7 @@ def deesse_input_py2C(deesse_input):
         deesse.MPDSFreeSimInput(mpds_siminput)
         deesse.free_MPDS_SIMINPUT(mpds_siminput)
         err_msg = f'{fname}: cannot set pyramid general parameters in C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_siminput.pyramidParameters ...
@@ -4351,12 +4565,13 @@ def deesse_input_py2C(deesse_input):
     # ... for each variable ...
     for i, pp in enumerate(deesse_input.pyramidParameters):
         try:
-            pp_c = pyramidParameters_py2C(pp)
+            pp_c = pyramidParameters_py2C(pp, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeSimInput(mpds_siminput)
             deesse.free_MPDS_SIMINPUT(mpds_siminput)
             err_msg = f'{fname}: cannot set pyramid parameters in C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
         deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(mpds_siminput.pyramidParameters, i, pp_c)
@@ -4371,18 +4586,16 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.dataImageInPyramid = deesse.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(deesse_input.pyramidDataImage):
             try:
-                im_c = img_py2C(dataIm)
+                im_c = img_py2C(dataIm, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert pyramidDataImage from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
             deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImageInPyramid, i, im_c)
-            # deesse.free_MPDS_IMAGE(im_c)
-            #
-            # deesse.MPDS_IMAGE_array_setitem(mpds_siminput.dataImageInPyramid, i, img_py2C(dataIm))
 
     # mpds_siminput.ndataPointSetInPyramid and mpds_siminput.dataPointSetInPyramid
     if deesse_input.pyramidDataPointSet is None:
@@ -4393,18 +4606,16 @@ def deesse_input_py2C(deesse_input):
         mpds_siminput.dataPointSetInPyramid = deesse.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(deesse_input.pyramidDataPointSet):
             try:
-                ps_c = ps_py2C(dataPS)
+                ps_c = ps_py2C(dataPS, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeSimInput(mpds_siminput)
                 deesse.free_MPDS_SIMINPUT(mpds_siminput)
                 err_msg = f'{fname}: cannot convert pyramidDataPointSet from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
             deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSetInPyramid, i, ps_c)
-            # deesse.free_MPDSPOINTSET(ps_c)
-            #
-            # deesse.MPDS_POINTSET_array_setitem(mpds_siminput.dataPointSetInPyramid, i, ps_py2C(dataPS))
 
     # mpds_siminput.tolerance
     mpds_siminput.tolerance = deesse_input.tolerance
@@ -4452,14 +4663,18 @@ def deesse_input_py2C(deesse_input):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesse_input_C2py(mpds_siminput):
+def deesse_input_C2py(mpds_siminput, logger=None):
     """
     Converts deesse input from C to python.
 
     Parameters
     ----------
-    mpds_siminput : \(MPDS_SIMINPUT \*\)
+    mpds_siminput : \\(MPDS_SIMINPUT \\*\\)
         deesse input in C
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -4471,7 +4686,7 @@ def deesse_input_C2py(mpds_siminput):
     # simName
     simName = mpds_siminput.simName
 
-    im = img_C2py(mpds_siminput.simImage)
+    im = img_C2py(mpds_siminput.simImage, logger=logger)
 
     # grid geometry
     nx = im.nx
@@ -4517,12 +4732,12 @@ def deesse_input_C2py(mpds_siminput):
     for i in range(nTI):
         if not simGridAsTiFlag[i]:
             im = deesse.MPDS_IMAGE_array_getitem(mpds_siminput.trainImage, i)
-            TI[i] = img_C2py(im)
+            TI[i] = img_C2py(im, logger=logger)
 
     # pdfTI
     pdfTI = None
     if nTI > 1:
-        im = img_C2py(mpds_siminput.pdfTrainImage)
+        im = img_C2py(mpds_siminput.pdfTrainImage, logger=logger)
         pdfTI = im.val
 
     # dataImage
@@ -4532,7 +4747,7 @@ def deesse_input_C2py(mpds_siminput):
         dataImage = np.array(ndataImage*[None])
         for i in range(ndataImage):
             im = deesse.MPDS_IMAGE_array_getitem(mpds_siminput.dataImage, i)
-            dataImage[i] = img_C2py(im)
+            dataImage[i] = img_C2py(im, logger=logger)
 
     # dataPointSet
     dataPointSet = None
@@ -4547,7 +4762,7 @@ def deesse_input_C2py(mpds_siminput):
     mask = None
     flag = bool(int.from_bytes(mpds_siminput.maskImageFlag.encode('utf-8'), byteorder='big'))
     if flag:
-        im = img_C2py(mpds_siminput.maskImage)
+        im = img_C2py(mpds_siminput.maskImage, logger=logger)
         mask = im.val
 
     # homothety
@@ -4561,7 +4776,7 @@ def deesse_input_C2py(mpds_siminput):
     if homothetyUsage == 1:
         homothetyXLocal = bool(int.from_bytes(mpds_siminput.homothetyXRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyXLocal:
-            im = img_C2py(mpds_siminput.homothetyXRatioImage)
+            im = img_C2py(mpds_siminput.homothetyXRatioImage, logger=logger)
             homothetyXRatio = im.val
         else:
             v = np.zeros(1)
@@ -4570,7 +4785,7 @@ def deesse_input_C2py(mpds_siminput):
 
         homothetyYLocal = bool(int.from_bytes(mpds_siminput.homothetyYRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyYLocal:
-            im = img_C2py(mpds_siminput.homothetyYRatioImage)
+            im = img_C2py(mpds_siminput.homothetyYRatioImage, logger=logger)
             homothetyYRatio = im.val
         else:
             v = np.zeros(1)
@@ -4579,7 +4794,7 @@ def deesse_input_C2py(mpds_siminput):
 
         homothetyZLocal = bool(int.from_bytes(mpds_siminput.homothetyZRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyZLocal:
-            im = img_C2py(mpds_siminput.homothetyZRatioImage)
+            im = img_C2py(mpds_siminput.homothetyZRatioImage, logger=logger)
             homothetyZRatio = im.val
         else:
             v = np.zeros(1)
@@ -4589,7 +4804,7 @@ def deesse_input_C2py(mpds_siminput):
     elif homothetyUsage == 2:
         homothetyXLocal = bool(int.from_bytes(mpds_siminput.homothetyXRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyXLocal:
-            im = img_C2py(mpds_siminput.homothetyXRatioImage)
+            im = img_C2py(mpds_siminput.homothetyXRatioImage, logger=logger)
             homothetyXRatio = im.val
         else:
             homothetyXRatio = np.zeros(2)
@@ -4597,7 +4812,7 @@ def deesse_input_C2py(mpds_siminput):
 
         homothetyYLocal = bool(int.from_bytes(mpds_siminput.homothetyYRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyYLocal:
-            im = img_C2py(mpds_siminput.homothetyYRatioImage)
+            im = img_C2py(mpds_siminput.homothetyYRatioImage, logger=logger)
             homothetyYRatio = im.val
         else:
             homothetyYRatio = np.zeros(2)
@@ -4605,7 +4820,7 @@ def deesse_input_C2py(mpds_siminput):
 
         homothetyZLocal = bool(int.from_bytes(mpds_siminput.homothetyZRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyZLocal:
-            im = img_C2py(mpds_siminput.homothetyZRatioImage)
+            im = img_C2py(mpds_siminput.homothetyZRatioImage, logger=logger)
             homothetyZRatio = im.val
         else:
             homothetyZRatio = np.zeros(2)
@@ -4622,7 +4837,7 @@ def deesse_input_C2py(mpds_siminput):
     if rotationUsage == 1:
         rotationAzimuthLocal = bool(int.from_bytes(mpds_siminput.rotationAzimuthImageFlag.encode('utf-8'), byteorder='big'))
         if rotationAzimuthLocal:
-            im = img_C2py(mpds_siminput.rotationAzimuthImage)
+            im = img_C2py(mpds_siminput.rotationAzimuthImage, logger=logger)
             rotationAzimuth = im.val
         else:
             v = np.zeros(1)
@@ -4631,7 +4846,7 @@ def deesse_input_C2py(mpds_siminput):
 
         rotationDipLocal = bool(int.from_bytes(mpds_siminput.rotationDipImageFlag.encode('utf-8'), byteorder='big'))
         if rotationDipLocal:
-            im = img_C2py(mpds_siminput.rotationDipImage)
+            im = img_C2py(mpds_siminput.rotationDipImage, logger=logger)
             rotationDip = im.val
         else:
             v = np.zeros(1)
@@ -4640,7 +4855,7 @@ def deesse_input_C2py(mpds_siminput):
 
         rotationPlungeLocal = bool(int.from_bytes(mpds_siminput.rotationPlungeImageFlag.encode('utf-8'), byteorder='big'))
         if rotationPlungeLocal:
-            im = img_C2py(mpds_siminput.rotationPlungeImage)
+            im = img_C2py(mpds_siminput.rotationPlungeImage, logger=logger)
             rotationPlunge = im.val
         else:
             v = np.zeros(1)
@@ -4650,7 +4865,7 @@ def deesse_input_C2py(mpds_siminput):
     elif rotationUsage == 2:
         rotationAzimuthLocal = bool(int.from_bytes(mpds_siminput.rotationAzimuthImageFlag.encode('utf-8'), byteorder='big'))
         if rotationAzimuthLocal:
-            im = img_C2py(mpds_siminput.rotationAzimuthImage)
+            im = img_C2py(mpds_siminput.rotationAzimuthImage, logger=logger)
             rotationAzimuth = im.val
         else:
             rotationAzimuth = np.zeros(2)
@@ -4658,7 +4873,7 @@ def deesse_input_C2py(mpds_siminput):
 
         rotationDipLocal = bool(int.from_bytes(mpds_siminput.rotationDipImageFlag.encode('utf-8'), byteorder='big'))
         if rotationDipLocal:
-            im = img_C2py(mpds_siminput.rotationDipImage)
+            im = img_C2py(mpds_siminput.rotationDipImage, logger=logger)
             rotationDip = im.val
         else:
             rotationDip = np.zeros(2)
@@ -4666,7 +4881,7 @@ def deesse_input_C2py(mpds_siminput):
 
         rotationPlungeLocal = bool(int.from_bytes(mpds_siminput.rotationPlungeImageFlag.encode('utf-8'), byteorder='big'))
         if rotationPlungeLocal:
-            im = img_C2py(mpds_siminput.rotationPlungeImage)
+            im = img_C2py(mpds_siminput.rotationPlungeImage, logger=logger)
             rotationPlunge = im.val
         else:
             rotationPlunge = np.zeros(2)
@@ -4685,15 +4900,17 @@ def deesse_input_C2py(mpds_siminput):
         normalizingType = normalizingType_dict[mpds_siminput.normalizingType]
     except:
         err_msg = f'{fname}: normalizing type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # searchNeighborhoodParameters
     searchNeighborhoodParameters = np.array(nv*[None])
     for i in range(nv):
         sn_c = deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_getitem(mpds_siminput.searchNeighborhoodParameters, i)
-        sn = search_neighborhood_parameters_C2py(sn_c)
+        sn = search_neighborhood_parameters_C2py(sn_c, logger=logger)
         if sn is None:
             err_msg = f'{fname}: cannot convert search neighborhood parameters from C to python'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         searchNeighborhoodParameters[i] = sn
@@ -4727,6 +4944,7 @@ def deesse_input_C2py(mpds_siminput):
             rescalingMode[i] = rs
         except:
             err_msg = f'{fname}: rescaling mode unknown'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
     # rescalingTargetMin
@@ -4781,6 +4999,7 @@ def deesse_input_C2py(mpds_siminput):
         simType = 'sim_variable_vector'
     else:
         err_msg = f'{fname}: simulation type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # simPathType
@@ -4813,6 +5032,7 @@ def deesse_input_C2py(mpds_siminput):
         simPathUnilateralOrder = simPathUnilateralOrder.astype('int')
     else:
         err_msg = f'{fname}: simulation path type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # distanceThreshold
@@ -4823,9 +5043,10 @@ def deesse_input_C2py(mpds_siminput):
     softProbability = np.array(nv*[None])
     for i in range(nv):
         sp_c = deesse.MPDS_SOFTPROBABILITY_array_getitem(mpds_siminput.softProbability, i)
-        sp = softProbability_C2py(sp_c)
+        sp = softProbability_C2py(sp_c, logger=logger)
         if sp is None:
             err_msg = f'{fname}: cannot convert soft probability from C to python'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         softProbability[i] = sp
@@ -4834,9 +5055,10 @@ def deesse_input_C2py(mpds_siminput):
     connectivity = np.array(nv*[None])
     for i in range(nv):
         co_c = deesse.MPDS_CONNECTIVITY_array_getitem(mpds_siminput.connectivity, i)
-        co = connectivity_C2py(co_c)
+        co = connectivity_C2py(co_c, logger=logger)
         if co is None:
             err_msg = f'{fname}: cannot convert connectivity parameters from C to python'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         connectivity[i] = co
@@ -4848,6 +5070,7 @@ def deesse_input_C2py(mpds_siminput):
         bd = blockData_C2py(bd_c)
         if bd is None:
             err_msg = f'{fname}: cannot convert block data parameters from C to python'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         blockData[i] = bd
@@ -4858,18 +5081,20 @@ def deesse_input_C2py(mpds_siminput):
     maxScanFraction = maxScanFraction.astype('float')
 
     # pyramidGeneralParameters
-    pyramidGeneralParameters = pyramidGeneralParameters_C2py(mpds_siminput.pyramidGeneralParameters)
+    pyramidGeneralParameters = pyramidGeneralParameters_C2py(mpds_siminput.pyramidGeneralParameters, logger=logger)
     if pyramidGeneralParameters is None:
         err_msg = f'{fname}: cannot convert pyramid general parameters from C to python'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # pyramidParameters
     pyramidParameters = np.array(nv*[None])
     for i in range(nv):
         pp_c = deesse.MPDS_PYRAMIDPARAMETERS_array_getitem(mpds_siminput.pyramidParameters, i)
-        pp = pyramidParameters_C2py(pp_c)
+        pp = pyramidParameters_C2py(pp_c, logger=logger)
         if pp is None:
             err_msg = f'{fname}: cannot convert pyramid parameters from C to python'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         pyramidParameters[i] = pp
@@ -4881,7 +5106,7 @@ def deesse_input_C2py(mpds_siminput):
         pyramidDataImage = np.array(npyramidDataImage*[None])
         for i in range(npyramidDataImage):
             im = deesse.MPDS_IMAGE_array_getitem(mpds_siminput.dataImageInPyramid, i)
-            pyramidDataImage[i] = img_C2py(im)
+            pyramidDataImage[i] = img_C2py(im, logger=logger)
 
     # pyramidataPointSet
     pyramidDataPointSet = None
@@ -4994,23 +5219,28 @@ def deesse_input_C2py(mpds_siminput):
         postProcessingTolerance=postProcessingTolerance,
         seed=seed,
         seedIncrement=seedIncrement,
-        nrealization=nrealization)
+        nrealization=nrealization,
+        logger=logger)
 
     return deesse_input
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
+def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor, logger=None):
     """
     Converts deesse output from C to python.
 
     Parameters
     ----------
-    mpds_simoutput : \(MPDS_SIMOUTPUT \*\)
+    mpds_simoutput : \\(MPDS_SIMOUTPUT \\*\\)
         deesse output in C
 
-    mpds_progressMonitor : \(MPDS_PROGRESSMONITOR \*\)
+    mpds_progressMonitor : \\(MPDS_PROGRESSMONITOR \\*\\)
         progress monitor in C
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -5148,7 +5378,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
             # ---
 
             # --- sim ---
-            im = img_C2py(mpds_simoutput.outputSimImage)
+            im = img_C2py(mpds_simoutput.outputSimImage, logger=logger)
 
             nv = mpds_simoutput.nvarSimPerReal
             k = 0
@@ -5158,7 +5388,8 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                sx=im.sx, sy=im.sy, sz=im.sz,
                                ox=im.ox, oy=im.oy, oz=im.oz,
                                nv=nv, val=im.val[k:(k+nv),...],
-                               varname=im.varname[k:(k+nv)]))
+                               varname=im.varname[k:(k+nv)],
+                               logger=logger))
                 k = k + nv
 
             del(im)
@@ -5203,7 +5434,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
 
                             # +++ sim_pyramid[j] +++
                             im_ptr = deesse.MPDS_IMAGEp_array_getitem(mpds_simoutput.outputSimImagePyramidLevel, j)
-                            im = img_C2py(im_ptr)
+                            im = img_C2py(im_ptr, logger=logger)
 
                             nv = nvarSimPerRealPyramidLevel[j]
                             k = 0
@@ -5213,7 +5444,8 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                                sx=im.sx, sy=im.sy, sz=im.sz,
                                                ox=im.ox, oy=im.oy, oz=im.oz,
                                                nv=nv, val=im.val[k:(k+nv),...],
-                                               varname=im.varname[k:(k+nv)]))
+                                               varname=im.varname[k:(k+nv)],
+                                               logger=logger))
                                 k = k + nv
 
                             del(im)
@@ -5223,7 +5455,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
 
         if mpds_simoutput.nvarPathIndexPerReal:
             # --- path ---
-            im = img_C2py(mpds_simoutput.outputPathIndexImage)
+            im = img_C2py(mpds_simoutput.outputPathIndexImage, logger=logger)
 
             nv = mpds_simoutput.nvarPathIndexPerReal
             k = 0
@@ -5233,7 +5465,8 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                 sx=im.sx, sy=im.sy, sz=im.sz,
                                 ox=im.ox, oy=im.oy, oz=im.oz,
                                 nv=nv, val=im.val[k:(k+nv),...],
-                                varname=im.varname[k:(k+nv)]))
+                                varname=im.varname[k:(k+nv)],
+                                logger=logger))
                 k = k + nv
 
             del(im)
@@ -5242,7 +5475,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
 
         if mpds_simoutput.nvarErrorPerReal:
             # --- error ---
-            im = img_C2py(mpds_simoutput.outputErrorImage)
+            im = img_C2py(mpds_simoutput.outputErrorImage, logger=logger)
 
             nv = mpds_simoutput.nvarErrorPerReal
             k = 0
@@ -5252,7 +5485,8 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                  sx=im.sx, sy=im.sy, sz=im.sz,
                                  ox=im.ox, oy=im.oy, oz=im.oz,
                                  nv=nv, val=im.val[k:(k+nv),...],
-                                 varname=im.varname[k:(k+nv)]))
+                                 varname=im.varname[k:(k+nv)],
+                                 logger=logger))
                 k = k + nv
 
             del(im)
@@ -5261,7 +5495,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
 
         if mpds_simoutput.nvarTiGridNodeIndexPerReal:
             # --- tiGridNode ---
-            im = img_C2py(mpds_simoutput.outputTiGridNodeIndexImage)
+            im = img_C2py(mpds_simoutput.outputTiGridNodeIndexImage, logger=logger)
 
             nv = mpds_simoutput.nvarTiGridNodeIndexPerReal
             k = 0
@@ -5271,7 +5505,8 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                 sx=im.sx, sy=im.sy, sz=im.sz,
                                 ox=im.ox, oy=im.oy, oz=im.oz,
                                 nv=nv, val=im.val[k:(k+nv),...],
-                                varname=im.varname[k:(k+nv)]))
+                                varname=im.varname[k:(k+nv)],
+                                logger=logger))
                 k = k + nv
 
             del(im)
@@ -5280,7 +5515,7 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
 
         if mpds_simoutput.nvarTiIndexPerReal:
             # --- tiIndex ---
-            im = img_C2py(mpds_simoutput.outputTiIndexImage)
+            im = img_C2py(mpds_simoutput.outputTiIndexImage, logger=logger)
 
             nv = mpds_simoutput.nvarTiIndexPerReal
             k = 0
@@ -5290,7 +5525,8 @@ def deesse_output_C2py(mpds_simoutput, mpds_progressMonitor):
                                 sx=im.sx, sy=im.sy, sz=im.sz,
                                 ox=im.ox, oy=im.oy, oz=im.oz,
                                 nv=nv, val=im.val[k:(k+nv),...],
-                                varname=im.varname[k:(k+nv)]))
+                                varname=im.varname[k:(k+nv)],
+                                logger=logger))
                 k = k + nv
 
             del(im)
@@ -5323,7 +5559,8 @@ def deesseRun(
         deesse_input,
         add_data_point_to_mask=True,
         nthreads=-1,
-        verbose=2):
+        verbose=2,
+        logger=None):
     """
     Launches deesse.
 
@@ -5355,6 +5592,10 @@ def deesseRun(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -5474,6 +5715,7 @@ def deesseRun(
 
     if not deesse_input.ok:
         err_msg = f'{fname}: check deesse input'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Set number of threads
@@ -5483,7 +5725,10 @@ def deesseRun(
         nth = nthreads
 
     if verbose > 0 and nth > os.cpu_count():
-        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+        if logger:
+            logger.warning(f"{fname}: number of threads used will exceed number of cpu(s) of the system...")
+        else:
+            print(f"{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...")
 
     if deesse_input.mask is not None and add_data_point_to_mask and deesse_input.dataPointSet is not None:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -5494,24 +5739,36 @@ def deesseRun(
                     nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                    indicator_var=True)
+                    indicator_var=True,
+                    logger=logger)
             deesse_input.mask = 1.0*np.any((im_tmp.val[0], deesse_input.mask), axis=0)
             del (im_tmp)
 
     if verbose > 1:
-        print('{}: DeeSse running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
-        sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+        if logger:
+            logger.info(f"{fname}: DeeSse running... [" + \
+                f"VERSION {deesse.MPDS_VERSION_NUMBER:s} / " + \
+                f"BUILD NUMBER {deesse.MPDS_BUILD_NUMBER:s} / " + \
+                f"OpenMP {nth:d} thread(s)]")
+        else:
+            print(f"{fname}: DeeSse running... [" + \
+                f"VERSION {deesse.MPDS_VERSION_NUMBER:s} / " + \
+                f"BUILD NUMBER {deesse.MPDS_BUILD_NUMBER:s} / " + \
+                f"OpenMP {nth:d} thread(s)]")
+            sys.stdout.flush()
+            sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
 
     # Convert deesse input from python to C
     try:
-        mpds_siminput = deesse_input_py2C(deesse_input)
+        mpds_siminput = deesse_input_py2C(deesse_input, logger=logger)
     except Exception as exc:
         err_msg = f'{fname}: cannot convert deesse input from python to C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # if mpds_siminput is None:
     #     err_msg = f'{fname}: cannot convert deesse input from python to C'
+    #     if logger: logger.error(err_msg)
     #     raise DeesseinterfaceError(err_msg)
 
     # Allocate mpds_simoutput
@@ -5554,9 +5811,10 @@ def deesseRun(
         err_message = deesse.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
         err_msg = f'{fname}: {err_message}'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
-    deesse_output = deesse_output_C2py(mpds_simoutput, mpds_progressMonitor)
+    deesse_output = deesse_output_C2py(mpds_simoutput, mpds_progressMonitor, logger=logger)
 
     # Free memory on C side: simulation output
     deesse.MPDSFreeSimOutput(mpds_simoutput)
@@ -5571,13 +5829,18 @@ def deesseRun(
             im.val[:, mask_original==0.0] = np.nan
 
     if verbose > 1 and deesse_output:
-        print(f'{fname}: DeeSse run complete')
+        if logger:
+            logger.info(f"{fname}: DeeSse run complete")
+        else:
+            print(f"{fname}: DeeSse run complete")
 
     # Show (print) encountered warnings
     if verbose > 0 and deesse_output and deesse_output['nwarning']:
-        print(f"{fname}: warnings encountered ({deesse_output['nwarning']} times in all):")
-        for i, warning_message in enumerate(deesse_output['warnings']):
-            print(f'#{i+1:3d}: {warning_message}')
+        # note: not logged even if `logger` is not `None` (list of warning(s) is returned)
+        if logger is None:
+            print(f"{fname}: warnings encountered ({deesse_output['nwarning']} times in all):")
+            for i, warning_message in enumerate(deesse_output['warnings']):
+                print(f'#{i+1:3d}: {warning_message}')
 
     return deesse_output
 # ----------------------------------------------------------------------------
@@ -5586,13 +5849,14 @@ def deesseRun(
 def deesseRun_mp(
         deesse_input,
         add_data_point_to_mask=True,
-        nproc=None,
-        nthreads_per_proc=None,
-        verbose=2):
+        nproc=-1,
+        nthreads_per_proc=-1,
+        verbose=2,
+        logger=None):
     """
-    Computes the same as the function :func:`deesseinterface.deesseRun`, using multiprocessing.
+    Computes the same as the function :func:`deesseRun`, using multiprocessing.
 
-    All the parameters are the same as those of the function :func:`deesseinterface.deesseRun`,
+    All the parameters are the same as those of the function :func:`deesseRun`,
     except `nthreads` that is replaced by the parameters `nproc` and
     `nthreads_per_proc`.
 
@@ -5600,63 +5864,90 @@ def deesseRun_mp(
     package):
 
     - `nproc` parallel processes using each one `nthreads_per_proc` threads \
-    are launched [parallel calls of the function :func:`deesseinterface.deesseRun`]
+    are launched [parallel calls of the function :func:`deesseRun`]
     - the set of realizations (specified by `nreal`) is distributed in a \
     balanced way over the processes
     - in terms of resources, this implies the use of `nproc*nthreads_per_proc` \
     cpu(s)
 
-    See function :func:`deesseinterface.deesseRun`.
+    See function :func:`deesseRun`.
 
     **Parameters (new)**
     --------------------
-    nproc : int, optional
-        number of processes; by default (`None`):
-        `nproc` is set to `min(nmax-1, nreal)` (but at least 1), where nmax is
-        the total number of cpu(s) of the system (retrieved by
+    nproc : int, default: -1
+        number of process(es): a negative number (or zero), -n <= 0, can be specified 
+        to use the total number of cpu(s) of the system except n; `nproc` is finally
+        at maximum equal to `nreal` but at least 1 by applying:
+        
+        - if `nproc >= 1`, then `nproc = max(min(nproc, nreal), 1)` is used
+        - if `nproc = -n <= 0`, then `nproc = max(min(nmax-n, nreal), 1)` is used, \
+        where nmax is the total number of cpu(s) of the system (retrieved by \
         `multiprocessing.cpu_count()`)
 
-    nthreads_per_proc : int, optional
-        number of thread(s) per process (should be > 0); by default (`None`):
-        `nthreads_per_proc` is automatically computed as the maximal integer
-        (but at least 1) such that `nproc*nthreads_per_proc <= nmax-1`, where
-        nmax is the total number of cpu(s) of the system (retrieved by
-        `multiprocessing.cpu_count()`)
+        note: if `nproc=None`, `nproc=-1` is used
+
+    nthreads_per_proc : int, default: -1
+        number of thread(s) per process;
+        if `nthreads_per_proc = -n <= 0`: `nthreads_per_proc` is automatically 
+        computed as the maximal integer (but at least 1) such that 
+        `nproc*nthreads_per_proc <= nmax-n`, where nmax is the total number of cpu(s)
+        of the system (retrieved by `multiprocessing.cpu_count()`); 
+
+        note: if `nthreads_per_proc=None`, `nthreads_per_proc=-1` is used
     """
     fname = 'deesseRun_mp'
 
     if not deesse_input.ok:
         err_msg = f'{fname}: check deesse input'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
-    if deesse_input.nrealization <= 1:
-        if verbose > 1:
-            print(f'{fname}: number of realization does not exceed 1: launching deesseRun...')
-        nthreads = nthreads_per_proc
-        if nthreads is None:
-            nthreads = -1
-        deesse_output = deesseRun(deesse_input, add_data_point_to_mask=add_data_point_to_mask, nthreads=nthreads, verbose=verbose)
-        return deesse_output
+    # if deesse_input.nrealization <= 1:
+    #     if verbose > 1:
+    #         if logger:
+    #             logger.info(f'{fname}: number of realization does not exceed 1: launching deesseRun...')
+    #         else:
+    #             print(f'{fname}: number of realization does not exceed 1: launching deesseRun...')
+    #     nthreads = nthreads_per_proc
+    #     if nthreads is None:
+    #         nthreads = -1
+    #     deesse_output = deesseRun(deesse_input, add_data_point_to_mask=add_data_point_to_mask, nthreads=nthreads, verbose=verbose, logger=logger)
+    #     return deesse_output
 
-    # Set number of processes: nproc
+    # Set number of process(es): nproc
     if nproc is None:
-        nproc = max(min(multiprocessing.cpu_count()-1, deesse_input.nrealization), 1)
+        nproc = -1
+    
+    if nproc <= 0:
+        nproc = max(min(multiprocessing.cpu_count() + nproc, deesse_input.nrealization), 1)
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), deesse_input.nrealization), 1)
         if verbose > 1 and nproc != nproc_tmp:
-            print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
+            if logger:
+                logger.info(f'{fname}: number of processes has been changed (now: nproc={nproc})')
+            else:
+                print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
-        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
+        nthreads_per_proc = -1
+    
+    if nthreads_per_proc <= 0:
+        nth = max(int(np.floor((multiprocessing.cpu_count() + nthreads_per_proc) / nproc)), 1)
     else:
-        nth = max(int(nthreads_per_proc), 1)
-        if verbose > 1 and nth != nthreads_per_proc:
-            print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
+        nth = int(nthreads_per_proc)
+        # if verbose > 1 and nth != nthreads_per_proc:
+        #     if logger:
+        #         logger.info(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
+        #     else:
+        #         print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        if logger:
+            logger.warning(f'{fname}: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        else:
+            print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
     if deesse_input.mask is not None and add_data_point_to_mask and deesse_input.dataPointSet is not None:
         # Make a copy of the original mask, to remove value in added mask cell at the end
@@ -5667,7 +5958,8 @@ def deesseRun_mp(
                     nx=deesse_input.nx, ny=deesse_input.ny, nz=deesse_input.nz,
                     sx=deesse_input.sx, sy=deesse_input.sy, sz=deesse_input.sz,
                     ox=deesse_input.ox, oy=deesse_input.oy, oz=deesse_input.oz,
-                    indicator_var=True)
+                    indicator_var=True,
+                    logger=logger)
             deesse_input.mask = 1.0*np.any((im_tmp.val[0], deesse_input.mask), axis=0)
             del (im_tmp)
 
@@ -5681,9 +5973,18 @@ def deesseRun_mp(
     real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
     if verbose > 1:
-        print('{}: DeeSse running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, nproc, deesse.MPDS_VERSION_NUMBER, deesse.MPDS_BUILD_NUMBER, nth))
-        sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
+        if logger:
+            logger.info(f"{fname}: DeeSse running on {nproc} process(es)... [" + \
+                f"VERSION {deesse.MPDS_VERSION_NUMBER:s} / " + \
+                f"BUILD NUMBER {deesse.MPDS_BUILD_NUMBER:s} / " + \
+                f"OpenMP {nth:d} thread(s)]")
+        else:
+            print(f"{fname}: DeeSse running on {nproc} process(es)... [" + \
+                f"VERSION {deesse.MPDS_VERSION_NUMBER:s} / " + \
+                f"BUILD NUMBER {deesse.MPDS_BUILD_NUMBER:s} / " + \
+                f"OpenMP {nth:d} thread(s)]")
+            sys.stdout.flush()
+            sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesse...
 
     # Initialize deesse input for each process
     deesse_input_proc = [copy.copy(deesse_input) for i in range(nproc)]
@@ -5703,7 +6004,7 @@ def deesseRun_mp(
         # else:
         #     verb = 0
         # Launch deesse (i-th process)
-        out_pool.append(pool.apply_async(deesseRun, args=(input, False, nth, verb)))
+        out_pool.append(pool.apply_async(deesseRun, args=(input, False, nth, verb), kwds={'logger':logger}))
 
     # Properly end working process
     pool.close() # Prevents any more tasks from being submitted to the pool,
@@ -5791,7 +6092,7 @@ def deesseRun_mp(
         tiIndex = None
 
     # nwarning
-    nwarning = np.sum([out['nwarning'] for out in deesse_output_proc])
+    nwarning = int(np.sum([out['nwarning'] for out in deesse_output_proc]))
     # warnings
     warnings = list(np.unique(np.hstack([out['warnings'] for out in deesse_output_proc])))
 
@@ -5837,13 +6138,18 @@ def deesseRun_mp(
         }
 
     if verbose > 1 and deesse_output:
-        print(f'{fname}: DeeSse run complete (all process(es))')
+        if logger:
+            logger.info(f'{fname}: DeeSse run complete (all process(es))')
+        else:
+            print(f'{fname}: DeeSse run complete (all process(es))')
 
     # Show (print) encountered warnings
     if verbose > 0 and deesse_output and deesse_output['nwarning']:
-        print(f"{fname}: warnings encountered ({deesse_output['nwarning']} times in all):")
-        for i, warning_message in enumerate(deesse_output['warnings']):
-            print(f'#{i+1:3d}: {warning_message}')
+        # note: not logged even if `logger` is not `None` (list of warning(s) is returned)
+        if logger is None:
+            print(f"{fname}: warnings encountered ({deesse_output['nwarning']} times in all):")
+            for i, warning_message in enumerate(deesse_output['warnings']):
+                print(f'#{i+1:3d}: {warning_message}')
 
     return deesse_output
 # ----------------------------------------------------------------------------
@@ -5854,7 +6160,8 @@ def exportDeesseInput(
         dirname='input_ascii',
         fileprefix='ds',
         endofline='\n',
-        verbose=1):
+        verbose=1,
+        logger=None):
     """
     Exports deesse input in txt (ASCII) files (in the directory `dirname`).
 
@@ -5884,11 +6191,16 @@ def exportDeesseInput(
         - 0: no comment
         - 1: basic comments
         - 2: detailed comments
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
     """
     fname = 'exportDeesseInput'
 
     if not deesse_input.ok:
         err_msg = f'{fname}: check deesse input'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Create ouptut directory if needed
@@ -5897,13 +6209,15 @@ def exportDeesseInput(
 
     # Convert deesse input from python to C
     try:
-        mpds_siminput = deesse_input_py2C(deesse_input)
+        mpds_siminput = deesse_input_py2C(deesse_input, logger=logger)
     except Exception as exc:
         err_msg = f'{fname}: cannot convert deesse input from python to C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # if mpds_siminput is None:
     #     err_msg = f'{fname}: cannot convert deesse input from python to C'
+    #     if logger: logger.error(err_msg)
     #     raise DeesseinterfaceError(err_msg)
 
     err = deesse.MPDSExportSimInput(mpds_siminput, dirname, fileprefix, endofline, verbose)
@@ -5916,6 +6230,7 @@ def exportDeesseInput(
         err_message = deesse.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
         err_msg = f'{fname}: {err_message}'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Free memory on C side: deesse input
@@ -5924,7 +6239,7 @@ def exportDeesseInput(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def importDeesseInput(filename, dirname='.'):
+def importDeesseInput(filename, dirname='.', logger=None):
     """
     Imports deesse input from txt (ASCII) files.
 
@@ -5942,6 +6257,10 @@ def importDeesseInput(filename, dirname='.'):
         name of the directory in which the main input txt (ASCII) file is stored
         (and from which the command line version of deesse would be launched)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     deesse_input :class:`DeesseInput`
@@ -5952,11 +6271,13 @@ def importDeesseInput(filename, dirname='.'):
     # Check directory
     if not os.path.isdir(dirname):
         err_msg = f'{fname}: directory does not exist'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Check file
     if not os.path.isfile(os.path.join(dirname, filename)):
         err_msg = f'{fname}: input file does not exist'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Get current working directory
@@ -5976,13 +6297,14 @@ def importDeesseInput(filename, dirname='.'):
         mpds_siminput = deesse.MPDS_SIMINPUTp_value(mpds_siminputp)
 
         # Convert deesse input from C to python
-        deesse_input = deesse_input_C2py(mpds_siminput)
+        deesse_input = deesse_input_C2py(mpds_siminput, logger=logger)
 
     except:
         # Free memory on C side: deesse input
         deesse.delete_MPDS_SIMINPUTp(mpds_siminputp)
         # Raise error
         err_msg = f'{fname}: cannot import deesse input from ASCII files'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     finally:
@@ -6007,15 +6329,16 @@ def imgPyramidImage(
         w0z=None,
         minWeight=None,
         nthreads=-1,
-        verbose=0):
+        verbose=0,
+        logger=None):
     """
     Computes the Gaussian (pyramid) reduction or expansion of the input image.
 
     This function applies the Gaussian pyramid reduction or expansion to all
     variables (treated as continuous) of the input image, and returns an output
     image with the same number of variables, whose the names are the same as the
-    variables of the input image, followed by a suffix the suffix "\_GPred" (resp.
-    "\_GPexp") if reduction (resp. expansion) is applied. The grid (support) of
+    variables of the input image, followed by a suffix the suffix "\\_GPred" (resp.
+    "\\_GPexp") if reduction (resp. expansion) is applied. The grid (support) of
     the output image is derived from the Gaussian pyramid operation.
     The Gaussian operation consists in applying a weighted moving average using a
     Gaussian-like kernel (or filter) of size (2*kx + 1) x (2*ky + 1) x (2*kz + 1)
@@ -6090,6 +6413,10 @@ def imgPyramidImage(
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     output_image : :class:`geone.img.Img`
@@ -6100,6 +6427,7 @@ def imgPyramidImage(
     # Check
     if operation not in ('reduce', 'expand'):
         err_msg = f'{fname}: unknown `operation`'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Prepare parameters
@@ -6152,9 +6480,10 @@ def imgPyramidImage(
 
     # Set input image "in C"
     try:
-        input_image_c = img_py2C(input_image)
+        input_image_c = img_py2C(input_image, logger=logger)
     except Exception as exc:
         err_msg = f'{fname}: cannot convert input image from python to C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # Allocate output image "in C"
@@ -6168,7 +6497,10 @@ def imgPyramidImage(
         nth = nthreads
 
     if verbose > 0 and nth > os.cpu_count():
-        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+        if logger:
+            logger.warning(f'{fname}: number of threads used will exceed number of cpu(s) of the system...')
+        else:
+            print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
 
     # Compute pyramid (launch C code)
     if operation == 'reduce':
@@ -6184,6 +6516,7 @@ def imgPyramidImage(
         deesse.free_MPDS_IMAGE(output_image_c)
         # Raise error
         err_msg = f'{fname}: `operation` invalid'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Retrieve output image "in python"
@@ -6198,9 +6531,10 @@ def imgPyramidImage(
         err_message = deesse.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
         err_msg = f'{fname}: {err_message}'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
-    output_image = img_C2py(output_image_c)
+    output_image = img_C2py(output_image_c, logger=logger)
 
     # Free memory on C side: input_image_c
     deesse.MPDSFreeImage(input_image_c)
@@ -6220,7 +6554,8 @@ def imgCategoricalToContinuous(
         yConnectFlag=None,
         zConnectFlag=None,
         nthreads=-1,
-        verbose=0):
+        verbose=0,
+        logger=None):
     """
     Transforms variable(s) of an image from "categorical" to "continuous".
 
@@ -6265,6 +6600,10 @@ def imgCategoricalToContinuous(
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     output_image : :class:`geone.img.Img`
@@ -6277,6 +6616,7 @@ def imgCategoricalToContinuous(
         varInd = np.atleast_1d(varInd).reshape(-1)
         if np.sum([iv in range(input_image.nv) for iv in varInd]) != len(varInd):
             err_msg = f'{fname}: invalid index-es'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
     else:
@@ -6302,7 +6642,7 @@ def imgCategoricalToContinuous(
             zConnectFlag = True
 
     # Initialize output image
-    output_image = img.copyImg(input_image)
+    output_image = img.copyImg(input_image, logger=logger)
 
     # Initialize value index
     val_index = np.zeros(input_image.nxyz(), dtype='intc')
@@ -6317,13 +6657,16 @@ def imgCategoricalToContinuous(
         nth = nthreads
 
     if verbose > 0 and nth > os.cpu_count():
-        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+        if logger:
+            logger.warning(f'{fname}: number of threads used will exceed number of cpu(s) of the system...')
+        else:
+            print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
 
     for ind in varInd:
         # Get vector of values of the variale of index ind from input image
         vptr = input_image.val[ind].reshape(-1)
 
-        unique_val = input_image.get_unique_one_var(ind)
+        unique_val = input_image.get_unique_one_var(ind, logger=logger)
         for i, v in enumerate(unique_val):
             val_index[vptr==v] = i
 
@@ -6357,6 +6700,7 @@ def imgCategoricalToContinuous(
             err_message = deesse.mpds_get_error_message(-err)
             err_message = err_message.replace('\n', '')
             err_msg = f'{fname}: {err_message}'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         to_new_index = np.zeros(n, dtype='intc') # 'intc' for C-compatibility
@@ -6453,14 +6797,14 @@ class DeesseXInputSectionPath(object):
             along x, y, z axis resp. between two successive sections \
             of the same type and orthogonal to x, y, z axis resp.:
 
-                - \(i) for each section orientation (in the order given by \
+                - \\(i\\) for each section orientation (in the order given by \
                 `sectionMode`): the section(s) corresponding to the \
                 most right border (face or edge located at one largest \
                 index in the corresponding direction) of the \
                 simulation grid is selected, provided that the space \
                 (step) with the previous section (selected in (a)) \
                 satisfies the minimal space in the relevant direction
-                - \(ii) for each section orientation (in the order given by \
+                - \\(ii\\) for each section orientation (in the order given by \
                 `sectionMode`): the sections between the borders are \
                 selected, such that they are regularly spaced along \
                 any direction (with a difference of at most one cell) \
@@ -6468,7 +6812,7 @@ class DeesseXInputSectionPath(object):
                 the number of cell from one section to the next one \
                 is at least equal to corresponding parameter \
                 minspaceX, minspaceY or minspaceZ)
-                - \(iii) for each section orientation (in the order given by \
+                - \\(iii\\) for each section orientation (in the order given by \
                 `sectionMode`): if in step (i) the right border was not \
                 selected (due to a space less than the minimal space \
                 paremeter(s)), then it is selected here
@@ -6568,6 +6912,10 @@ class DeesseXInputSectionPath(object):
             where nx, ny, nz are the number of nodes in the entire
             simulation grid along x, y, z axis respectively
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     **Methods**
     """
     def __init__(self,
@@ -6579,7 +6927,8 @@ class DeesseXInputSectionPath(object):
                  balancedFillingFlag=True,
                  nsection=0,
                  sectionType=None,
-                 sectionLoc=None):
+                 sectionLoc=None,
+                 logger=None):
         """
         Inits an instance of the class.
         """
@@ -6621,6 +6970,7 @@ class DeesseXInputSectionPath(object):
 
         if sectionMode not in sectionMode_avail:
             err_msg = f'{fname}: unknown `sectionMode`'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.sectionMode = sectionMode
@@ -6634,6 +6984,7 @@ class DeesseXInputSectionPath(object):
         )
         if sectionPathMode not in sectionPathMode_avail:
             err_msg = f'{fname}: unknown `sectionPathMode`'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.sectionPathMode = sectionPathMode
@@ -6671,12 +7022,14 @@ class DeesseXInputSectionPath(object):
                     self.sectionType = np.asarray(sectionType, dtype='int').reshape(nsection)
                 except:
                     err_msg = f'{fname}: parameter `sectionType`...'
+                    if logger: logger.error(err_msg)
                     raise DeesseinterfaceError(err_msg)
 
                 try:
                     self.sectionLoc = np.asarray(sectionLoc, dtype='int').reshape(nsection)
                 except:
                     err_msg = f'{fname}: parameter `sectionLoc`...'
+                    if logger: logger.error(err_msg)
                     raise DeesseinterfaceError(err_msg)
 
             else:
@@ -6868,6 +7221,10 @@ class DeesseXInputSection(object):
     postProcessingTolerance : float, default: 0.0
         as in :class:`DeesseInput`
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     **Methods**
     """
     def __init__(self,
@@ -6902,7 +7259,8 @@ class DeesseXInputSection(object):
                  postProcessingNeighboringNodeDensity=None,
                  postProcessingDistanceThreshold=None,
                  postProcessingMaxScanFraction=None,
-                 postProcessingTolerance=0.0):
+                 postProcessingTolerance=0.0,
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -6935,11 +7293,13 @@ class DeesseXInputSection(object):
                             self.distanceType[i] = 1
                         else:
                             err_msg = f'{fname}: parameter `distanceType`...'
+                            if logger: logger.error(err_msg)
                             raise DeesseinterfaceError(err_msg)
 
                 self.distanceType = np.asarray(self.distanceType).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `distanceType`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # dimension
@@ -6948,6 +7308,7 @@ class DeesseXInputSection(object):
         # section type
         if sectionType is None:
             err_msg = f'{fname}: parameter `sectionType`...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         if isinstance(sectionType, str):
@@ -6965,6 +7326,7 @@ class DeesseXInputSection(object):
                 self.sectionType = 5
             else:
                 err_msg = f'{fname}: parameter `sectionType`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         elif isinstance(sectionType, int):
@@ -6972,11 +7334,13 @@ class DeesseXInputSection(object):
 
         else:
             err_msg = f'{fname}: parameter `sectionType`...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         # TI, simGridAsTiFlag, nTI
         if TI is None and simGridAsTiFlag is None:
             err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid (both `None`)...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         if TI is not None:
@@ -6993,15 +7357,18 @@ class DeesseXInputSection(object):
 
         if len(self.TI) != len(self.simGridAsTiFlag):
             err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid (not same length)...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         for f, t in zip(self.simGridAsTiFlag, self.TI):
             if (not f and t is None) or (f and t is not None):
                 err_msg = f'{fname}: `TI` / `simGridAsTiFlag` invalid...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if nTI is not None and nTI != len(self.TI):
             err_msg = f'{fname}: `nTI` invalid...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         nTI = len(self.TI)
@@ -7019,6 +7386,7 @@ class DeesseXInputSection(object):
                     self.pdfTI = np.asarray(pdfTI, dtype=float).reshape(nTI, nz, ny, nx)
                 except:
                     err_msg = f'{fname}: parameter `pdfTI`...'
+                    if logger: logger.error(err_msg)
                     raise DeesseinterfaceError(err_msg)
 
         # homothety
@@ -7031,6 +7399,7 @@ class DeesseXInputSection(object):
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7041,6 +7410,7 @@ class DeesseXInputSection(object):
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if homothetyYLocal:
@@ -7051,6 +7421,7 @@ class DeesseXInputSection(object):
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7061,6 +7432,7 @@ class DeesseXInputSection(object):
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if homothetyZLocal:
@@ -7071,6 +7443,7 @@ class DeesseXInputSection(object):
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7081,6 +7454,7 @@ class DeesseXInputSection(object):
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
         elif homothetyUsage == 2:
@@ -7092,6 +7466,7 @@ class DeesseXInputSection(object):
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7102,6 +7477,7 @@ class DeesseXInputSection(object):
                         self.homothetyXRatio = np.asarray(homothetyXRatio, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `homothetyXRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if homothetyYLocal:
@@ -7112,6 +7488,7 @@ class DeesseXInputSection(object):
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7122,6 +7499,7 @@ class DeesseXInputSection(object):
                         self.homothetyYRatio = np.asarray(homothetyYRatio, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `homothetyYRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if homothetyZLocal:
@@ -7132,6 +7510,7 @@ class DeesseXInputSection(object):
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7142,6 +7521,7 @@ class DeesseXInputSection(object):
                         self.homothetyZRatio = np.asarray(homothetyZRatio, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `homothetyZRatio`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
         elif homothetyUsage == 0:
@@ -7151,6 +7531,7 @@ class DeesseXInputSection(object):
 
         else:
             err_msg = f'{fname}: `homothetyUsage` invalid'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.homothetyUsage = homothetyUsage
@@ -7168,6 +7549,7 @@ class DeesseXInputSection(object):
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7178,6 +7560,7 @@ class DeesseXInputSection(object):
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if rotationDipLocal:
@@ -7188,6 +7571,7 @@ class DeesseXInputSection(object):
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationDip`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7198,6 +7582,7 @@ class DeesseXInputSection(object):
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `rotationDip`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if rotationPlungeLocal:
@@ -7208,6 +7593,7 @@ class DeesseXInputSection(object):
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7218,6 +7604,7 @@ class DeesseXInputSection(object):
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(1)
                     except:
                         err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
         elif rotationUsage == 2:
@@ -7229,6 +7616,7 @@ class DeesseXInputSection(object):
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7239,6 +7627,7 @@ class DeesseXInputSection(object):
                         self.rotationAzimuth = np.asarray(rotationAzimuth, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `rotationAzimuth`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if rotationDipLocal:
@@ -7249,6 +7638,7 @@ class DeesseXInputSection(object):
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationDip`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7259,6 +7649,7 @@ class DeesseXInputSection(object):
                         self.rotationDip = np.asarray(rotationDip, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `rotationDip`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             if rotationPlungeLocal:
@@ -7269,6 +7660,7 @@ class DeesseXInputSection(object):
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2, nz, ny, nx)
                     except:
                         err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
             else:
@@ -7279,6 +7671,7 @@ class DeesseXInputSection(object):
                         self.rotationPlunge = np.asarray(rotationPlunge, dtype=float).reshape(2)
                     except:
                         err_msg = f'{fname}: parameter `rotationPlunge`...'
+                        if logger: logger.error(err_msg)
                         raise DeesseinterfaceError(err_msg)
 
         elif rotationUsage == 0:
@@ -7288,6 +7681,7 @@ class DeesseXInputSection(object):
 
         else:
             err_msg = f'{fname}: `rotationUsage` invalid'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.rotationUsage = rotationUsage
@@ -7303,6 +7697,7 @@ class DeesseXInputSection(object):
                 self.searchNeighborhoodParameters = np.asarray(searchNeighborhoodParameters).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `searchNeighborhoodParameters`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if nneighboringNode is None:
@@ -7320,6 +7715,7 @@ class DeesseXInputSection(object):
                 self.nneighboringNode = np.asarray(nneighboringNode).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `nneighboringNode`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if maxPropInequalityNode is None:
@@ -7329,6 +7725,7 @@ class DeesseXInputSection(object):
                 self.maxPropInequalityNode = np.asarray(maxPropInequalityNode).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `maxPropInequalityNode`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if neighboringNodeDensity is None:
@@ -7338,11 +7735,13 @@ class DeesseXInputSection(object):
                 self.neighboringNodeDensity = np.asarray(neighboringNodeDensity, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `neighboringNodeDensity`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # simulation type and simulation path type
         if simType not in ('sim_one_by_one', 'sim_variable_vector'):
             err_msg = f'{fname}: parameter `simType`...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.simType = simType
@@ -7353,6 +7752,7 @@ class DeesseXInputSection(object):
                 'random_hd_distance_sum_pdf', 'random_hd_distance_sum_sort',
                 'unilateral'):
             err_msg = f'{fname}: parameter `simPathType`...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.simPathType = simPathType
@@ -7378,6 +7778,7 @@ class DeesseXInputSection(object):
                     self.simPathUnilateralOrder = np.asarray(simPathUnilateralOrder).reshape(length)
                 except:
                     err_msg = f'{fname}: parameter `simPathUnilateralOrder`...'
+                    if logger: logger.error(err_msg)
                     raise DeesseinterfaceError(err_msg)
 
         else:
@@ -7391,16 +7792,18 @@ class DeesseXInputSection(object):
                 self.distanceThreshold = np.asarray(distanceThreshold, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `distanceThreshold`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # soft probability
         if softProbability is None:
-            self.softProbability = np.array([SoftProbability(probabilityConstraintUsage=0) for i in range(nv)])
+            self.softProbability = np.array([SoftProbability(probabilityConstraintUsage=0, logger=logger) for i in range(nv)])
         else:
             try:
                 self.softProbability = np.asarray(softProbability).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `softProbability`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # maximal scan fraction
@@ -7416,21 +7819,23 @@ class DeesseXInputSection(object):
                 self.maxScanFraction = np.asarray(maxScanFraction).reshape(nTI)
             except:
                 err_msg = f'{fname}: parameter `maxScanFraction`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # pyramids
         if pyramidGeneralParameters is None:
-            self.pyramidGeneralParameters = PyramidGeneralParameters(nx=nx, ny=ny, nz=nz)
+            self.pyramidGeneralParameters = PyramidGeneralParameters(nx=nx, ny=ny, nz=nz, logger=logger)
         else:
             self.pyramidGeneralParameters = pyramidGeneralParameters
 
         if pyramidParameters is None:
-            self.pyramidParameters = np.array([PyramidParameters() for i in range(nv)])
+            self.pyramidParameters = np.array([PyramidParameters() for _ in range(nv)])
         else:
             try:
                 self.pyramidParameters = np.asarray(pyramidParameters).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `pyramidParameters`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # tolerance and post-processing
@@ -7449,6 +7854,7 @@ class DeesseXInputSection(object):
                 self.postProcessingNneighboringNode = np.asarray(postProcessingNneighboringNode).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `postProcessingNneighboringNode`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if postProcessingNeighboringNodeDensity is None:
@@ -7463,6 +7869,7 @@ class DeesseXInputSection(object):
                 self.postProcessingNeighboringNodeDensity = np.asarray(postProcessingNeighboringNodeDensity, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `postProcessingNeighboringNodeDensity`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if postProcessingDistanceThreshold is None:
@@ -7483,6 +7890,7 @@ class DeesseXInputSection(object):
                 self.postProcessingDistanceThreshold = np.asarray(postProcessingDistanceThreshold, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `postProcessingDistanceThreshold`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if postProcessingMaxScanFraction is None:
@@ -7493,6 +7901,7 @@ class DeesseXInputSection(object):
                 self.postProcessingMaxScanFraction = np.asarray(postProcessingMaxScanFraction, dtype=float).reshape(nTI)
             except:
                 err_msg = f'{fname}: parameter `postProcessingMaxScanFraction`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         self.postProcessingTolerance = postProcessingTolerance
@@ -7641,6 +8050,10 @@ class DeesseXInput(object):
     nrealization : int, default: 1
         as in :class:`DeesseInput`
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Notes
     -----
     In output simulated images (obtained by running DeeSseX), the names of the
@@ -7676,7 +8089,8 @@ class DeesseXInput(object):
                  section_parameters=None,
                  seed=1234,
                  seedIncrement=1,
-                 nrealization=1):
+                 nrealization=1,
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -7710,6 +8124,7 @@ class DeesseXInput(object):
                 self.varname = list(np.asarray(varname).reshape(nv))
             except:
                 err_msg = f'{fname}: parameter `varname`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # outputVarFlag
@@ -7720,6 +8135,7 @@ class DeesseXInput(object):
                 self.outputVarFlag = np.asarray(outputVarFlag, dtype='bool').reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `outputVarFlag`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # output maps
@@ -7756,6 +8172,7 @@ class DeesseXInput(object):
                 self.mask = np.asarray(mask).reshape(nz, ny, nx)
             except:
                 err_msg = f'{fname}: parameter `mask`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # expMax
@@ -7776,6 +8193,7 @@ class DeesseXInput(object):
                 self.rescalingMode = list(np.asarray(rescalingMode).reshape(nv))
             except:
                 err_msg = f'{fname}: parameter `rescalingMode`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMin is None:
@@ -7785,6 +8203,7 @@ class DeesseXInput(object):
                 self.rescalingTargetMin = np.asarray(rescalingTargetMin, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `rescalingTargetMin`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMax is None:
@@ -7794,6 +8213,7 @@ class DeesseXInput(object):
                 self.rescalingTargetMax = np.asarray(rescalingTargetMax, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `rescalingTargetMax`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetMean is None:
@@ -7803,6 +8223,7 @@ class DeesseXInput(object):
                 self.rescalingTargetMean = np.asarray(rescalingTargetMean, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `rescalingTargetMean`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if rescalingTargetLength is None:
@@ -7812,6 +8233,7 @@ class DeesseXInput(object):
                 self.rescalingTargetLength = np.asarray(rescalingTargetLength, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `rescalingTargetLength`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # distance, ...
@@ -7822,6 +8244,7 @@ class DeesseXInput(object):
                 self.relativeDistanceFlag = np.asarray(relativeDistanceFlag, dtype='bool').reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `relativeDistanceFlag`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         if powerLpDistance is None:
@@ -7831,6 +8254,7 @@ class DeesseXInput(object):
                 self.powerLpDistance = np.asarray(powerLpDistance, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `powerLpDistance`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         self.powerLpDistanceInv = 1./self.powerLpDistance
@@ -7851,11 +8275,13 @@ class DeesseXInput(object):
                             self.distanceType[i] = 1
                         else:
                             err_msg = f'{fname}: parameter `distanceType`...'
+                            if logger: logger.error(err_msg)
                             raise DeesseinterfaceError(err_msg)
 
                 self.distanceType = np.asarray(self.distanceType).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `distanceType`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # conditioning weight
@@ -7866,11 +8292,13 @@ class DeesseXInput(object):
                 self.conditioningWeightFactor = np.asarray(conditioningWeightFactor, dtype=float).reshape(nv)
             except:
                 err_msg = f'{fname}: parameter `conditioningWeightFactor`...'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         # sectionPath_parameters
         if sectionPath_parameters is None:
             err_msg = f'{fname}: parameter `sectionPath_parameters` (must be specified)...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.sectionPath_parameters = sectionPath_parameters
@@ -7878,6 +8306,7 @@ class DeesseXInput(object):
         # section_parameters
         if section_parameters is None:
             err_msg = f'{fname}: parameter `section_parameters` (must be specified)...'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         self.section_parameters = np.asarray(section_parameters).reshape(-1)
@@ -7907,7 +8336,7 @@ class DeesseXInput(object):
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-def deesseX_input_sectionPath_py2C(sectionPath_parameters):
+def deesseX_input_sectionPath_py2C(sectionPath_parameters, logger=None):
     """
     Converts section path parameters (deesseX) from python to C
     (MPDS_XSECTIONPARAMETERS).
@@ -7917,9 +8346,13 @@ def deesseX_input_sectionPath_py2C(sectionPath_parameters):
     sectionPath_parameters : :class:`DeesseXInputSectionPath`
         section path parameters (strategy of simulation) in python
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
-    mpds_xsectionParameters : \(MPDS_XSECTIONPARAMETERS \*\)
+    mpds_xsectionParameters : \\(MPDS_XSECTIONPARAMETERS \\*\\)
         section path parameters (strategy of simulation) in C
     """
     fname = 'deesseX_input_sectionPath_py2C'
@@ -7968,6 +8401,7 @@ def deesseX_input_sectionPath_py2C(sectionPath_parameters):
         deesse.free_MPDS_XSECTIONPARAMETERS(mpds_xsectionParameters)
         # Raise error
         err_msg = f'{fname}: section mode unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # XSectionPathMode and other relevant fields
@@ -8006,21 +8440,25 @@ def deesseX_input_sectionPath_py2C(sectionPath_parameters):
         deesse.free_MPDS_XSECTIONPARAMETERS(mpds_xsectionParameters)
         # Raise error
         err_msg = f'{fname}: section path type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     return mpds_xsectionParameters
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseX_input_sectionPath_C2py(mpds_xsectionParameters):
+def deesseX_input_sectionPath_C2py(mpds_xsectionParameters, logger=None):
     """
     Converts section path parameters (deesseX) from C to python.
 
     Parameters
     ----------
-    mpds_xsectionParameters : \(MPDS_XSECTIONPARAMETERS \*\)
+    mpds_xsectionParameters : \\(MPDS_XSECTIONPARAMETERS \\*\\)
         section path parameters (strategy of simulation) in C
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -8066,6 +8504,7 @@ def deesseX_input_sectionPath_C2py(mpds_xsectionParameters):
         sectionMode = sectionMode_dict[mpds_xsectionParameters.XSectionMode]
     except:
         err_msg = f'{fname}: section mode unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # ... sectionPathMode other relevant fields
@@ -8105,6 +8544,7 @@ def deesseX_input_sectionPath_C2py(mpds_xsectionParameters):
 
     else:
         err_msg = f'{fname}: section path type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     sectionPath_parameters = DeesseXInputSectionPath(
@@ -8116,7 +8556,8 @@ def deesseX_input_sectionPath_C2py(mpds_xsectionParameters):
         balancedFillingFlag=balancedFillingFlag,
         nsection=nsection,
         sectionType=sectionType,
-        sectionLoc=sectionLoc)
+        sectionLoc=sectionLoc,
+        logger=logger)
 
     return sectionPath_parameters
 # ----------------------------------------------------------------------------
@@ -8128,7 +8569,8 @@ def deesseX_input_section_py2C(
         nx, ny, nz,
         sx, sy, sz,
         ox, oy, oz,
-        nv):
+        nv,
+        logger=None):
     """
     Converts section parameters (for one section) (deesseX) from python to C.
 
@@ -8170,9 +8612,13 @@ def deesseX_input_section_py2C(
     nv : int
         number of variable(s) / attribute(s)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
-    mpds_xsubsiminput : \(MPDS_XSUBSIMINPUT \*\)
+    mpds_xsubsiminput : \\(MPDS_XSUBSIMINPUT \\*\\)
         parameters in C
     """
     fname = 'deesseX_input_section_py2C'
@@ -8207,34 +8653,34 @@ def deesseX_input_section_py2C(
     for i, ti in enumerate(section_parameters.TI):
         if ti is not None:
             try:
-                im_c = img_py2C(ti)
+                im_c = img_py2C(ti, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert TI from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
             deesse.MPDS_IMAGE_array_setitem(mpds_xsubsiminput.trainImage, i, im_c)
-            # deesse.free_MPDS_IMAGE(im_c)
-            #
-            # deesse.MPDS_IMAGE_array_setitem(mpds_xsubsiminput.trainImage, i, img_py2C(ti))
 
     # mpds_xsubsiminput.pdfTrainImage
     if nTI > 1:
         im = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
-                 nv=nTI, val=section_parameters.pdfTI)
+                 nv=nTI, val=section_parameters.pdfTI,
+                 logger=logger)
         try:
-            mpds_xsubsiminput.pdfTrainImage = img_py2C(im)
+            mpds_xsubsiminput.pdfTrainImage = img_py2C(im, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
             deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
             # Raise error
             err_msg = f'{fname}: cannot convert pdfTI from python to C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
     # Homothety:
@@ -8249,15 +8695,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=section_parameters.homothetyXRatio)
+                     nv=1, val=section_parameters.homothetyXRatio,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.homothetyXRatioImage = img_py2C(im)
+                mpds_xsubsiminput.homothetyXRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert homothetyXRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8271,15 +8719,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=section_parameters.homothetyYRatio)
+                     nv=1, val=section_parameters.homothetyYRatio,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.homothetyYRatioImage = img_py2C(im)
+                mpds_xsubsiminput.homothetyYRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert homothetyYRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8293,15 +8743,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=section_parameters.homothetyZRatio)
+                     nv=1, val=section_parameters.homothetyZRatio,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.homothetyZRatioImage = img_py2C(im)
+                mpds_xsubsiminput.homothetyZRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert homothetyZRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8316,15 +8768,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=section_parameters.homothetyXRatio)
+                     nv=2, val=section_parameters.homothetyXRatio,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.homothetyXRatioImage = img_py2C(im)
+                mpds_xsubsiminput.homothetyXRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert homothetyXRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8338,15 +8792,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=section_parameters.homothetyYRatio)
+                     nv=2, val=section_parameters.homothetyYRatio,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.homothetyYRatioImage = img_py2C(im)
+                mpds_xsubsiminput.homothetyYRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert homothetyYRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8360,15 +8816,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=section_parameters.homothetyZRatio)
+                     nv=2, val=section_parameters.homothetyZRatio,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.homothetyZRatioImage = img_py2C(im)
+                mpds_xsubsiminput.homothetyZRatioImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert homothetyZRatio image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8389,15 +8847,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=section_parameters.rotationAzimuth)
+                     nv=1, val=section_parameters.rotationAzimuth,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.rotationAzimuthImage = img_py2C(im)
+                mpds_xsubsiminput.rotationAzimuthImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert rotationAzimuth image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8411,15 +8871,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=section_parameters.rotationDip)
+                     nv=1, val=section_parameters.rotationDip,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.rotationDipImage = img_py2C(im)
+                mpds_xsubsiminput.rotationDipImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert rotationDip image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8433,15 +8895,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=1, val=section_parameters.rotationPlunge)
+                     nv=1, val=section_parameters.rotationPlunge,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.rotationPlungeImage = img_py2C(im)
+                mpds_xsubsiminput.rotationPlungeImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert rotationPlunge image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8456,15 +8920,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=section_parameters.rotationAzimuth)
+                     nv=2, val=section_parameters.rotationAzimuth,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.rotationAzimuthImage = img_py2C(im)
+                mpds_xsubsiminput.rotationAzimuthImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert rotationAzimuth image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8478,15 +8944,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=section_parameters.rotationDip)
+                     nv=2, val=section_parameters.rotationDip,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.rotationDipImage = img_py2C(im)
+                mpds_xsubsiminput.rotationDipImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert rotationDip image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8500,15 +8968,17 @@ def deesseX_input_section_py2C(
             im = Img(nx=nx, ny=ny, nz=nz,
                      sx=sx, sy=sy, sz=sz,
                      ox=ox, oy=oy, oz=oz,
-                     nv=2, val=section_parameters.rotationPlunge)
+                     nv=2, val=section_parameters.rotationPlunge,
+                     logger=logger)
             try:
-                mpds_xsubsiminput.rotationPlungeImage = img_py2C(im)
+                mpds_xsubsiminput.rotationPlungeImage = img_py2C(im, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
                 deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert rotationPlunge image from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
         else:
@@ -8521,13 +8991,14 @@ def deesseX_input_section_py2C(
     mpds_xsubsiminput.searchNeighborhoodParameters = deesse.new_MPDS_SEARCHNEIGHBORHOODPARAMETERS_array(nv)
     for i, sn in enumerate(section_parameters.searchNeighborhoodParameters):
         try:
-            sn_c = search_neighborhood_parameters_py2C(sn)
+            sn_c = search_neighborhood_parameters_py2C(sn, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
             deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
             # Raise error
             err_msg = f'{fname}: cannot convert search neighborhood parameters from python to C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
         deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_setitem(
@@ -8559,13 +9030,15 @@ def deesseX_input_section_py2C(
                 section_parameters.simPathType,
                 section_parameters.simPathStrength,
                 section_parameters.simPathPower,
-                section_parameters.simPathUnilateralOrder)
+                section_parameters.simPathUnilateralOrder,
+                logger=logger)
     except Exception as exc:
         # Free memory on C side
         deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
         deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
         # Raise error
         err_msg = f'{fname}: cannot set "simAndPathParameters" in C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsubsiminput.distanceThreshold
@@ -8583,13 +9056,15 @@ def deesseX_input_section_py2C(
             sp_c = softProbability_py2C(sp,
                                         nx, ny, nz,
                                         sx, sy, sz,
-                                        ox, oy, oz)
+                                        ox, oy, oz,
+                                        logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
             deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
             # Raise error
             err_msg = f'{fname}: cannot set soft probability parameters in C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
         deesse.MPDS_SOFTPROBABILITY_array_setitem(mpds_xsubsiminput.softProbability, i, sp_c)
@@ -8610,6 +9085,7 @@ def deesseX_input_section_py2C(
         deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
         # Raise error
         err_msg = f'{fname}: cannot set pyramid general parameters in C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsubsiminput.pyramidParameters ...
@@ -8618,13 +9094,14 @@ def deesseX_input_section_py2C(
     # ... for each variable ...
     for i, pp in enumerate(section_parameters.pyramidParameters):
         try:
-            pp_c = pyramidParameters_py2C(pp)
+            pp_c = pyramidParameters_py2C(pp, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeXSubSimInput(mpds_xsubsiminput)
             deesse.free_MPDS_XSUBSIMINPUT(mpds_xsubsiminput)
             # Raise error
             err_msg = f'{fname}: cannot set pyramid parameters in C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
         deesse.MPDS_PYRAMIDPARAMETERS_array_setitem(mpds_xsubsiminput.pyramidParameters, i, pp_c)
@@ -8671,13 +9148,15 @@ def deesseX_input_section_C2py(
         mpds_xsubsiminput,
         sectionType,
         nx, ny, nz,
-        nv, distanceType):
+        nv, 
+        distanceType,
+        logger=None):
     """
     Converts section parameters (for one section) (deesseX) from C to python.
 
     Parameters
     ----------
-    mpds_xsubsiminput : \(MPDS_XSUBSIMINPUT \*\)
+    mpds_xsubsiminput : \\(MPDS_XSUBSIMINPUT \\*\\)
         parameters in C
 
     sectionType : int
@@ -8697,6 +9176,10 @@ def deesseX_input_section_C2py(
 
     distanceType : [sequence of] int(s) or str(s)
         type of distance (between pattern) for each variable
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -8722,12 +9205,12 @@ def deesseX_input_section_C2py(
     for i in range(nTI):
         if not simGridAsTiFlag[i]:
             im = deesse.MPDS_IMAGE_array_getitem(mpds_xsubsiminput.trainImage, i)
-            TI[i] = img_C2py(im)
+            TI[i] = img_C2py(im, logger=logger)
 
     # pdfTI
     pdfTI = None
     if nTI > 1:
-        im = img_C2py(mpds_xsubsiminput.pdfTrainImage)
+        im = img_C2py(mpds_xsubsiminput.pdfTrainImage, logger=logger)
         pdfTI = im.val
 
     # homothety
@@ -8741,7 +9224,7 @@ def deesseX_input_section_C2py(
     if homothetyUsage == 1:
         homothetyXLocal = bool(int.from_bytes(mpds_xsubsiminput.homothetyXRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyXLocal:
-            im = img_C2py(mpds_xsubsiminput.homothetyXRatioImage)
+            im = img_C2py(mpds_xsubsiminput.homothetyXRatioImage, logger=logger)
             homothetyXRatio = im.val
         else:
             v = np.zeros(1)
@@ -8750,7 +9233,7 @@ def deesseX_input_section_C2py(
 
         homothetyYLocal = bool(int.from_bytes(mpds_xsubsiminput.homothetyYRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyYLocal:
-            im = img_C2py(mpds_xsubsiminput.homothetyYRatioImage)
+            im = img_C2py(mpds_xsubsiminput.homothetyYRatioImage, logger=logger)
             homothetyYRatio = im.val
         else:
             v = np.zeros(1)
@@ -8759,7 +9242,7 @@ def deesseX_input_section_C2py(
 
         homothetyZLocal = bool(int.from_bytes(mpds_xsubsiminput.homothetyZRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyZLocal:
-            im = img_C2py(mpds_xsubsiminput.homothetyZRatioImage)
+            im = img_C2py(mpds_xsubsiminput.homothetyZRatioImage, logger=logger)
             homothetyZRatio = im.val
         else:
             v = np.zeros(1)
@@ -8769,7 +9252,7 @@ def deesseX_input_section_C2py(
     elif homothetyUsage == 2:
         homothetyXLocal = bool(int.from_bytes(mpds_xsubsiminput.homothetyXRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyXLocal:
-            im = img_C2py(mpds_xsubsiminput.homothetyXRatioImage)
+            im = img_C2py(mpds_xsubsiminput.homothetyXRatioImage, logger=logger)
             homothetyXRatio = im.val
         else:
             homothetyXRatio = np.zeros(2)
@@ -8777,7 +9260,7 @@ def deesseX_input_section_C2py(
 
         homothetyYLocal = bool(int.from_bytes(mpds_xsubsiminput.homothetyYRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyYLocal:
-            im = img_C2py(mpds_xsubsiminput.homothetyYRatioImage)
+            im = img_C2py(mpds_xsubsiminput.homothetyYRatioImage, logger=logger)
             homothetyYRatio = im.val
         else:
             homothetyYRatio = np.zeros(2)
@@ -8785,7 +9268,7 @@ def deesseX_input_section_C2py(
 
         homothetyZLocal = bool(int.from_bytes(mpds_xsubsiminput.homothetyZRatioImageFlag.encode('utf-8'), byteorder='big'))
         if homothetyZLocal:
-            im = img_C2py(mpds_xsubsiminput.homothetyZRatioImage)
+            im = img_C2py(mpds_xsubsiminput.homothetyZRatioImage, logger=logger)
             homothetyZRatio = im.val
         else:
             homothetyZRatio = np.zeros(2)
@@ -8802,7 +9285,7 @@ def deesseX_input_section_C2py(
     if rotationUsage == 1:
         rotationAzimuthLocal = bool(int.from_bytes(mpds_xsubsiminput.rotationAzimuthImageFlag.encode('utf-8'), byteorder='big'))
         if rotationAzimuthLocal:
-            im = img_C2py(mpds_xsubsiminput.rotationAzimuthImage)
+            im = img_C2py(mpds_xsubsiminput.rotationAzimuthImage, logger=logger)
             rotationAzimuth = im.val
         else:
             v = np.zeros(1)
@@ -8811,7 +9294,7 @@ def deesseX_input_section_C2py(
 
         rotationDipLocal = bool(int.from_bytes(mpds_xsubsiminput.rotationDipImageFlag.encode('utf-8'), byteorder='big'))
         if rotationDipLocal:
-            im = img_C2py(mpds_xsubsiminput.rotationDipImage)
+            im = img_C2py(mpds_xsubsiminput.rotationDipImage, logger=logger)
             rotationDip = im.val
         else:
             v = np.zeros(1)
@@ -8820,7 +9303,7 @@ def deesseX_input_section_C2py(
 
         rotationPlungeLocal = bool(int.from_bytes(mpds_xsubsiminput.rotationPlungeImageFlag.encode('utf-8'), byteorder='big'))
         if rotationPlungeLocal:
-            im = img_C2py(mpds_xsubsiminput.rotationPlungeImage)
+            im = img_C2py(mpds_xsubsiminput.rotationPlungeImage, logger=logger)
             rotationPlunge = im.val
         else:
             v = np.zeros(1)
@@ -8830,7 +9313,7 @@ def deesseX_input_section_C2py(
     elif rotationUsage == 2:
         rotationAzimuthLocal = bool(int.from_bytes(mpds_xsubsiminput.rotationAzimuthImageFlag.encode('utf-8'), byteorder='big'))
         if rotationAzimuthLocal:
-            im = img_C2py(mpds_xsubsiminput.rotationAzimuthImage)
+            im = img_C2py(mpds_xsubsiminput.rotationAzimuthImage, logger=logger)
             rotationAzimuth = im.val
         else:
             rotationAzimuth = np.zeros(2)
@@ -8838,7 +9321,7 @@ def deesseX_input_section_C2py(
 
         rotationDipLocal = bool(int.from_bytes(mpds_xsubsiminput.rotationDipImageFlag.encode('utf-8'), byteorder='big'))
         if rotationDipLocal:
-            im = img_C2py(mpds_xsubsiminput.rotationDipImage)
+            im = img_C2py(mpds_xsubsiminput.rotationDipImage, logger=logger)
             rotationDip = im.val
         else:
             rotationDip = np.zeros(2)
@@ -8846,7 +9329,7 @@ def deesseX_input_section_C2py(
 
         rotationPlungeLocal = bool(int.from_bytes(mpds_xsubsiminput.rotationPlungeImageFlag.encode('utf-8'), byteorder='big'))
         if rotationPlungeLocal:
-            im = img_C2py(mpds_xsubsiminput.rotationPlungeImage)
+            im = img_C2py(mpds_xsubsiminput.rotationPlungeImage, logger=logger)
             rotationPlunge = im.val
         else:
             rotationPlunge = np.zeros(2)
@@ -8856,9 +9339,10 @@ def deesseX_input_section_C2py(
     searchNeighborhoodParameters = np.array(nv*[None])
     for i in range(nv):
         sn_c = deesse.MPDS_SEARCHNEIGHBORHOODPARAMETERS_array_getitem(mpds_xsubsiminput.searchNeighborhoodParameters, i)
-        sn = search_neighborhood_parameters_C2py(sn_c)
+        sn = search_neighborhood_parameters_C2py(sn_c, logger=logger)
         if sn is None:
             err_msg = f'{fname}: cannot convert search neighborhood parameters from C to python'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         searchNeighborhoodParameters[i] = sn
@@ -8886,6 +9370,7 @@ def deesseX_input_section_C2py(
         simType = 'sim_variable_vector'
     else:
         err_msg = f'{fname}: simulation type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # simPathType
@@ -8918,6 +9403,7 @@ def deesseX_input_section_C2py(
         simPathUnilateralOrder = simPathUnilateralOrder.astype('int')
     else:
         err_msg = f'{fname}: simulation path type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # distanceThreshold
@@ -8928,9 +9414,10 @@ def deesseX_input_section_C2py(
     softProbability = np.array(nv*[None])
     for i in range(nv):
         sp_c = deesse.MPDS_SOFTPROBABILITY_array_getitem(mpds_xsubsiminput.softProbability, i)
-        sp = softProbability_C2py(sp_c)
+        sp = softProbability_C2py(sp_c, logger=logger)
         if sp is None:
             err_msg = f'{fname}: cannot convert soft probability from C to python'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         softProbability[i] = sp
@@ -8941,18 +9428,20 @@ def deesseX_input_section_C2py(
     maxScanFraction = maxScanFraction.astype('float')
 
     # pyramidGeneralParameters
-    pyramidGeneralParameters = pyramidGeneralParameters_C2py(mpds_xsubsiminput.pyramidGeneralParameters)
+    pyramidGeneralParameters = pyramidGeneralParameters_C2py(mpds_xsubsiminput.pyramidGeneralParameters, logger=logger)
     if pyramidGeneralParameters is None:
         err_msg = f'{fname}: cannot convert pyramid general parameters from C to python'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # pyramidParameters
     pyramidParameters = np.array(nv*[None])
     for i in range(nv):
         pp_c = deesse.MPDS_PYRAMIDPARAMETERS_array_getitem(mpds_xsubsiminput.pyramidParameters, i)
-        pp = pyramidParameters_C2py(pp_c)
+        pp = pyramidParameters_C2py(pp_c, logger=logger)
         if pp is None:
             err_msg = f'{fname}: cannot convert pyramid parameters from C to python'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         pyramidParameters[i] = pp
@@ -9025,13 +9514,14 @@ def deesseX_input_section_C2py(
         postProcessingNeighboringNodeDensity=postProcessingNeighboringNodeDensity,
         postProcessingDistanceThreshold=postProcessingDistanceThreshold,
         postProcessingMaxScanFraction=postProcessingMaxScanFraction,
-        postProcessingTolerance=postProcessingTolerance)
+        postProcessingTolerance=postProcessingTolerance,
+        logger=logger)
 
     return section_parameters
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseX_input_py2C(deesseX_input):
+def deesseX_input_py2C(deesseX_input, logger=None):
     """
     Converts deesseX input from python to C.
 
@@ -9040,9 +9530,13 @@ def deesseX_input_py2C(deesseX_input):
     deesseX_input : :class:`DeesseXInput`
         deesseX input in python
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
-    mpds_xsiminput : \(MPDS_XSIMINPUT \*\)
+    mpds_xsiminput : \\(MPDS_XSIMINPUT \\*\\)
         deesseX input in C
     """
     fname = 'deesseX_input_py2C'
@@ -9078,6 +9572,7 @@ def deesseX_input_py2C(deesseX_input):
         deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
         # Raise error
         err_msg = f'{fname}: simName is not a string'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     if len(deesseX_input.simName) >= deesse.MPDS_VARNAME_LENGTH:
@@ -9086,6 +9581,7 @@ def deesseX_input_py2C(deesseX_input):
         deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
         # Raise error
         err_msg = f'{fname}: simName is too long'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     deesse.mpds_x_allocate_and_set_simname(mpds_xsiminput, deesseX_input.simName)
@@ -9097,17 +9593,19 @@ def deesseX_input_py2C(deesseX_input):
              sx=sx, sy=sy, sz=sz,
              ox=ox, oy=oy, oz=oz,
              nv=nv, val=deesse.MPDS_MISSING_VALUE,
-             varname=deesseX_input.varname)
+             varname=deesseX_input.varname,
+             logger=logger)
 
     # ... convert im from python to C
     try:
-        mpds_xsiminput.simImage = img_py2C(im)
+        mpds_xsiminput.simImage = img_py2C(im, logger=logger)
     except Exception as exc:
         # Free memory on C side
         deesse.MPDSFreeXSimInput(mpds_xsiminput)
         deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
         # Raise error
         err_msg = f'{fname}: cannot initialize simImage in C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsiminput.nvar
@@ -9155,19 +9653,17 @@ def deesseX_input_py2C(deesseX_input):
         mpds_xsiminput.dataImage = deesse.new_MPDS_IMAGE_array(n)
         for i, dataIm in enumerate(deesseX_input.dataImage):
             try:
-                im_c = img_py2C(dataIm)
+                im_c = img_py2C(dataIm, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSimInput(mpds_xsiminput)
                 deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert dataImage from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
             deesse.MPDS_IMAGE_array_setitem(mpds_xsiminput.dataImage, i, im_c)
-            # deesse.free_MPDS_IMAGE(im_c)
-            #
-            # deesse.MPDS_IMAGE_array_setitem(mpds_xsiminput.dataImage, i, img_py2C(dataIm))
 
     # mpds_xsiminput.ndataPointSet and mpds_xsiminput.dataPointSet
     if deesseX_input.dataPointSet is None:
@@ -9178,19 +9674,17 @@ def deesseX_input_py2C(deesseX_input):
         mpds_xsiminput.dataPointSet = deesse.new_MPDS_POINTSET_array(n)
         for i, dataPS in enumerate(deesseX_input.dataPointSet):
             try:
-                ps_c = ps_py2C(dataPS)
+                ps_c = ps_py2C(dataPS, logger=logger)
             except Exception as exc:
                 # Free memory on C side
                 deesse.MPDSFreeXSimInput(mpds_xsiminput)
                 deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
                 # Raise error
                 err_msg = f'{fname}: cannot convert dataPointSet from python to C'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg) from exc
 
             deesse.MPDS_POINTSET_array_setitem(mpds_xsiminput.dataPointSet, i, ps_c)
-            # deesse.free_MPDS_POINTSET(ps_c)
-            #
-            # deesse.MPDS_POINTSET_array_setitem(mpds_xsiminput.dataPointSet, i, ps_py2C(dataPS))
 
     # mpds_xsiminput.maskImageFlag and mpds_xsiminput.maskImage
     if deesseX_input.mask is None:
@@ -9200,15 +9694,17 @@ def deesseX_input_py2C(deesseX_input):
         im = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
-                 nv=1, val=deesseX_input.mask)
+                 nv=1, val=deesseX_input.mask,
+                 logger=logger)
         try:
-            mpds_xsiminput.maskImage = img_py2C(im)
+            mpds_xsiminput.maskImage = img_py2C(im, logger=logger)
         except Exception as exc:
             # Free memory on C side
             deesse.MPDSFreeXSimInput(mpds_xsiminput)
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
             # Raise error
             err_msg = f'{fname}: cannot convert mask from python to C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsiminput.trainValueRangeExtensionMax
@@ -9228,6 +9724,7 @@ def deesseX_input_py2C(deesseX_input):
         deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
         # Raise error
         err_msg = f'{fname}: normalizing type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # mpds_xsimInput.rescalingMode
@@ -9246,6 +9743,7 @@ def deesseX_input_py2C(deesseX_input):
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
             # Raise error
             err_msg = f'{fname}: rescaling mode unknown'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
     # mpds_xsimInput.rescalingTargetMin
@@ -9301,13 +9799,14 @@ def deesseX_input_py2C(deesseX_input):
 
     # mpds_xsiminput.XSectionParameters
     try:
-        mpds_xsiminput.XSectionParameters = deesseX_input_sectionPath_py2C(deesseX_input.sectionPath_parameters)
+        mpds_xsiminput.XSectionParameters = deesseX_input_sectionPath_py2C(deesseX_input.sectionPath_parameters, logger=logger)
     except Exception as exc:
         # Free memory on C side
         deesse.MPDSFreeXSimInput(mpds_xsiminput)
         deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
         # Raise error
         err_msg = f'{fname}: cannot set XSectionParameters from python to C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsiminput.XSectionParameters = deesse.malloc_MPDS_XSECTIONPARAMETERS()
@@ -9354,6 +9853,7 @@ def deesseX_input_py2C(deesseX_input):
     #     deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
     #     # Raise error
     #     err_msg = f'{fname}: section mode unknown'
+    #     if logger: logger.error(err_msg)
     #     raise DeesseinterfaceError(err_msg)
     #
     # # ... XSectionPathMode and other relevant fields
@@ -9392,6 +9892,7 @@ def deesseX_input_py2C(deesseX_input):
     #     deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
     #     # Raise error
     #     err_msg = f'{fname}: section path type unknown'
+    #     if logger: logger.error(err_msg)
     #     raise DeesseinterfaceError(err_msg)
 
     # mpds_xsiminput.XSubSimInput_<*> ...
@@ -9402,6 +9903,7 @@ def deesseX_input_py2C(deesseX_input):
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
             # Raise error
             err_msg = f'{fname}: nx in (one) section parameters invalid'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         if sect_param.ny != ny:
@@ -9410,6 +9912,7 @@ def deesseX_input_py2C(deesseX_input):
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
             # Raise error
             err_msg = f'{fname}: ny in (one) section parameters invalid'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         if sect_param.nz != nz:
@@ -9418,6 +9921,7 @@ def deesseX_input_py2C(deesseX_input):
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
             # Raise error
             err_msg = f'{fname}: nz in (one) section parameters invalid'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         if sect_param.nv != nv:
@@ -9426,6 +9930,7 @@ def deesseX_input_py2C(deesseX_input):
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
             # Raise error
             err_msg = f'{fname}: nv in (one) section parameters invalid'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         if not np.all(deesseX_input.distanceType == sect_param.distanceType):
@@ -9434,6 +9939,7 @@ def deesseX_input_py2C(deesseX_input):
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
             # Raise error
             err_msg = f'{fname}: distanceType (one) section parameters invalid'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
         # for d1, d2 in zip(deesseX_input.distanceType, sect_param.distanceType):
@@ -9442,33 +9948,41 @@ def deesseX_input_py2C(deesseX_input):
         #         deesse.MPDSFreeXSimInput(mpds_xsiminput)
         #         deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
         #         err_msg = f'{fname}: distanceType (one) section parameters invalid'
+        #         if logger: logger.error(err_msg)
         #         raise DeesseinterfaceError(err_msg)
 
         try:
             if sect_param.sectionType == 0:
                 mpds_xsiminput.XSubSimInput_xy = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+                                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz, nv,
+                                                                            logger=logger)
             elif sect_param.sectionType == 1:
                 mpds_xsiminput.XSubSimInput_xz = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+                                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz, nv,
+                                                                            logger=logger)
             elif sect_param.sectionType == 2:
                 mpds_xsiminput.XSubSimInput_yz = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+                                                                            nx, ny, nz, sx, sy, sz, ox, oy, oz, nv,
+                                                                            logger=logger)
             elif sect_param.sectionType == 3:
                 mpds_xsiminput.XSubSimInput_z = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                           nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+                                                                           nx, ny, nz, sx, sy, sz, ox, oy, oz, nv,
+                                                                            logger=logger)
             elif sect_param.sectionType == 4:
                 mpds_xsiminput.XSubSimInput_y = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                           nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+                                                                           nx, ny, nz, sx, sy, sz, ox, oy, oz, nv,
+                                                                            logger=logger)
             elif sect_param.sectionType == 5:
                 mpds_xsiminput.XSubSimInput_x = deesseX_input_section_py2C(sect_param, sect_param.sectionType,
-                                                                           nx, ny, nz, sx, sy, sz, ox, oy, oz, nv)
+                                                                           nx, ny, nz, sx, sy, sz, ox, oy, oz, nv,
+                                                                            logger=logger)
             else:
                 # Free memory on C side
                 deesse.MPDSFreeXSimInput(mpds_xsiminput)
                 deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
                 # Raise error
                 err_msg = f'{fname}: section type in section parameters unknown'
+                if logger: logger.error(err_msg)
                 raise DeesseinterfaceError(err_msg)
 
         except Exception as exc:
@@ -9477,6 +9991,7 @@ def deesseX_input_py2C(deesseX_input):
             deesse.free_MPDS_XSIMINPUT(mpds_xsiminput)
             # Raise error
             err_msg = f'{fname}: cannot set XSubSimInput in C'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg) from exc
 
     # mpds_xsiminput.seed
@@ -9492,14 +10007,18 @@ def deesseX_input_py2C(deesseX_input):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseX_input_C2py(mpds_xsiminput):
+def deesseX_input_C2py(mpds_xsiminput, logger=None):
     """
     Converts deesseX input from C to python.
 
     Parameters
     ----------
-    mpds_xsiminput : \(MPDS_XSIMINPUT \*\)
+    mpds_xsiminput : \\(MPDS_XSIMINPUT \\*\\)
         deesseX input in C
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -9511,7 +10030,7 @@ def deesseX_input_C2py(mpds_xsiminput):
     # simName
     simName = mpds_xsiminput.simName
 
-    im = img_C2py(mpds_xsiminput.simImage)
+    im = img_C2py(mpds_xsiminput.simImage, logger=logger)
 
     # grid geometry
     nx = im.nx
@@ -9553,7 +10072,7 @@ def deesseX_input_C2py(mpds_xsiminput):
         dataImage = np.array(ndataImage*[None])
         for i in range(ndataImage):
             im = deesse.MPDS_IMAGE_array_getitem(mpds_xsiminput.dataImage, i)
-            dataImage[i] = img_C2py(im)
+            dataImage[i] = img_C2py(im, logger=logger)
 
     # dataPointSet
     dataPointSet = None
@@ -9568,7 +10087,7 @@ def deesseX_input_C2py(mpds_xsiminput):
     mask = None
     flag = bool(int.from_bytes(mpds_xsiminput.maskImageFlag.encode('utf-8'), byteorder='big'))
     if flag:
-        im = img_C2py(mpds_xsiminput.maskImage)
+        im = img_C2py(mpds_xsiminput.maskImage, logger=logger)
         mask = im.val
 
     # expMax
@@ -9584,6 +10103,7 @@ def deesseX_input_C2py(mpds_xsiminput):
         normalizingType = normalizingType_dict[mpds_xsiminput.normalizingType]
     except:
         err_msg = f'{fname}: normalizing type unknown'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # rescalingMode
@@ -9600,6 +10120,7 @@ def deesseX_input_C2py(mpds_xsiminput):
             rescalingMode[i] = rs
         except:
             err_msg = f'{fname}: rescaling mode unknown'
+            if logger: logger.error(err_msg)
             raise DeesseinterfaceError(err_msg)
 
     # rescalingTargetMin
@@ -9647,7 +10168,7 @@ def deesseX_input_C2py(mpds_xsiminput):
     deesse.mpds_get_array_from_real_vector(mpds_xsiminput.conditioningWeightFactor, 0, conditioningWeightFactor)
 
     # sectionPath_parameters
-    sectionPath_parameters = deesseX_input_sectionPath_C2py(mpds_xsiminput.XSectionParameters)
+    sectionPath_parameters = deesseX_input_sectionPath_C2py(mpds_xsiminput.XSectionParameters, logger=logger)
 
     # section_parameters
     section_parameters = []
@@ -9665,7 +10186,7 @@ def deesseX_input_C2py(mpds_xsiminput):
             'section_xy_z',
             'section_z_xy'):
         sectionType = 0
-        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_xy, sectionType, nx, ny, nz, nv, distanceType))
+        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_xy, sectionType, nx, ny, nz, nv, distanceType, logger=logger))
 
     if sectionPath_parameters.sectionMode in (
             'section_xy_xz_yz',
@@ -9681,7 +10202,7 @@ def deesseX_input_C2py(mpds_xsiminput):
             'section_xz_y',
             'section_y_xz'):
         sectionType = 1
-        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_xz, sectionType, nx, ny, nz, nv, distanceType))
+        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_xz, sectionType, nx, ny, nz, nv, distanceType, logger=logger))
 
     if sectionPath_parameters.sectionMode in (
             'section_xy_xz_yz',
@@ -9697,7 +10218,7 @@ def deesseX_input_C2py(mpds_xsiminput):
             'section_yz_x',
             'section_x_yz'):
         sectionType = 2
-        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_yz, sectionType, nx, ny, nz, nv, distanceType))
+        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_yz, sectionType, nx, ny, nz, nv, distanceType, logger=logger))
 
     if sectionPath_parameters.sectionMode in (
             'section_xy_z',
@@ -9713,7 +10234,7 @@ def deesseX_input_C2py(mpds_xsiminput):
             'section_y_z',
             'section_z_y'):
         sectionType = 3
-        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_z, sectionType, nx, ny, nz, nv, distanceType))
+        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_z, sectionType, nx, ny, nz, nv, distanceType, logger=logger))
 
     if sectionPath_parameters.sectionMode in (
             'section_xz_y',
@@ -9729,7 +10250,7 @@ def deesseX_input_C2py(mpds_xsiminput):
             'section_y_z',
             'section_z_y'):
         sectionType = 4
-        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_y, sectionType, nx, ny, nz, nv, distanceType))
+        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_y, sectionType, nx, ny, nz, nv, distanceType, logger=logger))
 
     if sectionPath_parameters.sectionMode in (
             'section_yz_x',
@@ -9745,7 +10266,7 @@ def deesseX_input_C2py(mpds_xsiminput):
             'section_x_z',
             'section_z_x'):
         sectionType = 5
-        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_x, sectionType, nx, ny, nz, nv, distanceType))
+        section_parameters.append(deesseX_input_section_C2py(mpds_xsiminput.XSubSimInput_x, sectionType, nx, ny, nz, nv, distanceType, logger=logger))
 
     section_parameters = np.asarray(section_parameters)
 
@@ -9783,23 +10304,28 @@ def deesseX_input_C2py(mpds_xsiminput):
         section_parameters=section_parameters,
         seed=seed,
         seedIncrement=seedIncrement,
-        nrealization=nrealization)
+        nrealization=nrealization,
+        logger=logger)
 
     return deesseX_input
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
+def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor, logger=None):
     """
     Converts deesse output from C to python.
 
     Parameters
     ----------
-    mpds_xsimoutput : \(MPDS_XSIMOUTPUT \*\)
+    mpds_xsimoutput : \\(MPDS_XSIMOUTPUT \\*\\)
         deesseX output in C
 
-    mpds_progressMonitor : \(MPDS_PROGRESSMONITOR \*\)
+    mpds_progressMonitor : \\(MPDS_PROGRESSMONITOR \\*\\)
         progress monitor in C
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -9888,7 +10414,7 @@ def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
             # ---
 
             # --- sim ---
-            im = img_C2py(mpds_xsimoutput.outputSimImage)
+            im = img_C2py(mpds_xsimoutput.outputSimImage, logger=logger)
 
             nv = mpds_xsimoutput.nvarSimPerReal
             k = 0
@@ -9898,7 +10424,8 @@ def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
                                sx=im.sx, sy=im.sy, sz=im.sz,
                                ox=im.ox, oy=im.oy, oz=im.oz,
                                nv=nv, val=im.val[k:(k+nv),...],
-                               varname=im.varname[k:(k+nv)]))
+                               varname=im.varname[k:(k+nv)],
+                               logger=logger))
                 k = k + nv
 
             del(im)
@@ -9907,7 +10434,7 @@ def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
 
         if mpds_xsimoutput.nvarSectionType:
             # --- simSectionType ---
-            im = img_C2py(mpds_xsimoutput.outputSectionTypeImage)
+            im = img_C2py(mpds_xsimoutput.outputSectionTypeImage, logger=logger)
 
             nv = mpds_xsimoutput.nvarSectionType
             simSectionType = []
@@ -9916,7 +10443,8 @@ def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
                                           sx=im.sx, sy=im.sy, sz=im.sz,
                                           ox=im.ox, oy=im.oy, oz=im.oz,
                                           nv=1, val=im.val[i,...],
-                                          varname=im.varname[i]))
+                                          varname=im.varname[i],
+                                          logger=logger))
 
             del(im)
             simSectionType = np.asarray(simSectionType).reshape(nv)
@@ -9924,7 +10452,7 @@ def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
 
         if mpds_xsimoutput.nvarSectionStep:
             # --- simSectionStep ---
-            im = img_C2py(mpds_xsimoutput.outputSectionStepImage)
+            im = img_C2py(mpds_xsimoutput.outputSectionStepImage, logger=logger)
 
             nv = mpds_xsimoutput.nvarSectionStep
             simSectionStep = []
@@ -9933,7 +10461,8 @@ def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
                                           sx=im.sx, sy=im.sy, sz=im.sz,
                                           ox=im.ox, oy=im.oy, oz=im.oz,
                                           nv=1, val=im.val[i,...],
-                                          varname=im.varname[i]))
+                                          varname=im.varname[i],
+                                          logger=logger))
 
             del(im)
             simSectionStep = np.asarray(simSectionStep).reshape(nv)
@@ -9963,7 +10492,8 @@ def deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor):
 def deesseXRun(
         deesseX_input,
         nthreads=-1,
-        verbose=2):
+        verbose=2,
+        logger=None):
     """
     Launches deesseX.
 
@@ -9986,6 +10516,10 @@ def deesseXRun(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -10057,6 +10591,7 @@ def deesseXRun(
 
     if not deesseX_input.ok:
         err_msg = f'{fname}: check deesseX input'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Set number of threads
@@ -10066,22 +10601,36 @@ def deesseXRun(
         nth = nthreads
 
     if verbose > 0 and nth > os.cpu_count():
-        print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
+        if logger:
+            logger.warning(f'{fname}: number of threads used will exceed number of cpu(s) of the system...')
+        else:
+            print(f'{fname}: WARNING: number of threads used will exceed number of cpu(s) of the system...')
 
     if verbose > 1:
-        print('{}: DeeSseX running... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, deesse.MPDS_X_VERSION_NUMBER, deesse.MPDS_X_BUILD_NUMBER, nth))
-        sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesseX...
+        if logger:
+            logger.info(f"{fname}: DeeSseX running... [" + \
+                f"VERSION {deesse.MPDS_X_VERSION_NUMBER:s} / " + \
+                f"BUILD NUMBER {deesse.MPDS_X_BUILD_NUMBER:s} / " + \
+                f"OpenMP {nth:d} thread(s)]")
+        else:
+            print(f"{fname}: DeeSseX running... [" + \
+                f"VERSION {deesse.MPDS_X_VERSION_NUMBER:s} / " + \
+                f"BUILD NUMBER {deesse.MPDS_X_BUILD_NUMBER:s} / " + \
+                f"OpenMP {nth:d} thread(s)]")
+            sys.stdout.flush()
+            sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesseX...
 
     # Convert deesseX input from python to C
     try:
-        mpds_xsiminput = deesseX_input_py2C(deesseX_input)
+        mpds_xsiminput = deesseX_input_py2C(deesseX_input, logger=logger)
     except Exception as exc:
         err_msg = f'{fname}: cannot convert deesseX input from python to C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # if mpds_xsiminput is None:
     #     err_msg = f'{fname}: cannot convert deesseX input from python to C'
+    #     if logger: logger.error(err_msg)
     #     raise DeesseinterfaceError(err_msg)
 
     # Allocate mpds_xsimoutput
@@ -10124,9 +10673,10 @@ def deesseXRun(
         err_message = deesse.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
         err_msg = f'{fname}: {err_message}'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
-    deesseX_output = deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor)
+    deesseX_output = deesseX_output_C2py(mpds_xsimoutput, mpds_progressMonitor, logger=logger)
 
     # Free memory on C side: simulation output
     deesse.MPDSFreeXSimOutput(mpds_xsimoutput)
@@ -10136,13 +10686,18 @@ def deesseXRun(
     deesse.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
     if verbose > 1 and deesseX_output:
-        print(f'{fname}: DeeSseX run complete')
+        if logger:
+            logger.info(f'{fname}: DeeSseX run complete')
+        else:
+            print(f'{fname}: DeeSseX run complete')
 
     # Show (print) encountered warnings
     if verbose > 0 and deesseX_output and deesseX_output['nwarning']:
-        print(f"{fname}: warnings encountered ({deesseX_output['nwarning']} times in all):")
-        for i, warning_message in enumerate(deesseX_output['warnings']):
-            print(f'#{i+1:3d}: {warning_message}')
+        # note: not logged even if `logger` is not `None` (list of warning(s) is returned)
+        if logger is None:
+            print(f"{fname}: warnings encountered ({deesseX_output['nwarning']} times in all):")
+            for i, warning_message in enumerate(deesseX_output['warnings']):
+                print(f'#{i+1:3d}: {warning_message}')
 
     return deesseX_output
 # ----------------------------------------------------------------------------
@@ -10150,13 +10705,14 @@ def deesseXRun(
 # ----------------------------------------------------------------------------
 def deesseXRun_mp(
         deesseX_input,
-        nproc=None,
-        nthreads_per_proc=None,
-        verbose=2):
+        nproc=-1,
+        nthreads_per_proc=-1,
+        verbose=2,
+        logger=None):
     """
-    Computes the same as the function :func:`deesseinterface.deesseXRun`, using multiprocessing.
+    Computes the same as the function :func:`deesseXRun`, using multiprocessing.
 
-    All the parameters are the same as those of the function :func:`deesseinterface.deesseXRun`,
+    All the parameters are the same as those of the function :func:`deesseXRun`,
     except `nthreads` that is replaced by the parameters `nproc` and
     `nthreads_per_proc`.
 
@@ -10164,63 +10720,90 @@ def deesseXRun_mp(
     package):
 
     - `nproc` parallel processes using each one `nthreads_per_proc` threads \
-    are launched [parallel calls of the function :func:`deesseinterface.deesseXRun`];
+    are launched [parallel calls of the function :func:`deesseXRun`];
     - the set of realizations (specified by `nreal`) is distributed in a \
     balanced way over the processes
     - in terms of resources, this implies the use of `nproc*nthreads_per_proc` \
     cpu(s)
 
-    See function :func:`deesseinterface.deesseXRun`.
+    See function :func:`deesseXRun`.
 
     **Parameters (new)**
     --------------------
-    nproc : int, optional
-        number of processes; by default (`None`):
-        `nproc` is set to `min(nmax-1, nreal)` (but at least 1), where nmax is
-        the total number of cpu(s) of the system (retrieved by
+    nproc : int, default: -1
+        number of process(es): a negative number (or zero), -n <= 0, can be specified 
+        to use the total number of cpu(s) of the system except n; `nproc` is finally
+        at maximum equal to `nreal` but at least 1 by applying:
+        
+        - if `nproc >= 1`, then `nproc = max(min(nproc, nreal), 1)` is used
+        - if `nproc = -n <= 0`, then `nproc = max(min(nmax-n, nreal), 1)` is used, \
+        where nmax is the total number of cpu(s) of the system (retrieved by \
         `multiprocessing.cpu_count()`)
 
-    nthreads_per_proc : int, optional
-        number of thread(s) per process (should be > 0); by default (`None`):
-        `nthreads_per_proc` is automatically computed as the maximal integer
-        (but at least 1) such that `nproc*nthreads_per_proc <= nmax-1`, where
-        nmax is the total number of cpu(s) of the system (retrieved by
-        `multiprocessing.cpu_count()`)
+        note: if `nproc=None`, `nproc=-1` is used
+
+    nthreads_per_proc : int, default: -1
+        number of thread(s) per process;
+        if `nthreads_per_proc = -n <= 0`: `nthreads_per_proc` is automatically 
+        computed as the maximal integer (but at least 1) such that 
+        `nproc*nthreads_per_proc <= nmax-n`, where nmax is the total number of cpu(s)
+        of the system (retrieved by `multiprocessing.cpu_count()`); 
+
+        note: if `nthreads_per_proc=None`, `nthreads_per_proc=-1` is used
     """
     fname = 'deesseXRun_mp'
 
     if not deesseX_input.ok:
         err_msg = f'{fname}: check deesseX input'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
-    if deesseX_input.nrealization <= 1:
-        if verbose > 1:
-            print(f'{fname}: number of realization does not exceed 1: launching deesseXRun...')
-        nthreads = nthreads_per_proc
-        if nthreads is None:
-            nthreads = -1
-        deesseX_output = deesseXRun(deesseX_input, nthreads=nthreads, verbose=verbose)
-        return deesseX_output
+    # if deesseX_input.nrealization <= 1:
+    #     if verbose > 1:
+    #         if logger:
+    #             logger.info(f'{fname}: number of realization does not exceed 1: launching deesseXRun...')
+    #         else:
+    #             print(f'{fname}: number of realization does not exceed 1: launching deesseXRun...')
+    #     nthreads = nthreads_per_proc
+    #     if nthreads is None:
+    #         nthreads = -1
+    #     deesseX_output = deesseXRun(deesseX_input, nthreads=nthreads, verbose=verbose, logger=logger)
+    #     return deesseX_output
 
-    # Set number of processes: nproc
+    # Set number of process(es): nproc
     if nproc is None:
-        nproc = max(min(multiprocessing.cpu_count()-1, deesseX_input.nrealization), 1)
+        nproc = -1
+    
+    if nproc <= 0:
+        nproc = max(min(multiprocessing.cpu_count() + nproc, deesseX_input.nrealization), 1)
     else:
         nproc_tmp = nproc
         nproc = max(min(int(nproc), deesseX_input.nrealization), 1)
         if verbose > 1 and nproc != nproc_tmp:
-            print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
+            if logger:
+                logger.info(f'{fname}: number of processes has been changed (now: nproc={nproc})')
+            else:
+                print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
 
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
-        nth = max(int(np.floor((multiprocessing.cpu_count()-1) / nproc)), 1)
+        nthreads_per_proc = -1
+    
+    if nthreads_per_proc <= 0:
+        nth = max(int(np.floor((multiprocessing.cpu_count() + nthreads_per_proc) / nproc)), 1)
     else:
-        nth = max(int(nthreads_per_proc), 1)
-        if verbose > 1 and nth != nthreads_per_proc:
-            print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
+        nth = int(nthreads_per_proc)
+        # if verbose > 1 and nth != nthreads_per_proc:
+        #     if logger:
+        #         logger.info(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
+        #     else:
+        #         print(f'{fname}: number of threads per process has been changed (now: nthreads_per_proc={nth})')
 
     if verbose > 0 and nproc * nth > multiprocessing.cpu_count():
-        print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        if logger:
+            logger.warning(f'{fname}: total number of cpu(s) used will exceed number of cpu(s) of the system...')
+        else:
+            print(f'{fname}: WARNING: total number of cpu(s) used will exceed number of cpu(s) of the system...')
 
     # Set the distribution of the realizations over the processes
     # Condider the Euclidean division of nreal by nproc:
@@ -10232,9 +10815,18 @@ def deesseXRun_mp(
     real_index_proc = [i*q + min(i, r) for i in range(nproc+1)]
 
     if verbose > 1:
-        print('{}: DeeSseX running on {} process(es)... [VERSION {:s} / BUILD NUMBER {:s} / OpenMP {:d} thread(s)]'.format(fname, nproc, deesse.MPDS_X_VERSION_NUMBER, deesse.MPDS_X_BUILD_NUMBER, nth))
-        sys.stdout.flush()
-        sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesseX...
+        if logger:
+            logger.info(f"{fname}: DeeSseX running on {nproc} process(es)... [" + \
+                f"VERSION {deesse.MPDS_X_VERSION_NUMBER:s} / " + \
+                f"BUILD NUMBER {deesse.MPDS_X_BUILD_NUMBER:s} / " + \
+                f"OpenMP {nth:d} thread(s)]")
+        else:
+            print(f"{fname}: DeeSseX running on {nproc} process(es)... [" + \
+                f"VERSION {deesse.MPDS_X_VERSION_NUMBER:s} / " + \
+                f"BUILD NUMBER {deesse.MPDS_X_BUILD_NUMBER:s} / " + \
+                f"OpenMP {nth:d} thread(s)]")
+            sys.stdout.flush()
+            sys.stdout.flush() # twice!, so that the previous print is flushed before launching deesseX...
 
     # Initialize deesseX input for each process
     deesseX_input_proc = [copy.copy(deesseX_input) for i in range(nproc)]
@@ -10254,7 +10846,7 @@ def deesseXRun_mp(
         # else:
         #     verb = 0
         # Launch deesseX (i-th process)
-        out_pool.append(pool.apply_async(deesseXRun, args=(input, nth, verb)))
+        out_pool.append(pool.apply_async(deesseXRun, args=(input, nth, verb), kwds={'logger':logger}))
 
     # Properly end working process
     pool.close() # Prevents any more tasks from being submitted to the pool,
@@ -10299,7 +10891,7 @@ def deesseXRun_mp(
         simSectionStep = None
 
     # nwarning
-    nwarning = np.sum([out['nwarning'] for out in deesseX_output_proc])
+    nwarning = int(np.sum([out['nwarning'] for out in deesseX_output_proc]))
     # warnings
     warnings = list(np.unique(np.hstack([out['warnings'] for out in deesseX_output_proc])))
 
@@ -10331,13 +10923,18 @@ def deesseXRun_mp(
         }
 
     if verbose > 1 and deesseX_output:
-        print(f'{fname}: DeeSseX run complete (all process(es))')
+        if logger:
+            logger.info(f'{fname}: DeeSseX run complete (all process(es))')
+        else:
+            print(f'{fname}: DeeSseX run complete (all process(es))')
 
     # Show (print) encountered warnings
     if verbose > 0 and deesseX_output and deesseX_output['nwarning']:
-        print(f"{fname}: warnings encountered ({deesseX_output['nwarning']} times in all):")
-        for i, warning_message in enumerate(deesseX_output['warnings']):
-            print(f'#{i+1:3d}: {warning_message}')
+        # note: not logged even if `logger` is not `None` (list of warning(s) is returned)
+        if logger is None:
+            print(f"{fname}: warnings encountered ({deesseX_output['nwarning']} times in all):")
+            for i, warning_message in enumerate(deesseX_output['warnings']):
+                print(f'#{i+1:3d}: {warning_message}')
 
     return deesseX_output
 # ----------------------------------------------------------------------------
@@ -10348,7 +10945,8 @@ def exportDeesseXInput(
         dirname='input_ascii',
         fileprefix='dsX',
         endofline='\n',
-        verbose=1):
+        verbose=1,
+        logger=None):
     """
     Exports deesseX input in txt (ASCII) files (in the directory `dirname`).
 
@@ -10378,11 +10976,16 @@ def exportDeesseXInput(
         - 0: no comment
         - 1: basic comments
         - 2: detailed comments
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
     """
     fname = 'exportDeesseXInput'
 
     if not deesseX_input.ok:
         err_msg = f'{fname}: check deesseX input'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Create ouptut directory if needed
@@ -10391,13 +10994,15 @@ def exportDeesseXInput(
 
     # Convert deesseX input from python to C
     try:
-        mpds_xsiminput = deesseX_input_py2C(deesseX_input)
+        mpds_xsiminput = deesseX_input_py2C(deesseX_input, logger=logger)
     except Exception as exc:
         err_msg = f'{fname}: cannot convert deesseX input from python to C'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg) from exc
 
     # if mpds_xsiminput is None:
     #     err_msg = f'{fname}: cannot convert deesseX input from python to C'
+    #     if logger: logger.error(err_msg)
     #     raise DeesseinterfaceError(err_msg)
 
     err = deesse.MPDSExportXSimInput( mpds_xsiminput, dirname, fileprefix, endofline, verbose)
@@ -10410,6 +11015,7 @@ def exportDeesseXInput(
         err_message = deesse.mpds_get_error_message(-err)
         err_message = err_message.replace('\n', '')
         err_msg = f'{fname}: {err_message}'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Free memory on C side: deesseX input
@@ -10418,7 +11024,7 @@ def exportDeesseXInput(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def importDeesseXInput(filename, dirname='.'):
+def importDeesseXInput(filename, dirname='.', logger=None):
     """
     Imports deesseX input from txt (ASCII) files.
 
@@ -10436,6 +11042,10 @@ def importDeesseXInput(filename, dirname='.'):
         name of the directory in which the main input txt (ASCII) file is stored
         (and from which the command line version of deesseX would be launched)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     deesseX_input :class:`DeesseXInput`
@@ -10446,11 +11056,13 @@ def importDeesseXInput(filename, dirname='.'):
     # Check directory
     if not os.path.isdir(dirname):
         err_msg = f'{fname}: directory does not exist'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Check file
     if not os.path.isfile(os.path.join(dirname, filename)):
         err_msg = f'{fname}: input file does not exist'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     # Get current working directory
@@ -10470,13 +11082,14 @@ def importDeesseXInput(filename, dirname='.'):
         mpds_xsiminput = deesse.MPDS_XSIMINPUTp_value(mpds_xsiminputp)
 
         # Convert deesse input from C to python
-        deesseX_input = deesseX_input_C2py(mpds_xsiminput)
+        deesseX_input = deesseX_input_C2py(mpds_xsiminput, logger=logger)
 
     except:
         # Free memory on C side: deesseX input
         deesse.delete_MPDS_XSIMINPUTp(mpds_xsiminputp)
         # Raise error
         err_msg = f'{fname}: cannot import deesseX input from ASCII files'
+        if logger: logger.error(err_msg)
         raise DeesseinterfaceError(err_msg)
 
     finally:

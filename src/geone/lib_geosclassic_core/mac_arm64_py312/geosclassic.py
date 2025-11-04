@@ -78,6 +78,7 @@ MPDS_WORD_LENGTH = _geosclassic.MPDS_WORD_LENGTH
 MPDS_MISSING_VALUE = _geosclassic.MPDS_MISSING_VALUE
 MPDS_INEQUALITY_DATA_SUFFIX_FOR_MIN = _geosclassic.MPDS_INEQUALITY_DATA_SUFFIX_FOR_MIN
 MPDS_INEQUALITY_DATA_SUFFIX_FOR_MAX = _geosclassic.MPDS_INEQUALITY_DATA_SUFFIX_FOR_MAX
+MPDS_DATA_SUFFIX_FOR_ERR_STD = _geosclassic.MPDS_DATA_SUFFIX_FOR_ERR_STD
 MPDS_JOB_VARNAME = _geosclassic.MPDS_JOB_VARNAME
 MPDS_JOB_DATA_LOCATION = _geosclassic.MPDS_JOB_DATA_LOCATION
 MPDS_JOB_DATA_VALUE = _geosclassic.MPDS_JOB_DATA_VALUE
@@ -275,7 +276,7 @@ COV_NUGGET = _geosclassic.COV_NUGGET
 COV_SPHERICAL = _geosclassic.COV_SPHERICAL
 COV_EXPONENTIAL = _geosclassic.COV_EXPONENTIAL
 COV_GAUSSIAN = _geosclassic.COV_GAUSSIAN
-COV_LINEAR = _geosclassic.COV_LINEAR
+COV_TRIANGULAR = _geosclassic.COV_TRIANGULAR
 COV_CUBIC = _geosclassic.COV_CUBIC
 COV_SINUS_CARDINAL = _geosclassic.COV_SINUS_CARDINAL
 COV_GAMMA = _geosclassic.COV_GAMMA
@@ -389,6 +390,7 @@ class mpds_geosClassicInput(object):
     outputReportFileName = property(_geosclassic.mpds_geosClassicInput_outputReportFileName_get, _geosclassic.mpds_geosClassicInput_outputReportFileName_set)
     computationMode = property(_geosclassic.mpds_geosClassicInput_computationMode_get, _geosclassic.mpds_geosClassicInput_computationMode_set)
     covModel = property(_geosclassic.mpds_geosClassicInput_covModel_get, _geosclassic.mpds_geosClassicInput_covModel_set)
+    searchRadius = property(_geosclassic.mpds_geosClassicInput_searchRadius_get, _geosclassic.mpds_geosClassicInput_searchRadius_set)
     searchRadiusRelative = property(_geosclassic.mpds_geosClassicInput_searchRadiusRelative_get, _geosclassic.mpds_geosClassicInput_searchRadiusRelative_set)
     nneighborMax = property(_geosclassic.mpds_geosClassicInput_nneighborMax_get, _geosclassic.mpds_geosClassicInput_nneighborMax_set)
     searchNeighborhoodSortMode = property(_geosclassic.mpds_geosClassicInput_searchNeighborhoodSortMode_get, _geosclassic.mpds_geosClassicInput_searchNeighborhoodSortMode_set)
@@ -432,6 +434,7 @@ class mpds_geosClassicIndicatorInput(object):
     outputReportFileName = property(_geosclassic.mpds_geosClassicIndicatorInput_outputReportFileName_get, _geosclassic.mpds_geosClassicIndicatorInput_outputReportFileName_set)
     computationMode = property(_geosclassic.mpds_geosClassicIndicatorInput_computationMode_get, _geosclassic.mpds_geosClassicIndicatorInput_computationMode_set)
     covModel = property(_geosclassic.mpds_geosClassicIndicatorInput_covModel_get, _geosclassic.mpds_geosClassicIndicatorInput_covModel_set)
+    searchRadius = property(_geosclassic.mpds_geosClassicIndicatorInput_searchRadius_get, _geosclassic.mpds_geosClassicIndicatorInput_searchRadius_set)
     searchRadiusRelative = property(_geosclassic.mpds_geosClassicIndicatorInput_searchRadiusRelative_get, _geosclassic.mpds_geosClassicIndicatorInput_searchRadiusRelative_set)
     nneighborMax = property(_geosclassic.mpds_geosClassicIndicatorInput_nneighborMax_get, _geosclassic.mpds_geosClassicIndicatorInput_nneighborMax_set)
     searchNeighborhoodSortMode = property(_geosclassic.mpds_geosClassicIndicatorInput_searchNeighborhoodSortMode_get, _geosclassic.mpds_geosClassicIndicatorInput_searchNeighborhoodSortMode_set)
@@ -613,8 +616,8 @@ def MPDSGetNImageVarValuePdf(arg1, arg2, arg3, arg4, arg5, arg6):
 def MPDSImageEE(arg1):
     return _geosclassic.MPDSImageEE(arg1)
 
-def MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
-    return _geosclassic.MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+def MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
+    return _geosclassic.MPDSImageToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
 
 def MPDSInitImage(arg1):
     return _geosclassic.MPDSInitImage(arg1)
@@ -840,8 +843,8 @@ def MPDSInitPointSet(arg1):
 def MPDSMallocPointSet(arg1, arg2, arg3):
     return _geosclassic.MPDSMallocPointSet(arg1, arg2, arg3)
 
-def MPDSPointSetToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10):
-    return _geosclassic.MPDSPointSetToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+def MPDSPointSetToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11):
+    return _geosclassic.MPDSPointSetToImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
 
 def MPDSPrintPointSet(arg1, arg2, arg3):
     return _geosclassic.MPDSPrintPointSet(arg1, arg2, arg3)
@@ -892,6 +895,8 @@ MPDS_WARNING_MSG_00060 = _geosclassic.MPDS_WARNING_MSG_00060
 MPDS_WARNING_MSG_00061 = _geosclassic.MPDS_WARNING_MSG_00061
 MPDS_WARNING_MSG_00062 = _geosclassic.MPDS_WARNING_MSG_00062
 MPDS_WARNING_MSG_00063 = _geosclassic.MPDS_WARNING_MSG_00063
+MPDS_WARNING_MSG_00065 = _geosclassic.MPDS_WARNING_MSG_00065
+MPDS_WARNING_MSG_00066 = _geosclassic.MPDS_WARNING_MSG_00066
 MPDS_WARNING_MSG_00070 = _geosclassic.MPDS_WARNING_MSG_00070
 MPDS_WARNING_MSG_00071 = _geosclassic.MPDS_WARNING_MSG_00071
 MPDS_WARNING_MSG_00075 = _geosclassic.MPDS_WARNING_MSG_00075
@@ -922,10 +927,12 @@ MPDS_WARNING_MSG_01014 = _geosclassic.MPDS_WARNING_MSG_01014
 MPDS_WARNING_MSG_01015 = _geosclassic.MPDS_WARNING_MSG_01015
 MPDS_WARNING_MSG_02001 = _geosclassic.MPDS_WARNING_MSG_02001
 MPDS_WARNING_MSG_02002 = _geosclassic.MPDS_WARNING_MSG_02002
+MPDS_WARNING_MSG_02003 = _geosclassic.MPDS_WARNING_MSG_02003
 MPDS_WARNING_MSG_02005 = _geosclassic.MPDS_WARNING_MSG_02005
 MPDS_WARNING_MSG_02012 = _geosclassic.MPDS_WARNING_MSG_02012
 MPDS_WARNING_MSG_02015 = _geosclassic.MPDS_WARNING_MSG_02015
 MPDS_WARNING_MSG_02016 = _geosclassic.MPDS_WARNING_MSG_02016
+MPDS_WARNING_MSG_02017 = _geosclassic.MPDS_WARNING_MSG_02017
 MPDS_WARNING_MSG_02020 = _geosclassic.MPDS_WARNING_MSG_02020
 MPDS_WARNING_MSG_05011 = _geosclassic.MPDS_WARNING_MSG_05011
 MPDS_WARNING_MSG_05030 = _geosclassic.MPDS_WARNING_MSG_05030
@@ -1022,14 +1029,14 @@ def MPDSOMPGeosClassicIndicatorSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6,
 def MPDSOMPGeosClassicIndicatorSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23):
     return _geosclassic.MPDSOMPGeosClassicIndicatorSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23)
 
-def MPDSOMPGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22):
-    return _geosclassic.MPDSOMPGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22)
+def MPDSOMPGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23):
+    return _geosclassic.MPDSOMPGeosClassicSimEstimation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23)
 
-def MPDSOMPGeosClassicSimEstimationUniqueSN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15):
-    return _geosclassic.MPDSOMPGeosClassicSimEstimationUniqueSN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15)
+def MPDSOMPGeosClassicSimEstimationUniqueSN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16):
+    return _geosclassic.MPDSOMPGeosClassicSimEstimationUniqueSN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16)
 
-def MPDSOMPGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27):
-    return _geosclassic.MPDSOMPGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27)
+def MPDSOMPGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28):
+    return _geosclassic.MPDSOMPGeosClassicSimSimulation(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24, arg25, arg26, arg27, arg28)
 
 def MPDSOMPImageConnectivityEulerNumber(arg1, arg2, arg3, arg4):
     return _geosclassic.MPDSOMPImageConnectivityEulerNumber(arg1, arg2, arg3, arg4)

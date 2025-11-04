@@ -153,7 +153,7 @@ class BlockData(object):
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-def readBlockData(filename):
+def readBlockData(filename, logger=None):
     """
     Reads block data from a txt file.
 
@@ -161,6 +161,10 @@ def readBlockData(filename):
     ----------
     filename : str
         name of the file
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -172,6 +176,7 @@ def readBlockData(filename):
     # Check if the file exists
     if not os.path.isfile(filename):
         err_msg = f'{fname}: invalid filename ({filename})'
+        if logger: logger.error(err_msg)
         raise BlockDataError(err_msg)
 
     # Open the file in read mode

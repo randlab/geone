@@ -1,10 +1,10 @@
-sphinx==7.3.7
-sphinx-gallery==0.17.1
-nbsphinx==0.9.5
-sphinx_rtd_theme==2.0.0
-ipython==8.17.2
-pandoc==2.4
-geone
+# sphinx==7.3.7
+# sphinx-gallery==0.17.1
+# nbsphinx==0.9.5
+# sphinx_rtd_theme==2.0.0
+# ipython==8.17.2
+# pandoc==2.4
+# geone
 # matplotlib
 # numpy<2
 # pandas

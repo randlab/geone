@@ -63,6 +63,7 @@ def drawImage3D_surface (
         foreground_color=None,
         cpos=None,
         verbose=1,
+        logger=None,
         **kwargs):
     """
     Displays a 3D image as surface(s) (based on `pyvista`).
@@ -240,6 +241,10 @@ def drawImage3D_surface (
     verbose : int, default: 1
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         additional keyword arguments passed to `plotter.add_mesh[_clip_plane]`
         when plotting the variable, such as
@@ -268,6 +273,7 @@ def drawImage3D_surface (
 
     if iv < 0 or iv >= im.nv:
         err_msg = f'{fname}: invalid `iv` index'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     # Set indices to be plotted
@@ -282,14 +288,17 @@ def drawImage3D_surface (
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
         err_msg = f'{fname}: invalid indices along x axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
         err_msg = f'{fname}: invalid indices along y axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         err_msg = f'{fname}: invalid indices along z axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     # Get the color map
@@ -298,6 +307,7 @@ def drawImage3D_surface (
             cmap = plt.get_cmap(cmap)
         except:
             err_msg = f'{fname}: invalid `cmap` string'
+            if logger: logger.error(err_msg)
             raise Imgplot3dError(err_msg)
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
@@ -329,6 +339,7 @@ def drawImage3D_surface (
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
             err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            if logger: logger.error(err_msg)
             raise Imgplot3dError(err_msg)
 
         # Get array 'dval' of displayed values (at least for color bar)
@@ -337,11 +348,13 @@ def drawImage3D_surface (
 
             if len(np.unique(dval)) != len(dval):
                 err_msg = f'{fname}: `categVal` contains duplicated entries'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
         else:
@@ -354,15 +367,18 @@ def drawImage3D_surface (
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
             if len(dval) > ncateg_max:
                 err_msg = f'{fname}: too many categories, set `categ=False`'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
         if not len(dval): # len(dval) == 0
             err_msg = f'{fname}: no value to be drawn'
+            if logger: logger.error(err_msg)
             raise Imgplot3dError(err_msg)
 
         if categActive is not None:
             if len(categActive) != len(dval):
                 err_msg = f'{fname}: length of `categActive` invalid (should be the same as length of `categVal`)'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
         else:
@@ -386,21 +402,27 @@ def drawImage3D_surface (
 
             elif categColCycle:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` is used cyclically (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
                 colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
 
             else:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` not used (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
             colorList = [cmap(x) for x in np.arange(len(dval)) * 1.0/(len(dval)-1)]
 
         # Set the colormap: 'cmap'
-        # - Trick: duplicate last color (even if len(colorList)> 1)!
-        #          otherwise the first color appears twice
-        colorList.append(colorList[-1])
+        # - Trick: duplicate last color (if len(colorList)> 1)!
+        if len(colorList) == 1:
+            colorList.append(colorList[-1])
         cmap = ccol.custom_cmap(colorList, ncol=len(colorList), alpha=alpha)
 
         # Set the min and max of the colorbar
@@ -535,6 +557,7 @@ def drawImage3D_slice (
         foreground_color=None,
         cpos=None,
         verbose=1,
+        logger=None,
         **kwargs):
     """
     Displays a 3D image as slices(s) (based on `pyvista`).
@@ -724,6 +747,10 @@ def drawImage3D_slice (
     verbose : int, default: 1
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         additional keyword arguments passed to `plotter.add_mesh`
         when plotting the variable, such as
@@ -752,6 +779,7 @@ def drawImage3D_slice (
 
     if iv < 0 or iv >= im.nv:
         err_msg = f'{fname}: invalid `iv` index'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     # Set indices to be plotted
@@ -766,14 +794,17 @@ def drawImage3D_slice (
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
         err_msg = f'{fname}: invalid indices along x axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
         err_msg = f'{fname}: invalid indices along y axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         err_msg = f'{fname}: invalid indices along z axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     # Get the color map
@@ -782,6 +813,7 @@ def drawImage3D_slice (
             cmap = plt.get_cmap(cmap)
         except:
             err_msg = f'{fname}: invalid `cmap` string'
+            if logger: logger.error(err_msg)
             raise Imgplot3dError(err_msg)
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
@@ -813,6 +845,7 @@ def drawImage3D_slice (
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
             err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            if logger: logger.error(err_msg)
             raise Imgplot3dError(err_msg)
 
         # Get array 'dval' of displayed values (at least for color bar)
@@ -821,11 +854,13 @@ def drawImage3D_slice (
 
             if len(np.unique(dval)) != len(dval):
                 err_msg = f'{fname}: `categVal` contains duplicated entries'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
         else:
@@ -838,15 +873,18 @@ def drawImage3D_slice (
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
             if len(dval) > ncateg_max:
                 err_msg = f'{fname}: too many categories, set `categ=False`'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
         if not len(dval): # len(dval) == 0
             err_msg = f'{fname}: no value to be drawn'
+            if logger: logger.error(err_msg)
             raise Imgplot3dError(err_msg)
 
         if categActive is not None:
             if len(categActive) != len(dval):
                 err_msg = f'{fname}: length of `categActive` invalid (should be the same as length of `categVal`)'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
         else:
@@ -870,21 +908,27 @@ def drawImage3D_slice (
 
             elif categColCycle:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` is used cyclically (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
                 colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
 
             else:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` not used (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
             colorList = [cmap(x) for x in np.arange(len(dval)) * 1.0/(len(dval)-1)]
 
         # Set the colormap: 'cmap'
-        # - Trick: duplicate last color (even if len(colorList)> 1)!
-        #          otherwise the first color appears twice
-        colorList.append(colorList[-1])
+        # - Trick: duplicate last color (if len(colorList)> 1)!
+        if len(colorList) == 1:
+            colorList.append(colorList[-1])
         cmap = ccol.custom_cmap(colorList, ncol=len(colorList), alpha=alpha)
 
         # Set the min and max of the colorbar
@@ -1023,11 +1067,12 @@ def drawImage3D_empty_grid (
         foreground_color=None,
         cpos=None,
         verbose=1,
+        logger=None,
         **kwargs):
     """
     Displays an empty grid from a 3D image.
 
-    Same parameters (if present) as in function :func:`imgplot3d.drawImage3D_slice` are used,
+    Same parameters (if present) as in function :func:`drawImage3D_slice` are used,
     see this function. (Tricks are applied.)
     """
     fname = 'drawImage3D_empty_grid'
@@ -1044,14 +1089,17 @@ def drawImage3D_empty_grid (
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
         err_msg = f'{fname}: invalid indices along x axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
         err_msg = f'{fname}: invalid indices along y axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         err_msg = f'{fname}: invalid indices along z axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     # Get the color map
@@ -1060,6 +1108,7 @@ def drawImage3D_empty_grid (
             cmap = plt.get_cmap(cmap)
         except:
             err_msg = f'{fname}: invalid `cmap` string'
+            if logger: logger.error(err_msg)
             raise Imgplot3dError(err_msg)
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)
@@ -1091,6 +1140,7 @@ def drawImage3D_empty_grid (
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
             err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            if logger: logger.error(err_msg)
             raise Imgplot3dError(err_msg)
 
         # Get array 'dval' of displayed values (at least for color bar)
@@ -1099,11 +1149,13 @@ def drawImage3D_empty_grid (
 
             if len(np.unique(dval)) != len(dval):
                 err_msg = f'{fname}: `categVal` contains duplicated entries'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
         else:
@@ -1116,15 +1168,18 @@ def drawImage3D_empty_grid (
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
             if len(dval) > ncateg_max:
                 err_msg = f'{fname}: too many categories, set `categ=False`'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
 
         if not len(dval): # len(dval) == 0
             err_msg = f'{fname}: no value to be drawn'
+            if logger: logger.error(err_msg)
             raise Imgplot3dError(err_msg)
 
         if categActive is not None:
             if len(categActive) != len(dval):
                 err_msg = f'{fname}: length of `categActive` invalid (should be the same as length of `categVal`)'
+                if logger: logger.error(err_msg)
                 raise Imgplot3dError(err_msg)
         else:
             categActive = np.ones(len(dval), dtype='bool')
@@ -1147,21 +1202,27 @@ def drawImage3D_empty_grid (
 
             elif categColCycle:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` is used cyclically (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
                 colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
 
             else:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` not used (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
             colorList = [cmap(x) for x in np.arange(len(dval)) * 1.0/(len(dval)-1)]
 
         # Set the colormap: 'cmap'
-        # - Trick: duplicate last color (even if len(colorList)> 1)!
-        #          otherwise the first color appears twice
-        colorList.append(colorList[-1])
+        # - Trick: duplicate last color (if len(colorList)> 1)!
+        if len(colorList) == 1:
+            colorList.append(colorList[-1])
         cmap = ccol.custom_cmap(colorList, ncol=len(colorList), alpha=alpha)
 
         # Set the min and max of the colorbar
@@ -1271,6 +1332,7 @@ def drawImage3D_volume (
         background_color=None,
         foreground_color=None,
         cpos=None,
+        logger=None,
         **kwargs):
     """
     Displays a 3D image as volume (based on `pyvista`).
@@ -1390,6 +1452,10 @@ def drawImage3D_volume (
         note: in principle, (focus_point - camera_location) is orthogonal to
         viewup_vector
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         additional keyword arguments passed to `plotter.add_volume`
         when plotting the variable, such as
@@ -1418,6 +1484,7 @@ def drawImage3D_volume (
 
     if iv < 0 or iv >= im.nv:
         err_msg = f'{fname}: invalid `iv` index'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     # Set indices to be plotted
@@ -1432,14 +1499,17 @@ def drawImage3D_volume (
 
     if ix0 >= ix1 or ix0 < 0 or ix1 > im.nx:
         err_msg = f'{fname}: invalid indices along x axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     if iy0 >= iy1 or iy0 < 0 or iy1 > im.ny:
         err_msg = f'{fname}: invalid indices along y axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     if iz0 >= iz1 or iz0 < 0 or iz1 > im.nz:
         err_msg = f'{fname}: invalid indices along z axis'
+        if logger: logger.error(err_msg)
         raise Imgplot3dError(err_msg)
 
     # Get the color map
@@ -1448,6 +1518,7 @@ def drawImage3D_volume (
             cmap = plt.get_cmap(cmap)
         except:
             err_msg = f'{fname}: invalid `cmap` string'
+            if logger: logger.error(err_msg)
             raise Imgplot3dError(err_msg)
 
     # Initialization of dictionary (do not use {} as default argument, it is not re-initialized...)

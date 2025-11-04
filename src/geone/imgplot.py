@@ -39,6 +39,7 @@ def drawImage2D(
         excludedVal=None,
         categ=False, categVal=None,
         categCol=None, categColCycle=False, categColbad=ccol.cbad_def,
+        nCategMax=100,
         vmin=None, vmax=None,
         contourf=False,
         contour=False,
@@ -58,6 +59,7 @@ def drawImage2D(
         colorbar_aspect=20, colorbar_pad_fraction=1.0,
         showColorbar=True, removeColorbar=False, showColorbarOnly=0,
         verbose=1,
+        logger=None,
         **kwargs):
     # animated : bool, default: False
     #     keyword argument passed to `matplotlib.pyplot.imshow` for animation...
@@ -140,6 +142,10 @@ def drawImage2D(
         color (3-tuple (RGB code), 4-tuple (RGBA code) or str) used for bad
         categorical value
 
+    nCategMax : int, default: 100
+        used only if `categ=True`: maximal number of categories, if there is 
+        more distinct values to be plotted, an error is raised
+        
     vmin : float, optional
         used only if `categ=False`:
         minimal value to be displayed; by default: minimal value of the displayed
@@ -271,11 +277,15 @@ def drawImage2D(
     verbose : int, default: 1
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         additional keyword arguments : each keyword argument with the key
         'xxx_<name>' will be passed as keyword argument with the key '<name>' to
         a function related to 'xxx';
-        possibilities for 'xxx\_' and related function:
+        possibilities for 'xxx\\_' and related function:
 
         .. list-table::
             :widths: 25 45
@@ -283,25 +293,25 @@ def drawImage2D(
 
             *   - string (prefix)
                 - method from `Axes` from `matplotlib`
-            *   - 'title\_'
+            *   - 'title\\_'
                 - `ax.set_title()`
-            *   - 'xlabel\_'
+            *   - 'xlabel\\_'
                 - `ax.set_xlabel()`
-            *   - 'xticks\_'
+            *   - 'xticks\\_'
                 - `ax.set_xticks()`
-            *   - 'xticklabels\_'
+            *   - 'xticklabels\\_'
                 - `ax.set_xticklabels()`
-            *   - 'ylabel\_'
+            *   - 'ylabel\\_'
                 - `ax.set_ylabel()`
-            *   - 'yticks\_'
+            *   - 'yticks\\_'
                 - `ax.set_yticks()`
-            *   - 'yticklabels\_'
+            *   - 'yticklabels\\_'
                 - `ax.set_yticklabels()`
-            *   - 'clabel\_'
+            *   - 'clabel\\_'
                 - `cbar.set_label()`
-            *   - 'cticks\_'
+            *   - 'cticks\\_'
                 - `cbar.set_ticks()`
-            *   - 'cticklabels\_'
+            *   - 'cticklabels\\_'
                 - `cbar.ax.set_yticklabels()`
 
         for examples:
@@ -352,6 +362,7 @@ def drawImage2D(
 
             if iv < 0 or iv >= im.nv:
                 err_msg = f'{fname}: invalid `iv` index'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
     # Check slice direction and indices
@@ -368,6 +379,7 @@ def drawImage2D(
 
             if ix < 0 or ix >= im.nx:
                 err_msg = f'{fname}: invalid `ix` index'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
             sliceDir = 'x'
@@ -378,6 +390,7 @@ def drawImage2D(
 
             if iy < 0 or iy >= im.ny:
                 err_msg = f'{fname}: invalid `iy` index'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
             sliceDir = 'y'
@@ -388,12 +401,14 @@ def drawImage2D(
 
             if iz < 0 or iz >= im.nz:
                 err_msg = f'{fname}: invalid `iz` index'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
             sliceDir = 'z'
 
     else: # n > 1
         err_msg = f'{fname}: slice specified in more than one direction'
+        if logger: logger.error(err_msg)
         raise ImgplotError(err_msg)
 
     # Extract what to be plotted
@@ -443,6 +458,7 @@ def drawImage2D(
             cmap = plt.get_cmap(cmap)
         except:
             err_msg = f'{fname}: invalid `cmap` string'
+            if logger: logger.error(err_msg)
             raise ImgplotError(err_msg)
 
     if categ:
@@ -451,6 +467,7 @@ def drawImage2D(
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
             err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            if logger: logger.error(err_msg)
             raise ImgplotError(err_msg)
 
         # Get array 'dval' of displayed values
@@ -459,11 +476,13 @@ def drawImage2D(
 
             if len(np.unique(dval)) != len(dval):
                 err_msg = f'{fname}: `categVal` contains duplicated entries'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
         else:
@@ -476,7 +495,16 @@ def drawImage2D(
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
 
         if not len(dval) and verbose > 0: # len(dval) == 0
-            print(f'{fname}: WARNING: no value to be drawn!')
+            if logger:
+                logger.warning(f'{fname}: no value to be drawn!')
+            else:
+                print(f'{fname}: WARNING: no value to be drawn!')
+
+        if len(dval) > nCategMax:
+            # Prevent from plotting in category mode if too many categories...
+            err_msg = f'{fname}: too many categories to be plotted (> `nCategMax` = {nCategMax})'
+            if logger: logger.error(err_msg)
+            raise ImgplotError(err_msg)
 
         # Replace dval[i] by i in zz and other values by np.nan
         zz2 = np.array(zz) # copy array
@@ -495,12 +523,18 @@ def drawImage2D(
 
             elif categColCycle:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` is used cyclically (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
                 colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
 
             else:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` not used (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
@@ -723,34 +757,35 @@ def get_colors_from_values(
         categCol=None, categColCycle=False, categColbad=ccol.cbad_def,
         vmin=None, vmax=None,
         cmin=None, cmax=None,
-        verbose=1):
+        verbose=1,
+        logger=None):
     """
-    Gets the colors for given values, according to color settings as used in function :func:`imgplot.drawImage2D`.
+    Gets the colors for given values, according to color settings as used in function :func:`drawImage2D`.
 
     Parameters
     ----------
     val : array-like of floats, or float
         values for which the colors have to be retrieved
 
-    cmap : see function :func:`imgplot.drawImage2D`
+    cmap : see function :func:`drawImage2D`
 
-    alpha : see function :func:`imgplot.drawImage2D`
+    alpha : see function :func:`drawImage2D`
 
-    excludedVal : see function :func:`imgplot.drawImage2D`
+    excludedVal : see function :func:`drawImage2D`
 
-    categ : see function :func:`imgplot.drawImage2D`
+    categ : see function :func:`drawImage2D`
 
-    categVal : see function :func:`imgplot.drawImage2D`
+    categVal : see function :func:`drawImage2D`
 
-    categCol : see function :func:`imgplot.drawImage2D`
+    categCol : see function :func:`drawImage2D`
 
-    categColCycle : see function :func:`imgplot.drawImage2D`
+    categColCycle : see function :func:`drawImage2D`
 
-    categColbad : see function :func:`imgplot.drawImage2D`
+    categColbad : see function :func:`drawImage2D`
 
-    vmin : see function :func:`imgplot.drawImage2D`
+    vmin : see function :func:`drawImage2D`
 
-    vmax : see function :func:`imgplot.drawImage2D`
+    vmax : see function :func:`drawImage2D`
 
     cmin : float, optional
         alternative keyword for `vmin` (for compatibility with color settings
@@ -763,6 +798,10 @@ def get_colors_from_values(
     verbose : int, default: 1
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     col : 1D array of colors
@@ -773,10 +812,12 @@ def get_colors_from_values(
     # Check vmin, cmin and vmax, cmax
     if vmin is not None and cmin is not None:
         err_msg = f'{fname}: use `vmin` or `cmin` (not both)'
+        if logger: logger.error(err_msg)
         raise ImgplotError(err_msg)
 
     if vmax is not None and cmax is not None:
         err_msg = f'{fname}: use `vmax` or `cmax` (not both)'
+        if logger: logger.error(err_msg)
         raise ImgplotError(err_msg)
 
     if vmin is None:
@@ -795,6 +836,7 @@ def get_colors_from_values(
             cmap = plt.get_cmap(cmap)
         except:
             err_msg = f'{fname}: invalid `cmap` string'
+            if logger: logger.error(err_msg)
             raise ImgplotError(err_msg)
 
     if categ:
@@ -803,6 +845,7 @@ def get_colors_from_values(
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
             err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            if logger: logger.error(err_msg)
             raise ImgplotError(err_msg)
 
         # Get array 'dval' of displayed values
@@ -811,11 +854,13 @@ def get_colors_from_values(
 
             if len(np.unique(dval)) != len(dval):
                 err_msg = f'{fname}: `categVal` contains duplicated entries'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
         else:
@@ -828,7 +873,10 @@ def get_colors_from_values(
             dval = np.array([v for v in np.unique(zz).reshape(-1) if ~np.isnan(v)])
 
         if not len(dval) and verbose > 0: # len(dval) == 0
-            print(f'{fname}: WARNING: no value to be drawn!')
+            if logger:
+                logger.warning(f'{fname}: no value to be drawn!')
+            else:
+                print(f'{fname}: WARNING: no value to be drawn!')
 
         # Replace dval[i] by i in zz and other values by np.nan
         zz2 = np.array(zz) # copy array
@@ -847,12 +895,18 @@ def get_colors_from_values(
 
             elif categColCycle:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` is used cyclically (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` is used cyclically (too few entries)')
                 colorList = [categCol[i%len(categCol)] for i in range(len(dval))]
 
             else:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` not used (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap
@@ -893,7 +947,7 @@ def get_colors_from_values(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def drawImage2Drgb(im, nancol=(1.0, 0.0, 0.0)):
+def drawImage2Drgb(im, nancol=(1.0, 0.0, 0.0), logger=None):
     """
     Displays a 2D image with 3 or 4 variables interpreted as RGB or RGBA code.
 
@@ -906,16 +960,22 @@ def drawImage2Drgb(im, nancol=(1.0, 0.0, 0.0)):
     nancol : color, default: (1.0, 0.0, 0.0)
         color (3-tuple for RGB code, 4-tuple for RGBA code, str) used for missing
         value (`numpy.nan`) in the input image
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
     """
     fname = 'drawImage2Drgb'
 
     # Check image parameters
     if im.nz != 1:
         err_msg = f'{fname}: `im.nz` must be 1'
+        if logger: logger.error(err_msg)
         raise ImgplotError(err_msg)
 
     if im.nv != 3 and im.nv != 4:
         err_msg = f'{fname}: `im.nv` must be 3 or 4'
+        if logger: logger.error(err_msg)
         raise ImgplotError(err_msg)
 
     vv = im.val.reshape(im.nv, -1).T
@@ -935,7 +995,7 @@ def drawImage2Drgb(im, nancol=(1.0, 0.0, 0.0)):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def drawGeobodyMap2D(im, iv=0):
+def drawGeobodyMap2D(im, iv=0, logger=None):
     """
     Displays a geobody 2D map, with adapted color bar.
 
@@ -950,6 +1010,10 @@ def drawGeobodyMap2D(im, iv=0):
 
     iv : int, default: 0
         index of the variable to be displayed
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
     """
     # fname = 'drawGeobodyMap2D'
 
@@ -974,7 +1038,7 @@ def drawGeobodyMap2D(im, iv=0):
         cticks = None
         cticklabels = None
     drawImage2D(im, iv=iv, excludedVal=0, categ=categ, categVal=categVal, categCol=categCol,
-                cticks=cticks, cticklabels=cticklabels)
+                cticks=cticks, cticklabels=cticklabels, logger=logger)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -986,7 +1050,8 @@ def writeImage2Dppm(
         excludedVal=None,
         categ=False, categVal=None, categCol=None,
         vmin=None, vmax=None,
-        verbose=1):
+        verbose=1,
+        logger=None):
     """
     Writes an image in a file in ppm format.
 
@@ -1001,30 +1066,34 @@ def writeImage2Dppm(
     filename : str
         name of the file
 
-    ix : see function :func:`imgplot.drawImage2D`
+    ix : see function :func:`drawImage2D`
 
-    iy : see function :func:`imgplot.drawImage2D`
+    iy : see function :func:`drawImage2D`
 
-    iz : see function :func:`imgplot.drawImage2D`
+    iz : see function :func:`drawImage2D`
 
-    iv : see function :func:`imgplot.drawImage2D`
+    iv : see function :func:`drawImage2D`
 
-    cmap : see function :func:`imgplot.drawImage2D`
+    cmap : see function :func:`drawImage2D`
 
-    excludedVal : see function :func:`imgplot.drawImage2D`
+    excludedVal : see function :func:`drawImage2D`
 
-    categ : see function :func:`imgplot.drawImage2D`
+    categ : see function :func:`drawImage2D`
 
-    categVal : see function :func:`imgplot.drawImage2D`
+    categVal : see function :func:`drawImage2D`
 
-    categCol : see function :func:`imgplot.drawImage2D`
+    categCol : see function :func:`drawImage2D`
 
-    vmin : see function :func:`imgplot.drawImage2D`
+    vmin : see function :func:`drawImage2D`
 
-    vmax : see function :func:`imgplot.drawImage2D`
+    vmax : see function :func:`drawImage2D`
 
     verbose : int, default: 1
         verbose mode, higher implies more printing (info)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
     """
     fname = 'writeImage2Dppm'
 
@@ -1034,6 +1103,7 @@ def writeImage2Dppm(
 
     if iv < 0 or iv >= im.nv:
         err_msg = f'{fname}: invalid `iv` index'
+        if logger: logger.error(err_msg)
         raise ImgplotError(err_msg)
 
     # Check slice direction and indices
@@ -1050,6 +1120,7 @@ def writeImage2Dppm(
 
             if ix < 0 or ix >= im.nx:
                 err_msg = f'{fname}: invalid `ix` index'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
             sliceDir = 'x'
@@ -1060,6 +1131,7 @@ def writeImage2Dppm(
 
             if iy < 0 or iy >= im.ny:
                 err_msg = f'{fname}: invalid `iy` index'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
             sliceDir = 'y'
@@ -1070,12 +1142,14 @@ def writeImage2Dppm(
 
             if iz < 0 or iz >= im.nz:
                 err_msg = f'{fname}: invalid `iz` index'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
             sliceDir = 'z'
 
     else: # n > 1
         err_msg = f'{fname}: slice specified in more than one direction'
+        if logger: logger.error(err_msg)
         raise ImgplotError(err_msg)
 
     # Extract what to be plotted
@@ -1116,6 +1190,7 @@ def writeImage2Dppm(
                 and type(categCol) is not list \
                 and type(categCol) is not tuple:
             err_msg = f'{fname}: `categCol` must be a list or a tuple (if not `None`)'
+            if logger: logger.error(err_msg)
             raise ImgplotError(err_msg)
 
         # Get array 'dval' of displayed values
@@ -1124,11 +1199,13 @@ def writeImage2Dppm(
 
             if len(np.unique(dval)) != len(dval):
                 err_msg = f'{fname}: `categVal` contains duplicated entries'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
             # Check 'categCol' (if not None)
             if categCol is not None and len(categCol) != len(dval):
                 err_msg = f'{fname}: length of `categVal` and length of `categCol` differ'
+                if logger: logger.error(err_msg)
                 raise ImgplotError(err_msg)
 
         else:
@@ -1142,6 +1219,7 @@ def writeImage2Dppm(
 
         if not len(dval): # len(dval) == 0
             err_msg = f'{fname}: no value to be drawn' # Warning instead and not raise error...
+            if logger: logger.error(err_msg)
             raise ImgplotError(err_msg)
 
         # Replace dval[i] by i in zz and other values by np.nan
@@ -1160,7 +1238,10 @@ def writeImage2Dppm(
 
             else:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: `categCol` not used (too few entries)')
+                    if logger:
+                        logger.warning(f'{fname}: `categCol` not used (too few entries)')
+                    else:
+                        print(f'{fname}: WARNING: `categCol` not used (too few entries)')
 
         if colorList is None:
             # Use colors from cmap

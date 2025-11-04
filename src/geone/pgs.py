@@ -31,7 +31,8 @@ def pluriGaussianSim_unconditional(
         algo_T2='fft', params_T2={},
         nreal=1,
         full_output=True,
-        verbose=1):
+        verbose=1,
+        logger=None):
     """
     Generates unconditional pluri-Gaussian simulations.
 
@@ -49,11 +50,11 @@ def pluriGaussianSim_unconditional(
 
     Parameters
     ----------
-    cov_model_T1 : :class:`geone.CovModel.CovModel<d>D`
+    cov_model_T1 : :class:`geone.covModel.CovModel<d>D`
         covariance model for T1, in 1D or 2D or 3D (same space dimension for T1 and T2);
         note: if `algo_T1='deterministic'`, `cov_model_T1` can be `None` (unused)
 
-    cov_model_T2 : :class:`geone.CovModel.CovModel<d>D`
+    cov_model_T2 : :class:`geone.covModel.CovModel<d>D`
         covariance model for T2, in 1D or 2D or 3D (same space dimension for T1 and T2);
         note: if `algo_T2='deterministic'`, `cov_model_T2` can be `None` (unused)
 
@@ -120,6 +121,10 @@ def pluriGaussianSim_unconditional(
     verbose : int, default: 1
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     Z : ndarray
@@ -155,14 +160,17 @@ def pluriGaussianSim_unconditional(
 
     if not callable(flag_value):
         err_msg = f'{fname}: `flag_value` invalid, should be a function (callable) of two arguments'
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     if algo_T1 not in ('fft', 'FFT', 'classic', 'CLASSIC', 'deterministic', 'DETERMINISTIC'):
         err_msg = f"{fname}: `algo_T1` invalid, should be 'fft' (default) or 'classic' or 'deterministic'"
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     if algo_T2 not in ('fft', 'FFT', 'classic', 'CLASSIC', 'deterministic', 'DETERMINISTIC'):
         err_msg = f"{fname}: `algo_T2` invalid, should be 'fft' (default) or 'classic' or 'deterministic'"
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     # Ignore covariance model if 'algo' is deterministic for T1, T2
@@ -177,6 +185,7 @@ def pluriGaussianSim_unconditional(
     if cov_model_T1 is None:
         if algo_T1 not in ('deterministic', 'DETERMINISTIC'):
             err_msg = f"{fname}: `cov_model_T1` is `None`, then `algo_T1` must be 'deterministic'"
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
     elif isinstance(cov_model_T1, gcm.CovModel1D):
@@ -187,19 +196,23 @@ def pluriGaussianSim_unconditional(
         d = 3
     else:
         err_msg = f'{fname}: `cov_model_T1` invalid, should be a class `geone.covModel.CovModel1D`, `geone.covModel.CovModel2D` or `geone.covModel.CovModel3D`'
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     if cov_model_T2 is None:
         if algo_T2 not in ('deterministic', 'DETERMINISTIC'):
             err_msg = f"{fname}: `cov_model_T2` is `None`, then `algo_T2` must be 'deterministic'"
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
         # if d == 0:
         #     err_msg = f'{fname}: `cov_model_T1` and `cov_model_T2` are `None`, at least one covariance model is required'
+        #     if logger: logger.error(err_msg)
         #     raise PgsError(err_msg)
 
     elif (d == 1 and not isinstance(cov_model_T2, gcm.CovModel1D)) or (d == 2 and not isinstance(cov_model_T2, gcm.CovModel2D)) or (d == 3 and not isinstance(cov_model_T2, gcm.CovModel3D)):
         err_msg = f'{fname}: `cov_model_T1` and `cov_model_T2` not compatible (dimensions differ)'
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     if d == 0:
@@ -212,6 +225,7 @@ def pluriGaussianSim_unconditional(
     # Check argument 'dimension'
     if hasattr(dimension, '__len__') and len(dimension) != d:
         err_msg = f'{fname}: `dimension` of incompatible length'
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     # Check (or set) argument 'spacing'
@@ -223,6 +237,7 @@ def pluriGaussianSim_unconditional(
     else:
         if hasattr(spacing, '__len__') and len(spacing) != d:
             err_msg = f'{fname}: `spacing` of incompatible length'
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
     # Check (or set) argument 'origin'
@@ -234,6 +249,7 @@ def pluriGaussianSim_unconditional(
     else:
         if hasattr(origin, '__len__') and len(origin) != d:
             err_msg = f'{fname}: `origin` of incompatible length'
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
 #    if not cov_model_T1.is_stationary(): # prevent calculation if covariance model is not stationary
@@ -261,6 +277,7 @@ def pluriGaussianSim_unconditional(
                     **params_T1, nreal=nreal)
         except Exception as exc:
             err_msg = f'{fname}: simulation of T1 failed'
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg) from exc
 
     else:
@@ -279,6 +296,7 @@ def pluriGaussianSim_unconditional(
                     **params_T2, nreal=nreal)
         except Exception as exc:
             err_msg = f'{fname}: simulation of T2 failed'
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg) from exc
     else:
         sim_T2 = np.array([params_T2['mean'].reshape(1,*dimension[::-1]) for _ in range(nreal)])
@@ -289,7 +307,10 @@ def pluriGaussianSim_unconditional(
 
     # Generate Z
     if verbose > 1:
-        print(f'{fname}: retrieving Z...')
+        if logger:
+            logger.info(f'{fname}: retrieving Z...')
+        else:
+            print(f'{fname}: retrieving Z...')
     Z = flag_value(sim_T1, sim_T2)
     # Z = np.asarray(Z).reshape(len(Z), *np.atleast_1d(dimension)[::-1])
 
@@ -312,7 +333,8 @@ def pluriGaussianSim(
         retrieve_real_anyway=False,
         nreal=1,
         full_output=True,
-        verbose=1):
+        verbose=1,
+        logger=None):
     """
     Generates (conditional) pluri-Gaussian simulations.
 
@@ -330,11 +352,11 @@ def pluriGaussianSim(
 
     Parameters
     ----------
-    cov_model_T1 : :class:`geone.CovModel.CovModel<d>D`
+    cov_model_T1 : :class:`geone.covModel.CovModel<d>D`
         covariance model for T1, in 1D or 2D or 3D (same space dimension for T1 and T2);
         note: if `algo_T1='deterministic'`, `cov_model_T1` can be `None` (unused)
 
-    cov_model_T2 : :class:`geone.CovModel.CovModel<d>D`
+    cov_model_T2 : :class:`geone.covModel.CovModel<d>D`
         covariance model for T2, in 1D or 2D or 3D (same space dimension for T1 and T2);
         note: if `algo_T2='deterministic'`, `cov_model_T2` can be `None` (unused)
 
@@ -462,6 +484,10 @@ def pluriGaussianSim(
     verbose : int, default: 1
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     Z : ndarray
@@ -509,14 +535,17 @@ def pluriGaussianSim(
 
     if not callable(flag_value):
         err_msg = f'{fname}: `flag_value` invalid, should be a function (callable) of two arguments'
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     if algo_T1 not in ('fft', 'FFT', 'classic', 'CLASSIC', 'deterministic', 'DETERMINISTIC'):
         err_msg = f"{fname}: `algo_T1` invalid, should be 'fft' (default) or 'classic' or 'deterministic'"
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     if algo_T2 not in ('fft', 'FFT', 'classic', 'CLASSIC', 'deterministic', 'DETERMINISTIC'):
         err_msg = f"{fname}: `algo_T2` invalid, should be 'fft' (default) or 'classic' or 'deterministic'"
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     # Ignore covariance model if 'algo' is deterministic for T1, T2
@@ -531,6 +560,7 @@ def pluriGaussianSim(
     if cov_model_T1 is None:
         if algo_T1 not in ('deterministic', 'DETERMINISTIC'):
             err_msg = f"{fname}: `cov_model_T1` is `None`, then `algo_T1` must be 'deterministic'"
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
     elif isinstance(cov_model_T1, gcm.CovModel1D):
@@ -541,19 +571,23 @@ def pluriGaussianSim(
         d = 3
     else:
         err_msg = f'{fname}: `cov_model_T1` invalid, should be a class `geone.covModel.CovModel1D`, `geone.covModel.CovModel2D` or `geone.covModel.CovModel3D`'
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     if cov_model_T2 is None:
         if algo_T2 not in ('deterministic', 'DETERMINISTIC'):
             err_msg = f"{fname}: `cov_model_T2` is `None`, then `algo_T2` must be 'deterministic'"
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
         # if d == 0:
         #     err_msg = f'{fname}: `cov_model_T1` and `cov_model_T2` are `None`, at least one covariance model is required'
+        #     if logger: logger.error(err_msg)
         #     raise PgsError(err_msg)
 
     elif (d == 1 and not isinstance(cov_model_T2, gcm.CovModel1D)) or (d == 2 and not isinstance(cov_model_T2, gcm.CovModel2D)) or (d == 3 and not isinstance(cov_model_T2, gcm.CovModel3D)):
         err_msg = f'{fname}: `cov_model_T1` and `cov_model_T2` not compatible (dimensions differ)'
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     if d == 0:
@@ -566,6 +600,7 @@ def pluriGaussianSim(
     # Check argument 'dimension'
     if hasattr(dimension, '__len__') and len(dimension) != d:
         err_msg = f'{fname}: `dimension` of incompatible length'
+        if logger: logger.error(err_msg)
         raise PgsError(err_msg)
 
     if d == 1:
@@ -582,6 +617,7 @@ def pluriGaussianSim(
     else:
         if hasattr(spacing, '__len__') and len(spacing) != d:
             err_msg = f'{fname}: `spacing` of incompatible length'
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
     # Check (or set) argument 'origin'
@@ -593,6 +629,7 @@ def pluriGaussianSim(
     else:
         if hasattr(origin, '__len__') and len(origin) != d:
             err_msg = f'{fname}: `origin` of incompatible length'
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
 #    if not cov_model_T1.is_stationary(): # prevent calculation if covariance model is not stationary
@@ -636,6 +673,7 @@ def pluriGaussianSim(
             mean_T1 = np.asarray(mean_T1).reshape(-1)
             if mean_T1.size not in (1, grid_size):
                 err_msg = f"{fname}: 'mean' parameter for T1 (in `params_T1`) has incompatible size"
+                if logger: logger.error(err_msg)
                 raise PgsError(err_msg)
 
     # Set var_T1 (as array) from params_T1, if given
@@ -654,6 +692,7 @@ def pluriGaussianSim(
                 var_T1 = np.asarray(var_T1).reshape(-1)
                 if var_T1.size not in (1, grid_size):
                     err_msg = f"{fname}: 'var' parameter for T1 (in `params_T1`) has incompatible size"
+                    if logger: logger.error(err_msg)
                     raise PgsError(err_msg)
 
     # Set mean_T2 (as array) from params_T2
@@ -674,6 +713,7 @@ def pluriGaussianSim(
             mean_T2 = np.asarray(mean_T2).reshape(-1)
             if mean_T2.size not in (1, grid_size):
                 err_msg = f"{fname}: 'mean' parameter for T2 (in `params_T2`) has incompatible size"
+                if logger: logger.error(err_msg)
                 raise PgsError(err_msg)
 
     # Set var_T2 (as array) from params_T2, if given
@@ -692,6 +732,7 @@ def pluriGaussianSim(
                 var_T2 = np.asarray(var_T2).reshape(-1)
                 if var_T2.size not in (1, grid_size):
                     err_msg = f"{fname}: 'var' parameter for T2 (in `params_T2`) has incompatible size"
+                    if logger: logger.error(err_msg)
                     raise PgsError(err_msg)
 
     # Note: format of data (x, v) not checked !
@@ -699,18 +740,21 @@ def pluriGaussianSim(
     if x is None:
         if v is not None:
             err_msg = f'{fname}: `x` is not given (`None`) but `v` is given (not `None`)'
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
     else:
         # Preparation for conditional case
         if v is None:
             err_msg = f'{fname}: `x` is given (not `None`) but `v` is not given (`None`)'
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
         x = np.asarray(x, dtype='float').reshape(-1, d) # cast in d-dimensional array if needed
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if len(v) != x.shape[0]:
             err_msg = f'{fname}: length of `v` is not valid'
+            if logger: logger.error(err_msg)
             raise PgsError(err_msg)
 
         # Compute
@@ -729,11 +773,15 @@ def pluriGaussianSim(
         if len(indc_unique) != len(x):
             if np.any([len(np.unique(v[indc_inv==j])) > 1 for j in range(len(indc_unique))]):
                 err_msg = f'{fname}: more than one conditioning point fall in a same grid cell and have different conditioning values'
+                if logger: logger.error(err_msg)
                 raise PgsError(err_msg)
 
             else:
                 if verbose > 0:
-                    print(f'{fname}: WARNING: more than one conditioning point fall in a same grid cell with same conditioning value (consistent)')
+                    if logger:
+                        logger.warning(f'{fname}: more than one conditioning point fall in a same grid cell with same conditioning value (consistent)')
+                    else:
+                        print(f'{fname}: WARNING: more than one conditioning point fall in a same grid cell with same conditioning value (consistent)')
                 x = np.array([x[indc_inv==j][0] for j in range(len(indc_unique))])
                 v = np.array([v[indc_inv==j][0] for j in range(len(indc_unique))])
 
@@ -884,12 +932,18 @@ def pluriGaussianSim(
     for ireal in range(nreal):
         # Generate ireal-th realization
         if verbose > 1:
-            print(f'{fname}: simulation {ireal+1} of {nreal}...')
+            if logger:
+                logger.info(f'{fname}: simulation {ireal+1} of {nreal}...')
+            else:
+                print(f'{fname}: simulation {ireal+1} of {nreal}...')
         for ntry in range(ntry_max):
             sim_ok = True
             nhd_ok = [] # to be appended for full output...
             if verbose > 2 and ntry > 0:
-                print(f'   ... new trial ({ntry+1} of {ntry_max}) for simulation {ireal+1} of {nreal}...')
+                if logger:
+                    logger.info(f'{fname}:   ... new trial ({ntry+1} of {ntry_max}) for simulation {ireal+1} of {nreal}...')
+                else:
+                    print(f'{fname}:   ... new trial ({ntry+1} of {ntry_max}) for simulation {ireal+1} of {nreal}...')
             if x is None:
                 # Unconditional case
                 # ------------------
@@ -903,10 +957,14 @@ def pluriGaussianSim(
                     except:
                         sim_ok = False
                         if verbose > 2:
-                            print('   ... simulation of T1 failed')
+                            if logger:
+                                logger.info(f'{fname}:   ... simulation of T1 failed')
+                            else:
+                                print(f'{fname}:   ... simulation of T1 failed')
                         continue
                     # except Exception as exc:
                     #     err_msg = f'{fname}: simulation of T1 failed'
+                    #     if logger: logger.error(err_msg)
                     #     raise PgsError(err_msg) from exc
 
                 else:
@@ -926,10 +984,14 @@ def pluriGaussianSim(
                     except:
                         sim_ok = False
                         if verbose > 2:
-                            print('   ... simulation of T2 failed')
+                            if logger:
+                                logger.info(f'{fname}:   ... simulation of T2 failed')
+                            else:
+                                print(f'{fname}:   ... simulation of T2 failed')
                         continue
                     # except Exception as exc:
                     #     err_msg = f'{fname}: simulation of T2 failed'
+                    #     if logger: logger.error(err_msg)
                     #     raise PgsError(err_msg) from exc
 
                 else:
@@ -969,7 +1031,10 @@ def pluriGaussianSim(
 
                 if not sim_ok:
                     if verbose > 2:
-                        print('    ... cannot solve kriging system (for T1, initialization)')
+                        if logger:
+                            logger.info(f'{fname}:    ... cannot solve kriging system (for T1, initialization)')
+                        else:
+                            print(f'{fname}:    ... cannot solve kriging system (for T1, initialization)')
                     continue
 
                 # Initialize: unconditional simulation of T2 at x (values in v_T[:,1])
@@ -998,7 +1063,10 @@ def pluriGaussianSim(
 
                 if not sim_ok:
                     if verbose > 2:
-                        print('    ... cannot solve kriging system (for T2, initialization)')
+                        if logger:
+                            logger.info(f'{fname}:    ... cannot solve kriging system (for T2, initialization)')
+                        else:
+                            print(f'{fname}:    ... cannot solve kriging system (for T2, initialization)')
                     continue
 
                 # Update simulated values v_T at x using Metropolis-Hasting (MH) algorithm
@@ -1016,7 +1084,10 @@ def pluriGaussianSim(
                         # Set acceptation probability for bad case
                         p_accept = accept_init * np.power(1.0 - nit/mh_iter_min, accept_pow)
                     if verbose > 3:
-                        print(f'   ... sim {ireal+1} of {nreal}: MH iter {nit+1} of {mh_iter_min},  {mh_iter_max}...')
+                        if logger:
+                            logger.info(f'{fname}:   ... sim {ireal+1} of {nreal}: MH iter {nit+1} of {mh_iter_min},  {mh_iter_max}...')
+                        else:
+                            print(f'{fname}:   ... sim {ireal+1} of {nreal}: MH iter {nit+1} of {mh_iter_min},  {mh_iter_max}...')
                     ind = np.random.permutation(npt)
                     for k in ind:
                         if nit >= mh_iter_min and hd_ok[k]:
@@ -1037,7 +1108,10 @@ def pluriGaussianSim(
                             except:
                                 sim_ok = False
                                 if verbose > 2:
-                                    print('   ... cannot solve kriging system (for T1)')
+                                    if logger:
+                                        logger.info(f'{fname}:   ... cannot solve kriging system (for T1)')
+                                    else:
+                                        print(f'{fname}:   ... cannot solve kriging system (for T1)')
                                 break
                             #
                             # Mean (kriged) value at x[k]
@@ -1059,7 +1133,10 @@ def pluriGaussianSim(
                             except:
                                 sim_ok = False
                                 if verbose > 2:
-                                    print('   ... cannot solve kriging system (for T2)')
+                                    if logger:
+                                        logger.info(f'{fname}:   ... cannot solve kriging system (for T2)')
+                                    else:
+                                        print(f'{fname}:   ... cannot solve kriging system (for T2)')
                                 break
                             #
                             # Mean (kriged) value at x[k]
@@ -1091,7 +1168,11 @@ def pluriGaussianSim(
                 if nhd_ok[-1] != npt:
                     # sim_ok kept to True
                     if verbose > 2:
-                        print('   ... conditioning failed')
+                        if logger:
+                            logger.info(f'{fname}:   ... conditioning failed')
+                        else:
+                            print(f'{fname}:   ... conditioning failed')
+
                     if ntry < ntry_max - 1 or not retrieve_real_anyway:
                         continue
 
@@ -1105,7 +1186,10 @@ def pluriGaussianSim(
                     except:
                         sim_ok = False
                         if verbose > 2:
-                            print('   ... conditional simulation of T1 failed')
+                            if logger:
+                                logger.info(f'{fname}:   ... conditional simulation of T1 failed')
+                            else:
+                                print(f'{fname}:   ... conditional simulation of T1 failed')
                         continue
 
                 else:
@@ -1125,7 +1209,10 @@ def pluriGaussianSim(
                     except:
                         sim_ok = False
                         if verbose > 2:
-                            print('   ... conditional simulation of T2 failed')
+                            if logger:
+                                logger.info(f'{fname}:   ... conditional simulation of T2 failed')
+                            else:
+                                print(f'{fname}:   ... conditional simulation of T2 failed')
                         continue
                 else:
                     sim_T2 = params_T2['mean'].reshape(1,*dimension[::-1])
@@ -1142,7 +1229,10 @@ def pluriGaussianSim(
                             break
                         else:
                             if verbose > 0:
-                                print(f'{fname}: WARNING: realization does not honoured all data, but retrieved anyway')
+                                if logger:
+                                    logger.warning(f'{fname}: realization does not honoured all data, but retrieved anyway')
+                                else:
+                                    print(f'{fname}: WARNING: realization does not honoured all data, but retrieved anyway')
                 Z_real = flag_value(sim_T1[0], sim_T2[0])
                 Z.append(Z_real)
                 if full_output:
@@ -1153,7 +1243,10 @@ def pluriGaussianSim(
 
     # Get Z
     if verbose > 0 and len(Z) < nreal:
-        print(f'{fname}: WARNING: some realization failed (missing)')
+        if logger:
+            logger.warning(f'{fname}: some realization failed (missing)')
+        else:
+            print(f'{fname}: WARNING: some realization failed (missing)')
     Z = np.asarray(Z).reshape(len(Z), *np.atleast_1d(dimension)[::-1])
 
     if full_output:

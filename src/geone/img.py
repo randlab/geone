@@ -208,7 +208,8 @@ class Img(object):
                  sx=1.0, sy=1.0, sz=1.0,
                  ox=0.0, oy=0.0, oz=0.0,
                  nv=0, val=np.nan, varname=None,
-                 name=''):
+                 name='',
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -261,6 +262,10 @@ class Img(object):
 
         name : str, default: ''
             name of the image
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'Img'
 
@@ -280,6 +285,7 @@ class Img(object):
             valarr = valarr.flat[0] * np.ones(nx*ny*nz*nv)
         elif valarr.size != nx*ny*nz*nv:
             err_msg = f'{fname}: `val` does not have an acceptable size'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         self.val = valarr.reshape(nv, nz, ny, nx)
@@ -294,6 +300,7 @@ class Img(object):
                 self.varname = [f'{varname[0]}{i:d}' for i in range(nv)]
             else:
                 err_msg = f'{fname}: `varname` has not an acceptable size'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
         self.name = name
@@ -328,7 +335,7 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_varname(self, varname=None, ind=-1):
+    def set_varname(self, varname=None, ind=-1, logger=None):
         """
         Sets name of the variable of the given index.
 
@@ -341,6 +348,10 @@ class Img(object):
         ind : int, default: -1
             index of the variable for which the name is given (negative integer
             for indexing from the end)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'set_varname'
 
@@ -351,6 +362,7 @@ class Img(object):
 
         if ii < 0 or ii >= self.nv:
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         if varname is None:
@@ -507,7 +519,9 @@ class Img(object):
             iy0=0, iy1=None,
             iz0=0, iz1=None,
             iv0=0, iv1=None,
-            newval=np.nan, newvarname=""):
+            newval=np.nan, 
+            newvarname="",
+            logger=None):
         """
         Resizes the image (including "variable" direction).
 
@@ -552,6 +566,10 @@ class Img(object):
 
         newvarname : str, default: ''
             prefix for new variable (if needed)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'resize'
 
@@ -569,18 +587,22 @@ class Img(object):
 
         if ix0 >= ix1:
             err_msg = f'{fname}: invalid index(es) along x'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         if iy0 >= iy1:
             err_msg = f'{fname}: invalid index(es) along y'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         if iz0 >= iz1:
             err_msg = f'{fname}: invalid index(es) along z'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         if iv0 >= iv1:
             err_msg = f'{fname}: invalid index(es) along v'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         initShape = self.val.shape
@@ -619,7 +641,7 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def insert_var(self, val=np.nan, varname=None, ind=0):
+    def insert_var(self, val=np.nan, varname=None, ind=0, logger=None):
         """
         Inserts one or several variable(s) at a given index.
 
@@ -640,6 +662,10 @@ class Img(object):
         ind : int, default: 0
             index where the new variable(s) is (are) inserted (negative integer
             for indexing from the end)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'insert_var'
 
@@ -651,6 +677,7 @@ class Img(object):
 
         if ii < 0 or ii > self.nv:
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         # Check val, set valarr (array of values)
@@ -659,6 +686,7 @@ class Img(object):
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size % self.nxyz() != 0:
             err_msg = f'{fname}: `val` does not have an acceptable size'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         m = valarr.size // self.nxyz() # number of variable(s) to be inserted
@@ -669,6 +697,7 @@ class Img(object):
                 varname = [varname]
             elif (not isinstance(varname, tuple) and not isinstance(varname, list) and not isinstance(varname, np.ndarray)) or len(varname)!=m:
                 err_msg = f'{fname}: `varname` does not have an acceptable size'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
             else:
                 varname = list(varname)
@@ -689,7 +718,7 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def append_var(self, val=np.nan, varname=None):
+    def append_var(self, val=np.nan, varname=None, logger=None):
         """
         Appends (i.e. inserts at the end) one or several variable(s).
 
@@ -708,14 +737,18 @@ class Img(object):
             name(s) of the new variable(s);
             by default (`None`): variable names are set to "V<num>", where <num>
             starts from the number of variables before the insertion
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         # fname = 'append_var'
 
-        self.insert_var(val=val, varname=varname, ind=self.nv)
+        self.insert_var(val=val, varname=varname, ind=self.nv, logger=logger)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def remove_var(self, ind=None, indList=None):
+    def remove_var(self, ind=None, indList=None, logger=None):
         """
         Removes variable(s) of given index(es).
 
@@ -726,28 +759,31 @@ class Img(object):
 
         indList : int or 1D array-like of ints
             deprecated (used in place of `ind` if `ind=None`)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'remove_var'
 
         if ind is None:
             ind = indList
             if ind is None:
-                # print(f'WARNING ({fname}): no index given')
                 return None
 
         ind = np.atleast_1d(ind).reshape(-1)
         if ind.size == 0:
-            # print(f'WARNING ({fname}): no index given')
             return None
 
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         ind = np.setdiff1d(np.arange(self.nv), ind)
 
-        self.extract_var(ind)
+        self.extract_var(ind, logger=logger)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -769,7 +805,7 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_var(self, val=np.nan, varname=None, ind=-1):
+    def set_var(self, val=np.nan, varname=None, ind=-1, logger=None):
         """
         Sets values and name of one variable (of given index).
 
@@ -788,6 +824,10 @@ class Img(object):
         ind : int, default: -1
             index of the variable to be set (negative integer for indexing from
             the end)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'set_var'
 
@@ -798,6 +838,7 @@ class Img(object):
 
         if ii < 0 or ii >= self.nv:
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
@@ -805,6 +846,7 @@ class Img(object):
             valarr = valarr.flat[0] * np.ones(self.nxyz())
         elif valarr.size != self.nxyz():
             err_msg = f'{fname}: `val` does not have an acceptable size'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         # Set variable of index ii
@@ -816,7 +858,7 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def extract_var(self, ind=None, indList=None):
+    def extract_var(self, ind=None, indList=None, logger=None):
         """
         Extracts variable(s) (of given index(es)).
 
@@ -830,6 +872,10 @@ class Img(object):
 
         indList : int or 1D array-like of ints
             deprecated (used in place of `ind` if `ind=None`)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'extract_var'
 
@@ -837,6 +883,7 @@ class Img(object):
             ind = indList
             if ind is None:
                 err_msg = f'{fname}: no index given'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
         ind = np.atleast_1d(ind).reshape(-1)
@@ -847,6 +894,7 @@ class Img(object):
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         # Update val array
@@ -860,7 +908,7 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def get_unique_one_var(self, ind=0, ignore_missing_value=True):
+    def get_unique_one_var(self, ind=0, ignore_missing_value=True, logger=None):
         """
         Gets unique values of one variable (of given index).
 
@@ -872,6 +920,10 @@ class Img(object):
         ignore_missing_value : bool, default: True
             - if `True`: missing values (`numpy.nan`) are ignored (if present)
             - if `False`: value `numpy.nan` is retrieved in output if present
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
 
         Returns
         -------
@@ -887,6 +939,7 @@ class Img(object):
 
         if ii < 0 or ii >= self.nv:
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         uval = np.unique(self.val[ii])
@@ -898,7 +951,7 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def get_prop_one_var(self, ind=0, density=True, ignore_missing_value=True):
+    def get_prop_one_var(self, ind=0, density=True, ignore_missing_value=True, logger=None):
         """
         Gets proportions (density or count) of unique values of one variable (of given index).
 
@@ -914,6 +967,10 @@ class Img(object):
         ignore_missing_value : bool, default: True
             - if `True`: missing values (`numpy.nan`) are ignored (if present)
             - if `False`: value `numpy.nan` is retrieved in output if present
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
 
         Returns
         -------
@@ -932,6 +989,7 @@ class Img(object):
 
         if ii < 0 or ii >= self.nv:
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         uv, cv = np.unique(self.val[ii], return_counts=True)
@@ -974,7 +1032,7 @@ class Img(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def get_prop(self, density=True, ignore_missing_value=True):
+    def get_prop(self, density=True, ignore_missing_value=True, logger=None):
         """
         Gets proportions (density or count) of unique values for each variable.
 
@@ -987,6 +1045,10 @@ class Img(object):
         ignore_missing_value : bool, default: True
             - if `True`: missing values (`numpy.nan`) are ignored (if present)
             - if `False`: value `numpy.nan` is retrieved in output if present
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
 
         Returns
         -------
@@ -1015,7 +1077,7 @@ class Img(object):
                 uv_all_ind_nan = None
 
         for i in range(self.nv):
-            uv, cv = self.get_prop_one_var(ind=i, density=density, ignore_missing_value=ignore_missing_value)
+            uv, cv = self.get_prop_one_var(ind=i, density=density, ignore_missing_value=ignore_missing_value, logger=logger)
             for j, v in enumerate(uv):
                 if np.isnan(v):
                     cv_all[i, uv_all_ind_nan] = cv[j]
@@ -1467,8 +1529,11 @@ class PointSet(object):
     #
     def __init__(self,
                  npt=0,
-                 nv=0, val=np.nan, varname=None,
-                 name=""):
+                 nv=0, 
+                 val=np.nan, 
+                 varname=None,
+                 name="",
+                 logger=None):
         """
         Inits an instance of the class.
 
@@ -1493,6 +1558,10 @@ class PointSet(object):
 
         name : str, default: ''
             name of the point set
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'PointSet'
 
@@ -1504,6 +1573,7 @@ class PointSet(object):
             valarr = valarr.flat[0] * np.ones(npt*nv)
         elif valarr.size != npt*nv:
             err_msg = f'{fname}: `val` does not have an acceptable size'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         self.val = valarr.reshape(nv, npt)
@@ -1528,6 +1598,7 @@ class PointSet(object):
             varname = list(np.asarray(varname).reshape(-1))
             if len(varname) != nv:
                 err_msg = f'{fname}: `varname` has not an acceptable size'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
             self.varname = list(np.asarray(varname).reshape(-1))
@@ -1575,7 +1646,7 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_varname(self, varname=None, ind=-1):
+    def set_varname(self, varname=None, ind=-1, logger=None):
         """
         Sets name of the variable of the given index.
 
@@ -1588,6 +1659,10 @@ class PointSet(object):
         ind : int, default: -1
             index of the variable for which the name is given (negative integer
             for indexing from the end)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'set_varname'
 
@@ -1598,6 +1673,7 @@ class PointSet(object):
 
         if ii < 0 or ii >= self.nv:
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         if varname is None:
@@ -1606,7 +1682,7 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def insert_var(self, val=np.nan, varname=None, ind=0):
+    def insert_var(self, val=np.nan, varname=None, ind=0, logger=None):
         """
         Inserts one or several variable(s) at a given index.
 
@@ -1627,6 +1703,10 @@ class PointSet(object):
         ind : int, default: 0
             index where the new variable(s) is (are) inserted (negative integer
             for indexing from the end)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'insert_var'
 
@@ -1638,6 +1718,7 @@ class PointSet(object):
 
         if ii < 0 or ii > self.nv:
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         # Check val, set valarr (array of values)
@@ -1646,6 +1727,7 @@ class PointSet(object):
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size % self.npt != 0:
             err_msg = f'{fname}: `val` does not have an acceptable size'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         m = valarr.size // self.npt # number of variable to be inserted
@@ -1656,6 +1738,7 @@ class PointSet(object):
                 varname = [varname]
             if (not isinstance(varname, tuple) and not isinstance(varname, list) and not isinstance(varname, np.ndarray)) or len(varname)!=m:
                 err_msg = f'{fname}: `varname` does not have an acceptable size'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
             else:
                 varname = list(varname)
@@ -1676,7 +1759,7 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def append_var(self, val=np.nan, varname=None):
+    def append_var(self, val=np.nan, varname=None, logger=None):
         """
         Appends (i.e. inserts at the end) one or several variable(s).
 
@@ -1695,14 +1778,18 @@ class PointSet(object):
             name(s) of the new variable(s);
             by default (`None`): variable names are set to "V<num>", where <num>
             starts from the number of variables before the insertion
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         # fname = 'append_var'
 
-        self.insert_var(val=val, varname=varname, ind=self.nv)
+        self.insert_var(val=val, varname=varname, ind=self.nv, logger=logger)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def remove_var(self, ind=None, indList=None):
+    def remove_var(self, ind=None, indList=None, logger=None):
         """
         Removes variable(s) of given index(es).
 
@@ -1713,28 +1800,31 @@ class PointSet(object):
 
         indList : int or 1D array-like of ints
             deprecated (used in place of `ind` if `ind=None`)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'remove_var'
 
         if ind is None:
             ind = indList
             if ind is None:
-                # print(f'WARNING ({fname}): no index given')
                 return None
 
         ind = np.atleast_1d(ind).reshape(-1)
         if ind.size == 0:
-            # print(f'WARNING ({fname}): no index given')
             return None
 
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         ind = np.setdiff1d(np.arange(self.nv), ind)
 
-        self.extract_var(ind)
+        self.extract_var(ind, logger=logger)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -1755,7 +1845,7 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def set_var(self, val=np.nan, varname=None, ind=-1):
+    def set_var(self, val=np.nan, varname=None, ind=-1, logger=None):
         """
         Sets values and name of one variable (of given index).
 
@@ -1774,6 +1864,10 @@ class PointSet(object):
         ind : int, default: -1
             index of the variable to be set (negative integer for indexing from
             the end)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'set_var'
 
@@ -1784,6 +1878,7 @@ class PointSet(object):
 
         if ii < 0 or ii >= self.nv:
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         valarr = np.asarray(val, dtype=float) # numpy.ndarray (possibly 0-dimensional)
@@ -1791,6 +1886,7 @@ class PointSet(object):
             valarr = valarr.flat[0] * np.ones(self.npt)
         elif valarr.size != self.npt:
             err_msg = f'{fname}: `val` does not have an acceptable size'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         # Set variable of index ii
@@ -1802,7 +1898,7 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def extract_var(self, ind=None, indList=None):
+    def extract_var(self, ind=None, indList=None, logger=None):
         """
         Extracts variable(s) (of given index(es)).
 
@@ -1816,6 +1912,10 @@ class PointSet(object):
 
         indList : int or 1D array-like of ints
             deprecated (used in place of `ind` if `ind=None`)
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'extract_var'
 
@@ -1823,6 +1923,7 @@ class PointSet(object):
             ind = indList
             if ind is None:
                 err_msg = f'{fname}: no index given'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
         ind = np.atleast_1d(ind).reshape(-1)
@@ -1833,6 +1934,7 @@ class PointSet(object):
         ind[ind<0] = self.nv + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.nv)):
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         # Update val array
@@ -1846,7 +1948,7 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def remove_point(self, ind=None):
+    def remove_point(self, ind=None, logger=None):
         """
         Removes point(s) (of given index-es).
 
@@ -1854,11 +1956,14 @@ class PointSet(object):
         ----------
         ind : int or 1D array-like of ints
             index(es) of the point(s) to be removed
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'remove_point'
 
         if ind is None:
-            # print(f'WARNING ({fname}): no index given')
             return None
 
         ind = np.atleast_1d(ind).reshape(-1)
@@ -1868,11 +1973,12 @@ class PointSet(object):
         ind[ind<0] = self.npt + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.npt)):
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         ind = np.setdiff1d(np.arange(self.npt), ind)
 
-        self.extract_point(ind)
+        self.extract_point(ind, logger=logger)
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
@@ -1907,7 +2013,7 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def extract_point(self, ind=None):
+    def extract_point(self, ind=None, logger=None):
         """
         Extracts point(s) (of given index-es).
 
@@ -1918,11 +2024,16 @@ class PointSet(object):
         ind : int or 1D array-like of ints
             index(es) of the point(s) to be extracted (kept);
             note: use `ind=[]` to remove all points
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'extract_point'
 
         if ind is None:
             err_msg = f'{fname}: no index given'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         ind = np.atleast_1d(ind).reshape(-1)
@@ -1933,6 +2044,7 @@ class PointSet(object):
         ind[ind<0] = self.npt + ind[ind<0] # deal with negative index-es
         if np.any((ind < 0, ind >= self.npt)):
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         # Update val array
@@ -1943,7 +2055,7 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def get_unique_one_var(self, ind=0, ignore_missing_value=True):
+    def get_unique_one_var(self, ind=0, ignore_missing_value=True, logger=None):
         """
         Gets unique values of one variable (of given index).
 
@@ -1955,6 +2067,10 @@ class PointSet(object):
         ignore_missing_value : bool, default: True
             - if `True`: missing values (`numpy.nan`) are ignored (if present)
             - if `False`: value `numpy.nan` is retrieved in output if present
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
 
         Returns
         -------
@@ -1970,6 +2086,7 @@ class PointSet(object):
 
         if ii < 0 or ii >= self.nv:
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         uval = np.unique(self.val[ii])
@@ -1981,7 +2098,7 @@ class PointSet(object):
     # ------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------
-    def get_prop_one_var(self, ind=0, density=True, ignore_missing_value=True):
+    def get_prop_one_var(self, ind=0, density=True, ignore_missing_value=True, logger=None):
         """
         Gets proportions (density or count) of unique values of one variable (of given index).
 
@@ -1997,6 +2114,10 @@ class PointSet(object):
         ignore_missing_value : bool, default: True
             - if `True`: missing values (`numpy.nan`) are ignored (if present)
             - if `False`: value `numpy.nan` is retrieved in output if present
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
 
         Returns
         -------
@@ -2015,6 +2136,7 @@ class PointSet(object):
 
         if ii < 0 or ii >= self.nv:
             err_msg = f'{fname}: invalid index'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         uv, cv = np.unique(self.val[ii], return_counts=True)
@@ -2193,9 +2315,16 @@ class Img_interp_func(object):
     """
     def __init__(self,
                  im,
-                 ind=0, ix=None, iy=None, iz=None,
-                 angle_var=False, angle_deg=True,
-                 order=1, mode='nearest', cval=np.nan):
+                 ind=0, 
+                 ix=None, 
+                 iy=None,
+                 iz=None,
+                 angle_var=False, 
+                 angle_deg=True,
+                 order=1, 
+                 mode='nearest', 
+                 cval=np.nan, 
+                 logger=None):
         """
         Inits an instance of the class (interpolator function).
 
@@ -2246,12 +2375,17 @@ class Img_interp_func(object):
         cval : float, default `numpy.nan`
             value used for evaluation beyond the domain of the image grid, used if
             `mode=constant`
+
+        logger : :class:`logging.Logger`, optional
+            logger (see package `logging`)
+            if specified, messages are written via `logger` (no print)
         """
         fname = 'Img_interp_func'
 
         # Check image
         if not isinstance(im, Img):
             err_msg = f'{fname}: `im` is not a geone image'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         # Check set variable index
@@ -2262,6 +2396,7 @@ class Img_interp_func(object):
 
         if iv < 0 or iv >= im.nv:
             err_msg = f'{fname}: invalid variable index (`ind`)'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         # Check index along x axis
@@ -2271,6 +2406,7 @@ class Img_interp_func(object):
 
             if ix < 0 or ix >= im.nx:
                 err_msg = f'{fname}: invalid index for x axis (`ix`)'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
         # Check index along y axis
@@ -2280,6 +2416,7 @@ class Img_interp_func(object):
 
             if iy < 0 or iy >= im.ny:
                 err_msg = f'{fname}: invalid index for y axis (`iy`)'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
         # Check index along z axis
@@ -2289,6 +2426,7 @@ class Img_interp_func(object):
 
             if iz < 0 or iz >= im.nz:
                 err_msg = f'{fname}: invalid index for z axis (`iz`)'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
         # Get array of values, spacing, and minimal coordinates for the interpolator
@@ -2335,6 +2473,7 @@ class Img_interp_func(object):
                     min_coords = np.array([im.oz]) + 0.5*spacing
                 else:
                     err_msg = f'{fname}: none of the axes corresponds to "no slice"'
+                    if logger: logger.error(err_msg)
                     raise ImgError(err_msg)
 
         self.angle_var = angle_var
@@ -2419,7 +2558,7 @@ class Img_interp_func(object):
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-def copyImg(im, varInd=None, varIndList=None):
+def copyImg(im, varInd=None, varIndList=None, logger=None):
     """
     Copies an image, with all or a subset of variables.
 
@@ -2434,6 +2573,10 @@ def copyImg(im, varInd=None, varIndList=None):
 
     varIndList : int or 1D array-like of ints, or None (default)
         deprecated (used in place of `varInd` if `varInd=None`)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -2453,23 +2596,27 @@ def copyImg(im, varInd=None, varIndList=None):
             im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
                          sx=im.sx, sy=im.sy, sz=im.sz,
                          ox=im.ox, oy=im.oy, oz=im.oz,
-                         nv=0, name=im.name)
+                         nv=0, name=im.name,
+                         logger=logger)
         else:
             # Check if each index is valid
             if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
                 err_msg = f'{fname}: invalid index-es'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
             im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
                          sx=im.sx, sy=im.sy, sz=im.sz,
                          ox=im.ox, oy=im.oy, oz=im.oz,
                          nv=len(varInd), val=im.val[varInd], varname=[im.varname[i] for i in varInd],
-                         name=im.name)
+                         name=im.name,
+                         logger=logger)
             # im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
             #              sx=im.sx, sy=im.sy, sz=im.sz,
             #              ox=im.ox, oy=im.oy, oz=im.oz,
             #              nv=len(varInd),
-            #              name=im.name)
+            #              name=im.name,
+            #              logger=logger)
             # for i, iv in enumerate(varInd):
             #     im_out.set_var(val=im.val[iv,...], varname=im.varname[iv], ind=i)
     else:
@@ -2478,13 +2625,14 @@ def copyImg(im, varInd=None, varIndList=None):
                      sx=im.sx, sy=im.sy, sz=im.sz,
                      ox=im.ox, oy=im.oy, oz=im.oz,
                      nv=im.nv, val=np.copy(im.val), varname=list(np.copy(np.asarray(im.varname))),
-                     name=im.name)
+                     name=im.name,
+                     logger=logger)
 
     return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def copyPointSet(ps, varInd=None, varIndList=None):
+def copyPointSet(ps, varInd=None, varIndList=None, logger=None):
     """
     Copies a point set, with all or a subset of variables.
 
@@ -2499,6 +2647,10 @@ def copyPointSet(ps, varInd=None, varIndList=None):
 
     varIndList : int or 1D array-like of ints, or None (default)
         deprecated (used in place of `varInd` if `varInd=None`)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -2516,6 +2668,7 @@ def copyPointSet(ps, varInd=None, varIndList=None):
         # Check if each index is valid
         if np.sum([iv in range(ps.nv) for iv in varInd]) != len(varInd):
             err_msg = f'{fname}: invalid index-es'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         ps_out = PointSet(npt=ps.npt,
@@ -2747,6 +2900,7 @@ def aggregateDataPointsWrtGrid(
         op='mean',
         return_inverse=False,
         verbose=0,
+        logger=None,
         **kwargs):
     """
     Aggregates points in same cells of a given grid geometry.
@@ -2822,6 +2976,10 @@ def aggregateDataPointsWrtGrid(
 
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     kwargs : dict
         keyword arguments passed to `numpy.<op>` function, e.g.
@@ -2899,7 +3057,10 @@ def aggregateDataPointsWrtGrid(
     if len(ic_unique) != len(ic):
         # Aggretation is needed
         if verbose > 0:
-            print(f'{fname}: WARNING: more than one point in the same cell (aggregation operation: {op})!')
+            if logger:
+                logger.warning(f'{fname}: more than one point in the same cell (aggregation operation: {op})!')
+            else:
+                print(f'{fname}: WARNING: more than one point in the same cell (aggregation operation: {op})!')
         # Prepare operation
         if op == 'max':
             func = np.nanmax
@@ -2915,6 +3076,7 @@ def aggregateDataPointsWrtGrid(
             func = np.nanquantile
             if 'q' not in kwargs:
                 err_msg = f"({fname}): keyword argument 'q' required by `op='quantile'`"
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
         elif op == 'most_freq':
@@ -2931,6 +3093,7 @@ def aggregateDataPointsWrtGrid(
                 return arr[np.random.randint(arr.shape[0])]
         else:
             err_msg = f"({fname}): unkown operation '{op}'"
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         c = np.array([c[ic_inv==j].mean(axis=0) for j in range(len(ic_unique))])
@@ -2971,6 +3134,7 @@ def imageFromPoints(
         indicator_var=False, count_var=False,
         op='mean',
         verbose=0,
+        logger=None,
         **kwargs):
     """
     Returns an image from points with attached variables.
@@ -3090,6 +3254,10 @@ def imageFromPoints(
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to `numpy.<op>` function, e.g.
         `ddof=1` if `op='std'` or`op='var'`
@@ -3105,10 +3273,12 @@ def imageFromPoints(
     d = points.shape[1]
     if d == 0:
         err_msg = f'{fname}: no point given'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     if d not in (1, 2, 3):
         err_msg = f'{fname}: `points` of invalid dimension'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Deal with x axis
@@ -3116,6 +3286,7 @@ def imageFromPoints(
     if ox is not None:
         if nx is None or sx is None:
             err_msg = f'{fname}: if `ox` is given, `nx` and `sx` must be given'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     else:
@@ -3126,6 +3297,7 @@ def imageFromPoints(
             sx = (x1 - x0)/nx
         else:
             err_msg = f'{fname}: defining grid (x axis)'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         ox = x0 - 0.5*(nx*sx - (x1-x0))
@@ -3137,6 +3309,7 @@ def imageFromPoints(
     elif oy is not None:
         if ny is None or sy is None:
             err_msg = f'{fname}: if `oy` is given, `ny` and `sy` must be given'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     else:
@@ -3147,6 +3320,7 @@ def imageFromPoints(
             sy = (y1 - y0)/ny
         else:
             err_msg = f'{fname}: defining grid (y axis)'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         oy = y0 - 0.5*(ny*sy - (y1-y0))
@@ -3158,6 +3332,7 @@ def imageFromPoints(
     elif oz is not None:
         if nz is None or sz is None:
             err_msg = f'{fname}: if `oz` is given, `nz` and `sz` must be given'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     else:
@@ -3168,12 +3343,13 @@ def imageFromPoints(
             sz = (z1 - z0)/nz
         else:
             err_msg = f'{fname}: defining grid (z axis)'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         oz = z0 - 0.5*(nz*sz - (z1-z0))
 
     # Define output image (without variable)
-    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=0)
+    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=0, logger=logger)
 
     # Return if no values and no additional variable
     if values is None and not indicator_var and not count_var:
@@ -3205,7 +3381,10 @@ def imageFromPoints(
     ind = np.all((ix >= 0, ix < nx, iy >= 0, iy < ny, iz >= 0, iz < nz), axis=0)
     if not np.all(ind):
         if verbose > 0:
-            print(f'{fname}: WARNING: point(s) out of the grid')
+            if logger:
+                logger.warning(f'{fname}: point(s) out of the grid')
+            else:
+                print(f'{fname}: WARNING: point(s) out of the grid')
 
     # Keep points within the grid
     ix, iy, iz = ix[ind], iy[ind], iz[ind]
@@ -3218,12 +3397,12 @@ def imageFromPoints(
     if indicator_var:
         v = np.zeros(nxyz)
         v[ic] = 1.0
-        im.append_var(v, varname='indicator')
+        im.append_var(v, varname='indicator', logger=logger)
     if count_var:
         v = np.zeros(nxyz)
         for i in ic:
             v[i] += 1.0
-        im.append_var(v, varname='count')
+        im.append_var(v, varname='count', logger=logger)
 
     # Add variable from values
     if values is not None:
@@ -3241,7 +3420,11 @@ def imageFromPoints(
         if len(ic_unique) != len(ic):
             # Aggretation is needed
             if verbose > 0:
-                print(f'{fname}: WARNING: more than one point in the same cell (aggregation operation: {op})!')
+                if logger:
+                    logger.warning(f'{fname}: more than one point in the same cell (aggregation operation: {op})!')
+                else:
+                    print(f'{fname}: WARNING: more than one point in the same cell (aggregation operation: {op})!')
+
             # Prepare operation
             if op == 'max':
                 func = np.nanmax
@@ -3257,6 +3440,7 @@ def imageFromPoints(
                 func = np.nanquantile
                 if 'q' not in kwargs:
                     err_msg = f"({fname}): keyword argument 'q' required by `op='quantile'`"
+                    if logger: logger.error(err_msg)
                     raise ImgError(err_msg)
 
             elif op == 'most_freq':
@@ -3268,6 +3452,7 @@ def imageFromPoints(
                     return arr[np.random.randint(arr.size)]
             else:
                 err_msg = f"({fname}): unkown operation '{op}'"
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
             values = np.array([func(np.asarray(values[ic_inv==j]), axis=0, **kwargs) for j in range(len(ic_unique))])
@@ -3275,7 +3460,7 @@ def imageFromPoints(
         else:
             v[:, ic] = values.T
 
-        im.append_var(v, varname=varname)
+        im.append_var(v, varname=varname, logger=logger)
 
     return im
 # ----------------------------------------------------------------------------
@@ -3290,6 +3475,7 @@ def pointSetToImage(
         ymin_ext=0.0, ymax_ext=0.0,
         zmin_ext=0.0, zmax_ext=0.0,
         op='mean',
+        logger=None,
         **kwargs):
     """
     Converts a point set into an image.
@@ -3307,16 +3493,18 @@ def pointSetToImage(
 
     where the fisrt parameter, `ps` is an instance of the class `PointSet`.
 
-    See function :func:`img.imageFromPoints`.
+    See function :func:`imageFromPoints`.
     """
     fname = 'pointSetToImage'
 
     if ps.nv < 3:
         err_msg = f'{fname}: invalid number of variable (should be > 3)'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     if ps.varname[0].lower() != 'x' or ps.varname[1].lower() != 'y' or ps.varname[2].lower() != 'z':
         err_msg = f'{fname}: invalid variable: 3 first ones must be x, y, z coordinates'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # points = np.array((ps.x(), ps.y(), ps.z())).T
@@ -3328,7 +3516,9 @@ def pointSetToImage(
                          ymin_ext=ymin_ext, ymax_ext=ymax_ext,
                          zmin_ext=zmin_ext, zmax_ext=zmax_ext,
                          indicator_var=False, count_var=False,
-                         op=op, **kwargs)
+                         op=op, 
+                         logger=logger,
+                         **kwargs)
 
     return im
 # ----------------------------------------------------------------------------
@@ -3427,7 +3617,7 @@ def isPointSetEqual(ps1, ps2):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def indicatorImage(im, ind=0, categ=None, return_categ=False):
+def indicatorImage(im, ind=0, categ=None, return_categ=False, logger=None):
     """
     Retrieves the image of the indicator of each given category for the given variable.
 
@@ -3450,6 +3640,10 @@ def indicatorImage(im, ind=0, categ=None, return_categ=False):
         indicates if the list of category values for which the indicator is
         retrieved (corresponding to `categ`) is returned or not
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     im_out : :class:`Img`
@@ -3468,11 +3662,12 @@ def indicatorImage(im, ind=0, categ=None, return_categ=False):
 
     if ind < 0 or ind >= im.nv:
         err_msg = f'{fname}: invalid index'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Set categ if not given (None)
     if categ is None:
-        categ = im.get_unique_one_var(ind=ind)
+        categ = im.get_unique_one_var(ind=ind, logger=logger)
 
     ncateg = len(categ)
 
@@ -3481,7 +3676,8 @@ def indicatorImage(im, ind=0, categ=None, return_categ=False):
         nx=im.nx, ny=im.ny, nz=im.nz,
         sx=im.sx, sy=im.sy, sz=im.sz,
         ox=im.ox, oy=im.oy, oz=im.oz,
-        nv=ncateg, varname=[f'{im.varname[ind]}_ind{i:03d}' for i in range(ncateg)])
+        nv=ncateg, varname=[f'{im.varname[ind]}_ind{i:03d}' for i in range(ncateg)],
+        logger=logger)
 
     # Compute each indicator variable
     for i, v in enumerate(categ):
@@ -3503,7 +3699,8 @@ def gatherImages(
         varInd=None,
         keep_varname=False,
         rem_var_from_source=False,
-        treat_image_one_by_one=False):
+        treat_image_one_by_one=False,
+        logger=None):
     """
     Gathers images into one image.
 
@@ -3539,6 +3736,10 @@ def gatherImages(
         to be gathered from all images are inserted in the output image at once \
         (faster)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     im_out : :class:`Img`
@@ -3555,12 +3756,14 @@ def gatherImages(
     for i in range(1,len(im_list)):
         if not isImageDimensionEqual(im_list[0], im_list[i]):
             err_msg = f'{fname}: grid dimensions differ'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     if varInd is not None:
         varInd = np.atleast_1d(varInd).reshape(-1)
         if np.sum([iv in range(im.nv) for im in im_list for iv in varInd]) != len(im_list)*len(varInd):
             err_msg = f'{fname}: invalid index-es'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     varname = None # default
@@ -3580,7 +3783,7 @@ def gatherImages(
                 for im in im_list:
                     val = np.concatenate((val, im.val[varInd]), 0)
                     for iv in ind:
-                        im.remove_var(iv)
+                        im.remove_var(iv, logger=logger)
             else:
                 for im in im_list:
                     val = np.concatenate((val, im.val), 0)
@@ -3592,7 +3795,7 @@ def gatherImages(
                 ind = np.sort(np.unique(varInd))[::-1] # unique index in decreasing order (for removing variable...)
                 for im in im_list:
                     for iv in ind:
-                        im.remove_var(iv)
+                        im.remove_var(iv, logger=logger)
             else:
                 val = np.concatenate([im.val for im in im_list], 0)
                 for im in im_list:
@@ -3612,13 +3815,14 @@ def gatherImages(
             nx=im_list[0].nx, ny=im_list[0].ny, nz=im_list[0].nz,
             sx=im_list[0].sx, sy=im_list[0].sy, sz=im_list[0].sz,
             ox=im_list[0].ox, oy=im_list[0].oy, oz=im_list[0].oz,
-            nv=val.shape[0], val=val, varname=varname)
+            nv=val.shape[0], val=val, varname=varname,
+            logger=logger)
 
     return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageContStat(im, op='mean', **kwargs):
+def imageContStat(im, op='mean', logger=None, **kwargs):
     """
     Computes "pixel-wise" statistics over all variables in an image.
 
@@ -3631,6 +3835,10 @@ def imageContStat(im, op='mean', **kwargs):
         statistic operator referring to the function `numpy.<op>`;
         note: `op='quantile'` requires the parameter
         `q=<sequence_of_quantile_to_compute>` that should be passed via `kwargs`
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     kwargs : dict
         keyword arguments passed to `numpy.<op>` function, e.g.
@@ -3665,29 +3873,32 @@ def imageContStat(im, op='mean', **kwargs):
         func = np.nanquantile
         if 'q' not in kwargs:
             err_msg = f"({fname}): keyword argument 'q' required by `op='quantile'`"
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         varname = [op + '_' + str(v) for v in kwargs['q']]
 
     else:
         err_msg = f"({fname}): unkown operation '{op}'"
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
                  sx=im.sx, sy=im.sy, sz=im.sz,
                  ox=im.ox, oy=im.oy, oz=im.oz,
-                 nv=0, val=0.0)
+                 nv=0, val=0.0,
+                 logger=logger)
 
     vv = func(im.val.reshape(im.nv,-1), axis=0, **kwargs)
     vv = vv.reshape(-1, im.nxyz())
     for v, name in zip(vv, varname):
-        im_out.append_var(v, varname=name)
+        im_out.append_var(v, varname=name, logger=logger)
 
     return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageListContStat(im_list, ind=0, op='mean', **kwargs):
+def imageListContStat(im_list, ind=0, op='mean', logger=None, **kwargs):
     """
     Computes "pixel-wise" statistics for one variable over all images in a list.
 
@@ -3705,6 +3916,10 @@ def imageListContStat(im_list, ind=0, op='mean', **kwargs):
         note: `op='quantile'` requires the parameter
         `q=<sequence_of_quantile_to_compute>` that should be passed via `kwargs`
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to `numpy.<op>` function, e.g.
         `ddof=1` if `op='std'` or`op='var'`
@@ -3721,6 +3936,7 @@ def imageListContStat(im_list, ind=0, op='mean', **kwargs):
     # Check input images
     if not isinstance(im_list, list) and not (isinstance(im_list, np.ndarray) and im_list.ndim==1):
         err_msg = f'{fname}: first argument must be a list (or a 1d-array) of images'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     if len(im_list) == 0:
@@ -3730,6 +3946,7 @@ def imageListContStat(im_list, ind=0, op='mean', **kwargs):
     for im in im_list[1:]:
         if im.val.shape != im0.val.shape:
             err_msg = f'{fname}: images in list of incompatible size'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     # Check (set) ind
@@ -3738,6 +3955,7 @@ def imageListContStat(im_list, ind=0, op='mean', **kwargs):
 
     if ind < 0 or ind >= im0.nv:
         err_msg = f'{fname}: invalid index'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Prepare operation
@@ -3760,29 +3978,32 @@ def imageListContStat(im_list, ind=0, op='mean', **kwargs):
         func = np.nanquantile
         if 'q' not in kwargs:
             err_msg = f"({fname}): keyword argument 'q' required by `op='quantile'`"
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         varname = [op + '_' + str(v) for v in kwargs['q']]
 
     else:
         err_msg = f"({fname}): unkown operation '{op}'"
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     im_out = Img(nx=im0.nx, ny=im0.ny, nz=im0.nz,
                  sx=im0.sx, sy=im0.sy, sz=im0.sz,
                  ox=im0.ox, oy=im0.oy, oz=im0.oz,
-                 nv=0, val=0.0)
+                 nv=0, val=0.0,
+                 logger=logger)
 
     vv = func(np.asarray([im.val[ind] for im in im_list]).reshape(len(im_list),-1), axis=0, **kwargs)
     vv = vv.reshape(-1, im.nxyz())
     for v, name in zip(vv, varname):
-        im_out.append_var(v, varname=name)
+        im_out.append_var(v, varname=name, logger=logger)
 
     return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageCategProp(im, categ):
+def imageCategProp(im, categ, logger=None):
     """
     Computes "pixel-wise" proportions of given categories over all variables in an image.
 
@@ -3793,6 +4014,10 @@ def imageCategProp(im, categ):
 
     categ : 1D array-like
         list of category values for which the proportions are calculated
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -3809,18 +4034,19 @@ def imageCategProp(im, categ):
     imOut = Img(nx=im.nx, ny=im.ny, nz=im.nz,
                 sx=im.sx, sy=im.sy, sz=im.sz,
                 ox=im.ox, oy=im.oy, oz=im.oz,
-                nv=0, val=0.0)
+                nv=0, val=0.0,
+                logger=logger)
 
     for i, code in enumerate(categ_arr):
         x = 1.0*(im.val.reshape(im.nv,-1) == code)
         np.putmask(x, np.isnan(im.val.reshape(im.nv,-1)), np.nan)
-        imOut.append_var(np.mean(x, axis=0), varname=f'prop{i}')
+        imOut.append_var(np.mean(x, axis=0), varname=f'prop{i}', logger=logger)
 
     return imOut
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageListCategProp(im_list, categ, ind=0):
+def imageListCategProp(im_list, categ, ind=0, logger=None):
     """
     Computes "pixel-wise" proportions of given categories for one variable over all images in a list.
 
@@ -3836,6 +4062,10 @@ def imageListCategProp(im_list, categ, ind=0):
     ind : int, default: 0
         index of the variable in each image from `im_list` to be considered
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     im_out : :class:`Img`
@@ -3848,6 +4078,7 @@ def imageListCategProp(im_list, categ, ind=0):
     # Check input images
     if not isinstance(im_list, list) and not (isinstance(im_list, np.ndarray) and im_list.ndim==1):
         err_msg = f'{fname}: first argument must be a list (or a 1d-array) of images'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     if len(im_list) == 0:
@@ -3857,6 +4088,7 @@ def imageListCategProp(im_list, categ, ind=0):
     for im in im_list[1:]:
         if im.val.shape != im0.val.shape:
             err_msg = f'{fname}: images in list of incompatible size'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     # Check (set) ind
@@ -3865,6 +4097,7 @@ def imageListCategProp(im_list, categ, ind=0):
 
     if ind < 0 or ind >= im0.nv:
         err_msg = f'{fname}: invalid index'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Array of categories
@@ -3873,30 +4106,31 @@ def imageListCategProp(im_list, categ, ind=0):
     im_out = Img(nx=im0.nx, ny=im0.ny, nz=im0.nz,
                  sx=im0.sx, sy=im0.sy, sz=im0.sz,
                  ox=im0.ox, oy=im0.oy, oz=im0.oz,
-                 nv=0, val=0.0)
+                 nv=0, val=0.0,
+                 logger=logger)
 
     v = np.asarray([im.val[ind] for im in im_list]).reshape(len(im_list),-1)
     for i, code in enumerate(categ_arr):
         x = 1.0*(v == code)
         np.putmask(x, np.isnan(v), np.nan)
-        im_out.append_var(np.mean(x, axis=0), varname=f'prop{i}')
+        im_out.append_var(np.mean(x, axis=0), varname=f'prop{i}', logger=logger)
 
     return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageEntropy(im, varInd=None, varIndList=None):
+def imageEntropy(im, varInd=None, varIndList=None, logger=None):
     """
     Computes "pixel-wise" entropy from proportions given as variables in an image.
 
     For each grid cell of (single) index i, the entropy is defined as
 
     .. math::
-        H[i] = - \sum_{v} v[i] \cdot \log_{n}(v[i])
+        H[i] = - \\sum_{v} v[i] \\cdot \\log_{n}(v[i])
 
     where :math:`v` loops on each considered variable, and :math:`n` is the number
     of considered variables, assuming that the variables are proportions that sum
-    to 1.0 in each grid cell, i.e. :math:`\sum_{v} v[i]` should be equal to 1.0,
+    to 1.0 in each grid cell, i.e. :math:`\\sum_{v} v[i]` should be equal to 1.0,
     for any i.
 
     Parameters
@@ -3910,6 +4144,10 @@ def imageEntropy(im, varInd=None, varIndList=None):
 
     varIndList : int or 1D array-like of ints, or None (default)
         deprecated (used in place of `varInd` if `varInd=None`)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -3927,6 +4165,7 @@ def imageEntropy(im, varInd=None, varIndList=None):
         # Check if each index is valid
         if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
             err_msg = f'{fname}: invalid index-es'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     else:
@@ -3934,13 +4173,15 @@ def imageEntropy(im, varInd=None, varIndList=None):
 
     if len(varInd) < 2:
         err_msg = f'{fname}: at least 2 indexes should be given'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
                  sx=im.sx, sy=im.sy, sz=im.sz,
                  ox=im.ox, oy=im.oy, oz=im.oz,
                  nv=1, val=np.nan,
-                 name=im.name)
+                 name=im.name,
+                 logger=logger)
 
     t = 1. / np.log(len(varInd))
 
@@ -3973,7 +4214,8 @@ def imageCategFromImageOfProp(
         mode='most_probable',
         target_prop=None,
         varInd=None,
-        categ=None):
+        categ=None,
+        logger=None):
     """
     Retrieves a categorical image from proportions given as variables in an image.
 
@@ -3997,9 +4239,9 @@ def imageCategFromImageOfProp(
 
     target_prop : 1D array-like, optional
         target proportions of categories (indexes), used if `mode='target_prop'`;
-        By default (`None`): the target proportions are set according to the
+        by default (`None`): the target proportions are set according to the
         proportions in the input image, i.e. `target_prop[i] = mean(im.val[varInd[i]])`
-        where `varInd` are the indexes of the considered variables in `im `
+        where `varInd` are the indexes of the considered variables in `im`
 
     varInd : 1D array-like, optional
         indexes of the variables of the input image to be taken into account;
@@ -4011,6 +4253,10 @@ def imageCategFromImageOfProp(
         in the input image) is replaced by `categ[i]` (note that the length of
         `categ` must be the same as the length of `varInd`);
         by default (`None`): `categ[i]=i` is used
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -4025,6 +4271,7 @@ def imageCategFromImageOfProp(
         # Check if each index is valid
         if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
             err_msg = f'{fname}: invalid index-es'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     else:
@@ -4034,6 +4281,7 @@ def imageCategFromImageOfProp(
 
     if n < 2:
         err_msg = f'{fname}: at least 2 indexes should be given'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Array of categories
@@ -4041,6 +4289,7 @@ def imageCategFromImageOfProp(
         categ_arr = np.array(categ, dtype=float).reshape(-1)
         if len(categ_arr) != n:
             err_msg = f'{fname}: `categ` of incompatible length'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     else:
@@ -4060,6 +4309,7 @@ def imageCategFromImageOfProp(
             target_prop_arr = np.array(target_prop, dtype=float).reshape(-1)
             if len(target_prop_arr) != n:
                 err_msg = f'{fname}: `target_prop` of incompatible length'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
         else:
@@ -4068,10 +4318,12 @@ def imageCategFromImageOfProp(
         # Check target proportions
         if np.any((target_prop_arr < 0.0, target_prop_arr > 1.0)):
             err_msg = f'{fname}: `target_prop` invalid (value not in [0,1])'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         if not np.isclose(target_prop_arr.sum(), 1.0):
             err_msg = f'{fname}: `target_prop` invalid (do not sum to 1.0)'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         # Fill the output variable by starting with the index of the smallest target proportion
@@ -4097,7 +4349,8 @@ def imageCategFromImageOfProp(
                  sx=im.sx, sy=im.sy, sz=im.sz,
                  ox=im.ox, oy=im.oy, oz=im.oz,
                  nv=1, val=v,
-                 name=mode)
+                 name=mode,
+                 logger=logger)
 
     return im_out
 # ----------------------------------------------------------------------------
@@ -4109,6 +4362,7 @@ def interpolateImage(
         nx=None, ny=None, nz=None,
         sx=None, sy=None, sz=None,
         ox=None, oy=None, oz=None,
+        logger=None,
         **kwargs):
     """
     Interpolates (each variable of) an image on a given grid, and returns an output image.
@@ -4180,6 +4434,10 @@ def interpolateImage(
 
         Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs : dict
         keyword arguments passed to the interpolator (:class:`Img_interp_func`),
         e.g. keys items 'order', 'mode', 'cval'
@@ -4200,6 +4458,7 @@ def interpolateImage(
 
     if len(categVar) != im.nv:
         err_msg = f'{fname}: `categVar` of incompatible length'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Set output image grid
@@ -4243,16 +4502,17 @@ def interpolateImage(
     im_out = Img(nx=nx, ny=ny, nz=nz,
                  sx=sx, sy=sy, sz=sz,
                  ox=ox, oy=oy, oz=oz,
-                 nv=im.nv, val=np.nan, varname=im.varname)
+                 nv=im.nv, val=np.nan, varname=im.varname,
+                 logger=logger)
 
     # Points where the variables will be evaluated by interpolation
     points = np.array((im_out.xx().reshape(-1), im_out.yy().reshape(-1), im_out.zz().reshape(-1))).T
     for i in range(im.nv):
         if categVar[i]:
             # Get the image of indicator variables
-            im_indic, categVal = indicatorImage(im, ind=i, return_categ=True)
+            im_indic, categVal = indicatorImage(im, ind=i, return_categ=True, logger=logger)
             # Get the interpolator function for each indicator variable
-            interp_indic = [Img_interp_func(im_indic, ind=j, **kwargs) for j in range(len(categVal))]
+            interp_indic = [Img_interp_func(im_indic, ind=j, logger=logger, **kwargs) for j in range(len(categVal))]
             # Interpolate each indicator variable at points (above)
             v = [interp(points) for interp in interp_indic]
 
@@ -4260,168 +4520,22 @@ def interpolateImage(
             im_indic = Img(nx=nx, ny=ny, nz=nz,
                            sx=sx, sy=sy, sz=sz,
                            ox=ox, oy=oy, oz=oz,
-                           nv=len(categVal), val=v)
+                           nv=len(categVal), val=v,
+                           logger=logger)
 
             # Get the image of the resulting categorical variable from the indicator variables
             im_tmp = imageCategFromImageOfProp(im_indic, mode='target_prop', categ=categVal)
             im_out.val[i,:,:,:] = im_tmp.val[0]
         else:
             # Interpolate the variable at points (above)
-            v = Img_interp_func(im, ind=i, **kwargs)(points)
+            v = Img_interp_func(im, ind=i, logger=logger, **kwargs)(points)
             im_out.val[i,:,:,:] = v.reshape(im_out.val.shape[1:])
 
     return im_out
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def imageCategFromImageOfProp(
-        im,
-        mode='most_probable',
-        target_prop=None,
-        varInd=None,
-        categ=None):
-    """
-    Computes a categorical image from image of proportions.
-
-    The input image has at least two variables, with the considered variables
-    (indexes `varInd`) are interpreted as proportions of categories. The
-    `varInd[i]`-th variable is the proportion of the i-th category, and the sum
-    of all considered variables in a same cell should be equal to 1.
-    The output (returned) image has one categorical variable, with index of a
-    category (or a corresponding category value given by `categ`) as value, and
-    is computed according to the specified `mode`: either the most probable
-    category (index) (`mode='most_probable'`) or category (index), such that
-    the proportion over the entire image grid matches (as well as possible)
-    given target proportions (`mode='target_prop'`); in this, the filling of the
-    output image starts with the category (index) of the smallest target
-    proportion.
-
-    Parameters
-    ----------
-    im : :class:`Img`
-        input image with variables interpreted as proportions, the sum of all
-        considered variable (see `varInd` below) in a same grid cell should be
-        equal to 1
-
-    mode : str, {'most_probable' (default), 'target_prop'}
-        defines the mode of computation:
-
-        - 'most_probable': most probable category is retrieved in each cell
-        - 'target_prop': category (index) such that the propotions over the \
-        entire image grid matches match as well as possible the proportions given \
-        by the parameter `target_prop`
-
-    target_prop : 1D array-like, optional
-        sequence of same length as length of `varInd`, target proportion for
-        each category, used if `mode='target_prop'`:
-
-        - if not given (`None`), the target proportions are set according to the \
-        proportions of the input image, i.e. \
-        `target_prop[i] = mean(im.val[varInd[i]])`
-
-    varInd : 1D array-like, optional
-        indexes of the variables of the input image to be taken into account (of
-        length at least 2); by default (`None`): all variables are considered
-        (`varInd = numpy.arange(im.nv)`)
-
-    categ : 1D array-like, optional
-        sequence of same length as length of `varInd`, category values to be
-        assigned in place of the category index in the output image, i.e. output
-        index i (corresponding to variable `varInd[i]` in the input image) is
-        replaced by categ[i]; by default (`None`): `categ[i] = i` is used
-
-    Returns
-    -------
-    im_out : :class:`Img`
-        image with one (categorical) variable, category (index) according to
-        the used mode (see above)
-    """
-    fname = 'imageCategFromImageOfProp'
-
-    if varInd is not None:
-        varInd = np.atleast_1d(varInd).reshape(-1)
-        # Check if each index is valid
-        if np.sum([iv in range(im.nv) for iv in varInd]) != len(varInd):
-            err_msg = f'{fname}: invalid index-es'
-            raise ImgError(err_msg)
-
-    else:
-        varInd = range(im.nv)
-
-    n = len(varInd)
-
-    if n < 2:
-        err_msg = f'{fname}: at least 2 indexes should be given'
-        raise ImgError(err_msg)
-
-    # Array of categories
-    if categ is not None:
-        categ_arr = np.array(categ, dtype=float).reshape(-1)
-        if len(categ_arr) != n:
-            err_msg = f'{fname}: `categ` of incompatible length'
-            raise ImgError(err_msg)
-
-    else:
-        categ_arr = np.arange(float(n))
-
-    val = im.val[varInd,:,:,:] # (copy)
-
-    if mode == 'most_probable':
-        # Get index (id) of the greatest proportion (at each cell)
-        id = np.argsort(-val, axis=0)[0]
-        v = np.asarray([categ_arr[i] for i in id.ravel()]).reshape(id.shape)
-        np.putmask(v, np.any(np.isnan(val), axis=0), np.nan)
-
-    elif mode == 'target_prop':
-        # Array of target proportions
-        if target_prop is not None:
-            target_prop_arr = np.array(target_prop, dtype=float).reshape(-1)
-            if len(target_prop_arr) != n:
-                err_msg = f'{fname}: `target_prop` of incompatible length'
-                raise ImgError(err_msg)
-
-        else:
-            target_prop_arr = np.maximum(0.0, np.minimum(1.0, np.nanmean(val, axis=(1, 2, 3))))
-
-        # Check target proportions
-        if np.any((target_prop_arr < 0.0, target_prop_arr > 1.0)):
-            err_msg = f'{fname}: `target_prop` invalid (value not in [0,1])'
-            raise ImgError(err_msg)
-
-        if not np.isclose(target_prop_arr.sum(), 1.0):
-            err_msg = f'{fname}: `target_prop` invalid (do not sum to 1.0)'
-            raise ImgError(err_msg)
-
-        # Fill the output variable by starting with the index of the smallest target proportion
-        id_prop = np.argsort(target_prop_arr)
-        # Initialization
-        cells = np.any(np.isnan(val), axis=0)   # grid image cell already set
-        id = np.zeros_like(cells, dtype='int')  # output id on grid image
-        # Treat all variable indexes
-        for i in range(n):
-            j = id_prop[i]
-            a = val[j]
-            q = np.quantile(a[~cells], 1.0-target_prop_arr[j])
-            cells_ind = np.all((a > q, ~cells), axis=0)
-            id[cells_ind] = j
-            cells = np.any((cells, cells_ind), axis=0)
-
-        # Treat remaining cells (not yet assigned), using most probable index
-        id[~cells] = np.argsort(-val[:,~cells], axis=0)[0]
-        v = np.asarray([categ_arr[i] for i in id.ravel()]).reshape(id.shape)
-        np.putmask(v, np.any(np.isnan(val), axis=0), np.nan)
-
-    im_out = Img(nx=im.nx, ny=im.ny, nz=im.nz,
-                 sx=im.sx, sy=im.sy, sz=im.sz,
-                 ox=im.ox, oy=im.oy, oz=im.oz,
-                 nv=1, val=v,
-                 name=mode)
-
-    return im_out
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
-def sampleFromPointSet(ps, size, mask_val=None, seed=None):
+def sampleFromPointSet(ps, size, mask_val=None, seed=None, logger=None):
     """
     Samples random points from PointSet object and return a point set.
 
@@ -4440,6 +4554,10 @@ def sampleFromPointSet(ps, size, mask_val=None, seed=None):
     seed : int, optional
         seed for initializing random number generator
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     ps_out : :class:`PointSet`
@@ -4454,17 +4572,20 @@ def sampleFromPointSet(ps, size, mask_val=None, seed=None):
         mask_val = np.asarray(mask_val).reshape(-1)
         if mask_val.size != ps.npt:
             err_msg = f'{fname}: size of `mask_val` invalid'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         indexes = np.where(mask_val != 0)[0]
         if size > len(indexes):
             err_msg = f'{fname}: `size` greater than number of active points in `ps`'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     else:
         indexes = ps.npt
         if size > indexes:
             err_msg = f'{fname}: `size` greater than number of points in `ps`'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     sample_indexes = np.sort(np.random.choice(indexes, size, replace=False))
@@ -4479,7 +4600,7 @@ def sampleFromPointSet(ps, size, mask_val=None, seed=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def sampleFromImage(im, size, mask_val=None, seed=None):
+def sampleFromImage(im, size, mask_val=None, seed=None, logger=None):
     """
     Samples random points from Img object and returns a point set.
 
@@ -4501,6 +4622,10 @@ def sampleFromImage(im, size, mask_val=None, seed=None):
     seed : int, optional
         seed for initializing random number generator
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     ps_out : :class:`PointSet`
@@ -4515,17 +4640,20 @@ def sampleFromImage(im, size, mask_val=None, seed=None):
         mask_val = np.asarray(mask_val).reshape(-1)
         if mask_val.size != im.nxyz():
             err_msg = f'{fname}: size of `mask_val` invalid'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         indexes = np.where(mask_val != 0)[0]
         if size > len(indexes):
             err_msg = f'{fname}: `size` greater than number of active grid cells in `im`'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     else:
         indexes = im.nxyz()
         if size > indexes:
             err_msg = f'{fname}: `size` greater than number of grid cells in `im`'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     sample_indexes = np.sort(np.random.choice(indexes, size, replace=False))
@@ -4545,7 +4673,7 @@ def sampleFromImage(im, size, mask_val=None, seed=None):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def extractRandomPointFromImage(im, npt, seed=None):
+def extractRandomPointFromImage(im, npt, seed=None, logger=None):
     """
     Extracts random points from an image (at center of grid cells) and return
     the corresponding point set.
@@ -4564,6 +4692,10 @@ def extractRandomPointFromImage(im, npt, seed=None):
     seed : int, optional
         seed for initializing random number generator
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     ps_out : :class:`PointSet`
@@ -4573,6 +4705,7 @@ def extractRandomPointFromImage(im, npt, seed=None):
 
     if npt <= 0:
         err_msg = f'{fname}: number of points negative or zero (`npt={npt}`)'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     if npt >= im.nxyz():
@@ -4599,13 +4732,13 @@ def extractRandomPointFromImage(im, npt, seed=None):
     ps = PointSet(npt=npt, nv=3+im.nv, val=0.0)
 
     # Set points coordinates
-    ps.set_var(val=x, varname='X', ind=0)
-    ps.set_var(val=y, varname='Y', ind=1)
-    ps.set_var(val=z, varname='Z', ind=2)
+    ps.set_var(val=x, varname='X', ind=0, logger=logger)
+    ps.set_var(val=y, varname='Y', ind=1, logger=logger)
+    ps.set_var(val=z, varname='Z', ind=2, logger=logger)
 
     # Set next variable(s)
     for i in range(im.nv):
-        ps.set_var(val=v[:,i], varname=im.varname[i], ind=3+i)
+        ps.set_var(val=v[:,i], varname=im.varname[i], ind=3+i, logger=logger)
 
     return ps
 # ----------------------------------------------------------------------------
@@ -4618,7 +4751,8 @@ def readVarsTxt(
         missing_value=None,
         delimiter=' ',
         comments='#',
-        usecols=None):
+        usecols=None,
+        logger=None):
     """
     Reads variables (data table) from a txt file.
 
@@ -4655,6 +4789,10 @@ def readVarsTxt(
         column index(es) to be read (first column corresponds to index 0);
         by default, all columns are read
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     varname : list
@@ -4670,6 +4808,7 @@ def readVarsTxt(
     # Check comments identifier
     if comments is not None and comments == '':
         err_msg = f'{funcname}: `comments` cannot be an empty string, use `comments=None` to disable comments'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Use pandas.read_csv to read (the rest of) the file (variable names and variable values)
@@ -4723,7 +4862,8 @@ def writeVarsTxt(
         missing_value=None,
         delimiter=' ',
         usecols=None,
-        fmt="%.10g"):
+        fmt="%.10g",
+        logger=None):
     """
     Writes variables (data table) in a txt file.
 
@@ -4766,6 +4906,10 @@ def writeVarsTxt(
         format for single variable value, `fmt` is a string of the form
         '%[flag]width[.precision]specifier'
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Notes
     -----
     For more details about format (`fmt` parameter), see
@@ -4776,10 +4920,12 @@ def writeVarsTxt(
     varname = np.asarray(varname).reshape(-1)
     # if not isinstance(varname, list):
     #     err_msg = f'{fname}: `varname` invalid, should be a list'
+    #     if logger: logger.error(err_msg)
     #     raise ImgError(err_msg)
 
     if val.ndim != 2 or val.shape[1] != len(varname):
         err_msg = f'{funcname}: `val` and `varname` are incompatible'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Extract columns if needed
@@ -4826,7 +4972,8 @@ def readGridInfoFromHeaderTxt(
         key_oy=['oy', 'yorigin', 'yllcorner'],
         key_oz=['oz', 'zorigin', 'zllcorner'],
         key_sorting=['sorting'],
-        get_sorting=False):
+        get_sorting=False,
+        logger=None):
     """
     Reads grid geometry information, and sorting mode of filling, from the header in a file.
 
@@ -4984,6 +5131,10 @@ def readGridInfoFromHeaderTxt(
     get_sorting : bool
         indicates if sorting mode is retrieved (`True`) or not (`False`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     ((nx, ny, nz), (sx, sy, sz), (ox, oy, oz)[, sorting]) : 3-tuple [or 4-tuple]
@@ -5002,12 +5153,14 @@ def readGridInfoFromHeaderTxt(
     # Check if the file exists
     if not os.path.isfile(filename):
         err_msg = f'{fname}: invalid filename ({filename})'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Check header_str identifier
     if header_str is not None:
         if header_str == '':
             err_msg = f'{fname}: `header_str` identifier cannot be an empty string, use `header_str=None` instead'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         else:
@@ -5047,6 +5200,7 @@ def readGridInfoFromHeaderTxt(
                 if entry in key_nx: # entry for nx ?
                     if nx_flag:
                         err_msg = f'{fname}: more than one entry for `nx`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                     try:
@@ -5055,11 +5209,13 @@ def readGridInfoFromHeaderTxt(
                         nx_flag = True
                     except:
                         err_msg = f'{fname}: reading entry for `nx`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                 elif entry in key_ny: # entry for ny ?
                     if ny_flag:
                         err_msg = f'{fname}: more than one entry for `ny`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                     try:
@@ -5068,11 +5224,13 @@ def readGridInfoFromHeaderTxt(
                         ny_flag = True
                     except:
                         err_msg = f'{fname}: reading entry for `ny`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                 elif entry in key_nz: # entry for nz ?
                     if nz_flag:
                         err_msg = f'{fname}: more than one entry for `nz`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                     try:
@@ -5081,11 +5239,13 @@ def readGridInfoFromHeaderTxt(
                         nz_flag = True
                     except:
                         err_msg = f'{fname}: reading entry for `nz`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                 elif entry in key_sx: # entry for sx ?
                     if sx_flag:
                         err_msg = f'{fname}: more than one entry for `sx`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                     try:
@@ -5094,11 +5254,13 @@ def readGridInfoFromHeaderTxt(
                         sx_flag = True
                     except:
                         err_msg = f'{fname}: reading entry for `sx`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                 elif entry in key_sy: # entry for sy ?
                     if sy_flag:
                         err_msg = f'{fname}: more than one entry for `sy`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                     try:
@@ -5107,11 +5269,13 @@ def readGridInfoFromHeaderTxt(
                         sy_flag = True
                     except:
                         err_msg = f'{fname}: reading entry for `sy`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                 elif entry in key_sz: # entry for sz ?
                     if sz_flag:
                         err_msg = f'{fname}: more than one entry for `sz`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                     try:
@@ -5120,11 +5284,13 @@ def readGridInfoFromHeaderTxt(
                         sz_flag = True
                     except:
                         err_msg = f'{fname}: reading entry for `sz`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                 elif entry in key_ox: # entry for ox ?
                     if ox_flag:
                         err_msg = f'{fname}: more than one entry for `ox`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                     try:
@@ -5133,11 +5299,13 @@ def readGridInfoFromHeaderTxt(
                         ox_flag = True
                     except:
                         err_msg = f'{fname}: reading entry for `ox`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                 elif entry in key_oy: # entry for oy ?
                     if oy_flag:
                         err_msg = f'{fname}: more than one entry for `oy`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                     try:
@@ -5146,11 +5314,13 @@ def readGridInfoFromHeaderTxt(
                         oy_flag = True
                     except:
                         err_msg = f'{fname}: reading entry for `oy`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                 elif entry in key_oz: # entry for oz ?
                     if oz_flag:
                         err_msg = f'{fname}: more than one entry for `oz`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                     try:
@@ -5159,11 +5329,13 @@ def readGridInfoFromHeaderTxt(
                         oz_flag = True
                     except:
                         err_msg = f'{fname}: reading entry for `oz`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                 elif entry in key_sorting and get_sorting: # entry for sorting (and get_sorting)?
                     if sorting_flag:
                         err_msg = f'{fname}: more than one entry for `sorting`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                     try:
@@ -5172,6 +5344,7 @@ def readGridInfoFromHeaderTxt(
                         sorting_flag = True
                     except:
                         err_msg = f'{fname}: reading entry for `sorting`'
+                        if logger: logger.error(err_msg)
                         raise ImgError(err_msg)
 
                 else:
@@ -5198,7 +5371,8 @@ def readImageTxt(
         missing_value=None,
         delimiter=' ',
         comments='#',
-        usecols=None):
+        usecols=None,
+        logger=None):
     """
     Reads an image from a txt file, including grid geometry, and sorting mode of filling.
 
@@ -5239,7 +5413,7 @@ def readImageTxt(
 
     Grid geometry and sorting mode of filling is retrieved from the header of
     the file (if present), i.e. the commented lines in the beginning of the file
-    (see also function :func:`img.readGridInfoFromHeaderTxt`).
+    (see also function :func:`readGridInfoFromHeaderTxt`).
 
     Example of file::
 
@@ -5331,6 +5505,10 @@ def readImageTxt(
         column index(es) to be read (first column corresponds to index 0);
         by default, all columns are read
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     im : :class:`Img`
@@ -5341,11 +5519,13 @@ def readImageTxt(
     # Check if the file exists
     if not os.path.isfile(filename):
         err_msg = f'{fname}: invalid filename ({filename})'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Check comments identifier
     if comments is None or comments == '':
         err_msg = f'{fname}: `comments` cannot be an empty string (nor `None`)'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Read grid geometry information and sorting mode from header
@@ -5357,9 +5537,11 @@ def readImageTxt(
                 ox=ox, oy=oy, oz=oz,
                 sorting=sorting,
                 header_str=comments,
-                get_sorting=True)
+                get_sorting=True,
+                logger=logger)
     except Exception as exc:
         err_msg = f'{fname}: grid geometry information cannot be read'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg) from exc
 
     # Deal with sorting
@@ -5368,6 +5550,7 @@ def readImageTxt(
 
     if len(sorting) != 6:
         err_msg = f'{fname}: `sorting` (string) invalid'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     sorting = sorting.lower() # tranform to lower case
@@ -5392,6 +5575,7 @@ def readImageTxt(
         tr = (3, 2, 1)
     else:
         err_msg = f'{fname}: `sorting` (string) invalid'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     flip = [1, 1, 1]
@@ -5401,24 +5585,27 @@ def readImageTxt(
             flip[i] = -1
         elif s != '+':
             err_msg = f'{fname}: `sorting` (string) invalid'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     # Read variale names and values from file
     try:
-        varname, val = readVarsTxt(filename, missing_value=missing_value, delimiter=delimiter, comments=comments, usecols=usecols)
+        varname, val = readVarsTxt(filename, missing_value=missing_value, delimiter=delimiter, comments=comments, usecols=usecols, logger=logger)
     except Exception as exc:
         err_msg = f'{fname}: variables names / values cannot be read'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg) from exc
 
     if val.shape[0] != nx*ny*nz:
         err_msg = f'{fname}: number of grid cells and number of values for each variable differ'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Reorganize val array according to sorting, final shape: (len(varname), nz, ny, nx)
     val = val.T.reshape(-1, *sha)[:, ::flip[2], ::flip[1], ::flip[0]].transpose(0, *tr)
 
     # Set image
-    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, len(varname), val, varname, filename)
+    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, len(varname), val, varname, filename, logger=logger)
 
     return im
 # ----------------------------------------------------------------------------
@@ -5433,7 +5620,8 @@ def writeImageTxt(
         comments='#',
         endofline='\n',
         usevars=None,
-        fmt="%.10g"):
+        fmt="%.10g",
+        logger=None):
     """
     Writes an image in a txt file, including grid geometry, and sorting mode of filling.
 
@@ -5523,6 +5711,10 @@ def writeImageTxt(
         format for single variable value, `fmt` is a string of the form
         '%[flag]width[.precision]specifier'
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Notes
     -----
     For more details about format (`fmt` parameter), see
@@ -5533,17 +5725,20 @@ def writeImageTxt(
     # Check comments identifier
     if comments is None or comments == '':
         err_msg = f'{fname}: `comments` cannot be an empty string (nor `None`)'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     if usevars is not None:
         if isinstance(usevars, int):
             if usevars < 0 or usevars >= im.nv:
                 err_msg = f'{fname}: `usevars` invalid'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
         else:
             if np.any([iv < 0 or iv >= im.nv for iv in usevars]):
                 err_msg = f'{fname}: `usevars` invalid'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
     # Deal with sorting
@@ -5552,6 +5747,7 @@ def writeImageTxt(
 
     if len(sorting) != 6:
         err_msg = f'{fname}: `sorting` (string) invalid'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     sorting = sorting.lower() # tranform to lower case
@@ -5570,6 +5766,7 @@ def writeImageTxt(
         tr = (3, 2, 1)
     else:
         err_msg = f'{fname}: `sorting` (string) invalid'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     flip = [1, 1, 1]
@@ -5586,6 +5783,7 @@ def writeImageTxt(
                 flip[2] = -1
         elif s1 != '+':
             err_msg = f'{fname}: `sorting` (string) invalid'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
     # Reorganize val array according to sorting, final shape: (im.nx*im.ny*im.nz, len(varname))
@@ -5616,7 +5814,7 @@ def writeImageTxt(
         # Write header
         ff.write(header.encode())
         # Write variable values
-        writeVarsTxt(ff, im.varname, val, missing_value=missing_value, delimiter=delimiter, usecols=usevars, fmt=fmt)
+        writeVarsTxt(ff, im.varname, val, missing_value=missing_value, delimiter=delimiter, usecols=usevars, fmt=fmt, logger=logger)
 
     return None
 # ----------------------------------------------------------------------------
@@ -5629,7 +5827,10 @@ def readPointSetTxt(
         comments='#',
         usecols=None,
         set_xyz_as_first_vars=True,
-        x_def=0.0, y_def=0.0, z_def=0.0):
+        x_def=0.0, 
+        y_def=0.0, 
+        z_def=0.0,
+        logger=None):
     """
     Reads a point set from a txt file.
 
@@ -5694,6 +5895,10 @@ def readPointSetTxt(
         default values for z coordinates (used if z coordinate is added
         as variable and not read from the file and if `set_xyz_as_first_vars=True`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     ps : :class:`PointSet`
@@ -5704,13 +5909,15 @@ def readPointSetTxt(
     # Check if the file exists
     if not os.path.isfile(filename):
         err_msg = f'{fname}: invalid filename ({filename})'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Read variale names and values from file
     try:
-        varname, val = readVarsTxt(filename, missing_value=missing_value, delimiter=delimiter, comments=comments, usecols=usecols)
+        varname, val = readVarsTxt(filename, missing_value=missing_value, delimiter=delimiter, comments=comments, usecols=usecols, logger=logger)
     except Exception as exc:
         err_msg = f'{fname}: variables names / values cannot be read'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg) from exc
 
     # Number of points and number of variables
@@ -5726,6 +5933,7 @@ def readPointSetTxt(
             ic.append(ix)
         elif len(ix) > 1:
             err_msg = f'{fname}: x-coordinates given more than once'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         else:
@@ -5737,6 +5945,7 @@ def readPointSetTxt(
             ic.append(iy)
         elif len(iy) > 1:
             err_msg = f'{fname}: y-coordinates given more than once'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         else:
@@ -5748,6 +5957,7 @@ def readPointSetTxt(
             ic.append(iz)
         elif len(iz) > 1:
             err_msg = f'{fname}: z-coordinates given more than once'
+            if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
         else:
@@ -5798,7 +6008,8 @@ def writePointSetTxt(
         comments='#',
         endofline='\n',
         usevars=None,
-        fmt="%.10g"):
+        fmt="%.10g",
+        logger=None):
     """
     Writes a point set in a txt file.
 
@@ -5847,6 +6058,10 @@ def writePointSetTxt(
         format for single variable value, `fmt` is a string of the form
         '%[flag]width[.precision]specifier'
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Notes
     -----
     For more details about format (`fmt` parameter), see
@@ -5857,17 +6072,20 @@ def writePointSetTxt(
     # Check comments identifier
     if comments is None or comments == '':
         err_msg = f'{fname}: `comments` cannot be an empty string (nor `None`)'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     if usevars is not None:
         if isinstance(usevars, int):
             if usevars < 0 or usevars >= ps.nv:
                 err_msg = f'{fname}: `usevars` invalid'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
         else:
             if np.any([iv < 0 or iv >= ps.nv for iv in usevars]):
                 err_msg = f'{fname}: `usevars` invalid'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
     # Set header
@@ -5883,7 +6101,7 @@ def writePointSetTxt(
         # Write header
         ff.write(header.encode())
         # Write variable values
-        writeVarsTxt(ff, ps.varname, ps.val.T, missing_value=missing_value, delimiter=delimiter, usecols=usevars, fmt=fmt)
+        writeVarsTxt(ff, ps.varname, ps.val.T, missing_value=missing_value, delimiter=delimiter, usecols=usevars, fmt=fmt, logger=logger)
 
     return None
 # ----------------------------------------------------------------------------
@@ -5895,7 +6113,8 @@ def readImage2Drgb(
         nancol=None,
         keep_channels=True,
         rgb_weight=(0.299, 0.587, 0.114),
-        flip_vertical=True):
+        flip_vertical=True,
+        logger=None):
     """
     Reads an "RGB" image from a file.
 
@@ -5971,6 +6190,10 @@ def readImage2Drgb(
         (using `matplotlib.pyplot.imread`), whereas it is at bottom left in the
         output image)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     im : :class:`Img`
@@ -5987,6 +6210,7 @@ def readImage2Drgb(
     # Check if the file exists
     if not os.path.isfile(filename):
         err_msg = f'{fname}: invalid filename ({filename})'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Read image
@@ -6000,6 +6224,7 @@ def readImage2Drgb(
     # Check input image
     if nv != 3 and nv != 4:
         err_msg = f'{fname}: the input image must be in RGB or RGBA (3 or 4 channels for each pixel)'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Normalize channels if needed
@@ -6048,7 +6273,7 @@ def readImage2Drgb(
 
     # Set output image
     #im = Img(nx, ny, 1, nv=nv, val=vv, varname=varname)
-    im = Img(nx, ny, 1, nv=nv, val=vv, varname=varname)
+    im = Img(nx, ny, 1, nv=nv, val=vv, varname=varname, logger=logger)
 
     if categ:
         out = (im, col)
@@ -6066,7 +6291,8 @@ def writeImage2Drgb(
         cmap='gray',
         nancol=(1.0, 0.0, 0.0),
         flip_vertical=True,
-        verbose=0):
+        verbose=0,
+        logger=None):
     """
     Writes (saves) an "RGB" image in a file.
 
@@ -6118,16 +6344,22 @@ def writeImage2Drgb(
 
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
     """
     fname = 'writeImage2Drgb'
 
     # Check image parameters
     if im.nz != 1:
         err_msg = f'{fname}: `im.nz` must be 1'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     if im.nv not in [1, 3, 4]:
         err_msg = f'{fname}: `im.nv` must be 1, 3, or 4'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Extract the array of values
@@ -6145,10 +6377,12 @@ def writeImage2Drgb(
                 nchan = len(col[0])
             except:
                 err_msg = f'{fname}: `col` must be a sequence of RGB or RBGA color (each entry is a sequence of length 3 or 4)'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
             if not np.all(np.array([len(c) for c in col]) == nchan):
                 err_msg = f'{fname}: same format is required for every color in `col`'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
             # "format" nancol
@@ -6158,11 +6392,13 @@ def writeImage2Drgb(
                 nancolf = mcolors.to_rgba(nancol)
             else:
                 err_msg = f'{fname}: invalid format for the colors (RGB or RGBA required)'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
             # Check value in vv
             if np.any((vv < 0, vv >= len(col))):
                 err_msg = f'{fname}: variable value in image cannot be treated as index in `col`'
+                if logger: logger.error(err_msg)
                 raise ImgError(err_msg)
 
             # Set ouput colors
@@ -6179,11 +6415,16 @@ def writeImage2Drgb(
                     cmap = plt.get_cmap(cmap)
                 except:
                     err_msg = f'{fname}: invalid `cmap` string'
+                    if logger: logger.error(err_msg)
                     raise ImgError(err_msg)
 
             if np.any((vv < 0, vv > 1)):
                 if verbose > 0:
-                    print(f'{fname}: WARNING: variable values in image are not in interval [0,1], they are rescaled')
+                    if logger:
+                        logger.warning(f'{fname}: variable values in image are not in interval [0,1], they are rescaled')
+                    else:
+                        print(f'{fname}: WARNING: variable values in image are not in interval [0,1], they are rescaled')
+
                 ind = np.where(~np.isnan(vv))
                 vmin = np.min(vv[ind])
                 vmax = np.max(vv[ind])
@@ -6209,12 +6450,12 @@ def writeImage2Drgb(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def readImageGslib(filename, missing_value=None):
+def readImageGslib(filename, missing_value=None, logger=None):
     """
     Reads an image from a file in "gslib" format.
 
     It is recommended to use the functions
-    :func:`img.readImageTxt` / :func:`img.writeImageTxt` instead.
+    :func:`readImageTxt` / :func:`writeImageTxt` instead.
 
     File is assumed to be in the following format (text file)::
 
@@ -6251,6 +6492,10 @@ def readImageGslib(filename, missing_value=None):
     missing_value : float, optional
         value that will be replaced by `numpy.nan`
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     im : :class:`Img`
@@ -6261,6 +6506,7 @@ def readImageGslib(filename, missing_value=None):
     # Check if the file exists
     if not os.path.isfile(filename):
         err_msg = f'{fname}: invalid filename ({filename})'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Open the file in read mode
@@ -6299,7 +6545,7 @@ def readImageGslib(filename, missing_value=None):
         np.putmask(valarr, valarr == missing_value, np.nan)
 
     # Set image
-    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr.T, varname, filename)
+    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr.T, varname, filename, logger=logger)
 
     return im
 # ----------------------------------------------------------------------------
@@ -6310,7 +6556,7 @@ def writeImageGslib(im, filename, missing_value=None, fmt="%.10g"):
     Writes an image in a file in "gslib" format.
 
     It is recommended to use the functions
-    :func:`img.readImageTxt` / :func:`img.writeImageTxt` instead.
+    :func:`readImageTxt` / :func:`writeImageTxt` instead.
 
     File is written in the following format (text file)::
 
@@ -6386,12 +6632,12 @@ def writeImageGslib(im, filename, missing_value=None, fmt="%.10g"):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def readImageVtk(filename, missing_value=None):
+def readImageVtk(filename, missing_value=None, logger=None):
     """
     Reads an image from a file in "vtk" format.
 
     It is recommended to use the functions
-    :func:`img.readImageTxt` / :func:`img.writeImageTxt` instead.
+    :func:`readImageTxt` / :func:`writeImageTxt` instead.
 
     Parameters
     ----------
@@ -6400,6 +6646,10 @@ def readImageVtk(filename, missing_value=None):
 
     missing_value : float, optional
         value that will be replaced by `numpy.nan`
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -6411,6 +6661,7 @@ def readImageVtk(filename, missing_value=None):
     # Check if the file exists
     if not os.path.isfile(filename):
         err_msg = f'{fname}: invalid filename ({filename})'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Open the file in read mode
@@ -6439,7 +6690,7 @@ def readImageVtk(filename, missing_value=None):
         np.putmask(valarr, valarr == missing_value, np.nan)
 
     # Set image
-    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr.T, varname, filename)
+    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv, valarr.T, varname, filename, logger=logger)
 
     return im
 # ----------------------------------------------------------------------------
@@ -6457,7 +6708,7 @@ def writeImageVtk(
     Writes an image in a file in "vtk" format.
 
     It is recommended to use the functions
-    :func:`img.readImageTxt` / :func:`img.writeImageTxt` instead.
+    :func:`readImageTxt` / :func:`writeImageTxt` instead.
 
     Parameters
     ----------
@@ -6468,7 +6719,8 @@ def writeImageVtk(
         name of the file
 
     missing_value : float, optional
-        `numpy.nan` value will be replaced by `missing_value` before writing
+        if specified: `numpy.nan` value will be replaced by `missing_value`;
+        otherwise, `numpy.nan` will be used
 
     fmt : str, default: '%.10g'
         format for single variable value, `fmt` is a string of the form
@@ -6513,24 +6765,239 @@ def writeImageVtk(
                  im.nxyz(),
                  '/'.join(im.varname), data_type, im.nv)
 
+    # Save data into a separate array, otherwise the img will be modified
+    data = np.copy(im.val)
+
     # Replace np.nan by missing_value
     if missing_value is not None:
-        np.putmask(im.val, np.isnan(im.val), missing_value)
+        np.putmask(data, np.isnan(data), missing_value)
 
     # Open the file in write binary mode
     with open(filename,'wb') as ff:
         ff.write(shead.encode())
         # Write variable values
-        np.savetxt(ff, im.val.reshape(im.nv, -1).T, delimiter=' ', fmt=fmt)
+        np.savetxt(ff, data.reshape(im.nv, -1).T, delimiter=' ', fmt=fmt)
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def readPointSetGslib(filename, missing_value=None):
+def readImageGrd(filename, varname='V0', logger=None):
+    """
+    Reads an image (2D, one variable) from a file in "grd" (or "asc") format.
+
+    The written file has the header:
+
+        ncols <nx>
+        nrows <ny>
+        xllcorner <ox>
+        yllcorner <oy>
+        cellsize <resolution>
+        NODATA_value <missing_value>
+
+    with the values of one variable starting from the upper left grid cell, 
+    from left to right (along columns or x-axis), then from top to bottom (along 
+    rows or y-axis), one value per line, with <missing_value> for no data entries
+    (that will be replaced by `numpy.nan` in the output image).
+
+    Parameters
+    ----------
+    filename : str
+        name of the file, should has the extension '.grd' or '.asc'
+
+    varname : str, default: 'V0'
+        name of the variable in the output image
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Returns
+    -------
+    im : :class:`Img`
+        image (read from the file)
+    """
+    fname = 'readImageGrd'
+
+    # Check if the file exists
+    if not os.path.isfile(filename):
+        err_msg = f'{fname}: invalid filename ({filename})'
+        if logger: logger.error(err_msg)
+        raise ImgError(err_msg)
+
+    # Open the file in read mode
+    with open(filename,'r') as ff:
+        # Read lines 1 to 6
+        header = [ff.readline() for i in range(6)]
+
+        # Read the rest of the file
+        valarr = np.loadtxt(ff)
+
+    # Get grid and missing value
+    nx, ny, ox, oy, sx, missing_value = None, None, None, None, None, None
+    for i in range(6):
+        k, v = header[i].split()
+        if k == 'ncols':
+            nx = int(v)
+        elif k == 'nrows':
+            ny = int(v)
+        elif k == 'xllcorner':
+            ox = float(v)
+        elif k == 'yllcorner':
+            oy = float(v)
+        elif k == 'cellsize':
+            sx = float(v)
+        elif k == 'NODATA_value':
+            missing_value = float(v)
+        else:
+            err_msg = f'{fname}: invalid "key" in header of the file'
+            if logger: logger.error(err_msg)
+            raise ImgError(err_msg)
+    
+    if nx is None or ny is None or ox is None or oy is None or sx is None or missing_value is None:
+        err_msg = f'{fname}: invalid file header'
+        if logger: logger.error(err_msg)
+        raise ImgError(err_msg)
+
+    # Set value of the variable
+    if valarr.size != nx*ny:
+        err_msg = f'{fname}: invalid number of values in the file'
+        if logger: logger.error(err_msg)
+        raise ImgError(err_msg)
+
+    # Replace missing_value by np.nan
+    np.putmask(valarr, valarr == missing_value, np.nan)
+    
+    # Reshape and flip along y axis
+    valarr = valarr.reshape(ny, nx)[::-1, :]
+
+    # Set image
+    sy = sx
+    nz = 1
+    sz = 1.0
+    oz = 0.0
+
+    im = Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, 1, valarr, varname, filename, logger=logger)
+
+    return im
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def writeImageGrd(
+        filename,
+        im,
+        iv=0,
+        iz=0,
+        missing_value=99999,
+        endofline='\n',
+        fmt="%.10g",
+        logger=None):
+    """
+    Writes an image layer in a text file (format / extention grd or asc, e.g. for QGis).
+
+    One variable in one layer (constant z index) is written.
+
+    The cell size along x and y axes must be the same (resolution).
+
+    The written file has the header:
+
+        ncols <nx>
+        nrows <ny>
+        xllcorner <ox>
+        yllcorner <oy>
+        cellsize <resolution>
+        NODATA_value <missing_value>
+
+    with the values of one variable on a given z-layer, starting from the upper
+    left grid cell, from left to right (along columns or x-axis), then from top to 
+    bottom (along rows or y-axis), one value per line, with <missing_value> for
+    np.nan entries.
+
+    Parameters
+    ----------
+    filename : str
+        name of the file, should has the extension '.grd' or '.asc'
+
+    im : :class:`Img`
+        image to be written
+
+    iv: int, default: 0
+        index of the variable to be written
+
+    iz: int, default: 0
+        index of the z-layer in the image (along z-axis) to be written
+    
+    missing_value : float, optional
+        `numpy.nan` value will be replaced by `missing_value` before writing
+
+    endofline : str, default: '\\\\n'
+        end of line character
+
+    fmt : str, default: '%.10g'
+        format for single variable value, `fmt` is a string of the form
+        '%[flag]width[.precision]specifier'
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Notes
+    -----
+    For more details about format (`fmt` parameter), see
+    https://docs.python.org/3/library/string.html#format-specification-mini-language
+    """
+    fname = 'writeImageGrd'
+
+    # Check iv
+    if iv < 0:
+        iv = im.nv + iv
+
+    if iv < 0 or iv >= im.nv:
+        err_msg = f'{fname}: variable index `iv` not valid'
+        if logger: logger.error(err_msg)
+        raise ImgError(err_msg)
+
+    # Check iz
+    if iz < 0:
+        iz = im.nz + iz
+
+    if iz < 0 or iz >= im.nz:
+        err_msg = f'{fname}: layer index `iz` not valid'
+        if logger: logger.error(err_msg)
+        raise ImgError(err_msg)
+
+    # Check resolution (im.sx and im.sy must be equal)
+    if not np.isclose(im.sx, im.sy):
+        err_msg = f'{fname}: resolution of image not valid: cell size in x and y direction (`sx`, `sy`) must be equal'
+        if logger: logger.error(err_msg)
+        raise ImgError(err_msg)
+
+    # Extract values (flip along y axis)
+    val = im.val[iv, iz, ::-1, :].reshape(-1)
+
+    # Change np.nan to missing_value
+    np.putmask(val, np.isnan(val), missing_value)
+
+    # Set header
+    headerlines = []
+    headerlines.append(f'ncols {im.nx}')
+    headerlines.append(f'nrows {im.ny}')
+    headerlines.append(f'xllcorner {im.ox}')
+    headerlines.append(f'yllcorner {im.oy}')
+    headerlines.append(f'cellsize {im.sx}')
+    headerlines.append(f'NODATA_value {missing_value}')
+    header = f'{endofline}'.join(headerlines)
+
+    np.savetxt(filename, val, comments='', header=header, fmt=fmt)
+
+    return None
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+def readPointSetGslib(filename, missing_value=None, logger=None):
     """
     Reads a point set from a file in "gslib" format.
 
     It is recommended to use the functions
-    :func:`img.readPointSetTxt` / :func:`img.writePointSetTxt` instead.
+    :func:`readPointSetTxt` / :func:`writePointSetTxt` instead.
 
     File is assumed to be in the following format::
 
@@ -6559,6 +7026,10 @@ def readPointSetGslib(filename, missing_value=None):
     missing_value : float, optional
         value that will be replaced by `numpy.nan`
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     ps : :class:`PointSet`
@@ -6569,6 +7040,7 @@ def readPointSetGslib(filename, missing_value=None):
     # Check if the file exists
     if not os.path.isfile(filename):
         err_msg = f'{fname}: invalid filename ({filename})'
+        if logger: logger.error(err_msg)
         raise ImgError(err_msg)
 
     # Open the file in read mode
@@ -6607,7 +7079,7 @@ def writePointSetGslib(ps, filename, missing_value=None, fmt="%.10g"):
     Writes a point set in a file in "gslib" format.
 
     It is recommended to use the functions
-    :func:`img.readPointSetTxt` / :func:`img.writePointSetTxt` instead.
+    :func:`readPointSetTxt` / :func:`writePointSetTxt` instead.
 
     File is written in the following format::
 

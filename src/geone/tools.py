@@ -38,7 +38,7 @@ def add_path_by_drawing(
     the current axis (get with `matplotlib.pyplot.gca()`), with the following
     rules:
 
-    - left click: add the nex point (or first one)
+    - left click: add the next point (or first one)
     - right click: remove the last point
 
     When pressing a key:
@@ -282,10 +282,10 @@ def is_in_polygon(x, vertices, wrap=None, return_sum_of_angles=False, **kwargs):
 # -----------------------------------------------------------------------------
 def is_in_polygon_mp(x, vertices, wrap=None, return_sum_of_angles=False, nproc=-1, **kwargs):
     """
-    Computes the same as the function :func:`tools.is_in_polygon`, using multiprocessing.
+    Computes the same as the function :func:`is_in_polygon`, using multiprocessing.
 
     All the parameters except `nproc` are the same as those of the function
-    :func:`tools.is_in_polygon`.
+    :func:`is_in_polygon`.
 
     The number of processes used (in parallel) is n, and determined by the
     parameter `nproc` (int, optional) as follows:
@@ -295,7 +295,7 @@ def is_in_polygon_mp(x, vertices, wrap=None, return_sum_of_angles=False, nproc=-
     number of cpu(s) of the system (retrieved by `multiprocessing.cpu_count()`), \
     i.e. all cpus except `-nproc` is used (but at least one)
 
-    See function :func:`tools.is_in_polygon`.
+    See function :func:`is_in_polygon`.
     """
     # fname = 'is_in_polygon_mp'
 
@@ -369,6 +369,7 @@ def rasterize_polygon_2d(
         xmin_ext=0.0, xmax_ext=0.0,
         ymin_ext=0.0, ymax_ext=0.0,
         wrap=None,
+        logger=None,
         **kwargs):
     """
     Rasterizes a polygon (close line) in a 2D grid.
@@ -378,7 +379,7 @@ def rasterize_polygon_2d(
     vertices.
 
     The grid geometry of the output image is set by the given parameters or
-    computed from the vertices, as in function :func:`img.imageFromPoints`,
+    computed from the vertices, as in function :func:`geone.img.imageFromPoints`,
     i.e. for the x axis (similar for y):
 
     - `ox` (origin), `nx` (number of cells) and `sx` (resolution, cell size)
@@ -441,8 +442,12 @@ def rasterize_polygon_2d(
 
         by default (`None`): `wrap` is automatically computed
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     kwargs:
-        keyword arguments passed to function :func:`tools.is_in_polygon`
+        keyword arguments passed to function :func:`is_in_polygon`
 
     Returns
     -------
@@ -456,11 +461,12 @@ def rasterize_polygon_2d(
     im = img.imageFromPoints(vertices,
                              nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
                              xmin_ext=xmin_ext, xmax_ext=xmax_ext,
-                             ymin_ext=ymin_ext, ymax_ext=ymax_ext)
+                             ymin_ext=ymin_ext, ymax_ext=ymax_ext, 
+                             logger=logger)
 
     # Rasterize: for each cell, check if its center is within the grid
     v = np.asarray(is_in_polygon(np.array((im.xx().reshape(-1), im.yy().reshape(-1))).T, vertices, wrap=wrap, **kwargs)).astype('float')
-    im.append_var(v, varname='in')
+    im.append_var(v, varname='in', logger=logger)
 
     return im
 # -----------------------------------------------------------------------------
@@ -475,12 +481,13 @@ def rasterize_polygon_2d_mp(
         ymin_ext=0.0, ymax_ext=0.0,
         wrap=None,
         nproc=-1,
+        logger=None,
         **kwargs):
     """
-    Computes the same as the function :func:`tools.rasterize_polygon_2d`, using multiprocessing.
+    Computes the same as the function :func:`rasterize_polygon_2d`, using multiprocessing.
 
     All the parameters except `nproc` are the same as those of the function
-    :func:`tools.rasterize_polygon_2d`.
+    :func:`rasterize_polygon_2d`.
 
     The number of processes used (in parallel) is n, and determined by the
     parameter `nproc` (int, optional) as follows:
@@ -490,7 +497,7 @@ def rasterize_polygon_2d_mp(
     number of cpu(s) of the system (retrieved by `multiprocessing.cpu_count()`), \
     i.e. all cpus except `-nproc` is used (but at least one).
 
-    See function :func:`tools.rasterize_polygon_2d`.
+    See function :func:`rasterize_polygon_2d`.
     """
     # fname = 'rasterize_polygon_2d_mp'
 
@@ -498,11 +505,12 @@ def rasterize_polygon_2d_mp(
     im = img.imageFromPoints(vertices,
                              nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
                              xmin_ext=xmin_ext, xmax_ext=xmax_ext,
-                             ymin_ext=ymin_ext, ymax_ext=ymax_ext)
+                             ymin_ext=ymin_ext, ymax_ext=ymax_ext,
+                             logger=logger)
 
     # Rasterize: for each cell, check if its center is within the grid
     v = np.asarray(is_in_polygon_mp(np.array((im.xx().reshape(-1), im.yy().reshape(-1))).T, vertices, wrap=wrap, nproc=nproc, **kwargs)).astype('float')
-    im.append_var(v, varname='in')
+    im.append_var(v, varname='in', logger=logger)
 
     return im
 # -----------------------------------------------------------------------------
@@ -517,7 +525,8 @@ def curv_coord_2d_from_center_line(
         gradtol=1.e-5,
         path_len_max=10000,
         return_path=False,
-        verbose=1):
+        verbose=1,
+        logger=None):
     """
     Computes curvilinear coordinates in 2D from a center line, for points given in standard coordinates.
 
@@ -594,6 +603,10 @@ def curv_coord_2d_from_center_line(
 
     verbose : int, default: 1
         verbose mode, integer >=0, higher implies more display
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
 
     Returns
     -------
@@ -686,7 +699,11 @@ def curv_coord_2d_from_center_line(
             # k = len(cl_position[-2])
             k = len(cl_position) - 2
             if verbose > 0:
-                print(f'{fname}: WARNING: closest point on center line not found (last segment selected)')
+                if logger:
+                    logger.warning(f'{fname}: closest point on center line not found (last segment selected)')
+                else:
+                    print(f'{fname}: WARNING: closest point on center line not found (last segment selected)')
+        
         u1 = cl_u[k]
 
         s = np.sign(np.linalg.det(np.vstack((cl_position[k+1] - cl_position[k], x[i] - x_cur))))
@@ -718,12 +735,13 @@ def curv_coord_2d_from_center_line_mp(
         gradtol=1.e-5,
         path_len_max=10000,
         return_path=False,
-        nproc=-1):
+        nproc=-1,
+        logger=None):
     """
-    Computes the same as the function :func:`tools.curv_coord_2d_from_center_line`, using multiprocessing.
+    Computes the same as the function :func:`curv_coord_2d_from_center_line`, using multiprocessing.
 
     All the parameters except `nproc` are the same as those of the function
-    :func:`tools.curv_coord_2d_from_center_line`.
+    :func:`curv_coord_2d_from_center_line`.
 
     The number of processes used (in parallel) is n, and determined by the
     parameter `nproc` (int, optional) as follows:
@@ -733,7 +751,7 @@ def curv_coord_2d_from_center_line_mp(
     number of cpu(s) of the system (retrieved by `multiprocessing.cpu_count()`), \
     i.e. all cpus except `-nproc` is used (but at least one).
 
-    See function :func:`tools.curv_coord_2d_from_center_line`.
+    See function :func:`curv_coord_2d_from_center_line`.
     """
     # fname = 'curv_coord_2d_from_center_line_mp'
 
@@ -750,7 +768,7 @@ def curv_coord_2d_from_center_line_mp(
     q, r = np.divmod(xx.shape[0], n)
     ids_proc = [i*q + min(i, r) for i in range(n+1)]
 
-    kwargs = dict(cl_u=cl_u, gradx=gradx, grady=grady, dg=dg, gradtol=gradtol, path_len_max=path_len_max, return_path=return_path, verbose=0)
+    kwargs = dict(cl_u=cl_u, gradx=gradx, grady=grady, dg=dg, gradtol=gradtol, path_len_max=path_len_max, return_path=return_path, verbose=0, logger=logger)
     # Set pool of n workers
     pool = multiprocessing.Pool(n)
     out_pool = []

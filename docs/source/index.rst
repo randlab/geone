@@ -8,7 +8,7 @@ GEONE's documentation
 
 .. Update manually here! see ../../src/geone/_version.py
 
-**Current version : 1.2.18**
+**Current version : 1.3.0**
 
 GEONE is a Python3 package providing a set of tools for geostatistical modeling, including:
 

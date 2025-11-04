@@ -25,11 +25,14 @@ class RandProcessError(Exception):
 # ----------------------------------------------------------------------------
 def acceptRejectSampler(
         n, xmin, xmax, f,
-        c=None, g=None, g_rvs=None,
+        c=None, 
+        g=None, g_rvs=None,
         return_accept_ratio=False,
         max_trial=None,
-        verbose=0, show_progress=None,
-        opt_kwargs=None):
+        verbose=0, 
+        show_progress=None,
+        opt_kwargs=None,
+        logger=None):
     """
     Generates samples according to a given density function.
 
@@ -115,6 +118,10 @@ def acceptRejectSampler(
         keyword arguments to be passed to `scipy.optimize.differential_evolution`
         (do not set `'bounds'` key, bounds are set according to `xmin`, `xmax`)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     x : 2d-array of shape (n, m), or 1d-array of shape (n,)
@@ -144,6 +151,7 @@ def acceptRejectSampler(
 
     if xmin.ndim != xmax.ndim or np.any(np.isnan(xmin)) or np.any(np.isnan(xmax)) or np.any(xmin >= xmax):
         err_msg = f'{fname}: `xmin`, `xmax` invalid'
+        if logger: logger.error(err_msg)
         raise RandProcessError(err_msg)
 
     lx = xmax - xmin
@@ -166,11 +174,13 @@ def acceptRejectSampler(
     # Set g, g_rvs
     if (g is None and g_rvs is not None) or (g is not None and g_rvs is None):
         err_msg = f'{fname}: `g` and `g_rvs` should both be specified'
+        if logger: logger.error(err_msg)
         raise RandProcessError(err_msg)
 
     if g is None:
         if not dom_finite:
             err_msg = f'{fname}: `g` and `g_rvs` must be specified when infinite domain is considered'
+            if logger: logger.error(err_msg)
             raise RandProcessError(err_msg)
 
         # g
@@ -186,6 +196,7 @@ def acceptRejectSampler(
     if c is None:
         if not dom_finite:
             err_msg = f'{fname}: `c` must be specified when infinite domain is considered'
+            if logger: logger.error(err_msg)
             raise RandProcessError(err_msg)
 
         h = lambda x: -f(x)/g(x)
@@ -195,6 +206,7 @@ def acceptRejectSampler(
         res = scipy.optimize.differential_evolution(h, bounds=list(zip(xmin, xmax)), **opt_kwargs)
         if not res.success:
             err_msg = f'{fname}: `scipy.optimize.differential_evolution` failed {res.message})'
+            if logger: logger.error(err_msg)
             raise RandProcessError(err_msg)
 
         # -> res.x realizes the minimum of h(x)
@@ -232,16 +244,21 @@ def acceptRejectSampler(
         if verbose > 1:
             progress = int(100*naccept/n)
             if progress > progressOld:
-                print(f'A-R algo, progress: {progress:3d} %')
+                if logger:
+                    logger.info(f'{fname}: A-R algo, progress: {progress:3d} %')
+                else:
+                    print(f'{fname}: A-R algo, progress: {progress:3d} %')
                 progressOld = progress
         if ntot >= max_trial:
-            ok = False
             break
 
     x = np.asarray(x)
 
     if naccept < n and verbose > 0:
-        print(f'{fname}: WARNING: sample size is only {naccept}! (increase `max_trial`)')
+        if logger:
+            logger.warning(f'{fname}: sample size is only {naccept}! (increase `max_trial`)')
+        else:
+            print(f'{fname}: WARNING: sample size is only {naccept}! (increase `max_trial`)')
 
     if return_accept_ratio:
         accept_ratio = naccept/ntot
@@ -251,7 +268,7 @@ def acceptRejectSampler(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
+def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None, logger=None):
     """
     Generates random points following a Poisson point process.
 
@@ -283,6 +300,10 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
         `ninterval` contains the number of interval(s) in which the domain
         `[xmin, xmax[` is subdivided along each axis
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     pts : 2D array of shape (npts, m)
@@ -297,10 +318,12 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
 
     if xmin.ndim != xmax.ndim or xmin.ndim != 1:
         err_msg = f'{fname}: `xmin`, `xmax` not valid (dimension or shape)'
+        if logger: logger.error(err_msg)
         raise RandProcessError(err_msg)
 
     if np.any(xmin >= xmax):
         err_msg = f'{fname}: `xmin`, `xmax` not valid ((component of) xmin less than or equal to xmax)'
+        if logger: logger.error(err_msg)
         raise RandProcessError(err_msg)
 
     # dimension
@@ -309,6 +332,7 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
     if callable(mu):
         if ninterval is None:
             err_msg = f'{fname}: `ninterval` must be specified when a function is passed for the intensity (`mu`)'
+            if logger: logger.error(err_msg)
             raise RandProcessError(err_msg)
 
         ninterval = np.asarray(ninterval, dtype=int)  # possibly 0-dimensional
@@ -316,15 +340,18 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
             ninterval = ninterval.flat[0] * np.ones(dim)
         elif ninterval.size != dim:
             err_msg = f'{fname}: `ninterval` does not have an acceptable size'
+            if logger: logger.error(err_msg)
             raise RandProcessError(err_msg)
 
         if np.any(ninterval < 1):
             err_msg = f'{fname}: `ninterval` has negative or zero value'
+            if logger: logger.error(err_msg)
             raise RandProcessError(err_msg)
 
     elif isinstance(mu, np.ndarray):
         if mu.ndim != dim:
             err_msg = f'{fname}: inconsistent number of dimension for the ndarray `mu`'
+            if logger: logger.error(err_msg)
             raise RandProcessError(err_msg)
 
         ninterval = mu.shape[::-1]
@@ -367,11 +394,15 @@ def poissonPointProcess(mu, xmin=0.0, xmax=1.0, ninterval=None):
 # ----------------------------------------------------------------------------
 def chentsov1D(
         n_mean,
-        dimension, spacing=1.0, origin=0.0,
+        dimension, 
+        spacing=1.0, 
+        origin=0.0,
         direction_origin=None,
-        p_min=None, p_max=None,
+        p_min=None, 
+        p_max=None,
         nreal=1,
-        verbose=0):
+        verbose=0,
+        logger=None):
     """
     Generates a Chentsov's simulation in 1D.
 
@@ -446,6 +477,10 @@ def chentsov1D(
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     sim : 2D array of floats of shape (nreal, nx)
@@ -463,7 +498,10 @@ def chentsov1D(
 
     if nreal <= 0:
         if verbose > 0:
-            print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None` is returned')
+            if logger:
+                logger.warning(f'{fname}: `nreal` <= 0: `None`, `None` is returned')
+            else:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None` is returned')
         return None, None
 
     nx = dimension
@@ -482,6 +520,7 @@ def chentsov1D(
 
     if p_min >= p_max:
         err_msg = f'{fname}: `p_min` is greater than or equal to `p_max`'
+        if logger: logger.error(err_msg)
         raise RandProcessError(err_msg)
 
     # center of each grid cell of the simulation domain
@@ -500,9 +539,10 @@ def chentsov1D(
     for k in range(nreal):
         # Draw points via Poisson process
         try:
-            pts = poissonPointProcess(mu, p_min, p_max)
+            pts = poissonPointProcess(mu, p_min, p_max, logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: Poisson point process failed'
+            if logger: logger.error(err_msg)
             raise RandProcessError(err_msg) from exc
 
         n[k] = pts.shape[0]
@@ -520,12 +560,17 @@ def chentsov1D(
 # ----------------------------------------------------------------------------
 def chentsov2D(
         n_mean,
-        dimension, spacing=(1.0, 1.0), origin=(0.0, 0.0),
+        dimension, 
+        spacing=(1.0, 1.0), 
+        origin=(0.0, 0.0),
         direction_origin=None,
-        phi_min=0.0, phi_max=np.pi,
-        p_min=None, p_max=None,
+        phi_min=0.0, 
+        phi_max=np.pi,
+        p_min=None, 
+        p_max=None,
         nreal=1,
-        verbose=0):
+        verbose=0,
+        logger=None):
     """
     Generates a Chentsov's simulation in 2D.
 
@@ -624,6 +669,10 @@ def chentsov2D(
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     sim : 3D array of floats of shape (nreal, ny, nx)
@@ -642,7 +691,10 @@ def chentsov2D(
 
     if nreal <= 0:
         if verbose > 0:
-            print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None` is returned')
+            if logger:
+                logger.warning(f'{fname}: `nreal` <= 0: `None`, `None` is returned')
+            else:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None` is returned')
         return None, None
 
     nx, ny = dimension
@@ -661,10 +713,12 @@ def chentsov2D(
 
     if p_min >= p_max:
         err_msg = f'{fname}: `p_min` is greater than or equal to `p_max`'
+        if logger: logger.error(err_msg)
         raise RandProcessError(err_msg)
 
     if phi_min >= phi_max:
         err_msg = f'{fname}: `phi_min` is greater than or equal to `phi_max`'
+        if logger: logger.error(err_msg)
         raise RandProcessError(err_msg)
 
     # center of each grid cell of the simulation domain
@@ -691,9 +745,10 @@ def chentsov2D(
     for k in range(nreal):
         # Draw points via Poisson process
         try:
-            pts = poissonPointProcess(mu, [phi_min, p_min], [phi_max, p_max])
+            pts = poissonPointProcess(mu, [phi_min, p_min], [phi_max, p_max], logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: Poisson point process failed'
+            if logger: logger.error(err_msg)
             raise RandProcessError(err_msg) from exc
 
         n[k] = pts.shape[0]
@@ -721,14 +776,20 @@ def chentsov2D(
 # ----------------------------------------------------------------------------
 def chentsov3D(
         n_mean,
-        dimension, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0),
+        dimension, 
+        spacing=(1.0, 1.0, 1.0), 
+        origin=(0.0, 0.0, 0.0),
         direction_origin=None,
-        phi_min=0.0, phi_max=2.0*np.pi,
-        theta_min=0.0, theta_max=0.5*np.pi,
-        p_min=None, p_max=None,
+        phi_min=0.0, 
+        phi_max=2.0*np.pi,
+        theta_min=0.0, 
+        theta_max=0.5*np.pi,
+        p_min=None, 
+        p_max=None,
         ninterval_theta=100,
         nreal=1,
-        verbose=0):
+        verbose=0,
+        logger=None):
     """
     Generates a Chentsov's simulation in 3D.
 
@@ -851,6 +912,10 @@ def chentsov3D(
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
 
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
     Returns
     -------
     sim : 4D array of floats of shape (nreal, nz, ny, nx)
@@ -869,7 +934,10 @@ def chentsov3D(
 
     if nreal <= 0:
         if verbose > 0:
-            print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None` is returned')
+            if logger:
+                logger.warning(f'{fname}: `nreal` <= 0: `None`, `None` is returned')
+            else:
+                print(f'{fname}: WARNING: `nreal` <= 0: `None`, `None` is returned')
         return None, None
 
     nx, ny, nz = dimension
@@ -888,14 +956,17 @@ def chentsov3D(
 
     if p_min >= p_max:
         err_msg = f'{fname}: `p_min` is greater than or equal to `p_max`'
+        if logger: logger.error(err_msg)
         raise RandProcessError(err_msg)
 
     if phi_min >= phi_max:
         err_msg = f'{fname}: `phi_min` is greater than or equal to `phi_max`'
+        if logger: logger.error(err_msg)
         raise RandProcessError(err_msg)
 
     if theta_min >= theta_max:
         err_msg = f'{fname}: `theta_min` is greater than or equal to `theta_max`'
+        if logger: logger.error(err_msg)
         raise RandProcessError(err_msg)
 
     # center of each grid cell of the simulation domain
@@ -916,9 +987,10 @@ def chentsov3D(
     for k in range(nreal):
         # Draw points via Poisson process
         try:
-            pts = poissonPointProcess(mu, [phi_min, theta_min, p_min], [phi_max, theta_max, p_max], ninterval=[1, ninterval_theta, 1])
+            pts = poissonPointProcess(mu, [phi_min, theta_min, p_min], [phi_max, theta_max, p_max], ninterval=[1, ninterval_theta, 1], logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: Poisson point process failed'
+            if logger: logger.error(err_msg)
             raise RandProcessError(err_msg) from exc
 
         n[k] = pts.shape[0]

@@ -3,9 +3,9 @@
 Examples - Notebooks List
 *************************
 
-Switch to :ref:`Notebooks Gallery <examples_gallery_file>`
+Switch to :ref:`Notebooks Gallery <examples_gallery_file>`.
 
-Various examples are provided in notebooks below to get started with GEONE. 
+Various examples are provided in notebooks below to get started with GEONE.
 
 The notebooks (with related data files) from this doc are available on Github at `<https://github.com/randlab/geone/tree/master/docs/source/notebooks>`_
 
@@ -26,7 +26,7 @@ The following notebooks show how to deal with the classes `geone.img.Img` for "i
         ex_a_01 - Images and point sets         <notebooks/ex_a_01_image_and_pointset>
         ex_a_02 - Dealing with RGB images (png) <notebooks/ex_a_02_image2d_rgb>
         ex_a_03 - Interpolating images          <notebooks/ex_a_03_image_interpolation>
-    
+
 
 Multiple-point statistics - DEESSE
 ----------------------------------
@@ -66,7 +66,7 @@ The following notebooks show how some examples of crossing-simulation (X-simulat
 
 MultiGaussian estimation and simulation (general function)
 ----------------------------------------------------------
-The following notebook shows elementary covariance models and the use of a general function (wrapper) allowing to launch the other functions of GEONE for multiGaussian estimation and simulation (based on FFT / search neighborhood (GEOSCLASSIC), see below).
+The following notebook shows elementary covariance models, and examples of covariance model in 1D, 2D, 3D, and the use of a general function (wrapper) allowing to launch the other functions of GEONE for multiGaussian estimation and simulation (based on FFT / search neighborhood (GEOSCLASSIC), see below).
 
     .. toctree::
         :maxdepth: 1
@@ -97,9 +97,12 @@ Sequential Gaussian Simulation (SGS), Sequential Indicator Simulation (SIS) and 
         ex_gc_2d_2 - 2D with non stationary covariance  <notebooks/ex_geosclassic_2d_2_non_stat_cov>
         ex_gc_3d_1 - 3D                                 <notebooks/ex_geosclassic_3d_1>
         ex_gc_3d_2 - 3D with non stationary covariance  <notebooks/ex_geosclassic_3d_2_non_stat_cov>
-        ex_gc_indicator_1d - indicator variable in 1D   <notebooks/ex_geosclassic_indicator_1d>
-        ex_gc_indicator_2d - indicator variable in 2D   <notebooks/ex_geosclassic_indicator_2d>
-        ex_gc_indicator_3d - indicator variable in 3D   <notebooks/ex_geosclassic_indicator_3d>
+        ex_gc_indicator_1d_1 - categorical variable (indicator) in 1D       <notebooks/ex_geosclassic_indicator_1d_1>
+        ex_gc_indicator_1d_2 - ind. var. 1D with non stationary covariance  <notebooks/ex_geosclassic_indicator_1d_2_non_stat_cov>
+        ex_gc_indicator_2d_1 - categorical variable (indicator) in 2D       <notebooks/ex_geosclassic_indicator_2d_1>
+        ex_gc_indicator_2d_2 - ind. var. 2D with non stationary covariance  <notebooks/ex_geosclassic_indicator_2d_2_non_stat_cov>
+        ex_gc_indicator_3d_1 - categorical variable (indicator) in 3D       <notebooks/ex_geosclassic_indicator_3d_1>
+        ex_gc_indicator_3d_2 - ind. var. 1D with non stationary covariance  <notebooks/ex_geosclassic_indicator_3d_2_non_stat_cov>
         ex_gc_image_analysis - tools for image analysis <notebooks/ex_geosclassic_image_analysis>
 
 Variogram analysis tools
@@ -123,14 +126,14 @@ Pluri-Gaussian simulation (PGS)
 -------------------------------
     .. toctree::
         :maxdepth: 1
-        
+
         ex_pgs - PGS in 1D, 2D, 3D <notebooks/ex_pgs>
 
 Substitution Random Function (SRF)
 ----------------------------------
     .. toctree::
         :maxdepth: 1
-        
+
         ex_srf_mg_mc - categorical SRF in 1D, 2D, 3D <notebooks/ex_srf_mg_mc>
         ex_srf_mg_mg - continuous SRF in 1D, 2D, 3D  <notebooks/ex_srf_mg_mg>
 
@@ -140,7 +143,16 @@ Other algorithms based on random processes such accept-reject sampler, Markov ch
 
     .. toctree::
         :maxdepth: 1
-        
+
         ex_acceptRejectSampler            <notebooks/ex_acceptRejectSampler>
         ex_markov_chain                   <notebooks/ex_markov_chain>
         ex_randProcess - various examples <notebooks/ex_randProcess>
+
+Logging
+-------
+Some functions of GEONE allow for logging, based on the standard package `logging`.
+
+    .. toctree::
+        :maxdepth: 1
+
+        ex_logging            <notebooks/ex_logging_tip>

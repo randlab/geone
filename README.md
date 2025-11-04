@@ -2,7 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/geone/badge/?version=latest)](https://geone.readthedocs.io/en/latest/?badge=latest)
 
-**Current version : 1.2.18** <!-- Update manually here! see src/geone/_version.py -->
+**Current version : 1.3.0** <!-- Update manually here! see src/geone/_version.py -->
 
 GEONE is a Python3 package providing a set of tools for geostatistical modeling, including:
 
@@ -19,18 +19,15 @@ The notebooks (examples) from the documentation are available in [docs/source/no
 
 ## Installation
 
-GEONE relies on pre-compiled C libraries (DEESSE and GEOSCLASSIC core)
+GEONE is available on:
 
-GEONE is available:
+- [PyPI](https://pypi.org/project/geone) (The Python Package Index)
+- [Github repository](https://github.com/randlab/geone)
 
-- on [PyPI](https://pypi.org/project/geone) (The Python Package Index), for:
-    - linux (x86_64 with GLIBC 2.35 or GLIBC 2.27) and python 3.9 to 3.12
-    - mac (x86_64 or arm64) and python 3.9 to 3.12
-    - windows and python 3.9 to 3.12
-- on the [Github repository](https://github.com/randlab/geone), for:
-    - linux (x86_64 with GLIBC 2.35 or GLIBC 2.27) and python 3.7 to 3.12
-    - mac (x86_64 or arm64) and python 3.8 to 3.12
-    - windows and python 3.7 to 3.12
+GEONE relies on pre-compiled C libraries (DEESSE and GEOSCLASSIC core), available for:
+- linux (x86_64 with GLIBC 2.35 or GLIBC 2.27) and python 3.9 to 3.13
+- mac (x86_64 or arm64) and python 3.9 to 3.13
+- windows and python 3.9 to 3.13
 
 ### Installation from [PyPI](https://pypi.org/project/geone)
 
@@ -63,18 +60,32 @@ If the installation has been done from github, do not launch python from the dir
 
 ### Requirements
 
-The following python packages are used by GEONE (tested on python 3.11.5):
+The following python packages are used by GEONE:
 
-- matplotlib (3.8.1)
-- multiprocessing (for parallel processes)
-- numpy (tested with version 1.26.0)
-- pandas (tested with version 2.1.2)
-- pyvista (tested with version 0.42.3)
-- scipy (tested with version 1.11.3)
+- `matplotlib`
+- `multiprocessing` (for parallel processes)
+- `numpy`
+- `pandas`
+- `pyvista`
+- `scipy`
 
-**Warning**
+**Note: `numpy` version >= 2 is used.**
 
-numpy version **less than 2.** is required
+**Remark: the package `ipykernel` is required to run the notebooks.**
+
+GEONE has been tested with the following settings:
+```
+platform_system : Linux
+python version  : sys.version_info(major=3, minor=13, micro=7, releaselevel='final', serial=0)
+glibc_str       : glibc 2.35
+glibc_version   : (2, 35)
+machine         : x86_64
+matplotlib.__version__ = 3.10.7
+numpy.__version__      = 2.3.3
+pandas.__version__     = 2.3.3
+pyvista.__version__    = 0.46.3
+scipy.__version__      = 1.16.2
+```
 
 ### Removing GEONE
 In a terminal type
