@@ -68,7 +68,7 @@ Repository = "https://github.com/randlab/geone"
 Issues = "https://github.com/randlab/geone/issues"
 
 [tool.distutils.bdist_wheel]
-python-tag = "py311"
+python-tag = "py313"
 plat-name = "manylinux_2_35_x86_64"
 # To get supported tag:
 # python -c "from pip._internal.utils.compatibility_tags import get_supported; print(get_supported())"
