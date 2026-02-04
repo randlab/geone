@@ -16,6 +16,8 @@ import multiprocessing
 
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.ndimage
+
 from matplotlib.backend_bases import MouseButton
 
 from geone import img
@@ -446,7 +448,7 @@ def rasterize_polygon_2d(
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
 
-    kwargs:
+    kwargs : dict
         keyword arguments passed to function :func:`is_in_polygon`
 
     Returns
@@ -511,6 +513,168 @@ def rasterize_polygon_2d_mp(
     # Rasterize: for each cell, check if its center is within the grid
     v = np.asarray(is_in_polygon_mp(np.array((im.xx().reshape(-1), im.yy().reshape(-1))).T, vertices, wrap=wrap, nproc=nproc, **kwargs)).astype('float')
     im.append_var(v, varname='in', logger=logger)
+
+    return im
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+def rasterize_polygon_2d_with_PIL(
+        vertices,
+        nx=None, ny=None,
+        sx=None, sy=None,
+        ox=None, oy=None,
+        xmin_ext=0.0, xmax_ext=0.0,
+        ymin_ext=0.0, ymax_ext=0.0,
+        update_result=True,
+        wrap=None,
+        use_multiprocessing=False,
+        nproc=-1,
+        logger=None,
+        **kwargs):
+    """
+    Rasterizes a polygon (close line) in a 2D grid.
+
+    This function returns an image with one variable indicating for each cell
+    if it is inside (1) or outside (0) the polygon defined by the given
+    vertices.
+
+    The grid geometry of the output image is set by the given parameters or
+    computed from the vertices, as in function :func:`geone.img.imageFromPoints`,
+    i.e. for the x axis (similar for y):
+
+    - `ox` (origin), `nx` (number of cells) and `sx` (resolution, cell size)
+    - or only `nx`: `ox` and `sx` automatically computed
+    - or only `sx`: `ox` and `nx` automatically computed
+
+    In the two last cases, the parameters `xmin_ext`, `xmax_ext`, are used and
+    the approximate limit of the grid along x axis is set to x0, x1, where
+
+    - x0: min x coordinate of the vertices minus `xmin_ext`
+    - x1: max x coordinate of the vertices plus `xmax_ext`
+
+    Note: this function uses the package `PIL` (Pillow) to rasterize the polygon;
+    it is much more efficient than the function :func:`rasterize_polygon_2d`;
+    the result may slightly differ (on the border of the polygon) due to
+    differences in the rasterization algorithm: but the result may be updated
+    by checking if the pixels (cell centers) on the border are inside the polygon
+    or not, to get more precise result (as with the function :func:`rasterize_polygon_2d`).
+
+    Parameters
+    ----------
+    vertices : 2D array
+        vertices of a polygon in 2D, each row of `vertices` contains the two
+        coordinates of one vertex; the segments of the polygon are obtained by
+        linking two successive vertices (as well as the last one with the first
+        one, if not close), (clockwise or counterclockwise)
+
+    nx : int, optional
+        number of grid cells along x axis; see above for possible inputs
+
+    ny : int, optional
+        number of grid cells along y axis; see above for possible inputs
+
+    sx : float, optional
+        cell size along x axis; see above for possible inputs
+
+    sy : float, optional
+        cell size along y axis; see above for possible inputs
+
+    ox : float, optional
+        origin of the grid along x axis (x coordinate of cell border);
+        see above for possible
+
+    oy : float, optional
+        origin of the grid along y axis (y coordinate of cell border);
+        see above for possible
+
+        Note: `(ox, oy)` is the "lower-left" corner of the grid
+
+    xmin_ext : float, default: 0.0
+        extension beyond the min x coordinate of the vertices (see above)
+
+    xmax_ext : float, default: 0.0
+        extension beyond the max x coordinate of the vertices (see above)
+
+    ymin_ext : float, default: 0.0
+        extension beyond the min y coordinate of the vertices (see above)
+
+    ymax_ext : float, default: 0.0
+        extension beyond the max y coordinate of the vertices (see above)
+
+    update_result: bool, default: True
+        - `True`: the result obtained with PIL is updated by checking if \
+        the pixels (cell centers) on the border are inside the polygon or not \
+        with the function :func:`is_in_polygon[_mp]` (more precise)
+        - `False`: the result obtained with PIL is kept (less precise, a bit more \
+        pixels inside the polygon (near the border) than the result obtained with \
+        with the function :func:`rasterize_polygon_2d[_mp]`).
+
+    wrap : bool, optional
+        used only if `update_result=True`: parameter passed to the function 
+        :func: `is_in_polygon_2d[_mp]`
+
+    use_multiprocessing : bool, default: False
+        used only if `update_result=True`: indicates if multiprocessing is used in 
+        for updating result with function:
+        
+        - :func: `is_in_polygon_2d_mp` if `use_multiprocessing=True`
+        - :func: `is_in_polygon_2d` if `use_multiprocessing=False`
+
+    nproc : int, default: -1
+        used only if `update_result=True` and `use_multiprocessing=True`: 
+        parameter passed to the function :func: `is_in_polygon_2d_mp`
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    kwargs: dict
+        used only if `update_result=True`: keyword arguments passed to function 
+        :func:`is_in_polygon[_mp]`
+
+    Returns
+    -------
+    im : :class:`geone.img.Img`
+        output image (see above);
+        note: the image grid is defined in 3D with `nz=1`, `sz=1.0`, `oz=-0.5`
+    """
+    # fname = 'rasterize_polygon_2d_with_PIL'
+    from PIL import Image, ImageDraw
+    
+    # Define grid geometry (image with no variable)
+    im = img.imageFromPoints(vertices,
+                             nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
+                             xmin_ext=xmin_ext, xmax_ext=xmax_ext,
+                             ymin_ext=ymin_ext, ymax_ext=ymax_ext, 
+                             logger=logger)
+
+    # Rasterize polygon with PIL (integer coordinates)
+    p = (vertices - np.array([im.ox, im.oy])) / np.array([im.sx, im.sy])
+    p = [tuple([int(pi[0]), int(pi[1])]) for pi in p]
+    im_pil = Image.new("1", (im.nx, im.ny), 0) # "1" for boolean image
+    im_pil_draw = ImageDraw.Draw(im_pil)
+    im_pil_draw.polygon(p, fill=1)
+    v = np.array(im_pil, dtype=float)
+
+    im.append_var(v, varname='in', logger=logger)
+
+    if update_result:
+        # Identify points on the border of the polygon
+        arr = scipy.ndimage.convolve(im.val[0, 0], np.ones((3, 3)), mode='constant', cval=0)
+        # arr = np.all((arr*im.val[0, 0] > 0, arr < 9), axis=0).reshape(-1).astype(float)
+        arr = np.all((arr > 0, arr < 9), axis=0).reshape(-1).astype(float)
+        ig = np.where(arr)[0]
+        if len(ig):
+            # points to be checked
+            p = np.array((im.xx().reshape(-1)[ig], im.yy().reshape(-1)[ig])).T
+            if use_multiprocessing:
+                v_border = is_in_polygon_mp(p, vertices, wrap=wrap, return_sum_of_angles=False, nproc=nproc, **kwargs)
+            else:
+                v_border = is_in_polygon(p, vertices, wrap=wrap, return_sum_of_angles=False, **kwargs)
+        
+        v = im.val[0, 0].reshape(-1)
+        v[ig] = v_border.astype(float)
+        im.val[0, 0] = v.reshape(im.ny, im.nx)
 
     return im
 # -----------------------------------------------------------------------------

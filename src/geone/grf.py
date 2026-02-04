@@ -398,9 +398,9 @@ def grf1D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Preliminary computation...')
+            logger.info(f'{fname}: do preliminary computation...')
         else:
-            print(f'{fname}: Preliminary computation...')
+            print(f'{fname}: do preliminary computation...')
 
     #### Preliminary computation ####
     nx = dimension
@@ -534,7 +534,7 @@ def grf1D(
                             verbose=0, logger=logger,
                             **aggregate_data_op_kwargs)
                 except Exception as exc:
-                    err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                     if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
@@ -550,7 +550,7 @@ def grf1D(
                             verbose=0, logger=logger,
                             **aggregate_data_op_kwargs)
                 except Exception as exc:
-                    err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                     if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
@@ -571,7 +571,7 @@ def grf1D(
                         logger=logger,
                         **aggregate_data_op_kwargs)
             except Exception as exc:
-                err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                 if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
@@ -597,7 +597,7 @@ def grf1D(
                         logger=logger,
                         **aggregate_data_op_kwargs)
             except Exception as exc:
-                err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                 if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
@@ -638,9 +638,9 @@ def grf1D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing circulant embedding...')
+            logger.info(f'{fname}: compute circulant embedding...')
         else:
-            print(f'{fname}: Computing circulant embedding...')
+            print(f'{fname}: compute circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -674,9 +674,9 @@ def grf1D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+            logger.info(f'{fname}: compute FFT of circulant matrix...')
         else:
-            print(f'{fname}: Computing FFT of circulant matrix...')
+            print(f'{fname}: compute FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -714,9 +714,9 @@ def grf1D(
     if x is not None:
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Treatment of conditioning data...')
+                logger.info(f'{fname}: treatment of conditioning data...')
             else:
-                print(f'{fname}: Treatment of conditioning data...')
+                print(f'{fname}: treatment of conditioning data...')
         # Compute the part rAA of the covariance matrix
         #        +         +
         #        | rAA rAB |
@@ -728,9 +728,9 @@ def grf1D(
 
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+                logger.info(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
             else:
-                print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+                print(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
 
         # Compute
         #    indc: node index of conditioning node,
@@ -767,9 +767,9 @@ def grf1D(
             # --------------------
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                    logger.info(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
                 else:
-                    print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                    print(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
             # Compute the parts rBA of the covariance matrix (see above)
             # rBA
@@ -780,9 +780,9 @@ def grf1D(
 
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+                    logger.info(f'{fname}: compute rBA * rAA^(-1)...')
                 else:
-                    print(f'{fname}: Computing rBA * rAA^(-1)...')
+                    print(f'{fname}: compute rBA * rAA^(-1)...')
 
             # compute rBA * rAA^(-1)
             rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -803,9 +803,9 @@ def grf1D(
             # --------------------
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                    logger.info(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
                 else:
-                    print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                    print(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
 
             # Compute index in the embedding grid for indc and indnc
             # (to allow use of fft)
@@ -1449,7 +1449,7 @@ def krige1D(
                     verbose=0, logger=logger,
                     **aggregate_data_op_kwargs)
         except Exception as exc:
-            err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
             if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
@@ -1469,7 +1469,7 @@ def krige1D(
                     logger=logger,
                     **aggregate_data_op_kwargs)
         except Exception as exc:
-            err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
             if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
@@ -1491,9 +1491,9 @@ def krige1D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing circulant embedding...')
+            logger.info(f'{fname}: compute circulant embedding...')
         else:
-            print(f'{fname}: Computing circulant embedding...')
+            print(f'{fname}: compute circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -1527,9 +1527,9 @@ def krige1D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+            logger.info(f'{fname}: compute FFT of circulant matrix...')
         else:
-            print(f'{fname}: Computing FFT of circulant matrix...')
+            print(f'{fname}: compute FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -1587,9 +1587,9 @@ def krige1D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            logger.info(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
         else:
-            print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            print(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
 
     # Compute
     #    indc: node index of conditioning node,
@@ -1643,9 +1643,9 @@ def krige1D(
         # --------------------
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                logger.info(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
             else:
-                print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                print(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
         # Compute the parts rBA of the covariance matrix (see above)
         # rBA
@@ -1658,9 +1658,9 @@ def krige1D(
 
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+                logger.info(f'{fname}: compute rBA * rAA^(-1)...')
             else:
-                print(f'{fname}: Computing rBA * rAA^(-1)...')
+                print(f'{fname}: compute rBA * rAA^(-1)...')
 
         # compute rBA * rAA^(-1)
         rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -1672,9 +1672,9 @@ def krige1D(
         # Compute kriging estimates
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: computing kriging estimates...')
+                logger.info(f'{fname}: compute kriging estimates...')
             else:
-                print(f'{fname}: computing kriging estimates...')
+                print(f'{fname}: compute kriging estimates...')
 
         krig[indnc] = np.dot(rBArAAinv, v_agg)
         krig[indc] = v_agg
@@ -1683,9 +1683,9 @@ def krige1D(
             # Compute kriging standard deviation
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                    logger.info(f'{fname}: compute kriging standard deviation ...')
                 else:
-                    print(f'{fname}: computing kriging standard deviation ...')
+                    print(f'{fname}: compute kriging standard deviation ...')
 
             for j in range(nnc):
                 krigSD[indnc[j]] = np.dot(rBArAAinv[j,:], rBA[j,:])
@@ -1701,9 +1701,9 @@ def krige1D(
 
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                logger.info(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
             else:
-                print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                print(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
 
         # Compute index in the embedding grid for indc and indnc
         # (to allow use of fft)
@@ -1713,9 +1713,9 @@ def krige1D(
         # Compute kriging estimates
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: computing kriging estimates...')
+                logger.info(f'{fname}: compute kriging estimates...')
             else:
-                print(f'{fname}: computing kriging estimates...')
+                print(f'{fname}: compute kriging estimates...')
 
         # Compute
         #    u = rAA^(-1) * v_agg, and then
@@ -1731,9 +1731,9 @@ def krige1D(
             # Compute kriging standard deviation
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                    logger.info(f'{fname}: compute kriging standard deviation ...')
                 else:
-                    print(f'{fname}: computing kriging standard deviation ...')
+                    print(f'{fname}: compute kriging standard deviation ...')
 
             for j in range(nnc):
                 u = ccirc[np.mod(indc - indnc[j], N)] # j-th row of rBA
@@ -2121,9 +2121,9 @@ def grf2D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Preliminary computation...')
+            logger.info(f'{fname}: do preliminary computation...')
         else:
-            print(f'{fname}: Preliminary computation...')
+            print(f'{fname}: do preliminary computation...')
 
     #### Preliminary computation ####
     nx, ny = dimension
@@ -2266,7 +2266,7 @@ def grf2D(
                             verbose=0, logger=logger,
                             **aggregate_data_op_kwargs)
                 except Exception as exc:
-                    err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                     if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
@@ -2282,7 +2282,7 @@ def grf2D(
                             verbose=0, logger=logger,
                             **aggregate_data_op_kwargs)
                 except Exception as exc:
-                    err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                     if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
@@ -2302,7 +2302,7 @@ def grf2D(
                         logger=logger,
                         **aggregate_data_op_kwargs)
             except Exception as exc:
-                err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                 if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
@@ -2327,7 +2327,7 @@ def grf2D(
                         logger=logger,
                         **aggregate_data_op_kwargs)
             except Exception as exc:
-                err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                 if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
@@ -2369,9 +2369,9 @@ def grf2D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing circulant embedding...')
+            logger.info(f'{fname}: compute circulant embedding...')
         else:
-            print(f'{fname}: Computing circulant embedding...')
+            print(f'{fname}: compute circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -2417,9 +2417,9 @@ def grf2D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+            logger.info(f'{fname}: compute FFT of circulant matrix...')
         else:
-            print(f'{fname}: Computing FFT of circulant matrix...')
+            print(f'{fname}: compute FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -2457,9 +2457,9 @@ def grf2D(
     if x is not None:
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Treatment of conditioning data...')
+                logger.info(f'{fname}: treatment of conditioning data...')
             else:
-                print(f'{fname}: Treatment of conditioning data...')
+                print(f'{fname}: treatment of conditioning data...')
         # Compute the part rAA of the covariance matrix
         #        +         +
         #        | rAA rAB |
@@ -2471,9 +2471,9 @@ def grf2D(
 
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+                logger.info(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
             else:
-                print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+                print(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
 
         # Compute
         #    indc: node index of conditioning node,
@@ -2516,9 +2516,9 @@ def grf2D(
             # --------------------
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                    logger.info(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
                 else:
-                    print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                    print(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
             # Compute the parts rBA of the covariance matrix (see above)
             # rBA
@@ -2528,9 +2528,9 @@ def grf2D(
 
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+                    logger.info(f'{fname}: compute rBA * rAA^(-1)...')
                 else:
-                    print(f'{fname}: Computing rBA * rAA^(-1)...')
+                    print(f'{fname}: compute rBA * rAA^(-1)...')
 
             # compute rBA * rAA^(-1)
             rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -2551,9 +2551,9 @@ def grf2D(
             # --------------------
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                    logger.info(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
                 else:
-                    print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                    print(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
 
             # Compute index in the embedding grid for indc and indnc
             # (to allow use of fft)
@@ -3200,7 +3200,7 @@ def krige2D(
                     verbose=0, logger=logger,
                     **aggregate_data_op_kwargs)
         except Exception as exc:
-            err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
             if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
@@ -3218,7 +3218,7 @@ def krige2D(
                     logger=logger,
                     **aggregate_data_op_kwargs)
         except Exception as exc:
-            err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
             if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
@@ -3241,9 +3241,9 @@ def krige2D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing circulant embedding...')
+            logger.info(f'{fname}: compute circulant embedding...')
         else:
-            print(f'{fname}: Computing circulant embedding...')
+            print(f'{fname}: compute circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -3289,9 +3289,9 @@ def krige2D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+            logger.info(f'{fname}: compute FFT of circulant matrix...')
         else:
-            print(f'{fname}: Computing FFT of circulant matrix...')
+            print(f'{fname}: compute FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -3350,9 +3350,9 @@ def krige2D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            logger.info(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
         else:
-            print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            print(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
 
     # Compute
     #    indc: node index of conditioning node,
@@ -3412,9 +3412,9 @@ def krige2D(
         # --------------------
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                logger.info(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
             else:
-                print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                print(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
         # Compute the parts rBA of the covariance matrix (see above)
         # rBA
@@ -3427,9 +3427,9 @@ def krige2D(
 
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+                logger.info(f'{fname}: compute rBA * rAA^(-1)...')
             else:
-                print(f'{fname}: Computing rBA * rAA^(-1)...')
+                print(f'{fname}: compute rBA * rAA^(-1)...')
 
         # compute rBA * rAA^(-1)
         rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -3441,9 +3441,9 @@ def krige2D(
         # Compute kriging estimates
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: computing kriging estimates...')
+                logger.info(f'{fname}: compute kriging estimates...')
             else:
-                print(f'{fname}: computing kriging estimates...')
+                print(f'{fname}: compute kriging estimates...')
 
         krig[indnc] = np.dot(rBArAAinv, v_agg)
         krig[indc] = v_agg
@@ -3452,9 +3452,9 @@ def krige2D(
             # Compute kriging standard deviation
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                    logger.info(f'{fname}: compute kriging standard deviation ...')
                 else:
-                    print(f'{fname}: computing kriging standard deviation ...')
+                    print(f'{fname}: compute kriging standard deviation ...')
 
             for j in range(nnc):
                 krigSD[indnc[j]] = np.dot(rBArAAinv[j,:], rBA[j,:])
@@ -3470,9 +3470,9 @@ def krige2D(
 
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                logger.info(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
             else:
-                print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                print(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
 
         # Compute index in the embedding grid for indc and indnc
         # (to allow use of fft)
@@ -3482,9 +3482,9 @@ def krige2D(
         # Compute kriging estimates
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: computing kriging estimates...')
+                logger.info(f'{fname}: compute kriging estimates...')
             else:
-                print(f'{fname}: computing kriging estimates...')
+                print(f'{fname}: compute kriging estimates...')
 
         # Compute
         #    u = rAA^(-1) * v_agg, and then
@@ -3500,9 +3500,9 @@ def krige2D(
             # Compute kriging standard deviation
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                    logger.info(f'{fname}: compute kriging standard deviation ...')
                 else:
-                    print(f'{fname}: computing kriging standard deviation ...')
+                    print(f'{fname}: compute kriging standard deviation ...')
 
             for j in range(nnc):
                 u = ccirc[np.mod(iy - ky[j], N2), np.mod(ix - kx[j], N1)] # j-th row of rBA
@@ -3898,9 +3898,9 @@ def grf3D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Preliminary computation...')
+            logger.info(f'{fname}: do preliminary computation...')
         else:
-            print(f'{fname}: Preliminary computation...')
+            print(f'{fname}: do preliminary computation...')
 
     #### Preliminary computation ####
     nx, ny, nz = dimension
@@ -4045,7 +4045,7 @@ def grf3D(
                             verbose=0, logger=logger,
                             **aggregate_data_op_kwargs)
                 except Exception as exc:
-                    err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                     if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
@@ -4061,7 +4061,7 @@ def grf3D(
                             verbose=0, logger=logger,
                             **aggregate_data_op_kwargs)
                 except Exception as exc:
-                    err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                    err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                     if logger: logger.error(err_msg)
                     raise GrfError(err_msg) from exc
 
@@ -4079,7 +4079,7 @@ def grf3D(
                         logger=logger,
                         **aggregate_data_op_kwargs)
             except Exception as exc:
-                err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                 if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
@@ -4103,7 +4103,7 @@ def grf3D(
                         logger=logger,
                         **aggregate_data_op_kwargs)
             except Exception as exc:
-                err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+                err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
                 if logger: logger.error(err_msg)
                 raise GrfError(err_msg) from exc
 
@@ -4146,9 +4146,9 @@ def grf3D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing circulant embedding...')
+            logger.info(f'{fname}: compute circulant embedding...')
         else:
-            print(f'{fname}: Computing circulant embedding...')
+            print(f'{fname}: compute circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -4204,9 +4204,9 @@ def grf3D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+            logger.info(f'{fname}: compute FFT of circulant matrix...')
         else:
-            print(f'{fname}: Computing FFT of circulant matrix...')
+            print(f'{fname}: compute FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -4244,9 +4244,9 @@ def grf3D(
     if x is not None:
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Treatment of conditioning data...')
+                logger.info(f'{fname}: treatment of conditioning data...')
             else:
-                print(f'{fname}: Treatment of conditioning data...')
+                print(f'{fname}: treatment of conditioning data...')
         # Compute the part rAA of the covariance matrix
         #        +         +
         #        | rAA rAB |
@@ -4258,9 +4258,9 @@ def grf3D(
 
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+                logger.info(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
             else:
-                print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+                print(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
 
         # Compute
         #    indc: node index of conditioning node,
@@ -4306,9 +4306,9 @@ def grf3D(
             # --------------------
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                    logger.info(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
                 else:
-                    print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                    print(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
             # Compute the parts rBA of the covariance matrix (see above)
             # rBA
@@ -4318,9 +4318,9 @@ def grf3D(
 
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+                    logger.info(f'{fname}: compute rBA * rAA^(-1)...')
                 else:
-                    print(f'{fname}: Computing rBA * rAA^(-1)...')
+                    print(f'{fname}: compute rBA * rAA^(-1)...')
 
             # compute rBA * rAA^(-1)
             rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -4341,9 +4341,9 @@ def grf3D(
             # --------------------
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                    logger.info(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
                 else:
-                    print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                    print(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
 
             # Compute index in the embedding grid for indc and indnc
             # (to allow use of fft)
@@ -4999,7 +4999,7 @@ def krige3D(
                     verbose=0, logger=logger,
                     **aggregate_data_op_kwargs)
         except Exception as exc:
-            err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
             if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
@@ -5015,7 +5015,7 @@ def krige3D(
                     logger=logger,
                     **aggregate_data_op_kwargs)
         except Exception as exc:
-            err_msg = f"{fname}: aggratating data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
+            err_msg = f"{fname}: aggregate data points in grid failed (`aggregate_data_op='{aggregate_data_op}'`)"
             if logger: logger.error(err_msg)
             raise GrfError(err_msg) from exc
 
@@ -5039,9 +5039,9 @@ def krige3D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing circulant embedding...')
+            logger.info(f'{fname}: compute circulant embedding...')
         else:
-            print(f'{fname}: Computing circulant embedding...')
+            print(f'{fname}: compute circulant embedding...')
 
     # Circulant embedding of the covariance matrix
     # --------------------------------------------
@@ -5097,9 +5097,9 @@ def krige3D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing FFT of circulant matrix...')
+            logger.info(f'{fname}: compute FFT of circulant matrix...')
         else:
-            print(f'{fname}: Computing FFT of circulant matrix...')
+            print(f'{fname}: compute FFT of circulant matrix...')
 
     # Compute the Discrete Fourier Transform (DFT) of ccric, via FFT
     # --------------------------------------------------------------
@@ -5158,9 +5158,9 @@ def krige3D(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            logger.info(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
         else:
-            print(f'{fname}: Computing covariance matrix (rAA) for conditioning locations...')
+            print(f'{fname}: compute covariance matrix (rAA) for conditioning locations...')
 
     # Compute
     #    indc: node index of conditioning node,
@@ -5223,9 +5223,9 @@ def krige3D(
         # --------------------
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                logger.info(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
             else:
-                print(f'{fname}: Computing covariance matrix (rBA) for non-conditioning / conditioning locations...')
+                print(f'{fname}: compute covariance matrix (rBA) for non-conditioning / conditioning locations...')
 
         # Compute the parts rBA of the covariance matrix (see above)
         # rBA
@@ -5238,9 +5238,9 @@ def krige3D(
 
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing rBA * rAA^(-1)...')
+                logger.info(f'{fname}: compute rBA * rAA^(-1)...')
             else:
-                print(f'{fname}: Computing rBA * rAA^(-1)...')
+                print(f'{fname}: compute rBA * rAA^(-1)...')
 
         # compute rBA * rAA^(-1)
         rBArAAinv = np.dot(rBA, np.linalg.inv(rAA))
@@ -5252,9 +5252,9 @@ def krige3D(
         # Compute kriging estimates
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: computing kriging estimates...')
+                logger.info(f'{fname}: compute kriging estimates...')
             else:
-                print(f'{fname}: computing kriging estimates...')
+                print(f'{fname}: compute kriging estimates...')
 
         krig[indnc] = np.dot(rBArAAinv, v_agg)
         krig[indc] = v_agg
@@ -5263,9 +5263,9 @@ def krige3D(
             # Compute kriging standard deviation
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                    logger.info(f'{fname}: compute kriging standard deviation ...')
                 else:
-                    print(f'{fname}: computing kriging standard deviation ...')
+                    print(f'{fname}: compute kriging standard deviation ...')
 
             for j in range(nnc):
                 krigSD[indnc[j]] = np.dot(rBArAAinv[j,:], rBA[j,:])
@@ -5281,9 +5281,9 @@ def krige3D(
 
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                logger.info(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
             else:
-                print(f'{fname}: Computing index in the embedding grid for non-conditioning / conditioning locations...')
+                print(f'{fname}: compute index in the embedding grid for non-conditioning / conditioning locations...')
 
         # Compute index in the embedding grid for indc and indnc
         # (to allow use of fft)
@@ -5293,9 +5293,9 @@ def krige3D(
         # Compute kriging estimates
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: computing kriging estimates...')
+                logger.info(f'{fname}: compute kriging estimates...')
             else:
-                print(f'{fname}: computing kriging estimates...')
+                print(f'{fname}: compute kriging estimates...')
 
         # Compute
         #    u = rAA^(-1) * v_agg, and then
@@ -5311,9 +5311,9 @@ def krige3D(
             # Compute kriging standard deviation
             if verbose > 1:
                 if logger:
-                    logger.info(f'{fname}: computing kriging standard deviation ...')
+                    logger.info(f'{fname}: compute kriging standard deviation ...')
                 else:
-                    print(f'{fname}: computing kriging standard deviation ...')
+                    print(f'{fname}: compute kriging standard deviation ...')
 
             for j in range(nnc):
                 u = ccirc[np.mod(iz - kz[j], N3), np.mod(iy - ky[j], N2), np.mod(ix - kx[j], N1)] # j-th row of rBA

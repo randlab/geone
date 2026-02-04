@@ -2569,7 +2569,7 @@ def copyImg(im, varInd=None, varIndList=None, logger=None):
 
     varInd : int or 1D array-like of ints, or None (default)
         index(es) of the variables to be copied, use `varInd=[]` to copy only
-        the grid geometry; by default (`None`): all variables are copied"
+        the grid geometry; by default (`None`): all variables are copied
 
     varIndList : int or 1D array-like of ints, or None (default)
         deprecated (used in place of `varInd` if `varInd=None`)
@@ -3617,6 +3617,98 @@ def isPointSetEqual(ps1, ps2):
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def fill_image_nearest_neighbor(im, mask_array=None, varInd=None, inplace=False, logger=None):
+    """
+    Fills an image with nearest neighbors.
+
+    For each (specified) variable, the value at each image grid cell (in the
+    given mask, if specified) is set to the value of the nearest neighbor (i.e.
+    nearest grid cell) with a defined value (not `numpy.nan`). 
+    If a mask is specified, the value at the grid cells not in the mask is set 
+    to `numpy.nan`.
+
+    Parameters
+    ----------
+    im : :class:`Img`
+        input image (3D grid with attached variables)
+
+    mask_array : array-like, optional
+        array-like of size `ngrid_cells`, where `ngrid_cells` is the number 
+        of grid cells (the array is reshaped if needed); the entries start 
+        from "bottom-lower-left" cell in the grid, and then 
+        x index increases, then y index increases, then z index increases;
+        every value is casted to a 'bool' (i.e. for numerical values, value 
+        equal to 0.0 will be `False`, the other will be `True`); the cells
+        with value set to `True` are filled with the value of the nearest 
+        informed neighbor (cell), the other ones are filled with `numpy.nan`;
+        by default (`None`): every cell is filled wrt. the nearest informed neighbor
+
+    varInd : int or 1D array-like of ints, or None (default)
+        index(es) of the variables where the filling is applied 
+        (variable with index not in `varInd` is kept as in input 
+        image);
+        by default (`None`): all variables are treated
+
+    inplace : bool, default: False
+        if `True`, the operation is done inplace, i.e. the input image is 
+        modified; if `False`, the operation is done on a copy of the input
+        image (which is not modified)
+    
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Returns
+    -------
+    im_out : :class:`Img`
+        output image
+    """
+    fname = 'fill_image_nearest_neighbor'
+
+    if inplace:
+        im_out = im
+    else:
+        im_out = copyImg(im)
+    
+    if varInd is not None:
+        varInd = np.atleast_1d(varInd).reshape(-1).astype(int)
+        for i in range(len(varInd)):
+            if varInd[i] < 0:
+                varInd[i] = im.nv - varInd[i]
+            if varInd[i] < 0 or varInd[i] >= im.nv:
+                err_msg = f'{fname}: invalid index-es'
+                if logger: logger.error(err_msg)
+                raise ImgError(err_msg)
+    else:
+        varInd = np.arange(im.nv)
+    
+    if mask_array is not None:
+        try:
+            mask_array = np.asarray(mask_array).reshape(im.nxyz()).astype(bool)
+        except:
+            err_msg = f'{fname}: `mask_array` does not have an acceptable size'
+            if logger: logger.error(err_msg)
+            raise ImgError(err_msg)
+
+    grid_points = np.vstack((im.xx().reshape(-1), im.yy().reshape(-1), im.zz().reshape(-1))).T
+
+    for iv in varInd:
+        v = im.val[iv].reshape(-1) # values at grid points
+        ind_known = ~np.isnan(v)
+        
+        if mask_array is not None:
+            v_new = np.full(im.nxyz(), np.nan)
+            v_new[mask_array] = scipy.interpolate.griddata(grid_points[ind_known], v[ind_known], grid_points[mask_array, :], method='nearest')
+
+        else:
+            v_new = scipy.interpolate.griddata(grid_points[ind_known], v[ind_known], grid_points, method='nearest')
+
+        im_out.val[iv] = v_new.astype(float).reshape(im.val[iv].shape)
+        
+    return im_out
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def indicatorImage(im, ind=0, categ=None, return_categ=False, logger=None):
     """
     Retrieves the image of the indicator of each given category for the given variable.
@@ -3854,6 +3946,7 @@ def imageContStat(im, op='mean', logger=None, **kwargs):
     fname = 'imageContStat'
 
     # Prepare operation
+    nstat_out = 1 # number of output statistics
     if op == 'max':
         func = np.nanmax
         varname = [op]
@@ -3876,7 +3969,9 @@ def imageContStat(im, op='mean', logger=None, **kwargs):
             if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
+        kwargs['q'] = np.atleast_1d(kwargs['q']).reshape(-1) # set q as a 1D array
         varname = [op + '_' + str(v) for v in kwargs['q']]
+        nstat_out = len(kwargs['q'])
 
     else:
         err_msg = f"({fname}): unkown operation '{op}'"
@@ -3889,8 +3984,15 @@ def imageContStat(im, op='mean', logger=None, **kwargs):
                  nv=0, val=0.0,
                  logger=logger)
 
-    vv = func(im.val.reshape(im.nv,-1), axis=0, **kwargs)
-    vv = vv.reshape(-1, im.nxyz())
+    # To avoid the warning "RuntimeWarning: .." because slice with all NaN:
+    # do not apply the function at grid node with nan values for all variables
+    val = im.val.reshape(im.nv, -1)
+    vv = np.full((nstat_out, val.shape[1]), np.nan)
+    ind_ok = ~np.all(np.isnan(val), axis=0)
+    vv[:, ind_ok] = func(val[:, ind_ok], axis=0, **kwargs)
+    # vv = func(im.val.reshape(im.nv, -1), axis=0, **kwargs)
+    # vv = vv.reshape(-1, im.nxyz())
+    
     for v, name in zip(vv, varname):
         im_out.append_var(v, varname=name, logger=logger)
 
@@ -3959,6 +4061,7 @@ def imageListContStat(im_list, ind=0, op='mean', logger=None, **kwargs):
         raise ImgError(err_msg)
 
     # Prepare operation
+    nstat_out = 1 # number of output statistics
     if op == 'max':
         func = np.nanmax
         varname = [op]
@@ -3981,7 +4084,9 @@ def imageListContStat(im_list, ind=0, op='mean', logger=None, **kwargs):
             if logger: logger.error(err_msg)
             raise ImgError(err_msg)
 
+        kwargs['q'] = np.atleast_1d(kwargs['q']).reshape(-1) # set q as a 1D array
         varname = [op + '_' + str(v) for v in kwargs['q']]
+        nstat_out = len(kwargs['q'])
 
     else:
         err_msg = f"({fname}): unkown operation '{op}'"
@@ -3994,8 +4099,15 @@ def imageListContStat(im_list, ind=0, op='mean', logger=None, **kwargs):
                  nv=0, val=0.0,
                  logger=logger)
 
-    vv = func(np.asarray([im.val[ind] for im in im_list]).reshape(len(im_list),-1), axis=0, **kwargs)
-    vv = vv.reshape(-1, im.nxyz())
+    # To avoid the warning "RuntimeWarning: .." because slice with all NaN:
+    # do not apply the function at grid node with nan values for all variables
+    val = im.val.reshape(im.nv, -1)
+    vv = np.full((nstat_out, val.shape[1]), np.nan)
+    ind_ok = ~np.all(np.isnan(val), axis=0)
+    vv[:, ind_ok] = func(val[:, ind_ok], axis=0, **kwargs)
+    # vv = func(im.val.reshape(im.nv, -1), axis=0, **kwargs)
+    # vv = vv.reshape(-1, im.nxyz())
+    
     for v, name in zip(vv, varname):
         im_out.append_var(v, varname=name, logger=logger)
 
@@ -4038,8 +4150,8 @@ def imageCategProp(im, categ, logger=None):
                 logger=logger)
 
     for i, code in enumerate(categ_arr):
-        x = 1.0*(im.val.reshape(im.nv,-1) == code)
-        np.putmask(x, np.isnan(im.val.reshape(im.nv,-1)), np.nan)
+        x = 1.0*(im.val.reshape(im.nv, -1) == code)
+        np.putmask(x, np.isnan(im.val.reshape(im.nv, -1)), np.nan)
         imOut.append_var(np.mean(x, axis=0), varname=f'prop{i}', logger=logger)
 
     return imOut
@@ -4109,7 +4221,7 @@ def imageListCategProp(im_list, categ, ind=0, logger=None):
                  nv=0, val=0.0,
                  logger=logger)
 
-    v = np.asarray([im.val[ind] for im in im_list]).reshape(len(im_list),-1)
+    v = np.asarray([im.val[ind] for im in im_list]).reshape(len(im_list), -1)
     for i, code in enumerate(categ_arr):
         x = 1.0*(v == code)
         np.putmask(x, np.isnan(v), np.nan)
@@ -4726,7 +4838,7 @@ def extractRandomPointFromImage(im, npt, seed=None, logger=None):
     z = im.oz + (ind_ixyz[:,2]+0.5)*im.sz
 
     # Get value of every variable at points
-    v = np.array([im.val.reshape(im.nv,-1)[:,i] for i in ind_grid])
+    v = np.array([im.val.reshape(im.nv, -1)[:,i] for i in ind_grid])
 
     # Initialize point set
     ps = PointSet(npt=npt, nv=3+im.nv, val=0.0)

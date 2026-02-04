@@ -1567,7 +1567,7 @@ class CovModel2D(object):
 
         name : str, optional
             name of the model
-            
+
         logger : :class:`logging.Logger`, optional
             logger (see package `logging`)
             if specified, messages are written via `logger` (no print)
@@ -1705,7 +1705,7 @@ class CovModel2D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
-            
+
         logger : :class:`logging.Logger`, optional
             logger (see package `logging`)
             if specified, messages are written via `logger` (no print)
@@ -1748,7 +1748,7 @@ class CovModel2D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
-            
+
         logger : :class:`logging.Logger`, optional
             logger (see package `logging`)
             if specified, messages are written via `logger` (no print)
@@ -1802,7 +1802,7 @@ class CovModel2D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
-            
+
         logger : :class:`logging.Logger`, optional
             logger (see package `logging`)
             if specified, messages are written via `logger` (no print)
@@ -2583,7 +2583,7 @@ class CovModel2D(object):
 
         grid : bool, default: True
             indicates if a grid is plotted
-            
+
         logger : :class:`logging.Logger`, optional
             logger (see package `logging`)
             if specified, messages are written via `logger` (no print)
@@ -2813,8 +2813,8 @@ class CovModel3D(object):
     #
     def __init__(self,
                  elem=[],
-                 alpha=0.0, 
-                 beta=0.0, 
+                 alpha=0.0,
+                 beta=0.0,
                  gamma=0.0,
                  name=None,
                  logger=None):
@@ -2837,7 +2837,7 @@ class CovModel3D(object):
 
         name : str, optional
             name of the model
-            
+
         logger : :class:`logging.Logger`, optional
             logger (see package `logging`)
             if specified, messages are written via `logger` (no print)
@@ -3021,7 +3021,7 @@ class CovModel3D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
-            
+
         logger : :class:`logging.Logger`, optional
             logger (see package `logging`)
             if specified, messages are written via `logger` (no print)
@@ -3064,7 +3064,7 @@ class CovModel3D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
-            
+
         logger : :class:`logging.Logger`, optional
             logger (see package `logging`)
             if specified, messages are written via `logger` (no print)
@@ -3118,7 +3118,7 @@ class CovModel3D(object):
             indexe(s) of the elementary contribution (attribute `elem`) to be
             modified; by default (`None`): indexes of any elementary contribution
             are selected
-            
+
         logger : :class:`logging.Logger`, optional
             logger (see package `logging`)
             if specified, messages are written via `logger` (no print)
@@ -4105,7 +4105,7 @@ class CovModel3D(object):
 
         grid : bool, default: True
             indicates if a grid is plotted
-            
+
         logger : :class:`logging.Logger`, optional
             logger (see package `logging`)
             if specified, messages are written via `logger` (no print)
@@ -4946,8 +4946,8 @@ def variogramExp1D(
         try:
             h, g, npair = variogramCloud1D(
                     x, v, hmax=hmax,
-                    w_factor_loc_func=w_factor_loc_func, 
-                    coord_factor_loc_func=coord_factor_loc_func, 
+                    w_factor_loc_func=w_factor_loc_func,
+                    coord_factor_loc_func=coord_factor_loc_func,
                     loc_m=loc_m,
                     make_plot=False,
                     logger=logger)
@@ -5163,8 +5163,8 @@ def covModel1D_fit(
         try:
             h, g, npair = variogramCloud1D(
                     x, v, hmax=hmax,
-                    w_factor_loc_func=w_factor_loc_func, 
-                    coord_factor_loc_func=coord_factor_loc_func, 
+                    w_factor_loc_func=w_factor_loc_func,
+                    coord_factor_loc_func=coord_factor_loc_func,
                     loc_m=loc_m,
                     make_plot=False,
                     logger=logger) # npair won't be used
@@ -5887,10 +5887,10 @@ def variogramExp2D(
         try:
             vc = variogramCloud2D(
                     x, v, alpha=alpha, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
-                    alpha_loc_func=alpha_loc_func, 
+                    alpha_loc_func=alpha_loc_func,
                     w_factor_loc_func=w_factor_loc_func,
-                    coord1_factor_loc_func=coord1_factor_loc_func, 
-                    coord2_factor_loc_func=coord2_factor_loc_func, 
+                    coord1_factor_loc_func=coord1_factor_loc_func,
+                    coord2_factor_loc_func=coord2_factor_loc_func,
                     loc_m=loc_m,
                     make_plot=False,
                     logger=logger)
@@ -5908,9 +5908,9 @@ def variogramExp2D(
     for j in (0, 1):
         try:
             ve[j] = variogramExp1D(
-                        None, None, 
+                        None, None,
                         hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
-                        ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], 
+                        ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j],
                         variogramCloud=vc[j], make_plot=False, logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot compute experimental variogram in one direction'
@@ -7275,7 +7275,7 @@ def variogramExp3D(
         color0='red',
         color1='green',
         color2='blue',
-        figsize=None, 
+        figsize=None,
         logger=None,
         **kwargs):
     """
@@ -7500,13 +7500,13 @@ def variogramExp3D(
         try:
             vc = variogramCloud3D(
                     x, v, alpha=alpha, beta=beta, gamma=gamma, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
-                    alpha_loc_func=alpha_loc_func, 
-                    beta_loc_func=beta_loc_func, 
+                    alpha_loc_func=alpha_loc_func,
+                    beta_loc_func=beta_loc_func,
                     gamma_loc_func=gamma_loc_func,
                     w_factor_loc_func=w_factor_loc_func,
-                    coord1_factor_loc_func=coord1_factor_loc_func, 
-                    coord2_factor_loc_func=coord2_factor_loc_func, 
-                    coord3_factor_loc_func=coord3_factor_loc_func, 
+                    coord1_factor_loc_func=coord1_factor_loc_func,
+                    coord2_factor_loc_func=coord2_factor_loc_func,
+                    coord3_factor_loc_func=coord3_factor_loc_func,
                     loc_m=loc_m,
                     make_plot=False,
                     logger=logger)
@@ -7524,9 +7524,9 @@ def variogramExp3D(
     for j in (0, 1, 2):
         try:
             ve[j] = variogramExp1D(
-                        None, None, 
+                        None, None,
                         hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
-                        ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], 
+                        ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j],
                         make_plot=False, logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot compute experimental variogram in one direction'
@@ -8250,7 +8250,7 @@ def variogramExp3D_omni_wrt_2_first_axes(
         make_plot=True,
         color01='orange',
         color2='blue',
-        figsize=None, 
+        figsize=None,
         logger=None,
         **kwargs):
     """
@@ -8467,13 +8467,13 @@ def variogramExp3D_omni_wrt_2_first_axes(
         try:
             vc = variogramCloud3D_omni_wrt_2_first_axes(
                     x, v, alpha=alpha, beta=beta, gamma=gamma, tol_dist=tol_dist, tol_angle=tol_angle, hmax=hmax,
-                    alpha_loc_func=alpha_loc_func, 
-                    beta_loc_func=beta_loc_func, 
+                    alpha_loc_func=alpha_loc_func,
+                    beta_loc_func=beta_loc_func,
                     gamma_loc_func=gamma_loc_func,
                     w_factor_loc_func=w_factor_loc_func,
-                    coord1_factor_loc_func=coord1_factor_loc_func, 
-                    coord2_factor_loc_func=coord2_factor_loc_func, 
-                    coord3_factor_loc_func=coord3_factor_loc_func, 
+                    coord1_factor_loc_func=coord1_factor_loc_func,
+                    coord2_factor_loc_func=coord2_factor_loc_func,
+                    coord3_factor_loc_func=coord3_factor_loc_func,
                     loc_m=loc_m,
                     make_plot=False,
                     logger=logger)
@@ -8491,9 +8491,9 @@ def variogramExp3D_omni_wrt_2_first_axes(
     for j in (0, 1):
         try:
             ve[j] = variogramExp1D(
-                        None, None, 
+                        None, None,
                         hmax=None, w_factor_loc_func=None, coord_factor_loc_func=None, loc_m=loc_m,
-                        ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j], 
+                        ncla=ncla[j], cla_center=cla_center[j], cla_length=cla_length[j], variogramCloud=vc[j],
                         make_plot=False, logger=logger)
         except Exception as exc:
             err_msg = f'{fname}: cannot compute experimental variogram in one direction'
@@ -9407,9 +9407,9 @@ def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=
     """
     Computes a central value and an error standard deviation from an ensemble of values.
 
-    Given an ensemble of values `v`, a lower bound `v_min` and/or an upper 
+    Given an ensemble of values `v`, a lower bound `v_min` and/or an upper
     bound `v_max`, the central value `v_mean` is set to:
-    
+
     - the mean of values `v` that are within the bounds
     - or, if no value is within the bounds: the mean of the two bounds if \
     both bounds are given, or the value of the unique given bound plus \
@@ -9417,25 +9417,25 @@ def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=
     upper bound (`v_max`)) is given, or zero if no bound is given
 
     Then, the error standard deviation `v_err_std` is set such that
-    the Gaussian distribution of mean `v_mean` and standard deviation 
-    `v_err_std` has a probability `p/2` at least to be between `v_mean` and 
+    the Gaussian distribution of mean `v_mean` and standard deviation
+    `v_err_std` has a probability `p/2` at least to be between `v_mean` and
     the lower bound (`v_min`), resp. between `v_mean` and the upper bound
-    `v_max`. If no bound is given, `v_err_std` is set to the standard deviation 
+    (`v_max`). If no bound is given, `v_err_std` is set to the standard deviation
     of the values `v`.
-    
+
     Parameters
     ----------
     v : 1D array-like of floats
         values
-    
+
     v_min : float, default: numpy.nan
         lower bound (if not given or `numpy.nan`: no lower bound)
-    
+
     v_max : float, default: numpy.nan
         upper bound (if not given or `numpy.nan`: no upper bound)
-    
+
     p : float, default: 0.95
-        probability used to set the output error standard deviation 
+        probability used to set the output error standard deviation
         (see above)
 
     def_shift : float, default: 1.e-5
@@ -9445,12 +9445,12 @@ def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
-    
+
     Returns
     -------
     v_mean : float
         central value (see above)
-    
+
     v_err_std : float
         error standard deviation (see above)
     """
@@ -9471,13 +9471,13 @@ def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=
         v_min = -np.inf
 
     if v_max is None or np.isnan(v_max):
-        v_max = np.inf    
-    
+        v_max = np.inf
+
     if v_min >= v_max:
         err_msg = f'{fname}: `v_min` should be less than `v_max`'
         if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
-    
+
     t = scipy.stats.norm.ppf((1.0+p)/2.0)
 
     if np.isinf(v_min):
@@ -9489,7 +9489,7 @@ def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=
         else:
             # only upper bound
             ind = v <= v_max
-            if len(ind):
+            if ind.any():
                 v_mean = np.mean(v[ind])
             else:
                 v_mean = v_max - def_shift
@@ -9499,7 +9499,7 @@ def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=
         if np.isinf(v_max):
             # only lower bound
             ind = v >= v_min
-            if len(ind):
+            if ind.any():
                 v_mean = np.mean(v[ind])
             else:
                 v_mean = v_min + def_shift
@@ -9508,7 +9508,7 @@ def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=
         else:
             # lower bound and upper bound
             ind = np.all((v >= v_min, v <= v_max), axis=0)
-            if len(ind):
+            if ind.any():
                 v_mean = np.mean(v[ind])
             else:
                 v_mean = 0.5 *(v_min + v_max)
@@ -9533,7 +9533,7 @@ def eval_at_points_1D(f, pts, nx, sx, ox, return_float_if_unique=True, logger=No
         (the array is reshaped if needed), values at grid cells; note the shape of the \
         array is `(nx,)`
         - if a float: same value at every grid cell
-            
+
     pts : 2D array of floats of shape (n, 1)
         points at which the input fuction or value(s) has to be interpolated
 
@@ -9547,21 +9547,21 @@ def eval_at_points_1D(f, pts, nx, sx, ox, return_float_if_unique=True, logger=No
         origin of the grid along x axis (x coordinate of cell border)
 
         Note: `(ox, )` is the "bottom-lower-left" corner of the grid
-    
+
     return_float_if_unique : bool, default: True
-        if `True` and if all output values are identical, then a float 
-        (the unique output value) is returned; 
+        if `True` and if all output values are identical, then a float
+        (the unique output value) is returned;
         otherwise: an array of shape `(n,)` is returned
 
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
-    
+
     Returns
     -------
     f_pts : array of floats, or float
         array of output values at point `pts` of shape `(n,)`;
-        if `return_float_if_unique=True` and if all output values are identical, 
+        if `return_float_if_unique=True` and if all output values are identical,
         then a float (the unique output value) is returned
     """
     fname = 'eval_at_points_1D'
@@ -9581,7 +9581,7 @@ def eval_at_points_1D(f, pts, nx, sx, ox, return_float_if_unique=True, logger=No
                 f_pts = f_grid[0]
             else:
                 f_pts = f_grid[0] * np.ones(pts.shape[0])
-        
+
         elif f_grid.size == nx:
             f_pts = img.Img_interp_func(img.Img(nx, 1, 1, sx, 1.0, 1.0, ox, 0.0, 0.0, nv=1, val=f_grid, logger=logger), iy=0, iz=0, logger=logger)(pts)
             if return_float_if_unique and np.allclose(f_pts, f_pts[0]):
@@ -9590,7 +9590,7 @@ def eval_at_points_1D(f, pts, nx, sx, ox, return_float_if_unique=True, logger=No
             err_msg = f'{fname}: size of `f` is not valid'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-            
+
     return f_pts
 # ----------------------------------------------------------------------------
 
@@ -9610,7 +9610,7 @@ def eval_at_points_2D(f, pts, nx, ny, sx, sy, ox, oy, return_float_if_unique=Tru
         (the array is reshaped if needed), values at grid cells; note the shape of the \
         array is `(ny, nx)`
         - if a float: same value at every grid cell
-            
+
     pts : 2D array of floats of shape (n, 2)
         points at which the input fuction or value(s) has to be interpolated
 
@@ -9633,12 +9633,12 @@ def eval_at_points_2D(f, pts, nx, ny, sx, sy, ox, oy, return_float_if_unique=Tru
         origin of the grid along y axis (y coordinate of cell border)
 
         Note: `(ox, oy)` is the "bottom-lower-left" corner of the grid
-    
+
     return_float_if_unique : bool, default: True
-        if `True` and if all output values are identical, then a float 
-        (the unique output value) is returned; 
+        if `True` and if all output values are identical, then a float
+        (the unique output value) is returned;
         otherwise: an array of shape `(n,)` is returned
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -9647,7 +9647,7 @@ def eval_at_points_2D(f, pts, nx, ny, sx, sy, ox, oy, return_float_if_unique=Tru
     -------
     f_pts : array of floats, or float
         array of output values at point `pts` of shape `(n,)`;
-        if `return_float_if_unique=True` and if all output values are identical, 
+        if `return_float_if_unique=True` and if all output values are identical,
         then a float (the unique output value) is returned
     """
     fname = 'eval_at_points_2D'
@@ -9667,7 +9667,7 @@ def eval_at_points_2D(f, pts, nx, ny, sx, sy, ox, oy, return_float_if_unique=Tru
                 f_pts = f_grid[0]
             else:
                 f_pts = f_grid[0] * np.ones(pts.shape[0])
-        
+
         elif f_grid.size == nx*ny:
             f_pts = img.Img_interp_func(img.Img(nx, ny, 1, sx, sy, 1.0, ox, oy, 0.0, nv=1, val=f_grid, logger=logger), iz=0, logger=logger)(pts)
             if return_float_if_unique and np.allclose(f_pts, f_pts[0]):
@@ -9676,7 +9676,7 @@ def eval_at_points_2D(f, pts, nx, ny, sx, sy, ox, oy, return_float_if_unique=Tru
             err_msg = f'{fname}: size of `f` is not valid'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-            
+
     return f_pts
 # ----------------------------------------------------------------------------
 
@@ -9696,7 +9696,7 @@ def eval_at_points_3D(f, pts, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_i
         (the array is reshaped if needed), values at grid cells; note the shape of the \
         array is `(nz, ny, nx)`
         - if a float: same value at every grid cell
-            
+
     pts : 2D array of floats of shape (n, 3)
         points at which the input fuction or value(s) has to be interpolated
 
@@ -9728,12 +9728,12 @@ def eval_at_points_3D(f, pts, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_i
         origin of the grid along z axis (z coordinate of cell border)
 
         Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
-    
+
     return_float_if_unique : bool, default: True
-        if `True` and if all output values are identical, then a float 
-        (the unique output value) is returned; 
+        if `True` and if all output values are identical, then a float
+        (the unique output value) is returned;
         otherwise: an array of shape `(n,)` is returned
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -9742,7 +9742,7 @@ def eval_at_points_3D(f, pts, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_i
     -------
     f_pts : array of floats, or float
         array of output values at point `pts` of shape `(n,)`;
-        if `return_float_if_unique=True` and if all output values are identical, 
+        if `return_float_if_unique=True` and if all output values are identical,
         then a float (the unique output value) is returned
     """
     fname = 'eval_at_points_3D'
@@ -9762,7 +9762,7 @@ def eval_at_points_3D(f, pts, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_i
                 f_pts = f_grid[0]
             else:
                 f_pts = f_grid[0] * np.ones(pts.shape[0])
-        
+
         elif f_grid.size == nx*ny*nz:
             f_pts = img.Img_interp_func(img.Img(nx, ny, nz, sx, sy, sz, ox, oy, oz, nv=1, val=f_grid, logger=logger), logger=logger)(pts)
             if return_float_if_unique and np.allclose(f_pts, f_pts[0]):
@@ -9771,7 +9771,7 @@ def eval_at_points_3D(f, pts, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_i
             err_msg = f'{fname}: size of `f` is not valid'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-            
+
     return f_pts
 # ----------------------------------------------------------------------------
 
@@ -9791,7 +9791,7 @@ def eval_in_grid_1D(f, nx, sx, ox, return_float_if_unique=True, logger=None):
         (the array is reshaped if needed), values at grid cells; note the shape of the \
         array is `(nx,)`
         - if a float: same value at every grid cell
-            
+
     nx : int
         number of grid cells along x axis
 
@@ -9802,12 +9802,12 @@ def eval_in_grid_1D(f, nx, sx, ox, return_float_if_unique=True, logger=None):
         origin of the grid along x axis (x coordinate of cell border)
 
         Note: `(ox, )` is the "bottom-lower-left" corner of the grid
-       
+
     return_float_if_unique : bool, default: True
-        if `True` and if all output values are identical, then a float 
-        (the unique output value) is returned; 
+        if `True` and if all output values are identical, then a float
+        (the unique output value) is returned;
         otherwise: an array of shape `(nx,)` is returned
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -9817,7 +9817,7 @@ def eval_in_grid_1D(f, nx, sx, ox, return_float_if_unique=True, logger=None):
     f_grid : array of floats, or float
         array of output values in the grid (cell centers), of shape `(nx,)`,
         `f_grid[ix]` is the value at the grid cell of index `ix` along x-axis;
-        if `return_float_if_unique=True` and if all output values are identical, 
+        if `return_float_if_unique=True` and if all output values are identical,
         then a float (the unique output value) is returned
     """
     fname = 'eval_in_grid_1D'
@@ -9846,7 +9846,7 @@ def eval_in_grid_1D(f, nx, sx, ox, return_float_if_unique=True, logger=None):
             err_msg = f'{fname}: size of `f` is not valid'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-            
+
     return f_grid
 # ----------------------------------------------------------------------------
 
@@ -9866,7 +9866,7 @@ def eval_in_grid_2D(f, nx, ny, sx, sy, ox, oy, return_float_if_unique=True, logg
         (the array is reshaped if needed), values at grid cells; note the shape of the \
         array is `(ny, nx)`
         - if a float: same value at every grid cell
-            
+
     nx : int
         number of grid cells along x axis
 
@@ -9886,12 +9886,12 @@ def eval_in_grid_2D(f, nx, ny, sx, sy, ox, oy, return_float_if_unique=True, logg
         origin of the grid along y axis (y coordinate of cell border)
 
         Note: `(ox, oy)` is the "bottom-lower-left" corner of the grid
-    
+
     return_float_if_unique : bool, default: True
-        if `True` and if all output values are identical, then a float 
-        (the unique output value) is returned; 
+        if `True` and if all output values are identical, then a float
+        (the unique output value) is returned;
         otherwise: an array of shape `(ny, nx)` is returned
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -9900,9 +9900,9 @@ def eval_in_grid_2D(f, nx, ny, sx, sy, ox, oy, return_float_if_unique=True, logg
     -------
     f_grid : array of floats, or float
         array of output values in the grid (cell centers), of shape `(ny, nx)`,
-        `f_grid[iy, ix]` is the value at the grid cell of 
+        `f_grid[iy, ix]` is the value at the grid cell of
         indices `ix` along x-axis, `iy` along y-axis;
-        if `return_float_if_unique=True` and if all output values are identical, 
+        if `return_float_if_unique=True` and if all output values are identical,
         then a float (the unique output value) is returned
     """
     fname = 'eval_in_grid_2D'
@@ -9933,7 +9933,7 @@ def eval_in_grid_2D(f, nx, ny, sx, sy, ox, oy, return_float_if_unique=True, logg
             err_msg = f'{fname}: size of `f` is not valid'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-            
+
     return f_grid
 # ----------------------------------------------------------------------------
 
@@ -9953,7 +9953,7 @@ def eval_in_grid_3D(f, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_uniqu
         (the array is reshaped if needed), values at grid cells; note the shape of the \
         array is `(nz, ny, nx)`
         - if a float: same value at every grid cell
-   
+
     nx : int
         number of grid cells along x axis
 
@@ -9982,12 +9982,12 @@ def eval_in_grid_3D(f, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_uniqu
         origin of the grid along z axis (z coordinate of cell border)
 
         Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
-    
+
     return_float_if_unique : bool, default: True
-        if `True` and if all output values are identical, then a float 
-        (the unique output value) is returned; 
+        if `True` and if all output values are identical, then a float
+        (the unique output value) is returned;
         otherwise: an array of shape `(nz, ny, nx)` is returned
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -9996,9 +9996,9 @@ def eval_in_grid_3D(f, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_uniqu
     -------
     f_grid : array of floats, or float
         array of output values in the grid (cell centers), of shape `(nz, ny, nx)`,
-        `f_grid[iz, iy, ix]` is the value at the grid cell of 
+        `f_grid[iz, iy, ix]` is the value at the grid cell of
         indices `ix` along x-axis, `iy` along y-axis, `iz` along z-axis;
-        if `return_float_if_unique=True` and if all output values are identical, 
+        if `return_float_if_unique=True` and if all output values are identical,
         then a float (the unique output value) is returned
     """
     fname = 'eval_in_grid_3D'
@@ -10030,7 +10030,7 @@ def eval_in_grid_3D(f, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_uniqu
             err_msg = f'{fname}: size of `f` is not valid'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-            
+
     return f_grid
 # ----------------------------------------------------------------------------
 
@@ -10079,7 +10079,7 @@ def krige(
         points locations where the interpolation has to be done, with nu the
         number of points and d the space dimension (1, 2, or 3, same as for `x`),
         each row of `xu` is the coordinatates of one point;
-        note: for data in 1D (`d=1`), 1D array of shape `(nu,)` is accepted 
+        note: for data in 1D (`d=1`), 1D array of shape `(nu,)` is accepted
         for `nu` points
 
     cov_model : :class:`CovModel1D` or :class:`CovModel2D` or :class:`CovModel3D`
@@ -10096,15 +10096,15 @@ def krige(
         whatever dimension of points (d);
 
         note: the covariance model must be stationary, however, non stationarity is
-        handled: 
+        handled:
 
         - local rotation by specifying `alpha_xu` (in 2D or 3D), `beta_xu` (in 3D), `gamma_xu` (in 3D)
         - other non-stationarities by specifying `cov_model_non_stationarity_xu_list` (see below)
 
     v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
-        standard deviation of error at data points, with n the number of data points; 
-        if `v_err_std` is a float, the same value is used for all data points; 
-        this means that at location x[i], the data value is considered as in a Gaussian 
+        standard deviation of error at data points, with n the number of data points;
+        if `v_err_std` is a float, the same value is used for all data points;
+        this means that at location x[i], the data value is considered as in a Gaussian
         distribution of mean `v[i]` and standard deviation `v_err_std[i]`
 
     method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
@@ -10183,21 +10183,21 @@ def krige(
         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
         Examples (with the parameter `arg` is set from `val`)
-        
-        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
-            this multipies the weight contribution of every elementary contribution of the 
+
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`;
+            this multipies the weight contribution of every elementary contribution of the
             covariance model
         - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
-            this multipies the weight contribution of the elementary contribution of index 0 of the 
+            this multipies the weight contribution of the elementary contribution of index 0 of the
             covariance model
         - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
             this multipies the range in all direction of every elementary contribution of the
             covariance model
         - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
-            this multipies the range in the first main direction (index 0) of every elementary 
+            this multipies the range in the first main direction (index 0) of every elementary
             contribution of the covariance model
         - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
-            this multipies the range in the first main direction (index 0) of the elementary 
+            this multipies the range in the first main direction (index 0) of the elementary
             contribution of index 0 of the covariance model
 
     use_unique_neighborhood : bool, default: False
@@ -10214,11 +10214,11 @@ def krige(
 
     searchRadius : float, optional
         if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
-        with same radii along each axis), i.e. the data points at distance to the 
-        estimated point greater than `searchRadius` are not taken into account 
-        in the kriging system; if `searchRadius` is not `None`, then 
+        with same radii along each axis), i.e. the data points at distance to the
+        estimated point greater than `searchRadius` are not taken into account
+        in the kriging system; if `searchRadius` is not `None`, then
         `searchRadiusRelative` is not used;
-        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to
         define the search ellipsoid;
 
     searchRadiusRelative : float, default: 1.2
@@ -10227,9 +10227,9 @@ def krige(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
 
     nneighborMax : int, default: 12
@@ -10279,7 +10279,7 @@ def krige(
             err_msg = f'{fname}: `x` is None but `v` is not None'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-    
+
     else:
         x = np.asarray(x)
         # Get dimension (d) from x
@@ -10305,6 +10305,11 @@ def krige(
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
+        if np.any(np.isnan(v)):
+            err_msg = f'{fname}: `v` contains `nan` value(s)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
     # Set variance of data error (from standard deviation)
     if v_err_std is None:
         v_err_std = 0.0
@@ -10316,6 +10321,11 @@ def krige(
         if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
+    if np.any(v_err_var < 0.0):
+        err_msg = f'{fname}: `v_err_std` contains negative value(s)'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+    
     v_err_var = v_err_var * v_err_var
 
     # Get dimension from xu (du) and number of unknown points (nu)
@@ -10393,7 +10403,12 @@ def krige(
                     err_msg = f'{fname}: size of `mean_x` is not valid'
                     if logger: logger.error(err_msg)
                     raise CovModelError(err_msg)
-                
+
+                if np.any(np.isnan(mean_x)):
+                    err_msg = f'{fname}: `mean_x` contains `nan` value(s)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
         if mean_xu is None:
             if n == 0:
                 mean_xu = np.zeros(nu)
@@ -10405,6 +10420,11 @@ def krige(
                 mean_xu = mean_xu * np.ones(nu)
             elif mean_xu.size != nu:
                 err_msg = f'{fname}: size of `mean_xu` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(mean_xu)):
+                err_msg = f'{fname}: `mean_xu` contains `nan` value(s)'
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
@@ -10428,6 +10448,11 @@ def krige(
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
+            if np.any(np.isnan(var_x)):
+                err_msg = f'{fname}: `var_x` contains `nan` value(s)'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
             varUpdate_x = np.sqrt(var_x/cov0)
 
         if var_xu is not None:
@@ -10436,6 +10461,11 @@ def krige(
                 var_xu = var_xu * np.ones(nu)
             elif var_xu.size != nu:
                 err_msg = f'{fname}: size of `var_xu` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(var_xu)):
+                err_msg = f'{fname}: `var_xu` contains `nan` value(s)'
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
@@ -10493,7 +10523,7 @@ def krige(
                             err_msg = f'{fname}: covariance model with non stationary sill (method `multiply_w`) cannot be used if `var_xu` is not `None`'
                             if logger: logger.error(err_msg)
                             raise CovModelError(err_msg)
-                
+
                 vu_std = np.sqrt(cov0) * varUpdate_xu
 
             elif cov_model_non_stationarity_xu_list is not None:
@@ -10501,9 +10531,9 @@ def krige(
                     err_msg = f'{fname}: `cov_model_non_stationarity_xu_list` must be a list if not `None`'
                     if logger: logger.error(err_msg)
                     raise CovModelError(err_msg)
-                
+
                 # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
-                cov_model = copyCovModel(cov_model) 
+                cov_model = copyCovModel(cov_model)
                 cov_model_has_changed = False
                 adapt_cov_model_ind = []
                 for i, cm_ns_xu in enumerate(cov_model_non_stationarity_xu_list):
@@ -10570,16 +10600,16 @@ def krige(
                             cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
                         else:
                             cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
-                        
+
                         vu_std[k] = np.sqrt(cov0)
-                
+
                 else:
                     vu_std = np.sqrt(cov0) * np.ones(nu)
 
             else:
                 vu_std = np.sqrt(cov0) * np.ones(nu)
 
-        else: #if method == 'ordinary_kriging':               
+        else: #if method == 'ordinary_kriging':
             vu = np.zeros(nu)
 
             if cov_model_non_stationarity_xu_list is not None:
@@ -10587,9 +10617,9 @@ def krige(
                     err_msg = f'{fname}: `cov_model_non_stationarity_xu_list` must be a list if not `None`'
                     if logger: logger.error(err_msg)
                     raise CovModelError(err_msg)
-                
+
                 # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
-                cov_model = copyCovModel(cov_model) 
+                cov_model = copyCovModel(cov_model)
                 cov_model_has_changed = False
                 adapt_cov_model_ind = []
                 for i, cm_ns_xu in enumerate(cov_model_non_stationarity_xu_list):
@@ -10656,9 +10686,9 @@ def krige(
                             cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
                         else:
                             cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
-                        
+
                         vu_std[k] = np.sqrt(cov0)
-                
+
                 else:
                     vu_std = np.sqrt(cov0) * np.ones(nu)
 
@@ -10670,7 +10700,7 @@ def krige(
     # Here: n > 0 and nu > 0
 
     # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
-    cov_model = copyCovModel(cov_model) 
+    cov_model = copyCovModel(cov_model)
     cov_model_has_changed = False
 
     # Rotation given by alpha_xu, beta_xu, gamma_xu
@@ -10685,7 +10715,7 @@ def krige(
             err_msg = f'{fname}: `beta_xu` cannot be used with 1D or 2D covariance model'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-    
+
     if gamma_xu is not None:
         if omni_dir or d < 3:
             err_msg = f'{fname}: `gamma_xu` cannot be used with 1D or 2D covariance model'
@@ -10846,7 +10876,7 @@ def krige(
             cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
         else:
             cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
-    
+
     # Do kriging
     if use_unique_neighborhood:
         if rot:
@@ -10917,7 +10947,7 @@ def krige(
                 err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
-            
+
             if omni_dir:
                 dmax_ax = np.array([searchRadius], dtype='float')
             else:
@@ -10931,7 +10961,7 @@ def krige(
                 err_msg = f'{fname}: search radius relative (factor) not valid (negative)'
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
-            
+
             if omni_dir:
                 dmax_ax = np.array([cov_model.r()])
             elif d == 2:
@@ -10958,11 +10988,11 @@ def krige(
         vu = np.zeros(nu)
         vu_std = np.zeros(nu)
 
-        if verbose > 0:
+        if verbose > 1:
             progress_old = 0
 
         for j, x0 in enumerate(xu):
-            if verbose > 0:
+            if verbose > 1:
                 progress = int(j/nu*100.0)
                 if progress > progress_old:
                     if logger:
@@ -11087,7 +11117,7 @@ def krige(
     if var_x is not None:
         vu_std = varUpdate_xu * vu_std
 
-    if verbose > 0:
+    if verbose > 1:
         if logger:
             logger.info(f'{fname}: {100:3d}%')
         else:
@@ -11216,9 +11246,9 @@ def cross_valid_loo(
         whatever dimension of points (d);
 
     v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
-        standard deviation of error at data points, with n the number of data points; 
-        if `v_err_std` is a float, the same value is used for all data points; 
-        this means that at location x[i], the data value is considered as in a Gaussian 
+        standard deviation of error at data points, with n the number of data points;
+        if `v_err_std` is a float, the same value is used for all data points;
+        this means that at location x[i], the data value is considered as in a Gaussian
         distribution of mean `v[i]` and standard deviation `v_err_std[i]`
 
     dmin : float, optional
@@ -11283,21 +11313,21 @@ def cross_valid_loo(
         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
         Examples (with the parameter `arg` is set from `val`)
-        
-        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
-            this multipies the weight contribution of every elementary contribution of the 
+
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`;
+            this multipies the weight contribution of every elementary contribution of the
             covariance model
         - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
-            this multipies the weight contribution of the elementary contribution of index 0 of the 
+            this multipies the weight contribution of the elementary contribution of index 0 of the
             covariance model
         - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
             this multipies the range in all direction of every elementary contribution of the
             covariance model
         - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
-            this multipies the range in the first main direction (index 0) of every elementary 
+            this multipies the range in the first main direction (index 0) of every elementary
             contribution of the covariance model
         - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
-            this multipies the range in the first main direction (index 0) of the elementary 
+            this multipies the range in the first main direction (index 0) of the elementary
             contribution of index 0 of the covariance model
 
     significance : float, default: 0.05
@@ -11387,6 +11417,11 @@ def cross_valid_loo(
         if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
+    if np.any(np.isnan(v)):
+        err_msg = f'{fname}: `v` contains `nan` value(s)'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
     # Check dimension of cov_model and set if used as omni-directional model
     if isinstance(cov_model, CovModel1D):
         omni_dir = True
@@ -11411,7 +11446,7 @@ def cross_valid_loo(
         elif v_err_std.size != n:
             err_msg = f'{fname}: size of `v_err_std` is not valid'
             if logger: logger.error(err_msg)
-            raise CovModelError(err_msg)        
+            raise CovModelError(err_msg)
         else:
             adapt_kwds_v_err_std = True
 
@@ -11504,7 +11539,7 @@ def cross_valid_loo(
                     interpolator_kwargs['cov_model_non_stationarity_xu_list'].append([cm_ns_x[0], val[0], cm_ns_x[2]])
                 else:
                     interpolator_kwargs['cov_model_non_stationarity_xu_list'].append([cm_ns_x[0], val[0]])
-    
+
             adapt_kwds_cov_model_non_stationarity_x_list = len(adapt_kwds_cov_model_non_stationarity_x_list_ind) > 0
 
     adapt_kwds =       adapt_kwds_v_err_std \
@@ -11562,7 +11597,7 @@ def cross_valid_loo(
 
                 # interpolation
                 v_est[i], v_std[i] = interpolator(x[indx], v[indx], np.array(x[i]).reshape(-1, d), cov_model, **interpolator_kwargs)
-    
+
     else:
         if adapt_kwds:
             # adapt_kwds = True
@@ -11803,7 +11838,7 @@ def sgs(x, v, xu, cov_model,
         points locations where the interpolation has to be done, with nu the
         number of points and d the space dimension (1, 2, or 3, same as for `x`),
         each row of `xu` is the coordinatates of one point;
-        note: for data in 1D (`d=1`), 1D array of shape `(nu,)` is accepted 
+        note: for data in 1D (`d=1`), 1D array of shape `(nu,)` is accepted
         for `nu` points
 
     cov_model : :class:`CovModel1D` or :class:`CovModel2D` or :class:`CovModel3D`
@@ -11820,15 +11855,15 @@ def sgs(x, v, xu, cov_model,
         whatever dimension of points (d);
 
         note: the covariance model must be stationary, however, non stationarity is
-        handled: 
+        handled:
 
         - local rotation by specifying `alpha_xu` (in 2D or 3D), `beta_xu` (in 3D), `gamma_xu` (in 3D)
         - other non-stationarities by specifying `cov_model_non_stationarity_xu_list` (see below)
 
     v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
-        standard deviation of error at data points, with n the number of data points; 
-        if `v_err_std` is a float, the same value is used for all data points; 
-        this means that at location x[i], the data value is considered as in a Gaussian 
+        standard deviation of error at data points, with n the number of data points;
+        if `v_err_std` is a float, the same value is used for all data points;
+        this means that at location x[i], the data value is considered as in a Gaussian
         distribution of mean `v[i]` and standard deviation `v_err_std[i]`
 
     method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
@@ -11907,30 +11942,30 @@ def sgs(x, v, xu, cov_model,
         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
         Examples (with the parameter `arg` is set from `val`)
-        
-        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
-            this multipies the weight contribution of every elementary contribution of the 
+
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`;
+            this multipies the weight contribution of every elementary contribution of the
             covariance model
         - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
-            this multipies the weight contribution of the elementary contribution of index 0 of the 
+            this multipies the weight contribution of the elementary contribution of index 0 of the
             covariance model
         - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
             this multipies the range in all direction of every elementary contribution of the
             covariance model
         - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
-            this multipies the range in the first main direction (index 0) of every elementary 
+            this multipies the range in the first main direction (index 0) of every elementary
             contribution of the covariance model
         - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
-            this multipies the range in the first main direction (index 0) of the elementary 
+            this multipies the range in the first main direction (index 0) of the elementary
             contribution of index 0 of the covariance model
 
     searchRadius : float, optional
         if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
-        with same radii along each axis), i.e. the data points at distance to the 
-        estimated point greater than `searchRadius` are not taken into account 
-        in the kriging system; if `searchRadius` is not `None`, then 
+        with same radii along each axis), i.e. the data points at distance to the
+        estimated point greater than `searchRadius` are not taken into account
+        in the kriging system; if `searchRadius` is not `None`, then
         `searchRadiusRelative` is not used;
-        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to
         define the search ellipsoid;
 
     searchRadiusRelative : float, default: 1.2
@@ -11939,9 +11974,9 @@ def sgs(x, v, xu, cov_model,
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
 
     nneighborMax : int, default: 12
@@ -11989,7 +12024,7 @@ def sgs(x, v, xu, cov_model,
             err_msg = f'{fname}: `x` is None but `v` is not None'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-    
+
     else:
         x = np.asarray(x)
         # Get dimension (d) from x
@@ -12015,6 +12050,11 @@ def sgs(x, v, xu, cov_model,
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
+        if np.any(np.isnan(v)):
+            err_msg = f'{fname}: `v` contains `nan` value(s)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
     # Set variance of data error (from standard deviation)
     if v_err_std is None:
         v_err_std = 0.0
@@ -12023,6 +12063,11 @@ def sgs(x, v, xu, cov_model,
         v_err_var = v_err_var[0] * np.ones(n)
     elif v_err_var.size != n:
         err_msg = f'{fname}: size of `v_err_std` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    if np.any(v_err_var < 0.0):
+        err_msg = f'{fname}: `v_err_std` contains negative value(s)'
         if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
@@ -12113,7 +12158,12 @@ def sgs(x, v, xu, cov_model,
                     err_msg = f'{fname}: size of `mean_x` is not valid'
                     if logger: logger.error(err_msg)
                     raise CovModelError(err_msg)
-                
+
+                if np.any(np.isnan(mean_x)):
+                    err_msg = f'{fname}: `mean_x` contains `nan` value(s)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
         if mean_xu is None:
             if n == 0:
                 mean_xu = np.zeros(nu)
@@ -12125,6 +12175,11 @@ def sgs(x, v, xu, cov_model,
                 mean_xu = mean_xu * np.ones(nu)
             elif mean_xu.size != nu:
                 err_msg = f'{fname}: size of `mean_xu` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(mean_xu)):
+                err_msg = f'{fname}: `mean_xu` contains `nan` value(s)'
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
@@ -12148,6 +12203,11 @@ def sgs(x, v, xu, cov_model,
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
+            if np.any(np.isnan(var_x)):
+                err_msg = f'{fname}: `var_x` contains `nan` value(s)'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
             varUpdate_x = np.sqrt(var_x/cov0)
 
         if var_xu is not None:
@@ -12156,6 +12216,11 @@ def sgs(x, v, xu, cov_model,
                 var_xu = var_xu * np.ones(nu)
             elif var_xu.size != nu:
                 err_msg = f'{fname}: size of `var_xu` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(var_xu)):
+                err_msg = f'{fname}: `var_xu` contains `nan` value(s)'
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
@@ -12193,7 +12258,7 @@ def sgs(x, v, xu, cov_model,
         raise CovModelError(err_msg)
 
     # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
-    cov_model = copyCovModel(cov_model) 
+    cov_model = copyCovModel(cov_model)
     cov_model_has_changed = False
 
     # Rotation given by alpha_xu, beta_xu, gamma_xu
@@ -12208,13 +12273,13 @@ def sgs(x, v, xu, cov_model,
             err_msg = f'{fname}: `beta_xu` cannot be used with 1D or 2D covariance model'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-    
+
     if gamma_xu is not None:
         if omni_dir or d < 3:
             err_msg = f'{fname}: `gamma_xu` cannot be used with 1D or 2D covariance model'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-        
+
     if omni_dir:
         rot = False
     else:
@@ -12367,14 +12432,14 @@ def sgs(x, v, xu, cov_model,
             cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
         else:
             cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
-    
+
     # Limited search neighborhood
     if searchRadius is not None:
         if searchRadius <= 0.0:
             err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-        
+
         if omni_dir:
             dmax_ax = np.array([searchRadius], dtype='float')
         else:
@@ -12386,7 +12451,7 @@ def sgs(x, v, xu, cov_model,
             err_msg = f'{fname}: search radius relative (factor) not valid (negative)'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-        
+
         if d == 1 or omni_dir:
             dmax_ax = np.array([cov_model.r()])
         elif d == 2:
@@ -12436,7 +12501,7 @@ def sgs(x, v, xu, cov_model,
         seed = np.random.randint(1, 1000000)
     seed = int(seed)
 
-    if verbose > 0:
+    if verbose > 1:
         progress_old = 0
 
     for k in range(nreal):
@@ -12452,7 +12517,7 @@ def sgs(x, v, xu, cov_model,
 
         for j, jind in enumerate(ind_u):
             # Simulation at x0 = xu[jind] = xu[ind_u[j]]
-            if verbose > 0:
+            if verbose > 1:
                 progress = int((j+k*nu)/(nreal*nu)*100.0)
                 if progress > progress_old:
                     if logger:
@@ -12460,7 +12525,7 @@ def sgs(x, v, xu, cov_model,
                     else:
                         print(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
                     progress_old = progress
-            
+
             if adapt_cov_model:
                 cov_model = copyCovModel(cov_model_base)
                 for i in adapt_cov_model_ind:
@@ -12516,7 +12581,7 @@ def sgs(x, v, xu, cov_model,
                     mu = mean_all[n+jind]
                 else:
                     mu = mu0
-                
+
                 std = np.sqrt(cov0)
                 if var_x is not None:
                     std = varUpdate_all[n+jind]*std
@@ -12580,17 +12645,17 @@ def sgs(x, v, xu, cov_model,
             v_all[n+jind] = np.random.normal(loc=mu, scale=std)
 
             if ind_x_in_xu[jind] >= 0:
-                # Simulated location is a conditioning data location, then 
+                # Simulated location is a conditioning data location, then
                 # this conditioning data can no longer be selected for the next
                 # simulated locations (the current simulated point will be used)
                 ind_sel[ind_x_in_xu[jind]] = False
 
             ind_sel[n+jind] = True # the current simulated point can now be selected
-            
+
         # Store k-th realization
         vu[k, :] = v_all[n:]
 
-    if verbose > 0:
+    if verbose > 1:
         if logger:
             logger.info(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
         else:
@@ -12630,11 +12695,11 @@ def sgs_mp(
     function :func:`sgs`]; the set of realizations (specified by `nreal`) is
     distributed in a balanced way over the processes.
 
-    The number of processes used (in parallel) is determined by the parameter `nproc` 
-    (int, default: -1); a negative number (or zero), -n <= 0, can be specified 
+    The number of processes used (in parallel) is determined by the parameter `nproc`
+    (int, default: -1); a negative number (or zero), -n <= 0, can be specified
     to use the total number of cpu(s) of the system except n; `nproc` is finally
     at maximum equal to `nreal` but at least 1 by applying:
-        
+
     - if `nproc >= 1`, then `nproc = max(min(nproc, nreal), 1)` is used
     - if `nproc = -n <= 0`, then `nproc = max(min(nmax-n, nreal), 1)` is used, \
     where nmax is the total number of cpu(s) of the system (retrieved by \
@@ -12652,7 +12717,7 @@ def sgs_mp(
     # Set number of process(es): nproc
     if nproc is None:
         nproc = -1
-    
+
     if nproc <= 0:
         nproc = max(min(multiprocessing.cpu_count() + nproc, nreal), 1)
     else:
@@ -12663,7 +12728,7 @@ def sgs_mp(
                 logger.info(f'{fname}: number of processes has been changed (now: nproc={nproc})')
             else:
                 print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
-    
+
     # Set index for distributing realizations
     q, r = np.divmod(nreal, nproc)
     ids_proc = [i*q + min(i, r) for i in range(nproc+1)]
@@ -12687,18 +12752,18 @@ def sgs_mp(
         kwargs = dict(
                     v_err_std=v_err_std,
                     method=method,
-                    mean_x=mean_x, 
-                    mean_xu=mean_xu, 
-                    var_x=var_x, 
+                    mean_x=mean_x,
+                    mean_xu=mean_xu,
+                    var_x=var_x,
                     var_xu=var_xu,
-                    alpha_xu=alpha_xu, 
-                    beta_xu=beta_xu, 
+                    alpha_xu=alpha_xu,
+                    beta_xu=beta_xu,
                     gamma_xu=gamma_xu,
                     cov_model_non_stationarity_xu_list=cov_model_non_stationarity_xu_list,
                     searchRadius=searchRadius,
-                    searchRadiusRelative=searchRadiusRelative, 
+                    searchRadiusRelative=searchRadiusRelative,
                     nneighborMax=nneighborMax,
-                    nreal=ids_proc[i+1]-ids_proc[i], 
+                    nreal=ids_proc[i+1]-ids_proc[i],
                     seed=seed+ids_proc[i],
                     pid=i,
                     verbose=verbose*(i==0),
@@ -12766,7 +12831,7 @@ def sgs_at_inequality_data_points(
         points locations where the interpolation has to be done, with n_ineq the
         number of points and d the space dimension (1, 2, or 3, same as for `x`),
         each row of `x_ineq` is the coordinatates of one point;
-        note: for data in 1D (`d=1`), 1D array of shape `(n_ineq,)` is accepted 
+        note: for data in 1D (`d=1`), 1D array of shape `(n_ineq,)` is accepted
         for `n_ineq` points
 
     cov_model : :class:`CovModel1D` or :class:`CovModel2D` or :class:`CovModel3D`
@@ -12783,33 +12848,33 @@ def sgs_at_inequality_data_points(
         whatever dimension of points (d);
 
         note: the covariance model must be stationary, however, non stationarity is
-        handled: 
+        handled:
 
         - local rotation by specifying `alpha_x_ineq` (in 2D or 3D), `beta_x_ineq` (in 3D), `gamma_x_ineq` (in 3D)
         - other non-stationarities by specifying `cov_model_non_stationarity_x_ineq_list` (see below)
 
     v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
-        standard deviation of error at data points, with n the number of data points; 
-        if `v_err_std` is a float, the same value is used for all data points; 
-        this means that at location x[i], the data value is considered as in a Gaussian 
+        standard deviation of error at data points, with n the number of data points;
+        if `v_err_std` is a float, the same value is used for all data points;
+        this means that at location x[i], the data value is considered as in a Gaussian
         distribution of mean `v[i]` and standard deviation `v_err_std[i]`
 
     v_ineq_min : 1D array of floats of shape (n_ineq,), or float, optional
-        minimal value (lower bound) for inequality data points, with n_ineq the 
-        number of inequality data points (`v_ineq_min[i]` is the value for the 
-        location `x_ineq[i]`); if `v_ineq_min` is a float, the same value 
+        minimal value (lower bound) for inequality data points, with n_ineq the
+        number of inequality data points (`v_ineq_min[i]` is the value for the
+        location `x_ineq[i]`); if `v_ineq_min` is a float, the same value
         is used for all inequality data points; if `v_ineq_min=None` (default),
         no minimal value is considered for any inequality data point;
-        note: `v_ineq_min[i]` set to `np.nan` or `-np.inf` means that there is 
+        note: `v_ineq_min[i]` set to `np.nan` or `-np.inf` means that there is
         no minimal value for point `x_ineq[i]`
-        
+
     v_ineq_max : 1D array of floats of shape (n_ineq,), or float, optional
-        maximal value (upper bound) for inequality data points, with n_ineq the 
-        number of inequality data points (`v_ineq_max[i]` is the value for the 
-        location `x_ineq[i]`); if `v_ineq_max` is a float, the same value 
+        maximal value (upper bound) for inequality data points, with n_ineq the
+        number of inequality data points (`v_ineq_max[i]` is the value for the
+        location `x_ineq[i]`); if `v_ineq_max` is a float, the same value
         is used for all inequality data points; if `v_ineq_max=None` (default),
         no maximal value is considered for any inequality data point;
-        note: `v_ineq_max[i]` set to `np.nan` or `np.inf` means that there is 
+        note: `v_ineq_max[i]` set to `np.nan` or `np.inf` means that there is
         no maximal value for point `x_ineq[i]`
 
     method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
@@ -12888,30 +12953,30 @@ def sgs_at_inequality_data_points(
         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
         Examples (with the parameter `arg` is set from `val`)
-        
-        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
-            this multipies the weight contribution of every elementary contribution of the 
+
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`;
+            this multipies the weight contribution of every elementary contribution of the
             covariance model
         - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
-            this multipies the weight contribution of the elementary contribution of index 0 of the 
+            this multipies the weight contribution of the elementary contribution of index 0 of the
             covariance model
         - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
             this multipies the range in all direction of every elementary contribution of the
             covariance model
         - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
-            this multipies the range in the first main direction (index 0) of every elementary 
+            this multipies the range in the first main direction (index 0) of every elementary
             contribution of the covariance model
         - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
-            this multipies the range in the first main direction (index 0) of the elementary 
+            this multipies the range in the first main direction (index 0) of the elementary
             contribution of index 0 of the covariance model
 
     searchRadius : float, optional
         if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
-        with same radii along each axis), i.e. the data points at distance to the 
-        estimated point greater than `searchRadius` are not taken into account 
-        in the kriging system; if `searchRadius` is not `None`, then 
+        with same radii along each axis), i.e. the data points at distance to the
+        estimated point greater than `searchRadius` are not taken into account
+        in the kriging system; if `searchRadius` is not `None`, then
         `searchRadiusRelative` is not used;
-        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to
         define the search ellipsoid;
 
     searchRadiusRelative : float, default: 1.2
@@ -12920,9 +12985,9 @@ def sgs_at_inequality_data_points(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
 
     nneighborMax : int, default: 12
@@ -12932,7 +12997,7 @@ def sgs_at_inequality_data_points(
 
     nGibbsSamplerPath : int, default: 50
         number of Gibbs sampler paths for simulating values at inequality data points
-        
+
     nreal : int, default: 1
         number of realization(s)
 
@@ -12973,7 +13038,7 @@ def sgs_at_inequality_data_points(
             err_msg = f'{fname}: `x` is None but `v` is not None'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-    
+
     else:
         x = np.asarray(x)
         # Get dimension (d) from x
@@ -12998,6 +13063,11 @@ def sgs_at_inequality_data_points(
             err_msg = f'{fname}: size of `v` is not valid'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
+        
+        if np.any(np.isnan(v)):
+            err_msg = f'{fname}: `v` contains `nan` value(s)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
 
     # Set variance of data error (from standard deviation)
     if v_err_std is None:
@@ -13007,6 +13077,11 @@ def sgs_at_inequality_data_points(
         v_err_var = v_err_var[0] * np.ones(n)
     elif v_err_var.size != n:
         err_msg = f'{fname}: size of `v_err_std` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    if np.any(v_err_var < 0.0):
+        err_msg = f'{fname}: `v_err_std` contains negative value(s)'
         if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
@@ -13071,7 +13146,7 @@ def sgs_at_inequality_data_points(
     # Check (and set) v_ineq_min
     if v_ineq_min is None:
         v_ineq_min = np.full((n_ineq, ), -np.inf)
-    else:        
+    else:
         v_ineq_min = np.asarray(v_ineq_min).reshape(-1)
         if v_ineq_min.size == 1:
             v_ineq_min = v_ineq_min * np.ones(n_ineq)
@@ -13081,11 +13156,11 @@ def sgs_at_inequality_data_points(
             raise CovModelError(err_msg)
 
         v_ineq_min[np.isnan(v_ineq_min)] = -np.inf
-    
+
     # Check (and set) v_ineq_max
     if v_ineq_max is None:
         v_ineq_max = np.full((n_ineq, ), np.inf)
-    else:        
+    else:
         v_ineq_max = np.asarray(v_ineq_max).reshape(-1)
         if v_ineq_max.size == 1:
             v_ineq_max = v_ineq_max * np.ones(n_ineq)
@@ -13138,6 +13213,11 @@ def sgs_at_inequality_data_points(
                     if logger: logger.error(err_msg)
                     raise CovModelError(err_msg)
 
+                if np.any(np.isnan(mean_x)):
+                    err_msg = f'{fname}: `mean_x` contains `nan` value(s)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
         if mean_x_ineq is None:
             if n == 0:
                 mean_x_ineq = np.zeros(n_ineq)
@@ -13149,6 +13229,11 @@ def sgs_at_inequality_data_points(
                 mean_x_ineq = mean_x_ineq * np.ones(n_ineq)
             elif mean_x_ineq.size != n_ineq:
                 err_msg = f'{fname}: size of `mean_x_ineq` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(mean_x_ineq)):
+                err_msg = f'{fname}: `mean_x_ineq` contains `nan` value(s)'
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
@@ -13172,6 +13257,11 @@ def sgs_at_inequality_data_points(
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
+            if np.any(np.isnan(var_x)):
+                err_msg = f'{fname}: `var_x` contains `nan` value(s)'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
             varUpdate_x = np.sqrt(var_x/cov0)
 
         if var_x_ineq is not None:
@@ -13180,6 +13270,11 @@ def sgs_at_inequality_data_points(
                 var_x_ineq = var_x_ineq * np.ones(n_ineq)
             elif var_x_ineq.size != n_ineq:
                 err_msg = f'{fname}: size of `var_x_ineq` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(var_x_ineq)):
+                err_msg = f'{fname}: `var_x_ineq` contains `nan` value(s)'
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
@@ -13217,7 +13312,7 @@ def sgs_at_inequality_data_points(
         raise CovModelError(err_msg)
 
     # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
-    cov_model = copyCovModel(cov_model) 
+    cov_model = copyCovModel(cov_model)
     cov_model_has_changed = False
 
     # Rotation given by alpha_x_ineq, beta_x_ineq, gamma_x_ineq
@@ -13232,7 +13327,7 @@ def sgs_at_inequality_data_points(
             err_msg = f'{fname}: `beta_x_ineq` cannot be used with 1D or 2D covariance model'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-    
+
     if gamma_x_ineq is not None:
         if omni_dir or d < 3:
             err_msg = f'{fname}: `gamma_x_ineq` cannot be used with 1D or 2D covariance model'
@@ -13309,7 +13404,7 @@ def sgs_at_inequality_data_points(
                         raise CovModelError(err_msg)
                 else:
                     gamma_x_ineq = np.zeros(n_ineq)
-                
+
                 if np.allclose(np.vstack((alpha_x_ineq, beta_x_ineq, gamma_x_ineq)).T, np.array([alpha_x_ineq[0], beta_x_ineq[0], gamma_x_ineq[0]])):
                     if np.isclose(alpha_x_ineq[0], 0.0) and np.isclose(beta_x_ineq[0], 0.0) and np.isclose(gamma_x_ineq[0], 0.0):
                         rot = False
@@ -13391,14 +13486,14 @@ def sgs_at_inequality_data_points(
             cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
         else:
             cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
-    
+
     # Limited search neighborhood
     if searchRadius is not None:
         if searchRadius <= 0.0:
             err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-        
+
         if omni_dir:
             dmax_ax = np.array([searchRadius], dtype='float')
         else:
@@ -13410,7 +13505,7 @@ def sgs_at_inequality_data_points(
             err_msg = f'{fname}: search radius relative (factor) not valid (negative)'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-        
+
         if d == 1 or omni_dir:
             dmax_ax = np.array([cov_model.r()])
         elif d == 2:
@@ -13437,7 +13532,7 @@ def sgs_at_inequality_data_points(
 
      # Min value for std
     std_min = 1.e-10
-    eps = 1.e-8
+    # eps = 1.e-8
 
     # Set all points together (data points and inequality data points)
     x_all = np.vstack((x, x_ineq))
@@ -13497,7 +13592,7 @@ def sgs_at_inequality_data_points(
 
                 dmax_ax = searchRadiusRelative * dmax_ax
                 dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
-        
+
         h = x0 - x_all
         if rot:
             h = h.dot(rot_mat[j])
@@ -13506,7 +13601,7 @@ def sgs_at_inequality_data_points(
         if len(ind) > nneighborMax:
             ind_s = np.argsort(d2[ind])
             ind = ind[ind_s[:nneighborMax]]
-        
+
         nn = len(ind)
         if nn == 0:
             w = np.zeros(0)
@@ -13569,7 +13664,7 @@ def sgs_at_inequality_data_points(
                 std = np.sqrt(cov0)
                 if var_x is not None:
                     std = varUpdate_all[n+ind_ineq[j]]*std
-            
+
             if np.isclose(std, 0):
                 std = std_min
 
@@ -13599,12 +13694,18 @@ def sgs_at_inequality_data_points(
 
     # Array indicating if a point in x_all can be selected for kriging
     ind_sel = np.zeros(n+n_ineq, dtype='bool')
-    
+
     if seed is None:
         seed = np.random.randint(1, 1000000)
     seed = int(seed)
 
     if verbose > 0:
+        if logger:
+            logger.info(f'{fname}: do Gibbs sampler paths...')
+        else:
+            print(f'{fname}: do Gibbs sampler paths...')
+
+    if verbose > 1:
         progress_old = 0
 
     for k in range(nreal):
@@ -13619,11 +13720,11 @@ def sgs_at_inequality_data_points(
         # -------------------------
         # set path
         ind_ineq = np.random.permutation(n_ineq)
-        
-        nGibbs = 0 
+
+        nGibbs = 0
         for j, jind in enumerate(ind_ineq):
             # Simulation at x0 = x_ineq[jind] = x_ineq[ind_ineq[j]]
-            if verbose > 0:
+            if verbose > 1:
                 progress = int((j+n_ineq*(k*nGibbsSamplerPath+nGibbs))/(nreal*n_ineq*nGibbsSamplerPath)*100.0)
                 if progress > progress_old:
                     if logger:
@@ -13757,18 +13858,29 @@ def sgs_at_inequality_data_points(
                     std = np.sqrt(cov0)
                     if var_x is not None:
                         std = varUpdate_all[n+jind]*std
-                
+
                 if np.isclose(std, 0):
                     std = std_min
 
-            # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
-            # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
-            # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
-            tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
-            tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
-            t = tmin + np.random.random() * (tmax - tmin)
-            v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
+            # # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+            # # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+            # # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+            # tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
+            # tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
+            # t = tmin + np.random.random() * (tmax - tmin)
+            # v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
 
+            # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+            tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+            tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+            t = tmin + np.random.random() * (tmax - tmin)
+            v_all[n+jind] = min(v_ineq_max[jind], max(v_ineq_min[jind], mu + std * scipy.stats.norm.ppf(t)))
+            if np.isinf(v_all[n+jind]):
+                if np.isinf(v_ineq_min[jind]):
+                    v_all[n+jind] = v_ineq_max[jind]
+                elif np.isinf(v_ineq_max[jind]):
+                    v_all[n+jind] = v_ineq_min[jind]
+            
             ind_sel[n+jind] = True
 
         # Next paths (Gibbs sampler)
@@ -13779,7 +13891,7 @@ def sgs_at_inequality_data_points(
 
             for j, jind in enumerate(ind_ineq):
                 # Simulation at x0 = x_ineq[jind] = x_ineq[ind_ineq[j]]
-                if verbose > 0:
+                if verbose > 1:
                     progress = int((j+n_ineq*(k*nGibbsSamplerPath+nGibbs))/(nreal*n_ineq*nGibbsSamplerPath)*100.0)
                     if progress > progress_old:
                         if logger:
@@ -13824,20 +13936,31 @@ def sgs_at_inequality_data_points(
                         else:
                             mu = mu0
 
+                # # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+                # # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+                # # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+                # tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
+                # tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
+                # t = tmin + np.random.random() * (tmax - tmin)
+                # v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
+
                 # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
-                # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
-                # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
-                tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
-                tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
+                tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+                tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
                 t = tmin + np.random.random() * (tmax - tmin)
-                v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
+                v_all[n+jind] = min(v_ineq_max[jind], max(v_ineq_min[jind], mu + std * scipy.stats.norm.ppf(t)))
+                if np.isinf(v_all[n+jind]):
+                    if np.isinf(v_ineq_min[jind]):
+                        v_all[n+jind] = v_ineq_max[jind]
+                    elif np.isinf(v_ineq_max[jind]):
+                        v_all[n+jind] = v_ineq_min[jind]
 
         # Store k-th realization
         v_ineq[k, :] = v_all[n:]
         # for j in range(n_ineq):
         #     v_ineq[k, j] = v_all[n+j]
 
-    if verbose > 0:
+    if verbose > 1:
         if logger:
             logger.info(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
         else:
@@ -13876,14 +13999,14 @@ def sgs_at_inequality_data_points_mp(
     :func:`sgs_at_inequality_data_points`.
 
     This function launches parallel processes [parallel calls of the
-    function :func:`sgs_at_inequality_data_points`]; the set of realizations 
+    function :func:`sgs_at_inequality_data_points`]; the set of realizations
     (specified by `nreal`) is distributed in a balanced way over the processes.
 
-    The number of processes used (in parallel) is determined by the parameter `nproc` 
-    (int, default: -1); a negative number (or zero), -n <= 0, can be specified 
+    The number of processes used (in parallel) is determined by the parameter `nproc`
+    (int, default: -1); a negative number (or zero), -n <= 0, can be specified
     to use the total number of cpu(s) of the system except n; `nproc` is finally
     at maximum equal to `nreal` but at least 1 by applying:
-        
+
     - if `nproc >= 1`, then `nproc = max(min(nproc, nreal), 1)` is used
     - if `nproc = -n <= 0`, then `nproc = max(min(nmax-n, nreal), 1)` is used, \
     where nmax is the total number of cpu(s) of the system (retrieved by \
@@ -13901,7 +14024,7 @@ def sgs_at_inequality_data_points_mp(
     # Set number of process(es): nproc
     if nproc is None:
         nproc = -1
-    
+
     if nproc <= 0:
         nproc = max(min(multiprocessing.cpu_count() + nproc, nreal), 1)
     else:
@@ -13912,7 +14035,7 @@ def sgs_at_inequality_data_points_mp(
                 logger.info(f'{fname}: number of processes has been changed (now: nproc={nproc})')
             else:
                 print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
-    
+
     # Set index for distributing realizations
     q, r = np.divmod(nreal, nproc)
     ids_proc = [i*q + min(i, r) for i in range(nproc+1)]
@@ -13935,22 +14058,22 @@ def sgs_at_inequality_data_points_mp(
         # Set i-th process
         kwargs = dict(
                     v_err_std=v_err_std,
-                    v_ineq_min=v_ineq_min, 
+                    v_ineq_min=v_ineq_min,
                     v_ineq_max=v_ineq_max,
                     method=method,
-                    mean_x=mean_x, 
-                    mean_x_ineq=mean_x_ineq, 
-                    var_x=var_x, 
+                    mean_x=mean_x,
+                    mean_x_ineq=mean_x_ineq,
+                    var_x=var_x,
                     var_x_ineq=var_x_ineq,
-                    alpha_x_ineq=alpha_x_ineq, 
-                    beta_x_ineq=beta_x_ineq, 
+                    alpha_x_ineq=alpha_x_ineq,
+                    beta_x_ineq=beta_x_ineq,
                     gamma_x_ineq=gamma_x_ineq,
                     cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
-                    searchRadius=searchRadius, 
-                    searchRadiusRelative=searchRadiusRelative, 
+                    searchRadius=searchRadius,
+                    searchRadiusRelative=searchRadiusRelative,
                     nneighborMax=nneighborMax,
                     nGibbsSamplerPath=nGibbsSamplerPath,
-                    nreal=ids_proc[i+1]-ids_proc[i], 
+                    nreal=ids_proc[i+1]-ids_proc[i],
                     seed=seed+ids_proc[i],
                     pid=i,
                     verbose=verbose*(i==0),
@@ -14018,7 +14141,7 @@ def sgs_at_inequality_data_points_slow(
         points locations where the interpolation has to be done, with n_ineq the
         number of points and d the space dimension (1, 2, or 3, same as for `x`),
         each row of `x_ineq` is the coordinatates of one point;
-        note: for data in 1D (`d=1`), 1D array of shape `(n_ineq,)` is accepted 
+        note: for data in 1D (`d=1`), 1D array of shape `(n_ineq,)` is accepted
         for `n_ineq` points
 
     cov_model : :class:`CovModel1D` or :class:`CovModel2D` or :class:`CovModel3D`
@@ -14035,33 +14158,33 @@ def sgs_at_inequality_data_points_slow(
         whatever dimension of points (d);
 
         note: the covariance model must be stationary, however, non stationarity is
-        handled: 
+        handled:
 
         - local rotation by specifying `alpha_x_ineq` (in 2D or 3D), `beta_x_ineq` (in 3D), `gamma_x_ineq` (in 3D)
         - other non-stationarities by specifying `cov_model_non_stationarity_x_ineq_list` (see below)
 
     v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
-        standard deviation of error at data points, with n the number of data points; 
-        if `v_err_std` is a float, the same value is used for all data points; 
-        this means that at location x[i], the data value is considered as in a Gaussian 
+        standard deviation of error at data points, with n the number of data points;
+        if `v_err_std` is a float, the same value is used for all data points;
+        this means that at location x[i], the data value is considered as in a Gaussian
         distribution of mean `v[i]` and standard deviation `v_err_std[i]`
 
     v_ineq_min : 1D array of floats of shape (n_ineq,), or float, optional
-        minimal value (lower bound) for inequality data points, with n_ineq the 
-        number of inequality data points (`v_ineq_min[i]` is the value for the 
-        location `x_ineq[i]`); if `v_ineq_min` is a float, the same value 
+        minimal value (lower bound) for inequality data points, with n_ineq the
+        number of inequality data points (`v_ineq_min[i]` is the value for the
+        location `x_ineq[i]`); if `v_ineq_min` is a float, the same value
         is used for all inequality data points; if `v_ineq_min=None` (default),
         no minimal value is considered for any inequality data point;
-        note: `v_ineq_min[i]` set to `np.nan` or `-np.inf` means that there is 
+        note: `v_ineq_min[i]` set to `np.nan` or `-np.inf` means that there is
         no minimal value for point `x_ineq[i]`
-        
+
     v_ineq_max : 1D array of floats of shape (n_ineq,), or float, optional
-        maximal value (upper bound) for inequality data points, with n_ineq the 
-        number of inequality data points (`v_ineq_max[i]` is the value for the 
-        location `x_ineq[i]`); if `v_ineq_max` is a float, the same value 
+        maximal value (upper bound) for inequality data points, with n_ineq the
+        number of inequality data points (`v_ineq_max[i]` is the value for the
+        location `x_ineq[i]`); if `v_ineq_max` is a float, the same value
         is used for all inequality data points; if `v_ineq_max=None` (default),
         no maximal value is considered for any inequality data point;
-        note: `v_ineq_max[i]` set to `np.nan` or `np.inf` means that there is 
+        note: `v_ineq_max[i]` set to `np.nan` or `np.inf` means that there is
         no maximal value for point `x_ineq[i]`
 
     method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
@@ -14140,30 +14263,30 @@ def sgs_at_inequality_data_points_slow(
         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
         Examples (with the parameter `arg` is set from `val`)
-        
-        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
-            this multipies the weight contribution of every elementary contribution of the 
+
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`;
+            this multipies the weight contribution of every elementary contribution of the
             covariance model
         - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
-            this multipies the weight contribution of the elementary contribution of index 0 of the 
+            this multipies the weight contribution of the elementary contribution of index 0 of the
             covariance model
         - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
             this multipies the range in all direction of every elementary contribution of the
             covariance model
         - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
-            this multipies the range in the first main direction (index 0) of every elementary 
+            this multipies the range in the first main direction (index 0) of every elementary
             contribution of the covariance model
         - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
-            this multipies the range in the first main direction (index 0) of the elementary 
+            this multipies the range in the first main direction (index 0) of the elementary
             contribution of index 0 of the covariance model
 
     searchRadius : float, optional
         if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
-        with same radii along each axis), i.e. the data points at distance to the 
-        estimated point greater than `searchRadius` are not taken into account 
-        in the kriging system; if `searchRadius` is not `None`, then 
+        with same radii along each axis), i.e. the data points at distance to the
+        estimated point greater than `searchRadius` are not taken into account
+        in the kriging system; if `searchRadius` is not `None`, then
         `searchRadiusRelative` is not used;
-        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to
         define the search ellipsoid;
 
     searchRadiusRelative : float, default: 1.2
@@ -14172,9 +14295,9 @@ def sgs_at_inequality_data_points_slow(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
 
     nneighborMax : int, default: 12
@@ -14225,7 +14348,7 @@ def sgs_at_inequality_data_points_slow(
             err_msg = f'{fname}: `x` is None but `v` is not None'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-    
+
     else:
         x = np.asarray(x)
         # Get dimension (d) from x
@@ -14251,6 +14374,11 @@ def sgs_at_inequality_data_points_slow(
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
 
+        if np.any(np.isnan(v)):
+            err_msg = f'{fname}: `v` contains `nan` value(s)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
     # Set variance of data error (from standard deviation)
     if v_err_std is None:
         v_err_std = 0.0
@@ -14259,6 +14387,11 @@ def sgs_at_inequality_data_points_slow(
         v_err_var = v_err_var[0] * np.ones(n)
     elif v_err_var.size != n:
         err_msg = f'{fname}: size of `v_err_std` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    if np.any(v_err_var < 0.0):
+        err_msg = f'{fname}: `v_err_std` contains negative value(s)'
         if logger: logger.error(err_msg)
         raise CovModelError(err_msg)
 
@@ -14323,7 +14456,7 @@ def sgs_at_inequality_data_points_slow(
     # Check (and set) v_ineq_min
     if v_ineq_min is None:
         v_ineq_min = np.full((n_ineq, ), -np.inf)
-    else:        
+    else:
         v_ineq_min = np.asarray(v_ineq_min).reshape(-1)
         if v_ineq_min.size == 1:
             v_ineq_min = v_ineq_min * np.ones(n_ineq)
@@ -14333,11 +14466,11 @@ def sgs_at_inequality_data_points_slow(
             raise CovModelError(err_msg)
 
         v_ineq_min[np.isnan(v_ineq_min)] = -np.inf
-    
+
     # Check (and set) v_ineq_max
     if v_ineq_max is None:
         v_ineq_max = np.full((n_ineq, ), np.inf)
-    else:        
+    else:
         v_ineq_max = np.asarray(v_ineq_max).reshape(-1)
         if v_ineq_max.size == 1:
             v_ineq_max = v_ineq_max * np.ones(n_ineq)
@@ -14390,6 +14523,11 @@ def sgs_at_inequality_data_points_slow(
                     if logger: logger.error(err_msg)
                     raise CovModelError(err_msg)
 
+                if np.any(np.isnan(mean_x)):
+                    err_msg = f'{fname}: `mean_x` contains `nan` value(s)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
         if mean_x_ineq is None:
             if n == 0:
                 mean_x_ineq = np.zeros(n_ineq)
@@ -14401,6 +14539,11 @@ def sgs_at_inequality_data_points_slow(
                 mean_x_ineq = mean_x_ineq * np.ones(n_ineq)
             elif mean_x_ineq.size != n_ineq:
                 err_msg = f'{fname}: size of `mean_x_ineq` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(mean_x_ineq)):
+                err_msg = f'{fname}: `mean_x_ineq` contains `nan` value(s)'
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
@@ -14424,6 +14567,11 @@ def sgs_at_inequality_data_points_slow(
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
+            if np.any(np.isnan(var_x)):
+                err_msg = f'{fname}: `var_x` contains `nan` value(s)'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
             varUpdate_x = np.sqrt(var_x/cov0)
 
         if var_x_ineq is not None:
@@ -14432,6 +14580,11 @@ def sgs_at_inequality_data_points_slow(
                 var_x_ineq = var_x_ineq * np.ones(n_ineq)
             elif var_x_ineq.size != n_ineq:
                 err_msg = f'{fname}: size of `var_x_ineq` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(var_x_ineq)):
+                err_msg = f'{fname}: `var_x_ineq` contains `nan` value(s)'
                 if logger: logger.error(err_msg)
                 raise CovModelError(err_msg)
 
@@ -14469,7 +14622,7 @@ def sgs_at_inequality_data_points_slow(
         raise CovModelError(err_msg)
 
     # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
-    cov_model = copyCovModel(cov_model) 
+    cov_model = copyCovModel(cov_model)
     cov_model_has_changed = False
 
     # Rotation given by alpha_x_ineq, beta_x_ineq, gamma_x_ineq
@@ -14484,7 +14637,7 @@ def sgs_at_inequality_data_points_slow(
             err_msg = f'{fname}: `beta_x_ineq` cannot be used with 1D or 2D covariance model'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-    
+
     if gamma_x_ineq is not None:
         if omni_dir or d < 3:
             err_msg = f'{fname}: `gamma_x_ineq` cannot be used with 1D or 2D covariance model'
@@ -14561,7 +14714,7 @@ def sgs_at_inequality_data_points_slow(
                         raise CovModelError(err_msg)
                 else:
                     gamma_x_ineq = np.zeros(n_ineq)
-                
+
                 if np.allclose(np.vstack((alpha_x_ineq, beta_x_ineq, gamma_x_ineq)).T, np.array([alpha_x_ineq[0], beta_x_ineq[0], gamma_x_ineq[0]])):
                     if np.isclose(alpha_x_ineq[0], 0.0) and np.isclose(beta_x_ineq[0], 0.0) and np.isclose(gamma_x_ineq[0], 0.0):
                         rot = False
@@ -14643,14 +14796,14 @@ def sgs_at_inequality_data_points_slow(
             cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
         else:
             cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
-    
+
     # Limited search neighborhood
     if searchRadius is not None:
         if searchRadius <= 0.0:
             err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-        
+
         if omni_dir:
             dmax_ax = np.array([searchRadius], dtype='float')
         else:
@@ -14662,7 +14815,7 @@ def sgs_at_inequality_data_points_slow(
             err_msg = f'{fname}: search radius relative (factor) not valid (negative)'
             if logger: logger.error(err_msg)
             raise CovModelError(err_msg)
-        
+
         if d == 1 or omni_dir:
             dmax_ax = np.array([cov_model.r()])
         elif d == 2:
@@ -14689,7 +14842,7 @@ def sgs_at_inequality_data_points_slow(
 
      # Min value for std
     std_min = 1.e-10
-    eps = 1.e-8
+    # eps = 1.e-8
 
     # Allocate memory for output
     v_ineq = np.zeros((nreal, n_ineq))
@@ -14717,6 +14870,12 @@ def sgs_at_inequality_data_points_slow(
     seed = int(seed)
 
     if verbose > 0:
+        if logger:
+            logger.info(f'{fname}: do Gibbs sampler paths...')
+        else:
+            print(f'{fname}: do Gibbs sampler paths...')
+
+    if verbose > 1:
         progress_old = 0
 
     for k in range(nreal):
@@ -14726,7 +14885,7 @@ def sgs_at_inequality_data_points_slow(
         # Initialize ind_sel
         ind_sel[:n] = True  # all data points can be selected
         ind_sel[n:] = False # no simulated points can be selected at the beginning
-     
+
         for nGibbs in range(nGibbsSamplerPath):
             # set path
             ind_ineq = np.random.permutation(n_ineq)
@@ -14735,7 +14894,7 @@ def sgs_at_inequality_data_points_slow(
                 # Simulation at x0 = x_ineq[jind] = x_ineq[ind_ineq[j]]
                 ind_sel[n+jind] = False
 
-                if verbose > 0:
+                if verbose > 1:
                     progress = int((j+n_ineq*(k*nGibbsSamplerPath+nGibbs))/(nreal*n_ineq*nGibbsSamplerPath)*100.0)
                     if progress > progress_old:
                         if logger:
@@ -14799,7 +14958,7 @@ def sgs_at_inequality_data_points_slow(
                         mu = mean_all[n+jind]
                     else:
                         mu = mu0
-                    
+
                     std = np.sqrt(cov0)
                     if var_x is not None:
                         std = varUpdate_all[n+jind]*std
@@ -14869,24 +15028,35 @@ def sgs_at_inequality_data_points_slow(
                         std = np.sqrt(cov0)
                         if var_x is not None:
                             std = varUpdate_all[n+jind]*std
-                    
+
                     if np.isclose(std, 0):
                         std = std_min
 
+                # # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+                # # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+                # # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+                # tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
+                # tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
+                # t = tmin + np.random.random() * (tmax - tmin)
+                # v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
+
                 # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
-                # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
-                # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
-                tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
-                tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
+                tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+                tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
                 t = tmin + np.random.random() * (tmax - tmin)
-                v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
+                v_all[n+jind] = min(v_ineq_max[jind], max(v_ineq_min[jind], mu + std * scipy.stats.norm.ppf(t)))
+                if np.isinf(v_all[n+jind]):
+                    if np.isinf(v_ineq_min[jind]):
+                        v_all[n+jind] = v_ineq_max[jind]
+                    elif np.isinf(v_ineq_max[jind]):
+                        v_all[n+jind] = v_ineq_min[jind]
 
                 ind_sel[n+jind] = True
 
         # Store k-th realization
         v_ineq[k, :] = v_all[n:]
 
-    if verbose > 0:
+    if verbose > 1:
         if logger:
             logger.info(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
         else:
@@ -14925,14 +15095,14 @@ def sgs_at_inequality_data_points_slow_mp(
     :func:`sgs_at_inequality_data_points_slow`.
 
     This function launches parallel processes [parallel calls of the
-    function :func:`sgs_at_inequality_data_points_slow`]; the set of realizations 
+    function :func:`sgs_at_inequality_data_points_slow`]; the set of realizations
     (specified by `nreal`) is distributed in a balanced way over the processes.
 
-    The number of processes used (in parallel) is determined by the parameter `nproc` 
-    (int, default: -1); a negative number (or zero), -n <= 0, can be specified 
+    The number of processes used (in parallel) is determined by the parameter `nproc`
+    (int, default: -1); a negative number (or zero), -n <= 0, can be specified
     to use the total number of cpu(s) of the system except n; `nproc` is finally
     at maximum equal to `nreal` but at least 1 by applying:
-        
+
     - if `nproc >= 1`, then `nproc = max(min(nproc, nreal), 1)` is used
     - if `nproc = -n <= 0`, then `nproc = max(min(nmax-n, nreal), 1)` is used, \
     where nmax is the total number of cpu(s) of the system (retrieved by \
@@ -14950,7 +15120,7 @@ def sgs_at_inequality_data_points_slow_mp(
     # Set number of process(es): nproc
     if nproc is None:
         nproc = -1
-    
+
     if nproc <= 0:
         nproc = max(min(multiprocessing.cpu_count() + nproc, nreal), 1)
     else:
@@ -14961,7 +15131,7 @@ def sgs_at_inequality_data_points_slow_mp(
                 logger.info(f'{fname}: number of processes has been changed (now: nproc={nproc})')
             else:
                 print(f'{fname}: number of processes has been changed (now: nproc={nproc})')
-    
+
     # Set index for distributing realizations
     q, r = np.divmod(nreal, nproc)
     ids_proc = [i*q + min(i, r) for i in range(nproc+1)]
@@ -14984,22 +15154,22 @@ def sgs_at_inequality_data_points_slow_mp(
         # Set i-th process
         kwargs = dict(
                     v_err_std=v_err_std,
-                    v_ineq_min=v_ineq_min, 
+                    v_ineq_min=v_ineq_min,
                     v_ineq_max=v_ineq_max,
                     method=method,
-                    mean_x=mean_x, 
-                    mean_x_ineq=mean_x_ineq, 
-                    var_x=var_x, 
+                    mean_x=mean_x,
+                    mean_x_ineq=mean_x_ineq,
+                    var_x=var_x,
                     var_x_ineq=var_x_ineq,
-                    alpha_x_ineq=alpha_x_ineq, 
-                    beta_x_ineq=beta_x_ineq, 
+                    alpha_x_ineq=alpha_x_ineq,
+                    beta_x_ineq=beta_x_ineq,
                     gamma_x_ineq=gamma_x_ineq,
                     cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
-                    searchRadius=searchRadius, 
-                    searchRadiusRelative=searchRadiusRelative, 
+                    searchRadius=searchRadius,
+                    searchRadiusRelative=searchRadiusRelative,
                     nneighborMax=nneighborMax,
                     nGibbsSamplerPath=nGibbsSamplerPath,
-                    nreal=ids_proc[i+1]-ids_proc[i], 
+                    nreal=ids_proc[i+1]-ids_proc[i],
                     seed=seed+ids_proc[i],
                     pid=i,
                     verbose=verbose*(i==0),
@@ -15025,10 +15195,10 @@ def sgs_at_inequality_data_points_slow_mp(
 # # ============================================================================
 # # Simple and ordinary kriging for indicator variable (categorical variables)
 # # ============================================================================
-# # To be developed : 
-# # - SIS at given points ... 
+# # To be developed :
+# # - SIS at given points ...
 # # - version of simulateIndicator / estimateIndicator in geosclassicinterface...
-# # 
+# #
 # # ----------------------------------------------------------------------------
 # def krige_indicator(
 #         category_values,
@@ -15079,16 +15249,16 @@ def sgs_at_inequality_data_points_slow_mp(
 #         points locations where the interpolation has to be done, with nu the
 #         number of points and d the space dimension (1, 2, or 3, same as for `x`),
 #         each row of `xu` is the coordinatates of one point;
-#         note: for data in 1D (`d=1`), 1D array of shape `(nu,)` is accepted 
+#         note: for data in 1D (`d=1`), 1D array of shape `(nu,)` is accepted
 #         for `nu` points
 
 #     cov_model : [sequence of] :class:`CovModel<d>D`
 #         sequence of same length as `category_values` of covariance model in 1D,
 #         or a unique covariance model in 1D (recycled):
 #         covariance model for each category;
-#         covariance model in 1D or 2D or 3D;      
+#         covariance model in 1D or 2D or 3D;
 #         note: the covariance model must be stationary, however, non stationarity is
-#         handled: 
+#         handled:
 
 #         - local rotation by specifying `alpha` (in 2D or 3D), `beta` (in 3D), `gamma` (in 3D)
 #         - other non-stationarities by specifying `cov_model_non_stationarity_list` (see below)
@@ -15149,21 +15319,21 @@ def sgs_at_inequality_data_points_slow_mp(
 #         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
 #         Examples (with the parameter `arg` is set from `val`)
-        
-#         - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; 
-#             this multipies the weight contribution of every elementary contribution of the 
+
+#         - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`;
+#             this multipies the weight contribution of every elementary contribution of the
 #             covariance model
 #         - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
-#             this multipies the weight contribution of the elementary contribution of index 0 of the 
+#             this multipies the weight contribution of the elementary contribution of index 0 of the
 #             covariance model
 #         - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
 #             this multipies the range in all direction of every elementary contribution of the
 #             covariance model
 #         - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
-#             this multipies the range in the first main direction (index 0) of every elementary 
+#             this multipies the range in the first main direction (index 0) of every elementary
 #             contribution of the covariance model
 #         - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
-#             this multipies the range in the first main direction (index 0) of the elementary 
+#             this multipies the range in the first main direction (index 0) of the elementary
 #             contribution of index 0 of the covariance model
 
 #     use_unique_neighborhood : [sequence of] bool, default: False
@@ -15182,11 +15352,11 @@ def sgs_at_inequality_data_points_slow_mp(
 #     searchRadius : [sequence of] float, optional
 #         sequence of same length as `category_values` or recycled:
 #         if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
-#         with same radii along each axis), i.e. the data points at distance to the 
-#         estimated point greater than `searchRadius` are not taken into account 
-#         in the kriging system; if `searchRadius` is not `None`, then 
+#         with same radii along each axis), i.e. the data points at distance to the
+#         estimated point greater than `searchRadius` are not taken into account
+#         in the kriging system; if `searchRadius` is not `None`, then
 #         `searchRadiusRelative` is not used;
-#         by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+#         by default (`searchRadius=None`): `searchRadiusRelative` is used to
 #         define the search ellipsoid;
 
 #     searchRadiusRelative : [sequence of] float, default: 1.2
@@ -15196,9 +15366,9 @@ def sgs_at_inequality_data_points_slow_mp(
 #         r_i be the ranges of the covariance model along its main axes, when
 #         estimating/simulating a cell x, a cell y is taken into account iff it is
 #         within the ellipsoid centered at x of half axes equal to
-#         `searchRadiusRelative` * r_i; 
-#         (note that the distances to the central node are computed in the axes 
-#         sytem supporting the covariance model and accounting for anisotropy given 
+#         `searchRadiusRelative` * r_i;
+#         (note that the distances to the central node are computed in the axes
+#         sytem supporting the covariance model and accounting for anisotropy given
 #         by the ranges)
 
 #     nneighborMax : [sequence of] int, default: 12
@@ -15241,7 +15411,7 @@ def sgs_at_inequality_data_points_slow_mp(
 #             err_msg = f'{fname}: `x` is None but `v` is not None'
 #             if logger: logger.error(err_msg)
 #             raise CovModelError(err_msg)
-    
+
 #     else:
 #         x = np.asarray(x)
 #         # Get dimension (d) from x
@@ -15267,6 +15437,11 @@ def sgs_at_inequality_data_points_slow_mp(
 #             if logger: logger.error(err_msg)
 #             raise CovModelError(err_msg)
 
+#         if np.any(np.isnan(v)):
+#             err_msg = f'{fname}: `v` contains `nan` value(s)'
+#             if logger: logger.error(err_msg)
+#             raise CovModelError(err_msg)
+
 #         if ncategory > 1:
 #             if not np.all([vi in category_values for vi in v]):
 #                 err_msg = f'{fname}: `v` contains an invalid category value (not in `category_values`)'
@@ -15277,9 +15452,9 @@ def sgs_at_inequality_data_points_slow_mp(
 #                 err_msg = f'{fname}: `v` contains an invalid category value (not in `category_values` nor 0.0)'
 #                 if logger: logger.error(err_msg)
 #                 raise CovModelError(err_msg)
-        
+
 #         v_indicator = np.asarray([np.eye(ncategory)[np.where(np.asarray(category_values) == vi)[0][0]] for vi in v]).T
-    
+
 #     # Get dimension from xu (du) and number of unknown points (nu)
 #     if xu is None:
 #         nu = 0
@@ -15330,7 +15505,7 @@ def sgs_at_inequality_data_points_slow_mp(
 #                     err_msg = f'{fname}: size of `probability_x` is not valid'
 #                     if logger: logger.error(err_msg)
 #                     raise CovModelError(err_msg)
-                
+
 #         if probability_xu is None:
 #             if n == 0:
 #                 if ncategory > 1:
@@ -15349,7 +15524,7 @@ def sgs_at_inequality_data_points_slow_mp(
 #                 err_msg = f'{fname}: size of `probability_xu` is not valid'
 #                 if logger: logger.error(err_msg)
 #                 raise CovModelError(err_msg)
-            
+
 #     elif method == 'ordinary_kriging':
 #         if ncategory > 1:
 #             probability_xu = np.full((ncategory, nu), 1.0/ncategory)
@@ -15390,7 +15565,7 @@ def sgs_at_inequality_data_points_slow_mp(
 #         err_msg = f'{fname}: `use_unique_neighborhood` should be a single entry or a list of length equal to the number of categories'
 #         if logger: logger.error(err_msg)
 #         raise CovModelError(err_msg)
-    
+
 #     if searchRadius is None:
 #         searchRadius = ncategory * [None]
 #     elif isinstance(searchRadius, float) or isinstance(searchRadius, int):
@@ -15399,7 +15574,7 @@ def sgs_at_inequality_data_points_slow_mp(
 #         err_msg = f'{fname}: `searchRadius` should be `None`, a single entry or a list of length equal to the number of categories'
 #         if logger: logger.error(err_msg)
 #         raise CovModelError(err_msg)
-    
+
 #     if searchRadiusRelative is None:
 #         searchRadiusRelative = ncategory * [None]
 #     elif isinstance(searchRadiusRelative, float) or isinstance(searchRadiusRelative, int):
@@ -15408,9 +15583,9 @@ def sgs_at_inequality_data_points_slow_mp(
 #         err_msg = f'{fname}: `searchRadiusRelative` should be a list of length equal to the number of categories'
 #         if logger: logger.error(err_msg)
 #         raise CovModelError(err_msg)
-    
+
 #     if isinstance(nneighborMax, int):
-#         nneighborMax = ncategory * [nneighborMax]          
+#         nneighborMax = ncategory * [nneighborMax]
 #     elif not isinstance(nneighborMax, list) or len(nneighborMax) != ncategory:
 #         err_msg = f'{fname}: `nneighborMax` should be a single entry or a list of length equal to the number of categories'
 #         if logger: logger.error(err_msg)
@@ -15451,7 +15626,7 @@ def sgs_at_inequality_data_points_slow_mp(
 #                     searchRadiusRelative=searchRadiusRelative[i],
 #                     nneighborMax=nneighborMax[i],
 #                     verbose=verbose)
-            
+
 #     vu_indicator = np.maximum(0., np.minimum(1., vu_indicator))
 #     vu_indicator = vu_indicator/vu_indicator.sum(axis=0)
 

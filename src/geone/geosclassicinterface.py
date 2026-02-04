@@ -42,7 +42,7 @@ def img_py2C(im_py, logger=None):
     ----------
     im_py : :class:`geone.img.Img`
         image in python
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -148,7 +148,7 @@ def ps_py2C(ps_py, logger=None):
     ----------
     ps_py : :class:`geone.img.PointSet`
         point set in python
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -318,7 +318,7 @@ def covModel1Delem_py2C(
         origin of the grid along z axis (z coordinate of cell border)
 
         Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -561,7 +561,7 @@ def covModel2Delem_py2C(
         origin of the grid along z axis (z coordinate of cell border)
 
         Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -834,7 +834,7 @@ def covModel3Delem_py2C(
         origin of the grid along z axis (z coordinate of cell border)
 
         Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -1109,7 +1109,7 @@ def covModel1D_py2C(
         origin of the grid along z axis (z coordinate of cell border)
 
         Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -1195,7 +1195,7 @@ def covModel2D_py2C(
         origin of the grid along z axis (z coordinate of cell border)
 
         Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -1317,7 +1317,7 @@ def covModel3D_py2C(
         origin of the grid along z axis (z coordinate of cell border)
 
         Note: `(ox, oy, oz)` is the "bottom-lower-left" corner of the grid
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -1632,7 +1632,7 @@ def fill_mpds_geosClassicInput(
 
     nreal : int
         nreal parameter
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -1838,7 +1838,7 @@ def fill_mpds_geosClassicInput(
         if var.size == 1:
             mpds_geosClassicInput.varianceUsage = 1
             mpds_geosClassicInput.varianceValue = var[0]
-        
+
         elif var.size == nxyz:
             mpds_geosClassicInput.varianceUsage = 2
             im = Img(nx=nx, ny=ny, nz=nz,
@@ -1920,11 +1920,11 @@ def run_MPDSOMPGeosClassicSim(
     This function should not be called directly, it is used in other functions
     of this module.
 
-    All the parameters (except `nthreads`, `progress_monitor`, `pid`, `verbose` and `logger`) 
-    are the parameters for the input structure `mpds_geosClassicInput` (C); 
-    `nthreads` is the number of threads used by the function `MPDSOMPGeosClassicSim`; 
-    `progress_monitor` is an integer specifying the function used to update the progress 
-    monitor (0 : no output, 1: warning only, 4: more detailed); 
+    All the parameters (except `nthreads`, `progress_monitor`, `pid`, `verbose` and `logger`)
+    are the parameters for the input structure `mpds_geosClassicInput` (C);
+    `nthreads` is the number of threads used by the function `MPDSOMPGeosClassicSim`;
+    `progress_monitor` is an integer specifying the function used to update the progress
+    monitor (0 : no output, 1: warning only, 4: more detailed);
     `pid` is the process id of the caller (int, used with multiprocessing);
     `verbose` is the verbosity (int).
 
@@ -1937,11 +1937,11 @@ def run_MPDSOMPGeosClassicSim(
     if pid is not None:
         fname = f'{fname} [pid={pid}]'
 
-    if verbose > 2:
+    if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Filling C structure for Geos-Classic program')
+            logger.info(f'{fname}: fill C structure for Geos-Classic program')
         else:
-            print(f'{fname}: Filling C structure for Geos-Classic program')
+            print(f'{fname}: fill C structure for Geos-Classic program')
 
     # --- Fill mpds_geosClassicInput structure (C)
     try:
@@ -1986,7 +1986,7 @@ def run_MPDSOMPGeosClassicSim(
     geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
 
     # Set function to update progress monitor
-    # note: according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of 
+    # note: according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of
     #   py module, the function
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
@@ -2007,15 +2007,15 @@ def run_MPDSOMPGeosClassicSim(
         if logger: logger.error(err_msg)
         raise GeosclassicinterfaceError(err_msg)
 
-    if verbose > 1:
+    if verbose > 0:
         if logger:
-            logger.info(  
+            logger.info(
                 f'{fname}: Geos-Classic running... [' + \
                 f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
                 f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
                 f'OpenMP {nthreads:d} thread(s)]')
         else:
-            print(  
+            print(
                 f'{fname}: Geos-Classic running... [' + \
                 f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
                 f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
@@ -2053,7 +2053,7 @@ def run_MPDSOMPGeosClassicSim(
     # Free memory on C side: mpds_progressMonitor
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose > 1 and geosclassic_output:
+    if verbose > 0 and geosclassic_output:
         if logger:
             logger.info(f'{fname}: Geos-Classic run complete')
         else:
@@ -2081,7 +2081,7 @@ def _run_krige_and_MPDSOMPGeosClassicSim(
         searchRadius,
         searchRadiusRelative,
         nneighborMax,
-        space_dim,            # MPDSOMPGeosClassicSim parameters ... 
+        space_dim,            # MPDSOMPGeosClassicSim parameters ...
         cov_model_grid,
         nx, ny, nz,
         sx, sy, sz,
@@ -2112,14 +2112,14 @@ def _run_krige_and_MPDSOMPGeosClassicSim(
     This function should not be called directly, it is used in other functions
     of this module - ad-hoc function for internal use!
 
-    All the parameters (except `ir0`, `ir1`, `v_ineq_sim`, `nthreads`, 
-    `progress_monitor`, `pid`, `verbose` and `logger`) are the parameters for the function 
-    `geone.covModel.krige` or for the input structure `mpds_geosClassicInput` (C); 
+    All the parameters (except `ir0`, `ir1`, `v_ineq_sim`, `nthreads`,
+    `progress_monitor`, `pid`, `verbose` and `logger`) are the parameters for the function
+    `geone.covModel.krige` or for the input structure `mpds_geosClassicInput` (C);
     `ir0` and `ir1` define the range of realization (indices) to be done;
     `v_ineq_sim` is the array of all simulations at ineq data locations;
-    `nthreads` is the number of threads used by the function `MPDSOMPGeosClassicSim`; 
-    `progress_monitor` is an integer specifying the function used to update the progress 
-    monitor (0 : no output, 1: warning only, 4: more detailed); 
+    `nthreads` is the number of threads used by the function `MPDSOMPGeosClassicSim`;
+    `progress_monitor` is an integer specifying the function used to update the progress
+    monitor (0 : no output, 1: warning only, 4: more detailed);
     `pid` is the process id of the caller (int, used with multiprocessing);
     `verbose` is the verbosity (int).
 
@@ -2148,14 +2148,14 @@ def _run_krige_and_MPDSOMPGeosClassicSim(
 
         # 2b. New dataset for realization `ir`
         v_new = np.hstack((v, v_ineq_sim[ir]))
-        
+
         # 3b. Kriging new dataset for realization `ir` at the center of grid cells containing at least one data point
         # Do kriging at cell centers x_cc
         if verbose > 1:
             if logger:
-                logger.info(f"{fname}: real {ir:5d}: do kriging at the center of grid cells containing at least one data point...")
+                logger.info(f"{fname}: realization {ir:5d}: do kriging at the center of grid cells containing at least one data point...")
             else:
-                print(f"{fname}: real {ir:5d}: do kriging at the center of grid cells containing at least one data point...")
+                print(f"{fname}: realization {ir:5d}: do kriging at the center of grid cells containing at least one data point...")
 
         v_cc, v_cc_err_std = gcm.krige(
                                 x_new, v_new, x_cc, cov_model,
@@ -2174,7 +2174,7 @@ def _run_krige_and_MPDSOMPGeosClassicSim(
                                 searchRadiusRelative=searchRadiusRelative,
                                 nneighborMax=nneighborMax,
                                 pid=pid,
-                                verbose=(verbose>2),
+                                verbose=(verbose-2),
                                 logger=logger)
 
         # Update data point set: set values and error std in point set
@@ -2184,20 +2184,21 @@ def _run_krige_and_MPDSOMPGeosClassicSim(
         # 4b. Do 1 SGS realization (realization `ir`) on the grid (at cell centers) using data points at cell centers
         if verbose > 1:
             if logger:
-                logger.info(f"{fname}: real {ir:5d}: do sgs on the grid (at cell centers) using data points at cell centers...")
+                logger.info(f"{fname}: realization {ir:5d}: do sgs on the grid (at cell centers) using data points at cell centers...")
             else:
-                print(f"{fname}: real {ir:5d}: do sgs on the grid (at cell centers) using data points at cell centers...")
+                print(f"{fname}: realization {ir:5d}: do sgs on the grid (at cell centers) using data points at cell centers...")
 
         if outputReportFile is not None:
-            outputReportFile_ir = outputReportFile 
+            outputReportFile_ir = outputReportFile
             if pid is not None:
                 outputReportFile_ir = outputReportFile_ir + f'.{pid}'
 
-        if verbose >= 3:
-            progress_monitor = 4
-        else:
-            progress_monitor = 0
-    
+        # # progress_monitor is a keyword argument
+        # if verbose >= 5:
+        #     progress_monitor = 4
+        # else:
+        #     progress_monitor = 0
+
         args = (
                 space_dim,
                 cov_model_grid,
@@ -2223,13 +2224,13 @@ def _run_krige_and_MPDSOMPGeosClassicSim(
                 nthreads,
             )
         kwds = {
-                'progress_monitor':progress_monitor, 
+                'progress_monitor':progress_monitor,
                 'pid':pid,
-                'verbose':(verbose>3), # 0 # max(0, verbose-1)
+                'verbose':(verbose-2), # 0 # max(0, verbose-1)
                 'logger':logger
             }
         geosclassic_output = run_MPDSOMPGeosClassicSim(*args, **kwds)
-        
+
         image.val[ir-ir0] = geosclassic_output['image'].val[0]
         nwarning = nwarning + int(geosclassic_output['nwarning'])
         warnings.extend(geosclassic_output['warnings'])
@@ -2244,17 +2245,17 @@ def _run_krige_and_MPDSOMPGeosClassicSim(
 # ----------------------------------------------------------------------------
 def simulate(
         cov_model,
-        dimension, 
-        spacing=None, 
+        dimension,
+        spacing=None,
         origin=None,
         method='ordinary_kriging',
-        x=None, 
-        v=None, 
+        x=None,
+        v=None,
         v_err_std=0.0,
-        x_ineq=None, 
-        v_ineq_min=None, 
+        x_ineq=None,
+        v_ineq_min=None,
         v_ineq_max=None,
-        mean=None, 
+        mean=None,
         var=None,
         alpha=None,
         beta=None,
@@ -2286,11 +2287,11 @@ def simulate(
     Generates simulations (Sequential Gaussian Simulation, SGS) in a grid.
 
     A simulation takes place in (center of) grid cells, based on simple or
-    ordinary kriging. The space dimension (1, 2, or 3) is detected (from the 
+    ordinary kriging. The space dimension (1, 2, or 3) is detected (from the
     parameter `dimension`).
 
     The simulations can be conditioned by
-    
+
     - data: location: `x`, value: `v`, and errors standard deviation: `v_err_std`
     - inequality data: location: `x_ineq`, lower bounds: `v_ineq_min`, \
     and upper bounds `v_ineq_max` (no error)
@@ -2300,9 +2301,9 @@ def simulate(
 
     Before starting the simulations, the data points and inequality data points can
     be first pre-processed (optional, if `preprocess_data_and_ineq_in_grid=True`) in
-    order to have at most one data point or inequality data point per grid cell, by 
+    order to have at most one data point or inequality data point per grid cell, by
     proceeding as follows:
-    
+
     - if one grid cell contains both data point(s) and inequality data point(s), then \
     the inequality data point(s) are removed
     - if one grid cell contains several data points (no inequality data), they \
@@ -2323,56 +2324,56 @@ def simulate(
     Mode A: `mode_transform_ineq_to_data=True`
     ------------------------------------------
 
-    1a. If there is inequality data, they are first transformed to new data with 
-    error: for that, `transform_ineq_to_data_with_err_nsim` simulations at 
+    1a. If there is inequality data, they are first transformed to new data with
+    error: for that, `transform_ineq_to_data_with_err_nsim` simulations at
     inequality data points are generated, then at each location, the ensemble of values
-    is transformed to a new data value with an error standard deviation using the 
+    is transformed to a new data value with an error standard deviation using the
     function :func:`geone.covModel.values_to_mean_and_err_std`
 
-    2a. A new dataset is formed by grouping the original data (`x`, `v`, with the 
+    2a. A new dataset is formed by grouping the original data (`x`, `v`, with the
     error std `v_err_std`) and the new data with their own error std from step 1a.
 
-    3a. The dataset from step 2a is then kriged at the center of grid cells containing 
-    at least one data point, this results in a dataset at cell centers (values and error 
+    3a. The dataset from step 2a is then kriged at the center of grid cells containing
+    at least one data point, this results in a dataset at cell centers (values and error
     std are respectively the kriging estimates and the kriging std)
 
-    4a. The dataset at cell centers from step 3a is used to generate 
-    `nreal` SGS realizations on the grid (at cell centers), 
+    4a. The dataset at cell centers from step 3a is used to generate
+    `nreal` SGS realizations on the grid (at cell centers),
     using an external C function (Geos-Classic library)
 
     Mode B: `mode_transform_ineq_to_data=False`
     -------------------------------------------
 
-    1b. If there is inequality data, `nreal` simulations at inequality data points are 
+    1b. If there is inequality data, `nreal` simulations at inequality data points are
     done, each simulation being new data (without error)
 
-    2b. For each simulation of step 1b: a new dataset is formed by grouping the original 
+    2b. For each simulation of step 1b: a new dataset is formed by grouping the original
     data (`x`, `v`, with the error std  `v_err_std`) and the new data of that simulation
 
-    3b. Each dataset from step 2b is kriged at the center of grid cells containing at least 
-    one data point, this results in a dataset at cell centers (values and error std are 
+    3b. Each dataset from step 2b is kriged at the center of grid cells containing at least
+    one data point, this results in a dataset at cell centers (values and error std are
     respectively the kriging estimates and the kriging std)
 
-    4b. Each dataset at cell centers from step 3b (`nreal` at total) is used to generate 
-    1 SGS realization on the grid (at cell centers), using an external C function 
+    4b. Each dataset at cell centers from step 3b (`nreal` at total) is used to generate
+    1 SGS realization on the grid (at cell centers), using an external C function
     (Geos-Classic library)
-    
+
     Multiprocessing
     ---------------
     Multiprocessing (parallel processes) may be enabled in the following steps:
-    
+
     - step 1a/1b above, the simulations are done on `nproc_sgs_at_ineq` processes \
     (python) using each one thread; if `nproc_sgs_at_ineq > 1` multiprocessing is used
     - step 4a/4b above, the simulations are done using an external C function (Geos-Classic \
     library) on `nproc` processes using each `nthreads_per_proc`; \
     if `nproc > 1` multiprocessing is used
-    
+
     Parameters
     ----------
     cov_model : :class:`geone.covModel.CovModel<d>D`
-        covariance model in 1D or 2D or 3D;      
+        covariance model in 1D or 2D or 3D;
         note: the covariance model must be stationary, however, non stationarity is
-        handled: 
+        handled:
 
         - local rotation by specifying `alpha` (in 2D or 3D), `beta` (in 3D), `gamma` (in 3D)
         - other non-stationarities by specifying `cov_model_non_stationarity_list` (see below)
@@ -2408,19 +2409,19 @@ def simulate(
         type of kriging
 
     x : array-like of floats, optional
-        data points locations (float coordinates), array of shape `(n, d)`, 
+        data points locations (float coordinates), array of shape `(n, d)`,
         where `n` is the number of data points and `d` the spce dimension;
         note: `x` is (cast in array and) reshaped according to space dimension
         (i.e. other shape in input can be handled)
 
     v : 1D array-like of floats of shape (n,), optional
-        data values at `x` (`v[i]` is the data value at `x[i]`); 
+        data values at `x` (`v[i]` is the data value at `x[i]`);
         note: if one data point, a float is accepted
 
     v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
         standard deviation of error at data points, array of same length as `v`;
-        if `v_err_std` is a float, the same value is used for all data points; 
-        this means that at location x[i], the data value is considered as in a Gaussian 
+        if `v_err_std` is a float, the same value is used for all data points;
+        this means that at location x[i], the data value is considered as in a Gaussian
         distribution of mean `v[i]` and standard deviation `v_err_std[i]`
 
     x_ineq : array-like of floats, optional
@@ -2431,20 +2432,20 @@ def simulate(
 
     v_ineq_min : 1D array of floats of shape (n_ineq,), or float, optional
         minimal value (lower bound) at `x_ineq` (`v_ineq_min[i]` is the lower bound
-        at `x_ineq[i]`); 
-        notes: 
-        
+        at `x_ineq[i]`);
+        notes:
+
         - if `v_ineq_min=None` (default), no minimal value is considered for any \
         inequality data point (even if `n_ineq > 0`);
         - `v_ineq_min[i]` set to `np.nan` or `-np.inf` means that there is \
         no minimal value for point `x_ineq[i]`
         - if one inequality data point, a float is accepted
-        
+
     v_ineq_max : 1D array of floats of shape (n_ineq,), or float, optional
         maximal value (upper bound) at `x_ineq` (`v_ineq_max[i]` is the upper bound
-        at `x_ineq[i]`); 
-        notes: 
-        
+        at `x_ineq[i]`);
+        notes:
+
         - if `v_ineq_max=None` (default), no maximal value is considered for any \
         inequality data point (even if `n_ineq > 0`);
         - `v_ineq_max[i]` set to `np.nan` or `np.inf` means that there is \
@@ -2527,7 +2528,7 @@ def simulate(
         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
         Examples (where the parameter `arg` is set from `val`):
-        
+
         - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; \
         this multipies the weight contribution of every elementary contribution of the \
         covariance model
@@ -2543,14 +2544,14 @@ def simulate(
         - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`; \
         this multipies the range in the first main direction (index 0) of the elementary \
         contribution of index 0 of the covariance model
-        
+
     preprocess_data_and_ineq_in_grid : bool, default: True
         if `True`: data points and inequality data points are first pre-processed
-        in order to have at most one data point or inequality data point per grid cell 
+        in order to have at most one data point or inequality data point per grid cell
         (see above)
 
     preprocess_ineq_less_constrained : bool, default: True
-        the less (resp. more) contrained bounds are kept for aggregated inequality 
+        the less (resp. more) contrained bounds are kept for aggregated inequality
         data points if `preprocess_ineq_less_constrained` is `True` (resp. `False`);
         used only if preprocess_data_and_ineq_in_grid=True`
 
@@ -2562,16 +2563,16 @@ def simulate(
         number of simulations at inequality data points to transform them to
         new data with error (see above);
         used only if `mode_transform_ineq_to_data=True`
-    
+
     transform_ineq_to_data_with_err_p : float, default: 0.95
         probability used to transform the ensemble of values at inequality
         data points to new data with error (see above);
         used only if `mode_transform_ineq_to_data=True`
-    
+
     use_unique_neighborhood : bool, default: False
         indicates if a unique neighborhood is used (all data points are considered)
         to krige data at cell centers (step 3a/3b above)
-    
+
     mask : array-like, optional
         mask value at grid cells (value 1 for simulated cells, value 0 for not
         simulated cells); the size of the array must be equal to the number of
@@ -2588,15 +2589,15 @@ def simulate(
 
     searchRadius : float, optional
         if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
-        with same radii along each axis), i.e. the data points at distance to the 
-        estimated point greater than `searchRadius` are not taken into account 
-        in the kriging system; if `searchRadius` is not `None`, then 
+        with same radii along each axis), i.e. the data points at distance to the
+        estimated point greater than `searchRadius` are not taken into account
+        in the kriging system; if `searchRadius` is not `None`, then
         `searchRadiusRelative` is not used;
-        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to
         define the search ellipsoid;
-        
-        note : parameter considered for 
-        
+
+        note : parameter considered for
+
         - simulation at inequality data points (step 1a/1b)
         - kriging to cell centers (step 3a/3b) unless `use_unique_neighborhood=True`
         - simulation on the grid (step 4a/4b)
@@ -2607,34 +2608,34 @@ def simulate(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
-        note (Geos-Classic library): if a range r_i is non-stationary over the grid, 
+        note (Geos-Classic library): if a range r_i is non-stationary over the grid,
         its maximal value over the grid is considered;
 
-        note : parameter considered for 
-        
+        note : parameter considered for
+
         - simulation at inequality data points (step 1a/1b)
         - kriging to cell centers (step 3a/3b) unless `use_unique_neighborhood=True`
         - simulation on the grid (step 4a/4b)
-        
+
     nneighborMax : int, default: 12
         maximal number of neighbors (data points) taken into account in the
-        kriging system, must be greater than or equal to 1; the data points the 
-        closest to the simulated point are taken into account (see the parameters 
+        kriging system, must be greater than or equal to 1; the data points the
+        closest to the simulated point are taken into account (see the parameters
         `searchRadius`, `searchRadiusRelative`, `searchNeighborhoodSortMode`);
 
-        note : parameter considered for 
-        
+        note : parameter considered for
+
         - simulation at inequality data points (step 1a/1b)
         - kriging to cell centers (step 3a/3b) unless `use_unique_neighborhood=True`
         - simulation on the grid (step 4a/4b)
 
     searchNeighborhoodSortMode : int, default: 1
-        indicates how to sort the search neighboorhood cells (neighbors), for 
-        external C function (Geos-Classic library); they are sorted in increasing 
+        indicates how to sort the search neighboorhood cells (neighbors), for
+        external C function (Geos-Classic library); they are sorted in increasing
         order according to:
 
         - `searchNeighborhoodSortMode=0`: distance in the usual axes system
@@ -2669,11 +2670,11 @@ def simulate(
         report file
 
     nproc : int, default: -1
-        number of process(es) for external C function (Geos-Classic library): 
-        a negative number, -n <= 0, can be specified to use the total number of cpu(s) 
-        of the system except n; `nproc` is finally at maximum equal to `nreal` but at 
+        number of process(es) for external C function (Geos-Classic library):
+        a negative number, -n <= 0, can be specified to use the total number of cpu(s)
+        of the system except n; `nproc` is finally at maximum equal to `nreal` but at
         least 1 by applying:
-        
+
         - if `nproc >= 1`, then `nproc = max(min(nproc, nreal), 1)` is used
         - if `nproc = -n <= 0`, then `nproc = max(min(nmax-n, nreal), 1)` is used, \
         where nmax is the total number of cpu(s) of the system (retrieved by \
@@ -2683,11 +2684,11 @@ def simulate(
 
     nthreads_per_proc : int, default: -1
         number of thread(s) per process for external C function (Geos-Classic library);
-        if `nthreads_per_proc = -n <= 0`: `nthreads_per_proc` is automatically 
-        computed as the maximal integer (but at least 1) such that 
+        if `nthreads_per_proc = -n <= 0`: `nthreads_per_proc` is automatically
+        computed as the maximal integer (but at least 1) such that
         `nproc*nthreads_per_proc <= nmax-n`, where nmax is the total number of cpu(s)
-        of the system (retrieved by `multiprocessing.cpu_count()`); 
-        
+        of the system (retrieved by `multiprocessing.cpu_count()`);
+
         note: if `nthreads_per_proc=None`, `nthreads_per_proc=-1` is used
 
     nproc_sgs_at_ineq : int, optional
@@ -2718,10 +2719,10 @@ def simulate(
         - 0: no display
         - 1: warnings
         - 2: warnings + basic info
-        - 3 (or >2): all information
+        - > 2: more info
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -2747,7 +2748,7 @@ def simulate(
             list of distinct warnings encountered (can be empty)
     """
     fname = 'simulate'
-    
+
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
         err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use the other paramters for non-stationary covariance)'
@@ -2802,8 +2803,8 @@ def simulate(
         ox, oy, oz = origin, 0.0, 0.0
     elif d == 2:
         nx, ny, nz = *dimension, 1
-        sx, sy, sz = *spacing, 1.0 
-        ox, oy, oz = *origin, 0.0 
+        sx, sy, sz = *spacing, 1.0
+        ox, oy, oz = *origin, 0.0
     else: # d == 3
         nx, ny, nz = dimension
         sx, sy, sz = spacing
@@ -2844,7 +2845,7 @@ def simulate(
             err_msg = f'{fname}: `beta` not valid: should be callable or array or float or int'
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
-    
+
     if gamma is not None:
         if omni_dir or d < 3:
             err_msg = f'{fname}: `gamma` cannot be used with 1D or 2D covariance model'
@@ -2933,6 +2934,11 @@ def simulate(
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
 
+        if np.any(np.isnan(v)):
+            err_msg = f'{fname}: `v` contains `nan` value(s)'
+            if logger: logger.error(err_msg)
+            raise GeosclassicinterfaceError(err_msg)
+
     # ... set standard deviation of data error
     if v_err_std is None:
         v_err_std = 0.0
@@ -2944,11 +2950,16 @@ def simulate(
         if logger: logger.error(err_msg)
         raise GeosclassicinterfaceError(err_msg)
 
+    if np.any(v_err_std < 0.0):
+        err_msg = f'{fname}: `v_err_std` contains negative value(s)'
+        if logger: logger.error(err_msg)
+        raise GeosclassicinterfaceError(err_msg)
+
     # Preparation of inequality data points
     if x_ineq is None:
         x_ineq = np.empty((0, d), dtype='float')
         n_ineq = 0
-    
+
     else:
         x_ineq = np.asarray(x_ineq, dtype='float').reshape(-1, d) # cast in 2-dimensional array if needed
         n_ineq = x_ineq.shape[0]
@@ -2980,8 +2991,8 @@ def simulate(
         # Check (and set) v_ineq_min
         if v_ineq_min is None:
             v_ineq_min = np.full((n_ineq, ), -np.inf)
-        else:        
-            v_ineq_min = np.asarray(v_ineq_min).reshape(-1)
+        else:
+            v_ineq_min = np.asarray(v_ineq_min, dtype=float).reshape(-1)
             if v_ineq_min.size == 1:
                 v_ineq_min = v_ineq_min * np.ones(n_ineq)
             elif v_ineq_min.size != n_ineq:
@@ -2990,12 +3001,12 @@ def simulate(
                 raise GeosclassicinterfaceError(err_msg)
 
             v_ineq_min[np.isnan(v_ineq_min)] = -np.inf
-        
+
         # Check (and set) v_ineq_max
         if v_ineq_max is None:
             v_ineq_max = np.full((n_ineq, ), np.inf)
-        else:        
-            v_ineq_max = np.asarray(v_ineq_max).reshape(-1)
+        else:
+            v_ineq_max = np.asarray(v_ineq_max, dtype=float).reshape(-1)
             if v_ineq_max.size == 1:
                 v_ineq_max = v_ineq_max * np.ones(n_ineq)
             elif v_ineq_max.size != n_ineq:
@@ -3044,7 +3055,7 @@ def simulate(
         else:
             ig_x_ineq = np.array([], dtype='int')
             ig_x_ineq_unique = np.array([], dtype='int')
-        
+
         # Remove inequality data points falling in same cells as data points
         ig_inter, _, ig2 = np.intersect1d(ig_x_unique, ig_x_ineq_unique, assume_unique=True, return_indices=True)
         if len(ig_inter):
@@ -3057,9 +3068,9 @@ def simulate(
             n_ineq_new = len(x_ineq)
             if verbose > 2:
                 if logger:
-                    logger.info(f'{fname}: Preprocessing data: {n_ineq-n_ineq_new} inequality data points removed (in same grid cell as data points)')
+                    logger.info(f'{fname}: pre-process data: {n_ineq-n_ineq_new} inequality data points removed (in same grid cell as data points)')
                 else:
-                    print(f'{fname}: Preprocessing data: {n_ineq-n_ineq_new} inequality data points removed (in same grid cell as data points)')
+                    print(f'{fname}: pre-process data: {n_ineq-n_ineq_new} inequality data points removed (in same grid cell as data points)')
             n_ineq = n_ineq_new
 
         # Aggregate data points that fall into the same grid cell
@@ -3070,9 +3081,9 @@ def simulate(
             n_new = len(x)
             if verbose > 2:
                 if logger:
-                    logger.info(f'{fname}: Preprocessing data: data points aggregated (in same grid cells): {n} points (initial) -> {n_new} points (final)')
+                    logger.info(f'{fname}: pre-process data: data points aggregated (in same grid cells): {n} points (initial) -> {n_new} points (final)')
                 else:
-                    print(f'{fname}: Preprocessing data: data points aggregated (in same grid cells): {n} points (initial) -> {n_new} points (final)')
+                    print(f'{fname}: pre-process data: data points aggregated (in same grid cells): {n} points (initial) -> {n_new} points (final)')
             n = n_new
 
         # Aggregate inequality data points that fall into the same grid cell
@@ -3104,12 +3115,12 @@ def simulate(
                         v_ineq_max_new[j] = vm[~ind2].max()
                     else:
                         v_ineq_max_new[j] = vm[~ind2].min()
-            
+
             if verbose > 2:
                 if logger:
-                    logger.info(f'{fname}: Preprocessing data: inequality data points aggregated (in same grid cells): {n_ineq} points (initial) -> {n_ineq_new} points (final)')
+                    logger.info(f'{fname}: pre-process data: inequality data points aggregated (in same grid cells): {n_ineq} points (initial) -> {n_ineq_new} points (final)')
                 else:
-                    print(f'{fname}: Preprocessing data: inequality data points aggregated (in same grid cells): {n_ineq} points (initial) -> {n_ineq_new} points (final)')
+                    print(f'{fname}: pre-process data: inequality data points aggregated (in same grid cells): {n_ineq} points (initial) -> {n_ineq_new} points (final)')
 
             n_ineq = n_ineq_new
             x_ineq = x_ineq_new
@@ -3121,12 +3132,12 @@ def simulate(
                 err_msg = f'{fname}: after aggregation (pre-processing): `v_ineq_min` and `v_ineq_max` are not consistent'
                 if logger: logger.error(err_msg)
                 raise GeosclassicinterfaceError(err_msg)
-        
+
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Preprocessing data done: final number of data points : {n}, inequality data points: {n_ineq}')
+                logger.info(f'{fname}: pre-process data done: final number of data points : {n}, inequality data points: {n_ineq}')
             else:
-                print(f'{fname}: Preprocessing data done: final number of data points : {n}, inequality data points: {n_ineq}')
+                print(f'{fname}: pre-process data done: final number of data points : {n}, inequality data points: {n_ineq}')
 
     # Set method : computationMode
     #    computationMode=0: GEOS_CLASSIC_OK
@@ -3148,7 +3159,7 @@ def simulate(
                     logger.warning(f"{fname}: `var` is ignored with `method='ordinary_kriging'`")
                 else:
                     print(f"{fname}: WARNING: `var` is ignored with `method='ordinary_kriging'`")
-        
+
         computationMode = 2
 
     else:
@@ -3166,14 +3177,14 @@ def simulate(
             err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
-        
+
         searchRadius_geosClassic = searchRadius
         searchRadiusRelative_geosClassic = searchRadiusRelative # unused
 
     else:
         # searchRadius is not used, searchRadiusRelative is used
         searchRadius_geosClassic = 0.0 # to indicate in external C function that search radius is not used
-        searchRadiusRelative_geosClassic = searchRadiusRelative 
+        searchRadiusRelative_geosClassic = searchRadiusRelative
 
         # searchRadiusRelative
         if searchRadiusRelative_geosClassic < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
@@ -3210,14 +3221,14 @@ def simulate(
             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model (local rotation)'
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
-        
+
         if cov_model_non_stationarity_list is not None:
             for cm_ns in cov_model_non_stationarity_list:
                 if callable(cm_ns[1]) or (isinstance(cm_ns[1],  np.ndarray) and cm_ns[1].size  > 1):
                     err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model ({cm_ns[0]})'
                     if logger: logger.error(err_msg)
                     raise GeosclassicinterfaceError(err_msg)
-                
+
     elif searchNeighborhoodSortMode not in (0, 1):
         err_msg = f'{fname}: `searchNeighborhoodSortMode` not valid'
         if logger: logger.error(err_msg)
@@ -3231,11 +3242,11 @@ def simulate(
             err_msg = f'{fname}: `mask` is not valid'
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
-    
+
     # Set number of process(es): nproc
     if nproc is None:
         nproc = -1
-    
+
     if nproc <= 0:
         nproc = max(min(multiprocessing.cpu_count() + nproc, nreal), 1)
     else:
@@ -3250,7 +3261,7 @@ def simulate(
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
         nthreads_per_proc = -1
-    
+
     if nthreads_per_proc <= 0:
         nth = max(int(np.floor((multiprocessing.cpu_count() + nthreads_per_proc) / nproc)), 1)
     else:
@@ -3284,9 +3295,9 @@ def simulate(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computational resources: nproc = {nproc}, nthreads_per_proc = {nth}, nproc_sgs_at_ineq = {nproc_sgs_at_ineq}')
+            logger.info(f'{fname}: computational resources: nproc = {nproc}, nthreads_per_proc = {nth}, nproc_sgs_at_ineq = {nproc_sgs_at_ineq}')
         else:
-            print(f'{fname}: Computational resources: nproc = {nproc}, nthreads_per_proc = {nth}, nproc_sgs_at_ineq = {nproc_sgs_at_ineq}')
+            print(f'{fname}: computational resources: nproc = {nproc}, nthreads_per_proc = {nth}, nproc_sgs_at_ineq = {nproc_sgs_at_ineq}')
 
     # Mode A and B: do SGS simulations at inequality data points
     # ------------
@@ -3302,6 +3313,17 @@ def simulate(
             else: # d == 3
                 mean_x      = gcm.eval_at_points_3D(mean, x     , nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
                 mean_x_ineq = gcm.eval_at_points_3D(mean, x_ineq, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(mean_x)):
+                err_msg = f'{fname}: mean evaluated at data points contains `nan` value(s), please check `mean` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
+            if np.any(np.isnan(mean_x_ineq)):
+                err_msg = f'{fname}: mean evaluated at inequality data points contains `nan` value(s), please check `mean` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             mean_x      = None
             mean_x_ineq = None
@@ -3317,10 +3339,21 @@ def simulate(
             else: # d == 3
                 var_x      = gcm.eval_at_points_3D(var, x     , nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
                 var_x_ineq = gcm.eval_at_points_3D(var, x_ineq, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(var_x)):
+                err_msg = f'{fname}: variance evaluated at data points contains `nan` value(s), please check `var` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
+            if np.any(np.isnan(var_x_ineq)):
+                err_msg = f'{fname}: variance evaluated at inequality data points contains `nan` value(s), please check `var` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             var_x      = None
             var_x_ineq = None
-        
+
         # Rotation: set angles
         # ... alpha_x_ineq from alpha
         if alpha is not None:
@@ -3330,6 +3363,12 @@ def simulate(
                 alpha_x_ineq = gcm.eval_at_points_2D(alpha, x_ineq, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 alpha_x_ineq = gcm.eval_at_points_3D(alpha, x_ineq, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(alpha_x_ineq)):
+                err_msg = f'{fname}: angle alpha evaluated at inequality data points contains `nan` value(s), please check `alpha` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             alpha_x_ineq = None
 
@@ -3341,6 +3380,12 @@ def simulate(
                 beta_x_ineq = gcm.eval_at_points_2D(beta, x_ineq, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 beta_x_ineq = gcm.eval_at_points_3D(beta, x_ineq, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(beta_x_ineq)):
+                err_msg = f'{fname}: angle beta evaluated at inequality data points contains `nan` value(s), please check `beta` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             beta_x_ineq = None
 
@@ -3352,6 +3397,12 @@ def simulate(
                 gamma_x_ineq = gcm.eval_at_points_2D(gamma, x_ineq, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 gamma_x_ineq = gcm.eval_at_points_3D(gamma, x_ineq, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(gamma_x_ineq)):
+                err_msg = f'{fname}: angle gamma evaluated at inequality data points contains `nan` value(s), please check `gamma` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             gamma_x_ineq = None
 
@@ -3387,10 +3438,10 @@ def simulate(
 
         if verbose > 1:
             if logger:
-                logger.info(f"{fname}: (Step 1.1) Do sgs at inequality data points ({nsim} simulation(s) at {n_ineq} points)...")
+                logger.info(f"{fname}: (Step 1.1) do sgs at inequality data points ({nsim} simulation(s) at {n_ineq} points)...")
             else:
-                print(f"{fname}: (Step 1.1) Do sgs at inequality data points ({nsim} simulation(s) at {n_ineq} points)...")
-        
+                print(f"{fname}: (Step 1.1) do sgs at inequality data points ({nsim} simulation(s) at {n_ineq} points)...")
+
         if nproc_sgs_at_ineq != 1:
             v_ineq_sim = gcm.sgs_at_inequality_data_points_mp(
                         x, v, x_ineq, cov_model,
@@ -3411,7 +3462,7 @@ def simulate(
                         nGibbsSamplerPath=nGibbsSamplerPath,
                         nreal=nsim,
                         seed=seed,
-                        verbose=(verbose>2),
+                        verbose=(verbose-2),
                         nproc=nproc_sgs_at_ineq,
                         logger=logger)
         else:
@@ -3434,7 +3485,7 @@ def simulate(
                         nGibbsSamplerPath=nGibbsSamplerPath,
                         nreal=nsim,
                         seed=seed,
-                        verbose=(verbose>2),
+                        verbose=(verbose-2),
                         logger=logger)
 
     # Mode A and B : prepare parameters (common)
@@ -3482,6 +3533,14 @@ def simulate(
             else: # d == 3
                 mean_x_cc  = gcm.eval_at_points_3D(mean, x_cc,  nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
                 mean_x_new = gcm.eval_at_points_3D(mean, x_new, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(mean_x_cc)):
+                err_msg = f'{fname}: mean evaluated at cell centers (defined from data) contains `nan` value(s), please check `mean` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
+            # mean_x_new - evaluated at x_new gathering x and x_ineq - already checked
+
         else:
             mean_x_cc  = None
             mean_x_new = None
@@ -3497,10 +3556,18 @@ def simulate(
             else: # d == 3
                 var_x_cc  = gcm.eval_at_points_3D(var, x_cc,  nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
                 var_x_new = gcm.eval_at_points_3D(var, x_new, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(var_x_cc)):
+                err_msg = f'{fname}: variance evaluated at cell centers (defined from data) contains `nan` value(s), please check `var` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
+            # var_x_new - evaluated at x_new gathering x and x_ineq - already checked
+
         else:
             var_x_cc  = None
             var_x_new = None
-       
+
         # Rotation: set angles
         # ... alpha_x_cc from alpha
         if alpha is not None:
@@ -3510,6 +3577,12 @@ def simulate(
                 alpha_x_cc = gcm.eval_at_points_2D(alpha, x_cc, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 alpha_x_cc = gcm.eval_at_points_3D(alpha, x_cc, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(alpha_x_cc)):
+                err_msg = f'{fname}: angle alpha evaluated at cell centers (defined from data) contains `nan` value(s), please check `alpha` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             alpha_x_cc = None
 
@@ -3521,6 +3594,12 @@ def simulate(
                 beta_x_cc = gcm.eval_at_points_2D(beta, x_cc, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 beta_x_cc = gcm.eval_at_points_3D(beta, x_cc, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(beta_x_cc)):
+                err_msg = f'{fname}: angle beta evaluated at cell centers (defined from data) contains `nan` value(s), please check `beta` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             beta_x_cc = None
 
@@ -3532,6 +3611,12 @@ def simulate(
                 gamma_x_cc = gcm.eval_at_points_2D(gamma, x_cc, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 gamma_x_cc = gcm.eval_at_points_3D(gamma, x_cc, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(gamma_x_cc)):
+                err_msg = f'{fname}: angle gamma evaluated at cell centers (defined from data) contains `nan` value(s), please check `gamma` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             gamma_x_cc = None
 
@@ -3561,8 +3646,8 @@ def simulate(
         vv = np.zeros(npt)         # temporary values
         vv_err_std = np.zeros(npt) # temporary values
         dataPointSet = PointSet(
-                            npt=npt, nv=5, 
-                            val=np.vstack((pts.T, vv, vv_err_std)), 
+                            npt=npt, nv=5,
+                            val=np.vstack((pts.T, vv, vv_err_std)),
                             varname=['X', 'Y', 'Z', varname, f'{varname}_err_std'])
 
         if mask is not None and add_data_point_to_mask:
@@ -3579,12 +3664,12 @@ def simulate(
                 mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
                 del(im_tmp)
             recover_mask = True
-        
+
         else:
             recover_mask = False
 
         del(pts)
-    
+
     else: # n_new = 0
         # --- for step 3.
         x_cc = None
@@ -3614,7 +3699,7 @@ def simulate(
             var_grid = gcm.eval_in_grid_3D(var, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
     else:
         var_grid = None
-    
+
     # Set non-stationary covariance model (if needed)
     cov_model_grid = gcm.copyCovModel(cov_model)
     # ... from alpha
@@ -3683,31 +3768,31 @@ def simulate(
                 # 1a. Transform inequality data to equality data with error std
                 if verbose > 1:
                     if logger:
-                        logger.info(f"{fname}: (Step 1.2) Transform inequality data to equality data with error std...")
+                        logger.info(f"{fname}: (Step 1.2) transform inequality data to equality data with error std...")
                     else:
-                        print(f"{fname}: (Step 1.2) Transform inequality data to equality data with error std...")
+                        print(f"{fname}: (Step 1.2) transform inequality data to equality data with error std...")
 
-                # Set new data with error at inequality data points 
+                # Set new data with error at inequality data points
                 for i in range(n_ineq):
                     v_ineq[i], v_ineq_err_std[i] = gcm.values_to_mean_and_err_std(
-                                                        v_ineq_sim[:, i], 
-                                                        v_min=v_ineq_min[i], 
-                                                        v_max=v_ineq_max[i], 
-                                                        p=transform_ineq_to_data_with_err_p, 
+                                                        v_ineq_sim[:, i],
+                                                        v_min=v_ineq_min[i],
+                                                        v_max=v_ineq_max[i],
+                                                        p=transform_ineq_to_data_with_err_p,
                                                         def_shift=1.e-5,
                                                         logger=logger)
             elif verbose > 1:
                 if logger:
-                    logger.info(f"{fname}: (Step 1) No inequality data")
+                    logger.info(f"{fname}: (Step 1) no inequality data")
                 else:
-                    print(f"{fname}: (Step 1) No inequality data")
+                    print(f"{fname}: (Step 1) no inequality data")
 
             # 2a. New dataset
             if verbose > 1:
                 if logger:
-                    logger.info(f"{fname}: (Step 2) Set new dataset gathering data and inequality data locations...")
+                    logger.info(f"{fname}: (Step 2) set new dataset gathering data and inequality data locations...")
                 else:
-                    print(f"{fname}: (Step 2) Set new dataset gathering data and inequality data locations...")
+                    print(f"{fname}: (Step 2) set new dataset gathering data and inequality data locations...")
             v_new = np.hstack((v, v_ineq))
             v_new_err_std = np.hstack((v_err_std, v_ineq_err_std))
 
@@ -3715,9 +3800,9 @@ def simulate(
             # Do kriging at cell centers x_cc
             if verbose > 1:
                 if logger:
-                    logger.info(f"{fname}: (Step 3) Do kriging at the center of grid cells containing at least one data point...")
+                    logger.info(f"{fname}: (Step 3) do kriging at the center of grid cells containing at least one data point...")
                 else:
-                    print(f"{fname}: (Step 3) Do kriging at the center of grid cells containing at least one data point...")
+                    print(f"{fname}: (Step 3) do kriging at the center of grid cells containing at least one data point...")
 
             v_cc, v_cc_err_std = gcm.krige(
                                     x_new, v_new, x_cc, cov_model,
@@ -3735,25 +3820,25 @@ def simulate(
                                     searchRadius=searchRadius,
                                     searchRadiusRelative=searchRadiusRelative,
                                     nneighborMax=nneighborMax,
-                                    verbose=(verbose>2),
+                                    verbose=(verbose-2),
                                     logger=logger)
 
             # Update data point set: set values and error std in point set
             dataPointSet.val[3] = v_cc
             dataPointSet.val[4] = v_cc_err_std
-        
+
         elif verbose > 1:
             if logger:
-                logger.info(f"{fname}: (Step 1-3 skipped) No data")
+                logger.info(f"{fname}: (Step 1-3 skipped) no data")
             else:
-                print(f"{fname}: (Step 1-3 skipped) No data")
-        
+                print(f"{fname}: (Step 1-3 skipped) no data")
+
         # 4a. Do `nreal` SGS realizations on the grid (at cell centers) using data points at cell centers
         if verbose > 1:
             if logger:
-                logger.info(f"{fname}: (Step 4) Do sgs ({nreal} realizations) on the grid (at cell centers) using data points at cell centers...")
+                logger.info(f"{fname}: (Step 4) do sgs ({nreal} realizations) on the grid (at cell centers) using data points at cell centers...")
             else:
-                print(f"{fname}: (Step 4) Do sgs ({nreal} realizations) on the grid (at cell centers) using data points at cell centers...")
+                print(f"{fname}: (Step 4) do sgs ({nreal} realizations) on the grid (at cell centers) using data points at cell centers...")
 
         if nproc > 1:
             # multiprocessing enabled
@@ -3769,17 +3854,22 @@ def simulate(
 
             if verbose > 1:
                 if logger:
-                    logger.info(  
-                        f'{fname}: Geos-Classic running on {nproc} process(es)... [' + \
-                        f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                        f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                        f'OpenMP {nth:d} thread(s)]')
+                    logger.info(f'{fname}: call `run_MPDSOMPGeosClassicSim` [{nproc} process(es) of {nth:d} thread(s) (OpenMP)] ...')
                 else:
-                    print(  
-                        f'{fname}: Geos-Classic running on {nproc} process(es)... [' + \
-                        f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                        f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                        f'OpenMP {nth:d} thread(s)]')
+                    print(f'{fname}: call `run_MPDSOMPGeosClassicSim` [{nproc} process(es) of {nth:d} thread(s) (OpenMP)] ...')
+
+                # if logger:
+                #     logger.info(
+                #         f'{fname}: Geos-Classic running on {nproc} process(es)... [' + \
+                #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+                #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+                #         f'OpenMP {nth:d} thread(s)]')
+                # else:
+                #     print(
+                #         f'{fname}: Geos-Classic running on {nproc} process(es)... [' + \
+                #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+                #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+                #         f'OpenMP {nth:d} thread(s)]')
 
             outputReportFile_p = None
 
@@ -3790,11 +3880,11 @@ def simulate(
                 # Set input for i-th process
                 nreal_p = real_index_proc[i+1] - real_index_proc[i]
                 seed_p = seed + real_index_proc[i]
-                
+
                 if outputReportFile is not None:
                     outputReportFile_p = outputReportFile + f'.{i}'
-                
-                if i == 0 and verbose >= 3:
+
+                if i == 0 and verbose >= 5:
                     progress_monitor = 4
                 else:
                     progress_monitor = 0
@@ -3824,9 +3914,9 @@ def simulate(
                         nth
                     )
                 kwds = {
-                        'progress_monitor':progress_monitor, 
+                        'progress_monitor':progress_monitor,
                         'pid':i,
-                        'verbose':verbose*(i==0),
+                        'verbose':(verbose-2)*(i==0),
                         'logger':logger
                     }
 
@@ -3846,7 +3936,7 @@ def simulate(
                 err_msg = f'{fname}: async `run_MPDSOMPGeosClassicSim` failed'
                 if logger: logger.error(err_msg)
                 raise GeosclassicinterfaceError(err_msg)
- 
+
             # Gather results from every process
             # image
             image_list = []
@@ -3872,31 +3962,41 @@ def simulate(
 
             if verbose > 1 and geosclassic_output:
                 if logger:
-                    logger.info(f'{fname}: Geos-Classic ({nproc} process(es)) run complete')
+                    logger.info(f'{fname}: `run_MPDSOMPGeosClassicSim` [{nproc} process(es)] complete')
                 else:
-                    print(f'{fname}: Geos-Classic ({nproc} process(es)) run complete')
+                    print(f'{fname}: `run_MPDSOMPGeosClassicSim` [{nproc} process(es)] complete')
+
+                # if logger:
+                #     logger.info(f'{fname}: Geos-Classic ({nproc} process(es)) run complete')
+                # else:
+                #     print(f'{fname}: Geos-Classic ({nproc} process(es)) run complete')
 
         else:
             # multiprocessing not enabled
             # ---------------------------
             if verbose > 1:
                 if logger:
-                    logger.info(  
-                        f'{fname}: Geos-Classic running on 1 process... [' + \
-                        f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                        f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                        f'OpenMP {nth:d} thread(s)]')
+                    logger.info(f'{fname}: call `run_MPDSOMPGeosClassicSim` [1 process of {nth:d} thread(s) (OpenMP)] ...')
                 else:
-                    print(  
-                        f'{fname}: Geos-Classic running on 1 process... [' + \
-                        f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                        f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                        f'OpenMP {nth:d} thread(s)]')
+                    print(f'{fname}: call `run_MPDSOMPGeosClassicSim` [1 process of {nth:d} thread(s) (OpenMP)] ...')
 
-            if verbose < 3:
-                progress_monitor = 0
-            else:
+                # if logger:
+                #     logger.info(
+                #         f'{fname}: Geos-Classic running on 1 process... [' + \
+                #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+                #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+                #         f'OpenMP {nth:d} thread(s)]')
+                # else:
+                #     print(
+                #         f'{fname}: Geos-Classic running on 1 process... [' + \
+                #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+                #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+                #         f'OpenMP {nth:d} thread(s)]')
+
+            if verbose >= 5:
                 progress_monitor = 4
+            else:
+                progress_monitor = 0
 
             args = (
                     d,
@@ -3923,18 +4023,23 @@ def simulate(
                     nth
                 )
             kwds = {
-                    'progress_monitor':progress_monitor, 
+                    'progress_monitor':progress_monitor,
                     'pid':None,
-                    'verbose':verbose,
+                    'verbose':(verbose-2),
                     'logger':logger
                 }
             geosclassic_output = run_MPDSOMPGeosClassicSim(*args, **kwds)
 
             if verbose > 1 and geosclassic_output:
                 if logger:
-                    logger.info(f'{fname}: Geos-Classic (1 process) run complete')
+                    logger.info(f'{fname}: `run_MPDSOMPGeosClassicSim` [1 process] complete')
                 else:
-                    print(f'{fname}: Geos-Classic (1 process) run complete')
+                    print(f'{fname}: `run_MPDSOMPGeosClassicSim` [1 process] complete')
+
+                # if logger:
+                #     logger.info(f'{fname}: Geos-Classic (1 process) run complete')
+                # else:
+                #     print(f'{fname}: Geos-Classic (1 process) run complete')
 
     else: # mode_transform_ineq_to_data=False and n_ineq > 0
         # Mode B with at least one inequality data point
@@ -3956,17 +4061,22 @@ def simulate(
 
             if verbose > 1:
                 if logger:
-                    logger.info(
-                        f'{fname}: (Step 2-4): Krige + Geos-Classic running on {nproc} process(es)... [' + \
-                        f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                        f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                        f'OpenMP {nth:d} thread(s)]')
+                    logger.info(f'{fname}: (Step 2-4) call `_run_krige_and_MPDSOMPGeosClassicSim` [{nproc} process(es) of {nth:d} thread(s) (OpenMP)] ...')
                 else:
-                    print(
-                        f'{fname}: (Step 2-4): Krige + Geos-Classic running on {nproc} process(es)... [' + \
-                        f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                        f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                        f'OpenMP {nth:d} thread(s)]')
+                    print(f'{fname}: (Step 2-4) call `_run_krige_and_MPDSOMPGeosClassicSim` [{nproc} process(es) of {nth:d} thread(s) (OpenMP)] ...')
+
+                # if logger:
+                #     logger.info(
+                #         f'{fname}: (Step 2-4) do "krige + Geos-Classic" running on {nproc} process(es)... [' + \
+                #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+                #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+                #         f'OpenMP {nth:d} thread(s)]')
+                # else:
+                #     print(
+                #         f'{fname}: (Step 2-4) do "krige + Geos-Classic" running on {nproc} process(es)... [' + \
+                #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+                #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+                #         f'OpenMP {nth:d} thread(s)]')
 
             # Set pool of nproc workers
             pool = multiprocessing.Pool(nproc)
@@ -3974,9 +4084,9 @@ def simulate(
             for i in range(nproc):
                 # Set parameters for i-th process
                 ir0, ir1 = real_index_proc[i:i+2]
-      
-           
-                if i == 0 and verbose >= 3:
+
+
+                if i == 0 and verbose >= 8:
                     progress_monitor = 4
                 else:
                     progress_monitor = 0
@@ -3999,7 +4109,7 @@ def simulate(
                         searchRadius,
                         searchRadiusRelative,
                         nneighborMax,
-                        d,                          # MPDSOMPGeosClassicSim parameters ... 
+                        d,                          # MPDSOMPGeosClassicSim parameters ...
                         cov_model_grid,
                         nx, ny, nz,
                         sx, sy, sz,
@@ -4022,9 +4132,9 @@ def simulate(
                         nth,            # for MPDSOMPGeosClassicSim
                     )
                 kwds = {
-                        'progress_monitor':progress_monitor, 
+                        'progress_monitor':progress_monitor,
                         'pid':i,
-                        'verbose':(verbose-1)*(i==0),
+                        'verbose':(verbose-3)*(i==0),
                         'logger':logger
                     }
 
@@ -4044,7 +4154,7 @@ def simulate(
                 err_msg = f'{fname}: async `_run_krige_and_MPDSOMPGeosClassicSim` failed'
                 if logger: logger.error(err_msg)
                 raise GeosclassicinterfaceError(err_msg)
- 
+
             # Gather results from every process
             # image
             image_list = []
@@ -4070,30 +4180,40 @@ def simulate(
 
             if verbose > 1 and geosclassic_output:
                 if logger:
-                    logger.info(f'{fname}: Krige + Geos-Classic ({nproc} process(es)) run complete')
+                    logger.info(f'{fname}: `_run_krige_and_MPDSOMPGeosClassicSim` [{nproc} process(es)] complete')
                 else:
-                    print(f'{fname}: Krige + Geos-Classic ({nproc} process(es)) run complete')
-        
+                    print(f'{fname}: `_run_krige_and_MPDSOMPGeosClassicSim` [{nproc} process(es)] complete')
+
+                # if logger:
+                #     logger.info(f'{fname}: Krige + Geos-Classic ({nproc} process(es)) run complete')
+                # else:
+                #     print(f'{fname}: Krige + Geos-Classic ({nproc} process(es)) run complete')
+
         else:
             # multiprocessing not enabled
             # ---------------------------
             if verbose > 1:
                 if logger:
-                    logger.info(
-                        f'{fname}: (Step 2-4): Krige + Geos-Classic running on 1 process... [' + \
-                        f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                        f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                        f'OpenMP {nth:d} thread(s)]')
+                    logger.info(f'{fname}: (Step 2-4) call `_run_krige_and_MPDSOMPGeosClassicSim` [1 process of {nth:d} thread(s) (OpenMP)] ...')
                 else:
-                    print(
-                        f'{fname}: (Step 2-4): Krige + Geos-Classic running on 1 process... [' + \
-                        f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                        f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                        f'OpenMP {nth:d} thread(s)]')
+                    print(f'{fname}: (Step 2-4) call `_run_krige_and_MPDSOMPGeosClassicSim` [1 process of {nth:d} thread(s) (OpenMP)] ...')
+
+                # if logger:
+                #     logger.info(
+                #         f'{fname}: (Step 2-4) do "krige + Geos-Classic" running on 1 process... [' + \
+                #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+                #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+                #         f'OpenMP {nth:d} thread(s)]')
+                # else:
+                #     print(
+                #         f'{fname}: (Step 2-4) do "krige + Geos-Classic" running on 1 process... [' + \
+                #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+                #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+                #         f'OpenMP {nth:d} thread(s)]')
 
             ir0, ir1 = 0, nreal
-           
-            if verbose >= 3:
+
+            if verbose >= 8:
                 progress_monitor = 4
             else:
                 progress_monitor = 0
@@ -4116,7 +4236,7 @@ def simulate(
                     searchRadius,
                     searchRadiusRelative,
                     nneighborMax,
-                    d,                          # MPDSOMPGeosClassicSim parameters ... 
+                    d,                          # MPDSOMPGeosClassicSim parameters ...
                     cov_model_grid,
                     nx, ny, nz,
                     sx, sy, sz,
@@ -4139,19 +4259,24 @@ def simulate(
                     nth,            # for MPDSOMPGeosClassicSim
                 )
             kwds = {
-                    'progress_monitor':progress_monitor, 
+                    'progress_monitor':progress_monitor,
                     'pid':None,
-                    'verbose':verbose-1,
+                    'verbose':(verbose-3),
                     'logger':logger
                 }
             geosclassic_output = _run_krige_and_MPDSOMPGeosClassicSim(*args, **kwds)
 
             if verbose > 1 and geosclassic_output:
                 if logger:
-                    logger.info(f'{fname}: Krige + Geos-Classic (1 process) run complete')
+                    logger.info(f'{fname}: `_run_krige_and_MPDSOMPGeosClassicSim` [1 process] complete')
                 else:
-                    print(f'{fname}: Krige + Geos-Classic (1 process) run complete')
-        
+                    print(f'{fname}: `_run_krige_and_MPDSOMPGeosClassicSim` [1 process] complete')
+
+                # if logger:
+                #     logger.info(f'{fname}: Krige + Geos-Classic (1 process) run complete')
+                # else:
+                #     print(f'{fname}: Krige + Geos-Classic (1 process) run complete')
+
     if geosclassic_output is not None and recover_mask:
         # Remove the value out of the original mask (using its copy see above)
         geosclassic_output['image'].val[:, mask_original==0.0] = np.nan
@@ -4170,17 +4295,17 @@ def simulate(
 # ----------------------------------------------------------------------------
 def estimate(
         cov_model,
-        dimension, 
-        spacing=None, 
+        dimension,
+        spacing=None,
         origin=None,
         method='ordinary_kriging',
-        x=None, 
-        v=None, 
+        x=None,
+        v=None,
         v_err_std=0.0,
-        x_ineq=None, 
-        v_ineq_min=None, 
+        x_ineq=None,
+        v_ineq_min=None,
         v_ineq_max=None,
-        mean=None, 
+        mean=None,
         var=None,
         alpha=None,
         beta=None,
@@ -4208,11 +4333,11 @@ def estimate(
     Computes kriging estimates and standard deviations in a grid.
 
     Interpolation takes place in (center of) grid cells, based on simple or
-    ordinary kriging. The space dimension (1, 2, or 3) is detected (from the 
+    ordinary kriging. The space dimension (1, 2, or 3) is detected (from the
     parameter `dimension`).
 
     Interpolation can be conditioned by
-    
+
     - data: location: `x`, value: `v`, and errors standard deviation: `v_err_std`
     - inequality data: location: `x_ineq`, lower bounds: `v_ineq_min`, \
     and upper bounds `v_ineq_max` (no error)
@@ -4222,9 +4347,9 @@ def estimate(
 
     Before starting the interpolation, the data points and inequality data points can
     be first pre-processed (optional, if `preprocess_data_and_ineq_in_grid=True`) in
-    order to have at most one data point or inequality data point per grid cell, by 
+    order to have at most one data point or inequality data point per grid cell, by
     proceeding as follows:
-    
+
     - if one grid cell contains both data point(s) and inequality data point(s), then \
     the inequality data point(s) are removed
     - if one grid cell contains several data points (no inequality data), they \
@@ -4242,35 +4367,35 @@ def estimate(
 
     Interpolation steps are the following:
 
-    1a. If there is inequality data, they are first transformed to new data with 
-    error: for that, `transform_ineq_to_data_with_err_nsim` simulations at 
+    1a. If there is inequality data, they are first transformed to new data with
+    error: for that, `transform_ineq_to_data_with_err_nsim` simulations at
     inequality data points are generated, then at each location, the ensemble of values
     is transformed to a new data value with an error standard deviation using the function
     `geone.covModel.values_to_mean_and_err_std`
 
-    2a. A new dataset is formed by grouping the original data (`x`, `v`, with the 
+    2a. A new dataset is formed by grouping the original data (`x`, `v`, with the
     error std `v_err_std`) and the new data with their own error std from step 1a.
 
-    3a. The dataset from step 2a is then kriged at the center of grid cells containing 
-    at least one data point, this results in a dataset at cell centers (values and error 
+    3a. The dataset from step 2a is then kriged at the center of grid cells containing
+    at least one data point, this results in a dataset at cell centers (values and error
     std are respectively the kriging estimates and the kriging std)
 
-    4a. The dataset at cell centers from step 3a is then kriged on the grid (at cell 
+    4a. The dataset at cell centers from step 3a is then kriged on the grid (at cell
     centers), using an external C function (Geos-Classic library)
-   
+
     Multiprocessing
     ---------------
     Multiprocessing (parallel processes) may be enabled in the following steps:
-    
+
     - step 1a above, the simulations are done on `nproc_sgs_at_ineq` processes \
     (python) using each one thread; if `nproc_sgs_at_ineq > 1` multiprocessing is used
-    
+
     Parameters
     ----------
     cov_model : :class:`geone.covModel.CovModel<d>D`
-        covariance model in 1D or 2D or 3D;      
+        covariance model in 1D or 2D or 3D;
         note: the covariance model must be stationary, however, non stationarity is
-        handled: 
+        handled:
 
         - local rotation by specifying `alpha` (in 2D or 3D), `beta` (in 3D), `gamma` (in 3D)
         - other non-stationarities by specifying `cov_model_non_stationarity_list` (see below)
@@ -4306,19 +4431,19 @@ def estimate(
         type of kriging
 
     x : array-like of floats, optional
-        data points locations (float coordinates), array of shape `(n, d)`, 
+        data points locations (float coordinates), array of shape `(n, d)`,
         where `n` is the number of data points and `d` the spce dimension;
         note: `x` is (cast in array and) reshaped according to space dimension
         (i.e. other shape in input can be handled)
 
     v : 1D array-like of floats of shape (n,), optional
-        data values at `x` (`v[i]` is the data value at `x[i]`); 
+        data values at `x` (`v[i]` is the data value at `x[i]`);
         note: if one data point, a float is accepted
 
     v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
         standard deviation of error at data points, array of same length as `v`;
-        if `v_err_std` is a float, the same value is used for all data points; 
-        this means that at location x[i], the data value is considered as in a Gaussian 
+        if `v_err_std` is a float, the same value is used for all data points;
+        this means that at location x[i], the data value is considered as in a Gaussian
         distribution of mean `v[i]` and standard deviation `v_err_std[i]`
 
     x_ineq : array-like of floats, optional
@@ -4329,20 +4454,20 @@ def estimate(
 
     v_ineq_min : 1D array of floats of shape (n_ineq,), or float, optional
         minimal value (lower bound) at `x_ineq` (`v_ineq_min[i]` is the lower bound
-        at `x_ineq[i]`); 
-        notes: 
-        
+        at `x_ineq[i]`);
+        notes:
+
         - if `v_ineq_min=None` (default), no minimal value is considered for any \
         inequality data point (even if `n_ineq > 0`);
         - `v_ineq_min[i]` set to `np.nan` or `-np.inf` means that there is \
         no minimal value for point `x_ineq[i]`
         - if one inequality data point, a float is accepted
-        
+
     v_ineq_max : 1D array of floats of shape (n_ineq,), or float, optional
         maximal value (upper bound) at `x_ineq` (`v_ineq_max[i]` is the upper bound
-        at `x_ineq[i]`); 
-        notes: 
-        
+        at `x_ineq[i]`);
+        notes:
+
         - if `v_ineq_max=None` (default), no maximal value is considered for any \
         inequality data point (even if `n_ineq > 0`);
         - `v_ineq_max[i]` set to `np.nan` or `np.inf` means that there is \
@@ -4425,7 +4550,7 @@ def estimate(
         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
         Examples (where the parameter `arg` is set from `val`):
-        
+
         - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; \
         this multipies the weight contribution of every elementary contribution of the \
         covariance model
@@ -4441,30 +4566,30 @@ def estimate(
         - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`; \
         this multipies the range in the first main direction (index 0) of the elementary \
         contribution of index 0 of the covariance model
-       
+
     preprocess_data_and_ineq_in_grid : bool, default: True
         if `True`: data points and inequality data points are first pre-processed
-        in order to have at most one data point or inequality data point per grid cell 
+        in order to have at most one data point or inequality data point per grid cell
         (see above)
 
     preprocess_ineq_less_constrained : bool, default: True
-        the less (resp. more) contrained bounds are kept for aggregated inequality 
+        the less (resp. more) contrained bounds are kept for aggregated inequality
         data points if `preprocess_ineq_less_constrained` is `True` (resp. `False`);
         used only if preprocess_data_and_ineq_in_grid=True`
 
     transform_ineq_to_data_with_err_nsim : int, default: 100
         number of simulations at inequality data points to transform them to
         new data with error (see above)
-    
+
     transform_ineq_to_data_with_err_p : float, default: 0.95
         probability used to transform the ensemble of values at inequality
         data points to new data with error (see above)
-    
+
     use_unique_neighborhood : bool, default: False
         indicates if a unique neighborhood is used (all data points are considered)
         to krige data at cell centers (step 3a above), and to krige on the
         grid (step 4a above)
-    
+
     mask : array-like, optional
         mask value at grid cells (value 1 for simulated cells, value 0 for not
         simulated cells); the size of the array must be equal to the number of
@@ -4481,15 +4606,15 @@ def estimate(
 
     searchRadius : float, optional
         if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
-        with same radii along each axis), i.e. the data points at distance to the 
-        estimated point greater than `searchRadius` are not taken into account 
-        in the kriging system; if `searchRadius` is not `None`, then 
+        with same radii along each axis), i.e. the data points at distance to the
+        estimated point greater than `searchRadius` are not taken into account
+        in the kriging system; if `searchRadius` is not `None`, then
         `searchRadiusRelative` is not used;
-        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to
         define the search ellipsoid;
 
         note : parameter also considered for:
-         
+
         - simulation at inequality data points (step 1a)
         - kriging to cell centers (step 3a) unless `use_unique_neighborhood=True`
 
@@ -4499,34 +4624,34 @@ def estimate(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
-        note (Geos-Classic library): if a range r_i is non-stationary over the grid, 
+        note (Geos-Classic library): if a range r_i is non-stationary over the grid,
         its maximal value over the grid is considered;
 
-        note : parameter considered for 
-        
+        note : parameter considered for
+
         - simulation at inequality data points (step 1a)
         - kriging to cell centers (step 3a) unless `use_unique_neighborhood=True`
         - kriging on the grid (step 4a) unless `use_unique_neighborhood=True`
 
     nneighborMax : int, default: 12
         maximal number of neighbors (data points) taken into account in the
-        kriging system, must be greater than or equal to 1; the data points the 
-        closest to the estimated point are taken into account (see the parameters 
+        kriging system, must be greater than or equal to 1; the data points the
+        closest to the estimated point are taken into account (see the parameters
         `searchRadius`, `searchRadiusRelative`, `searchNeighborhoodSortMode`);
 
-        note : parameter considered for 
-        
+        note : parameter considered for
+
         - simulation at inequality data points (step 1a)
         - kriging to cell centers (step 3a) unless `use_unique_neighborhood=True`
         - kriging on the grid (step 4a) unless `use_unique_neighborhood=True`
 
     searchNeighborhoodSortMode : int, default: 1
-        indicates how to sort the search neighboorhood cells (neighbors), for 
-        external C function (Geos-Classic library); they are sorted in increasing 
+        indicates how to sort the search neighboorhood cells (neighbors), for
+        external C function (Geos-Classic library); they are sorted in increasing
         order according to:
 
         - `searchNeighborhoodSortMode=0`: distance in the usual axes system
@@ -4550,7 +4675,7 @@ def estimate(
 
     nGibbsSamplerPath : int, default: 50
         number of Gibbs sampler paths for simulating values at inequality data points
-        
+
     seed : int, optional
         seed for initializing random number generator (for simulation at inequality
         data points)
@@ -4561,9 +4686,9 @@ def estimate(
 
     nthreads : int, default: -1
         number of thread(s) for external C function (Geos-Classic library);
-        if `nthreads = -n <= 0`: `nthreads` is automatically set to `nmax - n` 
-        (but at least 1), where nmax is the total number of cpu(s) of the system 
-        (retrieved by `os.cpu_count()`); 
+        if `nthreads = -n <= 0`: `nthreads` is automatically set to `nmax - n`
+        (but at least 1), where nmax is the total number of cpu(s) of the system
+        (retrieved by `os.cpu_count()`);
         note: if `nthreads=None`, `nthreads=-1` is used
 
     nproc_sgs_at_ineq : int, optional
@@ -4586,7 +4711,7 @@ def estimate(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -4657,8 +4782,8 @@ def estimate(
         ox, oy, oz = origin, 0.0, 0.0
     elif d == 2:
         nx, ny, nz = *dimension, 1
-        sx, sy, sz = *spacing, 1.0 
-        ox, oy, oz = *origin, 0.0 
+        sx, sy, sz = *spacing, 1.0
+        ox, oy, oz = *origin, 0.0
     else: # d == 3
         nx, ny, nz = dimension
         sx, sy, sz = spacing
@@ -4691,7 +4816,7 @@ def estimate(
             err_msg = f'{fname}: `beta` cannot be used with 1D or 2D covariance model'
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
-    
+
     if gamma is not None:
         if omni_dir or d < 3:
             err_msg = f'{fname}: `gamma` cannot be used with 1D or 2D covariance model'
@@ -4763,7 +4888,7 @@ def estimate(
                         logger.warning(f'{fname}: data point(s) out of the grid')
                     else:
                         print(f'{fname}: WARNING: data point(s) out of the grid')
-        
+
         # Check v
         if v is None:
             err_msg = f'{fname}: `x` is not None but `v` is None'
@@ -4773,6 +4898,11 @@ def estimate(
         v = np.asarray(v, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
         if v.size != n:
             err_msg = f'{fname}: size of `v` is not valid'
+            if logger: logger.error(err_msg)
+            raise GeosclassicinterfaceError(err_msg)
+
+        if np.any(np.isnan(v)):
+            err_msg = f'{fname}: `v` contains `nan` value(s)'
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
 
@@ -4787,11 +4917,16 @@ def estimate(
         if logger: logger.error(err_msg)
         raise GeosclassicinterfaceError(err_msg)
 
+    if np.any(v_err_std < 0.0):
+        err_msg = f'{fname}: `v_err_std` contains negative value(s)'
+        if logger: logger.error(err_msg)
+        raise GeosclassicinterfaceError(err_msg)
+
     # Preparation of inequality data points
     if x_ineq is None:
         x_ineq = np.empty((0, d), dtype='float')
         n_ineq = 0
-    
+
     else:
         x_ineq = np.asarray(x_ineq, dtype='float').reshape(-1, d) # cast in 2-dimensional array if needed
         n_ineq = x_ineq.shape[0]
@@ -4823,8 +4958,8 @@ def estimate(
         # Check (and set) v_ineq_min
         if v_ineq_min is None:
             v_ineq_min = np.full((n_ineq, ), -np.inf)
-        else:        
-            v_ineq_min = np.asarray(v_ineq_min).reshape(-1)
+        else:
+            v_ineq_min = np.asarray(v_ineq_min, dtype=float).reshape(-1)
             if v_ineq_min.size == 1:
                 v_ineq_min = v_ineq_min * np.ones(n_ineq)
             elif v_ineq_min.size != n_ineq:
@@ -4833,12 +4968,12 @@ def estimate(
                 raise GeosclassicinterfaceError(err_msg)
 
             v_ineq_min[np.isnan(v_ineq_min)] = -np.inf
-        
+
         # Check (and set) v_ineq_max
         if v_ineq_max is None:
             v_ineq_max = np.full((n_ineq, ), np.inf)
-        else:        
-            v_ineq_max = np.asarray(v_ineq_max).reshape(-1)
+        else:
+            v_ineq_max = np.asarray(v_ineq_max, dtype=float).reshape(-1)
             if v_ineq_max.size == 1:
                 v_ineq_max = v_ineq_max * np.ones(n_ineq)
             elif v_ineq_max.size != n_ineq:
@@ -4887,7 +5022,7 @@ def estimate(
         else:
             ig_x_ineq = np.array([], dtype='int')
             ig_x_ineq_unique = np.array([], dtype='int')
-        
+
         # Remove inequality data points falling in same cells as data points
         ig_inter, _, ig2 = np.intersect1d(ig_x_unique, ig_x_ineq_unique, assume_unique=True, return_indices=True)
         if len(ig_inter):
@@ -4900,9 +5035,9 @@ def estimate(
             n_ineq_new = len(x_ineq)
             if verbose > 2:
                 if logger:
-                    logger.info(f'{fname}: Preprocessing data: {n_ineq-n_ineq_new} inequality data points removed (in same grid cell as data points)')
+                    logger.info(f'{fname}: pre-process data: {n_ineq-n_ineq_new} inequality data points removed (in same grid cell as data points)')
                 else:
-                    print(f'{fname}: Preprocessing data: {n_ineq-n_ineq_new} inequality data points removed (in same grid cell as data points)')
+                    print(f'{fname}: pre-process data: {n_ineq-n_ineq_new} inequality data points removed (in same grid cell as data points)')
             n_ineq = n_ineq_new
 
         # Aggregate data points that fall into the same grid cell
@@ -4913,9 +5048,9 @@ def estimate(
             n_new = len(x)
             if verbose > 2:
                 if logger:
-                    logger.info(f'{fname}: Preprocessing data: data points aggregated (in same grid cells): {n} points (initial) -> {n_new} points (final)')
+                    logger.info(f'{fname}: pre-process data: data points aggregated (in same grid cells): {n} points (initial) -> {n_new} points (final)')
                 else:
-                    print(f'{fname}: Preprocessing data: data points aggregated (in same grid cells): {n} points (initial) -> {n_new} points (final)')
+                    print(f'{fname}: pre-process data: data points aggregated (in same grid cells): {n} points (initial) -> {n_new} points (final)')
             n = n_new
 
         # Aggregate inequality data points that fall into the same grid cell
@@ -4947,12 +5082,12 @@ def estimate(
                         v_ineq_max_new[j] = vm[~ind2].max()
                     else:
                         v_ineq_max_new[j] = vm[~ind2].min()
-            
+
             if verbose > 2:
                 if logger:
-                    logger.info(f'{fname}: Preprocessing data: inequality data points aggregated (in same grid cells): {n_ineq} points (initial) -> {n_ineq_new} points (final)')
+                    logger.info(f'{fname}: pre-process data: inequality data points aggregated (in same grid cells): {n_ineq} points (initial) -> {n_ineq_new} points (final)')
                 else:
-                    print(f'{fname}: Preprocessing data: inequality data points aggregated (in same grid cells): {n_ineq} points (initial) -> {n_ineq_new} points (final)')
+                    print(f'{fname}: pre-process data: inequality data points aggregated (in same grid cells): {n_ineq} points (initial) -> {n_ineq_new} points (final)')
 
             n_ineq = n_ineq_new
             x_ineq = x_ineq_new
@@ -4964,12 +5099,12 @@ def estimate(
                 err_msg = f'{fname}: after aggregation (pre-processing): `v_ineq_min` and `v_ineq_max` are not consistent'
                 if logger: logger.error(err_msg)
                 raise GeosclassicinterfaceError(err_msg)
-        
+
         if verbose > 1:
             if logger:
-                logger.info(f'{fname}: Preprocessing data done: final number of data points : {n}, inequality data points: {n_ineq}')
+                logger.info(f'{fname}: pre-process data done: final number of data points : {n}, inequality data points: {n_ineq}')
             else:
-                print(f'{fname}: Preprocessing data done: final number of data points : {n}, inequality data points: {n_ineq}')
+                print(f'{fname}: pre-process data done: final number of data points : {n}, inequality data points: {n_ineq}')
 
     # Set method : computationMode
     #    computationMode=0: GEOS_CLASSIC_OK
@@ -4991,7 +5126,7 @@ def estimate(
                     logger.warning(f"{fname}: `var` is ignored with `method='ordinary_kriging'`")
                 else:
                     print(f"{fname}: WARNING: `var` is ignored with `method='ordinary_kriging'`")
-        
+
         computationMode = 0
 
     else:
@@ -5009,14 +5144,14 @@ def estimate(
             err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
-        
+
         searchRadius_geosClassic = searchRadius
         searchRadiusRelative_geosClassic = searchRadiusRelative # unused
 
     else:
         # searchRadius is not used, searchRadiusRelative is used
         searchRadius_geosClassic = 0.0 # to indicate in external C function that search radius is not used
-        searchRadiusRelative_geosClassic = searchRadiusRelative 
+        searchRadiusRelative_geosClassic = searchRadiusRelative
 
         # searchRadiusRelative
         if searchRadiusRelative_geosClassic < geosclassic.MPDS_GEOSCLASSIC_SEARCHRADIUSRELATIVE_MIN:
@@ -5029,7 +5164,7 @@ def estimate(
         err_msg = f'{fname}: `nneighborMax` should be greater than or equal to 1'
         if logger: logger.error(err_msg)
         raise GeosclassicinterfaceError(err_msg)
-        
+
     nneighborMax_geosClassic = nneighborMax
 
     if use_unique_neighborhood:
@@ -5057,14 +5192,14 @@ def estimate(
             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model (local rotation)'
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
-        
+
         if cov_model_non_stationarity_list is not None:
             for cm_ns in cov_model_non_stationarity_list:
                 if callable(cm_ns[1]) or (isinstance(cm_ns[1],  np.ndarray) and cm_ns[1].size  > 1):
                     err_msg = f'{fname}: `searchNeighborhoodSortMode=2` not allowed with non-stationary covariance model ({cm_ns[0]})'
                     if logger: logger.error(err_msg)
                     raise GeosclassicinterfaceError(err_msg)
-                
+
     elif searchNeighborhoodSortMode not in (0, 1):
         err_msg = f'{fname}: `searchNeighborhoodSortMode` not valid'
         if logger: logger.error(err_msg)
@@ -5078,11 +5213,11 @@ def estimate(
             err_msg = f'{fname}: `mask` is not valid'
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
-    
+
     # Set number of threads per process: nth
     if nthreads is None:
         nthreads = -1
-    
+
     if nthreads <= 0:
         nth = max(int(os.cpu_count() + nthreads), 1)
     else:
@@ -5116,9 +5251,9 @@ def estimate(
 
     if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Computational resources: nthreads = {nth}, nproc_sgs_at_ineq = {nproc_sgs_at_ineq}')
+            logger.info(f'{fname}: computational resources: nthreads = {nth}, nproc_sgs_at_ineq = {nproc_sgs_at_ineq}')
         else:
-            print(f'{fname}: Computational resources: nthreads = {nth}, nproc_sgs_at_ineq = {nproc_sgs_at_ineq}')
+            print(f'{fname}: computational resources: nthreads = {nth}, nproc_sgs_at_ineq = {nproc_sgs_at_ineq}')
 
     # Do SGS simulations at inequality data points
     # ------------
@@ -5134,6 +5269,17 @@ def estimate(
             else: # d == 3
                 mean_x      = gcm.eval_at_points_3D(mean, x     , nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
                 mean_x_ineq = gcm.eval_at_points_3D(mean, x_ineq, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(mean_x)):
+                err_msg = f'{fname}: mean evaluated at data points contains `nan` value(s), please check `mean` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
+            if np.any(np.isnan(mean_x_ineq)):
+                err_msg = f'{fname}: mean evaluated at inequality data points contains `nan` value(s), please check `mean` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             mean_x      = None
             mean_x_ineq = None
@@ -5149,10 +5295,21 @@ def estimate(
             else: # d == 3
                 var_x      = gcm.eval_at_points_3D(var, x     , nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
                 var_x_ineq = gcm.eval_at_points_3D(var, x_ineq, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(var_x)):
+                err_msg = f'{fname}: variance evaluated at data points contains `nan` value(s), please check `var` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
+            if np.any(np.isnan(var_x_ineq)):
+                err_msg = f'{fname}: variance evaluated at inequality data points contains `nan` value(s), please check `var` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             var_x      = None
             var_x_ineq = None
-        
+
         # Rotation: set angles
         # ... alpha_x_ineq from alpha
         if alpha is not None:
@@ -5162,6 +5319,12 @@ def estimate(
                 alpha_x_ineq = gcm.eval_at_points_2D(alpha, x_ineq, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 alpha_x_ineq = gcm.eval_at_points_3D(alpha, x_ineq, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(alpha_x_ineq)):
+                err_msg = f'{fname}: angle alpha evaluated at inequality data points contains `nan` value(s), please check `alpha` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             alpha_x_ineq = None
 
@@ -5173,6 +5336,12 @@ def estimate(
                 beta_x_ineq = gcm.eval_at_points_2D(beta, x_ineq, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 beta_x_ineq = gcm.eval_at_points_3D(beta, x_ineq, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(beta_x_ineq)):
+                err_msg = f'{fname}: angle beta evaluated at inequality data points contains `nan` value(s), please check `beta` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             beta_x_ineq = None
 
@@ -5184,6 +5353,12 @@ def estimate(
                 gamma_x_ineq = gcm.eval_at_points_2D(gamma, x_ineq, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 gamma_x_ineq = gcm.eval_at_points_3D(gamma, x_ineq, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(gamma_x_ineq)):
+                err_msg = f'{fname}: angle gamma evaluated at inequality data points contains `nan` value(s), please check `gamma` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             gamma_x_ineq = None
 
@@ -5212,15 +5387,16 @@ def estimate(
 
         if verbose > 1:
             if logger:
-                logger.info(f"{fname}: (Step 1.1) Do sgs at inequality data points ({nsim} simulation(s) at {n_ineq} points)...")
+                logger.info(f"{fname}: (Step 1.1) do sgs at inequality data points ({nsim} simulation(s) at {n_ineq} points)...")
             else:
-                print(f"{fname}: (Step 1.1) Do sgs at inequality data points ({nsim} simulation(s) at {n_ineq} points)...")
-        
+                print(f"{fname}: (Step 1.1) do sgs at inequality data points ({nsim} simulation(s) at {n_ineq} points)...")
+
         if nproc_sgs_at_ineq != 1:
             v_ineq_sim = gcm.sgs_at_inequality_data_points_mp(
                         x, v, x_ineq, cov_model,
                         v_err_std=v_err_std,
-                        v_ineq_min=v_ineq_min, v_ineq_max=v_ineq_max,
+                        v_ineq_min=v_ineq_min, 
+                        v_ineq_max=v_ineq_max,
                         method=method,
                         mean_x=mean_x,
                         mean_x_ineq=mean_x_ineq,
@@ -5236,14 +5412,15 @@ def estimate(
                         nGibbsSamplerPath=nGibbsSamplerPath,
                         nreal=nsim,
                         seed=seed,
-                        verbose=(verbose>2),
+                        verbose=(verbose-2),
                         nproc=nproc_sgs_at_ineq,
                         logger=logger)
         else:
             v_ineq_sim = gcm.sgs_at_inequality_data_points(
                         x, v, x_ineq, cov_model,
                         v_err_std=v_err_std,
-                        v_ineq_min=v_ineq_min, v_ineq_max=v_ineq_max,
+                        v_ineq_min=v_ineq_min, 
+                        v_ineq_max=v_ineq_max,
                         method=method,
                         mean_x=mean_x,
                         mean_x_ineq=mean_x_ineq,
@@ -5259,8 +5436,13 @@ def estimate(
                         nGibbsSamplerPath=nGibbsSamplerPath,
                         nreal=nsim,
                         seed=seed,
-                        verbose=(verbose>2),
+                        verbose=(verbose-2),
                         logger=logger)
+
+        # # Debugging
+        # np.savetxt('zzz_v_ineq_min.txt', v_ineq_min)
+        # np.savetxt('zzz_v_ineq_max.txt', v_ineq_max)
+        # np.savetxt('zzz_v_ineq_sim.txt', v_ineq_sim)
 
     # --- for step 2. (preparation)
     n_new = n + n_ineq
@@ -5273,42 +5455,47 @@ def estimate(
             # 1a. Transform inequality data to equality data with error std
             if verbose > 1:
                 if logger:
-                    logger.info(f"{fname}: (Step 1.2) Transform inequality data to equality data with error std...")
+                    logger.info(f"{fname}: (Step 1.2) transform inequality data to equality data with error std...")
                 else:
-                    print(f"{fname}: (Step 1.2) Transform inequality data to equality data with error std...")
+                    print(f"{fname}: (Step 1.2) transform inequality data to equality data with error std...")
 
-            # Set new data with error at inequality data points 
+            # Set new data with error at inequality data points
             for i in range(n_ineq):
                 v_ineq[i], v_ineq_err_std[i] = gcm.values_to_mean_and_err_std(
-                                                    v_ineq_sim[:, i], 
-                                                    v_min=v_ineq_min[i], 
-                                                    v_max=v_ineq_max[i], 
-                                                    p=transform_ineq_to_data_with_err_p, 
+                                                    v_ineq_sim[:, i],
+                                                    v_min=v_ineq_min[i],
+                                                    v_max=v_ineq_max[i],
+                                                    p=transform_ineq_to_data_with_err_p,
                                                     def_shift=1.e-5,
                                                     logger=logger)
+
         elif verbose > 1:
             if logger:
-                logger.info(f"{fname}: (Step 1) No inequality data")
+                logger.info(f"{fname}: (Step 1) no inequality data")
             else:
-                print(f"{fname}: (Step 1) No inequality data")
+                print(f"{fname}: (Step 1) no inequality data")
 
         # 2a. New dataset
         if verbose > 1:
             if logger:
-                logger.info(f"{fname}: (Step 2) Set new dataset gathering data and inequality data locations...")
+                logger.info(f"{fname}: (Step 2) set new dataset gathering data and inequality data locations...")
             else:
-                print(f"{fname}: (Step 2) Set new dataset gathering data and inequality data locations...")
-                
+                print(f"{fname}: (Step 2) set new dataset gathering data and inequality data locations...")
+
         x_new = np.vstack((x, x_ineq))
         v_new = np.hstack((v, v_ineq))
         v_new_err_std = np.hstack((v_err_std, v_ineq_err_std))
+
+        # # Debugging
+        # np.savetxt('zzz_v_new.txt', v_new)
+        # np.savetxt('zzz_v_new_err_std.txt', v_new_err_std)
 
         # --- for step 3. (preparation)
         # Get grid index and single grid index for new data points locations (`x_new`)
         ix, iy, iz = img.pointToGridIndex(*np.hstack((x_new, np.zeros((n_new, 3-d)))).T, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz)
         ig_x_new = img.gridIndexToSingleGridIndex(ix, iy, iz, nx, ny, nz)
         _, ig_x_new_ind = np.unique(ig_x_new, return_index=True)
-        
+
         if d == 1:
             ix = ix[ig_x_new_ind]
             xc = ox + sx * (ix + 0.5)
@@ -5339,6 +5526,14 @@ def estimate(
             else: # d == 3
                 mean_x_cc  = gcm.eval_at_points_3D(mean, x_cc,  nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
                 mean_x_new = gcm.eval_at_points_3D(mean, x_new, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(mean_x_cc)):
+                err_msg = f'{fname}: mean evaluated at cell centers (defined from data) contains `nan` value(s), please check `mean` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
+            # mean_x_new - evaluated at x_new gathering x and x_ineq - already checked
+
         else:
             mean_x_cc  = None
             mean_x_new = None
@@ -5354,10 +5549,18 @@ def estimate(
             else: # d == 3
                 var_x_cc  = gcm.eval_at_points_3D(var, x_cc,  nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
                 var_x_new = gcm.eval_at_points_3D(var, x_new, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(var_x_cc)):
+                err_msg = f'{fname}: variance evaluated at cell centers (defined from data) contains `nan` value(s), please check `var` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
+            # var_x_new - evaluated at x_new gathering x and x_ineq - already checked
+
         else:
             var_x_cc  = None
             var_x_new = None
-       
+
         # Rotation: set angles
         # ... alpha_x_cc from alpha
         if alpha is not None:
@@ -5367,6 +5570,12 @@ def estimate(
                 alpha_x_cc = gcm.eval_at_points_2D(alpha, x_cc, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 alpha_x_cc = gcm.eval_at_points_3D(alpha, x_cc, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(alpha_x_cc)):
+                err_msg = f'{fname}: angle alpha evaluated at cell centers (defined from data) contains `nan` value(s), please check `alpha` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             alpha_x_cc = None
 
@@ -5378,6 +5587,12 @@ def estimate(
                 beta_x_cc = gcm.eval_at_points_2D(beta, x_cc, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 beta_x_cc = gcm.eval_at_points_3D(beta, x_cc, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(beta_x_cc)):
+                err_msg = f'{fname}: angle beta evaluated at cell centers (defined from data) contains `nan` value(s), please check `beta` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             beta_x_cc = None
 
@@ -5389,6 +5604,12 @@ def estimate(
                 gamma_x_cc = gcm.eval_at_points_2D(gamma, x_cc, nx, ny,     sx, sy,     ox, oy,     return_float_if_unique=True, logger=logger)
             else: # d == 3
                 gamma_x_cc = gcm.eval_at_points_3D(gamma, x_cc, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
+
+            if np.any(np.isnan(gamma_x_cc)):
+                err_msg = f'{fname}: angle gamma evaluated at cell centers (defined from data) contains `nan` value(s), please check `gamma` parameter (if given as an array over the grid cells, avoid `nan` values)'
+                if logger: logger.error(err_msg)
+                raise GeosclassicinterfaceError(err_msg)
+
         else:
             gamma_x_cc = None
 
@@ -5416,10 +5637,10 @@ def estimate(
         # Do kriging at cell centers x_cc
         if verbose > 1:
             if logger:
-                logger.info(f"{fname}: (Step 3) Do kriging at the center of grid cells containing at least one data point...")
+                logger.info(f"{fname}: (Step 3) do kriging at the center of grid cells containing at least one data point...")
             else:
-                print(f"{fname}: (Step 3) Do kriging at the center of grid cells containing at least one data point...")
-
+                print(f"{fname}: (Step 3) do kriging at the center of grid cells containing at least one data point...")
+        
         v_cc, v_cc_err_std = gcm.krige(
                                 x_new, v_new, x_cc, cov_model,
                                 v_err_std=v_new_err_std,
@@ -5436,15 +5657,15 @@ def estimate(
                                 searchRadius=searchRadius,
                                 searchRadiusRelative=searchRadiusRelative,
                                 nneighborMax=nneighborMax,
-                                verbose=(verbose>2),
+                                verbose=(verbose-2),
                                 logger=logger)
 
         # --- for step 4. (preparation)
         npt = x_cc.shape[0]
         pts = np.hstack((x_cc, np.zeros((npt, 3-d))))
         dataPointSet = PointSet(
-                            npt=npt, nv=5, 
-                            val=np.vstack((pts.T, v_cc, v_cc_err_std)), 
+                            npt=npt, nv=5,
+                            val=np.vstack((pts.T, v_cc, v_cc_err_std)),
                             varname=['X', 'Y', 'Z', varname, f'{varname}_err_std'])
 
         if mask is not None and add_data_point_to_mask:
@@ -5461,7 +5682,7 @@ def estimate(
                 mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
                 del(im_tmp)
             recover_mask = True
-        
+
         else:
             recover_mask = False
 
@@ -5470,10 +5691,10 @@ def estimate(
     else: # n_new = 0 : no data
         if verbose > 1:
             if logger:
-                logger.info(f"{fname}: (Step 1-3 skipped) No data")
+                logger.info(f"{fname}: (Step 1-3 skipped) no data")
             else:
-                print(f"{fname}: (Step 1-3 skipped) No data")
-        
+                print(f"{fname}: (Step 1-3 skipped) no data")
+
         # --- for step 4. (preparation)
         dataPointSet = None
         recover_mask = False
@@ -5500,7 +5721,7 @@ def estimate(
             var_grid = gcm.eval_in_grid_3D(var, nx, ny, nz, sx, sy, sz, ox, oy, oz, return_float_if_unique=True, logger=logger)
     else:
         var_grid = None
-    
+
     # Set non-stationary covariance model (if needed)
     cov_model_grid = gcm.copyCovModel(cov_model)
     # ... from alpha
@@ -5558,28 +5779,33 @@ def estimate(
     # 4a. Do kriging on the grid (at cell centers) using data points at cell centers
     if verbose > 1:
         if logger:
-            logger.info(f"{fname}: (Step 4) Do kriging on the grid (at cell centers) using data points at cell centers...")
+            logger.info(f"{fname}: (Step 4) do kriging on the grid (at cell centers) using data points at cell centers...")
         else:
-            print(f"{fname}: (Step 4) Do kriging on the grid (at cell centers) using data points at cell centers...")
+            print(f"{fname}: (Step 4) do kriging on the grid (at cell centers) using data points at cell centers...")
 
     if verbose > 1:
         if logger:
-            logger.info(  
-                f'{fname}: Geos-Classic running on 1 process... [' + \
-                f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                f'OpenMP {nth:d} thread(s)]')
+            logger.info(f'{fname}: call `run_MPDSOMPGeosClassicSim` [1 process of {nth:d} thread(s) (OpenMP)] ...')
         else:
-            print(  
-                f'{fname}: Geos-Classic running on 1 process... [' + \
-                f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                f'OpenMP {nth:d} thread(s)]')
+            print(f'{fname}: call `run_MPDSOMPGeosClassicSim` [1 process of {nth:d} thread(s) (OpenMP)] ...')
 
-    if verbose < 3:
-        progress_monitor = 0
-    else:
+        # if logger:
+        #     logger.info(
+        #         f'{fname}: Geos-Classic running on 1 process... [' + \
+        #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+        #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+        #         f'OpenMP {nth:d} thread(s)]')
+        # else:
+        #     print(
+        #         f'{fname}: Geos-Classic running on 1 process... [' + \
+        #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+        #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+        #         f'OpenMP {nth:d} thread(s)]')
+
+    if verbose >= 5:
         progress_monitor = 4
+    else:
+        progress_monitor = 0
 
     args = (
             d,
@@ -5606,18 +5832,23 @@ def estimate(
             nth
         )
     kwds = {
-            'progress_monitor':progress_monitor, 
+            'progress_monitor':progress_monitor,
             'pid':None,
-            'verbose':verbose,
+            'verbose':(verbose-2),
             'logger':logger
         }
     geosclassic_output = run_MPDSOMPGeosClassicSim(*args, **kwds)
 
     if verbose > 1 and geosclassic_output:
         if logger:
-            logger.info(f'{fname}: Geos-Classic (1 process) run complete')
+            logger.info(f'{fname}: `run_MPDSOMPGeosClassicSim` [1 process] complete')
         else:
-            print(f'{fname}: Geos-Classic (1 process) run complete')
+            print(f'{fname}: `run_MPDSOMPGeosClassicSim` [1 process] complete')
+
+        # if logger:
+        #     logger.info(f'{fname}: Geos-Classic (1 process) run complete')
+        # else:
+        #     print(f'{fname}: Geos-Classic (1 process) run complete')
 
     if geosclassic_output is not None and recover_mask:
         # Remove the value out of the original mask (using its copy see above)
@@ -5679,7 +5910,7 @@ def fill_mpds_geosClassicIndicatorInput(
 
     categoryValue : array-like
         category values
-        
+
     cov_model : [list of] :class:`geone.covModel.CovModel<d>D`
         covariance model (see `use_same_cov_model_for_all_categories`)
 
@@ -5756,7 +5987,7 @@ def fill_mpds_geosClassicIndicatorInput(
 
     nreal : int
         nreal parameter
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -6035,13 +6266,13 @@ def run_MPDSOMPGeosClassicIndicatorSim(
     This function should not be called directly, it is used in other functions
     of this module.
 
-    All the parameters (except `use_same_cov_model_for_all_categories`, and `nthreads`, 
-    `progress_monitor`, `pid`, `verbose` and `logger`) are the parameters for the input structure 
-    `mpds_geosClassicInput` (C); `use_same_cov_model_for_all_categories` indicates if 
+    All the parameters (except `use_same_cov_model_for_all_categories`, and `nthreads`,
+    `progress_monitor`, `pid`, `verbose` and `logger`) are the parameters for the input structure
+    `mpds_geosClassicInput` (C); `use_same_cov_model_for_all_categories` indicates if
     the covariance model is given as a single entry or per category;
-    `nthreads` is the number of threads used by the function `MPDSOMPGeosClassicSim`; 
-    `progress_monitor` is an integer specifying the function used to update the progress 
-    monitor (0 : no output, 1: warning only, 4: more detailed); 
+    `nthreads` is the number of threads used by the function `MPDSOMPGeosClassicSim`;
+    `progress_monitor` is an integer specifying the function used to update the progress
+    monitor (0 : no output, 1: warning only, 4: more detailed);
     `pid` is the process id of the caller (int, used with multiprocessing);
     `verbose` is the verbosity (int).
 
@@ -6054,11 +6285,11 @@ def run_MPDSOMPGeosClassicIndicatorSim(
     if pid is not None:
         fname = f'{fname} [pid={pid}]'
 
-    if verbose > 2:
+    if verbose > 1:
         if logger:
-            logger.info(f'{fname}: Filling C structure for Geos-Classic program')
+            logger.info(f'{fname}: fill C structure for Geos-Classic program')
         else:
-            print(f'{fname}: Filling C structure for Geos-Classic program')
+            print(f'{fname}: fill C structure for Geos-Classic program')
 
     # --- Fill mpds_geosClassicIndicatorInput structure (C)
     try:
@@ -6103,7 +6334,7 @@ def run_MPDSOMPGeosClassicIndicatorSim(
     geosclassic.MPDSInitProgressMonitor(mpds_progressMonitor)
 
     # Set function to update progress monitor
-    # note: according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of 
+    # note: according to geosclassic.MPDS_SHOW_PROGRESS_MONITOR set to 4 for compilation of
     #   py module, the function
     #    mpds_updateProgressMonitor = geosclassic.MPDSUpdateProgressMonitor4_ptr
     # should be used, but the following function can also be used:
@@ -6124,15 +6355,15 @@ def run_MPDSOMPGeosClassicIndicatorSim(
         if logger: logger.error(err_msg)
         raise GeosclassicinterfaceError(err_msg)
 
-    if verbose > 1:
+    if verbose > 0:
         if logger:
-            logger.info(  
+            logger.info(
                 f'{fname}: Geos-Classic running... [' + \
                 f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
                 f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
                 f'OpenMP {nthreads:d} thread(s)]')
         else:
-            print(  
+            print(
                 f'{fname}: Geos-Classic running... [' + \
                 f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
                 f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
@@ -6170,7 +6401,7 @@ def run_MPDSOMPGeosClassicIndicatorSim(
     # Free memory on C side: mpds_progressMonitor
     geosclassic.free_MPDS_PROGRESSMONITOR(mpds_progressMonitor)
 
-    if verbose > 1 and geosclassic_output:
+    if verbose > 0 and geosclassic_output:
         if logger:
             logger.info(f'{fname}: Geos-Classic run complete')
         else:
@@ -6183,11 +6414,11 @@ def run_MPDSOMPGeosClassicIndicatorSim(
 def simulateIndicator(
         category_values,
         cov_model,
-        dimension, 
-        spacing=None, 
+        dimension,
+        spacing=None,
         origin=None,
         method='ordinary_kriging',
-        x=None, 
+        x=None,
         v=None,
         probability=None,
         alpha=None,
@@ -6212,16 +6443,16 @@ def simulateIndicator(
     Generates indicator simulations (Sequential Indicator Simulation, SIS) in a grid.
 
     A simulation takes place in (center of) grid cells, based on simple or
-    ordinary kriging of the indicator variables of the categories. The space dimension 
+    ordinary kriging of the indicator variables of the categories. The space dimension
     (1, 2, or 3) is detected (from the parameter `dimension`).
 
     The computation relies on a covariance model for each category value (indicator).
     The parameter `cov_model` is either one single covariance model (used for all categories)
-    a list of `ncategory` covariance models (one per category). Accordingly, the parameters 
+    a list of `ncategory` covariance models (one per category). Accordingly, the parameters
     `alpha`, `beta`, `gamma`, `cov_model_non_stationarity_list` are either given as one
     single entry or a list of `ncategory` entries (if not `None`).
 
-    The conditioning data are treated as follows: (one of) the most frequent categories 
+    The conditioning data are treated as follows: (one of) the most frequent categories
     of the data point(s) falling in the same grid cell is attributed to that cell.
 
     Parameters
@@ -6242,9 +6473,9 @@ def simulateIndicator(
         sequence of same length as `category_values` of covariance model in 1D,
         or a unique covariance model in 1D (recycled):
         covariance model for each category;
-        covariance model in 1D or 2D or 3D;      
+        covariance model in 1D or 2D or 3D;
         note: the covariance model must be stationary, however, non stationarity is
-        handled: 
+        handled:
 
         - local rotation by specifying `alpha` (in 2D or 3D), `beta` (in 3D), `gamma` (in 3D)
         - other non-stationarities by specifying `cov_model_non_stationarity_list` (see below)
@@ -6275,7 +6506,7 @@ def simulateIndicator(
         - 3D: `origin=(ox, oy, oz)`
 
         by default (`None`): 0.0 along each axis
-        
+
     method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
         type of kriging
 
@@ -6310,7 +6541,7 @@ def simulateIndicator(
 
     alpha : function (callable), or array-like of floats, or float, optional
         if specified: either a single entry or a list of entries of lenght `ncategory`
-        (the length of `category_values`, according to the parameter `cov_model` (see 
+        (the length of `category_values`, according to the parameter `cov_model` (see
         above);
         azimuth angle in degrees (see :class:`geone.covModel.CovModel<d>D`):
 
@@ -6325,7 +6556,7 @@ def simulateIndicator(
 
     beta : function (callable), or array-like of floats, or float, optional
         if specified: either a single entry or a list of entries of lenght `ncategory`
-        (the length of `category_values`, according to the parameter `cov_model` (see 
+        (the length of `category_values`, according to the parameter `cov_model` (see
         above);
         dip angle in degrees (see :class:`geone.covModel.CovModel<d>D`):
 
@@ -6340,7 +6571,7 @@ def simulateIndicator(
 
     gamma : function (callable), or array-like of floats, or float, optional
         if specified: either a single entry or a list of entries of lenght `ncategory`
-        (the length of `category_values`, according to the parameter `cov_model` (see 
+        (the length of `category_values`, according to the parameter `cov_model` (see
         above);
         plunge angle in degrees (see :class:`geone.covModel.CovModel<d>D`):
 
@@ -6355,7 +6586,7 @@ def simulateIndicator(
 
     cov_model_non_stationarity_list : list, optional
         if specified: either a single entry or a list of entries of lenght `ncategory`
-        (the length of `category_values`, according to the parameter `cov_model` (see 
+        (the length of `category_values`, according to the parameter `cov_model` (see
         above);
         list to set non-stationarities in covariance model; each entry must be
         a tuple (or list) `cm_ns` of length 2 or 3 with:
@@ -6371,7 +6602,7 @@ def simulateIndicator(
         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
         Examples (where the parameter `arg` is set from `val`):
-        
+
         - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; \
         this multipies the weight contribution of every elementary contribution of the \
         covariance model
@@ -6406,11 +6637,11 @@ def simulateIndicator(
         sequence of floats of same length as `category_values`, or
         a unique float (recycled); one parameter per category:
         if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
-        with same radii along each axis), i.e. the data points at distance to the 
-        estimated point greater than `searchRadius` are not taken into account 
-        in the kriging system; if `searchRadius` is not `None`, then 
+        with same radii along each axis), i.e. the data points at distance to the
+        estimated point greater than `searchRadius` are not taken into account
+        in the kriging system; if `searchRadius` is not `None`, then
         `searchRadiusRelative` is not used;
-        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to
         define the search ellipsoid;
 
     searchRadiusRelative : [sequence of] float(s), default: 1.2
@@ -6421,26 +6652,26 @@ def simulateIndicator(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
-        note (Geos-Classic library): if a range r_i is non-stationary over the grid, 
+        note (Geos-Classic library): if a range r_i is non-stationary over the grid,
         its maximal value over the grid is considered;
 
     nneighborMax : [sequence of] int(s), default: 12
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
         maximal number of neighbors (informed cells) taken into account in the
-        kriging system, must be greater than or equal to 1; the informed cells the 
-        closest to the estimated cell are taken into account (see the parameters 
+        kriging system, must be greater than or equal to 1; the informed cells the
+        closest to the estimated cell are taken into account (see the parameters
         `searchRadius`, `searchRadiusRelative`, `searchNeighborhoodSortMode`);
 
     searchNeighborhoodSortMode : [sequence of] int(s), default: 1
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
-        indicates how to sort the search neighboorhood cells (neighbors), for 
-        external C function (Geos-Classic library); they are sorted in increasing 
+        indicates how to sort the search neighboorhood cells (neighbors), for
+        external C function (Geos-Classic library); they are sorted in increasing
         order according to:
 
         - `searchNeighborhoodSortMode=0`: distance in the usual axes system
@@ -6470,11 +6701,11 @@ def simulateIndicator(
         report file
 
     nproc : int, default: -1
-        number of process(es) for external C function (Geos-Classic library): 
-        a negative number, -n <= 0, can be specified to use the total number of cpu(s) 
-        of the system except n; `nproc` is finally at maximum equal to `nreal` but at 
+        number of process(es) for external C function (Geos-Classic library):
+        a negative number, -n <= 0, can be specified to use the total number of cpu(s)
+        of the system except n; `nproc` is finally at maximum equal to `nreal` but at
         least 1 by applying:
-        
+
         - if `nproc >= 1`, then `nproc = max(min(nproc, nreal), 1)` is used
         - if `nproc = -n <= 0`, then `nproc = max(min(nmax-n, nreal), 1)` is used, \
         where nmax is the total number of cpu(s) of the system (retrieved by \
@@ -6484,11 +6715,11 @@ def simulateIndicator(
 
     nthreads_per_proc : int, default: -1
         number of thread(s) per process for external C function (Geos-Classic library);
-        if `nthreads_per_proc = -n <= 0`: `nthreads_per_proc` is automatically 
-        computed as the maximal integer (but at least 1) such that 
+        if `nthreads_per_proc = -n <= 0`: `nthreads_per_proc` is automatically
+        computed as the maximal integer (but at least 1) such that
         `nproc*nthreads_per_proc <= nmax-n`, where nmax is the total number of cpu(s)
-        of the system (retrieved by `multiprocessing.cpu_count()`); 
-        
+        of the system (retrieved by `multiprocessing.cpu_count()`);
+
         note: if `nthreads_per_proc=None`, `nthreads_per_proc=-1` is used
 
     treat_image_one_by_one : bool, default: False
@@ -6511,7 +6742,7 @@ def simulateIndicator(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -6586,8 +6817,8 @@ def simulateIndicator(
         ox, oy, oz = origin, 0.0, 0.0
     elif d == 2:
         nx, ny, nz = *dimension, 1
-        sx, sy, sz = *spacing, 1.0 
-        ox, oy, oz = *origin, 0.0 
+        sx, sy, sz = *spacing, 1.0
+        ox, oy, oz = *origin, 0.0
     else: # d == 3
         nx, ny, nz = dimension
         sx, sy, sz = spacing
@@ -6664,7 +6895,7 @@ def simulateIndicator(
                 err_msg = f'{fname}: `beta` not valid: should be callable or array or float or int'
                 if logger: logger.error(err_msg)
                 raise GeosclassicinterfaceError(err_msg)
-        
+
         if gamma is not None:
             if omni_dir or d < 3:
                 err_msg = f'{fname}: `gamma` cannot be used with 1D or 2D covariance model'
@@ -6724,7 +6955,7 @@ def simulateIndicator(
         # alpha
         if alpha is None:
             alpha = ncategory * [None]
-        
+
         elif not isinstance(alpha, list) or len(alpha) != ncategory:
             err_msg = f'{fname}: `alpha` should be a list of length equal to the number of categories (when covariance model is set per category)'
             if logger: logger.error(err_msg)
@@ -6744,7 +6975,7 @@ def simulateIndicator(
         # beta
         if beta is None:
             beta = ncategory * [None]
-        
+
         elif not isinstance(beta, list) or len(beta) != ncategory:
             err_msg = f'{fname}: `beta` should be a list of length equal to the number of categories (when covariance model is set per category)'
             if logger: logger.error(err_msg)
@@ -6755,7 +6986,7 @@ def simulateIndicator(
                 err_msg = f'{fname}: `beta` should be a list of length equal to the number of categories (when covariance model is set per category)'
                 if logger: logger.error(err_msg)
                 raise GeosclassicinterfaceError(err_msg)
-            
+
             for k, beta_k in enumerate(beta):
                 if omni_dir or d < 3:
                     err_msg = f'{fname}: `beta` (index {k}) cannot be used with 1D or 2D covariance model'
@@ -6769,7 +7000,7 @@ def simulateIndicator(
         # gamma
         if gamma is None:
             gamma = ncategory * [None]
-        
+
         elif not isinstance(gamma, list) or len(gamma) != ncategory:
             err_msg = f'{fname}: `gamma` should be a list of length equal to the number of categories (when covariance model is set per category)'
             if logger: logger.error(err_msg)
@@ -6793,7 +7024,7 @@ def simulateIndicator(
         # ... other non-stationarities given by cov_model_non_stationarity_list
         if cov_model_non_stationarity_list is None:
             cov_model_non_stationarity_list = ncategory * [None]
-        
+
         elif not isinstance(cov_model_non_stationarity_list, list) or len(cov_model_non_stationarity_list) != ncategory:
             err_msg = f'{fname}: `cov_model_non_stationarity_list` should be a list (of list) of length equal to the number of categories (when covariance model is set per category)'
             if logger: logger.error(err_msg)
@@ -6806,7 +7037,7 @@ def simulateIndicator(
                         err_msg = f'{fname}: `cov_model_non_stationarity_list` (index {k}) must be a list if not `None`'
                         if logger: logger.error(err_msg)
                         raise GeosclassicinterfaceError(err_msg)
-                    
+
                     for i, cm_ns in enumerate(cov_model_non_stationarity_list_k):
                         if not hasattr(cm_ns, '__len__') or len(cm_ns) not in (2, 3):
                             err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_list` (index {k}) not valid: should be a tuple or list of length 2 or 3 containing: method name (str), value(s) or callable (for arg)[, kwds (dict)]'
@@ -6838,7 +7069,7 @@ def simulateIndicator(
         err_msg = f'{fname}: `searchRadius` should be `None`, a single entry or a list of length equal to the number of categories'
         if logger: logger.error(err_msg)
         raise GeosclassicinterfaceError(err_msg)
-    
+
     if searchRadiusRelative is None:
         searchRadiusRelative = ncategory * [None]
     elif isinstance(searchRadiusRelative, float) or isinstance(searchRadiusRelative, int):
@@ -6847,9 +7078,9 @@ def simulateIndicator(
         err_msg = f'{fname}: `searchRadiusRelative` should be a list of length equal to the number of categories'
         if logger: logger.error(err_msg)
         raise GeosclassicinterfaceError(err_msg)
-    
+
     if isinstance(nneighborMax, int):
-        nneighborMax = ncategory * [nneighborMax]          
+        nneighborMax = ncategory * [nneighborMax]
     elif not isinstance(nneighborMax, list) or len(nneighborMax) != ncategory:
         err_msg = f'{fname}: `nneighborMax` should be a single entry or a list of length equal to the number of categories'
         if logger: logger.error(err_msg)
@@ -6875,7 +7106,7 @@ def simulateIndicator(
                 err_msg = f'{fname}: search radius (index {k}) (isotropic neighborhood) not valid (negative)'
                 if logger: logger.error(err_msg)
                 raise GeosclassicinterfaceError(err_msg)
-            
+
             searchRadius_geosClassic[k] = searchRadius[k]
             searchRadiusRelative_geosClassic[k] = searchRadiusRelative[k] # unused
 
@@ -6895,9 +7126,9 @@ def simulateIndicator(
             err_msg = f'{fname}: `nneighborMax` (index {k}) should be greater than or equal to 1'
             if logger: logger.error(err_msg)
             raise GeosclassicinterfaceError(err_msg)
-        
+
         nneighborMax_geosClassic[k] = nneighborMax[k]
-        
+
         if searchNeighborhoodSortMode[k] is None:
             searchNeighborhoodSortMode[k] = 1
             # # Set greatest possible value
@@ -6932,14 +7163,14 @@ def simulateIndicator(
                     err_msg = f'{fname}: `searchNeighborhoodSortMode=2` (index {k}) not allowed with non-stationary covariance model (local rotation)'
                     if logger: logger.error(err_msg)
                     raise GeosclassicinterfaceError(err_msg)
-            
+
             if cov_model_non_stationarity_list[k] is not None:
                 for cm_ns in cov_model_non_stationarity_list[k]:
                     if callable(cm_ns[1]) or (isinstance(cm_ns[1],  np.ndarray) and cm_ns[1].size  > 1):
                         err_msg = f'{fname}: `searchNeighborhoodSortMode=2` (index {k}) not allowed with non-stationary covariance model ({cm_ns[0]})'
                         if logger: logger.error(err_msg)
                         raise GeosclassicinterfaceError(err_msg)
-                    
+
         elif searchNeighborhoodSortMode[k] not in (0, 1):
             err_msg = f'{fname}: `searchNeighborhoodSortMode` (index {k}) not valid'
             if logger: logger.error(err_msg)
@@ -7064,7 +7295,7 @@ def simulateIndicator(
             mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
             del(im_tmp)
         recover_mask = True
-    
+
     else:
         recover_mask = False
 
@@ -7190,7 +7421,7 @@ def simulateIndicator(
     # Set number of process(es): nproc
     if nproc is None:
         nproc = -1
-    
+
     if nproc <= 0:
         nproc = max(min(multiprocessing.cpu_count() + nproc, nreal), 1)
     else:
@@ -7205,7 +7436,7 @@ def simulateIndicator(
     # Set number of threads per process: nth
     if nthreads_per_proc is None:
         nthreads_per_proc = -1
-    
+
     if nthreads_per_proc <= 0:
         nth = max(int(np.floor((multiprocessing.cpu_count() + nthreads_per_proc) / nproc)), 1)
     else:
@@ -7236,17 +7467,22 @@ def simulateIndicator(
 
         if verbose > 1:
             if logger:
-                logger.info(  
-                    f'{fname}: Geos-Classic running on {nproc} process(es)... [' + \
-                    f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                    f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                    f'OpenMP {nth:d} thread(s)]')
+                logger.info(f'{fname}: call `run_MPDSOMPGeosClassicIndicatorSim` [{nproc} process(es) of {nth:d} thread(s) (OpenMP)] ...')
             else:
-                print(  
-                    f'{fname}: Geos-Classic running on {nproc} process(es)... [' + \
-                    f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                    f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                    f'OpenMP {nth:d} thread(s)]')
+                print(f'{fname}: call `run_MPDSOMPGeosClassicIndicatorSim` [{nproc} process(es) of {nth:d} thread(s) (OpenMP)] ...')
+
+            # if logger:
+            #     logger.info(
+            #         f'{fname}: Geos-Classic running on {nproc} process(es)... [' + \
+            #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+            #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+            #         f'OpenMP {nth:d} thread(s)]')
+            # else:
+            #     print(
+            #         f'{fname}: Geos-Classic running on {nproc} process(es)... [' + \
+            #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+            #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+            #         f'OpenMP {nth:d} thread(s)]')
 
         outputReportFile_p = None
 
@@ -7257,11 +7493,11 @@ def simulateIndicator(
             # Set input for i-th process
             nreal_p = real_index_proc[i+1] - real_index_proc[i]
             seed_p = seed + real_index_proc[i]
-            
+
             if outputReportFile is not None:
                 outputReportFile_p = outputReportFile + f'.{i}'
-            
-            if i == 0 and verbose >= 3:
+
+            if i == 0 and verbose >= 5:
                 progress_monitor = 4
             else:
                 progress_monitor = 0
@@ -7291,9 +7527,9 @@ def simulateIndicator(
                     nth
                 )
             kwds = {
-                    'progress_monitor':progress_monitor, 
+                    'progress_monitor':progress_monitor,
                     'pid':i,
-                    'verbose':verbose*(i==0),
+                    'verbose':(verbose-2)*(i==0),
                     'logger':logger
                 }
 
@@ -7339,31 +7575,41 @@ def simulateIndicator(
 
         if verbose > 1 and geosclassic_output:
             if logger:
-                logger.info(f'{fname}: Geos-Classic ({nproc} process(es)) run complete')
+                logger.info(f'{fname}: `run_MPDSOMPGeosClassicIndicatorSim` [{nproc} process(es)] complete')
             else:
-                print(f'{fname}: Geos-Classic ({nproc} process(es)) run complete')
+                print(f'{fname}: `run_MPDSOMPGeosClassicIndicatorSim` [{nproc} process(es)] complete')
+
+            # if logger:
+            #     logger.info(f'{fname}: Geos-Classic ({nproc} process(es)) run complete')
+            # else:
+            #     print(f'{fname}: Geos-Classic ({nproc} process(es)) run complete')
 
     else:
         # multiprocessing not enabled
         # ---------------------------
         if verbose > 1:
             if logger:
-                logger.info(  
-                    f'{fname}: Geos-Classic running on 1 process... [' + \
-                    f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                    f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                    f'OpenMP {nth:d} thread(s)]')
+                logger.info(f'{fname}: call `run_MPDSOMPGeosClassicIndicatorSim` [1 process of {nth:d} thread(s) (OpenMP)] ...')
             else:
-                print(  
-                    f'{fname}: Geos-Classic running on 1 process... [' + \
-                    f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                    f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                    f'OpenMP {nth:d} thread(s)]')
+                print(f'{fname}: call `run_MPDSOMPGeosClassicIndicatorSim` [1 process of {nth:d} thread(s) (OpenMP)] ...')
 
-        if verbose < 3:
-            progress_monitor = 0
-        else:
+            # if logger:
+            #     logger.info(
+            #         f'{fname}: Geos-Classic running on 1 process... [' + \
+            #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+            #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+            #         f'OpenMP {nth:d} thread(s)]')
+            # else:
+            #     print(
+            #         f'{fname}: Geos-Classic running on 1 process... [' + \
+            #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+            #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+            #         f'OpenMP {nth:d} thread(s)]')
+
+        if verbose >= 5:
             progress_monitor = 4
+        else:
+            progress_monitor = 0
 
         args = (
                 use_same_cov_model_for_all_categories,
@@ -7390,18 +7636,23 @@ def simulateIndicator(
                 nth
             )
         kwds = {
-                'progress_monitor':progress_monitor, 
+                'progress_monitor':progress_monitor,
                 'pid':None,
-                'verbose':verbose,
+                'verbose':(verbose-2),
                 'logger':logger
             }
         geosclassic_output = run_MPDSOMPGeosClassicIndicatorSim(*args, **kwds)
 
         if verbose > 1 and geosclassic_output:
             if logger:
-                logger.info(f'{fname}: Geos-Classic (1 process) run complete')
+                logger.info(f'{fname}: `run_MPDSOMPGeosClassicIndicatorSim` [1 process] complete')
             else:
-                print(f'{fname}: Geos-Classic (1 process) run complete')
+                print(f'{fname}: `run_MPDSOMPGeosClassicIndicatorSim` [1 process] complete')
+
+            # if logger:
+            #     logger.info(f'{fname}: Geos-Classic (1 process) run complete')
+            # else:
+            #     print(f'{fname}: Geos-Classic (1 process) run complete')
 
     if geosclassic_output is not None and recover_mask:
         # Remove the value out of the original mask (using its copy see above)
@@ -7422,11 +7673,11 @@ def simulateIndicator(
 def estimateIndicator(
         category_values,
         cov_model,
-        dimension, 
-        spacing=None, 
+        dimension,
+        spacing=None,
         origin=None,
         method='ordinary_kriging',
-        x=None, 
+        x=None,
         v=None,
         probability=None,
         alpha=None,
@@ -7448,16 +7699,16 @@ def estimateIndicator(
     Generates estimate probabilities / proportions of categories (indicators) in a grid.
 
     Interpolation takes place in (center of) grid cells, based on simple or
-    ordinary kriging. The space dimension (1, 2, or 3) is detected (from the 
+    ordinary kriging. The space dimension (1, 2, or 3) is detected (from the
     parameter `dimension`).
 
     The computation relies on a covariance model for each category value (indicator).
     The parameter `cov_model` is either one single covariance model (used for all categories)
-    a list of `ncategory` covariance models (one per category). Accordingly, the parameters 
+    a list of `ncategory` covariance models (one per category). Accordingly, the parameters
     `alpha`, `beta`, `gamma`, `cov_model_non_stationarity_list` are either given as one
     single entry or a list of `ncategory` entries (if not `None`).
 
-    The conditioning data are treated as follows: (one of) the most frequent categories 
+    The conditioning data are treated as follows: (one of) the most frequent categories
     of the data point(s) falling in the same grid cell is attributed to that cell.
 
     Parameters
@@ -7478,9 +7729,9 @@ def estimateIndicator(
         sequence of same length as `category_values` of covariance model in 1D,
         or a unique covariance model in 1D (recycled):
         covariance model for each category;
-        covariance model in 1D or 2D or 3D;      
+        covariance model in 1D or 2D or 3D;
         note: the covariance model must be stationary, however, non stationarity is
-        handled: 
+        handled:
 
         - local rotation by specifying `alpha` (in 2D or 3D), `beta` (in 3D), `gamma` (in 3D)
         - other non-stationarities by specifying `cov_model_non_stationarity_list` (see below)
@@ -7511,7 +7762,7 @@ def estimateIndicator(
         - 3D: `origin=(ox, oy, oz)`
 
         by default (`None`): 0.0 along each axis
-        
+
     method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
         type of kriging
 
@@ -7546,7 +7797,7 @@ def estimateIndicator(
 
     alpha : function (callable), or array-like of floats, or float, optional
         if specified: either a single entry or a list of entries of lenght `ncategory`
-        (the length of `category_values`, according to the parameter `cov_model` (see 
+        (the length of `category_values`, according to the parameter `cov_model` (see
         above);
         azimuth angle in degrees (see :class:`geone.covModel.CovModel<d>D`):
 
@@ -7561,7 +7812,7 @@ def estimateIndicator(
 
     beta : function (callable), or array-like of floats, or float, optional
         if specified: either a single entry or a list of entries of lenght `ncategory`
-        (the length of `category_values`, according to the parameter `cov_model` (see 
+        (the length of `category_values`, according to the parameter `cov_model` (see
         above);
         dip angle in degrees (see :class:`geone.covModel.CovModel<d>D`):
 
@@ -7576,7 +7827,7 @@ def estimateIndicator(
 
     gamma : function (callable), or array-like of floats, or float, optional
         if specified: either a single entry or a list of entries of lenght `ncategory`
-        (the length of `category_values`, according to the parameter `cov_model` (see 
+        (the length of `category_values`, according to the parameter `cov_model` (see
         above);
         plunge angle in degrees (see :class:`geone.covModel.CovModel<d>D`):
 
@@ -7591,7 +7842,7 @@ def estimateIndicator(
 
     cov_model_non_stationarity_list : list, optional
         if specified: either a single entry or a list of entries of lenght `ncategory`
-        (the length of `category_values`, according to the parameter `cov_model` (see 
+        (the length of `category_values`, according to the parameter `cov_model` (see
         above);
         list to set non-stationarities in covariance model; each entry must be
         a tuple (or list) `cm_ns` of length 2 or 3 with:
@@ -7607,7 +7858,7 @@ def estimateIndicator(
         - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
 
         Examples (where the parameter `arg` is set from `val`):
-        
+
         - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`; \
         this multipies the weight contribution of every elementary contribution of the \
         covariance model
@@ -7642,7 +7893,7 @@ def estimateIndicator(
         sequence of bools of same length as `category_values`, or
         a unique bool (recycled); one parameter per category:
         indicates if a unique neighborhood is used (all data points are considered)
-        for kriging, in that case (`True`), parameters `searchRadius`, 
+        for kriging, in that case (`True`), parameters `searchRadius`,
         `searchRadiusRelative`, `nneighborMax`, `searchNeighborhoodSortMode` are
         not used
 
@@ -7650,11 +7901,11 @@ def estimateIndicator(
         sequence of floats of same length as `category_values`, or
         a unique float (recycled); one parameter per category:
         if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
-        with same radii along each axis), i.e. the data points at distance to the 
-        estimated point greater than `searchRadius` are not taken into account 
-        in the kriging system; if `searchRadius` is not `None`, then 
+        with same radii along each axis), i.e. the data points at distance to the
+        estimated point greater than `searchRadius` are not taken into account
+        in the kriging system; if `searchRadius` is not `None`, then
         `searchRadiusRelative` is not used;
-        by default (`searchRadius=None`): `searchRadiusRelative` is used to 
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to
         define the search ellipsoid;
         note: this parameter is ignored if `use_unique_neighborhood=True`
 
@@ -7666,11 +7917,11 @@ def estimateIndicator(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
-        note (Geos-Classic library): if a range r_i is non-stationary over the grid, 
+        note (Geos-Classic library): if a range r_i is non-stationary over the grid,
         its maximal value over the grid is considered;
         note: this parameter is ignored if `use_unique_neighborhood=True`
 
@@ -7678,16 +7929,16 @@ def estimateIndicator(
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
         maximal number of neighbors (informed cells) taken into account in the
-        kriging system, must be greater than or equal to 1; the informed cells the 
-        closest to the estimated cell are taken into account (see the parameters 
+        kriging system, must be greater than or equal to 1; the informed cells the
+        closest to the estimated cell are taken into account (see the parameters
         `searchRadius`, `searchRadiusRelative`, `searchNeighborhoodSortMode`);
         note: this parameter is ignored if `use_unique_neighborhood=True`
 
     searchNeighborhoodSortMode : [sequence of] int(s), default: 1
         sequence of ints of same length as `category_values`, or
         a unique int (recycled); one parameter per category:
-        indicates how to sort the search neighboorhood cells (neighbors), for 
-        external C function (Geos-Classic library); they are sorted in increasing 
+        indicates how to sort the search neighboorhood cells (neighbors), for
+        external C function (Geos-Classic library); they are sorted in increasing
         order according to:
 
         - `searchNeighborhoodSortMode=0`: distance in the usual axes system
@@ -7712,9 +7963,9 @@ def estimateIndicator(
 
     nthreads : int, default: -1
         number of thread(s) for external C function (Geos-Classic library);
-        if `nthreads = -n <= 0`: `nthreads` is automatically set to `nmax - n` 
-        (but at least 1), where nmax is the total number of cpu(s) of the system 
-        (retrieved by `os.cpu_count()`); 
+        if `nthreads = -n <= 0`: `nthreads` is automatically set to `nmax - n`
+        (but at least 1), where nmax is the total number of cpu(s) of the system
+        (retrieved by `os.cpu_count()`);
         not: if `nthreads=None`, `nthreads=-1` is used
 
     verbose : int, default: 2
@@ -7726,7 +7977,7 @@ def estimateIndicator(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -7791,8 +8042,8 @@ def estimateIndicator(
         ox, oy, oz = origin, 0.0, 0.0
     elif d == 2:
         nx, ny, nz = *dimension, 1
-        sx, sy, sz = *spacing, 1.0 
-        ox, oy, oz = *origin, 0.0 
+        sx, sy, sz = *spacing, 1.0
+        ox, oy, oz = *origin, 0.0
     else: # d == 3
         nx, ny, nz = dimension
         sx, sy, sz = spacing
@@ -7869,7 +8120,7 @@ def estimateIndicator(
                 err_msg = f'{fname}: `beta` not valid: should be callable or array or float or int'
                 if logger: logger.error(err_msg)
                 raise GeosclassicinterfaceError(err_msg)
-        
+
         if gamma is not None:
             if omni_dir or d < 3:
                 err_msg = f'{fname}: `gamma` cannot be used with 1D or 2D covariance model'
@@ -7929,7 +8180,7 @@ def estimateIndicator(
         # alpha
         if alpha is None:
             alpha = ncategory * [None]
-        
+
         elif not isinstance(alpha, list) or len(alpha) != ncategory:
             err_msg = f'{fname}: `alpha` should be a list of length equal to the number of categories (when covariance model is set per category)'
             if logger: logger.error(err_msg)
@@ -7949,7 +8200,7 @@ def estimateIndicator(
         # beta
         if beta is None:
             beta = ncategory * [None]
-        
+
         elif not isinstance(beta, list) or len(beta) != ncategory:
             err_msg = f'{fname}: `beta` should be a list of length equal to the number of categories (when covariance model is set per category)'
             if logger: logger.error(err_msg)
@@ -7960,7 +8211,7 @@ def estimateIndicator(
                 err_msg = f'{fname}: `beta` should be a list of length equal to the number of categories (when covariance model is set per category)'
                 if logger: logger.error(err_msg)
                 raise GeosclassicinterfaceError(err_msg)
-            
+
             for k, beta_k in enumerate(beta):
                 if omni_dir or d < 3:
                     err_msg = f'{fname}: `beta` (index {k}) cannot be used with 1D or 2D covariance model'
@@ -7974,7 +8225,7 @@ def estimateIndicator(
         # gamma
         if gamma is None:
             gamma = ncategory * [None]
-        
+
         elif not isinstance(gamma, list) or len(gamma) != ncategory:
             err_msg = f'{fname}: `gamma` should be a list of length equal to the number of categories (when covariance model is set per category)'
             if logger: logger.error(err_msg)
@@ -7998,7 +8249,7 @@ def estimateIndicator(
         # ... other non-stationarities given by cov_model_non_stationarity_list
         if cov_model_non_stationarity_list is None:
             cov_model_non_stationarity_list = ncategory * [None]
-        
+
         elif not isinstance(cov_model_non_stationarity_list, list) or len(cov_model_non_stationarity_list) != ncategory:
             err_msg = f'{fname}: `cov_model_non_stationarity_list` should be a list (of list) of length equal to the number of categories (when covariance model is set per category)'
             if logger: logger.error(err_msg)
@@ -8011,7 +8262,7 @@ def estimateIndicator(
                         err_msg = f'{fname}: `cov_model_non_stationarity_list` (index {k}) must be a list if not `None`'
                         if logger: logger.error(err_msg)
                         raise GeosclassicinterfaceError(err_msg)
-                    
+
                     for i, cm_ns in enumerate(cov_model_non_stationarity_list_k):
                         if not hasattr(cm_ns, '__len__') or len(cm_ns) not in (2, 3):
                             err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_list` (index {k}) not valid: should be a tuple or list of length 2 or 3 containing: method name (str), value(s) or callable (for arg)[, kwds (dict)]'
@@ -8041,7 +8292,7 @@ def estimateIndicator(
         err_msg = f'{fname}: `use_unique_neighborhood` should be a single entry or a list of length equal to the number of categories'
         if logger: logger.error(err_msg)
         raise GeosclassicinterfaceError(err_msg)
-    
+
     if searchRadius is None:
         searchRadius = ncategory * [None]
     elif isinstance(searchRadius, float) or isinstance(searchRadius, int):
@@ -8050,7 +8301,7 @@ def estimateIndicator(
         err_msg = f'{fname}: `searchRadius` should be `None`, a single entry or a list of length equal to the number of categories'
         if logger: logger.error(err_msg)
         raise GeosclassicinterfaceError(err_msg)
-    
+
     if searchRadiusRelative is None:
         searchRadiusRelative = ncategory * [None]
     elif isinstance(searchRadiusRelative, float) or isinstance(searchRadiusRelative, int):
@@ -8059,9 +8310,9 @@ def estimateIndicator(
         err_msg = f'{fname}: `searchRadiusRelative` should be a list of length equal to the number of categories'
         if logger: logger.error(err_msg)
         raise GeosclassicinterfaceError(err_msg)
-    
+
     if isinstance(nneighborMax, int):
-        nneighborMax = ncategory * [nneighborMax]          
+        nneighborMax = ncategory * [nneighborMax]
     elif not isinstance(nneighborMax, list) or len(nneighborMax) != ncategory:
         err_msg = f'{fname}: `nneighborMax` should be a single entry or a list of length equal to the number of categories'
         if logger: logger.error(err_msg)
@@ -8092,7 +8343,7 @@ def estimateIndicator(
                     err_msg = f'{fname}: search radius (index {k}) (isotropic neighborhood) not valid (negative)'
                     if logger: logger.error(err_msg)
                     raise GeosclassicinterfaceError(err_msg)
-                
+
                 searchRadius_geosClassic[k] = searchRadius[k]
                 searchRadiusRelative_geosClassic[k] = searchRadiusRelative[k] # unused
 
@@ -8112,7 +8363,7 @@ def estimateIndicator(
                 err_msg = f'{fname}: `nneighborMax` (index {k}) should be greater than or equal to 1'
                 if logger: logger.error(err_msg)
                 raise GeosclassicinterfaceError(err_msg)
-            
+
             nneighborMax_geosClassic[k] = nneighborMax[k]
 
             if searchNeighborhoodSortMode[k] is None:
@@ -8149,14 +8400,14 @@ def estimateIndicator(
                         err_msg = f'{fname}: `searchNeighborhoodSortMode=2` (index {k}) not allowed with non-stationary covariance model (local rotation)'
                         if logger: logger.error(err_msg)
                         raise GeosclassicinterfaceError(err_msg)
-                
+
                 if cov_model_non_stationarity_list[k] is not None:
                     for cm_ns in cov_model_non_stationarity_list[k]:
                         if callable(cm_ns[1]) or (isinstance(cm_ns[1],  np.ndarray) and cm_ns[1].size  > 1):
                             err_msg = f'{fname}: `searchNeighborhoodSortMode=2` (index {k}) not allowed with non-stationary covariance model ({cm_ns[0]})'
                             if logger: logger.error(err_msg)
                             raise GeosclassicinterfaceError(err_msg)
-                        
+
             elif searchNeighborhoodSortMode[k] not in (0, 1):
                 err_msg = f'{fname}: `searchNeighborhoodSortMode` (index {k}) not valid'
                 if logger: logger.error(err_msg)
@@ -8281,7 +8532,7 @@ def estimateIndicator(
             mask = 1.0*np.any((im_tmp.val[0], mask), axis=0)
             del(im_tmp)
         recover_mask = True
-    
+
     else:
         recover_mask = False
 
@@ -8402,7 +8653,7 @@ def estimateIndicator(
     # Set number of threads per process: nth - GeosClassic-parameter
     if nthreads is None:
         nthreads = -1
-    
+
     if nthreads <= 0:
         nth = max(int(os.cpu_count() + nthreads), 1)
     else:
@@ -8421,22 +8672,27 @@ def estimateIndicator(
 
     if verbose > 1:
         if logger:
-            logger.info(  
-                f'{fname}: Geos-Classic running on 1 process... [' + \
-                f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                f'OpenMP {nth:d} thread(s)]')
+            logger.info(f'{fname}: call `run_MPDSOMPGeosClassicIndicatorSim` [1 process of {nth:d} thread(s) (OpenMP)] ...')
         else:
-            print(  
-                f'{fname}: Geos-Classic running on 1 process... [' + \
-                f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
-                f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
-                f'OpenMP {nth:d} thread(s)]')
+            print(f'{fname}: call `run_MPDSOMPGeosClassicIndicatorSim` [1 process of {nth:d} thread(s) (OpenMP)] ...')
 
-    if verbose < 3:
-        progress_monitor = 0
-    else:
+        # if logger:
+        #     logger.info(
+        #         f'{fname}: Geos-Classic running on 1 process... [' + \
+        #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+        #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+        #         f'OpenMP {nth:d} thread(s)]')
+        # else:
+        #     print(
+        #         f'{fname}: Geos-Classic running on 1 process... [' + \
+        #         f'VERSION {geosclassic.MPDS_GEOS_CLASSIC_VERSION_NUMBER:s} / ' + \
+        #         f'BUILD NUMBER {geosclassic.MPDS_GEOS_CLASSIC_BUILD_NUMBER:s} / ' + \
+        #         f'OpenMP {nth:d} thread(s)]')
+
+    if verbose >= 5:
         progress_monitor = 4
+    else:
+        progress_monitor = 0
 
     args = (
             use_same_cov_model_for_all_categories,
@@ -8463,18 +8719,23 @@ def estimateIndicator(
             nth
         )
     kwds = {
-            'progress_monitor':progress_monitor, 
+            'progress_monitor':progress_monitor,
             'pid':None,
-            'verbose':verbose,
+            'verbose':(verbose-2),
             'logger':logger
         }
     geosclassic_output = run_MPDSOMPGeosClassicIndicatorSim(*args, **kwds)
 
     if verbose > 1 and geosclassic_output:
         if logger:
-            logger.info(f'{fname}: Geos-Classic (1 process) run complete')
+            logger.info(f'{fname}: `run_MPDSOMPGeosClassicIndicatorSim` [1 process] complete')
         else:
-            print(f'{fname}: Geos-Classic (1 process) run complete')
+            print(f'{fname}: `run_MPDSOMPGeosClassicIndicatorSim` [1 process] complete')
+
+        # if logger:
+        #     logger.info(f'{fname}: Geos-Classic (1 process) run complete')
+        # else:
+        #     print(f'{fname}: Geos-Classic (1 process) run complete')
 
     if geosclassic_output is not None and recover_mask:
         # Remove the value out of the original mask (using its copy see above)
@@ -8534,7 +8795,7 @@ def imgDistanceImage(
 
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -8739,7 +9000,7 @@ def imgGeobodyImage(
     connect_type : str {'connect_face', 'connect_face_edge', \
             'connect_face_edge_corner'}, default: 'connect_face'
         indicates which definition of adjacent cells is used (see above)
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -9015,7 +9276,7 @@ def imgTwoPointStatisticsImage(
 
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -9255,7 +9516,7 @@ def imgConnectivityGammaValue(
     connect_type : str {'connect_face', 'connect_face_edge', \
             'connect_face_edge_corner'}, default: 'connect_face'
         indicates which definition of adjacent cells is used (see above)
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -9304,7 +9565,7 @@ def imgConnectivityGammaValue(
                     complementary_set=complementary_set,
                     connect_type=connect_type,
                     logger=logger)
-            
+
         except Exception as exc:
             err_msg = f'{fname}: cannot compute geobody image'
             if logger: logger.error(err_msg)
@@ -9412,7 +9673,7 @@ def imgConnectivityGammaCurves(
 
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -9633,7 +9894,7 @@ def imgConnectivityEulerNumber(
 
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -9671,7 +9932,7 @@ def imgConnectivityEulerNumber(
                     complementary_set=complementary_set,
                     connect_type='connect_face',
                     logger=logger)
-            
+
         except Exception as exc:
             err_msg = f'{fname}: cannot compute geobody image'
             if logger: logger.error(err_msg)
@@ -9800,7 +10061,7 @@ def imgConnectivityEulerNumberCurves(
 
     verbose : int, default: 0
         verbose mode, higher implies more printing (info)
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -10127,11 +10388,11 @@ def simulate1D(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
-        note (Geos-Classic library): if a range r_i is non-stationary over the grid, 
+        note (Geos-Classic library): if a range r_i is non-stationary over the grid,
         its maximal value over the grid is considered;
 
     nneighborMax : int, default: 12
@@ -10192,7 +10453,7 @@ def simulate1D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -10458,7 +10719,7 @@ def simulate1D(
             # x_agg: 2D array, each row contains the coordinates of the center of such cell
             im_tmp = img.imageFromPoints(x, values=None, varname=None,
                                          nx=nx, sx=sx, ox=ox,
-                                         indicator_var=True, 
+                                         indicator_var=True,
                                          count_var=False,
                                          logger=logger)
             ind_agg = np.where(im_tmp.val[0])
@@ -10492,7 +10753,7 @@ def simulate1D(
                     v_agg, v_agg_std = gcm.krige(x, v, x_agg, cov_model_agg, method=method,
                                                  mean_x=mean_x, mean_xu=mean_x_agg,
                                                  var_x=var_x, var_xu=var_x_agg,
-                                                 verbose=0, logger=logger, 
+                                                 verbose=0, logger=logger,
                                                  **aggregate_data_op_kwargs)
                 except Exception as exc:
                     err_msg = f'{fname}: kriging error'
@@ -10528,7 +10789,7 @@ def simulate1D(
                 xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
                                                             xx, yy, zz, v,
                                                             nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                            op=aggregate_data_op, 
+                                                            op=aggregate_data_op,
                                                             return_inverse=True,
                                                             logger=logger,
                                                             **aggregate_data_op_kwargs)
@@ -10556,7 +10817,7 @@ def simulate1D(
                 xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                    op=aggregate_data_op, 
+                                                    op=aggregate_data_op,
                                                     logger=logger,
                                                     **aggregate_data_op_kwargs)
             except Exception as exc:
@@ -10653,7 +10914,7 @@ def simulate1D(
             xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg = img.aggregateDataPointsWrtGrid(
                                                 xx, yy, zz, vIneqMax,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                op=aggregate_data_ineqMax_op, 
+                                                op=aggregate_data_ineqMax_op,
                                                 logger=logger,
                                                 **aggregate_data_ineqMax_op_kwargs)
         except Exception as exc:
@@ -10805,7 +11066,7 @@ def simulate1D(
                     seed,
                     nreal,
                     logger=logger)
-            
+
         except Exception as exc:
             err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
             if logger: logger.error(err_msg)
@@ -10926,7 +11187,7 @@ def simulate1D(
                         seed+ir, # seed for realization index ir
                         1, # one real
                         logger=logger)
-                
+
             except Exception as exc:
                 err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
                 if logger: logger.error(err_msg)
@@ -11458,11 +11719,11 @@ def simulate2D(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
-        note (Geos-Classic library): if a range r_i is non-stationary over the grid, 
+        note (Geos-Classic library): if a range r_i is non-stationary over the grid,
         its maximal value over the grid is considered;
 
     nneighborMax : int, default: 12
@@ -11523,7 +11784,7 @@ def simulate2D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -11808,7 +12069,7 @@ def simulate2D(
             # x_agg: 2D array, each row contains the coordinates of the center of such cell
             im_tmp = img.imageFromPoints(x, values=None, varname=None,
                                          nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
-                                         indicator_var=True, 
+                                         indicator_var=True,
                                          count_var=False,
                                          logger=logger)
             ind_agg = np.where(im_tmp.val[0])
@@ -11882,7 +12143,7 @@ def simulate2D(
                 xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
                                                             xx, yy, zz, v,
                                                             nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                            op=aggregate_data_op, 
+                                                            op=aggregate_data_op,
                                                             return_inverse=True,
                                                             logger=logger,
                                                             **aggregate_data_op_kwargs)
@@ -11908,7 +12169,7 @@ def simulate2D(
                 xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                    op=aggregate_data_op, 
+                                                    op=aggregate_data_op,
                                                     logger=logger,
                                                     **aggregate_data_op_kwargs)
             except Exception as exc:
@@ -11946,7 +12207,7 @@ def simulate2D(
             xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg = img.aggregateDataPointsWrtGrid(
                                                 xx, yy, zz, vIneqMin,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                op=aggregate_data_ineqMin_op, 
+                                                op=aggregate_data_ineqMin_op,
                                                 logger=logger,
                                                 **aggregate_data_ineqMin_op_kwargs)
         except Exception as exc:
@@ -12003,7 +12264,7 @@ def simulate2D(
             xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg = img.aggregateDataPointsWrtGrid(
                                                 xx, yy, zz, vIneqMax,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                op=aggregate_data_ineqMax_op, 
+                                                op=aggregate_data_ineqMax_op,
                                                 logger=logger,
                                                 **aggregate_data_ineqMax_op_kwargs)
         except Exception as exc:
@@ -12276,7 +12537,7 @@ def simulate2D(
                         seed+ir, # seed for realization index ir
                         1, # one real
                         logger=logger)
-                
+
             except Exception as exc:
                 err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
                 if logger: logger.error(err_msg)
@@ -12809,11 +13070,11 @@ def simulate3D(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
-        note (Geos-Classic library): if a range r_i is non-stationary over the grid, 
+        note (Geos-Classic library): if a range r_i is non-stationary over the grid,
         its maximal value over the grid is considered;
 
     nneighborMax : int, default: 12
@@ -12874,7 +13135,7 @@ def simulate3D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -13177,7 +13438,7 @@ def simulate3D(
             # x_agg: 2D array, each row contains the coordinates of the center of such cell
             im_tmp = img.imageFromPoints(x, values=None, varname=None,
                                          nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
-                                         indicator_var=True, 
+                                         indicator_var=True,
                                          count_var=False,
                                          logger=logger)
             ind_agg = np.where(im_tmp.val[0])
@@ -13258,7 +13519,7 @@ def simulate3D(
                 xx_agg, yy_agg, zz_agg, v_agg, i_inv = img.aggregateDataPointsWrtGrid(
                                                         xx, yy, zz, v,
                                                         nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                        op=aggregate_data_op, 
+                                                        op=aggregate_data_op,
                                                         return_inverse=True,
                                                         logger=logger,
                                                         **aggregate_data_op_kwargs)
@@ -13283,7 +13544,7 @@ def simulate3D(
                 xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                    op=aggregate_data_op, 
+                                                    op=aggregate_data_op,
                                                     logger=logger,
                                                     **aggregate_data_op_kwargs)
             except Exception as exc:
@@ -13320,7 +13581,7 @@ def simulate3D(
             xx_ineqMin_agg, yy_ineqMin_agg, zz_ineqMin_agg, v_ineqMin_agg = img.aggregateDataPointsWrtGrid(
                                                 xx, yy, zz, vIneqMin,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                op=aggregate_data_ineqMin_op, 
+                                                op=aggregate_data_ineqMin_op,
                                                 logger=logger,
                                                 **aggregate_data_ineqMin_op_kwargs)
         except Exception as exc:
@@ -13376,7 +13637,7 @@ def simulate3D(
             xx_ineqMax_agg, yy_ineqMax_agg, zz_ineqMax_agg, v_ineqMax_agg = img.aggregateDataPointsWrtGrid(
                                                 xx, yy, zz, vIneqMax,
                                                 nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                op=aggregate_data_ineqMax_op, 
+                                                op=aggregate_data_ineqMax_op,
                                                 logger=logger,
                                                 **aggregate_data_ineqMax_op_kwargs)
         except Exception as exc:
@@ -13528,7 +13789,7 @@ def simulate3D(
                     seed,
                     nreal,
                     logger=logger)
-            
+
         except Exception as exc:
             err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
             if logger: logger.error(err_msg)
@@ -13649,7 +13910,7 @@ def simulate3D(
                         seed+ir, # seed for realization index ir
                         1, # one real
                         logger=logger)
-                
+
             except Exception as exc:
                 err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
                 if logger: logger.error(err_msg)
@@ -14108,11 +14369,11 @@ def estimate1D(
         r_i be the ranges of the covariance model along its main axes, when
         estimating/simulating a cell x, a cell y is taken into account iff it is
         within the ellipsoid centered at x of half axes equal to
-        `searchRadiusRelative` * r_i; 
-        (note that the distances to the central node are computed in the axes 
-        sytem supporting the covariance model and accounting for anisotropy given 
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
         by the ranges)
-        note (Geos-Classic library): if a range r_i is non-stationary over the grid, 
+        note (Geos-Classic library): if a range r_i is non-stationary over the grid,
         its maximal value over the grid is considered;
 
     nneighborMax : int, default: 12
@@ -14159,7 +14420,7 @@ def estimate1D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -14395,7 +14656,7 @@ def estimate1D(
             # x_agg: 2D array, each row contains the coordinates of the center of such cell
             im_tmp = img.imageFromPoints(x, values=None, varname=None,
                                          nx=nx, sx=sx, ox=ox,
-                                         indicator_var=True, 
+                                         indicator_var=True,
                                          count_var=False,
                                          logger=logger)
             ind_agg = np.where(im_tmp.val[0])
@@ -14439,7 +14700,7 @@ def estimate1D(
             xx_agg = x_agg[:, 0]
             yy_agg = np.ones_like(xx_agg) * oy + 0.5 * sy
             zz_agg = np.ones_like(xx_agg) * oz + 0.5 * sz
-            
+
             dataPointSet.append(
                 PointSet(npt=v_agg.shape[0], nv=5, val=np.array((xx_agg, yy_agg, zz_agg, v_agg, v_agg_std)), varname=['X', 'Y', 'Z', varname, f'{varname}_err_std'])
                 )
@@ -14453,7 +14714,7 @@ def estimate1D(
                 xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                    op=aggregate_data_op, 
+                                                    op=aggregate_data_op,
                                                     logger=logger,
                                                     **aggregate_data_op_kwargs)
             except Exception as exc:
@@ -14525,7 +14786,7 @@ def estimate1D(
                 0,
                 0,
                 logger=logger)
-        
+
     except Exception as exc:
         err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
         if logger: logger.error(err_msg)
@@ -14805,7 +15066,7 @@ def estimate2D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -15060,7 +15321,7 @@ def estimate2D(
             # x_agg: 2D array, each row contains the coordinates of the center of such cell
             im_tmp = img.imageFromPoints(x, values=None, varname=None,
                                          nx=nx, ny=ny, sx=sx, sy=sy, ox=ox, oy=oy,
-                                         indicator_var=True, 
+                                         indicator_var=True,
                                          count_var=False,
                                          logger=logger)
             ind_agg = np.where(im_tmp.val[0])
@@ -15117,7 +15378,7 @@ def estimate2D(
                 xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                    op=aggregate_data_op, 
+                                                    op=aggregate_data_op,
                                                     logger=logger,
                                                     **aggregate_data_op_kwargs)
             except Exception as exc:
@@ -15186,7 +15447,7 @@ def estimate2D(
                 0,
                 0,
                 logger=logger)
-        
+
     except Exception as exc:
         err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
         if logger: logger.error(err_msg)
@@ -15467,7 +15728,7 @@ def estimate3D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -15740,7 +16001,7 @@ def estimate3D(
             # x_agg: 2D array, each row contains the coordinates of the center of such cell
             im_tmp = img.imageFromPoints(x, values=None, varname=None,
                                          nx=nx, ny=ny, nz=nz, sx=sx, sy=sy, sz=sz, ox=ox, oy=oy, oz=oz,
-                                         indicator_var=True, 
+                                         indicator_var=True,
                                          count_var=False,
                                          logger=logger)
             ind_agg = np.where(im_tmp.val[0])
@@ -15804,7 +16065,7 @@ def estimate3D(
                 xx_agg, yy_agg, zz_agg, v_agg = img.aggregateDataPointsWrtGrid(
                                                     xx, yy, zz, v,
                                                     nx, ny, nz, sx, sy, sz, ox, oy, oz,
-                                                    op=aggregate_data_op, 
+                                                    op=aggregate_data_op,
                                                     logger=logger,
                                                     **aggregate_data_op_kwargs)
             except Exception as exc:
@@ -15873,7 +16134,7 @@ def estimate3D(
                 0,
                 0,
                 logger=logger)
-        
+
     except Exception as exc:
         err_msg = f'{fname}: cannot fill mpds_geosClassicInput C structure'
         if logger: logger.error(err_msg)
@@ -16142,7 +16403,7 @@ def simulateIndicator1D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -16558,7 +16819,7 @@ def simulateIndicator1D_mp(
         outputReportFile=None,
         treat_image_one_by_one=False,
         nproc=None, nthreads_per_proc=None,
-        verbose=2, 
+        verbose=2,
         logger=None):
     """
     Computes the same as the function :func:`simulateIndicator1D`, using multiprocessing.
@@ -16909,7 +17170,7 @@ def simulateIndicator2D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -17693,7 +17954,7 @@ def simulateIndicator3D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -18138,7 +18399,7 @@ def simulateIndicator3D_mp(
         outputReportFile=None,
         treat_image_one_by_one=False,
         nproc=None, nthreads_per_proc=None,
-        verbose=2, 
+        verbose=2,
         logger=None):
     """
     Computes the same as the function :func:`simulateIndicator3D`, using multiprocessing.
@@ -18493,7 +18754,7 @@ def estimateIndicator1D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -19066,7 +19327,7 @@ def estimateIndicator2D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
@@ -19501,7 +19762,7 @@ def estimateIndicator3D(
         searchNeighborhoodSortMode=None,
         outputReportFile=None,
         nthreads=-1,
-        verbose=2, 
+        verbose=2,
         logger=None):
     """
     Computes estimate probabilities / proportions of categories (indicators) in 2D.
@@ -19656,7 +19917,7 @@ def estimateIndicator3D(
         - 3 (or >2): all information
 
         note that if an error occurred, it is raised
-    
+
     logger : :class:`logging.Logger`, optional
         logger (see package `logging`)
         if specified, messages are written via `logger` (no print)
