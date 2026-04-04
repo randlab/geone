@@ -2273,7 +2273,10 @@ def simulate(
         searchRadiusRelative=1.2,
         nneighborMax=12,
         searchNeighborhoodSortMode=1,
+        sgs_at_ineq_in_seq=False,
         nGibbsSamplerPath=50,
+        nGibbsSamplerPath_burn_in=50,
+        nGibbsSamplerPath_intermediate=10,
         seed=None,
         nreal=1,
         outputReportFile=None,
@@ -2656,8 +2659,28 @@ def simulate(
 
         note: parameter considered for simulation on the grid (step 4a/4b)
 
+    sgs_at_ineq_in_seq : bool, default: False
+        - if `True`: realizations at inequality data points are done via a Gibbs sampler \
+        in a unique Markov chain Monte Carlo, based on a burn-in period for the first \
+        realization, then an intermediate period for the next realizations ("realizations \
+        in sequence") ; function `geone.covModel.sgs_at_inequality_data_points_seq` is used
+        - if `False`: each realization at inequality data points is done via a Gibbs sampler \
+        in its own Markov chain Monte Carlo, based on a given number of paths ; function \
+        `geone.covModel.sgs_at_inequality_data_points[_mp]` is used
+
+        Note: changing `sgs_at_ineq_in_seq` will change the realizations (even if `seed` is kept)
+        
     nGibbsSamplerPath : int, default: 50
-        number of Gibbs sampler paths for simulating values at inequality data points
+        used if `sgs_at_ineq_in_seq=False`, number of Gibbs sampler paths for simulating 
+        values at inequality data points
+
+    nGibbsSamplerPath_burn_in : int, default: 50
+        used if `sgs_at_ineq_in_seq=True`, number of Gibbs sampler paths for 
+        the burn-in period for simulating values at inequality data points
+
+    nGibbsSamplerPath_intermediate : int, default: 10
+        used if `sgs_at_ineq_in_seq=True`, number of Gibbs sampler paths for 
+        the intermediate period for simulating values at inequality data points
 
     seed : int, optional
         seed for initializing random number generator
@@ -2692,13 +2715,14 @@ def simulate(
         note: if `nthreads_per_proc=None`, `nthreads_per_proc=-1` is used
 
     nproc_sgs_at_ineq : int, optional
-        number of process(es) for sgs at inequality data points:
+        used if `sgs_at_ineq_in_seq=False`, number of process(es) for sgs at inequality 
+        data points:
 
         - if `nproc_sgs_at_ineq = 1`: multiprocessing is not enabled and the function \
-        `gcm.sgs_at_inequality_data_points` is used
+        `geone.covModel.sgs_at_inequality_data_points` is used
         - if `nproc_sgs_at_ineq > 1`: multiprocessing is enabled and the function \
-        `gcm.sgs_at_inequality_data_points_mp` with parameter `nproc=nproc_sgs_at_ineq` \
-        is used
+        `geone.covModel.sgs_at_inequality_data_points_mp` with parameter \
+        `nproc=nproc_sgs_at_ineq` is used
 
         by default (`None`): `nproc_sgs_at_ineq` is set to `nproc*nthreads_per_proc`
 
@@ -3278,15 +3302,18 @@ def simulate(
         else:
             print(f'{fname}: WARNING: total number of cpu(s) used ({nproc * nth}) will exceed number of cpu(s) of the system...')
 
-    # Set number of process(es) for the step 1a/1b (simulation at inequality data points)
-    if nproc_sgs_at_ineq is None:
-        nproc_sgs_at_ineq = nproc * nth
+    if not sgs_at_ineq_in_seq:
+        # Set number of process(es) for the step 1a/1b (simulation at inequality data points)
+        if nproc_sgs_at_ineq is None:
+            nproc_sgs_at_ineq = nproc * nth
 
-    if verbose > 0 and nproc_sgs_at_ineq > multiprocessing.cpu_count():
-        if logger:
-            logger.warning(f'{fname}: total number of cpu(s) used ({nproc_sgs_at_ineq}) (for simulation at inequality data points) will exceed number of cpu(s) of the system...')
-        else:
-            print(f'{fname}: WARNING: total number of cpu(s) used ({nproc_sgs_at_ineq}) (for simulation at inequality data points) will exceed number of cpu(s) of the system...')
+        if verbose > 0 and nproc_sgs_at_ineq > multiprocessing.cpu_count():
+            if logger:
+                logger.warning(f'{fname}: total number of cpu(s) used ({nproc_sgs_at_ineq}) (for simulation at inequality data points) will exceed number of cpu(s) of the system...')
+            else:
+                print(f'{fname}: WARNING: total number of cpu(s) used ({nproc_sgs_at_ineq}) (for simulation at inequality data points) will exceed number of cpu(s) of the system...')
+    else:
+        nproc_sgs_at_ineq = 1
 
     # Set seed
     if seed is None:
@@ -3442,51 +3469,77 @@ def simulate(
             else:
                 print(f"{fname}: (Step 1.1) do sgs at inequality data points ({nsim} simulation(s) at {n_ineq} points)...")
 
-        if nproc_sgs_at_ineq != 1:
-            v_ineq_sim = gcm.sgs_at_inequality_data_points_mp(
-                        x, v, x_ineq, cov_model,
-                        v_err_std=v_err_std,
-                        v_ineq_min=v_ineq_min, v_ineq_max=v_ineq_max,
-                        method=method,
-                        mean_x=mean_x,
-                        mean_x_ineq=mean_x_ineq,
-                        var_x=var_x,
-                        var_x_ineq=var_x_ineq,
-                        alpha_x_ineq=alpha_x_ineq,
-                        beta_x_ineq=beta_x_ineq,
-                        gamma_x_ineq=gamma_x_ineq,
-                        cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
-                        searchRadius=searchRadius,
-                        searchRadiusRelative=searchRadiusRelative,
-                        nneighborMax=nneighborMax,
-                        nGibbsSamplerPath=nGibbsSamplerPath,
-                        nreal=nsim,
-                        seed=seed,
-                        verbose=(verbose-2),
-                        nproc=nproc_sgs_at_ineq,
-                        logger=logger)
+        if sgs_at_ineq_in_seq:
+                v_ineq_sim = gcm.sgs_at_inequality_data_points_seq(
+                            x, v, x_ineq, cov_model,
+                            v_err_std=v_err_std,
+                            v_ineq_min=v_ineq_min, v_ineq_max=v_ineq_max,
+                            method=method,
+                            mean_x=mean_x,
+                            mean_x_ineq=mean_x_ineq,
+                            var_x=var_x,
+                            var_x_ineq=var_x_ineq,
+                            alpha_x_ineq=alpha_x_ineq,
+                            beta_x_ineq=beta_x_ineq,
+                            gamma_x_ineq=gamma_x_ineq,
+                            cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
+                            searchRadius=searchRadius,
+                            searchRadiusRelative=searchRadiusRelative,
+                            nneighborMax=nneighborMax,
+                            nGibbsSamplerPath_burn_in=nGibbsSamplerPath_burn_in,
+                            nGibbsSamplerPath_intermediate=nGibbsSamplerPath_intermediate,
+                            nreal=nsim,
+                            seed=seed,
+                            verbose=(verbose-2),
+                            logger=logger)
+
         else:
-            v_ineq_sim = gcm.sgs_at_inequality_data_points(
-                        x, v, x_ineq, cov_model,
-                        v_err_std=v_err_std,
-                        v_ineq_min=v_ineq_min, v_ineq_max=v_ineq_max,
-                        method=method,
-                        mean_x=mean_x,
-                        mean_x_ineq=mean_x_ineq,
-                        var_x=var_x,
-                        var_x_ineq=var_x_ineq,
-                        alpha_x_ineq=alpha_x_ineq,
-                        beta_x_ineq=beta_x_ineq,
-                        gamma_x_ineq=gamma_x_ineq,
-                        cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
-                        searchRadius=searchRadius,
-                        searchRadiusRelative=searchRadiusRelative,
-                        nneighborMax=nneighborMax,
-                        nGibbsSamplerPath=nGibbsSamplerPath,
-                        nreal=nsim,
-                        seed=seed,
-                        verbose=(verbose-2),
-                        logger=logger)
+            if nproc_sgs_at_ineq != 1:
+                v_ineq_sim = gcm.sgs_at_inequality_data_points_mp(
+                            x, v, x_ineq, cov_model,
+                            v_err_std=v_err_std,
+                            v_ineq_min=v_ineq_min, v_ineq_max=v_ineq_max,
+                            method=method,
+                            mean_x=mean_x,
+                            mean_x_ineq=mean_x_ineq,
+                            var_x=var_x,
+                            var_x_ineq=var_x_ineq,
+                            alpha_x_ineq=alpha_x_ineq,
+                            beta_x_ineq=beta_x_ineq,
+                            gamma_x_ineq=gamma_x_ineq,
+                            cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
+                            searchRadius=searchRadius,
+                            searchRadiusRelative=searchRadiusRelative,
+                            nneighborMax=nneighborMax,
+                            nGibbsSamplerPath=nGibbsSamplerPath,
+                            nreal=nsim,
+                            seed=seed,
+                            verbose=(verbose-2),
+                            nproc=nproc_sgs_at_ineq,
+                            logger=logger)
+
+            else:
+                v_ineq_sim = gcm.sgs_at_inequality_data_points(
+                            x, v, x_ineq, cov_model,
+                            v_err_std=v_err_std,
+                            v_ineq_min=v_ineq_min, v_ineq_max=v_ineq_max,
+                            method=method,
+                            mean_x=mean_x,
+                            mean_x_ineq=mean_x_ineq,
+                            var_x=var_x,
+                            var_x_ineq=var_x_ineq,
+                            alpha_x_ineq=alpha_x_ineq,
+                            beta_x_ineq=beta_x_ineq,
+                            gamma_x_ineq=gamma_x_ineq,
+                            cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
+                            searchRadius=searchRadius,
+                            searchRadiusRelative=searchRadiusRelative,
+                            nneighborMax=nneighborMax,
+                            nGibbsSamplerPath=nGibbsSamplerPath,
+                            nreal=nsim,
+                            seed=seed,
+                            verbose=(verbose-2),
+                            logger=logger)
 
     # Mode A and B : prepare parameters (common)
     # ------------
@@ -4322,7 +4375,10 @@ def estimate(
         searchRadiusRelative=1.2,
         nneighborMax=12,
         searchNeighborhoodSortMode=1,
+        sgs_at_ineq_in_seq=False,
         nGibbsSamplerPath=50,
+        nGibbsSamplerPath_burn_in=50,
+        nGibbsSamplerPath_intermediate=10,
         seed=None,
         outputReportFile=None,
         nthreads=-1,
@@ -4673,8 +4729,28 @@ def estimate(
         note: parameter considered for kriging on the grid (step 4a)
         unless `use_unique_neighborhood=True`
 
+    sgs_at_ineq_in_seq : bool, default: False
+        - if `True`: realizations at inequality data points are done via a Gibbs sampler \
+        in a unique Markov chain Monte Carlo, based on a burn-in period for the first \
+        realization, then an intermediate period for the next realizations ("realizations \
+        in sequence") ; function `geone.covModel.sgs_at_inequality_data_points_seq` is used
+        - if `False`: each realization at inequality data points is done via a Gibbs sampler \
+        in its own Markov chain Monte Carlo, based on a given number of paths ; function \
+        `geone.covModel.sgs_at_inequality_data_points[_mp]` is used
+
+        Note: changing `sgs_at_ineq_in_seq` will change the realizations (even if `seed` is kept)
+
     nGibbsSamplerPath : int, default: 50
-        number of Gibbs sampler paths for simulating values at inequality data points
+        used if `sgs_at_ineq_in_seq=False`, number of Gibbs sampler paths for simulating 
+        values at inequality data points
+
+    nGibbsSamplerPath_burn_in : int, default: 50
+        used if `sgs_at_ineq_in_seq=True`, number of Gibbs sampler paths for 
+        the burn-in period for simulating values at inequality data points
+
+    nGibbsSamplerPath_intermediate : int, default: 10
+        used if `sgs_at_ineq_in_seq=True`, number of Gibbs sampler paths for 
+        the intermediate period for simulating values at inequality data points
 
     seed : int, optional
         seed for initializing random number generator (for simulation at inequality
@@ -4692,13 +4768,14 @@ def estimate(
         note: if `nthreads=None`, `nthreads=-1` is used
 
     nproc_sgs_at_ineq : int, optional
-        number of process(es) for sgs at inequality data points:
+        used if `sgs_at_ineq_in_seq=False`, number of process(es) for sgs at inequality 
+        data points:
 
         - if `nproc_sgs_at_ineq = 1`: multiprocessing is not enabled and the function \
-        `gcm.sgs_at_inequality_data_points` is used
+        `geone.covModel.sgs_at_inequality_data_points` is used
         - if `nproc_sgs_at_ineq > 1`: multiprocessing is enabled and the function \
-        `gcm.sgs_at_inequality_data_points_mp` with parameter `nproc=nproc_sgs_at_ineq` \
-        is used
+        `geone.covModel.sgs_at_inequality_data_points_mp` with parameter \
+        `nproc=nproc_sgs_at_ineq` is used
 
         by default (`None`): `nproc_sgs_at_ineq` is set to `nthreads`
 
@@ -5234,15 +5311,18 @@ def estimate(
         else:
             print(f'{fname}: WARNING: total number of cpu(s) used ({nthreads}) will exceed number of cpu(s) of the system...')
 
-    # Set number of process(es) for the step 1a (simulation at inequality data points)
-    if nproc_sgs_at_ineq is None:
-        nproc_sgs_at_ineq = nth
+    if not sgs_at_ineq_in_seq:
+        # Set number of process(es) for the step 1a/1b (simulation at inequality data points)
+        if nproc_sgs_at_ineq is None:
+            nproc_sgs_at_ineq = nth
 
-    if verbose > 0 and nproc_sgs_at_ineq > os.cpu_count():
-        if logger:
-            logger.warning(f'{fname}: total number of cpu(s) used ({nproc_sgs_at_ineq}) (for simulation at inequality data points) will exceed number of cpu(s) of the system...')
-        else:
-            print(f'{fname}: WARNING: total number of cpu(s) used ({nproc_sgs_at_ineq}) (for simulation at inequality data points) will exceed number of cpu(s) of the system...')
+        if verbose > 0 and nproc_sgs_at_ineq > os.cpu_count():
+            if logger:
+                logger.warning(f'{fname}: total number of cpu(s) used ({nproc_sgs_at_ineq}) (for simulation at inequality data points) will exceed number of cpu(s) of the system...')
+            else:
+                print(f'{fname}: WARNING: total number of cpu(s) used ({nproc_sgs_at_ineq}) (for simulation at inequality data points) will exceed number of cpu(s) of the system...')
+    else:
+        nproc_sgs_at_ineq = 1
 
     # Set seed
     if seed is None:
@@ -5391,53 +5471,79 @@ def estimate(
             else:
                 print(f"{fname}: (Step 1.1) do sgs at inequality data points ({nsim} simulation(s) at {n_ineq} points)...")
 
-        if nproc_sgs_at_ineq != 1:
-            v_ineq_sim = gcm.sgs_at_inequality_data_points_mp(
-                        x, v, x_ineq, cov_model,
-                        v_err_std=v_err_std,
-                        v_ineq_min=v_ineq_min, 
-                        v_ineq_max=v_ineq_max,
-                        method=method,
-                        mean_x=mean_x,
-                        mean_x_ineq=mean_x_ineq,
-                        var_x=var_x,
-                        var_x_ineq=var_x_ineq,
-                        alpha_x_ineq=alpha_x_ineq,
-                        beta_x_ineq=beta_x_ineq,
-                        gamma_x_ineq=gamma_x_ineq,
-                        cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
-                        searchRadius=searchRadius,
-                        searchRadiusRelative=searchRadiusRelative,
-                        nneighborMax=nneighborMax,
-                        nGibbsSamplerPath=nGibbsSamplerPath,
-                        nreal=nsim,
-                        seed=seed,
-                        verbose=(verbose-2),
-                        nproc=nproc_sgs_at_ineq,
-                        logger=logger)
-        else:
-            v_ineq_sim = gcm.sgs_at_inequality_data_points(
-                        x, v, x_ineq, cov_model,
-                        v_err_std=v_err_std,
-                        v_ineq_min=v_ineq_min, 
-                        v_ineq_max=v_ineq_max,
-                        method=method,
-                        mean_x=mean_x,
-                        mean_x_ineq=mean_x_ineq,
-                        var_x=var_x,
-                        var_x_ineq=var_x_ineq,
-                        alpha_x_ineq=alpha_x_ineq,
-                        beta_x_ineq=beta_x_ineq,
-                        gamma_x_ineq=gamma_x_ineq,
-                        cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
-                        searchRadius=searchRadius,
-                        searchRadiusRelative=searchRadiusRelative,
-                        nneighborMax=nneighborMax,
-                        nGibbsSamplerPath=nGibbsSamplerPath,
-                        nreal=nsim,
-                        seed=seed,
-                        verbose=(verbose-2),
-                        logger=logger)
+        if sgs_at_ineq_in_seq:
+                v_ineq_sim = gcm.sgs_at_inequality_data_points_seq(
+                            x, v, x_ineq, cov_model,
+                            v_err_std=v_err_std,
+                            v_ineq_min=v_ineq_min, 
+                            v_ineq_max=v_ineq_max,
+                            method=method,
+                            mean_x=mean_x,
+                            mean_x_ineq=mean_x_ineq,
+                            var_x=var_x,
+                            var_x_ineq=var_x_ineq,
+                            alpha_x_ineq=alpha_x_ineq,
+                            beta_x_ineq=beta_x_ineq,
+                            gamma_x_ineq=gamma_x_ineq,
+                            cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
+                            searchRadius=searchRadius,
+                            searchRadiusRelative=searchRadiusRelative,
+                            nneighborMax=nneighborMax,
+                            nGibbsSamplerPath_burn_in=nGibbsSamplerPath_burn_in,
+                            nGibbsSamplerPath_intermediate=nGibbsSamplerPath_intermediate,
+                            nreal=nsim,
+                            seed=seed,
+                            verbose=(verbose-2),
+                            logger=logger)
+        else:           
+            if nproc_sgs_at_ineq != 1:
+                v_ineq_sim = gcm.sgs_at_inequality_data_points_mp(
+                            x, v, x_ineq, cov_model,
+                            v_err_std=v_err_std,
+                            v_ineq_min=v_ineq_min, 
+                            v_ineq_max=v_ineq_max,
+                            method=method,
+                            mean_x=mean_x,
+                            mean_x_ineq=mean_x_ineq,
+                            var_x=var_x,
+                            var_x_ineq=var_x_ineq,
+                            alpha_x_ineq=alpha_x_ineq,
+                            beta_x_ineq=beta_x_ineq,
+                            gamma_x_ineq=gamma_x_ineq,
+                            cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
+                            searchRadius=searchRadius,
+                            searchRadiusRelative=searchRadiusRelative,
+                            nneighborMax=nneighborMax,
+                            nGibbsSamplerPath=nGibbsSamplerPath,
+                            nreal=nsim,
+                            seed=seed,
+                            verbose=(verbose-2),
+                            nproc=nproc_sgs_at_ineq,
+                            logger=logger)
+
+            else:
+                v_ineq_sim = gcm.sgs_at_inequality_data_points(
+                            x, v, x_ineq, cov_model,
+                            v_err_std=v_err_std,
+                            v_ineq_min=v_ineq_min, 
+                            v_ineq_max=v_ineq_max,
+                            method=method,
+                            mean_x=mean_x,
+                            mean_x_ineq=mean_x_ineq,
+                            var_x=var_x,
+                            var_x_ineq=var_x_ineq,
+                            alpha_x_ineq=alpha_x_ineq,
+                            beta_x_ineq=beta_x_ineq,
+                            gamma_x_ineq=gamma_x_ineq,
+                            cov_model_non_stationarity_x_ineq_list=cov_model_non_stationarity_x_ineq_list,
+                            searchRadius=searchRadius,
+                            searchRadiusRelative=searchRadiusRelative,
+                            nneighborMax=nneighborMax,
+                            nGibbsSamplerPath=nGibbsSamplerPath,
+                            nreal=nsim,
+                            seed=seed,
+                            verbose=(verbose-2),
+                            logger=logger)
 
         # # Debugging
         # np.savetxt('zzz_v_ineq_min.txt', v_ineq_min)

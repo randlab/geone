@@ -9488,7 +9488,7 @@ def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=
 
         else:
             # only upper bound
-            ind = v <= v_max
+            ind = v < v_max # note: do not use <= becase the meach could be greater (due to numerical error)
             if ind.any():
                 v_mean = np.mean(v[ind])
             else:
@@ -9498,7 +9498,7 @@ def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=
     else:
         if np.isinf(v_max):
             # only lower bound
-            ind = v >= v_min
+            ind = v > v_min # note: do not use >= becase the meach could be smaller (due to numerical error)
             if ind.any():
                 v_mean = np.mean(v[ind])
             else:
@@ -9507,7 +9507,7 @@ def values_to_mean_and_err_std(v, v_min=np.nan, v_max=np.nan, p=0.95, def_shift=
 
         else:
             # lower bound and upper bound
-            ind = np.all((v >= v_min, v <= v_max), axis=0)
+            ind = np.all((v > v_min, v < v_max), axis=0) # note : use strict inequalities ...
             if ind.any():
                 v_mean = np.mean(v[ind])
             else:
@@ -12787,6 +12787,1227 @@ def sgs_mp(
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
+def sgs_at_inequality_data_points_seq(
+        x, v, x_ineq, cov_model,
+        v_err_std=0.0,
+        v_ineq_min=None, v_ineq_max=None,
+        method='ordinary_kriging',
+        mean_x=None,
+        mean_x_ineq=None,
+        var_x=None,
+        var_x_ineq=None,
+        alpha_x_ineq=None,
+        beta_x_ineq=None,
+        gamma_x_ineq=None,
+        cov_model_non_stationarity_x_ineq_list=None,
+        searchRadius=None,
+        searchRadiusRelative=1.2,
+        nneighborMax=12,
+        nGibbsSamplerPath_burn_in=50,
+        nGibbsSamplerPath_intermediate=10,
+        nreal=1,
+        seed=None,
+        verbose=0,
+        logger=None):
+    """
+    Performs Sequential Gaussian Simulation (SGS) at inequality data point(s).
+
+    This function does SGS at locations `x_ineq`, given data points locations
+    `x` with values `v`.
+
+    A sequence of realizations is done, via a Gibbs sampler in a unique Markov chain
+    Monte Carlo: the first realization is taken after a "burn-in period", then each next 
+    realization are taken after every "intermediate period". Note that the all the 
+    realizations depend on the same seed number or intialization of the random number
+    generator.
+
+    Parameters
+    ----------
+    x : 2D array of floats of shape (n, d)
+        data points locations, with n the number of data points and d the space
+        dimension (1, 2, or 3), each row of `x` is the coordinatates of one data
+        point; note: for data in 1D (`d=1`), 1D array of shape `(n,)` is accepted
+        for `n` data points
+
+    v : 1D array of floats of shape (n,)
+        data points values, with n the number of data points, `v[i]` is the data
+        value at location `x[i]`
+
+    x_ineq : 2D array of floats of shape (n_ineq, d)
+        points locations where the interpolation has to be done, with n_ineq the
+        number of points and d the space dimension (1, 2, or 3, same as for `x`),
+        each row of `x_ineq` is the coordinatates of one point;
+        note: for data in 1D (`d=1`), 1D array of shape `(n_ineq,)` is accepted
+        for `n_ineq` points
+
+    cov_model : :class:`CovModel1D` or :class:`CovModel2D` or :class:`CovModel3D`
+        covariance model in 1D, 2D, or 3D, in same dimension as dimension of
+        points (d), i.e.:
+
+        - :class:`CovModel1D` for data in 1D (d=1)
+        - :class:`CovModel2D` for data in 2D (d=2)
+        - :class:`CovModel3D` for data in 3D (d=3)
+
+        or
+
+        - :class:`CovModel1D` interpreted as an omni-directional covariance model \
+        whatever dimension of points (d);
+
+        note: the covariance model must be stationary, however, non stationarity is
+        handled:
+
+        - local rotation by specifying `alpha_x_ineq` (in 2D or 3D), `beta_x_ineq` (in 3D), `gamma_x_ineq` (in 3D)
+        - other non-stationarities by specifying `cov_model_non_stationarity_x_ineq_list` (see below)
+
+    v_err_std : 1D array of floats of shape (n,), or float, default: 0.0
+        standard deviation of error at data points, with n the number of data points;
+        if `v_err_std` is a float, the same value is used for all data points;
+        this means that at location x[i], the data value is considered as in a Gaussian
+        distribution of mean `v[i]` and standard deviation `v_err_std[i]`
+
+    v_ineq_min : 1D array of floats of shape (n_ineq,), or float, optional
+        minimal value (lower bound) for inequality data points, with n_ineq the
+        number of inequality data points (`v_ineq_min[i]` is the value for the
+        location `x_ineq[i]`); if `v_ineq_min` is a float, the same value
+        is used for all inequality data points; if `v_ineq_min=None` (default),
+        no minimal value is considered for any inequality data point;
+        note: `v_ineq_min[i]` set to `np.nan` or `-np.inf` means that there is
+        no minimal value for point `x_ineq[i]`
+
+    v_ineq_max : 1D array of floats of shape (n_ineq,), or float, optional
+        maximal value (upper bound) for inequality data points, with n_ineq the
+        number of inequality data points (`v_ineq_max[i]` is the value for the
+        location `x_ineq[i]`); if `v_ineq_max` is a float, the same value
+        is used for all inequality data points; if `v_ineq_max=None` (default),
+        no maximal value is considered for any inequality data point;
+        note: `v_ineq_max[i]` set to `np.nan` or `np.inf` means that there is
+        no maximal value for point `x_ineq[i]`
+
+    method : str {'simple_kriging', 'ordinary_kriging'}, default: 'ordinary_kriging'
+        type of kriging;
+        note: if `method='ordinary_kriging'`, the parameters
+        `mean_x`, `mean_x_ineq`, `var_x`, `var_x_ineq` are not used
+
+    mean_x : 1D array-like of floats, or float, optional
+        kriging mean value at data points `x`
+
+        - if `mean_x` is a float, the same value is considered for any point
+        - if `mean_x=None` (default): the mean of data values, i.e. mean of `v`, \
+        is considered for any point
+
+        note: if `method=ordinary_kriging`, parameter `mean_x` is ignored
+
+    mean_x_ineq : 1D array-like of floats, or float, optional
+        kriging mean value at points `x_ineq`
+
+        - if `mean_x_ineq` is a float, the same value is considered for any point
+        - if `mean_x_ineq=None` (default): the value `mean_x` (assumed to be a single \
+        float) is considered for any point
+
+        note: if `method=ordinary_kriging`, parameter `mean_x_ineq` is ignored
+
+    var_x : 1D array-like of floats, or float, optional
+        kriging variance value at data points `x`
+
+        - if `var_x` is a float, the same value is considered for any point
+        - if `var_x=None` (default): not used  (use of covariance model only)
+
+        note: if `method=ordinary_kriging`, parameter `var_x` is ignored
+
+    var_x_ineq : 1D array-like of floats, or float, optional
+        kriging variance value at points `x_ineq`
+
+        - if `var_x_ineq` is a float, the same value is considered for any point
+        - if `var_x_ineq=None` (default): not used  (use of covariance model only)
+
+        note: if `method=ordinary_kriging`, parameter `var_x_ineq` is ignored
+
+    alpha_x_ineq : 1D array-like of floats, or float, optional
+        azimuth angle in degrees at points `x_ineq`
+
+        - if `alpha_x_ineq` is a float, the same value is considered for any point
+        - if `alpha_x_ineq=None` (default): `alpha_x_ineq=0.0` is used for any point
+
+        note: `alpha_x_ineq` is ignored if the covariance model is in 1D
+
+    beta_x_ineq : 1D array-like of floats, or float, optional
+        dip angle in degrees at points `x_ineq`
+
+        - if `beta_x_ineq` is a float, the same value is considered for any point
+        - if `beta_x_ineq=None` (default): `beta_x_ineq=0.0` is used for any point
+
+        note: `beta_x_ineq` is ignored if the covariance model is in 1D or 2D
+
+    gamma_x_ineq : 1D array-like of floats, or float, optional
+        dip angle in degrees at points `x_ineq`
+
+        - if `gamma_x_ineq` is a float, the same value is considered for any point
+        - if `gamma_x_ineq=None` (default): `gamma_x_ineq=0.0` is used for any point
+
+        note: `gamma_x_ineq` is ignored if the covariance model is in 1D or 2D
+
+    cov_model_non_stationarity_x_ineq_list : list, optional
+        list to set non-stationarities in covariance model; each entry must be
+        a tuple (or list) `cm_ns` of length 2 or 3 with:
+
+        - `cm_ns[0]`: str: the name of the method of `cov_model` to be applied
+        - `cm_ns[1]`: 1D array-like of floats, or float: \
+        used to set the main parameter passed to the method:
+            - if array-like: its size must be equal to `n_ineq`, \
+            (the array is reshaped if needed), values at points `x_ineq`
+            - if a float: same value at all points `x_ineq`
+        - `cm_ns[2]`: dict, optional: keyworkds arguments to be passed to the method
+
+        Examples (with the parameter `arg` is set from `val`)
+
+        - `('multiply_w', val)` will apply `cov_model.multiply_w(arg)`;
+            this multipies the weight contribution of every elementary contribution of the
+            covariance model
+        - `('multiply_w', val, {'elem_ind':0})` will apply `cov_model.multiply_w(arg, elem_ind=0)`;
+            this multipies the weight contribution of the elementary contribution of index 0 of the
+            covariance model
+        - `('multiply_r', val)` will apply `cov_model.multiply_r(arg)`;
+            this multipies the range in all direction of every elementary contribution of the
+            covariance model
+        - `('multiply_r', val, {'r_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0)`;
+            this multipies the range in the first main direction (index 0) of every elementary
+            contribution of the covariance model
+        - `('multiply_r', val, {'r_ind':0, 'elem_ind':0})` will apply `cov_model.multiply_r(arg, r_ind=0, elem_ind=0)`;
+            this multipies the range in the first main direction (index 0) of the elementary
+            contribution of index 0 of the covariance model
+
+    searchRadius : float, optional
+        if specified, i.e. not `None`: radius of the search neighborhood (ellipsoid
+        with same radii along each axis), i.e. the data points at distance to the
+        estimated point greater than `searchRadius` are not taken into account
+        in the kriging system; if `searchRadius` is not `None`, then
+        `searchRadiusRelative` is not used;
+        by default (`searchRadius=None`): `searchRadiusRelative` is used to
+        define the search ellipsoid;
+
+    searchRadiusRelative : float, default: 1.2
+        used only if `searchRadius` is `None`;
+        indicates how the search ellipsoid is limited (should be positive): let
+        r_i be the ranges of the covariance model along its main axes, when
+        estimating/simulating a cell x, a cell y is taken into account iff it is
+        within the ellipsoid centered at x of half axes equal to
+        `searchRadiusRelative` * r_i;
+        (note that the distances to the central node are computed in the axes
+        sytem supporting the covariance model and accounting for anisotropy given
+        by the ranges)
+
+    nneighborMax : int, default: 12
+        maximal number of neighbors (data points) taken into account in the
+        kriging system; the data points the closest to the estimated points are
+        taken into account
+
+    nGibbsSamplerPath_burn_in : int, default: 50
+        burn-in period (number of Gibbs sampler paths, >= 1) of the McMC 
+        (for simulating values at inequality data points, for the first realization)
+
+    nGibbsSamplerPath_intermediate : int, default: 10
+        intermediate period (number of Gibbs sampler paths, >= 1) of the McMC 
+        (for simulating values at inequality data points, for realization from the 2nd one)
+
+    nreal : int, default: 1
+        number of realization(s)
+
+    seed : int, optional
+        seed for initializing random number generator
+
+    verbose : int, default: 0
+        verbose mode, higher implies more printing (info)
+
+    logger : :class:`logging.Logger`, optional
+        logger (see package `logging`)
+        if specified, messages are written via `logger` (no print)
+
+    Returns
+    -------
+    v_ineq : 2D array of shape (nreal, n_ineq)
+        simulated values at points `x_ineq`
+        - v_ineq[i, j] value of the i-th realization at point `x_ineq[j]`
+    """
+    fname = 'sgs_at_inequality_data_points_seq'
+
+    # Check number of realization(s)
+    if nreal < 0:
+        err_msg = f'{fname}: `nreal` is negative'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # Check burn-in and intermediate period
+    if nGibbsSamplerPath_burn_in < 1:
+        err_msg = f'{fname}: `nGibbsSamplerPath_burn_in` is negative or null'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    if nGibbsSamplerPath_intermediate < 1:
+        err_msg = f'{fname}: `nGibbsSamplerPath_intermediate` is negative or null'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # Prevent calculation if covariance model is not stationary
+    if not cov_model.is_stationary():
+        err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use the other paramters for non-stationary covariance)'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # Get dimension from x (d) and number of data points (n) and size of v
+    if x is None:
+        n = 0
+        d = 0
+        if v is not None:
+            err_msg = f'{fname}: `x` is None but `v` is not None'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    else:
+        x = np.asarray(x)
+        # Get dimension (d) from x
+        if x.ndim == 1:
+            # x is a 1-dimensional array
+            x = x.reshape(-1, 1)
+            d = 1
+        else:
+            # x is a 2-dimensional array
+            d = x.shape[1]
+
+        n = x.shape[0]
+
+        # Check size of v
+        if v is None:
+            err_msg = f'{fname}: `x` is not None but `v` is None'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v = np.asarray(v).reshape(-1)
+        if v.size != n:
+            err_msg = f'{fname}: size of `v` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        
+        if np.any(np.isnan(v)):
+            err_msg = f'{fname}: `v` contains `nan` value(s)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Set variance of data error (from standard deviation)
+    if v_err_std is None:
+        v_err_std = 0.0
+    v_err_var = np.asarray(v_err_std, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+    if v_err_var.size == 1:
+        v_err_var = v_err_var[0] * np.ones(n)
+    elif v_err_var.size != n:
+        err_msg = f'{fname}: size of `v_err_std` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    if np.any(v_err_var < 0.0):
+        err_msg = f'{fname}: `v_err_std` contains negative value(s)'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    v_err_var = v_err_var * v_err_var
+
+    # Get dimension from x_ineq (d_ineq) and number of unknown points (n_ineq)
+    if x_ineq is None:
+        n_ineq = 0
+        d_ineq = 0
+    else:
+        x_ineq = np.asarray(x_ineq)
+        # Get dimension (d_ineq) from x_ineq
+        if x_ineq.ndim == 1:
+            # x_ineq is a 1-dimensional array
+            x_ineq = x_ineq.reshape(-1, 1)
+            d_ineq = 1
+        else:
+            # x_ineq is a 2-dimensional array
+            d_ineq = x_ineq.shape[1]
+
+        n_ineq = x_ineq.shape[0]
+
+    if nreal == 0 or n_ineq == 0:
+        v_ineq = np.empty((nreal, n_ineq), dtype='float')
+        return v_ineq
+
+    # Here: n_ineq > 0 and nreal > 0
+
+    if n > 0:
+        # Check dimension of x and x_ineq
+        if d != d_ineq:
+            err_msg = f'{fname}: `x` and `x_ineq` do not have the same dimension'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    else: # n == 0
+        d = d_ineq # set d to d_ineq if no data point
+        x = np.empty((0, d), dtype='float') # set x to an empty array with shape (0, d)
+        v = np.array([], dtype='float')
+
+    # Check that all data points (locations) are distinct
+    for i in range(1, n):
+        if np.any(np.isclose(np.sum((x[:i]-x[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x` contains duplicated entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Check that all inequality data points (locations) are distinct
+    for i in range(1, n_ineq):
+        if np.any(np.isclose(np.sum((x_ineq[:i]-x_ineq[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x_ineq` contains duplicated entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Check that all data points and inequality data points (locations) are distinct
+    for i in range(1, n):
+        if np.any(np.isclose(np.sum((x_ineq-x[i])**2, axis=1), 0.0)):
+            err_msg = f'{fname}: `x` and `x_ineq` contains same entries'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    # Check (and set) v_ineq_min
+    if v_ineq_min is None:
+        v_ineq_min = np.full((n_ineq, ), -np.inf)
+    else:
+        v_ineq_min = np.asarray(v_ineq_min).reshape(-1)
+        if v_ineq_min.size == 1:
+            v_ineq_min = v_ineq_min * np.ones(n_ineq)
+        elif v_ineq_min.size != n_ineq:
+            err_msg = f'{fname}: size of `v_ineq_min` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v_ineq_min[np.isnan(v_ineq_min)] = -np.inf
+
+    # Check (and set) v_ineq_max
+    if v_ineq_max is None:
+        v_ineq_max = np.full((n_ineq, ), np.inf)
+    else:
+        v_ineq_max = np.asarray(v_ineq_max).reshape(-1)
+        if v_ineq_max.size == 1:
+            v_ineq_max = v_ineq_max * np.ones(n_ineq)
+        elif v_ineq_max.size != n_ineq:
+            err_msg = f'{fname}: size of `v_ineq_max` is not valid'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        v_ineq_max[np.isnan(v_ineq_max)] = np.inf
+
+    # Check consistency of v_ineq_min and v_ineq_max
+    if np.any(v_ineq_max <= v_ineq_min):
+        err_msg = f'{fname}: `v_ineq_min` and `v_ineq_max` are not consistent'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # Check dimension of cov_model and set if used as omni-directional model
+    if isinstance(cov_model, CovModel1D):
+        omni_dir = True
+    else:
+        if cov_model.__class__.__name__ != f'CovModel{d}D':
+            err_msg = f'{fname}: `cov_model` dimension is incompatible with dimension of points'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        omni_dir = False
+
+    # Covariance function
+    cov_func = cov_model.func() # covariance function
+    if omni_dir:
+        # covariance model in 1D is used
+        cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+    else:
+        cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+    # Method and mean, var
+    if method == 'simple_kriging':
+        ordinary_kriging = False
+        if n == 0:
+            mean_x = np.array([], dtype='float')
+        else:
+            if mean_x is None:
+                mean_x = np.mean(v) * np.ones(n)
+            else:
+                mean_x = np.asarray(mean_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                if mean_x.size == 1:
+                    mean_x = mean_x * np.ones(n)
+                elif mean_x.size != n:
+                    err_msg = f'{fname}: size of `mean_x` is not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+                if np.any(np.isnan(mean_x)):
+                    err_msg = f'{fname}: `mean_x` contains `nan` value(s)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+        if mean_x_ineq is None:
+            if n == 0:
+                mean_x_ineq = np.zeros(n_ineq)
+            else:
+                mean_x_ineq = np.mean(v) * np.ones(n_ineq)
+        else:
+            mean_x_ineq = np.asarray(mean_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if mean_x_ineq.size == 1:
+                mean_x_ineq = mean_x_ineq * np.ones(n_ineq)
+            elif mean_x_ineq.size != n_ineq:
+                err_msg = f'{fname}: size of `mean_x_ineq` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(mean_x_ineq)):
+                err_msg = f'{fname}: `mean_x_ineq` contains `nan` value(s)'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+        if n == 0:
+            if var_x_ineq is None:
+                var_x = None
+            else:
+                var_x = np.array([], dtype='float')
+
+        if (var_x is None and var_x_ineq is not None) or (var_x is not None and var_x_ineq is None):
+            err_msg = f'{fname}: `var_x` and `var_x_ineq` must both be specified'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        if var_x is not None:
+            var_x = np.asarray(var_x, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if var_x.size == 1:
+                var_x = var_x * np.ones(n)
+            elif var_x.size != n:
+                err_msg = f'{fname}: size of `var_x` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(var_x)):
+                err_msg = f'{fname}: `var_x` contains `nan` value(s)'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            varUpdate_x = np.sqrt(var_x/cov0)
+
+        if var_x_ineq is not None:
+            var_x_ineq = np.asarray(var_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if var_x_ineq.size == 1:
+                var_x_ineq = var_x_ineq * np.ones(n_ineq)
+            elif var_x_ineq.size != n_ineq:
+                err_msg = f'{fname}: size of `var_x_ineq` is not valid'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            if np.any(np.isnan(var_x_ineq)):
+                err_msg = f'{fname}: `var_x_ineq` contains `nan` value(s)'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+
+            varUpdate_x_ineq = np.sqrt(var_x_ineq/cov0)
+
+    elif method == 'ordinary_kriging':
+        if verbose > 0:
+            if mean_x is not None:
+                if logger:
+                    logger.warning(f"{fname}: `mean_x` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `mean_x` is ignored with `method='ordinary_kriging'`")
+            if mean_x_ineq is not None:
+                if logger:
+                    logger.warning(f"{fname}: `mean_x_ineq` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `mean_x_ineq` is ignored with `method='ordinary_kriging'`")
+            if var_x is not None:
+                if logger:
+                    logger.warning(f"{fname}: `var_x` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `var_x` is ignored with `method='ordinary_kriging'`")
+            if var_x_ineq is not None:
+                if logger:
+                    logger.warning(f"{fname}: `var_x_ineq` is ignored with `method='ordinary_kriging'`")
+                else:
+                    print(f"{fname}: WARNING: `var_x_ineq` is ignored with `method='ordinary_kriging'`")
+
+        ordinary_kriging = True
+        mean_x, mean_x_ineq, var_x, var_x_ineq = None, None, None, None
+
+    else:
+        err_msg = f'{fname}: `method` invalid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # WORK ON A COPY OF COVARIANCE MODEL (IN CASE IT IS ADAPTED)!
+    cov_model = copyCovModel(cov_model)
+    cov_model_has_changed = False
+
+    # Rotation given by alpha_x_ineq, beta_x_ineq, gamma_x_ineq
+    if alpha_x_ineq is not None:
+        if omni_dir:
+            err_msg = f'{fname}: `alpha_x_ineq` cannot be used with 1D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    if beta_x_ineq is not None:
+        if omni_dir or d < 3:
+            err_msg = f'{fname}: `beta_x_ineq` cannot be used with 1D or 2D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    if gamma_x_ineq is not None:
+        if omni_dir or d < 3:
+            err_msg = f'{fname}: `gamma_x_ineq` cannot be used with 1D or 2D covariance model'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+    if omni_dir:
+        rot = False
+    else:
+        if d == 2:
+            # 2D - check only alpha
+            if alpha_x_ineq is None:
+                rot = False
+            else:
+                alpha_x_ineq = np.asarray(alpha_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                if alpha_x_ineq.size == 1:
+                    if alpha_x_ineq[0] == 0.0:
+                        rot = False
+                    else:
+                        rot_mat = rotationMatrix2D(alpha_x_ineq[0]) # rot_mat : rotation matrix for any x_ineq[i]
+                        rot = True
+                        rot_mat_unique = True
+                elif alpha_x_ineq.size == n_ineq:
+                    if np.allclose(alpha_x_ineq, alpha_x_ineq[0]):
+                        if np.isclose(alpha_x_ineq[0], 0.0):
+                            rot = False
+                        else:
+                            rot_mat = rotationMatrix2D(alpha_x_ineq[0]) # rot_mat : rotation matrix for any x_ineq[i]
+                            rot = True
+                            rot_mat_unique = True
+                    else:
+                        rot_mat = rotationMatrix2D(alpha_x_ineq).transpose(2, 0, 1) # rot_mat[i] : rotation matrix for xineq[i]
+                        rot = True
+                        rot_mat_unique = False
+                else:
+                    err_msg = f'{fname}: size of `alpha_x_ineq` is not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+        else: # d == 3
+            # 3D
+            if alpha_x_ineq is None and beta_x_ineq is None and gamma_x_ineq is None:
+                rot = False
+            else:
+                if alpha_x_ineq is not None:
+                    alpha_x_ineq = np.asarray(alpha_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if alpha_x_ineq.size == 1:
+                        alpha_x_ineq = alpha_x_ineq * np.ones(n_ineq)
+                    elif alpha_x_ineq.size != n_ineq:
+                        err_msg = f'{fname}: size of `alpha_x_ineq` is not valid'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                else:
+                    alpha_x_ineq = np.zeros(n_ineq)
+
+                if beta_x_ineq is not None:
+                    beta_x_ineq = np.asarray(beta_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if beta_x_ineq.size == 1:
+                        beta_x_ineq = beta_x_ineq * np.ones(n_ineq)
+                    elif beta_x_ineq.size != n_ineq:
+                        err_msg = f'{fname}: size of `beta_x_ineq` is not valid'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                else:
+                    beta_x_ineq = np.zeros(n_ineq)
+
+                if gamma_x_ineq is not None:
+                    gamma_x_ineq = np.asarray(gamma_x_ineq, dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+                    if gamma_x_ineq.size == 1:
+                        gamma_x_ineq = gamma_x_ineq * np.ones(n_ineq)
+                    elif gamma_x_ineq.size != n_ineq:
+                        err_msg = f'{fname}: size of `gamma_x_ineq` is not valid'
+                        if logger: logger.error(err_msg)
+                        raise CovModelError(err_msg)
+                else:
+                    gamma_x_ineq = np.zeros(n_ineq)
+
+                if np.allclose(np.vstack((alpha_x_ineq, beta_x_ineq, gamma_x_ineq)).T, np.array([alpha_x_ineq[0], beta_x_ineq[0], gamma_x_ineq[0]])):
+                    if np.isclose(alpha_x_ineq[0], 0.0) and np.isclose(beta_x_ineq[0], 0.0) and np.isclose(gamma_x_ineq[0], 0.0):
+                        rot = False
+                    else:
+                        rot_mat = rotationMatrix3D(alpha_x_ineq[0], beta_x_ineq[0], gamma_x_ineq[0]) # rot_mat : rotation matrix for any x_ineq[i]
+                        rot = True
+                        rot_mat_unique = True
+                else:
+                    rot_mat = rotationMatrix3D(alpha_x_ineq, beta_x_ineq, gamma_x_ineq).transpose(2, 0, 1) # rot_mat[i] : rotation matrix for x_ineq[i]
+                    rot = True
+                    rot_mat_unique = False
+
+    if rot:
+        if d == 2:
+            cov_model.set_alpha(0.0)
+            cov_model_has_changed = True
+        elif d == 3:
+            cov_model.set_alpha(0.0)
+            cov_model.set_beta(0.0)
+            cov_model.set_gamma(0.0)
+            cov_model_has_changed = True
+        if rot_mat_unique:
+            # apply rotation to data points x and points x_ineq
+            x = x.dot(rot_mat)
+            x_ineq = x_ineq.dot(rot_mat)
+            rot = False # no need rotation further
+
+    # here: rot = True means that local rotation are applied
+
+    # Prepare non-stationarities for integration in covariance model
+    adapt_cov_model_ind = []
+    recompute_cov0 = False
+    recompute_dmax_ax = False
+    if cov_model_non_stationarity_x_ineq_list is not None:
+        if not isinstance(cov_model_non_stationarity_x_ineq_list, list):
+            err_msg = f'{fname}: `cov_model_non_stationarity_x_ineq_list` must be a list if not `None`'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+        for i, cm_ns_x_ineq in enumerate(cov_model_non_stationarity_x_ineq_list):
+            if not hasattr(cm_ns_x_ineq, '__len__') or len(cm_ns_x_ineq) not in (2, 3):
+                err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_x_ineq_list` not valid: should be a tuple or list of length 2 or 3 containing: method name (str), val[, kwds (dict)]'
+                if logger: logger.error(err_msg)
+                raise CovModelError(err_msg)
+            val = np.asarray(cm_ns_x_ineq[1], dtype='float').reshape(-1) # cast in 1-dimensional array if needed
+            if val.size != 1:
+                if val.size != n_ineq:
+                    err_msg = f'{fname}: entry {i} of `cov_model_non_stationarity_x_ineq_list`, `(method_name, val[, kwds])`: size of `val` not valid'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                if np.allclose(val, val[0]):
+                    val = val[:1] # of size 1
+                else:
+                    adapt_cov_model_ind.append(i)
+                    if cm_ns_x_ineq[0] == 'multiply_w':
+                        recompute_cov0 = True
+                    elif cm_ns_x_ineq[0] == 'multiply_r':
+                        recompute_dmax_ax = True
+            if val.size == 1:
+                method_name = cm_ns_x_ineq[0]
+                if len(cm_ns_x_ineq) == 3:
+                    kwds = cm_ns_x_ineq[2]
+                else:
+                    kwds = {}
+                try:
+                    eval(f'cov_model.{method_name}')(val[0], logger=logger, **kwds)
+                except:
+                    err_msg = f'{fname}: cannot apply non-stationarity (at points) for covariance model (check parameter `cov_model_non_stationarity_x_ineq_list`)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+                cov_model_has_changed = True
+
+    adapt_cov_model = len(adapt_cov_model_ind) > 0
+
+    if cov_model_has_changed:
+        # Update - Covariance function and value at 0
+        cov_func = cov_model.func() # covariance function
+        if omni_dir:
+            # covariance model in 1D is used
+            cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+        else:
+            cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+    # Limited search neighborhood
+    if searchRadius is not None:
+        if searchRadius <= 0.0:
+            err_msg = f'{fname}: search radius (isotropic neighborhood) not valid (negative)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        if omni_dir:
+            dmax_ax = np.array([searchRadius], dtype='float')
+        else:
+            dmax_ax = searchRadius * np.ones(d)
+
+    else:
+        # use searchRadiusRelative
+        if searchRadiusRelative <= 0.0:
+            err_msg = f'{fname}: search radius relative (factor) not valid (negative)'
+            if logger: logger.error(err_msg)
+            raise CovModelError(err_msg)
+
+        if d == 1 or omni_dir:
+            dmax_ax = np.array([cov_model.r()])
+        elif d == 2:
+            dmax_ax = cov_model.r12()
+        elif d == 3:
+            dmax_ax = cov_model.r123()
+
+        dmax_ax = searchRadiusRelative * dmax_ax
+
+    dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+    # Preparation if covariance model will be adapted
+    if adapt_cov_model:
+        cov_model_base = copyCovModel(cov_model)
+
+    # Maximum number of neighbors
+    if nneighborMax is None or nneighborMax < 0:
+        err_msg = f'{fname}: `nneighborMax` is not valid'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    mat = np.ones((nneighborMax+1, nneighborMax+1)) # allocate kriging matrix
+    b = np.ones(nneighborMax+1) # allocate second member
+
+     # Min value for std
+    std_min = 1.e-10
+    # eps = 1.e-8
+
+    # Set all points together (data points and inequality data points)
+    x_all = np.vstack((x, x_ineq))
+    # v_all = np.hstack((v, np.zeros(n_ineq)))
+    v_err_var_all = np.hstack((v_err_var, np.zeros(n_ineq)))
+
+    # Precompute solution of kriging for 2nd, 3rd, ... paths (Gibbs sampler)
+    # ----------------------------------------------------------------------
+    if verbose > 0:
+        if logger:
+            logger.info(f'{fname}: precomputing solution of kriging systems for all Gibbs sampler paths from the 2nd path...')
+        else:
+            print(f'{fname}: precomputing solution of kriging systems for all Gibbs sampler paths from the 2nd path...')
+
+    ind_sel = np.ones(n+n_ineq, dtype='bool')
+
+    ind_list = []
+    w_list = []
+    std_list = []
+
+    for j, x0 in enumerate(x_all[n:]):
+        # x0 is the location x_ineq[j]
+        ind_sel[n+j] = False
+
+        if adapt_cov_model:
+            cov_model = copyCovModel(cov_model_base)
+            for i in adapt_cov_model_ind:
+                cm_ns_x_ineq = cov_model_non_stationarity_x_ineq_list[i]
+                method_name = cm_ns_x_ineq[0]
+                val = cm_ns_x_ineq[1]
+                if len(cm_ns_x_ineq) == 3:
+                    kwds = cm_ns_x_ineq[2]
+                else:
+                    kwds = {}
+                try:
+                    eval(f'cov_model.{method_name}')(val[j], logger=logger, **kwds)
+                except:
+                    err_msg = f'{fname}: cannot apply non-stationarity (at one point) for covariance model (check parameter `cov_model_non_stationarity_x_ineq_list`)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+            cov_func = cov_model.func() # update covariance function
+            if recompute_cov0:
+                if omni_dir:
+                    # covariance model in 1D is used
+                    cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                else:
+                    cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+            if recompute_dmax_ax:
+                if omni_dir:
+                    dmax_ax = np.array([cov_model.r()])
+                elif d == 2:
+                    dmax_ax = cov_model.r12()
+                elif d == 3:
+                    dmax_ax = cov_model.r123()
+
+                dmax_ax = searchRadiusRelative * dmax_ax
+                dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+        h = x0 - x_all
+        if rot:
+            h = h.dot(rot_mat[j])
+        d2 = np.sum(dmax_ax_inv2 * h**2, axis=1)
+        ind = np.where(np.vstack((d2 < 1.0, ind_sel)).all(axis=0))[0]
+        if len(ind) > nneighborMax:
+            ind_s = np.argsort(d2[ind])
+            ind = ind[ind_s[:nneighborMax]]
+
+        nn = len(ind)
+        if nn == 0:
+            w = np.zeros(0)
+
+            std = np.sqrt(cov0)
+            if var_x is not None:
+                std = varUpdate_x_ineq[j]*std
+        else:
+            xneigh = x_all[ind]
+            v_err_var_neigh = v_err_var_all[ind]
+
+            # Set right hand side of the kriging system (b)
+            h = h[ind]
+            if omni_dir:
+                # compute norm of lag
+                h = np.sqrt(np.sum(h**2, axis=1))
+            b[:nn] = cov_func(h)
+
+            if ordinary_kriging:
+                nmat = nn+1
+            else:
+                nmat = nn
+
+            # Set kriging matrix (mat) of order nmat
+            for i in range(nn-1):
+                # lag between xneigh[i] and xneigh[j], j=i+1, ..., nn-1
+                h = xneigh[(i+1):] - xneigh[i]
+                if omni_dir:
+                    # compute norm of lag
+                    h = np.sqrt(np.sum(h**2, axis=1))
+                elif rot:
+                    h = h.dot(rot_mat[j])
+                cov_h = cov_func(h)
+                mat[i, (i+1):nn] = cov_h
+                mat[(i+1):nn, i] = cov_h
+                mat[i, i] = cov0 + v_err_var_neigh[i]
+
+            mat[nn-1,nn-1] = cov0 + v_err_var_neigh[nn-1]
+
+            if ordinary_kriging:
+                mat[:, nn] = 1.0
+                mat[nn, :] = 1.0
+                mat[nn,nn] = 0.0
+                b[nn] = 1.0
+
+            # Solve the kriging system
+            w = np.linalg.solve(mat[:nmat,:nmat], b[:nmat])
+
+            # Std (by kriging) at x_ineq[j]
+            if mean_x is not None:
+                # simple kriging
+                std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                if var_x is not None:
+                    std = varUpdate_x_ineq[j]*std
+            else:
+                # ordinary kriging
+                std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+
+            if np.isnan(std):
+                std = np.sqrt(cov0)
+                if var_x is not None:
+                    std = varUpdate_all[n+ind_ineq[j]]*std
+
+            if np.isclose(std, 0):
+                std = std_min
+
+        ind_list.append(ind)
+        w_list.append(w)
+        std_list.append(std)
+
+        ind_sel[n+j] = True
+
+    # Allocate memory for output
+    v_ineq = np.zeros((nreal, n_ineq))
+
+    # Set all points together (data points and inequality data points)
+    # x_all = np.vstack((x, x_ineq))
+    v_all = np.hstack((v, np.zeros(n_ineq)))
+    # v_err_var_all = np.hstack((v_err_var, np.zeros(n_ineq)))
+    if mean_x is not None:
+        mean_all = np.hstack((mean_x, mean_x_ineq))
+    if var_x is not None:
+        varUpdate_all = np.hstack((varUpdate_x, varUpdate_x_ineq))
+
+    # Set mu0 : used as mean when mean_x is None and there is no data in the neighborhood during the simulation ...
+    if n == 0:
+        mu0 = 0.0
+    else:
+        mu0 = np.mean(v)
+
+    # Array indicating if a point in x_all can be selected for kriging
+    ind_sel = np.zeros(n+n_ineq, dtype='bool')
+
+    if seed is None:
+        seed = np.random.randint(1, 1000000)
+    seed = int(seed)
+
+    if verbose > 0:
+        if logger:
+            logger.info(f'{fname}: do Gibbs sampler paths...')
+        else:
+            print(f'{fname}: do Gibbs sampler paths...')
+
+    if verbose > 1:
+        progress_old = 0
+
+    # Total number of Gibbs sampler paths
+    nGibbsSamplerPath_tot = nGibbsSamplerPath_burn_in * (nreal > 0) + nGibbsSamplerPath_intermediate * (nreal - 1)
+
+    # Vector of bool indicating at the end of which Gibbs sampler path a realization is saved
+    GibbsSamplerPath_save_real = np.zeros(nGibbsSamplerPath_tot, dtype=bool)
+    GibbsSamplerPath_save_real[nGibbsSamplerPath_burn_in-1::nGibbsSamplerPath_intermediate] = True
+    # for k in range(0, nreal):
+    #     GibbsSamplerPath_save_real[nGibbsSamplerPath_burn_in-1 + k*nGibbsSamplerPath_intermediate] = True
+
+    # Initialize random number generator (unique initialization for all realizations)
+    np.random.seed(seed)
+
+    # Initialize ind_sel
+    ind_sel[:n] = True  # all data points can be selected
+    ind_sel[n:] = False # no simulated points can be selected at the beginning
+
+    # First path (Gibbs sampler)
+    # --------------------------
+    # set path
+    ind_ineq = np.random.permutation(n_ineq)
+
+    nGibbs = 0
+    k = 0 # realization index to be saved
+    for j, jind in enumerate(ind_ineq):
+        # Simulation at x0 = x_ineq[jind] = x_ineq[ind_ineq[j]]
+        if verbose > 1:
+            progress = int(j/(n_ineq*nGibbsSamplerPath_tot)*100.0)
+            # progress = int((j+n_ineq*nGibbs)/(n_ineq*nGibbsSamplerPath_tot)*100.0)
+            if progress > progress_old:
+                if logger:
+                    logger.info(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                else:
+                    print(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                progress_old = progress
+
+        if adapt_cov_model:
+            cov_model = copyCovModel(cov_model_base)
+            for i in adapt_cov_model_ind:
+                cm_ns_x_ineq = cov_model_non_stationarity_x_ineq_list[i]
+                method_name = cm_ns_x_ineq[0]
+                val = cm_ns_x_ineq[1]
+                if len(cm_ns_x_ineq) == 3:
+                    kwds = cm_ns_x_ineq[2]
+                else:
+                    kwds = {}
+                try:
+                    eval(f'cov_model.{method_name}')(val[jind], logger=logger, **kwds)
+                except:
+                    err_msg = f'{fname}: cannot apply non-stationarity (at one point) for covariance model (check parameter `cov_model_non_stationarity_x_ineq_list`)'
+                    if logger: logger.error(err_msg)
+                    raise CovModelError(err_msg)
+
+            cov_func = cov_model.func() # update covariance function
+            if recompute_cov0:
+                if omni_dir:
+                    # covariance model in 1D is used
+                    cov0 = cov_func(0.)[0] # covariance function at origin (lag=0)
+                else:
+                    cov0 = cov_func(np.zeros(d))[0] # covariance function at origin (lag=0)
+
+            if recompute_dmax_ax:
+                if omni_dir:
+                    dmax_ax = np.array([cov_model.r()])
+                elif d == 2:
+                    dmax_ax = cov_model.r12()
+                elif d == 3:
+                    dmax_ax = cov_model.r123()
+
+                dmax_ax = searchRadiusRelative * dmax_ax
+                dmax_ax_inv2 = 1.0 / (dmax_ax * dmax_ax)
+
+        x0 = x_ineq[jind]
+        h = x0 - x_all[ind_sel]
+        if rot:
+            h = h.dot(rot_mat[jind])
+        d2 = np.sum(dmax_ax_inv2 * h**2, axis=1)
+        ind = np.where(d2 < 1.0)[0]
+        if len(ind) > nneighborMax:
+            ind_s = np.argsort(d2[ind])
+            ind = ind[ind_s[:nneighborMax]]
+        h = h[ind] # lag between x0 and x_all[ind] (used below for right hand side of the kriging system)
+        ind = ind_sel.nonzero()[0][ind] # indices in x_all
+        nn = len(ind)
+
+        if nn == 0:
+            # Mean and std (by kriging) at x_ineq[jind]
+            if mean_x is not None:
+                mu = mean_all[n+jind]
+            else:
+                mu = mu0
+
+            std = np.sqrt(cov0)
+            if var_x is not None:
+                std = varUpdate_all[n+jind]*std
+
+        else:
+            xneigh = x_all[ind]
+            vneigh = v_all[ind]
+            v_err_var_neigh = v_err_var_all[ind]
+
+            # Set right hand side of the kriging system (b)
+            if omni_dir:
+                # compute norm of lag
+                h = np.sqrt(np.sum(h**2, axis=1))
+            b[:nn] = cov_func(h)
+
+            if ordinary_kriging:
+                nmat = nn+1
+            else:
+                nmat = nn
+
+            # Set kriging matrix (mat) of order nmat
+            for i in range(nn-1):
+                # lag between xneigh[i] and xneigh[j], j=i+1, ..., nn-1
+                h = xneigh[(i+1):] - xneigh[i]
+                if omni_dir:
+                    # compute norm of lag
+                    h = np.sqrt(np.sum(h**2, axis=1))
+                elif rot:
+                    h = h.dot(rot_mat[jind])
+                cov_h = cov_func(h)
+                mat[i, (i+1):nn] = cov_h
+                mat[(i+1):nn, i] = cov_h
+                mat[i, i] = cov0 + v_err_var_neigh[i]
+
+            mat[nn-1,nn-1] = cov0 + v_err_var_neigh[nn-1]
+
+            if ordinary_kriging:
+                mat[:, nn] = 1.0
+                mat[nn, :] = 1.0
+                mat[nn,nn] = 0.0
+                b[nn] = 1.0
+
+            # Solve the kriging system
+            w = np.linalg.solve(mat[:nmat,:nmat], b[:nmat])
+
+            # Mean and std (by kriging) at x0
+            if mean_x is not None:
+                # simple kriging
+                std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                if var_x is not None:
+                    mu = mean_all[n+jind] + varUpdate_all[n+jind]*(1.0/varUpdate_all[ind]*(vneigh-mean_all[ind])).dot(w)
+                    std = varUpdate_all[n+jind]*std
+                else:
+                    mu = mean_all[n+jind] + (vneigh-mean_all[ind]).dot(w)
+            else:
+                # ordinary kriging
+                std = np.sqrt(max(0, cov0 - np.dot(w, b[:nmat])))
+                mu = vneigh.dot(w[:nn])
+
+            if np.isnan(mu) or np.isinf(mu):
+                if mean_x is not None:
+                    mu = mean_all[n+jind]
+                else:
+                    mu = mu0
+
+            if np.isnan(std) or np.isinf(std):
+                std = np.sqrt(cov0)
+                if var_x is not None:
+                    std = varUpdate_all[n+jind]*std
+
+            if np.isclose(std, 0):
+                std = std_min
+
+        # # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+        # # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+        # # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+        # tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
+        # tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
+        # t = tmin + np.random.random() * (tmax - tmin)
+        # v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
+
+        # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+        tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+        tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+        t = tmin + np.random.random() * (tmax - tmin)
+        v_all[n+jind] = min(v_ineq_max[jind], max(v_ineq_min[jind], mu + std * scipy.stats.norm.ppf(t)))
+        if np.isinf(v_all[n+jind]):
+            if np.isinf(v_ineq_min[jind]):
+                v_all[n+jind] = v_ineq_max[jind]
+            elif np.isinf(v_ineq_max[jind]):
+                v_all[n+jind] = v_ineq_min[jind]
+        
+        ind_sel[n+jind] = True
+
+    if GibbsSamplerPath_save_real[nGibbs]:
+        # Save realization k
+        v_ineq[k, :] = v_all[n:]
+        k = k+1
+
+    # Next paths (Gibbs sampler)
+    # --------------------------
+    for nGibbs in range(1, nGibbsSamplerPath_tot):
+        # set path
+        ind_ineq = np.random.permutation(n_ineq)
+
+        for j, jind in enumerate(ind_ineq):
+            # Simulation at x0 = x_ineq[jind] = x_ineq[ind_ineq[j]]
+            if verbose > 1:
+                progress = int((j+n_ineq*nGibbs)/(n_ineq*nGibbsSamplerPath_tot)*100.0)
+                if progress > progress_old:
+                    if logger:
+                        logger.info(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                    else:
+                        print(f'{fname}: {progress:3d}% ({k:3d} realizations done of {nreal})')
+                    progress_old = progress
+
+            ind = ind_list[jind]
+            nn = len(ind)
+
+            if nn == 0:
+                # Mean and std (by kriging) at x_ineq[jind]
+                if mean_x is not None:
+                    mu = mean_all[n+jind]
+                else:
+                    mu = mu0
+
+                # std = np.sqrt(cov0)
+                # if var_x is not None:
+                #     std = varUpdate_all[n+jind]*std
+
+            else:
+                vneigh = v_all[ind]
+                w = w_list[jind]
+                std = std_list[jind]
+
+                # Mean (by kriging) at x_ineq[jind]
+                if mean_x is not None:
+                    # simple kriging
+                    if var_x is not None:
+                        mu = mean_all[n+jind] + varUpdate_all[n+jind]*(1.0/varUpdate_all[ind]*(vneigh-mean_all[ind])).dot(w)
+                    else:
+                        mu = mean_all[n+jind] + (vneigh-mean_all[ind]).dot(w)
+                else:
+                    # ordinary kriging
+                    mu = vneigh.dot(w[:nn])
+
+                if np.isnan(mu) or np.isinf(mu):
+                    if mean_x is not None:
+                        mu = mean_all[n+jind]
+                    else:
+                        mu = mu0
+
+            # # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+            # # tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+            # # tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+            # tmin = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)))
+            # tmax = min(1.0 - eps, max(eps, scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)))
+            # t = tmin + np.random.random() * (tmax - tmin)
+            # v_all[n+jind] = mu + std * scipy.stats.norm.ppf(t)
+
+            # Draw value in Z ~ N(mu, std^2) | v_ineq_min[jind] <= Z <= v_ineq_max[jind]
+            tmin = scipy.stats.norm.cdf((v_ineq_min[jind] - mu)/std)
+            tmax = scipy.stats.norm.cdf((v_ineq_max[jind] - mu)/std)
+            t = tmin + np.random.random() * (tmax - tmin)
+            v_all[n+jind] = min(v_ineq_max[jind], max(v_ineq_min[jind], mu + std * scipy.stats.norm.ppf(t)))
+            if np.isinf(v_all[n+jind]):
+                if np.isinf(v_ineq_min[jind]):
+                    v_all[n+jind] = v_ineq_max[jind]
+                elif np.isinf(v_ineq_max[jind]):
+                    v_all[n+jind] = v_ineq_min[jind]
+
+        if GibbsSamplerPath_save_real[nGibbs]:
+            # Save realization k
+            v_ineq[k, :] = v_all[n:]
+            k = k+1
+
+    if verbose > 1:
+        if logger:
+            logger.info(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
+        else:
+            print(f'{fname}: {100:3d}% ({nreal:3d} realizations done of {nreal})')
+    
+    return v_ineq
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 def sgs_at_inequality_data_points(
         x, v, x_ineq, cov_model,
         v_err_std=0.0,
@@ -13024,6 +14245,18 @@ def sgs_at_inequality_data_points(
     if pid is not None:
         fname = f'{fname} [pid={pid}]'
 
+    # Check number of realization(s)
+    if nreal < 0:
+        err_msg = f'{fname}: `nreal` is negative'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # Check number of Gibbs sampler path
+    if nGibbsSamplerPath < 1:
+        err_msg = f'{fname}: `nGibbsSamplerPath` is negative or null'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
         err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use the other paramters for non-stationary covariance)'
@@ -13104,11 +14337,11 @@ def sgs_at_inequality_data_points(
 
         n_ineq = x_ineq.shape[0]
 
-    if n_ineq == 0:
-        v_ineq = np.empty((nreal, 0), dtype='float')
+    if nreal == 0 or n_ineq == 0:
+        v_ineq = np.empty((nreal, n_ineq), dtype='float')
         return v_ineq
 
-    # Here: n_ineq > 0
+    # Here: n_ineq > 0 and nreal > 0
 
     if n > 0:
         # Check dimension of x and x_ineq
@@ -13716,8 +14949,8 @@ def sgs_at_inequality_data_points(
         ind_sel[:n] = True  # all data points can be selected
         ind_sel[n:] = False # no simulated points can be selected at the beginning
 
-        # Firt path (Gibbs sampler)
-        # -------------------------
+        # First path (Gibbs sampler)
+        # --------------------------
         # set path
         ind_ineq = np.random.permutation(n_ineq)
 
@@ -14334,6 +15567,18 @@ def sgs_at_inequality_data_points_slow(
     if pid is not None:
         fname = f'{fname} [pid={pid}]'
 
+    # Check number of realization(s)
+    if nreal < 0:
+        err_msg = f'{fname}: `nreal` is negative'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
+    # Check number of Gibbs sampler path
+    if nGibbsSamplerPath < 1:
+        err_msg = f'{fname}: `nGibbsSamplerPath` is negative or null'
+        if logger: logger.error(err_msg)
+        raise CovModelError(err_msg)
+
     # Prevent calculation if covariance model is not stationary
     if not cov_model.is_stationary():
         err_msg = f'{fname}: `cov_model` is not stationary: {fname} cannot be applied (use the other paramters for non-stationary covariance)'
@@ -14414,11 +15659,11 @@ def sgs_at_inequality_data_points_slow(
 
         n_ineq = x_ineq.shape[0]
 
-    if n_ineq == 0:
-        v_ineq = np.empty((nreal, 0), dtype='float')
+    if nreal == 0 or n_ineq == 0:
+        v_ineq = np.empty((nreal, n_ineq), dtype='float')
         return v_ineq
 
-    # Here: n_ineq > 0
+    # Here: n_ineq > 0 and nreal > 0
 
     if n > 0:
         # Check dimension of x and x_ineq

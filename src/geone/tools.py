@@ -963,6 +963,381 @@ def curv_coord_2d_from_center_line_mp(
         return u
 # -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
+def filter_signal(
+        s,
+        freq_index=None,
+        n=None,
+        signal_fraction=None,
+        use_highest_amp=False, 
+        keep_Nyquist_freq=True, 
+        axis=None,
+        return_freq_index=False, 
+        return_dft_coeff=False):
+    """
+    Filters a signal based on Fourier transform.
+    
+    The input signal `s` is filtered by 
+    
+    1. applying the Discrete Fourier Transform (DFT) (or Fast Fourier Transform (FFT))
+    2. selecting some frequencies, i.e. discarding some DFT coefficients (set to 0.0), see below
+    3. applying back the inverse DFT (FFT)
+
+    At step 2, positive frequencies are selected as follows. If `freq_index` is given (not `None`), 
+    this is the list of selected frequency indices. Otherwise, the first (smallest) frequencies 
+    are selected if `use_highest_amp=False` or the frequencies of highest amplitude (proportional 
+    to the modulus of DFT coefficients) if `use_highest_amp=True`. The number of selected (positive) 
+    frequencies is either given by (at most) `n` or set such that the sum of their amplitude is 
+    greater than or equal to the given fraction `signal_fraction` of the total amplitude (sum of 
+    the amplitude of all frequencies).
+    
+    The signal is an nd-array, and it is filtered along the given axis (axes). The parameters
+    `freq_index`, `n`, `signal_fraction`, `use_highest_amp`, `keep_Nyquist_freq` can be given
+    for each axis in `axis` separately (as a sequence), or can be the same for all axes in `axis`
+    (repeated). 
+    
+    Note also that if the fraction of the total amplitude of the signal is used, this is done 
+    on the original signal for all axes in `axis`.
+
+    Parameters
+    ----------
+    s : nd-array of floats or complexes
+        input signal
+    
+    freq_index : list of ints or sequence of list of ints, optional
+        list of positive frequency indices selected for filtering, the indices should not 
+        be duplicated, and should be integers among 1, 2, ..., M = (N-1)//2, for a signal of 
+        length N, i.e. M = N/2 - 1 if N is even and M = (N-1)/2 if N is odd 
+        (if N is even, index N/2 corresponds to the Nyquist freqency); 
+        by default (`None`): the indices are selected according to `n` or `signal_fraction`;
+        if `axis` is a sequence, `freq_index` can be given as a sequence of same length,
+        and `freq_index[i]` is used for `axis[i]` (`freq_index` is repeated otherwise)
+
+    n : int, or sequence of ints, optional
+        number of positive frequencies to select (in addition to  "frequency 0"), n >= 0, 
+        used if `freq_index=None`; for a signal of length N, the indices of positive 
+        frequencies are 
+        1, 2, ..., M = (N-1)//2, i.e. M = N/2 - 1 if N is even and M = (N-1)/2 if N is odd
+        (if N is even, index N/2 corresponds to the Nyquist freqency); `n` is reduced to M 
+        (i.e. `n=min(n, M)` is applied) if needed; if `n=None`, `signal_fraction` is used;
+        if `axis` is a sequence, `n` can be given as a sequence of same length,
+        and `n[i]` is used for `n[i]` (`n` is repeated otherwise)
+
+    signal_fraction : float, optional
+        number between 0 and 1, used if `freq_index=None` and `n=None`, minimal fraction of 
+        the total amplitude of the signal to be represented;
+        if `freq_index=None`, `n=None` and `signal_fraction=None`, all the positive frequencies
+        are selected (the Nyquist frequency is treated according to the parameter 
+        `keep_Nyquist_freq`);
+        if `axis` is a sequence, `signal_fraction` can be given as a sequence of same length,
+        and `signal_fraction[i]` is used for `signal_fraction[i]` (`signal_fraction` is 
+        repeated otherwise)
+
+    use_highest_amp : bool, default: False
+        used if the `freq_index=None`, the frequencies selected for the filtered signal are the 
+        first ones with :
+        
+        - if `False`: the frequencies sorted in ascending order (smallest frequency first)
+        - if `True`: the frequencies sorted according to their amplitude in descending order \
+        (highest amplitude first), for a multi-dimensional signal, the average of amplitude is \
+        considered, computed over all axes except the axis along which the DFT is applied;
+
+        if `axis` is a sequence, `use_highest_amp` can be given as a sequence of same length,
+        and `use_highest_amp[i]` is used for `use_highest_amp[i]` (`use_highest_amp` is 
+        repeated otherwise)
+    
+    keep_Nyquist_freq : bool, default: True
+        indicates if the Nyquist frequency is kept in the filtered signal; the Nyquist frequency
+        corresponds to the half of the signal of length N (appears only if N is even, N being the 
+        length of `s` along the axis where the DFT is applied);
+        if `axis` is a sequence, `keep_Nyquist_freq` can be given as a sequence of same length,
+        and `keep_Nyquist_freq[i]` is used for `keep_Nyquist_freq[i]` (`keep_Nyquist_freq` is 
+        repeated otherwise)
+
+    axis : int or sequence of ints, optional
+        axis (axes) along which the signal is filtered;
+        by default (`None`), axis is set to `range(s.ndim)`, i.e. the signal is filtered
+        along all axes
+   
+    return_freq_index : bool, default: False
+        if `True`, the list of indices of the selected positive frequencies are returned
+        (for each axis in `axis`); for a signal of length N (in the axis along which the DFT 
+        is applied), the positive frequencies are of index 1, 2, ..., M = (N-1)//2, i.e. 
+        M = N/2 - 1 if N is even and M = (N-1)/2 if N is odd
+
+    return_dft_coeff : bool, default: False
+        if `True`, the filtered DFT coefficients are returned (array of same shape as the 
+        input signal `s`)
+
+    Returns
+    -------
+    s_filter : nd-array
+        filtered signal, of same shape as the shape of the input signal `s`
+    
+    freq_index : [list of] list[s] of ints, optional
+        returned if `returned_freq_index=True`, the list of indices of the selected positive 
+        frequencies, for each axis in `axis`; if `axis` is an int, then `freq_index` is a list`
+        and if `axis` is sequence, then `freq_index` is a list of lists
+    
+    dft_coeff : array of complexes, optional
+        returned if `returned_dft_coeff=True`, the filtered DFT coefficients, array of same shape 
+        as the input signal `s`
+    """
+    ndim = s.ndim
+
+    # Set `axis` as a sequence (and keep track if axis is an int or the signal is 1D)
+    if ndim == 1 or isinstance(axis, int):
+        unique_axis = True
+    else:
+        unique_axis = False
+
+    if axis is None:
+        axis = range(ndim)
+    
+    axis = np.atleast_1d(axis)
+    for i in range(len(axis)):
+        if axis[i] < 0:
+            axis[i] = N + axis[i]
+
+    if np.any((axis < 0, axis >= ndim)):
+        raise ValueError('`axis` not valid')
+
+    naxis = len(axis)
+
+    # Set size of the signal along each axis in `axis`
+    N = [s.shape[iax] for iax in axis]
+
+    # Set the index of the last positive frequency along each axis in `axis`
+    nmax = [(Ni-1)//2 for Ni in N]
+
+    if ndim > 1:
+        axes_T = []
+        shape_T = []
+        for iax in axis:
+            # Set index list for permutation of all axes and corresponding shape
+            # for furthe computation along axis iax
+            ax = list(range(ndim))
+            # swap 0 and iax index
+            i = ax[0]
+            ax[0] = ax[iax]
+            ax[iax] = i
+            # coresponding shape
+            sh = [s.shape[i] for i in ax]
+            
+            axes_T.append(ax)
+            shape_T.append(sh)
+
+    # Manage parameters `freq_index`, `n`, `signal_fraction`, `use_highest_amp`, `keep_Nyquist_freq`
+    # to deal with the way to select the frequencies
+    if freq_index is None:
+        freq_index = naxis*[None]
+
+    else:
+        if not isinstance(freq_index, tuple) and not isinstance(freq_index, list) and not isinstance(freq_index, np.ndarray):
+            raise TypeError('`freq_index`')
+
+        if freq_index[0] is not None and not isinstance(freq_index[0], tuple) and not isinstance(freq_index[0], list) and not isinstance(freq_index[0], np.ndarray):
+            # A single sequence is given
+            freq_index = naxis*[np.asarray(freq_index)]
+
+        elif len(freq_index) != naxis:
+            raise ValueError('`freq_index` of invalid length')
+        
+        else:
+            freq_index = list(freq_index) # cast to list
+            for i in range(naxis):
+                if freq_index[i] is not None:
+                    freq_index[i] = np.asarray(freq_index[i])
+
+    n = np.atleast_1d(n)
+    if n.size == 1:
+        n = np.repeat(n, naxis)
+    elif n.size != naxis:
+        raise ValueError('`n` of invalid length')
+
+    signal_fraction = np.atleast_1d(signal_fraction)
+    if signal_fraction.size == 1:
+        signal_fraction = np.repeat(signal_fraction, naxis)
+    elif signal_fraction.size != naxis:
+        raise ValueError('`signal_fraction` of invalid length')
+
+    use_highest_amp = np.atleast_1d(use_highest_amp)
+    if use_highest_amp.size == 1:
+        use_highest_amp = np.repeat(use_highest_amp, naxis)
+    elif use_highest_amp.size != naxis:
+        raise ValueError('`use_highest_amp` of invalid length')
+
+    keep_Nyquist_freq = np.atleast_1d(keep_Nyquist_freq)
+    if keep_Nyquist_freq.size == 1:
+        keep_Nyquist_freq = np.repeat(keep_Nyquist_freq, naxis)
+    elif keep_Nyquist_freq.size != naxis:
+        raise ValueError('`keep_Nyquist_freq` of invalid length')
+
+    # Compute positive frequence indices `freq_index`, and indices `ind` used for filtering along each axis in `axis`
+    ind = naxis*[None]
+    for i in range(naxis):
+        if freq_index[i] is not None:
+            if len(np.unique(freq_index[i])) != len(freq_index[i]):
+                raise ValueError('`freq_index` contains duplicated frequency index')
+            
+            if np.any((np.asarray(freq_index[i]) < 1, np.asarray(freq_index[i]) > nmax[i])):
+                raise ValueError('`freq_index` contains invalid index')
+    
+        else:
+            if n[i] is None:
+                if signal_fraction[i] is None or signal_fraction[i] >= 1.0:
+                    n[i] = nmax[i]
+            
+            else:
+                if n[i] < 0:
+                    raise ValueError('`n` not valid')
+                
+                n[i] = min(n[i], nmax[i])
+
+            if use_highest_amp[i] or n[i] is None:
+                # Compute amplitude `ampl` on the original signal of each positive frequency along the considered axis
+                # (and taking average over the other axes)
+                
+                # FFT of original signal
+                lam = np.fft.fft(s, axis=axis[i])
+
+                if ndim == 1:
+                    ampl = np.absolute(lam[1:nmax[i]+1])
+                else:
+                    # Take average amplitude over the other axes
+                    ampl = np.absolute(np.transpose(lam, axes=axes_T[i]).reshape(N[i], -1)[1:nmax[i]+1, :]).mean(axis=1)
+
+            if n[i] is None:
+                # Use signal_fraction[i]             
+                ampl_sum_target = signal_fraction[i] * ampl.sum()
+                
+                if use_highest_amp[i]:
+                    # Select the frequencies (index) with highest amplitudes until ampl_sum_target is reached
+                    ind_sort = np.argsort(ampl)[::-1]
+                    m = np.where(np.cumsum(ampl[ind_sort]) >= ampl_sum_target)[0][0]
+                    freq_index[i] = 1 + ind_sort[:m+1]
+                else:
+                    m = np.where(np.cumsum(ampl) >= ampl_sum_target)[0][0]
+                    freq_index[i] = 1 + np.arange(m+1).astype('int')
+
+            else:
+                # Use n[i]
+                if use_highest_amp[i]:
+                    # Select the frequencies (index) with highest amplitudes
+                    freq_index[i] = 1 + np.argsort(ampl)[::-1][:n[i]]
+                
+                else:
+                    freq_index[i] = 1 + np.arange(n[i]).astype('int')
+       
+        # Set indices ind[i] for the FFT
+        if keep_Nyquist_freq[i] and N[i]%2 == 0:
+            ind[i] = np.hstack(([0], freq_index[i], [N[i]//2], N[i]-freq_index[i][::-1])) # add freqency 0 and Nyquist frequency (N/2)
+        else:
+            ind[i] = np.hstack(([0], freq_index[i], N[i]-freq_index[i][::-1])) # add freqency 0
+
+    # Filter the signal
+
+    # Apply FFT along each axis in `axis` 
+    lam = s.copy().astype('complex')
+    for i in range(naxis):
+        # Compute the FFT 
+        lam = np.fft.fft(lam, axis=axis[i])
+
+    # Filter DFT coefficients, along each axis in `axis` 
+    for i in range(naxis):
+        # Discard unselected frequencies
+        if ndim == 1:
+            lam_filter = np.zeros_like(lam)
+            lam_filter[ind[i]] = lam[ind[i]]
+        else:
+            lam_filter = np.zeros((N[i], lam.size//N[i]), dtype=lam.dtype)
+            lam_filter[ind[i], :] = np.transpose(lam, axes=axes_T[i]).reshape(N[i], -1)[ind[i], :]
+            lam_filter = np.transpose(lam_filter.reshape(shape_T[i]), axes=axes_T[i])
+
+        lam = lam_filter
+
+    if return_dft_coeff:
+        dft_coeff = lam.copy()
+
+    # Apply inverse FFT, along each axis in `axis` 
+    for i in range(naxis):
+        lam = np.fft.ifft(lam, axis=axis[i])
+
+    # Set filtered signal    
+    s_filter = lam
+
+    # # ------
+    # # Note : the following gives the same filtered signal
+    # # Apply FFT and filter coefficients, along each axis in `axis` 
+    # lam = s.copy().astype('complex')
+    # for i in range(naxis):
+    #     # Compute the FFT 
+    #     lam = np.fft.fft(lam, axis=axis[i])
+
+    #     # Discard unselected frequencies
+    #     if ndim == 1:
+    #         lam_filter = np.zeros_like(lam)
+    #         lam_filter[ind[i]] = lam[ind[i]]
+    #     else:
+    #         lam_filter = np.zeros((N[i], lam.size//N[i]), dtype=lam.dtype)
+    #         lam_filter[ind[i], :] = np.transpose(lam, axes=axes_T[i]).reshape(N[i], -1)[ind[i], :]
+    #         lam_filter = np.transpose(lam_filter.reshape(shape_T[i]), axes=axes_T[i])
+
+    #     lam = lam_filter
+
+    # if return_dft_coeff:
+    #     dft_coeff = lam.copy()
+
+    # # Apply inverse FFT, along each axis in `axis` 
+    # for i in range(naxis):
+    #     lam = np.fft.ifft(lam, axis=axis[i])
+
+    # # Set filtered signal    
+    # s_filter = lam
+    # # ------
+
+    # # ------
+    # # Note : the following gives the same filtered signal
+    # s_filter = s.copy()    
+    # for i in range(naxis):
+    #     # Compute the FFT 
+    #     lam = np.fft.fft(s_filter, axis=axis[i])
+
+    #     # Discard unselected frequencies
+    #     if ndim == 1:
+    #         lam_filter = np.zeros_like(lam)
+    #         lam_filter[ind[i]] = lam[ind[i]]
+    #     else:
+    #         lam_filter = np.zeros((N[i], lam.size//N[i]), dtype=lam.dtype)
+    #         lam_filter[ind[i], :] = np.transpose(lam, axes=axes_T[i]).reshape(N[i], -1)[ind[i], :]
+    #         lam_filter = np.transpose(lam_filter.reshape(shape_T[i]), axes=axes_T[i])
+
+    #     # Compute the inverse FFT
+    #     s_filter = np.fft.ifft(lam_filter, axis=axis[i])
+    # # ------
+
+    if not np.iscomplex(s).any():
+        # input signal is real, then take the real part of the filtered signal
+        s_filter = np.real(s_filter)
+
+    if return_freq_index:
+        if return_dft_coeff:
+            if unique_axis:
+                return s_filter, freq_index[0], dft_coeff
+            else:
+                return s_filter, freq_index, dft_coeff
+
+        if unique_axis:
+            return s_filter, freq_index[0]
+        else:
+            return s_filter, freq_index
+ 
+    if return_dft_coeff:
+        return s_filter, dft_coeff
+            
+    return s_filter
+# -----------------------------------------------------------------------------
+
 ##### OLD BELOW #####
 # # -----------------------------------------------------------------------------
 # def sector_angle(x, line, **kwargs):

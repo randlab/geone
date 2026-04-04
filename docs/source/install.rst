@@ -77,6 +77,18 @@ GEONE has been tested with the following settings:
 - pyvista.__version__    = 0.46.3
 - scipy.__version__      = 1.16.2
 
+Note about `multiprocessing`
+----------------------------
+
+Some functions uses `multiprocessing` with each process running on multi-threads (OpenMP in pre-compiled C libraries). If such a function blocks, this might be due to the "start method" of `multiprocessing`, which is set to 'fork' by default on Linux. Setting "start method" to 'spawn' might solve this issue, at the cost of performance. Or, to keep better performance, "start method" can be let (set) to 'fork', and in function allowing to specify the number of process(es) `nproc` and the number of thread(s) per process `nthreads_per_proc`, use set-up such that `nproc=1` or `nthreads_per_proc=1`.
+
+.. note::
+    if needed, "start method" of `multiprocessing` must be set at START OF THE PYTHON SESSION, i.e. before running any multiprocessing task, with 
+    
+    `import multiprocessing; multiprocessing.set_start_method(start_method)`
+
+    where `start_method` is a string (e.g. 'spawn', 'fork'); or this can be forced by using the keyword argument `force=True`. Note that `multiprocessing.get_start_method()` returns the "start method".
+
 Removing GEONE
 --------------
 In a terminal type::
