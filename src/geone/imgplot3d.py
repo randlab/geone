@@ -931,14 +931,13 @@ def drawImage3D_slice (
         cmap = ccol.custom_cmap(colorList, ncol=len(colorList), alpha=alpha)
 
         # Set the min and max of the colorbar
-        cmin, cmax = 0, len(dval) # works, but scalar bar annotations may be shifted of +0.5, see below
-        # cmin, cmax = -0.5, len(dval) - 0.5 # does not work
+        cmin, cmax = -0.5, len(dval) - 0.5
 
         # Set scalar bar annotations if not given
         if scalar_bar_annotations == {}:
             if len(dval) <= scalar_bar_annotations_max: # avoid too many annotations (very slow and useless)
                 for i, v in enumerate(dval):
-                    scalar_bar_annotations[i+0.5] = f'{v:.3g}'
+                    scalar_bar_annotations[i] = f'{v:.3g}'
 
         scalar_bar_kwargs['n_labels'] = 0
         scalar_bar_kwargs['n_colors'] = len(dval)
@@ -1225,14 +1224,13 @@ def drawImage3D_empty_grid (
         cmap = ccol.custom_cmap(colorList, ncol=len(colorList), alpha=alpha)
 
         # Set the min and max of the colorbar
-        cmin, cmax = 0, len(dval) # works, but scalar bar annotations may be shifted of +0.5, see below
-        # cmin, cmax = -0.5, len(dval) - 0.5 # does not work
+        cmin, cmax = -0.5, len(dval) - 0.5
 
         # Set scalar bar annotations if not given
         if scalar_bar_annotations == {}:
             if len(dval) <= scalar_bar_annotations_max: # avoid too many annotations (very slow and useless)
                 for i, v in enumerate(dval):
-                    scalar_bar_annotations[i+0.5] = f'{v:.3g}'
+                    scalar_bar_annotations[i] = f'{v:.3g}'
 
         scalar_bar_kwargs['n_labels'] = 0
         scalar_bar_kwargs['n_colors'] = len(dval)

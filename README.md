@@ -2,7 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/geone/badge/?version=latest)](https://geone.readthedocs.io/en/latest/?badge=latest)
 
-**Current version : 1.3.3** <!-- Update manually here! see src/geone/_version.py -->
+**Current version : 1.3.4** <!-- Update manually here! see src/geone/_version.py -->
 
 GEONE is a Python3 package providing a set of tools for geostatistical modeling, including:
 
