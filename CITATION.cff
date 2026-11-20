@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: >-
+  If you use GEONE, please cite this software and the relevant methodological
+  references listed in the documentation. Record the version or commit used.
+type: software
+title: "GEONE: Geostatistical modeling tools"
+authors:
+  - family-names: Straubhaar
+    given-names: Julien
+  - family-names: Renard
+    given-names: Philippe
+repository-code: "https://github.com/randlab/geone"
+url: "https://geone.readthedocs.io"
+abstract: >-
+  GEONE provides Python tools for geostatistical modeling, including
+  multiple-point and two-point statistics, simulation, kriging, and
+  algorithms based on random processes.
+keywords:
+  - geostatistics
+  - multiple-point statistics
+  - simulation
+  - kriging
