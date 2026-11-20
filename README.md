@@ -17,6 +17,15 @@ The documentation of GEONE is on https://geone.readthedocs.io.
 <!-- The notebooks (examples) from the documentation are available in [docs/source/notebooks](./docs/source/notebooks). -->
 The notebooks (examples) from the documentation are available in [docs/source/notebooks](https://github.com/randlab/geone/tree/master/docs/source/notebooks).
 
+## Citing GEONE
+
+Software citation metadata is provided in [CITATION.cff](./CITATION.cff), also
+available through GitHub's **Cite this repository** menu. Record the GEONE
+version or commit used in your work. Cite the relevant
+[methodological references](https://geone.readthedocs.io/en/latest/ref.html)
+in addition to the software; the software citation does not replace references
+for the particular algorithms used.
+
 ## Installation
 
 GEONE is available on:
